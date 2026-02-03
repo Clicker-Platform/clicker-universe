@@ -1,0 +1,296 @@
+import { db } from "@/lib/firebase";
+import { doc, getDoc, collection, getDocs, query, where, orderBy } from "firebase/firestore";
+import { BusinessProfile, LinkItem, Product, SocialLink, SiteSettings, SocialLinkItem, initialBusinessHours, BusinessHours, Page, BusinessContact, Branch, initialBusinessContact, LinkSettings, ProductSettings } from "@/data/mockData";
+import { TemplateId } from "@/lib/templates/types";
+import { ICON_MAP } from "@/data/icons";
+
+// Helper to map icon names string back to Lucide components
+const IconMap = ICON_MAP;
+
+function logDebug(msg: string) {
+    if (process.env.NODE_ENV === 'development') {
+        console.log(`[DEBUG] ${msg}`);
+    }
+}
+
+export async function fetchPublicData(siteId: string, options: { includeProducts?: boolean } = { includeProducts: true }) {
+    logDebug(`Fetching public data for siteId: ${siteId}`);
+    // Execute all independent fetches in parallel with individual error handling
+    const [
+        profileSnap,
+        linksSnap,
+        productsSnap,
+        featuredSnap,
+        settings,
+        businessResult,
+        branchesResult,
+        linkSettings,
+        productSettings
+    ] = await Promise.all([
+        getDoc(doc(db, "sites", siteId, "content", "profile")).then(r => { logDebug('Profile: Success'); return r; }).catch(e => { logDebug(`Profile: Error ${e}`); return { exists: () => false, data: () => null } as any; }),
+        getDocs(collection(db, "sites", siteId, "links")).then(r => { logDebug('Links: Success'); return r; }).catch(e => { logDebug(`Links: Error ${e}`); return { docs: [] } as any; }),
+        options.includeProducts ? getDocs(collection(db, "sites", siteId, "products")).then(r => { logDebug('Products: Success'); return r; }).catch(e => { logDebug(`Products: Error ${e}`); return { docs: [] } as any; }) : Promise.resolve(null),
+        getDoc(doc(db, "sites", siteId, "content", "featuredProduct")).then(r => { logDebug('Featured: Success'); return r; }).catch(e => { logDebug(`Featured: Error ${e}`); return { exists: () => false, data: () => null } as any; }),
+        fetchSiteSettings(siteId).then(r => { logDebug('Settings: Success'); return r; }).catch(e => { logDebug(`Settings: Error ${e}`); return null; }),
+        getDoc(doc(db, "sites", siteId, "content", "business")).then(snap => ({ success: true, snap } as const)).catch(error => { logDebug(`Business: Error ${error}`); return { success: false, error } as const; }),
+        getDocs(query(collection(db, "sites", siteId, "branches"), orderBy("order", "asc"))).then(snap => ({ success: true, snap } as const)).catch(error => { logDebug(`Branches: Error ${error}`); return { success: false, error } as const; }),
+        fetchLinkSettings(siteId).then(r => { logDebug('LinkSettings: Success'); return r; }).catch(e => { logDebug(`LinkSettings: Error ${e}`); return null; }),
+        fetchProductSettings(siteId).then(r => { logDebug('ProductSettings: Success'); return r; }).catch(e => { logDebug(`ProductSettings: Error ${e}`); return null; })
+    ]);
+
+    // Process Profile
+    const profile = profileSnap.exists() ? profileSnap.data() as BusinessProfile : null;
+
+    // Process Links
+    const links = (linksSnap.docs || []).map((doc: any) => {
+        const data = doc.data();
+        return {
+            ...data,
+            id: doc.id,
+        } as LinkItem;
+    });
+    // Sort links by order
+    links.sort((a: LinkItem, b: LinkItem) => (a.order || 0) - (b.order || 0));
+
+    // Process Products (Optional)
+    let products: Product[] = [];
+    if (productsSnap) {
+        products = (productsSnap.docs || [])
+            .map((doc: any) => {
+                const data = doc.data();
+                return {
+                    id: doc.id,
+                    name: data.name || data.title || 'Untitled Product',
+                    price: data.price ? String(data.price) : '',
+                    imageUrl: data.imageUrl || data.image || '',
+                    description: data.description || '',
+                    category: data.category || 'All',
+                    images: data.images || [],
+                    isActive: data.isActive !== false,
+                    showPrice: data.showPrice !== false,
+                    showLabel: data.showLabel !== false
+                } as Product;
+            })
+            .filter((p: Product) => p.isActive) // Filter out inactive products
+            .sort((a: Product, b: Product) => a.name.localeCompare(b.name));
+    }
+
+    // Process Featured Product
+    let featuredProduct: Product | null = null;
+    if (featuredSnap.exists()) {
+        const featuredData = featuredSnap.data();
+        // Support both old format (full object with originalId) and new format (just productId)
+        const featuredId = featuredData.productId || featuredData.originalId;
+
+        if (featuredId) {
+            if (products.length > 0) {
+                // If we already fetched products, just find it
+                featuredProduct = products.find(p => p.id === featuredId) || null;
+            } else {
+                // Otherwise fetch it individually
+                // Note: This is an additional fetch, but necessary if products weren't requested or not found
+                // We could include this in the initial Promise.all if we knew the ID beforehand, but we don't.
+                // Optimally, includeProducts=true is the common case, so this is fast.
+                const pSnap = await getDoc(doc(db, "sites", siteId, "products", featuredId));
+                if (pSnap.exists()) {
+                    const data = pSnap.data();
+                    featuredProduct = {
+                        id: pSnap.id,
+                        name: data.name || data.title || 'Untitled Product',
+                        price: data.price ? String(data.price) : '',
+                        imageUrl: data.imageUrl || data.image || '',
+                        description: data.description || '',
+                        category: data.category || 'All',
+                        images: data.images || [],
+                        isActive: data.isActive !== false,
+                        showPrice: data.showPrice !== false,
+                        showLabel: data.showLabel !== false
+                    } as Product;
+                }
+            }
+        }
+    }
+
+    // Process Socials (from settings doc)
+    const socialLinks = settings?.socialLinkItems || [];
+
+    // Process Business Settings
+    let businessHours = initialBusinessHours;
+    let contact = initialBusinessContact;
+
+    if (businessResult.success && businessResult.snap && businessResult.snap.exists()) {
+        const businessSnap = businessResult.snap;
+        businessHours = businessSnap.data() as BusinessHours;
+        const data = businessSnap.data();
+        contact = {
+            whatsapp: data.whatsapp || "",
+            email: data.email || "",
+            address: data.address || "",
+            mapUrl: data.mapUrl || ""
+        };
+    } else if (!businessResult.success) {
+        console.error("Error fetching business settings:", businessResult.error);
+    }
+
+    // Process Branches
+    let branches: Branch[] = [];
+    if (branchesResult.success && branchesResult.snap) {
+        branches = branchesResult.snap.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        } as Branch));
+    } else if (!branchesResult.success) {
+        console.error("Error fetching branches:", branchesResult.error);
+    }
+
+    return {
+        profile,
+        links,
+        socialLinks,
+        products,
+        featuredProduct,
+        businessHours,
+        contact,
+        branches,
+        layoutStyle: (settings?.layoutStyle || 'classic') as TemplateId,
+        templateId: (settings?.layoutStyle || 'classic') as TemplateId,
+        footerText: settings?.footerText || '© 2024 SunnySide',
+        hideFooterContact: settings?.hideFooterContact || false,
+        showHeaderAddress: settings?.showHeaderAddress || false,
+        homeBlockOrder: settings?.homeBlockOrder || ['quick_actions', 'branches', 'featured', 'gallery', 'hours'],
+        themeColor: settings?.themeColor,
+        accentColor: settings?.accentColor,
+        hiddenBlockIds: settings?.hiddenBlockIds || [],
+        galleryTitle: settings?.galleryTitle,
+        borderRadius: settings?.borderRadius || 'large',
+        globalSeo: settings?.seo,
+        globalPixels: settings?.pixels,
+        linkSettings: linkSettings,
+        productSettings: productSettings,
+        homepageSlug: settings?.homepageSlug,
+        businessSchedule: businessHours.schedule
+    };
+}
+
+export async function fetchSiteSettings(siteId: string) {
+    const snap = await getDoc(doc(db, "sites", siteId, "content", "siteSettings"));
+    if (snap.exists()) {
+        return snap.data() as SiteSettings;
+    }
+    return null;
+}
+
+export async function fetchPageBySlug(siteId: string, slug: string) {
+    try {
+        const q = query(collection(db, "sites", siteId, "pages"), where("slug", "==", slug));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+            return null;
+        }
+
+        const doc = querySnapshot.docs[0];
+        return {
+            id: doc.id,
+            ...doc.data()
+        } as Page;
+    } catch (e) {
+        console.error(`Error fetching page with slug ${slug}:`, e);
+        return null;
+    }
+}
+
+export async function fetchPages(siteId: string) {
+    const querySnapshot = await getDocs(collection(db, "sites", siteId, "pages"));
+    return querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+    } as Page));
+
+
+}
+
+export async function fetchLinkSettings(siteId: string) {
+    const snap = await getDoc(doc(db, "sites", siteId, "content", "linkSettings"));
+    if (snap.exists()) {
+        return snap.data() as LinkSettings;
+    }
+    return { sectionTitle: "Quick Actions", showOnHome: true } as LinkSettings;
+}
+
+export async function fetchProductSettings(siteId: string) {
+    const snap = await getDoc(doc(db, "sites", siteId, "content", "productSettings"));
+    if (snap.exists()) {
+        return snap.data() as ProductSettings;
+    }
+    return { galleryTitle: "More Treats", showSectionTitle: true, itemsToShow: 6 } as ProductSettings;
+}
+export async function fetchLightweightPublicData(siteId: string) {
+    // Fetch only essential data for content pages (Profile, Settings, Contact)
+    const [
+        profileSnap,
+        settings,
+        businessSnap
+    ] = await Promise.all([
+        getDoc(doc(db, "sites", siteId, "content", "profile")),
+        fetchSiteSettings(siteId),
+        getDoc(doc(db, "sites", siteId, "content", "business"))
+    ]);
+
+    // Process Profile
+    const profile = profileSnap.exists() ? profileSnap.data() as BusinessProfile : null;
+
+    // Process Business Settings (Contact/Hours)
+    let businessHours = initialBusinessHours;
+    let contact = initialBusinessContact;
+
+    if (businessSnap.exists()) {
+        const data = businessSnap.data();
+        businessHours = data as BusinessHours; // Assuming structure matches or we map it
+        // Re-map contact fields just in case
+        contact = {
+            whatsapp: data.whatsapp || "",
+            email: data.email || "",
+            address: data.address || "",
+            mapUrl: data.mapUrl || ""
+        };
+    }
+
+    // Return strict subset required for SharedPageLayout
+    // We return empty arrays for lists we didn't fetch to satisfy the interface
+    return {
+        profile,
+        links: [], // Not fetched
+        socialLinks: settings?.socialLinkItems || [],
+        products: [], // Not fetched
+        featuredProduct: null, // Not fetched
+        businessHours,
+        contact,
+        branches: [], // Not fetched
+        layoutStyle: (settings?.layoutStyle || 'classic') as TemplateId,
+        templateId: (settings?.layoutStyle || 'classic') as TemplateId,
+        footerText: settings?.footerText || '© 2024 SunnySide',
+        hideFooterContact: settings?.hideFooterContact || false,
+        showHeaderAddress: settings?.showHeaderAddress || false,
+        homeBlockOrder: settings?.homeBlockOrder || [],
+        themeColor: settings?.themeColor,
+        accentColor: settings?.accentColor,
+        hiddenBlockIds: settings?.hiddenBlockIds || [],
+        galleryTitle: settings?.galleryTitle,
+        borderRadius: settings?.borderRadius || 'large',
+        globalSeo: settings?.seo,
+        globalPixels: settings?.pixels,
+        linkSettings: { sectionTitle: '', showOnHome: false }, // Placeholder
+        productSettings: {
+            galleryTitle: '',
+            showSectionTitle: false,
+            itemsToShow: 0,
+            whatsappBtnLabel: '',
+            whatsappMessageTemplate: '',
+            whatsappBtnColor: '',
+            whatsappBtnTextColor: ''
+        }, // Placeholder
+        homepageSlug: settings?.homepageSlug,
+        businessSchedule: businessHours.schedule
+    };
+}

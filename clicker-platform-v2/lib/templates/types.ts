@@ -1,0 +1,114 @@
+import React from 'react';
+
+// Keep existing TemplateId for backward compatibility during migration, 
+// but allow string for dynamic IDs.
+export type TemplateId = 'classic' | 'modern' | 'sojourner' | string;
+
+export interface ThemeColors {
+    primary: string;
+    secondary?: string;
+    accent?: string;
+    background: string;
+    foreground: string;
+    surface?: string;
+    border?: string;
+    muted?: string;
+}
+
+export interface ThemeFonts {
+    heading: string;
+    body: string;
+}
+
+export interface BackgroundElement {
+    icon: string;
+    position: string; // Tailwind class e.g. "top-10 left-4"
+    rotation: number; // Degrees
+    size?: string; // Tailwind class e.g. "w-16 h-16"
+    colorClass?: string; // Tailwind class e.g. "bg-brand-green"
+}
+
+export interface TemplateConfig {
+    colors: ThemeColors;
+    fonts: ThemeFonts;
+    borderRadius: string;
+    // Deprecated: cardStyle in favor of cardVariant, but keeping for compatibility
+    cardStyle: 'brutalist' | 'clean' | 'glass';
+    cardVariant: 'shadow' | 'outlined' | 'flat'; // New explicit control
+    backgroundElements?: BackgroundElement[];
+    allowThemeColorOverride?: boolean; // Defaults to true. If false, template background supercedes user theme color.
+
+    // Header & Layout Tokens
+    headerLayout: 'center' | 'left' | 'minimal';
+    homeButtonStyle: 'pill' | 'text' | 'icon';
+    homeButtonColor: 'primary' | 'foreground' | 'glass';
+    taglineStyle: 'contrast' | 'gentle' | 'outline'; // New token
+
+    // --- New Responsive Layout Engine (Phase 2) ---
+    layout?: TemplateLayoutConfig;
+
+    // --- Template-Specific Configuration (Phase 3) ---
+    // Flexible bucket for settings specific to a single template (e.g. Shuvo-only options)
+    custom?: Record<string, any>;
+}
+
+export interface TemplateGridConfig {
+    mobile: number; // Columns on mobile (default 1)
+    tablet: number; // Columns on tablet (default 2)
+    desktop: number; // Columns on desktop (default 3 or 4)
+    gap: string;    // Tailwind gap class e.g. 'gap-4'
+}
+
+export interface TemplateLayoutConfig {
+    // Controls the max-width of the main container
+    containerWidth: 'narrow' | 'boxed' | 'full' | 'tablet';
+    // 'narrow' = 480px (Classic Link-in-bio)
+    // 'boxed' = 1024px (Modern Web App)
+    // 'full' = 100% (Dashboard / Immersive)
+
+    // Controls navigation style behavior
+    navMode: 'mobile-only' | 'adaptive';
+    // 'mobile-only' = Always Bottom Bar / Drawer
+    // 'adaptive' = Bottom Bar (Mobile) -> Top Bar (Desktop)
+
+    // Explicitly toggle features
+    showBottomNav?: boolean;
+
+    // Grid System configuration
+    grid: TemplateGridConfig;
+}
+
+export type ThemeConfig = TemplateConfig;
+
+export interface TemplateComponents {
+    // We will type these more strictly as we create the specific component props
+    Header: React.ElementType<any>;
+    Background: React.ElementType<any>;
+    // Future: LinkCard, Footer, etc.
+}
+
+export interface TemplateDefinition {
+    id: TemplateId;
+    name: string;
+    description: string;
+    isPro?: boolean;
+    config: ThemeConfig;
+    components?: TemplateComponents; // Optional during transition
+    thumbnailUrl?: string;
+}
+
+// --- Firestore Document Schema ---
+
+export interface TemplateDocument {
+    id: string; // 'classic', 'modern', or UUID
+    name: string;
+    description: string;
+    type: 'system' | 'custom'; // 'system' = predefined, 'custom' = user made
+    tier: 'free' | 'premium';
+    status: 'active' | 'inactive';
+    config: ThemeConfig;
+    thumbnailUrl?: string;
+    ownerId?: string | null; // Null for system templates
+    createdAt?: any; // Timestamp
+    updatedAt?: any; // Timestamp
+}

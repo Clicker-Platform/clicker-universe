@@ -1,0 +1,191 @@
+import { fetchPageBySlug, fetchPublicData, fetchLightweightPublicData } from '@/lib/fetchData';
+import { notFound } from 'next/navigation';
+import { Metadata } from 'next';
+import { BlockRenderer } from "@/components/blocks/BlockRenderer";
+import { SharedPageLayout } from '@/components/layout/SharedPageLayout';
+import { getTemplate } from '@/lib/templates/registry';
+import { findModuleForRoute } from '@/lib/modules/registry';
+import { ModuleLoader } from '@/components/modules/ModuleLoader';
+import { getBlockSpan } from '@/lib/templates/layoutUtils';
+import { headers } from 'next/headers';
+
+type Props = {
+    params: Promise<{ tenant: string; slug: string[] }>;
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+};
+
+export const dynamic = 'force-dynamic';
+
+// Helper: Resolve path from slug array
+const getPath = (slug: string[]) => `/${slug.join('/')}`;
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+    const { tenant, slug } = await params;
+    const path = getPath(slug);
+    const siteId = tenant;
+
+    // 1. Check for Module
+    const moduleMatch = await findModuleForRoute(path);
+    if (moduleMatch) {
+        const { profile } = await fetchPublicData(siteId, { includeProducts: false });
+        const businessName = profile?.name || 'Clicker App';
+        return {
+            title: `${moduleMatch.module.displayName} | ${businessName}`,
+        };
+    }
+
+    // 2. Fallback to CMS (Only for single segment)
+    if (slug.length === 1) {
+        const page = await fetchPageBySlug(siteId, slug[0]);
+        const { globalSeo } = await fetchPublicData(siteId);
+
+        if (page) {
+            const title = page.seo?.title || globalSeo?.title || page.title;
+            const description = page.seo?.description || globalSeo?.description;
+            const image = page.seo?.image || globalSeo?.image;
+            const noIndex = page.seo?.noIndex ?? false;
+
+            return {
+                title,
+                description,
+                openGraph: {
+                    title,
+                    description,
+                    images: image ? [{ url: image }] : [],
+                },
+                robots: noIndex ? { index: false, follow: false } : undefined,
+            };
+        }
+    }
+
+    return {};
+}
+
+export default async function TenantCatchAllPage({ params, searchParams }: Props) {
+    const { tenant, slug } = await params;
+    const { t } = await searchParams;
+    const path = getPath(slug);
+    const siteId = tenant;
+
+    console.log('[TenantCatchAll] Tenant:', tenant, 'Path:', path);
+
+    // ---------------------------------------------------------
+    // 1. Module Routing
+    // ---------------------------------------------------------
+    const moduleMatch = await findModuleForRoute(path);
+
+    if (moduleMatch) {
+        return (
+            <ModuleLoader
+                componentKey={moduleMatch.route.componentKey}
+                params={params}
+                searchParams={searchParams}
+                siteId={siteId}
+            />
+        );
+    }
+
+    // ---------------------------------------------------------
+    // 2. CMS Page Fallback
+    // ---------------------------------------------------------
+    if (slug.length > 1) {
+        notFound();
+    }
+
+    const pageSlug = slug[0];
+    const [page, publicData] = await Promise.all([
+        fetchPageBySlug(siteId, pageSlug),
+        fetchLightweightPublicData(siteId)
+    ]);
+
+    if (!page) {
+        notFound();
+    }
+
+    const {
+        profile,
+        socialLinks,
+        templateId,
+        footerText,
+        contact,
+        hideFooterContact,
+        showHeaderAddress,
+        themeColor,
+        borderRadius,
+        globalPixels,
+        linkSettings,
+        productSettings
+    } = publicData;
+
+    const effectivePixels = {
+        facebookPixelId: page.pixels?.facebookPixelId || globalPixels?.facebookPixelId,
+        googleAnalyticsId: page.pixels?.googleAnalyticsId || globalPixels?.googleAnalyticsId,
+        tiktokPixelId: page.pixels?.tiktokPixelId || globalPixels?.tiktokPixelId,
+    };
+
+    const overrideTemplate = typeof t === 'string' ? t : undefined;
+    const pageTemplate = page.templateConfig?.activeTemplateId;
+    const safeTemplateId = overrideTemplate || pageTemplate || templateId || 'classic';
+    const template = getTemplate(safeTemplateId);
+
+    return (
+        <SharedPageLayout
+            templateId={safeTemplateId}
+            data={publicData}
+            pageOverrides={{
+                borderRadius: borderRadius,
+                themeColor: themeColor,
+                customConfig: page.templateConfig?.customConfig
+            }}
+        >
+            {page.blocks && Array.isArray(page.blocks) && page.blocks.length > 0 ? (
+                <div className="grid gap-[var(--grid-gap)] dynamic-grid">
+                    {page.blocks.map(block => {
+                        const isSingleCol = template.config.layout?.grid?.desktop === 1;
+                        const spanClass = isSingleCol ? 'col-span-full' : getBlockSpan(block.type);
+
+                        return (
+                            <div key={block.id} className={spanClass}>
+                                <BlockRenderer
+                                    block={block}
+                                    phoneNumber={contact?.whatsapp}
+                                    whatsappSettings={{
+                                        label: productSettings?.whatsappBtnLabel,
+                                        messageTemplate: productSettings?.whatsappMessageTemplate,
+                                        bgColor: productSettings?.whatsappBtnColor,
+                                        textColor: productSettings?.whatsappBtnTextColor
+                                    }}
+                                    theme={template.config}
+                                    siteId={siteId}
+                                />
+                            </div>
+                        );
+                    })}
+                </div>
+            ) : (
+                <article
+                    className={`
+                        bg-theme-surface p-6 flex-1
+                        ${template.config.cardVariant === 'outlined' ? 'border border-gray-200 shadow-sm' : 'shadow-xl border-[3px] border-theme-border'}
+                    `}
+                    style={{ borderRadius: 'var(--theme-radius)' }}
+                >
+                    {page.title && (
+                        <h1 className={`
+                            text-3xl font-extrabold text-theme-foreground mb-6 border-b-2 border-theme-border/30 pb-4
+                            ${template.config.fonts.heading.includes('Inter') ? 'tracking-normal' : ''}
+                        `}>
+                            {page.title}
+                        </h1>
+                    )}
+                    {page.content && (
+                        <div
+                            className="prose prose-stone max-w-none text-theme-foreground/80 font-medium"
+                            dangerouslySetInnerHTML={{ __html: page.content }}
+                        />
+                    )}
+                </article>
+            )}
+        </SharedPageLayout>
+    );
+}

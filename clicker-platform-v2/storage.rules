@@ -1,0 +1,31 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Auth helper
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Default: Public Read for everything (simplified for now)
+    match /{allPaths=**} {
+      allow read: if true;
+    }
+
+    // Tenant Writes: /sites/{siteId}/...
+    match /sites/{siteId}/{allPaths=**} {
+      allow write: if isAuthenticated();
+    }
+
+    // Legacy Writes: /products/...
+    match /products/{allPaths=**} {
+      allow write: if isAuthenticated();
+    }
+
+    // Legacy Writes: /uploads/...
+    match /uploads/{allPaths=**} {
+      allow write: if isAuthenticated();
+    }
+  }
+}

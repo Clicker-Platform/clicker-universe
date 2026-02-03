@@ -1,0 +1,111 @@
+'use client';
+
+import React, { memo } from 'react';
+import Image from 'next/image';
+import { Product } from '@/data/mockData';
+
+interface ProductCardProps {
+    product: Product;
+    onClick?: () => void;
+    className?: string;
+    layoutStyle?: string;
+}
+
+import { useTemplate } from '@/components/TemplateProvider';
+
+function ProductCardComponent({ product, onClick, className = '' }: ProductCardProps) {
+    const { theme, templateId } = useTemplate(); // Use context
+
+    const isClean = theme.cardStyle === 'clean';
+    //Ideally we rely on theme properties, now mapped to isClean for logic below.
+
+    // Dynamic Styles from Theme
+    const cardStyle = isClean
+        ? {}
+        : {
+            borderColor: theme.colors.accent,
+            boxShadow: `4px 4px 0px ${theme.colors.accent}`
+        };
+
+    const priceTagStyle = isClean
+        ? {}
+        : {
+            backgroundColor: theme.colors.primary,
+            color: theme.colors.accent,
+            borderColor: theme.colors.accent
+        };
+
+    const titleStyle = {
+        color: isClean ? theme.colors.foreground : theme.colors.accent
+    };
+
+    return (
+        <div
+            onClick={onClick}
+            className={`
+                bg-white relative flex flex-col group cursor-pointer
+                ${isClean ? 'overflow-hidden' : ''}
+                ${isClean
+                    ? 'rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow'
+                    : 'p-3 rounded-2xl border-[3px] transform transition-all duration-200 hover:-translate-y-1'
+                }
+                ${className}
+            `}
+            style={isClean ? {} : cardStyle}
+        >
+            {/* Price Tag */}
+            {(product as any).showPrice !== false && (
+                <div className={`absolute z-10 ${isClean ? 'top-3 right-3' : '-top-3 -right-2'}`}>
+                    {isClean ? (
+                        <div className="bg-white/90 backdrop-blur-sm text-gray-800 px-3 py-1 rounded-full font-bold text-xs shadow-sm border border-gray-100">
+                            {product.price}
+                        </div>
+                    ) : (
+                        <div
+                            className="border-[2px] px-2 py-1 rounded-lg font-black text-xs shadow-sm rotate-6"
+                            style={priceTagStyle}
+                        >
+                            {product.price}
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Image */}
+            <div className={`
+                aspect-square w-full overflow-hidden bg-gray-100 relative
+                ${isClean ? 'rounded-t-xl' : 'rounded-xl border-[2px] mb-3'}
+            `}
+                style={!isClean ? { borderColor: theme.colors.accent } : {}}
+            >
+                {product.imageUrl && product.imageUrl.trim() !== '' ? (
+                    <Image
+                        src={product.imageUrl}
+                        alt={product.name}
+                        fill
+                        sizes="(max-width: 768px) 50vw, 250px"
+                        className={`object-cover transition-transform duration-500 hover:scale-110`}
+                    />
+                ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-300 font-bold text-4xl">
+                        {product.name.charAt(0)}
+                    </div>
+                )}
+            </div>
+
+            {/* Title */}
+            <div className={`${isClean ? 'p-4' : ''} mt-auto`}>
+                <h3 className={`
+                    leading-tight
+                    ${isClean ? 'font-bold text-left text-sm text-gray-800' : 'font-extrabold text-center text-base sm:text-lg'}
+                 `}
+                    style={titleStyle}
+                >
+                    {product.name}
+                </h3>
+            </div>
+        </div>
+    );
+}
+
+export const ProductCard = memo(ProductCardComponent);

@@ -1,0 +1,86 @@
+{
+    "firestore": {
+        "rules": "clicker-platform-v2/firestore.rules",
+        "indexes": "clicker-platform-v2/firestore.indexes.json"
+    },
+    "storage": {
+        "rules": "clicker-platform-v2/storage.rules"
+    },
+    "functions": {
+        "source": "functions",
+        "codebase": "default",
+        "ignore": [
+            "node_modules",
+            ".git",
+            "firebase-debug.log",
+            "firebase-debug.*.log"
+        ]
+    },
+    "hosting": [
+        {
+            "site": "clickerapps",
+            "source": "clicker-platform-v2",
+            "ignore": [
+                "firebase.json",
+                "**/.*",
+                "**/node_modules/**"
+            ],
+            "frameworksBackend": {
+                "region": "us-central1"
+            }
+        },
+        {
+            "site": "clicker-auth-gateway",
+            "source": "auth-gateway",
+            "ignore": [
+                "firebase.json",
+                "**/.*",
+                "**/node_modules/**"
+            ],
+            "frameworksBackend": {
+                "region": "us-central1"
+            }
+        },
+        {
+            "site": "clicker-backyard-app",
+            "source": "backyard",
+            "ignore": [
+                "firebase.json",
+                "**/.*",
+                "**/node_modules/**"
+            ],
+            "frameworksBackend": {
+                "region": "us-central1"
+            }
+        },
+        {
+            "site": "clicker-universe",
+            "source": "clicker-platform-v2",
+            "ignore": [
+                "firebase.json",
+                "**/.*",
+                "**/node_modules/**"
+            ],
+            "frameworksBackend": {
+                "region": "us-central1"
+            }
+        }
+    ],
+    "emulators": {
+        "auth": {
+            "host": "127.0.0.1",
+            "port": 9099
+        },
+        "functions": {
+            "host": "127.0.0.1",
+            "port": 5001
+        },
+        "firestore": {
+            "host": "127.0.0.1",
+            "port": 8080
+        },
+        "ui": {
+            "enabled": true
+        }
+    }
+}

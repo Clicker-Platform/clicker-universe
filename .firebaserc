@@ -1,0 +1,21 @@
+{
+  "projects": {
+    "default": "clicker-universe"
+  },
+  "targets": {
+    "clicker-universe": {
+      "hosting": {
+        "backyard": [
+          "clicker-backyard-app"
+        ],
+        "core": [
+          "clickerapps"
+        ],
+        "auth": [
+          "clicker-auth-gateway"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

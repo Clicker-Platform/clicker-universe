@@ -1,0 +1,576 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { createBooking } from '@/lib/modules/reservation/api';
+import { Service, TimeSlot, Staff } from '@/lib/modules/reservation/types';
+import { Clock, User, Check, ChevronLeft, ChevronRight, Loader2, Search } from 'lucide-react';
+import { useSite } from '@/lib/site-context'; // New import
+
+interface AdminBookingWizardProps {
+    initialServices: Service[];
+    initialWeeklySlots: TimeSlot[];
+    initialStaff: Staff[];
+    initialSettings: { allowStaffSelection: boolean };
+    onSuccess: () => void;
+    onCancel: () => void;
+}
+
+export function AdminBookingWizard({
+    initialServices,
+    initialWeeklySlots,
+    initialStaff,
+    initialSettings,
+    onSuccess,
+    onCancel
+}: AdminBookingWizardProps) {
+    const { siteId } = useSite();
+    const [step, setStep] = useState(1);
+    const [loading, setLoading] = useState(false);
+
+    // Data
+    const [services] = useState<Service[]>(initialServices);
+    const [selectedService, setSelectedService] = useState<Service | null>(null);
+    const [staffList] = useState<Staff[]>(initialStaff);
+    const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null); // null means "Any"
+    const [settings] = useState(initialSettings);
+
+    const [date, setDate] = useState<Date>(new Date());
+    const [weeklySlots] = useState<TimeSlot[]>(initialWeeklySlots);
+    const [generatedSlots, setGeneratedSlots] = useState<string[]>([]);
+    const [loadingSlots, setLoadingSlots] = useState(false);
+    const [selectedTime, setSelectedTime] = useState<string | null>(null);
+
+    const [customerInfo, setCustomerInfo] = useState({
+        name: '',
+        email: '',
+        phone: '',
+        notes: '',
+        id: 'guest'
+    });
+
+    // Member Search State
+    const [searchTerm, setSearchTerm] = useState('');
+    const [searchResults, setSearchResults] = useState<any[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
+
+    const handleSearch = async (term: string) => {
+        setSearchTerm(term);
+        if (term.length < 3) {
+            setSearchResults([]);
+            return;
+        }
+
+        setIsSearching(true);
+        try {
+            if (!siteId) return;
+            const { searchMembers } = await import('@/lib/modules/membership/api');
+            const results = await searchMembers(siteId, term);
+            setSearchResults(results);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setIsSearching(false);
+        }
+    };
+
+    const [bookingRef, setBookingRef] = useState<string | null>(null);
+
+    // Generate Slots when Date or Service changes
+    useEffect(() => {
+        async function fetchAvailability() {
+            if (!selectedService || !siteId) return;
+            setLoadingSlots(true);
+
+            try {
+                // 1. Get configuration for this day of week
+                const dayOfWeek = date.getDay(); // 0=Sunday
+                const config = weeklySlots.find(s => s.dayOfWeek === dayOfWeek);
+
+                // 2. Fetch data for availability check
+                const { getBookingsForDay, getGlobalSchedule } = await import('@/lib/modules/reservation/api');
+                const [dayBookings, globalSchedule] = await Promise.all([
+                    getBookingsForDay(siteId, date),
+                    getGlobalSchedule(siteId)
+                ]);
+
+                // Determine Capacity logic
+                // Critical Fix: Only count ACTIVE staff for capacity
+                const activeStaffCount = staffList.filter(s => s.isActive).length;
+                const maxCapacity = selectedStaff ? 1 : activeStaffCount;
+
+                if (maxCapacity === 0 && !selectedStaff) {
+                    setGeneratedSlots([]);
+                    setLoadingSlots(false);
+                    return;
+                }
+
+                // 3. Generate candidate slots
+                const candidates: string[] = [];
+
+                let startHour = 9, startMinute = 0;
+                let endHour = 17, endMinute = 0;
+                let hasEffectiveSchedule = false;
+
+                // Priority 1: Global Schedule
+                const globalDay = globalSchedule.find(d => d.dayOfWeek === dayOfWeek);
+                const parseTime = (t: string) => t.split(':').map(Number);
+
+                if (globalDay && globalDay.isOpen && globalDay.hours.length > 0) {
+                    let minTime = 24 * 60;
+                    let maxTime = 0;
+
+                    globalDay.hours.forEach(h => {
+                        const [sH, sM] = parseTime(h.start);
+                        const [eH, eM] = parseTime(h.end);
+                        const startMins = sH * 60 + sM;
+                        const endMins = eH * 60 + eM;
+                        if (startMins < minTime) minTime = startMins;
+                        if (endMins > maxTime) maxTime = endMins;
+                    });
+
+                    startHour = Math.floor(minTime / 60);
+                    startMinute = minTime % 60;
+                    endHour = Math.floor(maxTime / 60);
+                    endMinute = maxTime % 60;
+                    hasEffectiveSchedule = true;
+                }
+                // Priority 2: Legacy Weekly Slots
+                else if (config && config.isActive) {
+                    [startHour, startMinute] = parseTime(config.startTime);
+                    [endHour, endMinute] = parseTime(config.endTime);
+                    hasEffectiveSchedule = true;
+                }
+
+                if (!hasEffectiveSchedule) {
+                    setGeneratedSlots([]);
+                    setLoadingSlots(false);
+                    return;
+                }
+
+                let current = new Date(date);
+                current.setHours(startHour, startMinute, 0, 0);
+
+                const closeTime = new Date(date);
+                closeTime.setHours(endHour, endMinute, 0, 0);
+
+                // Stop creating slots if the service duration would push it past closing time
+                const latestStartTime = new Date(closeTime.getTime() - selectedService.durationMinutes * 60000);
+
+                while (current <= latestStartTime) {
+                    // Format "HH:mm"
+                    const timeString = current.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+
+                    // 4. Check Overlap for this specific candidate slot
+                    const slotStart = current.getTime();
+                    const slotEnd = slotStart + selectedService.durationMinutes * 60000;
+
+                    const activeBookings = dayBookings.filter(b => b.status !== 'cancelled' && b.status !== 'completed');
+
+                    let relevantBookings = activeBookings;
+                    if (selectedStaff) {
+                        relevantBookings = activeBookings.filter(b => b.staffId === selectedStaff.id);
+                    }
+
+                    // Check specific staff conflicts
+                    const conflicts = relevantBookings.filter(b => {
+                        const bStart = b.startAt.toDate().getTime();
+                        const bEnd = b.endAt.toDate().getTime();
+                        return (bStart < slotEnd) && (bEnd > slotStart);
+                    });
+
+                    // Check Global Capacity (Active Bookings vs Total Staff)
+                    const globalOverlaps = activeBookings.filter(b => {
+                        const bStart = b.startAt.toDate().getTime();
+                        const bEnd = b.endAt.toDate().getTime();
+                        return (bStart < slotEnd) && (bEnd > slotStart);
+                    });
+
+                    const isGlobalAvailable = globalOverlaps.length < activeStaffCount;
+                    const isSpecificAvailable = conflicts.length === 0;
+
+                    if (selectedStaff) {
+                        if (isSpecificAvailable && isGlobalAvailable) candidates.push(timeString);
+                    } else {
+                        if (isGlobalAvailable) candidates.push(timeString);
+                    }
+
+                    // Increment by 60 mins (fixed interval for simplicity)
+                    current.setHours(current.getHours() + 1);
+                }
+
+                setGeneratedSlots(candidates);
+
+            } catch (error) {
+                console.error("Error generating slots:", error);
+            } finally {
+                setLoadingSlots(false);
+            }
+        }
+
+        fetchAvailability();
+    }, [date, selectedService, weeklySlots, selectedStaff, staffList, siteId]);
+
+    const handleServiceSelect = (service: Service) => {
+        setSelectedService(service);
+        if (settings.allowStaffSelection) {
+            setStep(2);
+        } else {
+            setStep(3); // Skip staff
+        }
+    };
+
+    const handleStaffSelect = (staff: Staff | null) => {
+        setSelectedStaff(staff);
+        setStep(3);
+    };
+
+    const handleTimeSelect = (time: string) => {
+        setSelectedTime(time);
+    };
+
+    const handleDateChange = (days: number) => {
+        const newDate = new Date(date);
+        newDate.setDate(newDate.getDate() + days);
+        setDate(newDate);
+        setSelectedTime(null); // Reset time when date changes
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedService || !selectedTime || !siteId) return;
+
+        setLoading(true);
+        try {
+            // Reconstruct Date object from date + time string
+            const [hours, minutes] = selectedTime.split(':').map(Number);
+            const bookingStart = new Date(date);
+            bookingStart.setHours(hours, minutes, 0, 0);
+
+            const bookingEnd = new Date(bookingStart.getTime() + selectedService.durationMinutes * 60000);
+
+            const id = await createBooking(siteId, {
+                serviceId: selectedService.id,
+                serviceName: selectedService.name,
+
+                customerId: customerInfo.id || 'guest',
+                customerName: customerInfo.name,
+                customerEmail: customerInfo.email,
+                customerPhone: customerInfo.phone,
+                status: 'confirmed', // Admin bookings are confirmed by default
+                startAt: bookingStart as any,
+                endAt: bookingEnd as any,
+                totalPrice: selectedService.price,
+                notes: customerInfo.notes,
+                staffId: selectedStaff?.id,
+                staffName: selectedStaff?.name
+            } as any);
+
+            setBookingRef(id);
+            setStep(5);
+        } catch (error) {
+            console.error(error);
+            alert("Booking failed. Please try again.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (step === 5) {
+        return (
+            <div className="text-center p-8 bg-green-50 rounded-2xl border border-green-100 animate-in fade-in">
+                <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Check size={32} strokeWidth={3} />
+                </div>
+                <h2 className="text-2xl font-black text-brand-dark mb-2">Booking Confirmed!</h2>
+                <div className="bg-white p-4 rounded-xl border border-dashed border-green-200 inline-block text-left text-sm text-gray-500 mb-6">
+                    <p>Reference: <span className="font-mono text-brand-dark">{bookingRef}</span></p>
+                    <p>Date: <span className="font-bold text-brand-dark">{date.toLocaleDateString()} at {selectedTime}</span></p>
+                </div>
+                <button
+                    onClick={onSuccess}
+                    className="block w-full py-3 bg-brand-dark text-white font-bold rounded-xl"
+                >
+                    Close
+                </button>
+            </div>
+        );
+    }
+
+    return (
+        <div className="bg-white min-h-[500px] flex flex-col">
+            {/* Header Steps */}
+            <div className="bg-gray-50 border-b border-gray-100 p-4">
+                <div className="flex items-center justify-between mb-2">
+                    {step > 1 ? (
+                        <button onClick={() => setStep(step - 1)} className="p-1 hover:bg-gray-200 rounded-lg text-gray-600">
+                            <ChevronLeft size={20} /> Back
+                        </button>
+                    ) : (
+                        <div />
+                    )}
+                    <span className="font-bold text-xs uppercase text-gray-400">
+                        Step {step} of 4
+                    </span>
+                    <div className="w-16"></div>
+                </div>
+                <h2 className="text-xl font-black text-center text-brand-dark">
+                    {step === 1 && "Select Service"}
+                    {step === 2 && "Select Staff"}
+                    {step === 3 && "Select Time"}
+                    {step === 4 && "Guest Details"}
+                </h2>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 flex-1 overflow-y-auto max-h-[60vh]">
+                {/* STEP 1: SERVICES */}
+                {step === 1 && (
+                    <div className="space-y-3">
+                        {services.length === 0 ? (
+                            <div className="text-center py-10 text-gray-400">No services found.</div>
+                        ) : (
+                            services.filter(s => s.isActive).map(service => (
+                                <button
+                                    key={service.id}
+                                    onClick={() => handleServiceSelect(service)}
+                                    className="w-full text-left p-4 rounded-xl border border-gray-100 hover:border-brand-dark hover:shadow-md transition-all group"
+                                >
+                                    <div className="flex justify-between items-start mb-1">
+                                        <h3 className="font-bold text-brand-dark group-hover:text-brand-blue transition-colors">
+                                            {service.name}
+                                        </h3>
+                                        <span className="font-bold text-brand-dark">
+                                            {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(service.price)}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                                        <Clock size={12} /> {service.durationMinutes} mins
+                                    </div>
+                                </button>
+                            ))
+                        )}
+                    </div>
+                )}
+
+                {/* STEP 2: STAFF (Conditional) */}
+                {step === 2 && (
+                    <div className="space-y-3">
+                        <button
+                            onClick={() => handleStaffSelect(null)}
+                            className="w-full text-left p-4 rounded-xl border border-gray-100 hover:border-brand-dark hover:shadow-md transition-all flex items-center gap-4"
+                        >
+                            <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-400">
+                                <User size={20} />
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-brand-dark">Any Available Staff</h3>
+                                <p className="text-xs text-gray-500">Auto-assign</p>
+                            </div>
+                        </button>
+
+                        {staffList.filter(s => s.isActive).map(staff => (
+                            <button
+                                key={staff.id}
+                                onClick={() => handleStaffSelect(staff)}
+                                className="w-full text-left p-4 rounded-xl border border-gray-100 hover:border-brand-dark hover:shadow-md transition-all flex items-center gap-4"
+                            >
+                                <div className="w-10 h-10 bg-brand-blue/10 text-brand-blue rounded-full flex items-center justify-center font-bold">
+                                    {staff.name.charAt(0)}
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-brand-dark">{staff.name}</h3>
+                                    <div className="flex flex-wrap gap-1 mt-0.5">
+                                        {(staff.label || 'Staff').split(',').map((tag, i) => (
+                                            <span key={i} className="text-[10px] uppercase font-bold text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
+                                                {tag.trim()}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            </button>
+                        ))}
+                    </div>
+                )}
+
+                {/* STEP 3: DATE & TIME */}
+                {step === 3 && (
+                    <div>
+                        <div className="flex items-center justify-between mb-6 bg-gray-50 p-2 rounded-xl sticky top-0 z-10">
+                            <button onClick={() => handleDateChange(-1)} className="p-2 hover:bg-white rounded-lg transition-colors">
+                                <ChevronLeft size={20} />
+                            </button>
+                            <div className="text-center">
+                                <p className="text-xs font-bold text-gray-400 uppercase">{date.toLocaleDateString(undefined, { weekday: 'long' })}</p>
+                                <p className="font-black text-brand-dark">{date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</p>
+                            </div>
+                            <button onClick={() => handleDateChange(1)} className="p-2 hover:bg-white rounded-lg transition-colors">
+                                <ChevronRight size={20} />
+                            </button>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-3">
+                            {loadingSlots ? (
+                                <div className="col-span-3 text-center py-8 text-gray-400 flex flex-col items-center">
+                                    <Loader2 className="animate-spin mb-2" />
+                                    Checking availability...
+                                </div>
+                            ) : generatedSlots.length === 0 ? (
+                                <div className="col-span-3 text-center py-8 text-gray-400">
+                                    No slots available for this date.
+                                </div>
+                            ) : (
+                                generatedSlots.map(time => (
+                                    <button
+                                        key={time}
+                                        onClick={() => handleTimeSelect(time)}
+                                        className={`py-3 rounded-xl text-sm font-bold border transition-all ${selectedTime === time
+                                            ? 'bg-brand-dark text-white border-brand-dark scale-105 shadow-lg'
+                                            : 'bg-white text-gray-600 border-gray-200 hover:border-brand-dark hover:text-brand-dark'
+                                            }`}
+                                    >
+                                        {time}
+                                    </button>
+                                )))}
+                        </div>
+
+                        <div className="mt-8 flex justify-end sticky bottom-0 bg-white pt-4 border-t border-gray-50">
+                            <button
+                                disabled={!selectedTime}
+                                onClick={() => setStep(4)}
+                                className="w-full py-3 bg-brand-dark text-white font-bold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-brand-dark/90 transition-colors"
+                            >
+                                Continue
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* STEP 4: DETAILS */}
+                {step === 4 && (
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        <div className="bg-gray-50 p-4 rounded-xl mb-6 text-sm">
+                            <div className="flex justify-between mb-1">
+                                <span className="text-gray-500">Service:</span>
+                                <span className="font-bold text-brand-dark">{selectedService?.name}</span>
+                            </div>
+                            {selectedStaff && (
+                                <div className="flex justify-between mb-1">
+                                    <span className="text-gray-500">Staff:</span>
+                                    <span className="font-bold text-brand-dark">{selectedStaff.name}</span>
+                                </div>
+                            )}
+                            <div className="flex justify-between">
+                                <span className="text-gray-500">Time:</span>
+                                <span className="font-bold text-brand-dark">{date.toLocaleDateString()} at {selectedTime}</span>
+                            </div>
+                        </div>
+
+                        {/* Member Search */}
+                        <div className="bg-brand-blue/5 border border-brand-blue/20 p-4 rounded-xl mb-6 relative">
+                            <h3 className="text-brand-dark font-bold mb-2 text-sm flex items-center gap-2">
+                                <Search size={16} /> Load Member (Walk-in)
+                            </h3>
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    value={searchTerm}
+                                    onChange={e => handleSearch(e.target.value)}
+                                    placeholder="Search by name or phone..."
+                                    className="w-full pl-9 pr-4 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:border-brand-dark"
+                                />
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+
+                                {(searchResults.length > 0) && (
+                                    <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-xl border border-gray-100 z-50 max-h-[200px] overflow-y-auto">
+                                        {searchResults.map((member: any) => (
+                                            <button
+                                                key={member.id}
+                                                type="button"
+                                                onClick={() => {
+                                                    setCustomerInfo({
+                                                        id: member.id,
+                                                        name: member.fullName,
+                                                        email: member.email || '',
+                                                        phone: member.phoneNumber,
+                                                        notes: customerInfo.notes
+                                                    });
+                                                    setSearchTerm('');
+                                                    setSearchResults([]);
+                                                }}
+                                                className="w-full text-left p-3 hover:bg-gray-50 border-b border-gray-50 flex items-center justify-between group"
+                                            >
+                                                <div>
+                                                    <div className="font-bold text-gray-800 text-sm group-hover:text-brand-dark">{member.fullName}</div>
+                                                    <div className="text-xs text-gray-500">{member.phoneNumber}</div>
+                                                </div>
+                                                <div className="text-xs font-bold text-brand-blue px-2 py-1 bg-brand-blue/10 rounded">Select</div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Full Name</label>
+                            <div className="relative">
+                                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                                <input
+                                    required
+                                    type="text"
+                                    value={customerInfo.name}
+                                    onChange={e => setCustomerInfo({ ...customerInfo, name: e.target.value })}
+                                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-dark"
+                                    placeholder="Guest Name / Walk-in"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Phone</label>
+                                <input
+                                    type="tel"
+                                    value={customerInfo.phone}
+                                    onChange={e => setCustomerInfo({ ...customerInfo, phone: e.target.value })}
+                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-dark"
+                                    placeholder="+62..."
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Email (Optional)</label>
+                                <input
+                                    type="email"
+                                    value={customerInfo.email}
+                                    onChange={e => setCustomerInfo({ ...customerInfo, email: e.target.value })}
+                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-dark"
+                                    placeholder="email@example.com"
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Notes</label>
+                            <textarea
+                                value={customerInfo.notes}
+                                onChange={e => setCustomerInfo({ ...customerInfo, notes: e.target.value })}
+                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-dark"
+                                rows={2}
+                                placeholder="Any special notes?"
+                            />
+                        </div>
+
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full py-3 bg-brand-dark text-white font-bold rounded-xl mt-4 hover:bg-brand-dark/90 transition-colors flex items-center justify-center gap-2"
+                        >
+                            {loading && <Loader2 size={18} className="animate-spin" />}
+                            {loading ? 'Confirming...' : 'Confirm Booking'}
+                        </button>
+                    </form>
+                )}
+            </div>
+        </div>
+    );
+}
