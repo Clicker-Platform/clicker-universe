@@ -1,0 +1,46 @@
+import { initializeApp, getApps, getApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
+import { getStorage } from "firebase/storage";
+
+/**
+ * Firebase Client SDK configuration.
+ * Uses environment variables for flexibility across environments.
+ * Fallback values are provided for backward compatibility.
+ */
+const firebaseConfig = {
+    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyCCZHsPFgEuTJp4axMb3eh7GZP4TQe1rVo",
+    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "clicker-universe.firebaseapp.com",
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "clicker-universe",
+    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "clicker-universe.firebasestorage.app",
+    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "1065982109250",
+    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:1065982109250:web:38065ef041ac0ca5686fdb",
+    measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
+};
+
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+const db = getFirestore(app);
+const auth = getAuth(app);
+const storage = getStorage(app);
+
+export { app, db, auth, storage };
+
+// Functions instance for Handoff
+import { getFunctions, connectFunctionsEmulator } from "firebase/functions";
+const functions = getFunctions(app, 'us-central1');
+
+import { connectAuthEmulator } from "firebase/auth";
+import { connectFirestoreEmulator } from "firebase/firestore";
+
+// Connect to emulators if in localhost/dev context
+// if (process.env.NODE_ENV === 'development') {
+//     // @ts-ignore
+//     if (!auth.emulatorConfig) {
+//         connectAuthEmulator(auth, "http://localhost:9099");
+//         connectFunctionsEmulator(functions, "localhost", 5001);
+//         connectFirestoreEmulator(db, 'localhost', 8080);
+//         console.log("🔥 [AuthGateway] Connected to Firebase Emulators");
+//     }
+// }
+
+export { functions };

@@ -1,0 +1,46 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-brand-green: #B6FF2E;
+  --color-brand-dark: #0E3B2E;
+  --color-brand-white: #FFFFFF;
+
+  /* Semantic Theme Colors */
+  --color-theme-primary: var(--theme-primary);
+  --color-theme-background: var(--theme-background);
+  --color-theme-foreground: var(--theme-foreground);
+  --color-theme-surface: var(--theme-surface);
+  --color-theme-border: var(--theme-border);
+
+  --shadow-sticker: 4px 4px 0px 0px var(--theme-border);
+  --shadow-sticker-hover: 2px 2px 0px 0px var(--theme-border);
+
+  --font-jakarta: var(--font-jakarta);
+}
+
+:root {
+  --color-brand-green: #B6FF2E;
+  --color-brand-dark: #0E3B2E;
+  --background: #ffffff;
+  --foreground: #171717;
+
+  /* Font Variables fallback */
+  --font-inter: 'Inter', sans-serif;
+  --font-space: 'Space Mono', monospace;
+
+  /* Default Theme Defaults (Sunny Side Up) */
+  --theme-primary: var(--color-brand-green);
+  --theme-background: var(--color-brand-green);
+  --theme-foreground: var(--color-brand-dark);
+  --theme-surface: #FFFFFF;
+  --theme-border: var(--color-brand-dark);
+}
+
+body {
+  background-color: var(--theme-background);
+  font-family: var(--font-jakarta), sans-serif;
+  color: var(--theme-foreground);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
