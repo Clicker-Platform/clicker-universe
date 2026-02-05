@@ -63,10 +63,11 @@ export async function middleware(request: NextRequest) {
 
         // For admin routes, read siteId from activeSite cookie
         if (segments[0] === 'admin') {
-            const activeSite = request.cookies.get('activeSite')?.value;
+            // Firebase Hosting only allows '__session' cookie
+            const activeSite = request.cookies.get('__session')?.value;
 
             // Auth Gateway URL (centralized login)
-            const gatewayUrl = process.env.NEXT_PUBLIC_AUTH_GATEWAY_URL || 'http://localhost:3012';
+            const gatewayUrl = process.env.NEXT_PUBLIC_AUTH_GATEWAY_URL || 'https://clicker-auth-gateway.web.app';
 
             // If user tries to access /admin/login directly, redirect to Gateway
             if (pathname.startsWith('/admin/login')) {

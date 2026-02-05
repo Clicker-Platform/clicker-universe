@@ -14,5 +14,5 @@ export const AnalyticsTracker = () => {
         }
     }, [track]);
 
-    return <div className="hidden"></div>;
+    return null;
 };

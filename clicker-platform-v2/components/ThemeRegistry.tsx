@@ -10,7 +10,7 @@ export default function ThemeRegistry({ initialSettings }: { initialSettings: Si
     useServerInsertedHTML(() => {
         if (!settings) return null;
 
-        const fontFamily = settings.fontFamily || 'Plus Jakarta Sans';
+        const fontFamily = settings.fontFamily || 'var(--font-jakarta)';
         const isCustomFont = !fontFamily.startsWith('var(');
         const fontUrl = `https://fonts.googleapis.com/css2?family=${fontFamily.replace(/ /g, '+')}:wght@400;700;800&display=swap`;
 

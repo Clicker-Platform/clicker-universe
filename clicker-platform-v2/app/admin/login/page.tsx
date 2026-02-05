@@ -28,9 +28,9 @@ function AdminLoginForm() {
             const sites = await getUserSites(user.uid, user.email);
 
             if (sites.length > 0) {
-                // Set the activeSite cookie for middleware to read
+                // Set the __session cookie for middleware to read (Required by Firebase Hosting)
                 const targetSite = sites[0];
-                document.cookie = `activeSite=${targetSite.siteId}; path=/; max-age=${60 * 60 * 24 * 30}; SameSite=Lax`;
+                document.cookie = `__session=${targetSite.siteId}; path=/; max-age=${60 * 60 * 24 * 30}; SameSite=Lax; Secure`;
 
                 // Redirect to admin dashboard
                 router.push('/admin');

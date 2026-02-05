@@ -21,11 +21,17 @@ import { useSite } from '@/lib/site-context';
 export default function POSReportsPage() {
     const { siteId } = useSite();
     const [activeTab, setActiveTab] = useState<'daily' | 'weekly' | 'monthly'>('daily');
-    const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]); // Local YYYY-MM-DD
-    const [selectedWeekStart, setSelectedWeekStart] = useState<string>(
-        getStartOfWeek(new Date()).toISOString().split('T')[0]
-    );
-    const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toISOString().slice(0, 7));
+    // Initialize with empty strings to prevent hydration mismatch (server time vs client time)
+    const [selectedDate, setSelectedDate] = useState<string>('');
+    const [selectedWeekStart, setSelectedWeekStart] = useState<string>('');
+    const [selectedMonth, setSelectedMonth] = useState<string>('');
+
+    useEffect(() => {
+        // Set initial dates on client side only
+        setSelectedDate(new Date().toISOString().split('T')[0]);
+        setSelectedWeekStart(getStartOfWeek(new Date()).toISOString().split('T')[0]);
+        setSelectedMonth(new Date().toISOString().slice(0, 7));
+    }, []);
 
     const [orders, setOrders] = useState<POSOrder[]>([]);
     const [summary, setSummary] = useState<ReportSummary | null>(null);
@@ -53,7 +59,7 @@ export default function POSReportsPage() {
 
     // Reset pagination when filter changes
     useEffect(() => {
-        if (!siteId) return;
+        if (!siteId || !selectedDate) return;
         setCurrentPage(1);
         setCursors({});
         setTotalOrdersCount(0);

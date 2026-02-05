@@ -23,6 +23,42 @@ export const PixelTracker = ({ pixels }: PixelTrackerProps) => {
         }
     }, [facebookPixelId]);
 
+    // TikTok Pixel Initialization Effect
+    useEffect(() => {
+        if (tiktokPixelId) {
+            /* eslint-disable */
+            (function (w, d, t) {
+                // @ts-ignore
+                w.TiktokAnalyticsObject = t; var ttq = w[t] = w[t] || [];
+                // @ts-ignore
+                ttq.methods = ["page", "track", "identify", "instances", "debug", "on", "off", "once", "ready", "alias", "group", "enableCookie", "disableCookie"];
+                // @ts-ignore
+                ttq.setAndDefer = function (t, e) { t[e] = function () { t.push([e].concat(Array.prototype.slice.call(arguments, 0))) } };
+                // @ts-ignore
+                for (var i = 0; i < ttq.methods.length; i++)ttq.setAndDefer(ttq, ttq.methods[i]);
+                // @ts-ignore
+                ttq.instance = function (t) { for (var e = ttq.methods[i], n = 0; n < ttq.methods.length; n++)ttq.setAndDefer(e, ttq.methods[n]); return e };
+                // @ts-ignore
+                ttq.load = function (e, n) {
+                    var i = "https://analytics.tiktok.com/i18n/pixel/events.js";
+                    // @ts-ignore
+                    ttq._i = ttq._i || {}, ttq._i[e] = [], ttq._i[e]._u = i, ttq._t = ttq._t || {}, ttq._t[e] = +new Date,
+                        // @ts-ignore
+                        ttq._o = ttq._o || {}, ttq._o[e] = n || {}; var o = document.createElement("script");
+                    o.type = "text/javascript", o.async = !0, o.src = i + "?sdkid=" + e + "&lib=" + t;
+                    var a = document.getElementsByTagName("script")[0];
+                    a.parentNode?.insertBefore(o, a)
+                };
+
+                // @ts-ignore
+                ttq.load(tiktokPixelId);
+                // @ts-ignore
+                ttq.page();
+            })(window, document, 'ttq');
+            /* eslint-enable */
+        }
+    }, [tiktokPixelId]);
+
     return (
         <>
             {/* Facebook Pixel */}
@@ -49,41 +85,18 @@ export const PixelTracker = ({ pixels }: PixelTrackerProps) => {
                     <Script
                         src={`https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsId}`}
                         strategy="afterInteractive"
-                    />
-                    <Script id="google-analytics" strategy="afterInteractive">
-                        {`
-                            window.dataLayer = window.dataLayer || [];
-                            function gtag(){dataLayer.push(arguments);}
+                        onLoad={() => {
+                            (window as any).dataLayer = (window as any).dataLayer || [];
+                            function gtag(...args: any[]) { (window as any).dataLayer.push(arguments); }
+                            (window as any).gtag = gtag; // Make globally available
                             gtag('js', new Date());
-                            gtag('config', '${googleAnalyticsId}');
-                        `}
-                    </Script>
+                            gtag('config', googleAnalyticsId);
+                        }}
+                    />
                 </>
             )}
 
-            {/* TikTok Pixel */}
-            {tiktokPixelId && (
-                <Script id="tiktok-pixel" strategy="afterInteractive">
-                    {`
-                        !function (w, d, t) {
-                          w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];
-                          ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie"],
-                          ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};
-                          for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);
-                          ttq.instance=function(t){for(var e=ttq.methods[i],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},
-                          ttq.load=function(e,n){var i="https://analytics.tiktok.com/i18n/pixel/events.js";
-                          ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=i,ttq._t=ttq._t||{},ttq._t[e]=+new Date,
-                          ttq._o=ttq._o||{},ttq._o[e]=n||{};var o=document.createElement("script");
-                          o.type="text/javascript",o.async=!0,o.src=i+"?sdkid="+e+"&lib="+t;
-                          var a=document.getElementsByTagName("script")[0];
-                          a.parentNode.insertBefore(o,a)};
-                        
-                          ttq.load('${tiktokPixelId}');
-                          ttq.page();
-                        }(window, document, 'ttq');
-                    `}
-                </Script>
-            )}
+            {/* TikTok Pixel handled in Effect to avoid hydration mismatch with new Date() */}
         </>
     );
 };

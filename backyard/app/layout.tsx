@@ -18,8 +18,8 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en">
-            <body className={`${inter.className} antialiased`}>
+        <html lang="id" className="notranslate" translate="no" suppressHydrationWarning>
+            <body className={`${inter.className} antialiased`} suppressHydrationWarning>
                 {children}
                 <Toaster richColors position="top-right" theme="light" />
             </body>

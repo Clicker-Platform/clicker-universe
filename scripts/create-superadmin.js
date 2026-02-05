@@ -22,6 +22,12 @@ async function main() {
         const user = await auth.getUserByEmail(SUPERADMIN_EMAIL);
         console.log(`User found: ${user.uid}`);
         console.log('Use this email to login.');
+
+        // Force update password if user exists (to ensure we know it)
+        if (PASSWORD) {
+            console.log(`Updating password to: ${PASSWORD}`);
+            await auth.updateUser(user.uid, { password: PASSWORD });
+        }
     } catch (e) {
         if (e.code === 'auth/user-not-found') {
             console.log('User not found. Creating...');

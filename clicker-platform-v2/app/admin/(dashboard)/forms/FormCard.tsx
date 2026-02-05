@@ -90,7 +90,7 @@ export const FormCard: React.FC<FormCardProps> = ({ form }) => {
 
                 <div className="border-t-2 border-gray-100 pt-4 flex items-center text-gray-400 text-sm font-bold gap-2">
                     <Calendar size={16} />
-                    <span>
+                    <span suppressHydrationWarning>
                         {form.createdAt ? new Date(form.createdAt).toLocaleDateString() : 'Unknown date'}
                     </span>
                 </div>

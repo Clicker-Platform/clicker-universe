@@ -74,8 +74,8 @@ export default function UpcomingReservationsWidget({ memberPhone }: { memberPhon
                             <div>
                                 <h4 className="font-bold text-gray-800">{booking.serviceName}</h4>
                                 <div className="flex items-center gap-3 text-xs text-gray-500 mt-1">
-                                    <span className="flex items-center gap-1"><Calendar size={12} /> {date.toLocaleDateString()}</span>
-                                    <span className="flex items-center gap-1"><Clock size={12} /> {date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                    <span suppressHydrationWarning className="flex items-center gap-1"><Calendar size={12} /> {date.toLocaleDateString()}</span>
+                                    <span suppressHydrationWarning className="flex items-center gap-1"><Clock size={12} /> {date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                 </div>
                             </div>
                             <span className={`text-[10px] px-2 py-1 rounded-full uppercase font-bold ${booking.status === 'confirmed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>

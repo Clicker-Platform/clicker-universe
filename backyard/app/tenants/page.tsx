@@ -8,7 +8,7 @@ import { Store, Power, PowerOff, Loader2, RefreshCw, Database, ExternalLink, Gri
 import { onAuthStateChanged } from 'firebase/auth';
 import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
 import Sidebar from '../../components/Sidebar';
-import { SYSTEM_MODULES } from '../../../clicker-platform/lib/modules/definitions';
+import { SYSTEM_MODULES } from '@/lib/modules/definitions';
 
 export default function TenantsPage() {
     const [tenants, setTenants] = useState<any[]>([]);

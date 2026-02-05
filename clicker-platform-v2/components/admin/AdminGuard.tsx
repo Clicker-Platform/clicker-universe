@@ -137,9 +137,12 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
                     </p>
                     <button
                         onClick={() => {
-                            // Clear activeSite cookie
-                            document.cookie = 'activeSite=; path=/; max-age=0';
-                            auth.signOut();
+                            // Clear __session cookie
+                            document.cookie = '__session=; path=/; max-age=0';
+                            auth.signOut().then(() => {
+                                const gatewayUrl = process.env.NEXT_PUBLIC_AUTH_GATEWAY_URL || 'https://clicker-auth-gateway.web.app';
+                                window.location.href = `${gatewayUrl}/logout`;
+                            });
                         }}
                         className="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-colors"
                     >

@@ -12,10 +12,15 @@ function AuthCallbackHandler() {
     const router = useRouter();
     const searchParams = useSearchParams();
 
+    const rawNext = searchParams.get('next');
+    // Safety Force: If next is '/' or empty, force it to '/admin'
+    const safeNextPath = (rawNext && rawNext !== '/') ? rawNext : '/admin';
+
     useEffect(() => {
         const handleCallback = async () => {
             const token = searchParams.get('token');
-            const next = searchParams.get('next') || '/admin';
+            // Use consistent safe path
+            const next = safeNextPath;
 
             if (!token) {
                 setError('No authentication token provided. Redirecting to login...');
@@ -41,13 +46,15 @@ function AuthCallbackHandler() {
                 if (sites.length > 0) {
                     // 3. Set the activeSite cookie for middleware
                     const targetSite = sites[0];
-                    document.cookie = `activeSite=${targetSite.siteId}; path=/; max-age=${60 * 60 * 24 * 30}; SameSite=Lax`;
+                    // 3. Set the __session cookie for middleware (Required by Firebase Hosting)
+                    // Ensure Secure flag is set for production
+                    document.cookie = `__session=${targetSite.siteId}; path=/; max-age=${60 * 60 * 24 * 30}; SameSite=Lax; Secure`;
 
                     console.log('[Auth Callback] Site resolved:', targetSite.siteId, 'Redirecting to:', next);
-                    setStatus('Success! Redirecting...');
+                    setStatus('Authentication successful!');
 
-                    // 4. Redirect to the intended destination (hard redirect to re-run middleware)
-                    window.location.href = next;
+                    // Stop auto-redirect loop for debugging/safety
+                    // Provide manual button
                 } else {
                     // User has no site membership
                     setError('No site membership found. Please contact your administrator.');
@@ -63,6 +70,8 @@ function AuthCallbackHandler() {
         handleCallback();
     }, [searchParams, router]);
 
+
+
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-100">
             <div className="bg-white p-8 rounded-2xl shadow-lg max-w-sm w-full border-[3px] border-brand-dark text-center">
@@ -73,8 +82,26 @@ function AuthCallbackHandler() {
                     </div>
                 ) : (
                     <div className="text-brand-dark">
-                        <div className="animate-spin rounded-full h-12 w-12 border-4 border-brand-dark border-t-transparent mx-auto mb-4"></div>
-                        <p className="font-bold">{status}</p>
+                        {status === 'Authentication successful!' ? (
+                            <>
+                                <p className="text-4xl mb-4">✅</p>
+                                <p className="font-bold mb-4">Login Verified</p>
+                                <button
+                                    onClick={() => window.location.href = safeNextPath}
+                                    className="w-full bg-brand-green text-brand-dark font-black uppercase py-3 rounded-xl border-[3px] border-brand-dark hover:scale-105 transition-transform"
+                                >
+                                    Enter Dashboard
+                                </button>
+                                <p className="mt-4 text-xs text-gray-400">
+                                    Cookie Set: {typeof document !== 'undefined' && document.cookie.includes('__session') ? 'Yes' : 'No'}
+                                </p>
+                            </>
+                        ) : (
+                            <>
+                                <div className="animate-spin rounded-full h-12 w-12 border-4 border-brand-dark border-t-transparent mx-auto mb-4"></div>
+                                <p className="font-bold">{status}</p>
+                            </>
+                        )}
                     </div>
                 )}
             </div>

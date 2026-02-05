@@ -48,7 +48,7 @@ export const SubmissionCard = memo(function SubmissionCard({
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2 text-gray-400 text-sm font-bold">
                         <Clock size={14} />
-                        <span>
+                        <span suppressHydrationWarning>
                             {sub.submittedAt ? new Date(sub.submittedAt).toLocaleString() : 'Unknown'}
                         </span>
                     </div>

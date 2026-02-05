@@ -14,11 +14,21 @@ interface OperatingHoursProps {
 export const OperatingHours: React.FC<OperatingHoursProps> = ({ data, schedule }) => {
     const { theme } = useTemplate();
     const isClean = theme.cardStyle === 'clean';
+    const [isOpen, setIsOpen] = React.useState(false);
+    const [isMounted, setIsMounted] = React.useState(false);
+
+    React.useEffect(() => {
+        setIsMounted(true);
+        if (schedule) {
+            setIsOpen(isBusinessOpen(new Date(), schedule));
+        }
+    }, [schedule]);
 
     if (!data.enabled) return null;
 
-    // Determine Open Status
-    const isOpen = schedule ? isBusinessOpen(new Date(), schedule) : true; // Default to true if no schedule (or use fallback text)
+    // Default tag text from data (e.g. "Opening Soon") if no schedule, 
+    // OR if schedule exists, determine Open/Closed.
+    // We only show Open/Closed status after mount to prevent hydration mismatch.
     const statusText = schedule ? (isOpen ? "Open Now" : "Closed") : data.tagText;
 
     // Determine Hours Text
@@ -56,7 +66,7 @@ export const OperatingHours: React.FC<OperatingHoursProps> = ({ data, schedule }
                 : 'border-[3px] border-brand-dark shadow-sticker transform -rotate-1'
             }
         `}>
-            {statusText && (
+            {statusText && isMounted && (
                 <div className={`
                     absolute  px-3 py-1 text-xs font-black uppercase rounded-lg
                     ${isClean

@@ -1,81 +1,123 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { httpsCallable } from 'firebase/functions';
 import { auth, functions } from '@/lib/firebase';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 
+// ... (imports remain)
+
 function AdminLoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isChecking, setIsChecking] = useState(true); // New loading state
+  const [status, setStatus] = useState(''); // Status message during auto-handoff
+
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Get redirect destination from URL params, default to core app dashboard or similar
-  // Since this is key gateway, maybe default to redirecting to the tenant's site?
-  // For now, let's keep it generic or direct to a success page.
-  const redirectTo = searchParams.get('redirect') || '/';
+  const redirectTo = searchParams.get('redirect');
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-
+  // Shared Handoff Logic
+  const performHandoff = async () => {
     try {
-      // 1. Authenticate with Gateway
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-
-      // 2. Generate Handoff Token (Custom Token)
-      // This token allows the user to sign in instantly on the other domain
+      setStatus('Generating secure access token...');
       const generateHandoffToken = httpsCallable(functions, 'generateHandoffToken');
       const result = await generateHandoffToken();
 
-      // @ts-ignore - Check if token exists in response
+      // @ts-ignore
       if (!result.data || !result.data.token) {
-        throw new Error('No token received from server. Please try again or contact support.');
+        throw new Error('No token received.');
       }
 
       // @ts-ignore
       const handoffToken = result.data.token;
 
-      // 3. Redirect to Target Platform with Token
-      // Always redirect to platform core, never back to auth gateway
+      setStatus('Redirecting to dashboard...');
       const platformUrl = window.location.hostname === 'localhost'
         ? 'http://localhost:3010'
         : 'https://clickerapps.web.app';
 
-      // Construct final URL with token AND next parameter for return path
-      // Extract path from redirectTo - use it as the 'next' param, not part of URL
-      const nextPath = redirectTo || '/admin';
+      const nextPath = (redirectTo && redirectTo !== '/') ? redirectTo : '/admin';
       const finalUrl = `${platformUrl}/admin/auth/callback?token=${handoffToken}&next=${encodeURIComponent(nextPath)}`;
 
-      console.log(`🎯 Platform URL: ${platformUrl}`);
-      console.log(`📍 Return path: ${nextPath}`);
       console.log(`🚀 Handing off to: ${finalUrl}`);
       window.location.href = finalUrl;
 
     } catch (err: any) {
-      console.error('Auth Handoff Error:', err);
+      console.error('Handoff Error:', err);
+      setError(`Auto-login failed: ${err.message}. Please login manually.`);
+      setIsChecking(false); // Show form on error
+    }
+  };
 
-      // Provide more specific error messages
+  // Auto-Login Check
+  useEffect(() => {
+    // Check if user is already logged in
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        console.log("User found, attempting auto-handoff...");
+        await performHandoff();
+      } else {
+        setIsChecking(false); // No user, show form
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setStatus('Authenticating...');
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      // Auth state change will trigger useEffect? 
+      // Actually, onAuthStateChanged might fire, but let's call handoff directly to be sure/faster
+      // OR rely on the listener. 
+      // Relying on listener is safer to avoid double-firing, but let's just wait for listener or call it if we want instant feedback.
+      // Better: The listener handles it. But we need to ensure 'isChecking' puts us in a loading state.
+      setIsChecking(true);
+
+      // Manual trigger if listener implies we are already authed? 
+      // signInWithEmailAndPassword authenticates the client. 
+      // The listener WILL fire. Let's rely on the listener or manual call.
+      // To prevent races, let's just call performHandoff() directly here too, but ensuring we don't double dip is tricky.
+      // Actually, standard pattern: 
+      // 1. signIn
+      // 2. performHandoff
+      await performHandoff();
+
+    } catch (err: any) {
+      console.error('Login Error:', err);
+      // Error handling logic...
       let errorMessage = 'Unknown error occurred';
-
       if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
         errorMessage = 'Invalid email or password';
       } else if (err.code === 'auth/too-many-requests') {
         errorMessage = 'Too many failed login attempts. Please try again later.';
-      } else if (err.code === 'unauthenticated') {
-        errorMessage = 'Authentication failed. Please try logging in again.';
       } else if (err.message) {
         errorMessage = err.message;
       }
-
-      setError(`⚠️ Auth Handoff\n❌ Error: ${errorMessage}`);
+      setError(`⚠️ Login Failed: ${errorMessage}`);
+      setStatus('');
+      setIsChecking(false);
     }
   };
+
+  if (isChecking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="flex flex-col items-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-brand-dark border-t-transparent mb-4"></div>
+          <p className="text-brand-dark font-bold animate-pulse">{status || 'Checking session...'}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
@@ -93,7 +135,7 @@ function AdminLoginForm() {
           </div>
         </div>
 
-        <h1 className="text-2xl font-black text-center text-brand-dark mb-6 uppercase">Admin Access</h1>
+        <h1 className="text-xl font-black text-center text-brand-dark mb-6 uppercase">Admin Access</h1>
 
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 text-sm font-bold">

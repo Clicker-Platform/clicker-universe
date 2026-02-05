@@ -116,7 +116,7 @@ export function POSOrderCard({ order, onUpdateStatus, onCancel, onProcessPayment
                     )}
 
                     {!kds && (
-                        <div className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                        <div suppressHydrationWarning className="text-xs text-gray-500 mt-1 flex items-center gap-1">
                             <Clock size={12} />
                             {new Date((order.createdAt as any).seconds * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </div>

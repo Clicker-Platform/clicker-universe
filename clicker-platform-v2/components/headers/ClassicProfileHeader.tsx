@@ -5,6 +5,44 @@ import { BusinessProfile, BusinessContact } from '@/data/mockData';
 import { MapPin, Star } from 'lucide-react';
 import Image from 'next/image';
 import { useTemplate } from '@/components/TemplateProvider';
+import { usePathname, useRouter } from 'next/navigation';
+import { useSite } from '@/lib/site-context';
+import { Home } from 'lucide-react';
+
+const HeaderHomeButton = () => {
+    const pathname = usePathname();
+    const router = useRouter();
+    const { siteId } = useSite();
+    const { theme } = useTemplate();
+
+    const [mounted, setMounted] = React.useState(false);
+    React.useEffect(() => { setMounted(true); }, []);
+
+    if (!mounted || !siteId) return null;
+
+    // Check if we are on root
+    const isRoot = pathname === `/${siteId}` || pathname === `/${siteId}/` || pathname === '/';
+
+    if (isRoot) return null;
+
+    // Use high contrast colors: White background, Dark/Primary text
+    return (
+        <div className="mt-6 flex justify-center">
+            <button
+                onClick={() => router.push(`/${siteId}`)}
+                className="flex items-center gap-2 px-6 py-3 rounded-full font-black text-sm uppercase tracking-wide shadow-sticker transition-transform hover:scale-105 active:scale-95 border-[3px]"
+                style={{
+                    backgroundColor: 'var(--theme-foreground)', // Dark background like the tagline
+                    color: 'var(--theme-primary)', // Neon/Primary text
+                    borderColor: 'var(--theme-foreground)'
+                }}
+            >
+                <Home size={18} strokeWidth={3} />
+                <span>Home</span>
+            </button>
+        </div>
+    );
+};
 
 interface HeaderProps {
     profile: BusinessProfile;
@@ -55,14 +93,16 @@ export const ClassicProfileHeader: React.FC<HeaderProps> = ({ profile, contact, 
                 <p className="text-theme-foreground font-bold text-lg leading-snug mx-auto">
                     {profile.description}
                 </p>
+                <HeaderHomeButton />
             </div>
 
+            {/* Address removed to avoid duplication with Footer
             {showAddress && contact?.address && (
                 <div className="mt-4 flex items-center gap-2 text-theme-foreground/80 font-bold">
                     <MapPin size={18} strokeWidth={3} />
                     <span className="text-sm">{contact.address.split('\n')[0]}</span>
                 </div>
-            )}
+            )} */}
         </div>
     );
 };

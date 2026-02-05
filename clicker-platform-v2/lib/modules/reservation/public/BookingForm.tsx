@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { createBooking } from '@/lib/modules/reservation/api';
 import { Service, TimeSlot, Staff } from '@/lib/modules/reservation/types';
 import { Check, ChevronLeft } from 'lucide-react';
@@ -43,7 +43,14 @@ export default function BookingForm({
     const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null); // null means "Any"
     const [settings] = useState(initialSettings);
 
-    const [date, setDate] = useState<Date>(new Date());
+    // Initialize as null/empty to prevent hydration mismatch for Date
+    const [date, setDate] = useState<Date | undefined>(undefined);
+
+    // Set date on mount
+    useEffect(() => {
+        setDate(new Date());
+    }, []);
+
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
     const [bookingRef, setBookingRef] = useState<string | null>(null);
 
@@ -95,7 +102,7 @@ export default function BookingForm({
         try {
             // Reconstruct Date object from date + time string
             const [hours, minutes] = selectedTime.split(':').map(Number);
-            const bookingStart = new Date(date);
+            const bookingStart = new Date(date || new Date());
             bookingStart.setHours(hours, minutes, 0, 0);
 
             const bookingEnd = new Date(bookingStart.getTime() + selectedService.durationMinutes * 60000);
@@ -136,7 +143,7 @@ export default function BookingForm({
                 <p className="text-gray-600 mb-6">Your appointment for <span className="font-bold">{selectedService?.name}</span> has been received.</p>
                 <div className="bg-white p-4 rounded-xl border border-dashed border-green-200 inline-block text-left text-sm text-gray-500 mb-6">
                     <p>Reference: <span className="font-mono text-brand-dark">{bookingRef}</span></p>
-                    <p>Date: <span className="font-bold text-brand-dark">{date.toLocaleDateString()} at {selectedTime}</span></p>
+                    <p>Date: <span suppressHydrationWarning className="font-bold text-brand-dark">{date?.toLocaleDateString()} at {selectedTime}</span></p>
                 </div>
                 <button
                     onClick={() => window.location.reload()}
@@ -199,7 +206,7 @@ export default function BookingForm({
                 {step === 3 && selectedService && (
                     <TimeStep
                         siteId={siteId}
-                        date={date}
+                        date={date || new Date()}
                         setDate={setDate}
                         selectedService={selectedService}
                         selectedStaff={selectedStaff}
@@ -213,7 +220,7 @@ export default function BookingForm({
                     <DetailsStep
                         selectedService={selectedService}
                         selectedStaff={selectedStaff}
-                        date={date}
+                        date={date || new Date()}
                         time={selectedTime}
                         membershipEnabled={settings.membershipEnabled || false}
                         onSubmit={handleSubmit}

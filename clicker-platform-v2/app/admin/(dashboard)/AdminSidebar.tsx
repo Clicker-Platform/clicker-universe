@@ -35,10 +35,13 @@ export function AdminSidebar() {
 
     const handleLogout = async () => {
         try {
-            // Clear activeSite cookie
-            document.cookie = 'activeSite=; path=/; max-age=0';
+            // Clear __session cookie
+            document.cookie = '__session=; path=/; max-age=0';
             await signOut(auth);
-            router.push('/admin/login');
+
+            // Cross-Domain Logout: Redirect to Gateway Logout
+            const gatewayUrl = process.env.NEXT_PUBLIC_AUTH_GATEWAY_URL || 'https://clicker-auth-gateway.web.app';
+            window.location.href = `${gatewayUrl}/logout`;
         } catch (error) {
             console.error('Logout failed:', error);
         }

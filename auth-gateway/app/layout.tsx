@@ -21,8 +21,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="id" className="notranslate" translate="no" suppressHydrationWarning>
       <body
+        suppressHydrationWarning
         className={`${jakarta.variable} antialiased font-sans selection:bg-brand-dark selection:text-brand-green`}
       >
         {children}

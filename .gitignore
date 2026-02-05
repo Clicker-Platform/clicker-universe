@@ -20,3 +20,6 @@ out
 .vscode
 .idea
 .agent/
+
+clicker-properti/
+.firebase/
