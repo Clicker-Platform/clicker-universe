@@ -5,6 +5,7 @@ import { Product } from '@/data/mockData';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { ProductCard } from '@/components/catalog/ProductCard';
 import { ProductDetailModal } from '@/components/catalog/ProductDetailModal';
+import { useSite } from '@/lib/site-context';
 
 import { useTemplate } from '@/components/TemplateProvider';
 
@@ -18,12 +19,13 @@ interface ProductGalleryProps {
 
 export const ProductGallery: React.FC<ProductGalleryProps> = ({ products, title = "Popular Treats", viewAllHref, phoneNumber, whatsappSettings }) => {
     const { track } = useAnalytics();
+    const { siteId } = useSite();
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const { templateId, theme } = useTemplate();
     const isClean = theme.cardStyle === 'clean';
 
     const handleProductClick = (product: Product) => {
-        track({ type: 'product_click', id: product.id });
+        track({ type: 'product_click', id: product.id, siteId });
         setSelectedProduct(product);
     };
 
@@ -88,7 +90,7 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({ products, title 
                             ? 'bg-transparent text-brand-dark border-2 border-brand-dark hover:bg-brand-dark hover:text-white'
                             : 'bg-brand-dark text-white hover:bg-brand-green hover:text-brand-dark shadow-sm'
                             }`}
-                        onClick={() => track({ type: 'view_all_click', id: 'catalog' })}
+                        onClick={() => track({ type: 'view_all_click', id: 'catalog', siteId })}
                     >
                         View More ...
                     </a>

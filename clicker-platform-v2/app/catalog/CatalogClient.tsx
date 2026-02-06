@@ -8,6 +8,7 @@ import { SearchBar } from '@/components/catalog/SearchBar';
 import { ProductDetailModal } from '@/components/catalog/ProductDetailModal';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useSite } from '@/lib/site-context';
 
 interface CatalogClientProps {
     products: Product[];
@@ -15,6 +16,7 @@ interface CatalogClientProps {
 
 export function CatalogClient({ products }: CatalogClientProps) {
     const { track } = useAnalytics();
+    const { siteId } = useSite();
     const [searchQuery, setSearchQuery] = useState('');
     const debouncedSearchQuery = useDebounce(searchQuery, 300);
     const [selectedCategory, setSelectedCategory] = useState('All');
@@ -38,9 +40,9 @@ export function CatalogClient({ products }: CatalogClientProps) {
     }, [products, selectedCategory, debouncedSearchQuery]);
 
     const handleProductClick = useCallback((product: Product) => {
-        track({ type: 'product_click', id: product.id });
+        track({ type: 'product_click', id: product.id, siteId });
         setSelectedProduct(product);
-    }, [track]);
+    }, [track, siteId]);
 
     return (
         <div className="w-full">

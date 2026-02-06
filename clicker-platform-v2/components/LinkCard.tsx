@@ -8,6 +8,7 @@ import { ICON_MAP } from '@/data/icons';
 
 import { FormModal } from '@/components/FormModal';
 import { TemplateContext } from '@/components/TemplateProvider';
+import { useSite } from '@/lib/site-context';
 
 interface LinkCardProps {
     item: LinkItem;
@@ -53,8 +54,11 @@ export const LinkCard: React.FC<LinkCardProps> = ({ item, siteId, tenantSlug }) 
         return url;
     };
 
+    const { siteId: contextSiteId } = useSite();
+    const effectiveSiteId = siteId || contextSiteId;
+
     const handleClick = async (e: React.MouseEvent) => {
-        track({ type: 'link_click', id: item.id });
+        track({ type: 'link_click', id: item.id, siteId: effectiveSiteId });
 
         if (item.type === 'form' && item.formId) {
             e.preventDefault();
@@ -168,7 +172,7 @@ export const LinkCard: React.FC<LinkCardProps> = ({ item, siteId, tenantSlug }) 
                     form={formData}
                     isOpen={isModalOpen}
                     onClose={() => setIsModalOpen(false)}
-                    siteId={siteId}
+                    siteId={effectiveSiteId}
                 />
             )}
         </>
