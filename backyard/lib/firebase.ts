@@ -29,11 +29,11 @@ const functions = getFunctions(app);
 //     // @ts-ignore
 //     if (!global._firebase_emulators_connected) {
 //         console.log('🔥 [Backyard] Connecting to Firebase Emulators...');
-
+//
 //         connectAuthEmulator(auth, 'http://localhost:9099');
 //         connectFirestoreEmulator(db, 'localhost', 8080);
 //         connectFunctionsEmulator(functions, 'localhost', 5001);
-
+//
 //         // @ts-ignore
 //         global._firebase_emulators_connected = true;
 //     }

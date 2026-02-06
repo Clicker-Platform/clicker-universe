@@ -25,6 +25,55 @@ export default function UsersPage() {
     const [actionLoading, setActionLoading] = useState(false);
     const [confirmOpen, setConfirmOpen] = useState(false);
 
+    // Create User State
+    const [createOpen, setCreateOpen] = useState(false);
+    const [newEmail, setNewEmail] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [newName, setNewName] = useState('');
+    const [newSiteId, setNewSiteId] = useState('');
+    const [newRole, setNewRole] = useState('owner'); // Default to owner for easy tenant setup
+
+    const handleCreateUser = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setActionLoading(true);
+        try {
+            const createUser = httpsCallable(functions, 'createUser');
+            const result: any = await createUser({
+                email: newEmail,
+                password: newPassword,
+                displayName: newName,
+                // If Site ID is provided, we bind them immediately
+                role: newSiteId ? newRole : undefined,
+                siteId: newSiteId ? newSiteId : undefined
+            });
+
+            toast.success('Identity Created', { description: `${newEmail} registered successfully.` });
+            setCreateOpen(false);
+
+            // Reset Form
+            setNewEmail('');
+            setNewPassword('');
+            setNewName('');
+            setNewSiteId('');
+
+            // Refresh List
+            // Note: optimally we'd push the new user to the list, but fetching is safer
+            const listUsers = httpsCallable(functions, 'listUsers');
+            const refresh = await listUsers();
+            setUsers((refresh.data as any).users || []);
+
+            // Select the new user if possible
+            if (result.data?.uid) {
+                // We might need to find it in the new list, handled by select logic
+            }
+
+        } catch (error: any) {
+            toast.error('Registration Failed', { description: error.message });
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
     // 1. Fetch Users on Mount
     useEffect(() => {
         const fetchUsers = async () => {
@@ -42,11 +91,13 @@ export default function UsersPage() {
     }, []);
 
     // 2. Filter Users
-    const filteredUsers = users.filter(u =>
-        u.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        u.uid.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        u.displayName?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filteredUsers = users
+        .filter(u => u.email) // Exclude anonymous users (no email)
+        .filter(u =>
+            u.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            u.uid.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            u.displayName?.toLowerCase().includes(searchQuery.toLowerCase())
+        );
 
     // 3. Handle Role Assignment
     const handleAssignRole = async () => {
@@ -122,7 +173,16 @@ export default function UsersPage() {
                         <div className="p-6 border-b-[3px] border-brand-dark bg-gray-50/50 flex flex-col gap-4">
                             <div className="flex justify-between items-center">
                                 <h2 className="text-xl font-bold text-brand-dark">Subjects Database</h2>
-                                <span className="bg-brand-dark text-white px-2 py-1 rounded text-xs font-bold">{users.length} Found</span>
+                                <div className="flex items-center gap-2">
+                                    <span className="bg-brand-dark text-white px-2 py-1 rounded text-xs font-bold">{users.length} Found</span>
+                                    <button
+                                        onClick={() => setCreateOpen(true)}
+                                        className="bg-blue-600 hover:bg-blue-700 text-white p-1.5 rounded-lg transition-colors shadow-sm"
+                                        title="Register New Identity"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                                    </button>
+                                </div>
                             </div>
                             <div className="relative">
                                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -306,6 +366,95 @@ export default function UsersPage() {
                     description={`You are about to grant "${roleType.toUpperCase()}" access for site "${roleSiteId}" to this user. This powerful permission allows them to modify tenant data.`}
                 />
             </div>
+
+            {/* CREATE USER DIALOG */}
+            {createOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                        <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                            <h3 className="font-bold text-lg text-brand-dark flex items-center gap-2">
+                                <Users className="w-5 h-5 text-blue-600" />
+                                Register New Identity
+                            </h3>
+                            <button onClick={() => setCreateOpen(false)} className="text-gray-400 hover:text-gray-600">
+                                <UserX className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleCreateUser} className="p-6 space-y-4">
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-gray-600 uppercase">Email Address</label>
+                                <input
+                                    type="email"
+                                    required
+                                    value={newEmail}
+                                    onChange={e => setNewEmail(e.target.value)}
+                                    className="w-full px-4 py-2 rounded-xl border-2 border-gray-200 focus:border-brand-dark outline-none font-medium text-sm"
+                                    placeholder="user@example.com"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-gray-600 uppercase">Display Name</label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={newName}
+                                    onChange={e => setNewName(e.target.value)}
+                                    className="w-full px-4 py-2 rounded-xl border-2 border-gray-200 focus:border-brand-dark outline-none font-medium text-sm"
+                                    placeholder="John Doe"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-gray-600 uppercase">Password</label>
+                                <input
+                                    type="password"
+                                    required
+                                    minLength={6}
+                                    value={newPassword}
+                                    onChange={e => setNewPassword(e.target.value)}
+                                    className="w-full px-4 py-2 rounded-xl border-2 border-gray-200 focus:border-brand-dark outline-none font-medium text-sm"
+                                    placeholder="••••••••"
+                                />
+                            </div>
+
+                            <div className="pt-4 border-t border-gray-100">
+                                <div className="text-xs font-bold text-blue-600 mb-2">OPTIONAL: BIND TO TENANT</div>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-bold text-gray-400 uppercase">Site ID</label>
+                                        <input
+                                            type="text"
+                                            value={newSiteId}
+                                            onChange={e => setNewSiteId(e.target.value)}
+                                            className="w-full px-3 py-2 rounded-lg border-2 border-gray-100 focus:border-blue-500 outline-none font-mono text-xs"
+                                            placeholder="cafe-quattro"
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-bold text-gray-400 uppercase">Start Role</label>
+                                        <select
+                                            className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 transition-all appearance-none"
+                                            value={newRole}
+                                            onChange={(e) => setNewRole(e.target.value)}
+                                        >
+                                            <option value="owner">Owner</option>
+                                            <option value="member">Member</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={actionLoading}
+                                className="w-full py-3 mt-2 bg-brand-dark text-white rounded-xl font-bold hover:bg-gray-800 transition-all shadow-md flex items-center justify-center gap-2"
+                            >
+                                {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Create Identity'}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

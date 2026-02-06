@@ -52,7 +52,7 @@ export const generateHandoffToken = functions.https.onCall(async (request) => {
 
 export const createUser = functions.https.onCall(async (request) => {
     // Basic security: Ensure requester is authenticated (and ideally is an admin)
-    const { email, password, displayName, role } = request.data;
+    const { email, password, displayName, role, siteId, permissions, moduleAccess } = request.data;
     const SUPER_ADMIN_EMAIL = 'clickerplatform@gmail.com';
 
     // Basic security: Ensure requester is authenticated (and ideally is an admin)
@@ -68,32 +68,134 @@ export const createUser = functions.https.onCall(async (request) => {
     // if (context.auth.token.role !== 'admin') { ... }
 
 
-    if (!email || !password) {
+    if (!email) {
         throw new functions.https.HttpsError(
             'invalid-argument',
-            'Email and password are required.'
+            'Email is required.'
         );
     }
 
     try {
-        const userRecord = await admin.auth().createUser({
-            email,
-            password,
-            displayName,
-            emailVerified: true // God mode: Auto verify
-        });
+        let userRecord;
+        let isNewUser = false;
 
-        // Set custom claims if role is provided OR if it matches the Super Admin email
-        const SUPER_ADMIN_EMAIL = 'clickerplatform@gmail.com';
-        if (role || email === SUPER_ADMIN_EMAIL) {
-            const finalRole = (email === SUPER_ADMIN_EMAIL) ? 'superadmin' : role;
-            await admin.auth().setCustomUserClaims(userRecord.uid, { role: finalRole });
+        try {
+            // 1. Try to fetch existing user
+            userRecord = await admin.auth().getUserByEmail(email);
+            console.log(`[createUser] Found existing user: ${userRecord.uid}`);
+        } catch (error: any) {
+            if (error.code === 'auth/user-not-found') {
+                // 2. If not found, create new user
+                if (!password) {
+                    throw new functions.https.HttpsError(
+                        'invalid-argument',
+                        'Password is required for new users.'
+                    );
+                }
+                userRecord = await admin.auth().createUser({
+                    email,
+                    password,
+                    displayName,
+                    emailVerified: true
+                });
+                isNewUser = true;
+                console.log(`[createUser] Created new user: ${userRecord.uid}`);
+            } else {
+                throw error;
+            }
         }
 
-        return { userId: userRecord.uid, message: 'User created successfully.' };
+        // 3. Prepare Claims
+        // Get existing claims if any (to avoid overwriting other potential claims if we were to support multi-tenancy more purely, but here we overwrite siteId)
+        const currentClaims = userRecord.customClaims || {};
+        const newClaims: Record<string, any> = { ...currentClaims };
+
+        if (role) newClaims.role = role;
+        if (siteId) newClaims.siteId = siteId;
+
+        // Force Superadmin logic
+        if (email === SUPER_ADMIN_EMAIL) {
+            newClaims.role = 'superadmin';
+            // Optional: maybe remove siteId for superadmin? 
+            // newClaims.siteId = null; 
+        }
+
+        // 4. Update Claims
+        await admin.auth().setCustomUserClaims(userRecord.uid, newClaims);
+
+        // 5. Sync with Firestore (Platform V2 Compatibility)
+        if (siteId) {
+            const memberData: any = {
+                uid: userRecord.uid,
+                email: userRecord.email,
+                displayName: userRecord.displayName || displayName || '',
+                role: role || 'staff', // Default to staff
+                status: 'active',
+                joinedAt: admin.firestore.FieldValue.serverTimestamp(),
+            };
+
+            // Only update permissions if provided, otherwise default to empty for new users
+            if (permissions !== undefined) memberData.permissions = permissions;
+            else if (isNewUser) memberData.permissions = [];
+
+            if (moduleAccess !== undefined) memberData.moduleAccess = moduleAccess;
+            else if (isNewUser) memberData.moduleAccess = {};
+
+
+            // Log for debugging
+            console.log(`[createUser] Syncing to Firestore: sites/${siteId}/members/${userRecord.uid}`, memberData);
+
+            await admin.firestore()
+                .collection('sites')
+                .doc(siteId)
+                .collection('members')
+                .doc(userRecord.uid)
+                .set(memberData, { merge: true }); // Merge to avoid overwriting existing detailed permissions if any
+        }
+
+        return {
+            userId: userRecord.uid,
+            isNewUser,
+            message: isNewUser ? 'User created successfully.' : 'Existing user updated with new access.'
+        };
+
     } catch (error: any) {
-        console.error("Error creating user:", JSON.stringify(error, Object.getOwnPropertyNames(error)));
-        throw new functions.https.HttpsError('internal', `Failed to create user: ${error.message} (Code: ${error.code})`);
+        console.error("Error creating/updating user:", JSON.stringify(error, Object.getOwnPropertyNames(error)));
+        throw new functions.https.HttpsError('internal', `Failed to process user: ${error.message}`);
+    }
+});
+
+// Remove user from a specific site (removes claims and Firestore doc)
+export const removeUserFromSite = functions.https.onCall(async (request) => {
+    if (!request.auth) throw new functions.https.HttpsError('unauthenticated', 'Auth required');
+
+    const { uid, siteId } = request.data;
+    if (!uid || !siteId) throw new functions.https.HttpsError('invalid-argument', 'UID and Site ID required');
+
+    try {
+        // 1. Remove Firestore Document
+        await admin.firestore()
+            .collection('sites')
+            .doc(siteId)
+            .collection('members')
+            .doc(uid)
+            .delete();
+
+        // 2. Update Claims (Remove role and siteId)
+        const userRecord = await admin.auth().getUser(uid);
+        const currentClaims = userRecord.customClaims || {};
+
+        // Remove siteId if it matches
+        if (currentClaims.siteId === siteId) {
+            delete currentClaims.siteId;
+            delete currentClaims.role; // Also remove role context
+            await admin.auth().setCustomUserClaims(uid, currentClaims);
+        }
+
+        return { message: 'User removed from site successfully.' };
+    } catch (error: any) {
+        console.error("Error removing user:", error);
+        throw new functions.https.HttpsError('internal', error.message);
     }
 });
 

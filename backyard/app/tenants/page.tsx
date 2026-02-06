@@ -2,13 +2,16 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { httpsCallable } from 'firebase/functions';
-import { functions, auth } from '@/lib/firebase';
+import { collection, onSnapshot } from 'firebase/firestore';
+import { functions, db, auth } from '@/lib/firebase';
 import { toast } from 'sonner';
-import { Store, Power, PowerOff, Loader2, RefreshCw, Database, ExternalLink, Grid } from 'lucide-react';
+import { Store, Power, PowerOff, Loader2, RefreshCw, Database, ExternalLink, Grid, Users, UserPlus, UserX } from 'lucide-react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
 import Sidebar from '../../components/Sidebar';
 import { SYSTEM_MODULES } from '@/lib/modules/definitions';
+import { PermissionEditor } from '@/components/PermissionEditor';
+import { ModuleAccess } from '@/lib/modules/types';
 
 export default function TenantsPage() {
     const [tenants, setTenants] = useState<any[]>([]);
@@ -167,184 +170,303 @@ export default function TenantsPage() {
         }
     };
 
+    // 5. Handle Team Management
+    const [teamDialogOpen, setTeamDialogOpen] = useState(false);
+    const [teamMembers, setTeamMembers] = useState<any[]>([]);
+    const [teamLoading, setTeamLoading] = useState(false);
+
+    // Add Member State
+    const [newMemberEmail, setNewMemberEmail] = useState('');
+    const [newMemberName, setNewMemberName] = useState('');
+    const [newMemberPassword, setNewMemberPassword] = useState('');
+    const [newMemberRole, setNewMemberRole] = useState('staff');
+    const [permissions, setPermissions] = useState<string[]>([]);
+    const [moduleAccess, setModuleAccess] = useState<Record<string, ModuleAccess>>({});
+
+    // Subscribe to Firestore members collection
+    useEffect(() => {
+        if (!teamDialogOpen || !selectedTenant?.id) return;
+
+        setTeamLoading(true);
+        console.log("🔍 Fetching Firestore team for Site ID:", selectedTenant.id);
+
+        const unsubscribe = onSnapshot(collection(db, 'sites', selectedTenant.id, 'members'),
+            (snapshot) => {
+                const members: any[] = [];
+                snapshot.forEach((doc) => {
+                    members.push({ uid: doc.id, ...doc.data() });
+                });
+                console.log("🏁 Firestore Team Members:", members.length);
+                setTeamMembers(members);
+                setTeamLoading(false);
+            },
+            (error) => {
+                console.error("❌ Fetch Team Error:", error);
+                toast.error('Failed to load team', { description: error.message });
+                setTeamLoading(false);
+            }
+        );
+
+        return () => unsubscribe();
+    }, [teamDialogOpen, selectedTenant?.id]);
+
+    const openTeamDialog = (tenant: any) => {
+        setSelectedTenant(tenant);
+        setTeamDialogOpen(true);
+        // Reset form
+        setNewMemberEmail('');
+        setNewMemberName('');
+        setNewMemberPassword('');
+        setNewMemberRole('staff');
+        setPermissions([]);
+        setModuleAccess({});
+    };
+
+    const handleAddMember = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedTenant) return;
+        setTeamLoading(true);
+        try {
+            const createUserFn = httpsCallable(functions, 'createUser');
+            const payload = {
+                email: newMemberEmail,
+                password: newMemberPassword, // Optional for existing users
+                displayName: newMemberName,
+                role: newMemberRole, // 'owner' or 'member' (mapped to 'staff' in cloud function if not owner)
+                siteId: selectedTenant.id,
+                permissions: newMemberRole === 'staff' ? permissions : [],
+                moduleAccess: newMemberRole === 'staff' ? moduleAccess : {}
+            };
+            const result: any = await createUserFn(payload);
+
+            toast.success(result.data.message);
+
+            // Clear form (no need to fetch, onSnapshot handles it)
+            setNewMemberEmail('');
+            setNewMemberName('');
+            setNewMemberPassword('');
+        } catch (error: any) {
+            toast.error('Failed to add member', { description: error.message });
+        } finally {
+            setTeamLoading(false);
+        }
+    };
+
+    const handleRemoveMember = async (uid: string) => {
+        if (!confirm('Are you sure you want to remove this member?')) return;
+
+        setTeamLoading(true);
+        try {
+            // New function that handles both Firestore and Claims
+            const removeUserFn = httpsCallable(functions, 'removeUserFromSite');
+            await removeUserFn({
+                uid,
+                siteId: selectedTenant.id
+            });
+
+            toast.success('Member removed successfully');
+        } catch (error: any) {
+            toast.error('Failed to remove member', { description: error.message });
+        } finally {
+            setTeamLoading(false);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-gray-50/50 flex font-sans">
             <Sidebar />
             <div className="flex-1 ml-64 p-8">
-                <header className="mb-8">
+                <header className="mb-4">
                     <h1 className="text-3xl font-black text-brand-dark flex items-center gap-3">
                         <Store className="w-8 h-8" />
-                        TENANT GOVERNANCE
+                        Backyard Forge
                     </h1>
-                    <p className="text-gray-500 font-medium">Manage Multi-Tenant Sites</p>
+                    <p className="text-gray-400 font-medium">Manifesting New Civilizations & Managed Realities</p>
                 </header>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    {/* CREATE PANEL */}
-                    <div className="bg-white rounded-3xl border-[3px] border-brand-dark shadow-[6px_6px_0px_0px_rgba(34,34,34,1)] overflow-hidden h-fit">
-                        <div className="p-6 border-b-[3px] border-brand-dark bg-gray-50/50">
-                            <h2 className="text-xl font-bold text-brand-dark">Forge New Tenant</h2>
+                <div className="flex flex-col gap-8">
+                    {/* FORGE PANEL */}
+                    <div className="bg-white rounded-[32px] border-[3px] border-brand-dark shadow-sm overflow-hidden flex flex-col">
+                        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/30">
+                            <div>
+                                <h2 className="text-xl font-bold text-brand-dark">Tenant Forge</h2>
+                                <p className="text-xs text-gray-400 font-medium">Deploy a new instance into the universe</p>
+                            </div>
+                            <div className="flex gap-2">
+                                <button onClick={() => fetchTenants()} className="p-2 hover:bg-white rounded-xl transition-all border border-transparent hover:border-gray-100">
+                                    <RefreshCw className={`w-5 h-5 text-brand-dark ${loading ? 'animate-spin' : ''}`} />
+                                </button>
+                            </div>
                         </div>
-                        <form onSubmit={handleCreate} className="p-6 space-y-5">
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold text-brand-dark uppercase tracking-wider">Site Name</label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={name}
-                                    onChange={e => setName(e.target.value)}
-                                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-brand-dark outline-none font-medium transition-colors"
-                                    placeholder="Cafe Quattro"
-                                />
-                            </div>
 
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold text-brand-dark uppercase tracking-wider">Target Application (Hosting ID)</label>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <button
-                                        type="button"
-                                        onClick={() => setHostingId('quattro')}
-                                        className={`px-4 py-3 rounded-xl border-2 font-bold text-sm transition-all ${hostingId === 'quattro'
-                                            ? 'border-brand-dark bg-brand-dark text-white shadow-md'
-                                            : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300'
-                                            }`}
-                                    >
-                                        Quattro App
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setHostingId('aletra')}
-                                        className={`px-4 py-3 rounded-xl border-2 font-bold text-sm transition-all ${hostingId === 'aletra'
-                                            ? 'border-brand-dark bg-brand-dark text-white shadow-md'
-                                            : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300'
-                                            }`}
-                                    >
-                                        Aletra App
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div className="space-y-3">
-                                <label className="text-xs font-bold text-brand-dark uppercase tracking-wider">Active Modules</label>
-                                <div className="grid grid-cols-2 gap-3">
-                                    {SYSTEM_MODULES.map((mod: any) => (
-                                        <label key={mod.id} className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${modules[mod.id]
-                                            ? 'border-green-500 bg-green-50'
-                                            : 'border-gray-200 hover:border-gray-300'
-                                            }`}>
-                                            <input
-                                                type="checkbox"
-                                                checked={modules[mod.id] || false}
-                                                onChange={(e) => setModules({ ...modules, [mod.id]: e.target.checked })}
-                                                className="w-5 h-5 rounded border-gray-300 text-green-600 focus:ring-green-500"
-                                            />
-                                            <div>
-                                                <span className="font-bold text-sm text-gray-700">{mod.displayName}</span>
-                                                <p className="text-xs text-gray-400">{mod.description}</p>
-                                            </div>
-                                        </label>
-                                    ))}
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <label className="flex items-center gap-3 p-3 rounded-xl border-2 border-gray-200 cursor-pointer hover:border-brand-dark transition-all">
-                                    <input
-                                        type="checkbox"
-                                        checked={seedSampleData}
-                                        onChange={(e) => setSeedSampleData(e.target.checked)}
-                                        className="w-5 h-5 rounded border-gray-300 text-brand-dark focus:ring-brand-dark"
-                                    />
-                                    <div>
-                                        <div className="font-bold text-sm text-brand-dark">Include Starter Data</div>
-                                        <div className="text-xs text-gray-500">Auto-generate sample products, profile, and settings.</div>
+                        <form onSubmit={handleCreate} className="p-8 space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                {/* Basic Info */}
+                                <div className="space-y-4">
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-brand-dark uppercase tracking-wider pl-1">Tenant Name</label>
+                                        <input
+                                            type="text"
+                                            required
+                                            value={name}
+                                            onChange={e => setName(e.target.value)}
+                                            className="w-full px-4 py-3 rounded-2xl border-[3px] border-gray-100 focus:border-brand-dark outline-none font-bold text-sm bg-gray-50/30 transition-all"
+                                            placeholder="Cafe Quattro"
+                                        />
                                     </div>
-                                </label>
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold text-brand-dark uppercase tracking-wider">Subdomain (ID)</label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={subdomain}
-                                    onChange={e => setSubdomain(e.target.value)}
-                                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-brand-dark outline-none font-medium transition-colors"
-                                    placeholder="cafe-quattro"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold text-brand-dark uppercase tracking-wider">Owner Email</label>
-                                <input
-                                    type="email"
-                                    required
-                                    value={ownerEmail}
-                                    onChange={e => setOwnerEmail(e.target.value)}
-                                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-brand-dark outline-none font-medium transition-colors"
-                                    placeholder="owner@cafe.com"
-                                />
-                            </div>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-brand-dark uppercase tracking-wider pl-1">Target Hosting (Tenant)</label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <button
+                                                type="button"
+                                                onClick={() => setHostingId('quattro')}
+                                                className={`px-4 py-3 rounded-2xl border-[3px] font-black text-[10px] uppercase transition-all ${hostingId === 'quattro'
+                                                    ? 'border-brand-dark bg-brand-dark text-white shadow-md'
+                                                    : 'border-gray-100 bg-white text-gray-400 hover:border-gray-200'
+                                                    }`}
+                                            >
+                                                Quattro
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setHostingId('aletra')}
+                                                className={`px-4 py-3 rounded-2xl border-[3px] font-black text-[10px] uppercase transition-all ${hostingId === 'aletra'
+                                                    ? 'border-brand-dark bg-brand-dark text-white shadow-md'
+                                                    : 'border-gray-100 bg-white text-gray-400 hover:border-gray-200'
+                                                    }`}
+                                            >
+                                                Aletra
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-brand-dark uppercase tracking-wider pl-1">Subdomain (ID)</label>
+                                        <input
+                                            type="text"
+                                            required
+                                            value={subdomain}
+                                            onChange={e => setSubdomain(e.target.value)}
+                                            className="w-full px-4 py-3 rounded-2xl border-[3px] border-gray-100 focus:border-brand-dark outline-none font-bold text-sm bg-gray-50/30 transition-all"
+                                            placeholder="cafe-quattro"
+                                        />
+                                    </div>
+                                </div>
 
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold text-brand-dark uppercase tracking-wider">Owner Password</label>
-                                <input
-                                    type="password"
-                                    required
-                                    value={password}
-                                    onChange={e => setPassword(e.target.value)}
-                                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-brand-dark outline-none font-medium transition-colors"
-                                    placeholder="••••••••"
-                                    minLength={6}
-                                />
-                                <p className="text-[10px] text-gray-400 font-bold uppercase">Min 6 chars. Creates user if not exists.</p>
+                                {/* Modules Selector (Span 2) */}
+                                <div className="space-y-4 md:col-span-2">
+                                    <label className="text-xs font-bold text-brand-dark uppercase tracking-wider pl-1">Active Modules & Provisions</label>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                        {SYSTEM_MODULES.map((mod: any) => (
+                                            <label key={mod.id} className={`flex items-center gap-3 p-3 rounded-2xl border-[3px] cursor-pointer transition-all ${modules[mod.id]
+                                                ? 'border-brand-dark bg-brand-dark text-white shadow-md'
+                                                : 'border-gray-100 bg-white text-gray-400 hover:border-gray-200'
+                                                }`}>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={modules[mod.id] || false}
+                                                    onChange={(e) => setModules({ ...modules, [mod.id]: e.target.checked })}
+                                                    className="w-4 h-4 rounded border-gray-300 transition-all"
+                                                />
+                                                <div className="flex flex-col">
+                                                    <span className="font-black text-[11px] uppercase truncate">{mod.displayName}</span>
+                                                </div>
+                                            </label>
+                                        ))}
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-gray-100 pt-6">
+                                        <div className="md:col-span-2 grid grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-bold text-brand-dark uppercase tracking-wider pl-1">Owner Email</label>
+                                                <input
+                                                    type="email"
+                                                    required
+                                                    value={ownerEmail}
+                                                    onChange={e => setOwnerEmail(e.target.value)}
+                                                    className="w-full px-4 py-3 rounded-2xl border-[3px] border-gray-100 focus:border-brand-dark outline-none font-bold text-sm bg-gray-50/30"
+                                                    placeholder="owner@cafe.com"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-bold text-brand-dark uppercase tracking-wider pl-1">Owner Password</label>
+                                                <input
+                                                    type="password"
+                                                    required
+                                                    value={password}
+                                                    onChange={e => setPassword(e.target.value)}
+                                                    className="w-full px-4 py-3 rounded-2xl border-[3px] border-gray-100 focus:border-brand-dark outline-none font-bold text-sm bg-gray-50/30"
+                                                    placeholder="••••••••"
+                                                    minLength={6}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="flex items-end">
+                                            <button
+                                                type="submit"
+                                                disabled={createLoading}
+                                                className="w-full py-3 bg-brand-dark text-white rounded-[20px] font-black uppercase text-xs tracking-widest hover:bg-gray-800 transition-all active:scale-95 shadow-xl flex items-center justify-center gap-2"
+                                            >
+                                                {createLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><UserPlus className="w-4 h-4" /> Forge Instance</>}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <button
-                                type="submit"
-                                disabled={createLoading}
-                                className="w-full py-3 bg-brand-dark text-white rounded-xl font-bold hover:bg-gray-800 hover:-translate-y-0.5 transition-all disabled:opacity-50"
-                            >
-                                {createLoading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : 'Create Tenant'}
-                            </button>
                         </form>
                     </div>
 
                     {/* LIST PANEL */}
-                    <div className="bg-white rounded-3xl border-[3px] border-brand-dark shadow-sm overflow-hidden flex flex-col min-h-[600px]">
-                        <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-                            <h2 className="text-xl font-bold text-brand-dark">Active Tenants</h2>
-                            <div className="bg-gray-100 px-3 py-1 rounded-full text-xs font-bold text-gray-600">
-                                Total: {tenants.length}
+                    <div className="bg-white rounded-[32px] border-[3px] border-brand-dark shadow-sm overflow-hidden flex flex-col">
+                        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/30">
+                            <div>
+                                <h2 className="text-xl font-bold text-brand-dark">Active Contexts</h2>
+                                <p className="text-xs text-gray-400 font-medium">Manifested tenants currently in operation</p>
+                            </div>
+                            <div className="bg-brand-dark px-4 py-2 rounded-2xl text-[10px] font-black text-white shadow-md uppercase tracking-widest">
+                                Manifestations: {tenants.length}
                             </div>
                         </div>
 
-                        <div className="flex-1 overflow-auto p-0">
+                        <div className="flex-1 overflow-auto">
                             {loading ? (
-                                <div className="p-12 text-center text-gray-400">Loading Tenants...</div>
+                                <div className="p-12 text-center text-gray-400 uppercase font-black text-xs tracking-widest flex items-center justify-center gap-3">
+                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                    Synchronizing Multiverse...
+                                </div>
                             ) : tenants.length === 0 ? (
-                                <div className="p-12 text-center text-gray-400">No tenants forged yet.</div>
+                                <div className="p-12 text-center text-gray-400 font-bold">No tenants manifested in this sector.</div>
                             ) : (
                                 <table className="w-full text-left">
-                                    <thead className="bg-gray-50 border-b border-gray-100 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                    <thead className="bg-gray-50/50 border-b border-gray-100 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
                                         <tr>
-                                            <th className="p-4 pl-6">Site Info</th>
-                                            <th className="p-4">Owner</th>
-                                            <th className="p-4">Status</th>
-                                            <th className="p-4 text-right pr-6">Actions</th>
+                                            <th className="p-6">Context Identity</th>
+                                            <th className="p-6">Originator</th>
+                                            <th className="p-6">Vital Status</th>
+                                            <th className="p-6 text-right">Manipulation</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-50">
                                         {tenants.map((tenant) => (
                                             <tr key={tenant.id} className="hover:bg-gray-50/50 transition-colors">
                                                 <td className="p-4 pl-6">
-                                                    <div className="font-bold text-brand-dark">{tenant.name}</div>
-                                                    <div className="text-xs text-gray-400 font-mono mb-1">{tenant.id}</div>
-                                                    <a
-                                                        href={`https://clickerapps.web.app/${tenant.slug || tenant.id}`}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="text-xs text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1 bg-blue-50 w-fit px-2 py-0.5 rounded-md border border-blue-100 transition-colors"
-                                                    >
-                                                        <ExternalLink className="w-3 h-3" />
-                                                        {tenant.slug || tenant.id}
-                                                    </a>
+                                                    <div className="flex flex-col gap-1">
+                                                        <div className="font-bold text-[17px] text-brand-dark tracking-tight">{tenant.name}</div>
+                                                        <div className="flex items-center gap-2 text-xs text-gray-400 font-medium">
+                                                            <span className="font-mono bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100">{tenant.slug || tenant.id}</span>
+                                                            {tenant.id !== tenant.slug && (
+                                                                <span className="text-[10px] opacity-70">ID: {tenant.id.slice(0, 8)}</span>
+                                                            )}
+                                                        </div>
+                                                        <a
+                                                            href={`https://clickerapps.web.app/${tenant.slug || tenant.id}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="text-[11px] text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1.5 bg-blue-50/50 w-fit px-2 py-1 rounded-lg border border-blue-100/50 transition-all hover:bg-blue-50"
+                                                        >
+                                                            <ExternalLink className="w-3.5 h-3.5" />
+                                                            clickerapps.web.app/{tenant.slug || tenant.id}
+                                                        </a>
+                                                    </div>
                                                 </td>
                                                 <td className="p-4 text-sm text-gray-600">
                                                     {tenant.ownerEmail}
@@ -363,32 +485,46 @@ export default function TenantsPage() {
                                                     )}
                                                 </td>
                                                 <td className="p-4 text-right pr-6">
-                                                    <button
-                                                        onClick={() => handleToggleStatus(tenant)}
-                                                        className={`p-2 rounded-lg border-2 transition-all ${tenant.status === 'active'
-                                                            ? 'border-red-100 text-red-600 hover:bg-red-50 hover:border-red-200'
-                                                            : 'border-green-100 text-green-600 hover:bg-green-50 hover:border-green-200'
-                                                            }`}
-                                                        title={tenant.status === 'active' ? 'Suspend Tenant' : 'Activate Tenant'}
-                                                    >
-                                                        {tenant.status === 'active' ? <PowerOff className="w-4 h-4" /> : <Power className="w-4 h-4" />}
-                                                    </button>
+                                                    <div className="flex justify-end items-center gap-2">
+                                                        <div className="flex items-center bg-gray-50 p-1 rounded-xl border border-gray-100 shadow-sm gap-1">
+                                                            <button
+                                                                onClick={() => openTeamDialog(tenant)}
+                                                                className="p-2 rounded-lg text-indigo-600 hover:bg-white hover:shadow-sm transition-all"
+                                                                title="Manage Team"
+                                                            >
+                                                                <Users className="w-4.5 h-4.5" />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => openModuleDialog(tenant)}
+                                                                className="p-2 rounded-lg text-blue-600 hover:bg-white hover:shadow-sm transition-all"
+                                                                title="Manage Modules"
+                                                            >
+                                                                <Grid className="w-4.5 h-4.5" />
+                                                            </button>
+                                                        </div>
 
-                                                    <button
-                                                        onClick={() => openModuleDialog(tenant)}
-                                                        className="p-2 rounded-lg border-2 border-blue-100 text-blue-600 hover:bg-blue-50 hover:border-blue-200 transition-all ml-2"
-                                                        title="Manage Modules"
-                                                    >
-                                                        <Grid className="w-4 h-4" />
-                                                    </button>
+                                                        <div className="w-[1px] h-6 bg-gray-200 mx-1" />
 
-                                                    <button
-                                                        onClick={() => handleSeed(tenant)}
-                                                        className="p-2 rounded-lg border-2 border-amber-100 text-amber-600 hover:bg-amber-50 hover:border-amber-200 transition-all ml-2"
-                                                        title="Seed Demo Data"
-                                                    >
-                                                        <Database className="w-4 h-4" />
-                                                    </button>
+                                                        <div className="flex items-center gap-1">
+                                                            <button
+                                                                onClick={() => handleSeed(tenant)}
+                                                                className="p-2 rounded-lg border border-amber-200 text-amber-600 hover:bg-amber-50 transition-all"
+                                                                title="Seed Demo Data"
+                                                            >
+                                                                <Database className="w-4 h-4" />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleToggleStatus(tenant)}
+                                                                className={`p-2 rounded-lg border transition-all ${tenant.status === 'active'
+                                                                    ? 'border-red-200 text-red-600 hover:bg-red-50'
+                                                                    : 'border-green-200 text-green-600 hover:bg-green-50'
+                                                                    }`}
+                                                                title={tenant.status === 'active' ? 'Suspend' : 'Activate'}
+                                                            >
+                                                                {tenant.status === 'active' ? <PowerOff className="w-4 h-4" /> : <Power className="w-4 h-4" />}
+                                                            </button>
+                                                        </div>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))}
@@ -415,13 +551,14 @@ export default function TenantsPage() {
                 {/* MODULE MANAGEMENT DIALOG */}
                 {moduleDialogOpen && selectedTenant && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-                        <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                            <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                                <h3 className="font-bold text-lg text-brand-dark flex items-center gap-2">
-                                    <Grid className="w-5 h-5 text-blue-600" />
-                                    Manage Modules
-                                </h3>
-                                {/* Simple Close Button */}
+                        <div className="bg-white rounded-3xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+                            <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-white shrink-0">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-brand-light rounded-xl text-brand-dark">
+                                        <Grid className="w-5 h-5" />
+                                    </div>
+                                    <h3 className="font-bold text-lg text-brand-dark">Manage Modules</h3>
+                                </div>
                                 <button type="button" onClick={() => setModuleDialogOpen(false)} className="text-gray-400 hover:text-gray-600">
                                     <span className="sr-only">Close</span>
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -480,6 +617,207 @@ export default function TenantsPage() {
                                 >
                                     {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save Changes'}
                                 </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* TEAM MANAGEMENT DIALOG */}
+                {teamDialogOpen && selectedTenant && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+                        <div className="bg-white rounded-[32px] border-[3px] border-brand-dark shadow-2xl w-full max-w-5xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[92vh]">
+                            <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                                <h3 className="font-bold text-lg text-brand-dark flex items-center gap-2">
+                                    <Users className="w-5 h-5 text-indigo-600" />
+                                    Manage Team: <span className="text-gray-500">{selectedTenant.name}</span>
+                                </h3>
+                                <button onClick={() => setTeamDialogOpen(false)} className="text-gray-400 hover:text-gray-600">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                </button>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-12 flex-1 overflow-hidden min-h-0">
+                                {/* LEFT: MEMBER LIST */}
+                                <div className="p-0 flex flex-col border-r border-gray-100 overflow-hidden bg-gray-50/30 md:col-span-4">
+                                    <div className="p-3 border-b border-gray-100 font-bold text-xs text-gray-500 uppercase">
+                                        Current Members ({teamMembers.length})
+                                    </div>
+                                    <div className="overflow-y-auto h-[480px] p-3 space-y-2">
+                                        {teamLoading ? (
+                                            <div className="text-center py-8 text-gray-400 text-sm flex flex-col items-center">
+                                                <Loader2 className="w-6 h-6 animate-spin mb-2" />
+                                                Loading crew...
+                                            </div>
+                                        ) : teamMembers.length === 0 ? (
+                                            <div className="text-center py-8 text-gray-400 text-sm">
+                                                No members found for this site.
+                                            </div>
+                                        ) : (
+                                            teamMembers.map(m => (
+                                                <div
+                                                    key={m.uid}
+                                                    onClick={() => {
+                                                        setNewMemberEmail(m.email || '');
+                                                        setNewMemberName(m.displayName || '');
+                                                        setNewMemberRole(m.customClaims?.role || 'staff');
+                                                        setPermissions(m.permissions || []);
+                                                        setModuleAccess(m.moduleAccess || {});
+                                                        // Prevent password edit for now or handle it separately if needed
+                                                        setNewMemberPassword('');
+                                                    }}
+                                                    className={`p-4 rounded-2xl border-[2px] transition-all flex items-center justify-between group cursor-pointer ${newMemberEmail === m.email
+                                                        ? 'bg-white border-brand-dark shadow-lg -translate-y-0.5'
+                                                        : 'bg-white border-gray-100 shadow-sm hover:border-gray-300 hover:bg-gray-50/50'
+                                                        }`}
+                                                >
+                                                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm shrink-0 border-2 ${newMemberEmail === m.email ? 'bg-brand-dark text-white border-brand-dark' : 'bg-gray-100 text-gray-400 border-gray-200'}`}>
+                                                            {(m.displayName || m.email || '?').charAt(0).toUpperCase()}
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="font-black text-sm text-brand-dark truncate leading-tight">{m.displayName || 'No Name'}</div>
+                                                            <div className="text-[11px] text-gray-400 font-medium truncate">{m.email}</div>
+                                                            <div className="mt-1.5 flex gap-1">
+                                                                {m.customClaims?.role === 'owner' ? (
+                                                                    <span className="text-[9px] font-black uppercase bg-blue-50 text-blue-600 border border-blue-100 px-2 py-0.5 rounded-lg">
+                                                                        Owner
+                                                                    </span>
+                                                                ) : (
+                                                                    <span className="text-[9px] font-black uppercase bg-gray-50 text-gray-500 border border-gray-200 px-2 py-0.5 rounded-lg">
+                                                                        {m.customClaims?.role || 'Staff'}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleRemoveMember(m.uid);
+                                                        }}
+                                                        className="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all"
+                                                        title="Remove from Team"
+                                                    >
+                                                        <UserX className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Right: Add Member Form */}
+                                <div className="md:col-span-8 flex flex-col h-full bg-white min-h-0">
+                                    <div className="p-4 border-b border-gray-100 bg-gray-50/30 flex justify-between items-center shrink-0">
+                                        <div>
+                                            <h3 className="font-bold text-gray-500 text-xs uppercase tracking-wider">
+                                                {teamMembers.some(m => m.email === newMemberEmail) ? 'Edit Member Access' : 'Add New Member'}
+                                            </h3>
+                                            <p className="text-[10px] text-gray-400">Configure identity and permissions</p>
+                                        </div>
+                                        {newMemberEmail && (
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setNewMemberEmail('');
+                                                    setNewMemberName('');
+                                                    setNewMemberPassword('');
+                                                    setPermissions([]);
+                                                    setModuleAccess({});
+                                                }}
+                                                className="text-[10px] font-black text-brand-dark hover:opacity-70 uppercase bg-white border border-gray-200 px-2.5 py-1.5 rounded-lg shadow-sm active:scale-95 transition-all"
+                                            >
+                                                + New Member
+                                            </button>
+                                        )}
+                                    </div>
+                                    <div className="flex-1 overflow-y-auto p-6 h-[480px]">
+                                        <form onSubmit={handleAddMember} className="space-y-5">
+                                            <div className="space-y-4">
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div className="space-y-2">
+                                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">Email Address</label>
+                                                        <input
+                                                            type="email"
+                                                            required
+                                                            value={newMemberEmail}
+                                                            onChange={e => setNewMemberEmail(e.target.value)}
+                                                            className="w-full px-4 py-3 rounded-2xl border-[3px] border-gray-100 focus:border-brand-dark outline-none font-bold text-sm bg-gray-50/30 transition-all placeholder:text-gray-300"
+                                                            placeholder="staff@cafe.com"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">Display Name</label>
+                                                        <input
+                                                            type="text"
+                                                            required
+                                                            value={newMemberName}
+                                                            onChange={e => setNewMemberName(e.target.value)}
+                                                            className="w-full px-4 py-3 rounded-2xl border-[3px] border-gray-100 focus:border-brand-dark outline-none font-bold text-sm bg-gray-50/30 transition-all placeholder:text-gray-300"
+                                                            placeholder="Jane Doe"
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div className="space-y-2">
+                                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">Password</label>
+                                                        <input
+                                                            type="password"
+                                                            required
+                                                            value={newMemberPassword}
+                                                            onChange={e => setNewMemberPassword(e.target.value)}
+                                                            className="w-full px-4 py-3 rounded-2xl border-[3px] border-gray-100 focus:border-brand-dark outline-none font-bold text-sm bg-gray-50/30 transition-all placeholder:text-gray-300"
+                                                            placeholder="••••••••"
+                                                            minLength={6}
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">Role</label>
+                                                        <select
+                                                            value={newMemberRole}
+                                                            onChange={e => setNewMemberRole(e.target.value)}
+                                                            className="w-full px-4 py-3 rounded-2xl border-[3px] border-gray-100 focus:border-brand-dark outline-none font-bold text-sm bg-gray-50/30 transition-all appearance-none cursor-pointer"
+                                                        >
+                                                            <option value="staff">Staff Member</option>
+                                                            <option value="owner">Admin Owner</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                {newMemberRole === 'staff' && (
+                                                    <div className="space-y-2 pt-2 border-t border-gray-100">
+                                                        <label className="text-xs font-bold text-gray-500 uppercase">
+                                                            Access Permissions
+                                                        </label>
+                                                        <div className="bg-gray-50/50 rounded-xl border border-gray-200 p-2">
+                                                            <PermissionEditor
+                                                                value={{ permissions, moduleAccess }}
+                                                                onChange={(val: any) => {
+                                                                    setPermissions(val.permissions);
+                                                                    setModuleAccess(val.moduleAccess);
+                                                                }}
+                                                                siteModules={selectedTenant.modules || {}}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                )}
+
+
+                                                <button
+                                                    type="submit"
+                                                    disabled={actionLoading}
+                                                    className="w-full py-2.5 bg-brand-dark text-white rounded-xl font-bold hover:bg-gray-800 transition-all shadow-md mt-2 flex items-center justify-center gap-2"
+                                                >
+                                                    {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : (teamMembers.some(m => m.email === newMemberEmail) ? 'Update Member' : 'Add to Team')}
+                                                </button>
+
+                                                <p className="text-[10px] text-gray-400 leading-tight">
+                                                    Creating a new identity and binding it to <strong>{selectedTenant.name} ({selectedTenant.id})</strong>.
+                                                </p>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
