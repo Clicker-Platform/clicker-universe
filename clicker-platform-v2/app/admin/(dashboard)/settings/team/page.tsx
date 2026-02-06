@@ -284,11 +284,13 @@ export default function TeamPage() {
                                         </span>
                                         {member.role !== 'owner' && member.permissions && member.permissions.length > 0 && (
                                             <div className="flex gap-1 flex-wrap justify-end max-w-[200px]">
-                                                {member.permissions.map(p => (
-                                                    <span key={p} className="text-[10px] px-1.5 py-0.5 bg-brand-green/20 text-brand-dark rounded font-medium capitalize truncate max-w-[100px]" title={formatPermission(p)}>
-                                                        {formatPermission(p)}
-                                                    </span>
-                                                ))}
+                                                {member.permissions
+                                                    .filter(p => siteModules[p] !== false) // Only show if module is NOT disabled (undefined allows core/static perms if any)
+                                                    .map(p => (
+                                                        <span key={p} className="text-[10px] px-1.5 py-0.5 bg-brand-green/20 text-brand-dark rounded font-medium capitalize truncate max-w-[100px]" title={formatPermission(p)}>
+                                                            {formatPermission(p)}
+                                                        </span>
+                                                    ))}
                                             </div>
                                         )}
                                     </div>

@@ -61,7 +61,7 @@ export function OrderTrackerProvider({ children, siteId }: { children: React.Rea
     // 3. Listen to Firestore for each active order
     useEffect(() => {
         // Wait for auth to be ready and siteId
-        if (!user || !siteId || activeOrderIds.length === 0) {
+        if (!user || !siteId || siteId === 'default' || siteId === 'pending' || activeOrderIds.length === 0) {
             setOrders([]);
             return;
         }

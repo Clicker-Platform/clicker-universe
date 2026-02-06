@@ -178,6 +178,12 @@ service cloud.firestore {
       match /leads/{leadId} {
         allow read, write: if isValidUser(siteId) && isModuleEnabled(siteId, 'sales-pipeline') && hasRole(siteId, ['owner', 'staff']);
       }
+      
+      // Sales Pipeline Config (Deep Match)
+      match /modules/sales_pipeline/{document=**} {
+         allow read: if isValidUser(siteId);
+         allow write: if isValidUser(siteId) && hasRole(siteId, ['owner']);
+      }
 
       // === STRICT NESTED MODULES ===
       
@@ -216,6 +222,12 @@ service cloud.firestore {
         allow read: if true;
         allow write: if hasSiteAccess(siteId);
       }
+      
+      // Catch-all for other reservation docs (like setup/config)
+      match /modules/reservation/{document=**} {
+         allow read: if true;
+         allow write: if hasSiteAccess(siteId);
+      }
 
       // 3. INVENTORY (Strictly Nested)
       match /modules/inventory/items/{itemId} {
@@ -239,6 +251,18 @@ service cloud.firestore {
       match /modules/membership/settings/{settingId} {
         allow read: if isValidUser(siteId) && isModuleEnabled(siteId, 'membership');
         allow write: if hasWritePermission(siteId, 'membership', 'settings');
+      }
+
+      // 5. AI SALES AGENT (Strictly Nested)
+      match /modules/ai_sales {
+        allow read: if true; // Public needs to read config (enabled/greeting)
+        allow write: if isValidUser(siteId) && hasRole(siteId, ['owner']);
+        
+        // Allow deep read for config/subcollections
+        match /{document=**} {
+             allow read: if isValidUser(siteId);
+             allow write: if isValidUser(siteId) && hasRole(siteId, ['owner']);
+        }
       }
 
       // Note: Generic "Catch-all" REMOVED to enforce strict modularity.

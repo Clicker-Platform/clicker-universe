@@ -5,7 +5,6 @@ import NextImage from 'next/image';
 import { useEffect, useState } from 'react';
 import { useCart } from '../cart-context';
 import { Plus, Search } from 'lucide-react';
-import { getInventory } from '@/lib/modules/inventory/api';
 import { InventoryItem } from '@/lib/modules/inventory/types';
 import { getMenuItems, getPOSSettings } from '@/lib/modules/byod_pos/api';
 import { POSItem } from '@/lib/modules/byod_pos/types';
@@ -62,6 +61,8 @@ export function MenuGrid({ initialItems, initialInventoryMap }: MenuGridProps) {
                     }
                 }
 
+                // Dynamic Import for Modularity
+                const { getInventory } = await import('@/lib/modules/inventory/api');
                 const inventoryItems = await getInventory(siteId);
 
                 const invById: Record<string, InventoryItem> = {};
@@ -143,17 +144,19 @@ export function MenuGrid({ initialItems, initialInventoryMap }: MenuGridProps) {
     useEffect(() => {
         if (!siteId) return;
 
-        getInventory(siteId).then(inv => {
-            const byLink: Record<string, InventoryItem> = {};
-            const byName: Record<string, InventoryItem> = {};
-            const byId: Record<string, InventoryItem> = {};
-            inv.forEach(i => {
-                byId[i.id] = i;
-                if (i.linkedPosItemId) byLink[i.linkedPosItemId] = i;
-                byName[i.name] = i;
+        import('@/lib/modules/inventory/api').then(({ getInventory }) => {
+            getInventory(siteId).then(inv => {
+                const byLink: Record<string, InventoryItem> = {};
+                const byName: Record<string, InventoryItem> = {};
+                const byId: Record<string, InventoryItem> = {};
+                inv.forEach(i => {
+                    byId[i.id] = i;
+                    if (i.linkedPosItemId) byLink[i.linkedPosItemId] = i;
+                    byName[i.name] = i;
+                });
+                setLookupMaps({ byLink, byName });
+                setInventoryById(byId);
             });
-            setLookupMaps({ byLink, byName });
-            setInventoryById(byId);
         });
     }, [siteId]);
 

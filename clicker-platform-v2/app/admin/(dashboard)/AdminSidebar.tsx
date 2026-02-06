@@ -4,11 +4,12 @@ import { useState, useEffect, useMemo } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link'; // Keep existing import usually
 import Image from 'next/image';
-import { LayoutDashboard, Link as LinkIcon, ShoppingBag, User, LogOut, Menu, X, Settings, Map as MapIcon, Palette, FileText, Inbox, Box, Zap, Calendar, List, Users } from 'lucide-react';
+import { LayoutDashboard, Link as LinkIcon, ShoppingBag, User, LogOut, Menu, X, Settings, Map as MapIcon, Palette, FileText, Inbox, Box, Zap, Calendar, List, Users, Globe } from 'lucide-react';
 import { collection, query, where, onSnapshot, doc } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase';
 import { signOut, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { subscribeToEnabledModules, MODULE_ICONS, getRouteIdFromPath } from '@/lib/modules/registry';
+import { STATIC_MODULE_DEFINITIONS } from '@/lib/modules/definitions';
 import { ModuleDefinition } from '@/lib/modules/types';
 import { useSite } from '@/lib/site-context';
 import { useUser } from '@/lib/user-context';
@@ -29,6 +30,8 @@ export function AdminSidebar() {
     const [unreadCount, setUnreadCount] = useState(0);
     const [modules, setModules] = useState<ModuleDefinition[]>([]);
     const [isFocusMode, setIsFocusMode] = useState(false);
+    const [isCollapsed, setIsCollapsed] = useState(false);
+    const [hoveredItem, setHoveredItem] = useState<{ label: string, top: number } | null>(null);
     const pathname = usePathname();
     const router = useRouter();
 
@@ -53,6 +56,11 @@ export function AdminSidebar() {
         if (savedFocus !== null) {
             setIsFocusMode(JSON.parse(savedFocus));
         }
+
+        const savedCollapsed = localStorage.getItem('sidebar_collapsed');
+        if (savedCollapsed !== null) {
+            setIsCollapsed(JSON.parse(savedCollapsed));
+        }
     }, []);
 
     // Save focus mode preference
@@ -60,6 +68,13 @@ export function AdminSidebar() {
         const newValue = !isFocusMode;
         setIsFocusMode(newValue);
         localStorage.setItem('admin_focus_mode', JSON.stringify(newValue));
+    };
+
+    // Toggle Sidebar Collapse
+    const toggleSidebarCollapse = () => {
+        const newValue = !isCollapsed;
+        setIsCollapsed(newValue);
+        localStorage.setItem('sidebar_collapsed', JSON.stringify(newValue));
     };
 
     // Get Site Context
@@ -71,7 +86,7 @@ export function AdminSidebar() {
         let unsubscribeSite: (() => void) | null = null;
         let unsubscribeSnapshot: (() => void) | null = null;
 
-        if (!siteId) return;
+        if (!siteId || siteId === 'default' || siteId === 'pending') return;
 
         // 1. Subscribe to Site Config for enabled modules
         try {
@@ -151,6 +166,9 @@ export function AdminSidebar() {
 
         // Filter core items based on permissions
         const coreItems = allCoreItems.filter(item => {
+            // HIDE LINKS (Per Request for Parity)
+            if (item.label === 'Links') return false;
+
             if (hasFullAccess) return true;
             if (item.permission === null) return true; // Always visible
             return userPermissions.includes(item.permission) || userPermissions.includes('biolink');
@@ -161,14 +179,36 @@ export function AdminSidebar() {
             // FILTER: Only show modules enabled for this site and globally
             if (!siteEnabledModules[m.id] && !siteEnabledModules[m.id as any]) return null;
 
-            const items = (m.adminRoutes || [])
+            // MERGE: Use Static Definitions for Strict Parity if available
+            const staticDef = STATIC_MODULE_DEFINITIONS[m.id];
+            const routes = staticDef?.adminRoutes || m.adminRoutes || [];
+
+            const items = routes
                 .filter(r => !r.hidden)
                 .filter(r => {
+                    // Check Permission if defined in static route
+                    // If no explicit permission in static route, fall back to basic access
+                    if (r.permission) {
+                        // Very basic check: does user have this permission string?
+                        // In Properti, 'manage_team' etc are roles. 
+                        // Here permissions are strings like 'pos_owner', 'pos_staff'.
+                        // We need a mapping or just check if userPermissions includes it?
+                        // For now, if r.permission is set, check it.
+                        // Properti uses specific helper functions like hasPosRole. 
+                        // V2 uses useUser().hasPermission() presumably.
+
+                        // Fix: r.permission (e.g. 'manage_team') might not match 'pos_owner'. 
+                        // Let's assume strict parity means using V2 permission strings.
+                        // But for now, let's just show them if hasFullAccess or if they have the specific permission.
+                        if (hasFullAccess) return true;
+                        return userPermissions.includes(r.permission as any);
+                    }
+
                     const routeId = getRouteIdFromPath(m.id, r.path);
                     return hasAccess(m.id, routeId);
                 })
                 .map(route => {
-                    // Universal POS Label Overrides
+                    // Universal POS Label Overrides (Applied in Static Defs, but keeping failsafe)
                     let label = route.label;
                     if (label === 'POS Menu') label = 'Catalog';
                     if (label === 'Kitchen View' || label === 'POS Orders' || label === 'Orders') label = 'POS Orders';
@@ -179,14 +219,6 @@ export function AdminSidebar() {
                         href: `${baseUrl}${route.path}`
                     };
                 });
-
-
-
-
-
-
-
-
 
             if (items.length === 0) return null;
 
@@ -204,10 +236,7 @@ export function AdminSidebar() {
             return moduleGroups;
         }
 
-        // --- Standard Grouping for Core Items ---
-
-        // Define groups and their matchers for Core Items
-        // Staff only sees module groups, not Workspace/Site&Content sections
+        // --- Standard Grouping for Core Items (PROPERTI MATCH) ---
         const groupsDef = hasFullAccess ? [
             {
                 title: 'Customer Engagement',
@@ -215,49 +244,46 @@ export function AdminSidebar() {
             },
             {
                 title: 'Workspace',
-                match: (item: NavItem) => ['Overview', 'Business', 'Profile', 'Appearance', 'Settings', 'Team'].includes(item.label)
+                match: (item: NavItem) => {
+                    // Remap Labels for matching
+                    const label = item.label === 'Settings' ? 'Website' : (item.label === 'Profile' ? 'My Account' : item.label);
+                    return ['Overview', 'Business', 'My Account', 'Appearance', 'Website'].includes(label);
+                }
             },
             {
                 title: 'Site & Content',
-                match: (item: NavItem) => ['Pages', 'Links', 'Forms Builder', 'Products'].includes(item.label)
+                match: (item: NavItem) => ['Pages', 'Forms Builder', 'Products'].includes(item.label)
             },
             {
-                title: 'Sales & Ops',
-                match: (item: NavItem) => false // Deprecated: POS/Bookings are now in Modules
+                title: 'Organization',
+                match: (item: NavItem) => ['Users', 'Team'].includes(item.label)
             }
-        ] : [
-            // Staff: Only show Overview if they have it (from coreItems filter)
-            // No group headers for staff - just their permitted modules
-        ];
+        ] : [];
 
-        // Assign core items to groups
+        // Assign core items to groups and REMAP LABELS for UI Parity
         const groups: SidebarGroup[] = groupsDef.map(g => ({
             title: g.title,
-            items: coreItems.filter(g.match) // Only filter from coreItems
+            items: coreItems.filter(item => {
+                // Check match against effective label
+                const label = item.label === 'Settings' ? 'Website' : (item.label === 'Profile' ? 'My Account' : item.label);
+                const effectiveLabel = label === 'Team' ? 'Users' : label;
+
+                if (g.title === 'Workspace' && ['Overview', 'Business', 'My Account', 'Appearance', 'Website'].includes(effectiveLabel)) return true;
+                if (g.title === 'Site & Content' && ['Pages', 'Forms Builder', 'Products'].includes(effectiveLabel)) return true;
+                if (g.title === 'Customer Engagement' && ['Inbox'].includes(effectiveLabel)) return true;
+                if (g.title === 'Organization' && ['Users'].includes(effectiveLabel)) return true;
+                return false;
+            }).map(item => {
+                // APPLY LABEL OVERRIDES
+                if (item.label === 'Settings') return { ...item, label: 'Website', icon: Globe }; // Globe icon for Website
+                if (item.label === 'Profile') return { ...item, label: 'My Account' };
+                if (item.label === 'Team') return { ...item, label: 'Users', icon: Users };
+                return item;
+            })
         }));
 
-        // Find matched items to handle "Other" if necessary (optional safeguard)
-        const matchedHrefs = new Set(groups.flatMap(g => g.items.map(i => i.href)));
-        const unmatchedCoreItems = coreItems.filter(i => !matchedHrefs.has(i.href));
-
-        if (unmatchedCoreItems.length > 0) {
-            // Add unmatched core items to 'Workspace' or new group
-            const workspace = groups.find(g => g.title === 'Workspace');
-            if (workspace) workspace.items.push(...unmatchedCoreItems);
-        }
-
-        // Add Module Groups BEFORE Settings/Workspace if desired, or at the top. 
-        // Logic: Core Site Content > Modules > Workspace/Settings
-
-        // Let's Insert Module Groups at the top, or after "Site & Content"
-        // Based on user request "Cluster menus... for easy navigation", usually strictly separating them is best.
-        // Let's prepend them to be prominent if they are the main business apps.
-        // Or append them. The previous code appended them. Let's prepend them for prominence as "Business Apps".
-
-        // Actually, typical Admin dashboards: Overview > Apps (Modules) > Configuration.
-        // Let's insert Module Groups after the first group (if it exists) or at the beginning?
-        // Let's just append them to the list like before, but as distinct groups.
-        groups.push(...moduleGroups); // Put modules AFTER core items
+        // Add Module Groups
+        groups.push(...moduleGroups);
 
         // Filter out empty groups
         return groups.filter(g => g.items.length > 0);
@@ -311,22 +337,23 @@ export function AdminSidebar() {
 
             {/* Sidebar */}
             <aside className={`
-                fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-gray-200 flex flex-col transition-transform duration-300 ease-in-out
-                md:relative md:translate-x-0
+                fixed inset-y-0 left-0 z-40 bg-white border-r border-gray-200 flex flex-col transition-all duration-300 ease-in-out
+                w-full md:sticky md:top-0 md:h-screen
                 ${sidebarOpen ? 'translate-x-0 shadow-xl' : '-translate-x-full shadow-none'}
+                ${isCollapsed ? 'md:w-24' : 'md:w-64'}
+                md:translate-x-0
             `}>
-                <div className="p-6 pb-2">
-                    <div className="flex items-center justify-between mb-8">
-                        <div className="flex items-center gap-3">
-                            <div className="relative w-10 h-10 flex items-center justify-center">
-                                <Image
-                                    src="/clicker_brand_logo.png"
-                                    alt="Clicker Logo"
-                                    width={40}
-                                    height={40}
-                                    className="object-contain"
-                                />
-                            </div>
+                <div className={`p-6 pb-2 flex items-center ${(isCollapsed && !sidebarOpen) ? 'justify-center' : 'justify-between'}`}>
+                    <div className="flex items-center gap-3">
+                        <div className="relative w-10 h-10 flex items-center justify-center shrink-0">
+                            <Image
+                                src="/clicker_brand_logo.png"
+                                alt="Clicker Logo"
+                                fill
+                                className="object-contain"
+                            />
+                        </div>
+                        {(!isCollapsed || sidebarOpen) && (
                             <div>
                                 <span className="font-black text-xl text-brand-dark block leading-none">Clicker</span>
                                 {modules.length > 0 && (
@@ -334,25 +361,30 @@ export function AdminSidebar() {
                                         onClick={toggleFocusMode}
                                         className="text-[10px] font-bold text-gray-400 hover:text-brand-green uppercase tracking-wider flex items-center gap-1 mt-1"
                                     >
-                                        {isFocusMode ? 'Focus Mode On' : 'Switch to Focus'}
+                                        {isFocusMode ? 'Focus On' : 'Focus Mode'}
                                         <Zap size={10} className={isFocusMode ? 'fill-brand-green text-brand-green' : ''} />
                                     </button>
                                 )}
                             </div>
-                        </div>
-                        {/* Close button for mobile */}
-                        <button onClick={() => setSidebarOpen(false)} className="md:hidden p-2 text-gray-400 hover:text-gray-600">
-                            <X size={24} />
-                        </button>
+                        )}
                     </div>
+                    {/* Close button for mobile */}
+                    <button onClick={() => setSidebarOpen(false)} className="md:hidden p-2 text-gray-400 hover:text-gray-600">
+                        <X size={24} />
+                    </button>
                 </div>
 
-                <nav className="flex-1 overflow-y-auto px-4 pb-4 space-y-6">
+                <nav className="flex-1 overflow-y-auto px-3 pb-4 space-y-6 scrollbar-hide">
                     {groupedNavItems.map((group) => (
-                        <div key={group.title}>
-                            <h3 className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-                                {group.title}
-                            </h3>
+                        <div key={group.title} className={(isCollapsed && !sidebarOpen) ? 'text-center' : ''}>
+                            {(!isCollapsed || sidebarOpen) && (
+                                <h3 className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 truncate">
+                                    {group.title}
+                                </h3>
+                            )}
+                            {(isCollapsed && !sidebarOpen) && (
+                                <div className="h-px bg-gray-100 my-2 mx-2"></div>
+                            )}
                             <div className="space-y-1">
                                 {group.items.map((item) => {
                                     const isActive = activeRoute?.href === item.href;
@@ -361,19 +393,32 @@ export function AdminSidebar() {
                                             key={item.href}
                                             href={item.href}
                                             onClick={() => setSidebarOpen(false)}
-                                            className={`flex items-center gap-3 px-4 py-2 rounded-xl font-bold transition-all justify-between text-sm ${isActive
+                                            onMouseEnter={(e) => {
+                                                if (isCollapsed && !sidebarOpen) {
+                                                    const rect = e.currentTarget.getBoundingClientRect();
+                                                    setHoveredItem({
+                                                        label: item.label,
+                                                        top: rect.top
+                                                    });
+                                                }
+                                            }}
+                                            onMouseLeave={() => setHoveredItem(null)}
+                                            className={`flex items-center gap-3 px-3 py-2 rounded-xl font-bold transition-all text-sm group relative ${isActive
                                                 ? 'bg-brand-dark text-brand-green shadow-sm'
                                                 : 'text-gray-500 hover:bg-gray-50 hover:text-brand-dark'
-                                                }`}
+                                                } ${(isCollapsed && !sidebarOpen) ? 'justify-center' : 'justify-between'}`}
                                         >
                                             <div className="flex items-center gap-3">
-                                                <item.icon size={18} className={isActive ? 'stroke-[2.5px]' : ''} />
-                                                {item.label}
+                                                <item.icon size={20} className={`shrink-0 ${isActive ? 'stroke-[2.5px]' : ''}`} />
+                                                {(!isCollapsed || sidebarOpen) && <span className="truncate">{item.label}</span>}
                                             </div>
-                                            {item.label === 'Inbox' && unreadCount > 0 && (
+                                            {(!isCollapsed || sidebarOpen) && item.label === 'Inbox' && unreadCount > 0 && (
                                                 <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full ${isActive ? 'bg-brand-green text-brand-dark' : 'bg-red-500 text-white'}`}>
                                                     {unreadCount}
                                                 </span>
+                                            )}
+                                            {(isCollapsed && !sidebarOpen) && item.label === 'Inbox' && unreadCount > 0 && (
+                                                <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
                                             )}
                                         </Link>
                                     );
@@ -382,20 +427,47 @@ export function AdminSidebar() {
                         </div>
                     ))}
 
-                    {/* Account Group */}
-                    <div>
-                        <h3 className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-                            Account
-                        </h3>
-                        <div className="space-y-1">
-                            <button
-                                onClick={handleLogout}
-                                className="w-full flex items-center gap-3 px-4 py-2 rounded-xl font-bold text-gray-500 hover:text-red-500 hover:bg-red-50 transition-colors text-sm"
-                            >
-                                <LogOut size={18} />
-                                Logout
-                            </button>
+                    {/* Custom Tooltip Portal */}
+                    {(isCollapsed && !sidebarOpen) && hoveredItem && (
+                        <div
+                            className="fixed left-24 z-[60] bg-gray-900 text-white text-sm font-bold px-3 py-1.5 rounded-lg shadow-xl animate-in fade-in slide-in-from-left-2 duration-150 pointer-events-none whitespace-nowrap"
+                            style={{ top: hoveredItem.top + 6 }}
+                        >
+                            {hoveredItem.label}
+                            <div className="absolute top-1/2 -left-1 -translate-y-1/2 border-4 border-transparent border-r-gray-900" />
                         </div>
+                    )}
+
+                    {/* Footer / Toggle Area */}
+                    <div className="p-3 border-t border-gray-100 bg-white">
+                        {/* Account Group - Condensed */}
+                        <button
+                            onClick={handleLogout}
+                            title="Logout"
+                            className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl font-bold text-gray-500 hover:text-red-500 hover:bg-red-50 transition-colors text-sm mb-2 ${(isCollapsed && !sidebarOpen) ? 'justify-center' : ''}`}
+                        >
+                            <LogOut size={20} className="shrink-0" />
+                            {(!isCollapsed || sidebarOpen) && <span>Logout</span>}
+                        </button>
+
+                        <button
+                            onClick={toggleSidebarCollapse}
+                            className="hidden md:flex w-full items-center justify-center p-2 text-gray-400 hover:bg-gray-50 rounded-lg transition-colors border-t border-dashed border-gray-200 mt-1"
+                        >
+                            {isCollapsed ? <Menu size={18} /> : (
+                                <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider">
+                                    <Menu size={16} /> <span className="truncate">Collapse Sidebar</span>
+                                </div>
+                            )}
+                        </button>
+
+                        {/* DEBUG INFO: TEMPORARY */}
+                        {!isCollapsed && (
+                            <div className="mt-2 p-2 bg-gray-50 rounded text-[10px] text-gray-400 font-mono break-all">
+                                <div>Site: {siteId || 'null'}</div>
+                                <div>Slug: {tenantSlug || 'null'}</div>
+                            </div>
+                        )}
                     </div>
                 </nav>
             </aside>

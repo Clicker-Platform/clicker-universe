@@ -18,33 +18,72 @@ export default function MemberListPage() {
     const [members, setMembers] = useState<Member[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [lastDoc, setLastDoc] = useState<any>(null); // QueryDocumentSnapshot
+    const [hasMore, setHasMore] = useState(true);
+    const [loadingMore, setLoadingMore] = useState(false);
 
     const { canEdit, checkAccess } = usePermission('membership', 'members');
 
+    // Unified Fetch Logic
     useEffect(() => {
         if (!siteId) return;
+        let isCancelled = false;
 
-        async function fetchMembers() {
+        async function loadInitialData() {
+            setLoading(true);
             try {
-                // MVP: Just fetch last 50. Real app needs pagination/search on server.
-                // Scoped to sites/{siteId}/members
-                const q = query(collection(db, 'sites', siteId, 'members'), orderBy('createdAt', 'desc'), limit(50));
-                const snapshot = await getDocs(q);
-                const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Member));
-                setMembers(data);
+                if (searchTerm.length >= 3) {
+                    // Import searchMembers from API (ensure it is exported)
+                    const { searchMembers } = await import('../api');
+                    const results = await searchMembers(siteId, searchTerm);
+                    if (!isCancelled) {
+                        setMembers(results);
+                        setHasMore(false); // Search result is finite list for now
+                    }
+                } else {
+                    // Default View (Paginated)
+                    // Import getPaginatedMembers from API
+                    const { getPaginatedMembers } = await import('../api');
+                    const { members: newMembers, lastVisible } = await getPaginatedMembers(siteId, null, 20);
+                    if (!isCancelled) {
+                        setMembers(newMembers);
+                        setLastDoc(lastVisible);
+                        setHasMore(!!lastVisible && newMembers.length === 20);
+                    }
+                }
             } catch (error) {
-                console.error("Error fetching members:", error);
+                console.error("Error loading members:", error);
             } finally {
-                setLoading(false);
+                if (!isCancelled) setLoading(false);
             }
         }
-        fetchMembers();
-    }, [siteId]);
 
-    const filteredMembers = members.filter(m =>
-        m.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        m.phoneNumber.includes(searchTerm)
-    );
+        const timer = setTimeout(() => {
+            loadInitialData();
+        }, 300); // 300ms debounce
+
+        return () => {
+            isCancelled = true;
+            clearTimeout(timer);
+        }
+    }, [siteId, searchTerm]);
+
+    async function loadMore() {
+        if (!lastDoc || loadingMore || !siteId) return;
+        setLoadingMore(true);
+        try {
+            const { getPaginatedMembers } = await import('../api');
+            const { members: newMembers, lastVisible } = await getPaginatedMembers(siteId, lastDoc, 20);
+            setMembers(prev => [...prev, ...newMembers]);
+            setLastDoc(lastVisible);
+            setHasMore(!!lastVisible && newMembers.length === 20);
+        } catch (error) {
+            console.error("Error loading more members:", error);
+            toast.error("Failed to load more members");
+        } finally {
+            setLoadingMore(false);
+        }
+    }
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [submitting, setSubmitting] = useState(false);
@@ -65,8 +104,16 @@ export default function MemberListPage() {
             });
             setIsModalOpen(false);
             setNewUser({ fullName: '', phoneNumber: '', email: '' });
-            // trigger refresh - simplest way for now is page reload or refetch
-            window.location.reload();
+
+            // Refresh logic: clear search term to trigger useEffect re-fetch
+            if (searchTerm) {
+                setSearchTerm('');
+            } else {
+                // If already empty, valid way to force reload is needed, or manual fetch.
+                // For now, simpler to reload page or toggle stricter state.
+                window.location.reload();
+            }
+            toast.success("Member registered successfully!");
         } catch (error) {
             console.error(error);
             toast.error("Failed to register member. Phone number might be duplicate.");
@@ -74,6 +121,9 @@ export default function MemberListPage() {
             setSubmitting(false);
         }
     }
+
+    // Filter logic is now server-side/search based, so we use 'members' directly
+    const filteredMembers = members;
 
     return (
         <div className="p-6">
@@ -114,55 +164,76 @@ export default function MemberListPage() {
                     {loading ? (
                         <div className="flex justify-center items-center h-64"><Loader2 className="animate-spin text-gray-400" /></div>
                     ) : (
-                        <table className="w-full text-left">
-                            <thead className="bg-gray-50 text-gray-500 font-bold text-xs uppercase tracking-wider sticky top-0 z-10">
-                                <tr>
-                                    <th className="p-4 border-b border-gray-100">Name</th>
-                                    <th className="p-4 border-b border-gray-100">Phone</th>
-                                    <th className="p-4 border-b border-gray-100">Email</th>
-                                    <th className="p-4 text-right border-b border-gray-100">Points</th>
-                                    <th className="p-4 text-right border-b border-gray-100">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100">
-                                {filteredMembers.length === 0 ? (
+                        <>
+                            <table className="w-full text-left">
+                                <thead className="bg-gray-50 text-gray-500 font-bold text-xs uppercase tracking-wider sticky top-0 z-10">
                                     <tr>
-                                        <td colSpan={5} className="p-12 text-center text-gray-400">
-                                            <div className="flex flex-col items-center gap-2">
-                                                <User size={32} className="opacity-20" />
-                                                <p>No members found.</p>
-                                            </div>
-                                        </td>
+                                        <th className="p-4 border-b border-gray-100">Name</th>
+                                        <th className="p-4 border-b border-gray-100">Phone</th>
+                                        <th className="p-4 border-b border-gray-100">Email</th>
+                                        <th className="p-4 text-right border-b border-gray-100">Points</th>
+                                        <th className="p-4 text-right border-b border-gray-100">Actions</th>
                                     </tr>
-                                ) : (
-                                    filteredMembers.map(member => (
-                                        <tr key={member.id} className="hover:bg-gray-50 transition group">
-                                            <td className="p-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-9 h-9 rounded-full bg-brand-dark/5 flex items-center justify-center text-brand-dark font-black text-sm border border-brand-dark/10">
-                                                        {member.fullName.charAt(0)}
-                                                    </div>
-                                                    <span className="font-bold text-gray-800 group-hover:text-brand-dark transition-colors">{member.fullName}</span>
+                                </thead>
+                                <tbody className="divide-y divide-gray-100">
+                                    {filteredMembers.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={5} className="p-12 text-center text-gray-400">
+                                                <div className="flex flex-col items-center gap-2">
+                                                    <User size={32} className="opacity-20" />
+                                                    <p>No members found.</p>
                                                 </div>
                                             </td>
-                                            <td className="p-4 text-gray-600 font-medium text-sm">{member.phoneNumber}</td>
-                                            <td className="p-4 text-gray-600 font-medium text-sm">{member.email}</td>
-                                            <td className="p-4 text-right font-black text-brand-dark text-sm">
-                                                {member.currentPoints.toLocaleString()}
-                                            </td>
-                                            <td className="p-4 text-right">
-                                                <Link
-                                                    href={`/admin/membership/details?id=${member.id}`}
-                                                    className="px-3 py-1.5 text-xs font-bold text-gray-600 hover:text-brand-dark bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors inline-block"
-                                                >
-                                                    View
-                                                </Link>
-                                            </td>
                                         </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
+                                    ) : (
+                                        filteredMembers.map(member => (
+                                            <tr key={member.id} className="hover:bg-gray-50 transition group">
+                                                <td className="p-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-9 h-9 rounded-full bg-brand-dark/5 flex items-center justify-center text-brand-dark font-black text-sm border border-brand-dark/10">
+                                                            {member.fullName.charAt(0)}
+                                                        </div>
+                                                        <span className="font-bold text-gray-800 group-hover:text-brand-dark transition-colors">{member.fullName}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="p-4 text-gray-600 font-medium text-sm">{member.phoneNumber}</td>
+                                                <td className="p-4 text-gray-600 font-medium text-sm">{member.email}</td>
+                                                <td className="p-4 text-right font-black text-brand-dark text-sm">
+                                                    {(member.currentPoints || 0).toLocaleString()}
+                                                </td>
+                                                <td className="p-4 text-right">
+                                                    <Link
+                                                        href={`${siteId ? `/${siteId}` : ''}/admin/membership/details?id=${member.id}`}
+                                                        className="px-3 py-1.5 text-xs font-bold text-gray-600 hover:text-brand-dark bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors inline-block"
+                                                    >
+                                                        View
+                                                    </Link>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+
+                            {/* Load More Trigger */}
+                            {hasMore && !loading && (
+                                <div className="p-4 flex justify-center border-t border-gray-100">
+                                    <button
+                                        onClick={loadMore}
+                                        disabled={loadingMore}
+                                        className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-brand-dark hover:bg-brand-dark/5 rounded-lg transition-colors disabled:opacity-50"
+                                    >
+                                        {loadingMore ? (
+                                            <Loader2 size={16} className="animate-spin" />
+                                        ) : (
+                                            // Make sure ChevronDown is imported
+                                            <span className="text-xl">▼</span>
+                                        )}
+                                        {loadingMore ? 'Loading members...' : 'Load More Members'}
+                                    </button>
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
 
@@ -176,28 +247,48 @@ export default function MemberListPage() {
                             <p>No members found.</p>
                         </div>
                     ) : (
-                        filteredMembers.map(member => (
-                            <Link
-                                key={member.id}
-                                href={`/admin/membership/details?id=${member.id}`}
-                                className="block bg-white p-4 rounded-2xl border border-gray-100 shadow-sm active:scale-[0.98] transition-transform"
-                            >
-                                <div className="flex items-center justify-between mb-2">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-brand-dark/5 flex items-center justify-center text-brand-dark font-black text-sm border border-brand-dark/10">
-                                            {member.fullName.charAt(0)}
+                        <>
+                            {filteredMembers.map(member => (
+                                <Link
+                                    key={member.id}
+                                    href={`${siteId ? `/${siteId}` : ''}/admin/membership/details?id=${member.id}`}
+                                    className="block bg-white p-4 rounded-2xl border border-gray-100 shadow-sm active:scale-[0.98] transition-transform"
+                                >
+                                    <div className="flex items-center justify-between mb-2">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-full bg-brand-dark/5 flex items-center justify-center text-brand-dark font-black text-sm border border-brand-dark/10">
+                                                {member.fullName.charAt(0)}
+                                            </div>
+                                            <div>
+                                                <h3 className="font-bold text-gray-900">{member.fullName}</h3>
+                                                <p className="text-xs text-gray-500 font-medium">{member.phoneNumber}</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <h3 className="font-bold text-gray-900">{member.fullName}</h3>
-                                            <p className="text-xs text-gray-500 font-medium">{member.phoneNumber}</p>
+                                        <div className="bg-brand-green/20 text-brand-dark px-2.5 py-1 rounded-lg text-xs font-black">
+                                            {(member.currentPoints || 0).toLocaleString()} pts
                                         </div>
                                     </div>
-                                    <div className="bg-brand-green/20 text-brand-dark px-2.5 py-1 rounded-lg text-xs font-black">
-                                        {member.currentPoints.toLocaleString()} pts
-                                    </div>
+                                </Link>
+                            ))}
+
+                            {/* Load More Trigger */}
+                            {hasMore && (
+                                <div className="pt-2 pb-4 flex justify-center">
+                                    <button
+                                        onClick={loadMore}
+                                        disabled={loadingMore}
+                                        className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-brand-dark bg-white border border-gray-200 shadow-sm hover:bg-gray-50 rounded-xl transition-all disabled:opacity-50 w-full justify-center"
+                                    >
+                                        {loadingMore ? (
+                                            <Loader2 size={16} className="animate-spin" />
+                                        ) : (
+                                            <span>▼</span>
+                                        )}
+                                        {loadingMore ? 'Loading...' : 'Load More'}
+                                    </button>
                                 </div>
-                            </Link>
-                        ))
+                            )}
+                        </>
                     )}
                 </div>
             </div>

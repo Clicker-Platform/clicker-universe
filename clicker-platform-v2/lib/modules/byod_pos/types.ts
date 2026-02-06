@@ -87,3 +87,11 @@ export interface POSItem {
     isActive?: boolean;
     variants?: ProductVariant[];
 }
+
+export interface POSStaffMember {
+    userId: string;
+    email: string;
+    name: string;
+    role: string;
+    assignedAt: string | Date;
+}

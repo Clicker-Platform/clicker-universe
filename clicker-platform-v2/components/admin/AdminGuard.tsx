@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, getDocs, limit } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { useSite } from '@/lib/site-context';
 import { Loader2, ShieldAlert } from 'lucide-react';
@@ -20,95 +20,93 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
     const { siteId } = useSite();
 
     useEffect(() => {
-        if (!siteId) return; // Wait for site context
-
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+            // 1. AUTHENTICATION CHECK
             if (!currentUser) {
-                // Not logged in, redirect to Auth Gateway
                 const gatewayUrl = process.env.NEXT_PUBLIC_AUTH_GATEWAY_URL || 'http://localhost:3000';
-                const returnPath = pathname || '/admin';
-                window.location.href = `${gatewayUrl}?redirect=${encodeURIComponent(returnPath)}`;
+                window.location.href = `${gatewayUrl}?redirect=${encodeURIComponent(pathname || '/admin')}`;
                 setLoading(false);
-            } else {
-                setUser(currentUser);
+                return;
+            }
+            setUser(currentUser);
 
-                // Verify RBAC for this Site
-                try {
-                    // Check if super admin (platform owner) - Optional/TODO
-                    // For now, strict site check
+            // 2. SITE CONTEXT CHECK
+            if (!siteId || siteId === 'default' || siteId === 'pending') {
+                console.warn('[AdminGuard] Invalid Site ID. Render "Missing Context" screen.');
+                setUnauthorized(true);
+                setLoading(false);
+                return;
+            }
 
-                    // 1. Try to find user in members subcollection
-                    const userDocRef = doc(db, 'sites', siteId, 'members', currentUser.uid);
-                    const userSnap = await getDoc(userDocRef);
+            // 3. AUTHORIZATION (RBAC) CHECK
+            try {
+                // Check Membership first (Optimized for most users)
+                const userDocRef = doc(db, 'sites', siteId, 'members', currentUser.uid);
+                const userSnap = await getDoc(userDocRef);
 
-                    if (userSnap.exists()) {
-                        const userData = userSnap.data();
-                        setRole(userData.role as Role);
-                        setUnauthorized(false);
-                    } else {
-                        // 2. If not found, check if user is the Owner of the site (via site metadata)
-                        const siteDocRef = doc(db, 'sites', siteId);
-                        const siteSnap = await getDoc(siteDocRef);
+                if (userSnap.exists()) {
+                    const userData = userSnap.data();
+                    setRole(userData.role as Role);
+                    setUnauthorized(false);
+                } else {
+                    // Check Ownership (Fallback for Owners not in members list yet)
+                    const siteDocRef = doc(db, 'sites', siteId);
+                    const siteSnap = await getDoc(siteDocRef);
 
-                        if (siteSnap.exists()) {
-                            const siteData = siteSnap.data();
-                            // Check ownerId OR ownerEmail (legacy seed data support)
-                            const isOwner = siteData.ownerId === currentUser.uid || siteData.ownerEmail === currentUser.email;
+                    if (siteSnap.exists()) {
+                        const siteData = siteSnap.data();
+                        const isOwner = siteData.ownerId === currentUser.uid ||
+                            siteData.ownerEmail === currentUser.email;
 
-                            if (isOwner) {
-                                setRole('owner'); // Implicit owner role
-                                setUnauthorized(false);
-                            } else {
-                                console.warn(`User ${currentUser.uid} is not a member or owner of site ${siteId}. Checking for pending access...`);
-
-                                // Auto-Join Check
-                                try {
-                                    const res = await fetch('/api/auth/check-access', {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({
-                                            uid: currentUser.uid,
-                                            email: currentUser.email,
-                                            siteId: siteId
-                                        })
-                                    });
-                                    const data = await res.json();
-
-                                    if (data.status === 'joined') {
-                                        console.log("Access granted automatically! Refreshing state...");
-                                        // Quick refresh
-                                        const newMemberSnap = await getDoc(userDocRef);
-                                        if (newMemberSnap.exists()) {
-                                            const newData = newMemberSnap.data();
-                                            setRole(newData.role as Role);
-                                            setUnauthorized(false);
-                                            return; // Exit here, state updated
-                                        }
-                                    } else {
-                                        console.warn("No pending access found.");
-                                    }
-                                } catch (accessError) {
-                                    console.error("Error checking access:", accessError);
-                                }
-
-                                setUnauthorized(true);
-                            }
+                        if (isOwner) {
+                            setRole('owner');
+                            setUnauthorized(false);
                         } else {
-                            console.warn(`Site ${siteId} not found`);
+                            // 4. AUTO-JOIN / PENDING LOGIC (Wait for API?)
+                            console.warn(`User ${currentUser.email} is not authorized for site ${siteId}`);
                             setUnauthorized(true);
                         }
+                    } else {
+                        console.error('Site document not found:', siteId);
+                        setUnauthorized(true);
                     }
-                } catch (error) {
-                    console.error("RBAC Check Failed:", error);
-                    setUnauthorized(true);
-                } finally {
-                    setLoading(false);
                 }
+            } catch (error) {
+                console.error("AdminGuard Permission Check Error:", error);
+                setUnauthorized(true);
+            } finally {
+                setLoading(false);
             }
         });
 
         return () => unsubscribe();
     }, [router, pathname, siteId]);
+
+    // Specific Error for Default Site
+    if ((siteId === 'default' || siteId === 'pending') && !loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
+                <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-xl border border-gray-100 text-center">
+                    <ShieldAlert className="w-16 h-16 text-brand-orange mx-auto mb-6" />
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Missing Tenant Context</h2>
+                    <p className="text-gray-500 mb-8">
+                        The application could not determine which site you are trying to access.
+                        This usually happens if you access <code>/admin</code> directly.
+                    </p>
+
+                    <div className="flex flex-col gap-3">
+                        <a href="/quattro/admin" className="px-6 py-3 bg-brand-dark text-white rounded-xl font-bold hover:bg-black transition-colors">
+                            Go to Demo Store (Quattro)
+                        </a>
+                        <p className="text-xs text-gray-400 mt-2">
+                            Current Site ID: {siteId}<br />
+                            User: {user?.email}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     if (loading) {
         return (

@@ -73,4 +73,5 @@ export const MODULE_COMPONENTS: Record<string, any> = {
         .then(mod => mod.ChatWidget)
     ),
     'ai_sales:AdminSettings': dynamic(() => import('@/lib/modules/ai-sales-agent/admin/AgentSettingsPage')),
+    'ai_sales:Dashboard': dynamic(() => import('@/lib/modules/ai-sales-agent/admin/AgentDashboard')),
 };

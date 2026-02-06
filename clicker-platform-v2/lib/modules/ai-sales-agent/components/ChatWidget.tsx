@@ -24,8 +24,8 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ siteId, moduleId, agentN
     useEffect(() => {
         if (!siteId) return;
 
-        // Use site-scoped path: sites/{siteId}/modules/ai-sales-agent
-        const unsub = onSnapshot(doc(db, 'sites', siteId, 'modules', 'ai-sales-agent'), (doc) => {
+        // Use site-scoped path: sites/{siteId}/modules/ai_sales
+        const unsub = onSnapshot(doc(db, 'sites', siteId, 'modules', 'ai_sales'), (doc) => {
             if (doc.exists()) {
                 setConfig(doc.data());
                 // Set initial greeting
@@ -115,7 +115,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ siteId, moduleId, agentN
                 <button
                     onClick={() => setIsOpen(true)}
                     className="
-                        hidden md:flex
+                        flex
                         fixed bottom-6 right-6 z-50
                         w-14 h-14 rounded-full
                         items-center justify-center

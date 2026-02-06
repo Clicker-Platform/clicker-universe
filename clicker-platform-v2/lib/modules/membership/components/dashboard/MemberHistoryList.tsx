@@ -5,8 +5,7 @@ import { getMemberHistory } from '../../api';
 import { LoyaltyTransaction } from '../../types';
 import { Calendar, CreditCard, ChevronRight } from 'lucide-react';
 
-import { generateReceiptHtml } from '@/lib/modules/byod_pos/receipt-generator';
-import { getOrder, getPOSSettings } from '@/lib/modules/byod_pos/api';
+// Types are fine
 import { POSOrder } from '@/lib/modules/byod_pos/types';
 import { FileText, X } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
@@ -34,6 +33,12 @@ export default function MemberHistoryList({ memberId }: MemberHistoryListProps) 
         if (!siteId) return;
         // Fetch order
         try {
+            // Dynamic Imports for Strict Modularity
+            const [{ getOrder, getPOSSettings }, { generateReceiptHtml }] = await Promise.all([
+                import('@/lib/modules/byod_pos/api'),
+                import('@/lib/modules/byod_pos/receipt-generator')
+            ]);
+
             const [order, settings] = await Promise.all([
                 getOrder(siteId, orderId),
                 getPOSSettings(siteId)

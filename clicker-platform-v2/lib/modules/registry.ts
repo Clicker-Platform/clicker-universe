@@ -22,6 +22,7 @@ import { db } from '@/lib/firebase';
 import { collection, query, where, onSnapshot, Unsubscribe } from 'firebase/firestore';
 import { PublicRouteDefinition, ModuleDefinition, AdminRoute } from './types';
 import { getDoc, getDocs, doc } from 'firebase/firestore';
+import { STATIC_MODULE_DEFINITIONS } from './definitions';
 
 export async function findModuleForRoute(path: string): Promise<{ module: ModuleDefinition, route: PublicRouteDefinition } | null> {
     try {
@@ -51,8 +52,14 @@ export async function findModuleForAdminRoute(path: string): Promise<{ module: M
 
     for (const doc of querySnapshot.docs) {
         const mod = { id: doc.id, ...doc.data() } as ModuleDefinition;
-        if (mod.adminRoutes) {
-            const route = mod.adminRoutes.find(r => r.path === path);
+
+        // MERGE: Use Static Definitions for Admin Routing
+        // This ensures routes defined in code (like /admin/pos/access) are found even if Firestore doesn't have them
+        const staticDef = STATIC_MODULE_DEFINITIONS[mod.id];
+        const adminRoutes = staticDef?.adminRoutes || mod.adminRoutes || [];
+
+        if (adminRoutes) {
+            const route = adminRoutes.find(r => r.path === path);
             if (route) {
                 return { module: mod, route };
             }

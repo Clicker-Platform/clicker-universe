@@ -35,8 +35,8 @@ async function fetchOrders(
     if (!siteId) return { orders: [], lastVisible: null };
 
     const constraints: QueryConstraint[] = [
-        where('createdAt', '>=', Timestamp.fromDate(start)),
-        where('createdAt', '<', Timestamp.fromDate(end)),
+        where('createdAt', '>=', Timestamp.fromDate((start && !isNaN(start.getTime())) ? start : new Date())),
+        where('createdAt', '<', Timestamp.fromDate((end && !isNaN(end.getTime())) ? end : new Date())),
         // STRICT: Only 'completed' (settled) orders as requested for Reports
         where('status', '==', 'completed'),
         orderBy('createdAt', 'desc')
@@ -196,8 +196,8 @@ export async function getReportStats(siteId: string, start: Date, end: Date): Pr
     // 1. Total Sales & Count (completed/ready/served)
     const validQuery = query(
         coll,
-        where('createdAt', '>=', Timestamp.fromDate(start)),
-        where('createdAt', '<', Timestamp.fromDate(end)),
+        where('createdAt', '>=', Timestamp.fromDate((start && !isNaN(start.getTime())) ? start : new Date())),
+        where('createdAt', '<', Timestamp.fromDate((end && !isNaN(end.getTime())) ? end : new Date())),
         where('status', '==', 'completed')
     );
 
@@ -213,8 +213,8 @@ export async function getReportStats(siteId: string, start: Date, end: Date): Pr
     // 2. Cancelled Stats
     const cancelledQuery = query(
         coll,
-        where('createdAt', '>=', Timestamp.fromDate(start)),
-        where('createdAt', '<', Timestamp.fromDate(end)),
+        where('createdAt', '>=', Timestamp.fromDate((start && !isNaN(start.getTime())) ? start : new Date())),
+        where('createdAt', '<', Timestamp.fromDate((end && !isNaN(end.getTime())) ? end : new Date())),
         where('status', '==', 'cancelled')
     );
 
@@ -232,8 +232,8 @@ export async function getReportStats(siteId: string, start: Date, end: Date): Pr
     await Promise.all(paymentMethods.map(async (method) => {
         const pQuery = query(
             coll,
-            where('createdAt', '>=', Timestamp.fromDate(start)),
-            where('createdAt', '<', Timestamp.fromDate(end)),
+            where('createdAt', '>=', Timestamp.fromDate((start && !isNaN(start.getTime())) ? start : new Date())),
+            where('createdAt', '<', Timestamp.fromDate((end && !isNaN(end.getTime())) ? end : new Date())),
             where('status', '==', 'completed'),
             where('paymentMethod', '==', method)
         );
@@ -261,8 +261,8 @@ export async function getItemsSales(siteId: string, start: Date, end: Date): Pro
     if (!siteId) return [];
     const q = query(
         collection(db, 'sites', siteId, ORDERS_COLLECTION),
-        where('createdAt', '>=', Timestamp.fromDate(start)),
-        where('createdAt', '<', Timestamp.fromDate(end)),
+        where('createdAt', '>=', Timestamp.fromDate((start && !isNaN(start.getTime())) ? start : new Date())),
+        where('createdAt', '<', Timestamp.fromDate((end && !isNaN(end.getTime())) ? end : new Date())),
         // STRICT: Only 'completed' (Paid) orders as requested
         where('status', '==', 'completed'),
         orderBy('createdAt', 'desc')

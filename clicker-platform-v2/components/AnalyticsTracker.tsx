@@ -1,18 +1,20 @@
 'use client';
 
 import { useAnalytics } from '@/hooks/useAnalytics';
+import { useSite } from '@/lib/site-context';
 import { useEffect, useRef } from 'react';
 
 export const AnalyticsTracker = () => {
     const { track } = useAnalytics();
+    const { siteId } = useSite();
     const trackedRef = useRef(false);
 
     useEffect(() => {
-        if (!trackedRef.current) {
-            track({ type: 'page_view' });
+        if (!trackedRef.current && siteId && siteId !== 'pending' && siteId !== 'default') {
+            track({ type: 'page_view', siteId });
             trackedRef.current = true;
         }
-    }, [track]);
+    }, [track, siteId]);
 
     return null;
 };

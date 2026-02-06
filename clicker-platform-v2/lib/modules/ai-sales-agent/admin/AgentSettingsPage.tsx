@@ -49,7 +49,7 @@ export default function AgentSettingsPage() {
     useEffect(() => {
         if (!siteId) return;
 
-        const unsub = onSnapshot(doc(db, 'sites', siteId, 'modules', 'ai-sales-agent'), (snap) => {
+        const unsub = onSnapshot(doc(db, 'sites', siteId, 'modules', 'ai_sales'), (snap) => {
             if (snap.exists()) {
                 setConfig({ ...DEFAULT_CONFIG, ...snap.data() } as AgentConfig);
             }
@@ -68,7 +68,7 @@ export default function AgentSettingsPage() {
 
         try {
             setSaving(true);
-            await setDoc(doc(db, 'sites', siteId, 'modules', 'ai-sales-agent'), config, { merge: true });
+            await setDoc(doc(db, 'sites', siteId, 'modules', 'ai_sales'), config, { merge: true });
             toast.success('Agent settings saved successfully');
         } catch (error) {
             console.error('Error saving settings:', error);
@@ -93,8 +93,9 @@ export default function AgentSettingsPage() {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-[400px]">
-                <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+            <div className="p-8 flex flex-col items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-orange mb-4"></div>
+                <p className="text-gray-500">Loading agent settings... ({siteId})</p>
             </div>
         );
     }

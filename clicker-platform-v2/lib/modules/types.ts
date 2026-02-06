@@ -4,6 +4,7 @@ export interface AdminRoute {
     icon?: string; // Key for the icon map
     componentKey?: string; // If set, handled by Dynamic Router
     hidden?: boolean; // If true, hide from sidebar
+    permission?: string; // Optional permission requirement (e.g. 'manage_team')
 }
 
 export interface PublicRouteDefinition {

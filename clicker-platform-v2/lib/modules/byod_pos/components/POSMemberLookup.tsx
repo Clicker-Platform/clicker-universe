@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Search, UserPlus, Check, Loader2 } from 'lucide-react';
-import { findMemberByPhone, findMemberByEmail, createMember } from '@/lib/modules/membership/api';
+// Types are fine
 import { Member } from '@/lib/modules/membership/types';
 import { toast } from 'sonner';
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
@@ -31,6 +31,9 @@ export function POSMemberLookup({ onMemberSelect, selectedMember, submitLabel = 
         if (!phone || phone.length < 3 || !siteId) return;
         setLoading(true);
         try {
+            // Dynamic Import for Strict Modularity
+            const { findMemberByPhone } = await import('@/lib/modules/membership/api');
+
             const member = await findMemberByPhone(siteId, phone);
             if (member) {
                 onMemberSelect(member);
@@ -54,6 +57,10 @@ export function POSMemberLookup({ onMemberSelect, selectedMember, submitLabel = 
         setLoading(true);
         try {
             if (!siteId) return;
+
+            // Dynamic Import for Strict Modularity
+            const { findMemberByPhone, findMemberByEmail, createMember } = await import('@/lib/modules/membership/api');
+
             // 1. Proactive Check for Duplicates
             const [existingPhone, existingEmail] = await Promise.all([
                 findMemberByPhone(siteId, regForm.phoneNumber),

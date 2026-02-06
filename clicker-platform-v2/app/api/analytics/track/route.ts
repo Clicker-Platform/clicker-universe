@@ -6,40 +6,43 @@ export async function POST(request: Request) {
     try {
         const body = await request.json();
         console.log('Analytics received body:', body); // Debug log
-        const { type, id } = body;
+        const { type, id, siteId: bodySiteId } = body;
 
-        if (!type) {
-            console.error('Missing type in analytics payload', body);
-            return NextResponse.json({ error: 'Missing type', debugBody: body }, { status: 400 });
+        // FIXED: Extract siteId from Body (preferred) or Headers
+        const siteId = bodySiteId || request.headers.get('x-site-id');
+
+        if (!siteId || siteId === 'default' || siteId === 'pending') {
+            console.warn('[Analytics] Skipped tracking: Invalid siteId', siteId);
+            return NextResponse.json({ error: 'Invalid site context' }, { status: 400 });
         }
 
         const batch = adminDb.batch();
 
-        // 1. Track Page Views (Global)
+        // 1. Track Page Views (Site Scoped)
         if (type === 'page_view') {
-            const statsRef = adminDb.collection('content').doc('siteStats');
+            const statsRef = adminDb.collection('sites').doc(siteId).collection('analytics').doc('siteStats');
             batch.set(statsRef, { pageViews: FieldValue.increment(1) }, { merge: true });
         }
 
         // 2. Track Link Clicks
         if (type === 'link_click' && id) {
-            const linkRef = adminDb.collection('links').doc(id);
+            const linkRef = adminDb.collection('sites').doc(siteId).collection('links').doc(id);
             // Increment local link click
             batch.update(linkRef, { clicks: FieldValue.increment(1) });
 
-            // Increment global click count
-            const statsRef = adminDb.collection('content').doc('siteStats');
+            // Increment site-level click count
+            const statsRef = adminDb.collection('sites').doc(siteId).collection('analytics').doc('siteStats');
             batch.set(statsRef, { totalClicks: FieldValue.increment(1) }, { merge: true });
         }
 
         // 3. Track Product Clicks
         if (type === 'product_click' && id) {
-            const productRef = adminDb.collection('products').doc(id);
+            const productRef = adminDb.collection('sites').doc(siteId).collection('products').doc(id);
             // Increment local product click
             batch.update(productRef, { clicks: FieldValue.increment(1) });
 
-            // Increment global click count
-            const statsRef = adminDb.collection('content').doc('siteStats');
+            // Increment site-level click count
+            const statsRef = adminDb.collection('sites').doc(siteId).collection('analytics').doc('siteStats');
             batch.set(statsRef, { totalClicks: FieldValue.increment(1) }, { merge: true });
         }
 

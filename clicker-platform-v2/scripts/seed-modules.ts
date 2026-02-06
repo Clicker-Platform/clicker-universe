@@ -113,6 +113,22 @@ const MODULES = [
             pointsName: 'Points',
             earningRatio: 1
         }
+    },
+    {
+        id: 'ai_sales',
+        displayName: 'AI Sales Agent',
+        description: 'Auto-reply agent for customer inquiries.',
+        icon: 'bot',
+        version: '1.0.0',
+        enabled: true,
+        adminRoutes: [
+            { path: '/admin/ai-sales', label: 'Dashboard', icon: 'layout-dashboard', componentKey: 'ai_sales:AdminSettings' },
+            { path: '/admin/ai-sales/settings', label: 'Settings', icon: 'settings', componentKey: 'ai_sales:AdminSettings' }
+        ],
+        publicRoutes: [],
+        blocks: [
+            { type: 'ai_chat_widget', label: 'Chat Widget', componentKey: 'ai_sales:ChatWidget' }
+        ]
     }
 ];
 

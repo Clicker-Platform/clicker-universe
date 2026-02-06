@@ -14,6 +14,30 @@ function logDebug(msg: string) {
 }
 
 export async function fetchPublicData(siteId: string, options: { includeProducts?: boolean } = { includeProducts: true }) {
+    if (!siteId || siteId === 'default' || siteId === 'pending') {
+        logDebug(`Skipping fetchPublicData for invalid siteId: ${siteId}`);
+        return {
+            profile: null,
+            links: [],
+            socialLinks: [],
+            products: [],
+            featuredProduct: null,
+            businessHours: initialBusinessHours,
+            contact: initialBusinessContact,
+            branches: [],
+            layoutStyle: 'classic',
+            templateId: 'classic',
+            footerText: '',
+            hideFooterContact: false,
+            showHeaderAddress: false,
+            homeBlockOrder: [],
+            hiddenBlockIds: [],
+            linkSettings: { sectionTitle: '', showOnHome: false },
+            productSettings: { galleryTitle: '', showSectionTitle: false, itemsToShow: 0 },
+            homepageSlug: undefined,
+            businessSchedule: initialBusinessHours.schedule
+        } as any;
+    }
     logDebug(`Fetching public data for siteId: ${siteId}`);
     // Execute all independent fetches in parallel with individual error handling
     const [
@@ -173,6 +197,7 @@ export async function fetchPublicData(siteId: string, options: { includeProducts
 }
 
 export async function fetchSiteSettings(siteId: string) {
+    if (!siteId || siteId === 'default' || siteId === 'pending') return null;
     const snap = await getDoc(doc(db, "sites", siteId, "content", "siteSettings"));
     if (snap.exists()) {
         return snap.data() as SiteSettings;

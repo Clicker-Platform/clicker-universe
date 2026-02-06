@@ -57,3 +57,11 @@ export interface MembershipSettings {
     // Derived/Runtime
     updatedAt?: Timestamp;
 }
+
+export interface MembershipStaffMember {
+    userId: string;
+    email: string;
+    name: string;
+    role: string;
+    assignedAt: string | Date;
+}

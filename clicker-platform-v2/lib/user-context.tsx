@@ -95,7 +95,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     };
 
     useEffect(() => {
-        if (!siteId || siteId === 'pending') {
+        if (!siteId || siteId === 'default' || siteId === 'pending') {
             setLoading(false);
             return;
         }

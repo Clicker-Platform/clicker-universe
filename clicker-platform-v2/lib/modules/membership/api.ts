@@ -12,16 +12,53 @@ import {
     Timestamp,
     serverTimestamp,
     runTransaction,
-    limit
+    limit,
+    startAfter,
+    QueryDocumentSnapshot,
+    arrayUnion,
+    arrayRemove,
+    deleteDoc
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Member, LoyaltyTransaction, MembershipSettings } from './types';
+import { Member, LoyaltyTransaction, MembershipSettings, MembershipStaffMember } from './types';
 
 // Collection References
 // Collection Suffixes
 export const MEMBERS_COLLECTION = 'modules/membership/members';
 export const TRANSACTIONS_COLLECTION = 'modules/membership/transactions';
 export const SETTINGS_DOC = 'modules/membership/settings/config';
+
+// --- Member Identity API ---
+
+// Standardized Pagination (Matches byod_pos/api.ts)
+export async function getPaginatedMembers(
+    siteId: string,
+    lastDoc: QueryDocumentSnapshot | null,
+    pageSize: number = 20
+): Promise<{ members: Member[], lastVisible: QueryDocumentSnapshot | null }> {
+    let q = query(
+        collection(db, 'sites', siteId, MEMBERS_COLLECTION),
+        orderBy('createdAt', 'desc'),
+        limit(pageSize)
+    );
+
+    if (lastDoc) {
+        q = query(
+            collection(db, 'sites', siteId, MEMBERS_COLLECTION),
+            orderBy('createdAt', 'desc'),
+            startAfter(lastDoc),
+            limit(pageSize)
+        );
+    }
+
+    const snapshot = await getDocs(q);
+    const members = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Member));
+
+    return {
+        members,
+        lastVisible: snapshot.docs[snapshot.docs.length - 1] || null
+    };
+}
 
 // --- Member Identity API ---
 
@@ -86,8 +123,8 @@ export async function searchMembers(siteId: string, term: string): Promise<Membe
 
     const nameQuery = query(
         collection(db, 'sites', siteId, MEMBERS_COLLECTION),
-        where('name', '>=', term),
-        where('name', '<=', term + '\uf8ff'),
+        where('fullName', '>=', term),
+        where('fullName', '<=', term + '\uf8ff'),
         limit(5)
     );
 
@@ -306,4 +343,66 @@ export async function updateMembershipSettings(siteId: string, settings: Partial
         ...settings,
         updatedAt: serverTimestamp()
     }, { merge: true });
+}
+
+/**
+ * Membership Staff / Permissions API
+ */
+
+export async function getMembershipStaff(siteId: string): Promise<MembershipStaffMember[]> {
+    const membersRef = collection(db, 'sites', siteId, 'members');
+    // Query for permissions OR role
+    const qPermissions = query(membersRef, where('permissions', 'array-contains', 'membership'));
+
+    // As with POS, we generally assume owners have access, but strictly speaking "permissions" array should handle it.
+    // However, legacy "owner" role often bypasses explicit arrays. Let's merge both.
+    const qOwner = query(membersRef, where('role', '==', 'owner'));
+
+    const [snapPerms, snapOwner] = await Promise.all([getDocs(qPermissions), getDocs(qOwner)]);
+
+    const staffMap = new Map<string, MembershipStaffMember>();
+
+    const processDoc = (docSnap: any, defaultRole: string = 'staff') => {
+        const data = docSnap.data();
+        if (!staffMap.has(docSnap.id)) {
+            staffMap.set(docSnap.id, {
+                userId: docSnap.id,
+                email: data.email || '',
+                name: data.displayName || data.name || 'Unknown',
+                role: data.role === 'owner' ? 'manager' : defaultRole,
+                assignedAt: data.joinedAt ? (data.joinedAt.toDate ? data.joinedAt.toDate() : new Date(data.joinedAt)) : new Date()
+            });
+        }
+    };
+
+    snapPerms.docs.forEach(d => processDoc(d));
+    snapOwner.docs.forEach(d => processDoc(d, 'manager'));
+
+    return Array.from(staffMap.values());
+}
+
+/**
+ * @deprecated Use Global Team Management (/admin/settings/team)
+ */
+export async function assignMembershipRole(siteId: string, email: string, role: string): Promise<void> {
+    console.warn("assignMembershipRole is deprecated. Use Global Team Management.");
+}
+
+/**
+ * @deprecated Use Global Team Management (/admin/settings/team)
+ */
+export async function removeMembershipRole(siteId: string, userId: string): Promise<void> {
+    console.warn("removeMembershipRole is deprecated. Use Global Team Management.");
+}
+
+export async function getMembershipRole(siteId: string, userId: string): Promise<string | null> {
+    const memberRef = doc(db, 'sites', siteId, 'members', userId);
+    const snap = await getDoc(memberRef);
+    if (snap.exists()) {
+        const data = snap.data();
+        if (data.role === 'owner') return 'manager';
+        if (data.permissions?.includes('membership')) return 'staff';
+        if (data.moduleAccess?.membership) return 'staff';
+    }
+    return null;
 }

@@ -80,7 +80,19 @@ export async function middleware(request: NextRequest) {
                 return NextResponse.redirect(`${gatewayUrl}?redirect=${encodeURIComponent(pathname)}`);
             }
 
-            // Set siteId from cookie (or 'pending' for login/claim pages)
+            // STRICT MULTI-TENANT REDIRECT:
+            // If we have an active site, but the URL is generic '/admin...', 
+            // Redirect to '/:siteId/admin...' to enforce tenant scoping.
+            // Exclude auth callbacks to prevent loops.
+            if (activeSite && !pathname.startsWith('/admin/auth/')) {
+                const tenantUrl = request.nextUrl.clone();
+                // Construct new path: /quattro/admin/dashboard
+                // Current: /admin/dashboard
+                tenantUrl.pathname = `/${activeSite}${pathname}`;
+                return NextResponse.redirect(tenantUrl);
+            }
+
+            // (Fallback: Should rarely reach here if redirect works, mainly for auth pages)
             requestHeaders.set('x-site-id', activeSite || 'pending');
         } else {
             // Other special routes (auth, member, etc.) - platform level
@@ -104,6 +116,22 @@ export async function middleware(request: NextRequest) {
         const requestHeaders = new Headers(request.headers);
         requestHeaders.set('x-tenant-slug', tenant);
         requestHeaders.set('x-site-id', tenant);
+
+        // DETECT TENANT ADMIN ROUTE (e.g. /quattro/admin/...)
+        // Rewrite to /admin/... so app/admin directory handles it
+        // but keep the tenant context in headers.
+        if (segments.length >= 2 && segments[1] === 'admin') {
+            // Remove 'quattro' from path: /quattro/admin/inbox -> /admin/inbox
+            const newPath = '/' + segments.slice(1).join('/');
+            const url = request.nextUrl.clone();
+            url.pathname = newPath;
+
+            return NextResponse.rewrite(url, {
+                request: {
+                    headers: requestHeaders,
+                },
+            });
+        }
 
         // Let Next.js routing handle the path normally
         // [tenant]/page.tsx will handle /{tenant}

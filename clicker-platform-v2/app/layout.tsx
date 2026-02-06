@@ -42,11 +42,15 @@ export default async function RootLayout({
 }>) {
   // 1. EXTRACT TENANT ID
   const headersList = await headers();
-  const siteId = headersList.get('x-site-id') || 'default';
+  // FIXED: No more 'default' fallback. Use 'pending' to indicate no tenant context.
+  // This forces explicit handling of "no site" states.
+  const siteId = headersList.get('x-site-id') || 'pending';
   const tenantSlug = headersList.get('x-tenant-slug') || undefined;
 
-  // 2. Fetch Settings
-  const settings = await fetchSiteSettings(siteId);
+  // 2. Fetch Settings (Only if we have a valid siteId)
+  const settings = (siteId && siteId !== 'pending' && siteId !== 'default')
+    ? await fetchSiteSettings(siteId)
+    : null;
 
   return (
     <html lang="id" className="notranslate" translate="no" suppressHydrationWarning>

@@ -15,10 +15,11 @@ import {
     startAfter,
     QueryDocumentSnapshot,
     runTransaction,
-    arrayUnion
+    arrayUnion,
+    arrayRemove
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { POSOrder, POSSettings, POSItem } from './types';
+import { POSOrder, POSSettings, POSItem, POSStaffMember } from './types';
 import { isModuleEnabled } from '@/lib/modules/registry';
 
 import { ORDERS_COLLECTION, SETTINGS_DOC } from './constants';
@@ -31,6 +32,8 @@ export { ORDERS_COLLECTION }; // Re-export for potential legacy consumers if nee
  * Limits to the last 100 orders to prevent performance issues.
  */
 export function subscribeToRecentOrders(siteId: string, callback: (orders: POSOrder[]) => void) {
+    if (!siteId || siteId === 'default' || siteId === 'pending') return () => { };
+
     const q = query(
         collection(db, 'sites', siteId, ORDERS_COLLECTION),
         orderBy('createdAt', 'desc'),
@@ -43,6 +46,13 @@ export function subscribeToRecentOrders(siteId: string, callback: (orders: POSOr
             ...doc.data()
         } as POSOrder));
         callback(orders);
+    }, (error) => {
+        if (error.code === 'permission-denied') {
+            console.warn("Cashier/Admin subscription permission denied. Ensure you are logged in as an admin or staff.");
+            // Optionally callback with empty list or handle gracefully
+        } else {
+            console.error("Error subscribing to recent orders:", error);
+        }
     });
 }
 
@@ -384,8 +394,8 @@ export async function confirmPayment(siteId: string, orderId: string, method: PO
  */
 
 export async function getPOSSettings(siteId: string): Promise<POSSettings> {
-    if (!siteId) {
-        console.warn("getPOSSettings called without siteId");
+    if (!siteId || siteId === 'default' || siteId === 'pending') {
+        console.warn("getPOSSettings called without valid siteId");
         return {
             mode: 'fast-checkout',
             paymentMethods: { cash: true, card: true, qris: true },
@@ -549,15 +559,92 @@ export async function cancelOrderItem(siteId: string, orderId: string, itemIndex
         });
     });
 
-    // Handle stock refund OUTSIDE the transaction for now to avoid complexity or just assume
-    // we should have done it. Since updateStock might be complex.
-    // Let's verify updateOrdering logic in api.ts regarding stock.
-    // cancelOrder uses updateStock awaiting it.
-    // But cancelOrder is NOT using runTransaction.
-    // Here we use runTransaction for atomicity of order update.
-    // We should probably handle stock separately or before.
-    // To be safe, let's fetch order first, do stock, then update?
-    // But then race conditions.
-    // Let's stick to simple: Update order. Then if success, update stock?
     // Or just copy logic from cancelOrder which gets data then refunds then deletes.
+}
+
+/**
+ * Staff / Permissions API
+ */
+
+export async function getPOSStaff(siteId: string): Promise<POSStaffMember[]> {
+    // 1. Query Global Site Members who have 'byod_pos' permission
+    // Note: This relies on the Global Users Page to save permissions into the `permissions` array or `moduleAccess.byod_pos`
+    // We check for 'permissions' array-contains 'byod_pos' OR via the new granular 'moduleAccess' if possible (but Firestore query limitations apply).
+    // Safest bet for now is relying on the 'permissions' array which PermissionEditor updates.
+
+    const membersRef = collection(db, 'sites', siteId, 'members');
+    // We want any member who has 'byod_pos' in their permissions array
+    const q = query(membersRef, where('permissions', 'array-contains', 'byod_pos'));
+
+    const snap = await getDocs(q);
+    const staff: POSStaffMember[] = [];
+
+    // Map global members to POSStaffMember
+    for (const docSnap of snap.docs) {
+        const data = docSnap.data();
+        const userId = docSnap.id;
+
+        // Note: Global members collection already has displayName, email etc replicated.
+        // No need to fetch from /users/ unless data is stale, but usually it's synced.
+        // If 'displayName' is missing in site members, we fallback to 'Unknown'
+
+        staff.push({
+            userId,
+            email: data.email || '',
+            name: data.displayName || data.name || 'Unknown',
+            role: data.role === 'owner' ? 'manager' : 'staff', // Simple mapping
+            assignedAt: data.joinedAt ? (data.joinedAt.toDate ? data.joinedAt.toDate() : new Date(data.joinedAt)) : new Date()
+        });
+    }
+
+    // Also Include Owner? Usually Owners have all access.
+    // If owner is not in results (because they might not have explicit 'byod_pos' permission tag), we should fetch them?
+    // Owners usually have role='owner'.
+    // Let's do a secondary query or just rely on owners adding themselves to the module permissions?
+    // Better DX: Explicitly fetch owners too.
+    const qOwner = query(membersRef, where('role', '==', 'owner'));
+    const snapOwner = await getDocs(qOwner);
+    snapOwner.docs.forEach(docSnap => {
+        const data = docSnap.data();
+        if (!staff.find(s => s.userId === docSnap.id)) {
+            staff.push({
+                userId: docSnap.id,
+                email: data.email || '',
+                name: data.displayName || data.name || 'Owner',
+                role: 'manager',
+                assignedAt: new Date()
+            });
+        }
+    });
+
+    return staff;
+}
+
+/**
+ * @deprecated Use Global Team Management (/admin/settings/team)
+ */
+export async function assignPOSRole(siteId: string, email: string, role: string): Promise<void> {
+    console.warn("assignPOSRole is deprecated. Use Global Team Management.");
+}
+
+/**
+ * @deprecated Use Global Team Management (/admin/settings/team)
+ */
+export async function removePOSRole(siteId: string, userId: string): Promise<void> {
+    console.warn("removePOSRole is deprecated. Use Global Team Management.");
+}
+
+export async function getPOSRole(siteId: string, userId: string): Promise<string | null> {
+    // Check Global Member Role/Permissions
+    const memberRef = doc(db, 'sites', siteId, 'members', userId);
+    const snap = await getDoc(memberRef);
+
+    if (snap.exists()) {
+        const data = snap.data();
+        if (data.role === 'owner') return 'manager';
+        if (data.permissions?.includes('byod_pos')) return 'staff'; // Default to staff if they have permission
+        // Check granular if needed
+        if (data.moduleAccess?.byod_pos) return 'staff';
+    }
+    return null;
 }

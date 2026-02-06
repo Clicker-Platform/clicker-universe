@@ -7,8 +7,10 @@ type AnalyticsEvent =
     | { type: 'view_all_click'; id: string };
 
 export const useAnalytics = () => {
-    const track = useCallback(async (event: AnalyticsEvent) => {
+    const track = useCallback(async (event: AnalyticsEvent & { siteId: string }) => {
         if (typeof window === 'undefined') return;
+        if (!event.siteId || event.siteId === 'pending' || event.siteId === 'default') return;
+
         console.log('Track:', event);
         try {
             // Fire and forget - don't await to avoid blocking UI
