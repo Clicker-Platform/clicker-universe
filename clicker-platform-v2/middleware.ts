@@ -50,8 +50,9 @@ export async function middleware(request: NextRequest) {
     // DOMAIN & SUBDOMAIN PARSING
     // ===================================
     const hostname = request.headers.get('host') || '';
-    const baseDomain = 'clicker.id'; // Adjust for production/local env if needed via ENV
-    // const baseDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'clicker.id';
+    const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'clicker.id';
+    const isLocal = hostname.includes('localhost');
+    const protocol = isLocal ? 'http' : 'https';
 
     let currentHost = hostname;
     if (process.env.NODE_ENV === 'development') {
@@ -109,10 +110,9 @@ export async function middleware(request: NextRequest) {
             // Firebase Hosting only allows '__session' cookie
             const activeSite = request.cookies.get('__session')?.value;
 
-            // Auth Gateway URL (centralized login - masked domain)
-            // HARDCODED to ensure no leakage to .web.app domains via missing env vars at SSR runtime
-            const gatewayUrl = 'https://auth.clicker.id';
-            const baseDomain = 'clicker.id';
+            // Auth Gateway URL (centralized login)
+            const gatewayUrl = process.env.NEXT_PUBLIC_AUTH_GATEWAY_URL || 'https://auth.clicker.id';
+            const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'clicker.id';
 
             // Get the masked domain from Cloudflare headers
             // IMPORTANT: Firebase Hosting overwrites x-forwarded-host to .web.app domains
@@ -132,13 +132,13 @@ export async function middleware(request: NextRequest) {
             // Build full redirect URL with masked domain (not Firebase URL)
             const buildRedirectUrl = (path: string): string => {
                 if (forwardedHost) {
-                    // Use the actual masked domain from Cloudflare
-                    return `https://${forwardedHost}${path}`;
+                    // Use the actual masked domain
+                    return `${protocol}://${forwardedHost}${path}`;
                 } else if (tenantSlug) {
                     // Fallback: construct from tenant slug
-                    return `https://${tenantSlug}.${baseDomain}${path}`;
+                    return `${protocol}://${tenantSlug}.${baseDomain}${path}`;
                 }
-                // Last fallback: just the path (auth-gateway defaults to clicker.id)
+                // Last fallback: just the path
                 return path;
             };
 
@@ -161,8 +161,8 @@ export async function middleware(request: NextRequest) {
             // Redirect to 'https://:siteId.clicker.id/admin...' to enforce tenant subdomain.
             // Exclude auth callbacks to prevent loops.
             if (activeSite && !pathname.startsWith('/admin/auth/')) {
-                // Construct new URL: https://quattro.clicker.id/admin/dashboard
-                const newUrl = `https://${activeSite}.${baseDomain}${pathname}`;
+                // Construct new URL
+                const newUrl = `${protocol}://${activeSite}.${baseDomain}${pathname}`;
                 return NextResponse.redirect(newUrl);
             }
 
@@ -206,21 +206,21 @@ export async function middleware(request: NextRequest) {
         // Need auth check before allowing access
         if (segments.length >= 2 && segments[1] === 'admin') {
             const activeSite = request.cookies.get('__session')?.value;
-            const baseDomain = 'clicker.id';
+            const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'clicker.id';
             const hostname = request.headers.get('host') || '';
 
             // CANONICAL REDIRECT:
             // If accessing via root domain (clicker.id/quattro/admin),
             // Redirect to subdomain (quattro.clicker.id/admin).
-            if (hostname === baseDomain || hostname === `www.${baseDomain}`) {
+            // SKIP this on localhost if the user wants path-based routing (localhost:3000/demo/admin)
+            if (!isLocal && (hostname === baseDomain || hostname === `www.${baseDomain}`)) {
                 const cleanPath = '/' + segments.slice(1).join('/'); // /admin/...
                 const newUrl = `https://${tenant}.${baseDomain}${cleanPath}`;
                 return NextResponse.redirect(newUrl);
             }
 
-            // Auth Gateway URL (centralized login - masked domain)
-            // HARDCODED to ensure no leakage to web.app via Env Vars
-            const gatewayUrl = 'https://auth.clicker.id';
+            // Auth Gateway URL
+            const gatewayUrl = process.env.NEXT_PUBLIC_AUTH_GATEWAY_URL || 'https://auth.clicker.id';
 
             // Get the masked domain from Cloudflare headers
             // Prioritize custom header to avoid Firebase Hosting overwrites
@@ -236,10 +236,10 @@ export async function middleware(request: NextRequest) {
                 }
 
                 if (forwardedHost) {
-                    return `https://${forwardedHost}${targetPath}`;
+                    return `${protocol}://${forwardedHost}${targetPath}`;
                 } else {
-                    // Use tenant slug to construct masked domain
-                    return `https://${tenant}.${baseDomain}${targetPath}`;
+                    // Use tenant slug to construct domain
+                    return `${protocol}://${tenant}.${baseDomain}${targetPath}`;
                 }
             };
 

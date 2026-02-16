@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
+// @ts-ignore
 import { doc, getDoc, setDoc, collection, getDocs } from 'firebase/firestore';
 import { SiteSettings, NavigationItem } from '@/data/mockData';
 import { Save, Search, Globe, ImageIcon, Palette, GripVertical, DownloadCloud, ChevronDown, ChevronUp, Trash2, Link as LinkIcon, Plus } from 'lucide-react';
@@ -347,8 +348,8 @@ export default function AppearanceClient() {
                 getDocs(collection(db, 'sites', siteId, 'forms')),
                 getDocs(collection(db, 'sites', siteId, 'pages'))
             ]);
-            setForms(formsSnap.docs.map(d => ({ id: d.id, ...d.data() })));
-            setPages(pagesSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+            setForms(formsSnap.docs.map((d: any) => ({ id: d.id, ...d.data() })));
+            setPages(pagesSnap.docs.map((d: any) => ({ id: d.id, ...d.data() })));
         } catch (err) {
             console.error("Failed to load resources:", err);
         }
@@ -558,7 +559,7 @@ export default function AppearanceClient() {
 
     return (
         <div className="max-w-4xl">
-            <h1 className="text-3xl font-black text-brand-dark mb-8 uppercase flex items-center gap-3">
+            <h1 className="text-3xl font-black text-brand-dark mb-8 uppercase flex items-center gap-3 relative">
                 <Palette size={32} />
                 Appearance
             </h1>
@@ -574,38 +575,38 @@ export default function AppearanceClient() {
                     {/* Editor Form */}
                     <form onSubmit={handleSave} className={`space-y-6 bg-white p-8 rounded-3xl border-[3px] border-brand-dark shadow-sm h-fit transition-opacity duration-200 ${saving ? 'opacity-50 pointer-events-none' : ''}`}>
 
-                    <div className="flex gap-2 p-1 bg-gray-100 rounded-xl mb-6">
-                        <button
-                            type="button"
-                            onClick={() => setActiveTab('template')}
-                            className={`flex-1 py-2 px-4 rounded-lg font-bold text-sm transition-all ${activeTab === 'template'
-                                ? 'bg-white text-brand-dark shadow-sm'
-                                : 'text-gray-500 hover:text-gray-700'
-                                }`}
-                        >
-                            Template
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setActiveTab('layout')}
-                            className={`flex-1 py-2 px-4 rounded-lg font-bold text-sm transition-all ${activeTab === 'layout'
-                                ? 'bg-white text-brand-dark shadow-sm'
-                                : 'text-gray-500 hover:text-gray-700'
-                                }`}
-                        >
-                            Block Layout
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setActiveTab('navigation')}
-                            className={`flex-1 py-2 px-4 rounded-lg font-bold text-sm transition-all ${activeTab === 'navigation'
-                                ? 'bg-white text-brand-dark shadow-sm'
-                                : 'text-gray-500 hover:text-gray-700'
-                                }`}
-                        >
-                            Navigation
-                        </button>
-                    </div>
+                        <div className="flex gap-2 p-1 bg-gray-100 rounded-xl mb-6">
+                            <button
+                                type="button"
+                                onClick={() => setActiveTab('template')}
+                                className={`flex-1 py-2 px-4 rounded-lg font-bold text-sm transition-all ${activeTab === 'template'
+                                    ? 'bg-white text-brand-dark shadow-sm'
+                                    : 'text-gray-500 hover:text-gray-700'
+                                    }`}
+                            >
+                                Template
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setActiveTab('layout')}
+                                className={`flex-1 py-2 px-4 rounded-lg font-bold text-sm transition-all ${activeTab === 'layout'
+                                    ? 'bg-white text-brand-dark shadow-sm'
+                                    : 'text-gray-500 hover:text-gray-700'
+                                    }`}
+                            >
+                                Block Layout
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setActiveTab('navigation')}
+                                className={`flex-1 py-2 px-4 rounded-lg font-bold text-sm transition-all ${activeTab === 'navigation'
+                                    ? 'bg-white text-brand-dark shadow-sm'
+                                    : 'text-gray-500 hover:text-gray-700'
+                                    }`}
+                            >
+                                Navigation
+                            </button>
+                        </div>
 
                         {activeTab === 'template' && (
                             <div className="space-y-8 animate-fade-in">
@@ -916,72 +917,101 @@ export default function AppearanceClient() {
 
                         {/* TAB 3: Navigation / Menu */}
                         {activeTab === 'navigation' && (
-                            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                            <div className="space-y-8 animate-fade-in">
+                                {/* Top Navigation */}
                                 <div>
                                     <div className="flex items-center justify-between mb-4">
-                                        <h3 className="font-black text-brand-dark text-lg uppercase tracking-tight">Main Navigation</h3>
+                                        <label className="block text-brand-dark font-black text-xl">Top Navigation</label>
                                         <button
                                             type="button"
                                             onClick={() => handleAddNavItem('top')}
-                                            className="bg-brand-dark text-white p-2 rounded-xl hover:bg-brand-dark/90 text-sm font-bold flex items-center gap-2"
+                                            className="text-xs font-bold text-brand-dark bg-brand-green/20 hover:bg-brand-green px-3 py-1.5 rounded-lg transition-colors"
                                         >
-                                            <Plus size={16} /> Add Link
+                                            + Add Link
                                         </button>
                                     </div>
-                                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(e) => handleNavDragEnd(e, 'topNav')}>
-                                        <SortableContext items={(settings.navigation?.topNav || []).map(i => i.id)} strategy={verticalListSortingStrategy}>
-                                            {settings.navigation?.topNav?.map((item) => (
-                                                <SortableNavItem
-                                                    key={item.id}
-                                                    item={item}
-                                                    onRemove={() => handleRemoveNavItem('top', item.id)}
-                                                    onUpdate={(f, v) => handleUpdateNavItem('top', item.id, f, v)}
-                                                    forms={forms}
-                                                    pages={pages}
-                                                />
-                                            ))}
-                                        </SortableContext>
-                                    </DndContext>
+                                    <div className="space-y-3">
+                                        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(e) => handleNavDragEnd(e, 'topNav')}>
+                                            <SortableContext items={(settings.navigation?.topNav || []).map(i => i.id)} strategy={verticalListSortingStrategy}>
+                                                {(settings.navigation?.topNav || []).map((item: any) => (
+                                                    <SortableNavItem
+                                                        key={item.id}
+                                                        item={item}
+                                                        forms={forms}
+                                                        pages={pages}
+                                                        onRemove={() => handleRemoveNavItem('top', item.id)}
+                                                        onUpdate={(field, val) => handleUpdateNavItem('top', item.id, field, val)}
+                                                    />
+                                                ))}
+                                            </SortableContext>
+                                        </DndContext>
+                                        {(!settings.navigation?.topNav || settings.navigation.topNav.length === 0) && (
+                                            <div className="text-gray-400 text-sm italic text-center py-4 border-2 border-dashed border-gray-100 rounded-xl">
+                                                No links yet. Add one to get started.
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
 
-                                {/* NEW: Action Buttons (CTA) Restoration */}
-                                <div className="mt-8 bg-gray-50 border-2 border-gray-100 rounded-3xl p-6">
-                                    <div className="flex items-center gap-2 mb-4">
-                                        <h3 className="font-black text-brand-dark text-lg uppercase tracking-tight">Action Buttons (CTA)</h3>
-                                        <span className="text-[8px] bg-brand-green/20 text-brand-dark px-1.5 py-0.5 rounded font-black uppercase tracking-widest">Header Only</span>
-                                    </div>
+                                {/* NEW: Top Navigation Actions */}
+                                <div className="bg-white border-2 border-dashed border-gray-200 rounded-xl p-6">
+                                    <label className="block text-brand-dark font-black text-lg mb-4 flex items-center gap-2">
+                                        <span className="bg-brand-green/20 text-brand-dark p-1 rounded-md text-xs">NEW</span>
+                                        Action Buttons
+                                    </label>
+
+
 
                                     <div className="space-y-4">
+                                        {/* Enable CTA Toggle */}
                                         <label className="flex items-center gap-3 cursor-pointer">
                                             <div className={`
-                                                relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out 
-                                                ${settings.navigation?.topNavActions?.cta?.enabled ? 'bg-brand-dark' : 'bg-gray-200'}
-                                            `}>
+                                            relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none 
+                                            ${settings.navigation?.topNavActions?.cta?.enabled ? 'bg-brand-dark' : 'bg-gray-200'}
+                                        `}>
                                                 <input
                                                     type="checkbox"
                                                     className="sr-only"
                                                     checked={settings.navigation?.topNavActions?.cta?.enabled || false}
-                                                    onChange={(e) => setSettings({
-                                                        ...settings,
-                                                        navigation: {
-                                                            ...settings.navigation!,
-                                                            topNavActions: {
-                                                                ...settings.navigation?.topNavActions,
-                                                                showSearch: settings.navigation?.topNavActions?.showSearch || false,
-                                                                cta: { ...(settings.navigation?.topNavActions?.cta || { label: 'Book Now', linkValue: '', linkType: 'url' }), enabled: e.target.checked }
-                                                            }
-                                                        }
-                                                    })}
+                                                    onChange={(e) => {
+                                                        setSettings(prev => {
+                                                            const nav = prev.navigation || { topNav: [], bottomNav: [] };
+                                                            const currentCta = nav.topNavActions?.cta;
+                                                            return {
+                                                                ...prev,
+                                                                navigation: {
+                                                                    ...nav,
+                                                                    topNavActions: {
+                                                                        ...nav.topNavActions,
+                                                                        showSearch: nav.topNavActions?.showSearch || false,
+                                                                        cta: {
+                                                                            enabled: e.target.checked,
+                                                                            label: currentCta?.label || 'Order Now',
+                                                                            linkType: currentCta?.linkType || 'url',
+                                                                            linkValue: currentCta?.linkValue || '#',
+                                                                            formId: currentCta?.formId || null,
+                                                                            pageId: currentCta?.pageId || null
+                                                                        }
+                                                                    }
+                                                                }
+                                                            };
+                                                        })
+                                                    }}
                                                 />
-                                                <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${settings.navigation?.topNavActions?.cta?.enabled ? 'translate-x-5' : 'translate-x-0'}`} />
+                                                <span className={`
+                                                pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out
+                                                ${settings.navigation?.topNavActions?.cta?.enabled ? 'translate-x-5' : 'translate-x-0'}
+                                            `} />
                                             </div>
-                                            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Show CTA Button in Header</span>
+                                            <span className="font-bold text-gray-700 text-sm">Show CTA Button (e.g. Order)</span>
                                         </label>
 
+                                        {/* Conditional CTA Configuration */}
                                         {settings.navigation?.topNavActions?.cta?.enabled && (
-                                            <div className="grid grid-cols-2 gap-4 pt-2 animate-in slide-in-from-top-1 duration-200">
+                                            <div className="pl-14 space-y-3 animate-fade-in-up">
+                                                {/* Label Input */}
                                                 <div>
-                                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 block">Button Label</label>
+                                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Button Label</label>
                                                     <input
                                                         type="text"
                                                         value={settings.navigation?.topNavActions?.cta?.label || ''}
@@ -989,51 +1019,275 @@ export default function AppearanceClient() {
                                                             ...settings,
                                                             navigation: {
                                                                 ...settings.navigation!,
-                                                                    topNavActions: {
-                                                                        ...settings.navigation?.topNavActions,
-                                                                        showSearch: settings.navigation?.topNavActions?.showSearch || false,
-                                                                        cta: { ...settings.navigation?.topNavActions?.cta!, label: e.target.value }
-                                                                    }
+                                                                topNavActions: {
+                                                                    ...settings.navigation?.topNavActions!,
+                                                                    cta: { ...settings.navigation?.topNavActions?.cta!, label: e.target.value }
+                                                                }
                                                             }
                                                         })}
-                                                        className="w-full px-4 py-2 text-sm border-2 border-white bg-white rounded-xl focus:border-brand-dark focus:ring-0 font-bold"
-                                                        placeholder="e.g. Reservation"
+                                                        className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-brand-green/20 focus:border-brand-green outline-none"
+                                                        placeholder="e.g. Order Now"
                                                     />
                                                 </div>
-                                                <div>
-                                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 block">Target link</label>
-                                                    <input
-                                                        type="text"
-                                                        value={settings.navigation?.topNavActions?.cta?.linkValue || ''}
-                                                        onChange={(e) => setSettings({
-                                                            ...settings,
-                                                            navigation: {
-                                                                ...settings.navigation!,
+
+                                                {/* Type Selector  */}
+                                                <div className="grid grid-cols-3 gap-2">
+                                                    {(['url', 'form', 'page'] as const).map(t => (
+                                                        <button
+                                                            key={t}
+                                                            type="button"
+                                                            onClick={() => setSettings({
+                                                                ...settings,
+                                                                navigation: {
+                                                                    ...settings.navigation!,
                                                                     topNavActions: {
-                                                                        ...settings.navigation?.topNavActions,
-                                                                        showSearch: settings.navigation?.topNavActions?.showSearch || false,
-                                                                        cta: { ...settings.navigation?.topNavActions?.cta!, linkValue: e.target.value, linkType: 'url' }
+                                                                        ...settings.navigation?.topNavActions!,
+                                                                        cta: {
+                                                                            ...settings.navigation?.topNavActions?.cta!,
+                                                                            linkType: t,
+                                                                            linkValue: '', // Reset value on type change
+                                                                            formId: null,
+                                                                            pageId: null
+                                                                        }
                                                                     }
-                                                            }
-                                                        })}
-                                                        className="w-full px-4 py-2 text-[10px] font-mono border-2 border-white bg-white rounded-xl focus:border-brand-dark focus:ring-0"
-                                                        placeholder="/reservation"
-                                                    />
+                                                                }
+                                                            })}
+                                                            className={`
+                                                            px-2 py-1.5 text-xs font-bold uppercase rounded-lg border transition-all
+                                                            ${settings.navigation?.topNavActions?.cta?.linkType === t
+                                                                    ? 'bg-brand-dark text-white border-brand-dark shadow-sm'
+                                                                    : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'}
+                                                        `}
+                                                        >
+                                                            {t}
+                                                        </button>
+                                                    ))}
+                                                </div>
+
+                                                {/* Dynamic Value Input */}
+                                                <div>
+                                                    {settings.navigation?.topNavActions?.cta?.linkType === 'url' && (
+                                                        <input
+                                                            type="text"
+                                                            placeholder="https://..."
+                                                            value={settings.navigation?.topNavActions?.cta?.linkValue || ''}
+                                                            onChange={(e) => setSettings({
+                                                                ...settings,
+                                                                navigation: {
+                                                                    ...settings.navigation!,
+                                                                    topNavActions: {
+                                                                        ...settings.navigation?.topNavActions!,
+                                                                        cta: { ...settings.navigation?.topNavActions?.cta!, linkValue: e.target.value }
+                                                                    }
+                                                                }
+                                                            })}
+                                                            className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-brand-green/20 focus:border-brand-green outline-none"
+                                                        />
+                                                    )}
+
+                                                    {settings.navigation?.topNavActions?.cta?.linkType === 'form' && (
+                                                        <select
+                                                            value={settings.navigation?.topNavActions?.cta?.formId || ''}
+                                                            onChange={(e) => setSettings({
+                                                                ...settings,
+                                                                navigation: {
+                                                                    ...settings.navigation!,
+                                                                    topNavActions: {
+                                                                        ...settings.navigation?.topNavActions!,
+                                                                        cta: {
+                                                                            ...settings.navigation?.topNavActions?.cta!,
+                                                                            formId: e.target.value,
+                                                                            linkValue: e.target.value // Sync for consistency
+                                                                        }
+                                                                    }
+                                                                }
+                                                            })}
+                                                            className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-brand-green/20 focus:border-brand-green outline-none appearance-none"
+                                                        >
+                                                            <option value="">Select a Form...</option>
+                                                            {forms.map(f => <option key={f.id} value={f.id}>{f.title}</option>)}
+                                                        </select>
+                                                    )}
+
+                                                    {settings.navigation?.topNavActions?.cta?.linkType === 'page' && (
+                                                        <select
+                                                            value={settings.navigation?.topNavActions?.cta?.pageId || ''}
+                                                            onChange={(e) => {
+                                                                const p = pages.find(pg => pg.id === e.target.value);
+                                                                setSettings({
+                                                                    ...settings,
+                                                                    navigation: {
+                                                                        ...settings.navigation!,
+                                                                        topNavActions: {
+                                                                            ...settings.navigation?.topNavActions!,
+                                                                            cta: {
+                                                                                ...settings.navigation?.topNavActions?.cta!,
+                                                                                pageId: e.target.value,
+                                                                                linkValue: p ? `/${p.slug}` : ''
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                })
+                                                            }}
+                                                            className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-brand-green/20 focus:border-brand-green outline-none appearance-none"
+                                                        >
+                                                            <option value="">Select a Page...</option>
+                                                            {pages.map(p => <option key={p.id} value={p.id}>{p.title} (/{p.slug})</option>)}
+                                                        </select>
+                                                    )}
                                                 </div>
                                             </div>
                                         )}
                                     </div>
                                 </div>
 
-                                {/* Footer Text Restoration */}
-                                <div className="mt-8">
-                                    <label className="text-xs font-black text-brand-dark uppercase tracking-widest mb-2 block">Footer Text</label>
+                                <hr className="border-gray-100" />
+
+                                {/* Bottom Navigation */}
+                                <div>
+                                    <div className="flex items-center justify-between mb-4">
+                                        <label className="block text-brand-dark font-black text-xl">Bottom Navigation</label>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleAddNavItem('bottom')}
+                                            className="text-xs font-bold text-brand-dark bg-brand-green/20 hover:bg-brand-green px-3 py-1.5 rounded-lg transition-colors"
+                                        >
+                                            + Add Link
+                                        </button>
+                                    </div>
+                                    <p className="text-sm text-gray-500 mb-3">Ideally 3-5 items for mobile app bars.</p>
+                                    <div className="space-y-3">
+                                        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(e) => handleNavDragEnd(e, 'bottomNav')}>
+                                            <SortableContext items={(settings.navigation?.bottomNav || []).map(i => i.id)} strategy={verticalListSortingStrategy}>
+                                                {(settings.navigation?.bottomNav || []).map((item: any) => (
+                                                    <SortableNavItem
+                                                        key={item.id}
+                                                        item={item}
+                                                        forms={forms}
+                                                        pages={pages}
+                                                        onRemove={() => handleRemoveNavItem('bottom', item.id)}
+                                                        onUpdate={(field, val) => handleUpdateNavItem('bottom', item.id, field, val)}
+                                                    />
+                                                ))}
+                                            </SortableContext>
+                                        </DndContext>
+                                    </div>
+                                </div>
+
+                                <hr className="border-gray-100" />
+
+                                {/* Center Floating Action Button (FAB) */}
+                                <div className="bg-white rounded-xl border-2 border-gray-100 shadow-sm p-4">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <div>
+                                            <p className="font-bold text-brand-dark">Center FAB Button</p>
+                                            <p className="text-xs text-gray-500">Floating action button in bottom nav</p>
+                                        </div>
+                                        <label className="relative inline-flex items-center cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                className="sr-only peer"
+                                                checked={!!settings.navigation?.fab?.enabled}
+                                                onChange={(e) => {
+                                                    const isEnabled = e.target.checked;
+                                                    setSettings(prev => {
+                                                        const currentFab = prev.navigation?.fab;
+                                                        const newFab = currentFab
+                                                            ? { ...currentFab, enabled: isEnabled }
+                                                            : { id: 'fab', label: '', type: 'url' as const, value: '#', icon: 'PlusCircle', enabled: isEnabled };
+
+                                                        return {
+                                                            ...prev,
+                                                            navigation: {
+                                                                ...prev.navigation!,
+                                                                fab: newFab
+                                                            }
+                                                        };
+                                                    });
+                                                }}
+                                            />
+                                            <div className="w-11 h-6 bg-gray-200 peer-checked:bg-brand-dark rounded-full peer-focus:ring-2 peer-focus:ring-brand-green/20 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
+                                        </label>
+                                    </div>
+                                    {settings.navigation?.fab?.enabled && (
+                                        <div className="space-y-3 pt-3 border-t border-gray-100">
+                                            <div>
+                                                <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Link Type</label>
+                                                <div className="flex gap-2">
+                                                    {(['url', 'form', 'page'] as const).map(t => (
+                                                        <button
+                                                            key={t}
+                                                            type="button"
+                                                            onClick={() => setSettings(prev => ({
+                                                                ...prev,
+                                                                navigation: { ...prev.navigation!, fab: { ...prev.navigation!.fab!, type: t, formId: null, pageId: null } }
+                                                            }))}
+                                                            className={`px-3 py-1.5 text-xs font-bold rounded-lg border uppercase ${settings.navigation?.fab?.type === t ? 'bg-brand-dark text-white border-brand-dark' : 'bg-white text-gray-500 border-gray-200'}`}
+                                                        >
+                                                            {t}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Destination</label>
+                                                {settings.navigation?.fab?.type === 'form' ? (
+                                                    <select
+                                                        value={settings.navigation.fab.formId || ''}
+                                                        onChange={(e) => setSettings(prev => ({ ...prev, navigation: { ...prev.navigation!, fab: { ...prev.navigation!.fab!, formId: e.target.value } } }))}
+                                                        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white"
+                                                    >
+                                                        <option value="">Select Form...</option>
+                                                        {forms.map(f => <option key={f.id} value={f.id}>{f.title}</option>)}
+                                                    </select>
+                                                ) : settings.navigation?.fab?.type === 'page' ? (
+                                                    <select
+                                                        value={settings.navigation.fab.pageId || ''}
+                                                        onChange={(e) => {
+                                                            const p = pages.find(pg => pg.id === e.target.value);
+                                                            setSettings(prev => ({ ...prev, navigation: { ...prev.navigation!, fab: { ...prev.navigation!.fab!, pageId: e.target.value, value: p ? `/${p.slug}` : '#' } } }));
+                                                        }}
+                                                        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white"
+                                                    >
+                                                        <option value="">Select Page...</option>
+                                                        {pages.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
+                                                    </select>
+                                                ) : (
+                                                    <input
+                                                        type="text"
+                                                        value={settings.navigation?.fab?.value || ''}
+                                                        onChange={(e) => setSettings(prev => ({ ...prev, navigation: { ...prev.navigation!, fab: { ...prev.navigation!.fab!, value: e.target.value } } }))}
+                                                        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg"
+                                                        placeholder="https://example.com or /path"
+                                                    />
+                                                )}
+                                            </div>
+
+                                            <div>
+                                                <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Icon</label>
+                                                <NavIconPicker
+                                                    currentIcon={settings.navigation?.fab?.icon || 'PlusCircle'}
+                                                    onSelect={(icon) => setSettings(prev => ({
+                                                        ...prev,
+                                                        navigation: { ...prev.navigation!, fab: { ...prev.navigation!.fab!, icon } }
+                                                    }))}
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <hr className="border-gray-100" />
+
+                                <div>
+                                    <label className="block text-brand-dark font-bold mb-2">Footer Text</label>
                                     <input
                                         type="text"
                                         value={settings.footerText || ''}
                                         onChange={(e) => setSettings({ ...settings, footerText: e.target.value })}
-                                        className="w-full px-4 py-3 bg-white border-2 border-gray-100 rounded-2xl focus:border-brand-dark focus:ring-0 text-sm font-bold"
-                                        placeholder="e.g. © 2024 Your Business Name"
+                                        placeholder="© 2024 Your Company"
+                                        className="w-full px-4 py-3 rounded-xl border-[2px] border-gray-200 focus:border-brand-dark outline-none font-medium"
                                     />
                                 </div>
                             </div>
