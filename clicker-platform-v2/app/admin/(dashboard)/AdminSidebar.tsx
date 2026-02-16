@@ -181,8 +181,6 @@ export function AdminSidebar() {
                 })
                 .map(route => {
                     let label = route.label;
-                    if (label === 'POS Menu') label = 'Catalog';
-                    if (label === 'Kitchen View' || label === 'POS Orders' || label === 'Orders') label = 'POS Orders';
 
                     return {
                         icon: MODULE_ICONS[route.icon || ''] || MODULE_ICONS[m.icon] || Box,
