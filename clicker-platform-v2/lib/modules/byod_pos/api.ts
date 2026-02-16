@@ -201,7 +201,7 @@ export async function getMenuItems(
 
     return {
         items,
-        lastDoc: snapshot.docs[snapshot.docs.length - 1] || null
+        lastDoc: snapshot.docs.length === pageSize ? snapshot.docs[snapshot.docs.length - 1] : null
     };
 }
 

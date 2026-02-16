@@ -19,6 +19,7 @@ const CalendarPage = dynamic(() => import('@/lib/modules/reservation/admin/calen
 const ServicesPage = dynamic(() => import('@/lib/modules/reservation/admin/services/ServicesClient'));
 const StaffPage = dynamic(() => import('@/lib/modules/reservation/admin/staff/StaffClient'));
 const ReservationDashboard = dynamic(() => import('@/lib/modules/reservation/admin/page'));
+const AdminBookingWizard = dynamic(() => import('@/lib/modules/reservation/admin/components/AdminBookingWizard'));
 
 // Admin Pages (Inventory)
 const InventoryAdminPage = dynamic(() => import('@/lib/modules/inventory/admin/InventoryAdminPage'));
@@ -56,8 +57,11 @@ export const MODULE_COMPONENTS: Record<string, any> = {
     'reservation:BookNowWaitlist': ReservationWidget,
     'reservation:AdminBookings': CalendarPage,
     'reservation:AdminServices': ServicesPage,
+    'reservation:ServiceList': ServicesPage,
     'reservation:AdminStaff': StaffPage,
     'reservation:Dashboard': ReservationDashboard,
+    'reservation:AdminBookingWizard': AdminBookingWizard,
+    'reservation:Settings': CalendarPage,
     'reservation:UpcomingWidget': UpcomingReservationsWidget,
 
     // Inventory Module
@@ -67,6 +71,7 @@ export const MODULE_COMPONENTS: Record<string, any> = {
     'membership:MemberListPage': MemberListPage,
     'membership:MemberDetailsPage': MemberDetailsPage,
     'membership:Settings': MembershipSettingsPage,
+    'membership:LoginPage': dynamic(() => import('@/lib/modules/membership/components/public/LoginPage')),
 
     // AI Sales Agent Module
     'ai_sales:ChatWidget': dynamic(() => import('@/lib/modules/ai-sales-agent/components/ChatWidget')

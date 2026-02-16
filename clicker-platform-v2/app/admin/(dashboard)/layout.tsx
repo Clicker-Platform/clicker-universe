@@ -1,10 +1,14 @@
+import { headers } from 'next/headers';
 import { AdminSidebar } from './AdminSidebar';
 import AdminGuard from '@/components/admin/AdminGuard';
 import { UserProvider } from '@/lib/user-context';
 
 export const dynamic = 'force-dynamic';
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+    // Simplified: AdminLayout just wraps content. 
+    // Subdomain context is now handled globally in RootLayout -> SiteProvider.
+
     return (
         <AdminGuard>
             <UserProvider>

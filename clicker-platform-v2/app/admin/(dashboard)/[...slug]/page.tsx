@@ -27,12 +27,12 @@ export async function generateMetadata({ params }: Props) {
 }
 
 export default async function AdminCatchAllPage({ params, searchParams }: Props) {
-    const { slug } = await params;
+    const resolvedParams = await params;
+    const resolvedSearchParams = await searchParams;
+    const { slug } = resolvedParams;
     const path = getPath(slug);
-    console.log(`[AdminRouter] Lookup path: '${path}'`);
 
     const moduleMatch = await findModuleForAdminRoute(path);
-    console.log(`[AdminRouter] Match result:`, moduleMatch ? `Found (${moduleMatch.route.componentKey})` : 'Null');
 
     if (moduleMatch && moduleMatch.route.componentKey) {
         // Extract route ID for permission check
@@ -43,8 +43,8 @@ export default async function AdminCatchAllPage({ params, searchParams }: Props)
             <PermissionGuard moduleId={moduleMatch.module.id} routeId={routeId}>
                 <ModuleLoader
                     componentKey={moduleMatch.route.componentKey}
-                    params={params}
-                    searchParams={searchParams}
+                    params={resolvedParams}
+                    searchParams={resolvedSearchParams}
                 />
             </PermissionGuard>
         );

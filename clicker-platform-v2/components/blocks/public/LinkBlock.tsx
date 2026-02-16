@@ -5,8 +5,8 @@ import { LinkItem } from "@/data/mockData";
 import { LinkBlockClient } from './LinkBlockClient';
 
 export const LinkBlock = async ({ data, siteId }: { data: any, siteId?: string }) => {
-    const linkId = data.linkId;
-    if (!linkId || !siteId) return null;
+    if (!data || !siteId) return null;
+    const linkId = data?.linkId;
 
     let link: LinkItem | null = null;
     try {

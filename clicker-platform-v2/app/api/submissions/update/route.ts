@@ -10,13 +10,13 @@ export async function POST(request: Request) {
         // }
 
         const body = await request.json();
-        const { id, action } = body;
+        const { id, action, siteId } = body;
 
-        if (!id || !action) {
+        if (!id || !action || !siteId) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
-        const docRef = adminDb.collection('submissions').doc(id);
+        const docRef = adminDb.collection('sites').doc(siteId).collection('inbox').doc(id);
 
         if (action === 'delete') {
             await docRef.delete();

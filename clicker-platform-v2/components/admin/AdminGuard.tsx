@@ -23,7 +23,8 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
             // 1. AUTHENTICATION CHECK
             if (!currentUser) {
-                const gatewayUrl = process.env.NEXT_PUBLIC_AUTH_GATEWAY_URL || 'http://localhost:3000';
+                // HARDCODED: Ensure strict redirect to masked auth domain
+                const gatewayUrl = 'https://auth.clicker.id';
                 window.location.href = `${gatewayUrl}?redirect=${encodeURIComponent(pathname || '/admin')}`;
                 setLoading(false);
                 return;
@@ -138,7 +139,8 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
                             // Clear __session cookie
                             document.cookie = '__session=; path=/; max-age=0';
                             auth.signOut().then(() => {
-                                const gatewayUrl = process.env.NEXT_PUBLIC_AUTH_GATEWAY_URL || 'https://clicker-auth-gateway.web.app';
+                                // HARDCODED: Ensure strict redirect to masked auth domain
+                                const gatewayUrl = 'https://auth.clicker.id';
                                 window.location.href = `${gatewayUrl}/logout`;
                             });
                         }}

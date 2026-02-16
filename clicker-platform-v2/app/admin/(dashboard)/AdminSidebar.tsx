@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import Link from 'next/link'; // Keep existing import usually
+import Link from 'next/link';
 import Image from 'next/image';
 import { LayoutDashboard, Link as LinkIcon, ShoppingBag, User, LogOut, Menu, X, Settings, Map as MapIcon, Palette, FileText, Inbox, Box, Zap, Calendar, List, Users, Globe } from 'lucide-react';
 import { collection, query, where, onSnapshot, doc } from 'firebase/firestore';
@@ -25,6 +25,10 @@ interface SidebarGroup {
     items: NavItem[];
 }
 
+// interface AdminSidebarProps {
+//    isSubdomain?: boolean;
+// }
+
 export function AdminSidebar() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
@@ -34,23 +38,20 @@ export function AdminSidebar() {
     const [hoveredItem, setHoveredItem] = useState<{ label: string, top: number } | null>(null);
     const pathname = usePathname();
     const router = useRouter();
-
+    const { siteId, tenantSlug, isSubdomain } = useSite();
 
     const handleLogout = async () => {
         try {
-            // Clear __session cookie
             document.cookie = '__session=; path=/; max-age=0';
             await signOut(auth);
-
-            // Cross-Domain Logout: Redirect to Gateway Logout
-            const gatewayUrl = process.env.NEXT_PUBLIC_AUTH_GATEWAY_URL || 'https://clicker-auth-gateway.web.app';
+            // HARDCODED: Ensure strict redirect to masked auth domain
+            const gatewayUrl = 'https://auth.clicker.id';
             window.location.href = `${gatewayUrl}/logout`;
         } catch (error) {
             console.error('Logout failed:', error);
         }
     };
 
-    // Load focus mode preference
     useEffect(() => {
         const savedFocus = localStorage.getItem('admin_focus_mode');
         if (savedFocus !== null) {
@@ -63,22 +64,21 @@ export function AdminSidebar() {
         }
     }, []);
 
-    // Save focus mode preference
+
+
     const toggleFocusMode = () => {
         const newValue = !isFocusMode;
         setIsFocusMode(newValue);
         localStorage.setItem('admin_focus_mode', JSON.stringify(newValue));
     };
 
-    // Toggle Sidebar Collapse
     const toggleSidebarCollapse = () => {
         const newValue = !isCollapsed;
         setIsCollapsed(newValue);
         localStorage.setItem('sidebar_collapsed', JSON.stringify(newValue));
     };
 
-    // Get Site Context
-    const { siteId, tenantSlug } = useSite();
+
     const { permissions: userPermissions, isOwner, hasAccess } = useUser();
     const [siteEnabledModules, setSiteEnabledModules] = useState<Record<string, boolean>>({});
 
@@ -88,12 +88,10 @@ export function AdminSidebar() {
 
         if (!siteId || siteId === 'default' || siteId === 'pending') return;
 
-        // 1. Subscribe to Site Config for enabled modules
         try {
             unsubscribeSite = onSnapshot(doc(db, 'sites', siteId), (docSnap) => {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    // Merge legacy settings.modules and root modules
                     const legacy = data.settings?.modules || {};
                     const root = data.modules || {};
                     setSiteEnabledModules({ ...legacy, ...root });
@@ -103,9 +101,7 @@ export function AdminSidebar() {
             console.error("Error fetching site modules", e);
         }
 
-        // 2. Subscribe to auth state changes to ensure we have a user before listening to DB
         const unsubscribeAuth = onAuthStateChanged(auth, (user: FirebaseUser | null) => {
-            // ... (existing inbox logic) ...
             if (unsubscribeSnapshot) {
                 unsubscribeSnapshot();
                 unsubscribeSnapshot = null;
@@ -135,7 +131,6 @@ export function AdminSidebar() {
     }, [siteId]);
 
     useEffect(() => {
-        // Subscribe to enabled modules (Global Definitions)
         const unsubscribe = subscribeToEnabledModules((fetchedModules) => {
             setModules(fetchedModules);
         });
@@ -143,10 +138,10 @@ export function AdminSidebar() {
     }, []);
 
     const groupedNavItems = useMemo(() => {
-        const baseUrl = tenantSlug ? `/${tenantSlug}` : '';
+        // If on subdomain, URL is root-relative (/admin).
+        // If on root domain, URL is tenant-prefixed (/hi-clicker/admin).
+        const baseUrl = (tenantSlug && !isSubdomain) ? `/${tenantSlug}` : '';
 
-        // Define core items with permission requirements
-        // permission: null = always visible, string = requires that permission
         const allCoreItems = [
             { icon: LayoutDashboard, label: 'Overview', href: `${baseUrl}/admin`, permission: null },
             { icon: Inbox, label: 'Inbox', href: `${baseUrl}/admin/inbox`, permission: 'biolink' },
@@ -161,54 +156,30 @@ export function AdminSidebar() {
             { icon: Settings, label: 'Settings', href: `${baseUrl}/admin/settings`, permission: 'settings' },
         ];
 
-        // Check if user has full access (owner or '*' permission)
         const hasFullAccess = isOwner || userPermissions.includes('*');
 
-        // Filter core items based on permissions
         const coreItems = allCoreItems.filter(item => {
-            // HIDE LINKS (Per Request for Parity)
-            if (item.label === 'Links') return false;
-
             if (hasFullAccess) return true;
-            if (item.permission === null) return true; // Always visible
+            if (item.permission === null) return true;
             return userPermissions.includes(item.permission) || userPermissions.includes('biolink');
         });
 
-        // Create a group for EACH module
         const moduleGroups: SidebarGroup[] = modules.map(m => {
-            // FILTER: Only show modules enabled for this site and globally
-            if (!siteEnabledModules[m.id] && !siteEnabledModules[m.id as any]) return null;
-
-            // MERGE: Use Static Definitions for Strict Parity if available
+            if (!siteEnabledModules[m.id]) return null;
             const staticDef = STATIC_MODULE_DEFINITIONS[m.id];
             const routes = staticDef?.adminRoutes || m.adminRoutes || [];
 
             const items = routes
                 .filter(r => !r.hidden)
                 .filter(r => {
-                    // Check Permission if defined in static route
-                    // If no explicit permission in static route, fall back to basic access
                     if (r.permission) {
-                        // Very basic check: does user have this permission string?
-                        // In Properti, 'manage_team' etc are roles. 
-                        // Here permissions are strings like 'pos_owner', 'pos_staff'.
-                        // We need a mapping or just check if userPermissions includes it?
-                        // For now, if r.permission is set, check it.
-                        // Properti uses specific helper functions like hasPosRole. 
-                        // V2 uses useUser().hasPermission() presumably.
-
-                        // Fix: r.permission (e.g. 'manage_team') might not match 'pos_owner'. 
-                        // Let's assume strict parity means using V2 permission strings.
-                        // But for now, let's just show them if hasFullAccess or if they have the specific permission.
                         if (hasFullAccess) return true;
                         return userPermissions.includes(r.permission as any);
                     }
-
                     const routeId = getRouteIdFromPath(m.id, r.path);
                     return hasAccess(m.id, routeId);
                 })
                 .map(route => {
-                    // Universal POS Label Overrides (Applied in Static Defs, but keeping failsafe)
                     let label = route.label;
                     if (label === 'POS Menu') label = 'Catalog';
                     if (label === 'Kitchen View' || label === 'POS Orders' || label === 'Orders') label = 'POS Orders';
@@ -231,13 +202,11 @@ export function AdminSidebar() {
             };
         }).filter(Boolean) as SidebarGroup[];
 
-        // RESTORE FOCUS MODE: If Focus Mode is active, return ONLY module groups
         if (isFocusMode && moduleGroups.length > 0) {
             return moduleGroups;
         }
 
-        // --- Standard Grouping for Core Items (PROPERTI MATCH) ---
-        const groupsDef = hasFullAccess ? [
+        const groupsDef = [
             {
                 title: 'Customer Engagement',
                 match: (item: NavItem) => ['Inbox'].includes(item.label)
@@ -245,59 +214,40 @@ export function AdminSidebar() {
             {
                 title: 'Workspace',
                 match: (item: NavItem) => {
-                    // Remap Labels for matching
                     const label = item.label === 'Settings' ? 'Website' : (item.label === 'Profile' ? 'My Account' : item.label);
                     return ['Overview', 'Business', 'My Account', 'Appearance', 'Website'].includes(label);
                 }
             },
             {
                 title: 'Site & Content',
-                match: (item: NavItem) => ['Pages', 'Forms Builder', 'Products'].includes(item.label)
+                match: (item: NavItem) => ['Pages', 'Forms Builder', 'Products', 'Links'].includes(item.label)
             },
             {
                 title: 'Organization',
                 match: (item: NavItem) => ['Users', 'Team'].includes(item.label)
             }
-        ] : [];
+        ];
 
-        // Assign core items to groups and REMAP LABELS for UI Parity
         const groups: SidebarGroup[] = groupsDef.map(g => ({
             title: g.title,
-            items: coreItems.filter(item => {
-                // Check match against effective label
-                const label = item.label === 'Settings' ? 'Website' : (item.label === 'Profile' ? 'My Account' : item.label);
-                const effectiveLabel = label === 'Team' ? 'Users' : label;
-
-                if (g.title === 'Workspace' && ['Overview', 'Business', 'My Account', 'Appearance', 'Website'].includes(effectiveLabel)) return true;
-                if (g.title === 'Site & Content' && ['Pages', 'Forms Builder', 'Products'].includes(effectiveLabel)) return true;
-                if (g.title === 'Customer Engagement' && ['Inbox'].includes(effectiveLabel)) return true;
-                if (g.title === 'Organization' && ['Users'].includes(effectiveLabel)) return true;
-                return false;
-            }).map(item => {
-                // APPLY LABEL OVERRIDES
-                if (item.label === 'Settings') return { ...item, label: 'Website', icon: Globe }; // Globe icon for Website
+            items: coreItems.filter(item => g.match(item)).map(item => {
+                if (item.label === 'Settings') return { ...item, label: 'Website', icon: Globe };
                 if (item.label === 'Profile') return { ...item, label: 'My Account' };
                 if (item.label === 'Team') return { ...item, label: 'Users', icon: Users };
                 return item;
             })
         }));
 
-        // Add Module Groups
         groups.push(...moduleGroups);
-
-        // Filter out empty groups
         return groups.filter(g => g.items.length > 0);
-    }, [modules, isFocusMode, siteEnabledModules, tenantSlug, userPermissions, isOwner]);
+    }, [modules, isFocusMode, siteEnabledModules, tenantSlug, userPermissions, isOwner, hasAccess, isSubdomain]);
 
-
-    // Find the best matching route for active state
-    // We need to look across all groups
     const activeRoute = useMemo(() => {
         const allItems = groupedNavItems.flatMap(g => g.items);
         return allItems.reduce((best, item) => {
             if (
                 pathname === item.href ||
-                (pathname?.startsWith(item.href) && item.href !== '/admin') // Avoid /admin matching everything
+                (pathname?.startsWith(item.href) && item.href !== '/admin')
             ) {
                 if (!best || item.href.length > best.href.length) {
                     return item;
@@ -368,7 +318,6 @@ export function AdminSidebar() {
                             </div>
                         )}
                     </div>
-                    {/* Close button for mobile */}
                     <button onClick={() => setSidebarOpen(false)} className="md:hidden p-2 text-gray-400 hover:text-gray-600">
                         <X size={24} />
                     </button>
@@ -437,39 +386,36 @@ export function AdminSidebar() {
                             <div className="absolute top-1/2 -left-1 -translate-y-1/2 border-4 border-transparent border-r-gray-900" />
                         </div>
                     )}
+                </nav>
 
-                    {/* Footer / Toggle Area */}
-                    <div className="p-3 border-t border-gray-100 bg-white">
-                        {/* Account Group - Condensed */}
-                        <button
-                            onClick={handleLogout}
-                            title="Logout"
-                            className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl font-bold text-gray-500 hover:text-red-500 hover:bg-red-50 transition-colors text-sm mb-2 ${(isCollapsed && !sidebarOpen) ? 'justify-center' : ''}`}
-                        >
-                            <LogOut size={20} className="shrink-0" />
-                            {(!isCollapsed || sidebarOpen) && <span>Logout</span>}
-                        </button>
+                {/* Footer Area - FIXED BOTTOM */}
+                <div className="p-3 border-t border-gray-100 bg-white shrink-0">
+                    <button
+                        onClick={handleLogout}
+                        title="Logout"
+                        className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl font-bold text-gray-500 hover:text-red-500 hover:bg-red-50 transition-colors text-sm mb-2 ${(isCollapsed && !sidebarOpen) ? 'justify-center' : ''}`}
+                    >
+                        <LogOut size={20} className="shrink-0" />
+                        {(!isCollapsed || sidebarOpen) && <span>Logout</span>}
+                    </button>
 
-                        <button
-                            onClick={toggleSidebarCollapse}
-                            className="hidden md:flex w-full items-center justify-center p-2 text-gray-400 hover:bg-gray-50 rounded-lg transition-colors border-t border-dashed border-gray-200 mt-1"
-                        >
-                            {isCollapsed ? <Menu size={18} /> : (
-                                <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider">
-                                    <Menu size={16} /> <span className="truncate">Collapse Sidebar</span>
-                                </div>
-                            )}
-                        </button>
-
-                        {/* DEBUG INFO: TEMPORARY */}
-                        {!isCollapsed && (
-                            <div className="mt-2 p-2 bg-gray-50 rounded text-[10px] text-gray-400 font-mono break-all">
-                                <div>Site: {siteId || 'null'}</div>
-                                <div>Slug: {tenantSlug || 'null'}</div>
+                    <button
+                        onClick={toggleSidebarCollapse}
+                        className="hidden md:flex w-full items-center justify-center p-2 text-gray-400 hover:bg-gray-50 rounded-lg transition-colors border-t border-dashed border-gray-200 mt-1"
+                    >
+                        {isCollapsed ? <Menu size={18} /> : (
+                            <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider">
+                                <Menu size={16} /> <span className="truncate">Collapse Sidebar</span>
                             </div>
                         )}
-                    </div>
-                </nav>
+                    </button>
+
+                    {!isCollapsed && !sidebarOpen && (
+                        <div className="mt-2 p-2 bg-gray-50 rounded text-[10px] text-gray-400 font-mono break-all text-center">
+                            Site: {siteId} | [tenant]: {tenantSlug}
+                        </div>
+                    )}
+                </div>
             </aside>
         </>
     );

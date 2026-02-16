@@ -97,7 +97,7 @@ export const createTenant = functions.https.onCall(async (request) => {
 
         // 5. Automated Seed Data (Unified Logic)
         console.log(`[createTenant] Seeding initial data for ${siteId}...`);
-        await performSiteSeeding(db, siteId, ownerEmail); // Use normalized logic
+        await performSiteSeeding(db, siteId, ownerEmail, { name, subdomain }); // Use normalized logic
 
         // Seed specific modules if enabled
         if (modules) {

@@ -46,64 +46,70 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="p-8 w-full max-w-md mx-auto">
-            {step === 'INPUT' ? (
-                <>
-                    <div className="text-center mb-8">
-                        <div className="bg-indigo-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600">
-                            <Mail size={32} />
-                        </div>
-                        <h1 className="text-2xl font-bold text-gray-800 mb-2">Member Login</h1>
-                        <p className="text-gray-500">Enter your email to receive a secure login link.</p>
-                    </div>
+        <div className="min-h-screen flex items-center justify-center p-6 bg-brand-green">
+            <div className="w-full max-w-md bg-white p-8 md:p-12 rounded-[32px] border-[3px] border-brand-dark shadow-sticker relative flex flex-col items-center">
 
-                    <form onSubmit={handleSendLink} className="space-y-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                            <input
-                                type="email"
-                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition bg-gray-50 focus:bg-white"
-                                placeholder="you@example.com"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                            />
-                        </div>
-
-                        {error && (
-                            <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg text-center animate-in fade-in slide-in-from-top-1">
-                                {error}
+                {step === 'INPUT' ? (
+                    <div className="w-full">
+                        <div className="text-center mb-10">
+                            <div className="bg-brand-green w-20 h-20 rounded-3xl border-[3px] border-brand-dark shadow-sticker flex items-center justify-center mx-auto mb-10 transform -rotate-3">
+                                <Mail size={32} strokeWidth={2.5} className="text-brand-dark" />
                             </div>
-                        )}
+                            <h1 className="text-3xl font-black text-brand-dark mb-3 uppercase tracking-tight">Member Login</h1>
+                            <p className="text-brand-dark/70 text-base font-bold leading-tight max-w-[280px] mx-auto">
+                                Enter your email to receive a secure login link.
+                            </p>
+                        </div>
+
+                        <form onSubmit={handleSendLink} className="space-y-6">
+                            <div>
+                                <label className="block text-brand-dark text-xs font-black mb-2 ml-1 uppercase tracking-widest">Email Address</label>
+                                <input
+                                    type="email"
+                                    className="w-full px-5 py-4 rounded-2xl border-[3px] border-brand-dark focus:ring-4 focus:ring-brand-green/30 outline-none transition-all bg-white text-brand-dark placeholder:text-brand-dark/30 font-bold"
+                                    placeholder="you@example.com"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                />
+                            </div>
+
+                            {error && (
+                                <div className="bg-red-50 text-red-600 text-xs p-4 rounded-xl text-center font-black border-[2px] border-red-200 animate-in fade-in slide-in-from-top-1">
+                                    {error}
+                                </div>
+                            )}
+
+                            <button
+                                type="submit"
+                                disabled={isLoading}
+                                className="w-full bg-brand-dark hover:bg-brand-green hover:text-brand-dark text-white font-black py-5 rounded-2xl transition-all flex items-center justify-center gap-3 border-[3px] border-brand-dark shadow-sticker hover:shadow-sticker-hover active:translate-y-1 active:shadow-none disabled:opacity-70 disabled:cursor-not-allowed text-lg uppercase tracking-wider"
+                            >
+                                {isLoading ? <Loader2 className="animate-spin" size={24} /> : <>Send Link <ArrowRight size={22} strokeWidth={3} /></>}
+                            </button>
+                        </form>
+                    </div>
+                ) : (
+                    <div className="text-center animate-in fade-in zoom-in duration-500 w-full py-4">
+                        <div className="bg-brand-green w-24 h-24 rounded-full border-[3px] border-brand-dark shadow-sticker flex items-center justify-center mx-auto mb-10 text-brand-dark transform rotate-6">
+                            <CheckCircle2 size={48} strokeWidth={2.5} />
+                        </div>
+                        <h2 className="text-3xl font-black text-brand-dark mb-4 uppercase tracking-tight">Check Email</h2>
+                        <p className="text-brand-dark/70 text-base font-bold mb-10 leading-relaxed">
+                            We sent a login link to <br />
+                            <span className="font-black text-brand-dark border-b-4 border-brand-green px-1">{email}</span>
+                            <br /><span className="text-xs mt-4 block opacity-60 uppercase tracking-widest">Click the link to sign in instantly.</span>
+                        </p>
 
                         <button
-                            type="submit"
-                            disabled={isLoading}
-                            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-200 disabled:opacity-70 disabled:cursor-not-allowed"
+                            onClick={() => setStep('INPUT')}
+                            className="w-full py-4 rounded-2xl border-[3px] border-brand-dark text-brand-dark font-black text-sm hover:bg-brand-green transition-all shadow-sticker hover:shadow-sticker-hover active:translate-y-0.5 active:shadow-none uppercase tracking-widest"
                         >
-                            {isLoading ? <Loader2 className="animate-spin" /> : <>Send Login Link <ArrowRight size={18} /></>}
+                            Back to Start
                         </button>
-                    </form>
-                </>
-            ) : (
-                <div className="text-center animate-in fade-in zoom-in">
-                    <div className="bg-green-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 text-green-600">
-                        <CheckCircle2 size={40} />
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-800 mb-3">Check your Email</h2>
-                    <p className="text-gray-600 mb-6">
-                        We sent a login link to <span className="font-semibold text-gray-800">{email}</span>.
-                        <br />Click the link to sign in instantly.
-                    </p>
-
-                    <button
-                        onClick={() => setStep('INPUT')}
-                        className="text-indigo-600 font-medium hover:text-indigo-700 text-sm hover:underline"
-                    >
-                        Use a different email
-                    </button>
-                </div>
-            )}
+                )}
+            </div>
         </div>
     );
 }

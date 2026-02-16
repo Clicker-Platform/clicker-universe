@@ -1,141 +1,119 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 
-export const DEMO_SITE_DATA = {
+export const STARTER_TEMPLATE = {
     metadata: {
-        name: "Demo Store",
-        domain: "demo.localhost",
         isActive: true,
         settings: {
-            modules: { pos: true, inventory: true, forms: true }
+            modules: { pos: false, inventory: false, forms: false } // Default off
+        },
+        seo: {
+            noIndex: true
+        },
+        pixels: {
+            facebookPixelId: "",
+            googleAnalyticsId: "",
+            tiktokPixelId: ""
         }
     },
     settings: {
-        title: "SunnySide - Fresh Bakes Daily",
-        description: "Artisanal pastries, strong coffee, and good vibes.",
-        themeColor: "#B6FF2E",
-        accentColor: "#0E3B2E",
-        fontFamily: "Plus Jakarta Sans",
-        layoutStyle: "classic",
+        themeColor: "#000000",
+        accentColor: "#3b82f6",
+        fontFamily: "Inter",
+        layoutStyle: "clean",
     },
     profile: {
-        name: "SunnySide Cafe",
-        tagline: "Est. 2024",
-        description: "We serve the best coffee in town with a side of sunshine. Come visit us!",
+        tagline: "Your Quality Brand",
+        description: "Welcome to your new website. You can edit this description in the Admin Panel.",
         contact: {
-            email: "hello@sunnyside.demo",
-            phone: "+6281234567890",
-            address: "Jl. Sudirman No. 1, Jakarta"
+            email: "contact@example.com",
+            phone: "+62 000-0000-0000",
+            address: "Your Business Address"
         },
-        socialLinks: [
-            { platform: "instagram", url: "https://instagram.com/sunnyside", isActive: true },
-            { platform: "whatsapp", url: "https://wa.me/6281234567890", isActive: true }
-        ]
+        socialLinks: []
     },
     pages: {
         home: {
-            title: "Welcome to SunnySide",
+            title: "Home",
             slug: "home",
             isActive: true,
             blocks: [
                 {
                     id: "hero-1",
                     type: "hero",
-                    content: {
-                        headline: "Fresh Coffee & Pastries",
-                        subheadline: "Start your day with a smile.",
-                        buttonText: "Order Now",
-                        buttonLink: "/catalog"
+                    data: {
+                        title: "Powered by Clicker",
+                        subtitle: "Your new website is ready. This platform enables you to scale your business effortlessly.",
+                        buttonText: "Manage Content",
+                        buttonLink: "/admin",
+                        imageUrl: "/clicker_brand_logo.png"
                     },
                     order: 0
-                },
-                {
-                    id: "features-1",
-                    type: "features",
-                    content: {
-                        title: "Why Choose Us",
-                        items: [
-                            { title: "Organic Beans", description: "Directly sourced from farmers." },
-                            { title: "Freshly Baked", description: "Baked every morning at 5 AM." }
-                        ]
-                    },
-                    order: 1
                 }
             ]
-        },
-        about: {
-            title: "About Us",
-            slug: "about",
-            isActive: true,
-            content: "<p>We started in a small garage with a big dream: to serve the perfect cup of coffee. Today, we are proud to share our passion with you.</p>"
         }
     },
     products: [
         {
-            name: "Signature Latte",
-            price: 35000,
-            description: "Espresso with steamed milk and a thin layer of foam.",
-            category: "Coffee",
+            name: "Clicker Starter Pack",
+            price: 100000,
+            description: "A sample product demonstrating the Clicker e-commerce capability. Replace this with your own inventory.",
+            category: "General",
             isActive: true,
-            imageUrl: "https://images.unsplash.com/photo-1541167760496-1628856ab772?auto=format&fit=crop&q=80&w=1000"
-        },
-        {
-            name: "Almond Croissant",
-            price: 28000,
-            description: "Buttery, flaky croissant topped with toasted almonds.",
-            category: "Pastry",
-            isActive: true,
-            imageUrl: "https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&q=80&w=1000"
-        },
-        {
-            name: "Avocado Toast",
-            price: 45000,
-            description: "Sourdough bread topped with smashed avocado and poached egg.",
-            category: "Food",
-            isActive: true,
-            imageUrl: "https://images.unsplash.com/photo-1588137372308-15f75323ca8d?auto=format&fit=crop&q=80&w=1000"
+            imageUrl: "/clicker_brand_logo.png"
         }
     ],
     links: [
         {
-            title: "Official Website",
-            url: "https://example.com",
-            iconName: "Globe",
+            title: "Visit Admin Panel",
+            url: "https://clicker.id/admin",
+            iconName: "Settings",
             isActive: true,
             order: 0
-        },
-        {
-            title: "Check our Menu",
-            url: "/catalog",
-            iconName: "Coffee",
-            isActive: true,
-            order: 1
         }
     ]
 };
 
-export async function performSiteSeeding(db: admin.firestore.Firestore, siteId: string, ownerId?: string) {
-    console.log(`🌱 Seeding site logic for: ${siteId}`);
+export async function performSiteSeeding(db: admin.firestore.Firestore, siteId: string, ownerId?: string, overrides?: any) {
+    console.log(`🌱 Seeding STARTER template for: ${siteId}`);
     const siteRef = db.collection('sites').doc(siteId);
+
+    const siteName = overrides?.name || "New Site";
 
     // 1. Site Metadata
     const metadata = {
-        ...DEMO_SITE_DATA.metadata,
+        ...STARTER_TEMPLATE.metadata,
+        name: siteName, // Use actual name
+        domain: `${siteId}.clicker.id`, // Default domain
         id: siteId,
         ownerId: ownerId || 'system-seed',
-        updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        seo: {
+            ...STARTER_TEMPLATE.metadata.seo,
+            title: siteName,
+            description: `Official site for ${siteName}`
+        }
     };
     await siteRef.set(metadata, { merge: true });
 
     // 2. Site Settings
-    await siteRef.collection('content').doc('siteSettings').set(DEMO_SITE_DATA.settings);
+    const settings = {
+        ...STARTER_TEMPLATE.settings,
+        title: siteName,
+        description: `Official site for ${siteName}`
+    };
+    await siteRef.collection('content').doc('siteSettings').set(settings);
 
     // 3. Business Profile
-    await siteRef.collection('content').doc('profile').set(DEMO_SITE_DATA.profile);
+    const profile = {
+        ...STARTER_TEMPLATE.profile,
+        name: siteName
+    };
+    await siteRef.collection('content').doc('profile').set(profile);
 
     // 4. Pages
     const pagesBatch = db.batch();
-    for (const [key, pageData] of Object.entries(DEMO_SITE_DATA.pages)) {
+    for (const [key, pageData] of Object.entries(STARTER_TEMPLATE.pages)) {
         const pageRef = siteRef.collection('pages').doc(key);
         pagesBatch.set(pageRef, {
             ...pageData,
@@ -144,12 +122,21 @@ export async function performSiteSeeding(db: admin.firestore.Firestore, siteId: 
     }
     await pagesBatch.commit();
 
+    // 5. Products (Ensure empty collection exists or just skip)
+    // No need to delete existing if we assume new site, but for safety/re-seed:
+    const existingProducts = await siteRef.collection('products').limit(10).get();
+    if (!existingProducts.empty) {
+        // If re-seeding, maybe we shouldn't delete user data? 
+        // For now, let's strictly follow "clean slate" only for creation or explicit reset.
+        // If `seedSampleData` flag was passed, we might want logic here.
+        // But for "Clean Seed", we simply do nothing here.
+    }
+
     // 5. Products
     const productsBatch = db.batch();
-    const existingProducts = await siteRef.collection('products').get();
-    existingProducts.docs.forEach(doc => productsBatch.delete(doc.ref));
-
-    for (const product of DEMO_SITE_DATA.products) {
+    // Safety check: only seed if collection is empty to avoid dupes on re-run, or if we want to force seed.
+    // For creation, it's empty.
+    for (const product of STARTER_TEMPLATE.products) {
         const newProductRef = siteRef.collection('products').doc();
         productsBatch.set(newProductRef, {
             ...product,
@@ -160,10 +147,7 @@ export async function performSiteSeeding(db: admin.firestore.Firestore, siteId: 
 
     // 6. Links
     const linksBatch = db.batch();
-    const existingLinks = await siteRef.collection('links').get();
-    existingLinks.docs.forEach(doc => linksBatch.delete(doc.ref));
-
-    for (const link of DEMO_SITE_DATA.links) {
+    for (const link of STARTER_TEMPLATE.links) {
         const newLinkRef = siteRef.collection('links').doc();
         linksBatch.set(newLinkRef, {
             ...link,
@@ -172,6 +156,8 @@ export async function performSiteSeeding(db: admin.firestore.Firestore, siteId: 
     }
     await linksBatch.commit();
 }
+
+
 
 export const seedSiteData = functions.https.onCall(async (request) => {
     const { siteId, ownerId } = request.data;

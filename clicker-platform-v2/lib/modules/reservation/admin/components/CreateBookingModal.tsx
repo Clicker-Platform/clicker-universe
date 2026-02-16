@@ -1,7 +1,7 @@
 import React from 'react';
 import { X } from 'lucide-react';
 import { Service, Staff, TimeSlot } from '@/lib/modules/reservation/types';
-import { AdminBookingWizard } from './AdminBookingWizard';
+import AdminBookingWizard from './AdminBookingWizard';
 
 interface CreateBookingModalProps {
     onClose: () => void;

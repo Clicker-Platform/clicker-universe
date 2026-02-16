@@ -79,7 +79,7 @@ export default function ServicesClient({ initialServices = [] }: ServicesClientP
                 description: service.description,
                 durationMinutes: service.durationMinutes,
                 price: service.price,
-                isActive: service.isActive,
+                isActive: service.isActive ?? true,
                 category: service.category || ''
             });
         } else {

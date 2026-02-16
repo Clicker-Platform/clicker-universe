@@ -14,11 +14,12 @@ interface ProductsFormProps {
 import { useSite } from '@/lib/site-context';
 
 export const ProductsForm = ({ data, onChange }: ProductsFormProps) => {
+    const safeData = data || {};
     const { siteId } = useSite();
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const selectedIds: string[] = data.productIds || [];
+    const selectedIds: string[] = safeData.productIds || [];
 
     useEffect(() => {
         if (!siteId) return;
@@ -53,7 +54,7 @@ export const ProductsForm = ({ data, onChange }: ProductsFormProps) => {
         const newIds = selectedIds.includes(id)
             ? selectedIds.filter(pid => pid !== id)
             : [...selectedIds, id];
-        onChange({ ...data, productIds: newIds });
+        onChange({ ...safeData, productIds: newIds });
     };
 
     if (loading) return <div className="py-4 text-center"><Loader2 className="animate-spin mx-auto text-gray-400" size={20} /></div>;
@@ -64,8 +65,8 @@ export const ProductsForm = ({ data, onChange }: ProductsFormProps) => {
                 <label className="block text-xs font-bold text-gray-500 mb-1">Section Title (Optional)</label>
                 <input
                     type="text"
-                    value={data.title || ''}
-                    onChange={(e) => onChange({ ...data, title: e.target.value })}
+                    value={safeData.title || ''}
+                    onChange={(e) => onChange({ ...safeData, title: e.target.value })}
                     className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-brand-dark focus:ring-0"
                     placeholder="e.g. Featured Products"
                 />

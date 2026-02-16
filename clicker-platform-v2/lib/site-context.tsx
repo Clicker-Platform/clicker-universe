@@ -6,17 +6,18 @@ interface SiteContextType {
     siteId: string;
     tenantSlug?: string;
     isPending?: boolean;
+    isSubdomain: boolean;
 }
 
 const SiteContext = createContext<SiteContextType | undefined>(undefined);
 
-export function SiteProvider({ siteId, tenantSlug, children }: { siteId: string, tenantSlug?: string, children: ReactNode }) {
+export function SiteProvider({ siteId, tenantSlug, isSubdomain = false, children }: { siteId: string, tenantSlug?: string, isSubdomain?: boolean, children: ReactNode }) {
     // Derived state for easier consumption
     // We treat 'default' as pending too, just in case legacy code passes it.
     const isPending = !siteId || siteId === 'pending' || siteId === 'default';
 
     return (
-        <SiteContext.Provider value={{ siteId, tenantSlug, isPending }}>
+        <SiteContext.Provider value={{ siteId, tenantSlug, isPending, isSubdomain }}>
             {children}
         </SiteContext.Provider>
     );

@@ -14,7 +14,7 @@ import { createMember } from '../api';
 import { usePermission } from '@/lib/hooks/use-permission';
 
 export default function MemberListPage() {
-    const { siteId } = useSite();
+    const { siteId, tenantSlug } = useSite();
     const [members, setMembers] = useState<Member[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -203,7 +203,7 @@ export default function MemberListPage() {
                                                 </td>
                                                 <td className="p-4 text-right">
                                                     <Link
-                                                        href={`${siteId ? `/${siteId}` : ''}/admin/membership/details?id=${member.id}`}
+                                                        href={`${tenantSlug ? `/${tenantSlug}` : ''}/admin/membership/details?id=${member.id}`}
                                                         className="px-3 py-1.5 text-xs font-bold text-gray-600 hover:text-brand-dark bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors inline-block"
                                                     >
                                                         View

@@ -37,14 +37,47 @@ function AdminLoginForm() {
       const handoffToken = result.data.token;
 
       setStatus('Redirecting to dashboard...');
-      const platformUrl = window.location.hostname === 'localhost'
-        ? 'http://localhost:3010'
-        : 'https://clickerapps.web.app';
 
-      const nextPath = (redirectTo && redirectTo !== '/') ? redirectTo : '/admin';
+      // Determine the platform URL - prefer masked domains
+      let platformUrl: string = 'https://clicker.id'; // Default to masked root domain
+
+      if (window.location.hostname === 'localhost') {
+        platformUrl = 'http://localhost:3010';
+      } else {
+        // 1. Try to get domain from redirect param
+        if (redirectTo && redirectTo.startsWith('http')) {
+          try {
+            platformUrl = new URL(redirectTo).origin;
+          } catch {
+            // Invalid URL in redirect param
+          }
+        }
+
+        // 2. If no valid redirect domain, try to infer from tenant cookie
+        if (!platformUrl) {
+          // Check for tenant cookie set during login
+          const tenantMatch = document.cookie.match(/__tenant=([^;]+)/);
+          const tenantSlug = tenantMatch ? tenantMatch[1] : null;
+
+          if (tenantSlug) {
+            // Construct masked domain from tenant
+            platformUrl = `https://${tenantSlug}.clicker.id`;
+          } else {
+            // 3. Last resort fallback
+            // Prefer generic masked domain over Firebase URL
+            platformUrl = 'https://clicker.id';
+          }
+        }
+      }
+
+
+      const nextPath = (redirectTo && redirectTo !== '/')
+        ? (redirectTo.startsWith('http') ? new URL(redirectTo).pathname : redirectTo)
+        : '/admin';
       const finalUrl = `${platformUrl}/admin/auth/callback?token=${handoffToken}&next=${encodeURIComponent(nextPath)}`;
 
-      console.log(`🚀 Handing off to: ${finalUrl}`);
+
+      // console.log(`🚀 Handing off to: ${finalUrl}`); // SECURE: Don't log token
       window.location.href = finalUrl;
 
     } catch (err: any) {
@@ -56,6 +89,34 @@ function AdminLoginForm() {
 
   // Auto-Login Check
   useEffect(() => {
+    // Check if redirected back due to an error (e.g., no site membership)
+    const errorParam = searchParams.get('error');
+    if (errorParam) {
+      // User was redirected back with an error — clear stale auth session first
+      auth.signOut().then(() => {
+        // Clear any stale cookies
+        document.cookie = '__session=; path=/; max-age=0; SameSite=Lax; Secure';
+        document.cookie = '__session=; path=/; max-age=0; Domain=.clicker.id; SameSite=Lax; Secure';
+
+        const errorMessages: Record<string, string> = {
+          'no_membership': '⚠️ Akun ini tidak memiliki akses ke situs manapun. Silakan login dengan akun lain.',
+          'auth_failed': '⚠️ Autentikasi gagal. Silakan coba lagi.',
+        };
+        setError(errorMessages[errorParam] || `⚠️ Terjadi kesalahan: ${errorParam}`);
+        setIsChecking(false);
+      }).catch(() => {
+        setError('⚠️ Akun tidak memiliki akses. Silakan login dengan akun lain.');
+        setIsChecking(false);
+      });
+      // Clean the error param from URL
+      if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('error');
+        window.history.replaceState(null, '', url.toString());
+      }
+      return () => { }; // No-op cleanup
+    }
+
     // Check if user is already logged in
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {

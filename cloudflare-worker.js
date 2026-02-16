@@ -1,72 +1,199 @@
-// Cloudflare Worker for Subdomain → Path Rewriting
-// Deploy this to Cloudflare Workers & Pages
-// Route: *.clicker.id/*
+/**
+ * Cloudflare Worker - Multi-Tenant Subdomain Masking
+ * Version: v10 - Fixed redirect Location header masking + /admin root route
+ * 
+ * DEPLOYMENT:
+ * 1. Go to Cloudflare Dashboard → Workers & Pages
+ * 2. Create/Edit your worker
+ * 3. Paste this code
+ * 4. Deploy
+ * 
+ * DNS SETUP:
+ * - Add CNAME record: * → <worker-name>.<account>.workers.dev (Proxied)
+ * - Add CNAME record: @ → <worker-name>.<account>.workers.dev (Proxied)
+ */
+
+const HOSTS = {
+    marketing: 'clicker-universe.web.app',           // Landing/Marketing page
+    authGateway: 'clicker-auth-gateway.web.app',     // Auth Gateway
+    clickerPlatform: 'clickerapps.web.app',          // Main multi-tenant app
+    backyard: 'clicker-backyard-app.web.app',        // Backyard Admin
+};
+
+// Subdomains that should NOT be treated as tenant slugs
+const RESERVED_SUBDOMAINS = ['www', 'backyard', 'admin', 'api', 'staging', 'app', 'auth', 'login'];
 
 export default {
     async fetch(request, env) {
         const url = new URL(request.url);
         const hostname = url.hostname;
+        const pathname = url.pathname;
 
-        // Configuration
-        const rootDomain = 'clicker.id';
-        const platformDomain = 'clickerapps.web.app';
-        const authDomain = 'clicker-auth-gateway.web.app';
+        // Extract subdomain from hostname
+        const parts = hostname.split('.');
+        let subdomain = null;
 
-        // Special case: auth.clicker.id → clicker-auth-gateway.web.app
-        if (hostname === `auth.${rootDomain}`) {
-            const newUrl = `https://${authDomain}${url.pathname}${url.search}`;
-
-            console.log(`[Worker] Auth Rewrite: ${url.href} → ${newUrl}`);
-
-            const response = await fetch(newUrl, {
-                method: request.method,
-                headers: request.headers,
-                body: request.body,
-                redirect: 'manual'
-            });
-
-            const newResponse = new Response(response.body, response);
-            newResponse.headers.set('X-Worker-Rewrite', 'auth-gateway');
-
-            return newResponse;
+        // Handle workers.dev testing domain
+        if (hostname.endsWith('workers.dev')) {
+            // Format: <subdomain>.<worker>.<account>.workers.dev
+            if (parts.length > 4) {
+                subdomain = parts.slice(0, -4).join('.');
+            }
+        } else {
+            // Standard custom domain: <subdomain>.clicker.id
+            if (parts.length > 2) {
+                subdomain = parts.slice(0, -2).join('.');
+            }
         }
 
-        // Tenant subdomains: tenant.clicker.id → clickerapps.web.app/tenant
-        if (hostname.endsWith(`.${rootDomain}`) && hostname !== rootDomain && hostname !== `auth.${rootDomain}`) {
-            // Extract subdomain: quattro.clicker.id → "quattro"
-            const tenant = hostname.replace(`.${rootDomain}`, '');
+        // ============================================
+        // RESERVED SUBDOMAINS (Special Routing)
+        // ============================================
 
-            // Rewrite URL: quattro.clicker.id/about → clickerapps.web.app/quattro/about
-            const newUrl = `https://${platformDomain}/${tenant}${url.pathname}${url.search}`;
-
-            console.log(`[Worker] Tenant Rewrite: ${url.href} → ${newUrl}`);
-
-            // Fetch from Firebase Hosting
-            const response = await fetch(newUrl, {
-                method: request.method,
-                headers: request.headers,
-                body: request.body,
-                redirect: 'manual'
-            });
-
-            // Clone response to modify headers if needed
-            const newResponse = new Response(response.body, response);
-
-            // Add debug header to verify Worker is running
-            newResponse.headers.set('X-Worker-Rewrite', `tenant:${tenant}`);
-
-            return newResponse;
+        // backyard.clicker.id → Backyard Admin Console
+        if (subdomain === 'backyard') {
+            return proxyRequest(request, HOSTS.backyard, pathname);
         }
 
-        // For main domain (clicker.id) or non-matching, pass through
-        // Could also redirect to docs/landing page
-        if (hostname === rootDomain) {
-            return new Response('Clicker Platform - Use tenant.clicker.id to access your site', {
-                status: 200,
-                headers: { 'Content-Type': 'text/plain' }
-            });
+        // auth.clicker.id/* → Auth Gateway
+        if (subdomain === 'auth' || subdomain === 'login') {
+            return proxyRequest(request, HOSTS.authGateway, pathname);
         }
 
-        return fetch(request);
+        // ============================================
+        // TENANT SUBDOMAINS (Dynamic Routing)
+        // ============================================
+        // quattro.clicker.id/* → clickerapps.web.app/quattro/*
+        // hi-clicker.clicker.id/admin → clickerapps.web.app/hi-clicker/admin
+
+        if (subdomain && subdomain !== 'www' && !RESERVED_SUBDOMAINS.includes(subdomain)) {
+            // IMPORTANT: Don't prefix static assets and API routes with tenant slug
+            // These paths should pass through as-is to Firebase
+            const staticPaths = ['/_next/', '/favicon', '/robots', '/sitemap', '/manifest', '/__nextjs', '/seed/', '/api/'];
+            const isStaticPath = staticPaths.some(prefix => pathname.startsWith(prefix));
+
+
+            if (isStaticPath) {
+                // Static assets: pass through without tenant prefix
+                return proxyRequest(request, HOSTS.clickerPlatform, pathname, subdomain);
+            }
+
+            // Dynamic pages: prepend tenant slug to path
+            const tenantPath = `/${subdomain}${pathname === '/' ? '' : pathname}`;
+            return proxyRequest(request, HOSTS.clickerPlatform, tenantPath, subdomain);
+        }
+
+
+        // ============================================
+        // ROOT DOMAIN PATHS (clicker.id/*)
+        // ============================================
+
+        // Platform static assets (/_next/, /__nextjs, /api/, etc.)
+        // When clicker.id/admin loads, it requests clicker.id/_next/static/chunks/...
+        // These MUST route to platform, not marketing
+        const platformStaticPaths = ['/_next/', '/__nextjs', '/api/'];
+        if (platformStaticPaths.some(prefix => pathname.startsWith(prefix))) {
+            return proxyRequest(request, HOSTS.clickerPlatform, pathname);
+        }
+
+        // /admin/* → Clicker Platform (admin dashboard)
+        if (pathname.startsWith('/admin')) {
+            return proxyRequest(request, HOSTS.clickerPlatform, pathname);
+        }
+
+        // /login → Redirect to auth.clicker.id (NOT proxy)
+        // IMPORTANT: Must redirect, not proxy, because proxying causes _next/static
+        // assets to be fetched from clicker.id (which routes to platform, not auth-gateway)
+        // resulting in 404s due to mismatched build chunk hashes.
+        if (pathname.startsWith('/login')) {
+            const searchParams = url.search || '';
+            return Response.redirect(`https://auth.clicker.id${searchParams}`, 302);
+        }
+
+        // /auth/* → Auth Gateway (strip /auth prefix)
+        if (pathname.startsWith('/auth')) {
+            const newPath = pathname.replace('/auth', '') || '/';
+            return proxyRequest(request, HOSTS.authGateway, newPath);
+        }
+
+        // Default: Root domain → Marketing Site
+        return proxyRequest(request, HOSTS.marketing, pathname);
+    }
+};
+
+/**
+ * Proxy request to target Firebase Hosting
+ * Simplified version - uses direct fetch
+ */
+async function proxyRequest(request, targetHost, targetPath, tenantSlug = null) {
+    // Build the target URL
+    const originalUrl = new URL(request.url);
+    const targetUrl = `https://${targetHost}${targetPath}${originalUrl.search}`;
+
+    try {
+        // Use direct fetch with minimal options
+        const response = await fetch(targetUrl, {
+            method: request.method,
+            headers: {
+                'Host': targetHost,
+                'Accept': request.headers.get('Accept') || '*/*',
+                'Accept-Language': request.headers.get('Accept-Language') || 'en-US,en;q=0.9',
+                'Cookie': request.headers.get('Cookie') || '',
+                'User-Agent': request.headers.get('User-Agent') || 'CloudflareWorker',
+                // Pass through for Next.js middleware
+                'X-Forwarded-Host': request.headers.get('Host') || '',
+                'X-Clicker-Original-Host': request.headers.get('Host') || '', // Custom header to bypass Firebase overwrites
+                'X-Forwarded-Proto': 'https',
+                'X-Tenant-Slug': tenantSlug || '',
+            },
+            redirect: 'manual',
+        });
+
+        // Create new response with modified headers
+        const newResponse = new Response(response.body, {
+            status: response.status,
+            statusText: response.statusText,
+            headers: response.headers,
+        });
+
+        // CRITICAL: Rewrite Location header for redirects to use masked domains
+        // Without this, middleware 302 redirects expose raw .web.app URLs to the browser
+        if (response.status >= 300 && response.status < 400) {
+            const location = response.headers.get('Location');
+            if (location) {
+                let maskedLocation = location
+                    .replace('https://clicker-auth-gateway.web.app', 'https://auth.clicker.id')
+                    .replace('https://clickerapps.web.app', 'https://clicker.id')
+                    .replace('https://clicker-backyard-app.web.app', 'https://backyard.clicker.id')
+                    .replace('https://clicker-universe.web.app', 'https://clicker.id');
+                newResponse.headers.set('Location', maskedLocation);
+            }
+        }
+
+        // Add debug headers
+        newResponse.headers.set('X-Served-By', 'clicker-gateway-v10');
+        newResponse.headers.set('X-Routed-To', targetHost);
+        newResponse.headers.set('X-Target-Path', targetPath);
+        if (tenantSlug) {
+            newResponse.headers.set('X-Tenant-Slug', tenantSlug);
+        }
+
+        // Add permissive CSP
+        newResponse.headers.set('Content-Security-Policy',
+            "default-src 'self' https: data: blob:; " +
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https: blob:; " +
+            "style-src 'self' 'unsafe-inline' https:; " +
+            "img-src 'self' data: https: blob:; " +
+            "connect-src 'self' https: wss:; " +
+            "font-src 'self' https: data:;"
+        );
+
+        return newResponse;
+    } catch (error) {
+        return new Response(`Gateway Error: ${error.message}\nTarget: ${targetUrl}`, {
+            status: 502,
+            headers: { 'Content-Type': 'text/plain' }
+        });
     }
 }
+

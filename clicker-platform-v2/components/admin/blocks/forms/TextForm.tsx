@@ -21,13 +21,14 @@ interface TextFormProps {
 }
 
 export const TextForm = ({ data, onChange }: TextFormProps) => {
+    const safeData = data || {};
     return (
         <div className="space-y-2">
             <label className="block text-xs font-bold text-gray-500">Content</label>
             <div className="min-h-[200px]">
                 <RichTextEditor
-                    value={data.content || ''}
-                    onChange={(html) => onChange({ ...data, content: html })}
+                    value={safeData.content || ''}
+                    onChange={(html) => onChange({ ...safeData, content: html })}
                 />
             </div>
             <p className="text-[10px] text-gray-400">

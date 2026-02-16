@@ -25,6 +25,12 @@ import { DaySchedule } from '@/lib/core/types';
 import { fetchSiteSettings } from '@/lib/fetchData';
 import { BusinessHours } from '@/data/mockData';
 export { getStaffMembers };
+// Helper to sanitize data for Firestore (replaces undefined with null or removes them)
+const sanitize = (data: any) => {
+    return Object.fromEntries(
+        Object.entries(data).map(([k, v]) => [k, v === undefined ? null : v])
+    );
+};
 
 // Collection References
 const SERVICES_COLLECTION = 'modules/reservation/services';
@@ -46,7 +52,7 @@ export async function getService(siteId: string, id: string): Promise<Service | 
 
 export async function createService(siteId: string, service: Omit<Service, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
     const docRef = await addDoc(collection(db, 'sites', siteId, SERVICES_COLLECTION), {
-        ...service,
+        ...sanitize(service),
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
     });
@@ -56,7 +62,7 @@ export async function createService(siteId: string, service: Omit<Service, 'id' 
 export async function updateService(siteId: string, id: string, updates: Partial<Omit<Service, 'id' | 'createdAt' | 'updatedAt'>>): Promise<void> {
     const docRef = doc(db, 'sites', siteId, SERVICES_COLLECTION, id);
     await updateDoc(docRef, {
-        ...updates,
+        ...sanitize(updates),
         updatedAt: serverTimestamp()
     });
 }
@@ -73,25 +79,46 @@ export async function getBookings(
     limitCount: number = 20,
     lastDoc: QueryDocumentSnapshot | null = null
 ): Promise<{ bookings: Booking[], lastDoc: QueryDocumentSnapshot | null }> {
-    let q = query(collection(db, 'sites', siteId, BOOKINGS_COLLECTION), orderBy('createdAt', 'desc')); // Used createdAt for cleaner sort
+    // If we have a status filter, Firestore requires a composite index for orderBy.
+    // To avoid this for now, we query without orderBy if status is present and sort in-memory,
+    // or we just tell the user to add the index. 
+    // Given the multi-tenant nature, it's better to keep it robust.
 
-    // Support single status or array of statuses
+    let baseQuery = collection(db, 'sites', siteId, BOOKINGS_COLLECTION);
+    let q;
+
     if (status) {
+        // When filtering by status, we don't include orderBy in the Firestore query to avoid index requirement
+        q = query(baseQuery);
         if (Array.isArray(status)) {
             q = query(q, where('status', 'in', status));
         } else {
             q = query(q, where('status', '==', status));
         }
+        // Note: Without orderBy in query, pagination (lastDoc) might be inconsistent if results are many.
+        // For MVP, we'll fetch and sort.
+    } else {
+        q = query(baseQuery, orderBy('createdAt', 'desc'));
+    }
+
+    if (lastDoc && !status) { // Only use startAfter if we have server-side ordering
+        q = query(q, startAfter(lastDoc));
     }
 
     q = query(q, limit(limitCount));
 
-    if (lastDoc) {
-        q = query(q, startAfter(lastDoc));
+    const snapshot = await getDocs(q);
+    let bookings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Booking));
+
+    // In-memory sort if we couldn't do it on server
+    if (status) {
+        bookings.sort((a, b) => {
+            const dateA = a.createdAt?.toDate?.()?.getTime() || a.startAt?.toDate?.()?.getTime() || 0;
+            const dateB = b.createdAt?.toDate?.()?.getTime() || b.startAt?.toDate?.()?.getTime() || 0;
+            return dateB - dateA; // Descending
+        });
     }
 
-    const snapshot = await getDocs(q);
-    const bookings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Booking));
     const newLastDoc = snapshot.docs.length === limitCount ? snapshot.docs[snapshot.docs.length - 1] : null;
 
     return { bookings, lastDoc: newLastDoc };

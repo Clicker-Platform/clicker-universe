@@ -87,7 +87,7 @@ export default function InboxPage() {
                 <p className="text-gray-600 font-medium">Read and manage form submissions from your customers.</p>
             </div>
 
-            <InboxClient initialSubmissions={submissions} formFieldMap={formFieldMap} />
+            <InboxClient initialSubmissions={submissions} formFieldMap={formFieldMap} siteId={siteId} />
         </div>
     );
 }

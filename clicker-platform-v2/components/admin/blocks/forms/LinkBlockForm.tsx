@@ -14,6 +14,7 @@ interface LinkBlockFormProps {
 import { useSite } from '@/lib/site-context';
 
 export const LinkBlockForm = ({ data, onChange }: LinkBlockFormProps) => {
+    const safeData = data || {};
     const { siteId } = useSite();
     const [links, setLinks] = useState<LinkItem[]>([]);
     const [loading, setLoading] = useState(true);
@@ -42,7 +43,7 @@ export const LinkBlockForm = ({ data, onChange }: LinkBlockFormProps) => {
     const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const linkId = e.target.value;
         // Find title for easier preview if needed, but we store ID
-        onChange({ ...data, linkId });
+        onChange({ ...safeData, linkId });
     };
 
     if (loading) {
@@ -57,7 +58,7 @@ export const LinkBlockForm = ({ data, onChange }: LinkBlockFormProps) => {
             </p>
 
             <select
-                value={data.linkId || ''}
+                value={safeData.linkId || ''}
                 onChange={handleChange}
                 className="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-brand-dark focus:ring-0 transition-colors bg-white font-medium"
             >

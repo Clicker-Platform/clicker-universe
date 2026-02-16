@@ -52,12 +52,12 @@ async function getProductsByIds(siteId: string, ids: string[]) {
 import { ProductsBlockClient } from './ProductsBlockClient';
 
 export const ProductsBlock = async ({ data, phoneNumber, whatsappSettings, siteId, products: preFetchedProducts }: { data: any, phoneNumber?: string, whatsappSettings?: any, siteId?: string, products?: any[] }) => {
-    if (!siteId) return null;
+    if (!siteId || !data) return null;
 
     let products = preFetchedProducts || [];
 
     // If specific IDs provided, prefer fetching those
-    if (data.productIds && data.productIds.length > 0) {
+    if (data?.productIds && data?.productIds.length > 0) {
         products = await getProductsByIds(siteId, data.productIds);
     }
     // Otherwise use preFetchedProducts (which is all active products)

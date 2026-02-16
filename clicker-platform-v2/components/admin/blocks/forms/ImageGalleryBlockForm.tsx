@@ -16,12 +16,13 @@ interface ImageGalleryBlockFormProps {
 }
 
 export const ImageGalleryBlockForm = ({ data, onChange }: ImageGalleryBlockFormProps) => {
+    const safeData = data || {};
     const { siteId } = useSite();
     const [uploading, setUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const images = data.images || [];
-    const coverImage = data.coverImage || (images.length > 0 ? images[0] : '');
+    const images = safeData.images || [];
+    const coverImage = safeData.coverImage || (images.length > 0 ? images[0] : '');
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
@@ -73,7 +74,7 @@ export const ImageGalleryBlockForm = ({ data, onChange }: ImageGalleryBlockFormP
                 const newCover = !coverImage ? uploadedUrls[0] : coverImage;
 
                 onChange({
-                    ...data,
+                    ...safeData,
                     images: newImages,
                     coverImage: newCover // Ensure at least one cover if images exist
                 });
@@ -98,7 +99,7 @@ export const ImageGalleryBlockForm = ({ data, onChange }: ImageGalleryBlockFormP
         }
 
         onChange({
-            ...data,
+            ...safeData,
             images: newImages,
             coverImage: newCover
         });
@@ -106,7 +107,7 @@ export const ImageGalleryBlockForm = ({ data, onChange }: ImageGalleryBlockFormP
 
     const setCover = (url: string) => {
         onChange({
-            ...data,
+            ...safeData,
             coverImage: url
         });
     };

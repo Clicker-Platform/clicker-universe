@@ -13,21 +13,22 @@ interface FAQFormProps {
 }
 
 export const FAQForm = ({ data, onChange }: FAQFormProps) => {
-    const items: FAQItem[] = data.items || [];
+    const safeData = data || {};
+    const items: FAQItem[] = safeData.items || [];
 
     const handleItemChange = (index: number, field: keyof FAQItem, value: string) => {
         const newItems = [...items];
         newItems[index] = { ...newItems[index], [field]: value };
-        onChange({ ...data, items: newItems });
+        onChange({ ...safeData, items: newItems });
     };
 
     const handleAddItem = () => {
-        onChange({ ...data, items: [...items, { question: '', answer: '' }] });
+        onChange({ ...safeData, items: [...items, { question: '', answer: '' }] });
     };
 
     const handleDeleteItem = (index: number) => {
         const newItems = items.filter((_, i) => i !== index);
-        onChange({ ...data, items: newItems });
+        onChange({ ...safeData, items: newItems });
     };
 
     return (

@@ -8,8 +8,10 @@ interface HeroFormProps {
 }
 
 export const HeroForm = ({ data, onChange }: HeroFormProps) => {
+    const safeData = data || {};
+
     const handleChange = (field: string, value: string) => {
-        onChange({ ...data, [field]: value });
+        onChange({ ...safeData, [field]: value });
     };
 
     return (
@@ -18,7 +20,7 @@ export const HeroForm = ({ data, onChange }: HeroFormProps) => {
                 <label className="block text-xs font-bold text-gray-500 mb-1">Title</label>
                 <input
                     type="text"
-                    value={data.title || ''}
+                    value={safeData.title || ''}
                     onChange={(e) => handleChange('title', e.target.value)}
                     className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-brand-dark focus:ring-0"
                     placeholder="Welcome to our page"
@@ -28,7 +30,7 @@ export const HeroForm = ({ data, onChange }: HeroFormProps) => {
                 <label className="block text-xs font-bold text-gray-500 mb-1">Subtitle</label>
                 <input
                     type="text"
-                    value={data.subtitle || ''}
+                    value={safeData.subtitle || ''}
                     onChange={(e) => handleChange('subtitle', e.target.value)}
                     className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-brand-dark focus:ring-0"
                     placeholder="Brief description or tagline"
@@ -37,7 +39,7 @@ export const HeroForm = ({ data, onChange }: HeroFormProps) => {
             <div>
                 <BlockImageUploader
                     label="Hero Image"
-                    currentUrl={data.imageUrl}
+                    currentUrl={safeData.imageUrl}
                     onUpload={(url) => handleChange('imageUrl', url)}
                     onRemove={() => handleChange('imageUrl', '')}
                 />

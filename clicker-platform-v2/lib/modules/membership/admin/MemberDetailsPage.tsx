@@ -15,7 +15,7 @@ import { usePermission } from '@/lib/hooks/use-permission';
 import { useSite } from '@/lib/site-context';
 
 export default function MemberDetailsPage() {
-    const { siteId } = useSite();
+    const { siteId, tenantSlug } = useSite();
     const searchParams = useSearchParams();
     const id = searchParams.get('id');
 
@@ -124,7 +124,7 @@ export default function MemberDetailsPage() {
 
     return (
         <div className="p-6 max-w-5xl mx-auto">
-            <Link href="/admin/membership" className="inline-flex items-center text-gray-500 hover:text-gray-800 mb-6 gap-2">
+            <Link href={`${tenantSlug ? `/${tenantSlug}` : ''}/admin/membership/list`} className="inline-flex items-center text-gray-500 hover:text-gray-800 mb-6 gap-2">
                 <ArrowLeft size={18} /> Back to List
             </Link>
 

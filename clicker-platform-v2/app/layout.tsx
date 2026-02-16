@@ -47,6 +47,17 @@ export default async function RootLayout({
   const siteId = headersList.get('x-site-id') || 'pending';
   const tenantSlug = headersList.get('x-tenant-slug') || undefined;
 
+  // 3. DETECT SUBDOMAIN (from Middleware with Fallback)
+  let isSubdomain = headersList.get('x-clicker-is-subdomain') === 'true';
+  if (!isSubdomain) {
+    const host = headersList.get('x-clicker-original-host') || headersList.get('x-forwarded-host') || headersList.get('host') || '';
+    // Check if it's a subdomain of clicker.id (but not www or root)
+    if (host.endsWith('.clicker.id') && host !== 'clicker.id' && host !== 'www.clicker.id') {
+      isSubdomain = true;
+    }
+  }
+
+  // 4. THEME REGISTRY requests
   // 2. Fetch Settings (Only if we have a valid siteId)
   const settings = (siteId && siteId !== 'pending' && siteId !== 'default')
     ? await fetchSiteSettings(siteId)
@@ -58,7 +69,7 @@ export default async function RootLayout({
         suppressHydrationWarning
         className={`${jakarta.variable} antialiased font-sans selection:bg-brand-dark selection:text-brand-green`}
       >
-        <SiteProvider siteId={siteId} tenantSlug={tenantSlug}>
+        <SiteProvider siteId={siteId} tenantSlug={tenantSlug} isSubdomain={isSubdomain}>
           <ThemeRegistry initialSettings={settings} />
           <AnalyticsTracker />
           <div className="flex-grow w-full">

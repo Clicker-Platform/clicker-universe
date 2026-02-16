@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Mail, Archive } from 'lucide-react';
 import { SubmissionCard } from '@/components/admin/inbox/SubmissionCard';
 import { InboxFilters } from '@/components/admin/inbox/InboxFilters';
@@ -11,13 +11,18 @@ import { useRouter } from 'next/navigation';
 interface InboxClientProps {
     initialSubmissions: Submission[];
     formFieldMap: Record<string, Record<string, string>>;
+    siteId: string;
 }
 
-export default function InboxClient({ initialSubmissions, formFieldMap }: InboxClientProps) {
+export default function InboxClient({ initialSubmissions, formFieldMap, siteId }: InboxClientProps) {
     const router = useRouter();
     const [submissions, setSubmissions] = useState<Submission[]>(initialSubmissions);
     const [filterStatus, setFilterStatus] = useState<'all' | 'new' | 'read' | 'archived'>('all');
     const [loadingId, setLoadingId] = useState<string | null>(null);
+
+    useEffect(() => {
+        setSubmissions(initialSubmissions);
+    }, [initialSubmissions]);
 
     const handleAction = async (id: string, action: string) => {
         setLoadingId(id);
@@ -25,8 +30,9 @@ export default function InboxClient({ initialSubmissions, formFieldMap }: InboxC
             const res = await fetch('/api/submissions/update', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id, action })
+                body: JSON.stringify({ id, action, siteId })
             });
+            // ...
 
             if (res.ok) {
                 if (action === 'delete') {

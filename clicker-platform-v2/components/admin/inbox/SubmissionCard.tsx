@@ -27,13 +27,23 @@ export const SubmissionCard = memo(function SubmissionCard({
         <div className="p-6 hover:bg-gray-50 transition-colors group cursor-default">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                 <div className="flex items-center gap-3">
-                    <div onClick={() => onAction(sub.id, sub.status === 'new' ? 'read' : 'new')} className="cursor-pointer">
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            if (sub.status === 'new') {
+                                onAction(sub.id, 'read');
+                            }
+                        }}
+                        disabled={loadingId === sub.id || sub.status !== 'new'}
+                        className={`p-2 rounded-full transition-all ${sub.status === 'new' ? 'hover:bg-gray-100 cursor-pointer' : 'cursor-default'} ${loadingId === sub.id ? 'opacity-50' : ''}`}
+                        title={sub.status === 'new' ? "Mark as read" : undefined}
+                    >
                         {sub.status === 'new' ? (
-                            <div className="w-3 h-3 rounded-full bg-blue-500 ring-4 ring-blue-100" title="Mark as read" />
+                            <div className="w-3.5 h-3.5 rounded-full bg-blue-500 ring-4 ring-blue-100" />
                         ) : (
-                            <div className="w-3 h-3 rounded-full border-2 border-gray-300" title="Mark as unread" />
+                            <div className="w-3.5 h-3.5 rounded-full border-2 border-gray-300 bg-white" />
                         )}
-                    </div>
+                    </button>
                     <h3 className={`text-lg text-brand-dark ${sub.status === 'new' ? 'font-extrabold' : 'font-medium'}`}>
                         {sub.formTitle || 'Unknown Form'}
                     </h3>

@@ -2,6 +2,8 @@ import React from 'react';
 import Image from 'next/image';
 
 export const HeroBlock = ({ data, theme }: { data: any, theme?: any }) => {
+    if (!data) return null;
+
     // Default to 'clean' if theme is missing, or whatever default makes sense
     const isClean = theme?.cardStyle === 'clean';
 
@@ -13,7 +15,7 @@ export const HeroBlock = ({ data, theme }: { data: any, theme?: any }) => {
                 : 'border-[3px] border-theme-border shadow-sticker'
             }
         `} style={{ borderRadius: 'var(--theme-radius)' }}>
-            {data.imageUrl && data.imageUrl.trim() !== '' && (
+            {data?.imageUrl && data?.imageUrl.trim() !== '' && (
                 <div className="absolute inset-0 z-0">
                     <Image
                         src={data.imageUrl}
@@ -34,9 +36,9 @@ export const HeroBlock = ({ data, theme }: { data: any, theme?: any }) => {
                         : 'font-black text-theme-foreground transform -rotate-1'
                     }
                 `}>
-                    {data.title}
+                    {data?.title}
                 </h1>
-                {data.subtitle && (
+                {data?.subtitle && (
                     <p className={`
                         text-xl font-bold 
                         ${isClean ? 'text-gray-500' : 'text-gray-500'}

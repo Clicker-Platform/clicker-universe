@@ -6,8 +6,10 @@ interface ButtonFormProps {
 }
 
 export const ButtonForm = ({ data, onChange }: ButtonFormProps) => {
+    const safeData = data || {};
+
     const handleChange = (field: string, value: string) => {
-        onChange({ ...data, [field]: value });
+        onChange({ ...safeData, [field]: value });
     };
 
     return (
@@ -16,7 +18,7 @@ export const ButtonForm = ({ data, onChange }: ButtonFormProps) => {
                 <label className="block text-xs font-bold text-gray-500 mb-1">Label</label>
                 <input
                     type="text"
-                    value={data.label || ''}
+                    value={safeData.label || ''}
                     onChange={(e) => handleChange('label', e.target.value)}
                     className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-brand-dark focus:ring-0"
                     placeholder="Click Here"
@@ -26,7 +28,7 @@ export const ButtonForm = ({ data, onChange }: ButtonFormProps) => {
                 <label className="block text-xs font-bold text-gray-500 mb-1">URL</label>
                 <input
                     type="text"
-                    value={data.url || ''}
+                    value={safeData.url || ''}
                     onChange={(e) => handleChange('url', e.target.value)}
                     className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-brand-dark focus:ring-0 font-mono"
                     placeholder="https://..."
@@ -35,7 +37,7 @@ export const ButtonForm = ({ data, onChange }: ButtonFormProps) => {
             <div>
                 <label className="block text-xs font-bold text-gray-500 mb-1">Style</label>
                 <select
-                    value={data.variant || 'primary'}
+                    value={safeData.variant || 'primary'}
                     onChange={(e) => handleChange('variant', e.target.value)}
                     className="w-full p-2 border border-gray-200 rounded-lg text-sm bg-white"
                 >
@@ -47,7 +49,7 @@ export const ButtonForm = ({ data, onChange }: ButtonFormProps) => {
             <div>
                 <label className="block text-xs font-bold text-gray-500 mb-1">Alignment</label>
                 <select
-                    value={data.align || 'center'}
+                    value={safeData.align || 'center'}
                     onChange={(e) => handleChange('align', e.target.value)}
                     className="w-full p-2 border border-gray-200 rounded-lg text-sm bg-white"
                 >

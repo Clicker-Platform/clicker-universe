@@ -9,8 +9,10 @@ interface MapFormProps {
 }
 
 export const MapForm = ({ data, onChange }: MapFormProps) => {
+    const safeData = data || {};
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        onChange({ ...data, address: e.target.value });
+        onChange({ ...safeData, address: e.target.value });
     };
 
     return (
@@ -23,7 +25,7 @@ export const MapForm = ({ data, onChange }: MapFormProps) => {
                     </div>
                     <input
                         type="text"
-                        value={data.address || ''}
+                        value={safeData.address || ''}
                         onChange={handleChange}
                         className="w-full pl-10 pr-4 py-2 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-brand-dark focus:ring-0 transition-all outline-none"
                         placeholder="e.g. 1600 Amphitheatre Parkway, Mountain View, CA"
@@ -34,7 +36,7 @@ export const MapForm = ({ data, onChange }: MapFormProps) => {
                 </p>
             </div>
 
-            {data.address && (
+            {safeData.address && (
                 <div className="rounded-xl overflow-hidden border border-gray-200 h-[200px] bg-gray-100 mt-4">
                     <iframe
                         width="100%"
@@ -43,7 +45,7 @@ export const MapForm = ({ data, onChange }: MapFormProps) => {
                         loading="lazy"
                         allowFullScreen
                         referrerPolicy="no-referrer-when-downgrade"
-                        src={`https://maps.google.com/maps?q=${encodeURIComponent(data.address)}&t=&z=13&ie=UTF8&iwloc=&output=embed`}
+                        src={`https://maps.google.com/maps?q=${encodeURIComponent(safeData.address)}&t=&z=13&ie=UTF8&iwloc=&output=embed`}
                     ></iframe>
                 </div>
             )}

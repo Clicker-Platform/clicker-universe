@@ -131,7 +131,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
                     const memberData = memberSnap.data();
                     if (!memberData) return; // Guard clause
 
-                    console.log('[UserContext] Realtime Update:', memberData.moduleAccess); // Debug
+                    // console.log('[UserContext] Realtime Update:', memberData.moduleAccess); // Debug
                     setRole(memberData.role as Role || 'staff');
                     setPermissions(memberData.permissions || []);
                     setModuleAccess(memberData.moduleAccess || {});

@@ -8,8 +8,10 @@ interface ImageFormProps {
 }
 
 export const ImageForm = ({ data, onChange }: ImageFormProps) => {
+    const safeData = data || {};
+
     const handleChange = (field: string, value: string) => {
-        onChange({ ...data, [field]: value });
+        onChange({ ...safeData, [field]: value });
     };
 
     return (
@@ -17,7 +19,7 @@ export const ImageForm = ({ data, onChange }: ImageFormProps) => {
             <div>
                 <BlockImageUploader
                     label="Upload Image"
-                    currentUrl={data.url}
+                    currentUrl={safeData.url}
                     onUpload={(url) => handleChange('url', url)}
                     onRemove={() => handleChange('url', '')}
                 />

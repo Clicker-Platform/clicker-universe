@@ -4,6 +4,7 @@ import React from 'react';
 import { useTemplate } from '@/components/TemplateProvider';
 
 export const TextBlock = ({ data }: { data: any }) => {
+    if (!data) return null;
     const { templateId, theme } = useTemplate();
     const isClean = theme.cardStyle === 'clean';
 
@@ -36,9 +37,8 @@ export const TextBlock = ({ data }: { data: any }) => {
                     
                     prose-a:text-[var(--theme-primary)]
                     
-
                 `}
-                dangerouslySetInnerHTML={{ __html: data.content }}
+                dangerouslySetInnerHTML={{ __html: data?.content || '' }}
             />
         </section>
     );

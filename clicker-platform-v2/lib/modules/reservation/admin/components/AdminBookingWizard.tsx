@@ -15,7 +15,7 @@ interface AdminBookingWizardProps {
     onCancel: () => void;
 }
 
-export function AdminBookingWizard({
+export default function AdminBookingWizard({
     initialServices,
     initialWeeklySlots,
     initialStaff,
@@ -194,8 +194,8 @@ export function AdminBookingWizard({
                         if (isGlobalAvailable) candidates.push(timeString);
                     }
 
-                    // Increment by 60 mins (fixed interval for simplicity)
-                    current.setHours(current.getHours() + 1);
+                    // Increment by 1 hour (60 mins) per user request
+                    current = new Date(current.getTime() + 60 * 60000);
                 }
 
                 setGeneratedSlots(candidates);
@@ -247,6 +247,17 @@ export function AdminBookingWizard({
             bookingStart.setHours(hours, minutes, 0, 0);
 
             const bookingEnd = new Date(bookingStart.getTime() + selectedService.durationMinutes * 60000);
+
+            // Re-verify availability strictly before saving
+            const { checkAvailability } = await import('@/lib/modules/reservation/api');
+            const isAvailable = await checkAvailability(siteId, selectedService.id, bookingStart, selectedService.durationMinutes);
+
+            if (!isAvailable) {
+                alert("Sorry, this slot was just taken. Please choose another time.");
+                setStep(3); // Go back to time selection
+                setLoading(false);
+                return;
+            }
 
             const id = await createBooking(siteId, {
                 serviceId: selectedService.id,
@@ -326,10 +337,10 @@ export function AdminBookingWizard({
                 {/* STEP 1: SERVICES */}
                 {step === 1 && (
                     <div className="space-y-3">
-                        {services.length === 0 ? (
+                        {services?.length === 0 ? (
                             <div className="text-center py-10 text-gray-400">No services found.</div>
                         ) : (
-                            services.filter(s => s.isActive).map(service => (
+                            services?.filter(s => s.isActive).map(service => (
                                 <button
                                     key={service.id}
                                     onClick={() => handleServiceSelect(service)}
@@ -480,7 +491,7 @@ export function AdminBookingWizard({
                                 />
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
 
-                                {(searchResults.length > 0) && (
+                                {(searchResults?.length > 0) && (
                                     <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-xl border border-gray-100 z-50 max-h-[200px] overflow-y-auto">
                                         {searchResults.map((member: any) => (
                                             <button
