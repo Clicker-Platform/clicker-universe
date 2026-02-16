@@ -6,9 +6,9 @@ export const STATIC_MODULE_DEFINITIONS: Record<string, Partial<ModuleDefinition>
         adminRoutes: [
             { label: 'Catalog', path: '/admin/pos/menu', icon: 'clipboard-list', componentKey: 'byod_pos:AdminMenu' },
             { label: 'Orders', path: '/admin/pos/orders', icon: 'shopping-bag', componentKey: 'byod_pos:AdminOrders' },
-            { label: 'Cashier', path: '/admin/pos/cashier', icon: 'monitor-dot', componentKey: 'byod_pos:Cashier', hidden: true },
-            { label: 'KDS', path: '/admin/pos/kds', icon: 'utensils', componentKey: 'byod_pos:KDS', hidden: true },
-            { label: 'Transactions', path: '/admin/pos/transactions', icon: 'credit-card', componentKey: 'byod_pos:Transactions', hidden: true },
+            { label: 'Cashier', path: '/admin/pos/cashier', icon: 'monitor-dot', componentKey: 'byod_pos:Cashier' },
+            { label: 'KDS', path: '/admin/pos/kds', icon: 'utensils', componentKey: 'byod_pos:KDS' },
+            { label: 'Transactions', path: '/admin/pos/transactions', icon: 'credit-card', componentKey: 'byod_pos:Transactions' },
             { label: 'Settings', path: '/admin/pos/settings', icon: 'settings', permission: 'settings', componentKey: 'byod_pos:AdminSettings' },
             { label: 'Reports', path: '/admin/pos/reports', icon: 'file-text', permission: 'view_reports', componentKey: 'byod_pos:AdminOrders' } // Placeholder
         ]
