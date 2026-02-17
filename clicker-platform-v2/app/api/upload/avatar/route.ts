@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminStorage } from '@/lib/firebase-admin';
-import sharp from 'sharp';
+// Dynamic require to prevent Turbopack from hashing the module name
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const sharp = require('sharp') as typeof import('sharp');
 import { cookies } from 'next/headers';
 import { v4 as uuidv4 } from 'uuid';
 

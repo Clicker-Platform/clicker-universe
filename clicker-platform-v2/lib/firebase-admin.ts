@@ -1,15 +1,31 @@
-import { initializeApp, getApps, App, getApp, cert } from 'firebase-admin/app';
-import { getAuth } from 'firebase-admin/auth';
-import { getFirestore } from 'firebase-admin/firestore';
-import { getStorage } from 'firebase-admin/storage';
-
 /**
  * Firebase Admin SDK initialization for server-side operations.
+ * 
+ * IMPORTANT: Uses dynamic require() to bypass Turbopack's static analysis
+ * which otherwise generates hashed module identifiers that fail at runtime
+ * in Firebase Cloud Functions. This is a known Turbopack bug (#87737).
  * 
  * CORE STRATEGY: "Hybrid Identity"
  * 1. PRODUCTION: Use Application Default Credentials (ADC) - No keys needed.
  * 2. LOCAL DEV: Optionally use GCP_SERVICE_ACCOUNT_KEY if ADC (gcloud) is not set up.
  */
+
+// Dynamic require to prevent Turbopack from hashing the module name
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const firebaseAdminApp = require('firebase-admin/app') as typeof import('firebase-admin/app');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const firebaseAdminAuth = require('firebase-admin/auth') as typeof import('firebase-admin/auth');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const firebaseAdminFirestore = require('firebase-admin/firestore') as typeof import('firebase-admin/firestore');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const firebaseAdminStorage = require('firebase-admin/storage') as typeof import('firebase-admin/storage');
+
+const { initializeApp, getApps, cert } = firebaseAdminApp;
+const { getAuth } = firebaseAdminAuth;
+const { getFirestore } = firebaseAdminFirestore;
+const { getStorage } = firebaseAdminStorage;
+
+import type { App } from 'firebase-admin/app';
 
 function initializeAdminApp(): App {
     const apps = getApps();
@@ -32,7 +48,6 @@ function initializeAdminApp(): App {
                 console.log('[firebase-admin] Reading credentials from file:', serviceAccountKey);
                 const fs = require('fs');
                 const path = require('path');
-                // Resolve path relative to cwd if needed, though absolute/relative usually works as is in node
                 const keyPath = path.resolve(process.cwd(), serviceAccountKey);
                 const keyContent = fs.readFileSync(keyPath, 'utf-8');
                 credential = JSON.parse(keyContent);
@@ -65,4 +80,3 @@ export const adminApp = initializeAdminApp();
 export const adminAuth = getAuth(adminApp);
 export const adminDb = getFirestore(adminApp);
 export const adminStorage = getStorage(adminApp);
-

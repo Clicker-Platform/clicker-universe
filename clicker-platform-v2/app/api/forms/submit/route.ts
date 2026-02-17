@@ -1,5 +1,6 @@
 import { adminDb } from '@/lib/firebase-admin';
-import { FieldValue } from 'firebase-admin/firestore';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { FieldValue } = require('firebase-admin/firestore') as typeof import('firebase-admin/firestore');
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
