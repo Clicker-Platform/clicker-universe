@@ -2,6 +2,9 @@
 
 import { useState, useRef } from 'react';
 import { Upload, X, Loader2 } from 'lucide-react';
+import { storage } from '@/lib/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { useSite } from '@/lib/site-context';
 
 interface AvatarUploadProps {
     currentAvatarUrl?: string;
@@ -13,6 +16,7 @@ export function AvatarUpload({ currentAvatarUrl, onUploadComplete }: AvatarUploa
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const { siteId } = useSite();
 
     const handleDragOver = (e: React.DragEvent) => {
         e.preventDefault();
@@ -50,24 +54,24 @@ export function AvatarUpload({ currentAvatarUrl, onUploadComplete }: AvatarUploa
         }
 
         setUploading(true);
-        const formData = new FormData();
-        formData.append('file', file);
 
         try {
-            const res = await fetch('/api/upload/avatar', {
-                method: 'POST',
-                body: formData,
+            // Build site-aware storage path
+            const storagePrefix = siteId === 'platform' ? 'profile' : `sites/${siteId}/profile`;
+            const ext = file.name.split('.').pop() || 'jpg';
+            const fileName = `${storagePrefix}/avatar_${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
+
+            // Upload directly to Firebase Storage from client
+            const storageRef = ref(storage, fileName);
+            await uploadBytes(storageRef, file, {
+                contentType: file.type,
             });
 
-            const data = await res.json();
-
-            if (!res.ok) {
-                throw new Error(data.error || 'Upload failed');
-            }
-
-            onUploadComplete(data.url);
+            // Get the download URL
+            const url = await getDownloadURL(storageRef);
+            onUploadComplete(url);
         } catch (err: any) {
-            console.error(err);
+            console.error('[AvatarUpload] Error:', err);
             setError(err.message || 'Error uploading image');
         } finally {
             setUploading(false);
@@ -102,7 +106,7 @@ export function AvatarUpload({ currentAvatarUrl, onUploadComplete }: AvatarUploa
                 {uploading ? (
                     <div className="flex flex-col items-center text-gray-500">
                         <Loader2 className="animate-spin mb-2" size={32} />
-                        <span className="font-bold">Uploading & Converting...</span>
+                        <span className="font-bold">Uploading...</span>
                     </div>
                 ) : (
                     <>
@@ -116,7 +120,7 @@ export function AvatarUpload({ currentAvatarUrl, onUploadComplete }: AvatarUploa
                                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl">
                                     <Upload size={32} className="text-brand-dark mb-2" />
                                     <span className="font-bold text-brand-dark">Change Avatar</span>
-                                    <span className="text-sm text-gray-500">Max 5MB (WebP)</span>
+                                    <span className="text-sm text-gray-500">Max 5MB</span>
                                 </div>
                             </div>
                         ) : (
