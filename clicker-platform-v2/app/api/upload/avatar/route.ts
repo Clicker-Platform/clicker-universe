@@ -6,31 +6,37 @@ import { v4 as uuidv4 } from 'uuid';
 
 export async function POST(req: NextRequest) {
     try {
+        console.log('[Upload Avatar] Starting upload process...');
         const formData = await req.formData();
         const file = formData.get('file') as File;
 
         if (!file) {
+            console.warn('[Upload Avatar] No file provided');
             return NextResponse.json({ error: 'No file provided' }, { status: 400 });
         }
 
         const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
         if (!allowedTypes.includes(file.type)) {
+            console.warn('[Upload Avatar] Invalid file type:', file.type);
             return NextResponse.json({ error: 'Invalid file type' }, { status: 400 });
         }
 
         if (file.size > 5 * 1024 * 1024) {
+            console.warn('[Upload Avatar] File size too large:', file.size);
             return NextResponse.json({ error: 'File size too large (max 5MB)' }, { status: 400 });
         }
 
         const buffer = Buffer.from(await file.arrayBuffer());
 
         // Process image with Sharp
+        console.log('[Upload Avatar] Processing image with Sharp...');
         const processedBuffer = await sharp(buffer)
             .resize({ width: 500, height: 500, fit: 'cover' }) // Optimization
             .webp({ quality: 80 })
             .toBuffer();
 
         const bucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
+        console.log('[Upload Avatar] Storage bucket:', bucketName);
 
         if (!bucketName) {
             console.error('[Upload Avatar] Error: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET is not defined');
@@ -49,6 +55,7 @@ export async function POST(req: NextRequest) {
         // Generate a unique token for the download URL (Standard Firebase Client way)
         const downloadToken = uuidv4();
 
+        console.log('[Upload Avatar] Saving to:', fileName);
         await fileRef.save(processedBuffer, {
             metadata: {
                 contentType: 'image/webp',
@@ -63,10 +70,11 @@ export async function POST(req: NextRequest) {
         const encodedPath = encodeURIComponent(fileName);
         const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${bucketName}/o/${encodedPath}?alt=media&token=${downloadToken}`;
 
+        console.log('[Upload Avatar] Success! URL:', publicUrl);
         return NextResponse.json({ url: publicUrl });
 
     } catch (error) {
-        console.error('Error uploading avatar:', error);
+        console.error('[Upload Avatar] FATAL ERROR:', error);
         return NextResponse.json({
             error: 'Internal server error',
             details: error instanceof Error ? error.message : String(error)
