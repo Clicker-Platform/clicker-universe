@@ -92,6 +92,38 @@ export async function getPaginatedOrders(siteId: string, lastDoc: QueryDocumentS
  * Optimizes performance by filtering at database level.
  */
 export async function getHistoryOrders(siteId: string, lastDoc: QueryDocumentSnapshot | null, pageSize: number = 20): Promise<{ orders: POSOrder[], lastVisible: QueryDocumentSnapshot | null }> {
+    const constraints: any[] = [
+        where('status', 'in', ['completed', 'cancelled']),
+        orderBy('createdAt', 'desc'),
+        limit(pageSize)
+    ];
+
+    if (lastDoc) {
+        constraints.push(startAfter(lastDoc));
+    }
+
+    const q = query(
+        collection(db, 'sites', siteId, ORDERS_COLLECTION),
+        ...constraints
+    );
+
+    const snapshot = await getDocs(q);
+    const orders = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+    } as POSOrder));
+
+    return {
+        orders,
+        lastVisible: snapshot.docs[snapshot.docs.length - 1] || null
+    };
+}
+
+/**
+ * Fetch dedicated history orders (completed/cancelled/refunded/paid).
+ * Optimizes performance by filtering at database level.
+ */
+export async function getHistoryOrders(siteId: string, lastDoc: QueryDocumentSnapshot | null, pageSize: number = 20): Promise<{ orders: POSOrder[], lastVisible: QueryDocumentSnapshot | null }> {
     // Note: 'in' query with orderBy might require a composite index. 
     // If you see a "Missing Index" error, click the link in the console to create it.
 
@@ -440,8 +472,10 @@ export async function getPOSSettings(siteId: string): Promise<POSSettings> {
                 },
                 requireTableNumber: settingsData.requireTableNumber || false,
                 taxSettings: settingsData.taxSettings,
+                businessDayStartHour: settingsData.businessDayStartHour,
                 businessName: title,
-                businessAddress: address
+                businessAddress: address,
+                businessLogo: logo
             };
         }
 
@@ -455,7 +489,8 @@ export async function getPOSSettings(siteId: string): Promise<POSSettings> {
             },
             requireTableNumber: false,
             businessName: title,
-            businessAddress: address
+            businessAddress: address,
+            businessLogo: logo
         };
     } catch (e) {
         console.error("Error in getPOSSettings", e);

@@ -2,14 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { adminStorage } from '@/lib/firebase-admin';
 import sharp from 'sharp';
 import { cookies } from 'next/headers';
+import { v4 as uuidv4 } from 'uuid';
 
 export async function POST(req: NextRequest) {
     try {
-        // Session check removed to allow client-side auth (Firebase SDK) to handle access.
-        // The UI is already protected by AdminGuard.
-        // const session = (await cookies()).get('session')?.value;
-        // if (!session) { ... }
-
         const formData = await req.formData();
         const file = formData.get('file') as File;
 
@@ -36,31 +32,44 @@ export async function POST(req: NextRequest) {
 
         const bucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
 
-        console.log('[Upload Avatar] Using bucket:', bucketName);
-
         if (!bucketName) {
             console.error('[Upload Avatar] Error: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET is not defined');
             return NextResponse.json({ error: 'Server configuration error: Missing storage bucket' }, { status: 500 });
         }
 
         const bucket = adminStorage.bucket(bucketName);
-        const fileName = `profile/avatar_${Date.now()}.webp`;
+
+        // Site-aware isolation
+        const siteId = req.headers.get('x-site-id') || 'platform';
+        const storagePrefix = siteId === 'platform' ? 'profile' : `sites/${siteId}/profile`;
+
+        const fileName = `${storagePrefix}/avatar_${Date.now()}_${Math.random().toString(36).substring(7)}.webp`;
         const fileRef = bucket.file(fileName);
+
+        // Generate a unique token for the download URL (Standard Firebase Client way)
+        const downloadToken = uuidv4();
 
         await fileRef.save(processedBuffer, {
             metadata: {
                 contentType: 'image/webp',
+                metadata: {
+                    firebaseStorageDownloadTokens: downloadToken
+                }
             },
         });
 
-        // Make the file public and get the URL
-        await fileRef.makePublic();
-        const publicUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
+        // Construct the Firebase Storage Download URL (No makePublic needed)
+        // Format: https://firebasestorage.googleapis.com/v0/b/[BUCKET]/o/[PATH]?alt=media&token=[TOKEN]
+        const encodedPath = encodeURIComponent(fileName);
+        const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${bucketName}/o/${encodedPath}?alt=media&token=${downloadToken}`;
 
         return NextResponse.json({ url: publicUrl });
 
     } catch (error) {
         console.error('Error uploading avatar:', error);
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+        return NextResponse.json({
+            error: 'Internal server error',
+            details: error instanceof Error ? error.message : String(error)
+        }, { status: 500 });
     }
 }

@@ -55,7 +55,11 @@ export async function POST(req: NextRequest) {
         const bucket = adminStorage.bucket(bucketName);
         console.log('[Upload] Bucket initialized:', bucket.name);
 
-        const fileName = `${folder}/${Date.now()}_${Math.random().toString(36).substring(7)}.webp`;
+        // Site-aware isolation
+        const siteId = req.headers.get('x-site-id') || 'platform';
+        const storagePrefix = siteId === 'platform' ? folder : `sites/${siteId}/${folder}`;
+
+        const fileName = `${storagePrefix}/${Date.now()}_${Math.random().toString(36).substring(7)}.webp`;
         const fileRef = bucket.file(fileName);
 
         // Generate a unique token for the download URL

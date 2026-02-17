@@ -8,14 +8,12 @@ import { useEffect, useState } from 'react';
 import { getPOSSettings } from '@/lib/modules/byod_pos/api';
 import { POSSettings } from '@/lib/modules/byod_pos/types';
 
-function POSInterface() {
-    const { siteId } = useSite();
-    const [settings, setSettings] = useState<POSSettings | null>(null);
+interface POSInterfaceProps {
+    settings: POSSettings | null;
+}
 
-    useEffect(() => {
-        if (!siteId) return;
-        getPOSSettings(siteId).then(setSettings);
-    }, [siteId]);
+function POSInterface({ settings }: POSInterfaceProps) {
+    const { siteId } = useSite();
 
     // Use businessName from POS settings, fallback to general site name 'QUATTRO'
     const businessName = settings?.businessName || 'QUATTRO';
@@ -46,6 +44,13 @@ import { OrderTracker } from '../components/OrderTracker';
 
 export default function OrderPage() {
     const { siteId } = useSite();
+    const [settings, setSettings] = useState<POSSettings | null>(null);
+
+    useEffect(() => {
+        if (siteId) {
+            getPOSSettings(siteId).then(setSettings);
+        }
+    }, [siteId]);
 
     if (!siteId) {
         return <div className="p-4 text-center">Loading...</div>;
@@ -54,7 +59,7 @@ export default function OrderPage() {
     return (
         <OrderTrackerProvider siteId={siteId}>
             <CartProvider>
-                <POSInterface />
+                <POSInterface settings={settings} />
                 <OrderTracker />
             </CartProvider>
         </OrderTrackerProvider>

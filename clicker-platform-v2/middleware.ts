@@ -72,9 +72,9 @@ export async function middleware(request: NextRequest) {
 
         if (subdomain === 'admin' || subdomain === 'auth') {
             // Let explicit admin/auth logic handle it below or pass through
-            // Actually, 'admin.clicker.id' might be the main admin portal?
-            // For now, let's assume 'admin' subdomain is reserved or treated as a tenant named 'admin' (bad).
-            // Let's assume tenants don't use reserved names.
+        } else if (segments.length >= 1 && specialRoutes.includes(segments[0])) {
+            // SKIP REWRITE for special routes (api, admin, auth, etc.) on subdomains
+            // This ensures kasisehat.clicker.id/api/upload/avatar stays as /api/upload/avatar
         } else {
             // REWRITE LOGIC
             // kasisehat.clicker.id/ -> /kasisehat
@@ -104,11 +104,19 @@ export async function middleware(request: NextRequest) {
     // ===================================
     if (segments.length >= 1 && specialRoutes.includes(segments[0])) {
         const requestHeaders = new Headers(request.headers);
+        const subdomain = isSubdomain ? currentHost.replace(`.${baseDomain}`, '') : null;
 
-        // For admin routes, read siteId from activeSite cookie
+        // Determine Site ID
+        let siteId = 'platform';
+        if (subdomain && subdomain !== 'www' && subdomain !== 'admin' && subdomain !== 'auth') {
+            siteId = subdomain;
+        }
+
+        // For admin routes, read siteId from activeSite cookie (override subdomain if set)
         if (segments[0] === 'admin') {
             // Firebase Hosting only allows '__session' cookie
             const activeSite = request.cookies.get('__session')?.value;
+            if (activeSite) siteId = activeSite;
 
             // Auth Gateway URL (centralized login)
             const gatewayUrl = process.env.NEXT_PUBLIC_AUTH_GATEWAY_URL || 'https://auth.clicker.id';
@@ -166,11 +174,10 @@ export async function middleware(request: NextRequest) {
                 return NextResponse.redirect(newUrl);
             }
 
-            // (Fallback: Should rarely reach here if redirect works, mainly for auth pages)
-            requestHeaders.set('x-site-id', activeSite || 'pending');
+            requestHeaders.set('x-site-id', siteId);
         } else {
-            // Other special routes (auth, member, etc.) - platform level
-            requestHeaders.set('x-site-id', 'platform');
+            // For other special routes (api, member, etc.), use the detected siteId
+            requestHeaders.set('x-site-id', siteId);
         }
 
         return NextResponse.next({

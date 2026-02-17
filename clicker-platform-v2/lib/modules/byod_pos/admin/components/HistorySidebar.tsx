@@ -1,7 +1,10 @@
 'use client';
 
-import { POSOrder } from '@/lib/modules/byod_pos/types';
-import { X, Clock, CreditCard, Receipt, FileText, CheckCircle, XCircle } from 'lucide-react';
+import { POSOrder, POSSettings } from '@/lib/modules/byod_pos/types';
+import { X, Clock, CreditCard, Receipt, FileText, CheckCircle, XCircle, Printer } from 'lucide-react';
+import { useReceiptPrinter } from '@/lib/modules/byod_pos/hooks/useReceiptPrinter';
+import { getPOSSettings } from '@/lib/modules/byod_pos/api';
+import { useSite } from '@/lib/site-context';
 import { useEffect, useState } from 'react';
 
 interface HistorySidebarProps {
@@ -18,7 +21,16 @@ interface HistorySidebarProps {
 }
 
 export function HistorySidebar({ isOpen, onClose, group }: HistorySidebarProps) {
+    const { siteId } = useSite();
     const [visible, setVisible] = useState(false);
+    const { printReceipt } = useReceiptPrinter();
+    const [settings, setSettings] = useState<POSSettings | undefined>(undefined);
+
+    useEffect(() => {
+        if (group && siteId) {
+            getPOSSettings(siteId).then(setSettings);
+        }
+    }, [group, siteId]);
 
     useEffect(() => {
         if (isOpen) {
@@ -99,14 +111,59 @@ export function HistorySidebar({ isOpen, onClose, group }: HistorySidebarProps) 
                                     <div>
                                         <h3 className="text-2xl font-black text-gray-900 mb-1">{group.label}</h3>
                                         <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${group.status === 'paid' ? 'bg-green-100 text-green-700' :
-                                                group.status === 'cancelled' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'
+                                            group.status === 'cancelled' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'
                                             }`}>
                                             {group.status === 'paid' ? <CheckCircle size={12} /> : <XCircle size={12} />}
                                             {group.status}
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <div className="text-sm text-gray-500 mb-1">Total Amount</div>
+                                        <div className="text-xs text-gray-400 mb-1">Subtotal</div>
+                                        <div className="text-sm font-bold text-gray-700 mb-2">
+                                            {formatCurrency(group.orders.reduce((sum, o) => sum + (o.taxBreakdown?.subtotal || o.total), 0))}
+                                        </div>
+
+                                        {/* Tax Summary from all orders */}
+                                        {(() => {
+                                            const totalService = group.orders.reduce((sum, o) => {
+                                                let val = o.taxBreakdown?.serviceCharge || 0;
+                                                if (val === 0 && (o.taxBreakdown?.serviceChargeRate || 0) > 0) {
+                                                    val = Math.round((o.taxBreakdown?.subtotal || o.total) * (o.taxBreakdown!.serviceChargeRate / 100));
+                                                }
+                                                return sum + val;
+                                            }, 0);
+
+                                            return totalService > 0 ? (
+                                                <div className="flex justify-end gap-4 text-xs text-gray-500 mb-1">
+                                                    <span>Service Charge</span>
+                                                    <span>{formatCurrency(totalService)}</span>
+                                                </div>
+                                            ) : null;
+                                        })()}
+
+                                        {(() => {
+                                            const totalTax = group.orders.reduce((sum, o) => {
+                                                let val = o.taxBreakdown?.restaurantTax || 0;
+                                                if (val === 0 && (o.taxBreakdown?.restaurantTaxRate || 0) > 0) {
+                                                    const sub = o.taxBreakdown?.subtotal || o.total;
+                                                    let svc = o.taxBreakdown?.serviceCharge || 0;
+                                                    if (svc === 0 && (o.taxBreakdown?.serviceChargeRate || 0) > 0) {
+                                                        svc = Math.round(sub * (o.taxBreakdown!.serviceChargeRate / 100));
+                                                    }
+                                                    val = Math.round((sub + svc) * (o.taxBreakdown!.restaurantTaxRate / 100));
+                                                }
+                                                return sum + val;
+                                            }, 0);
+
+                                            return totalTax > 0 ? (
+                                                <div className="flex justify-end gap-4 text-xs text-gray-500 mb-2">
+                                                    <span>Tax</span>
+                                                    <span>{formatCurrency(totalTax)}</span>
+                                                </div>
+                                            ) : null;
+                                        })()}
+
+                                        <div className="text-sm text-gray-500 mb-1 pt-2 border-t border-gray-200">Total Amount</div>
                                         <div className="text-2xl font-black text-brand-dark">
                                             {formatCurrency(group.total)}
                                         </div>
@@ -139,9 +196,21 @@ export function HistorySidebar({ isOpen, onClose, group }: HistorySidebarProps) 
                                                     <span className="font-mono bg-white px-1.5 py-0.5 rounded border border-gray-200">#{order.id.slice(-4)}</span>
                                                     <span>{new Date((order.createdAt?.seconds || 0) * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                                 </div>
-                                                <div className={`font-bold ${order.status === 'cancelled' ? 'text-red-600' : 'text-green-600'
-                                                    }`}>
-                                                    {order.status.toUpperCase()}
+                                                <div className="flex items-center gap-3">
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            printReceipt(order, settings);
+                                                        }}
+                                                        className="p-1.5 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                                                        title="Print Receipt"
+                                                    >
+                                                        <Printer size={16} />
+                                                    </button>
+                                                    <div className={`font-bold ${order.status === 'cancelled' ? 'text-red-600' : 'text-green-600'
+                                                        }`}>
+                                                        {order.status.toUpperCase()}
+                                                    </div>
                                                 </div>
                                             </div>
 

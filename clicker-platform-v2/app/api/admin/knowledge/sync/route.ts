@@ -12,7 +12,13 @@ export async function POST(req: NextRequest) {
         const urlsString = formData.get('urls') as string;
         const pdfFile = formData.get('pdfFile') as File | null;
 
-        console.log(`[Sync] Started. PDF: ${pdfFile ? pdfFile.name : 'None'}, URL Count: ${urlsString ? urlsString.split('\n').length : 0}`);
+        // Get siteId from request headers (set by middleware)
+        const siteId = req.headers.get('x-site-id');
+        if (!siteId) {
+            return NextResponse.json({ success: false, error: 'Site ID is required for knowledge sync' }, { status: 400 });
+        }
+
+        console.log(`[Sync] Started for Site: ${siteId}. PDF: ${pdfFile ? pdfFile.name : 'None'}, URL Count: ${urlsString ? urlsString.split('\n').length : 0}`);
 
         let combinedText = "";
 
@@ -64,13 +70,7 @@ ${content}
             try {
                 console.log(`[Sync] Processing PDF with Gemini Vision: ${pdfFile.name}...`);
 
-                // Get siteId from request headers (set by middleware)
-                const siteId = req.headers.get('x-site-id');
-                if (!siteId) {
-                    throw new Error('Site ID is required for knowledge sync');
-                }
-
-                // Get Gemini Client
+                // Get Gemini Client (siteId is already validated above)
                 const { getGeminiClient } = await import("@/lib/modules/ai-sales-agent/server/gemini-client");
                 const ai = await getGeminiClient(siteId);
                 // Using Gemini 2.0 Flash (Experimental) as 1.5 might have alias issues or strict versioning
@@ -127,11 +127,16 @@ ${text}
             }
         }
 
-        // 3. Save to Firestore
-        await adminDb.collection('modules').doc('ai-sales-agent').set({
-            knowledgeBaseContent: combinedText,
-            knowledgeUpdatedAt: new Date().toISOString()
-        }, { merge: true });
+        // 3. Save to Firestore (Site-scoped)
+        await adminDb
+            .collection('sites')
+            .doc(siteId)
+            .collection('modules')
+            .doc('ai-sales-agent')
+            .set({
+                knowledgeBaseContent: combinedText,
+                knowledgeUpdatedAt: new Date().toISOString()
+            }, { merge: true });
 
         return NextResponse.json({
             success: true,

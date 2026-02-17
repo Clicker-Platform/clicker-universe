@@ -62,14 +62,19 @@ export function MenuGrid({ initialItems, initialInventoryMap }: MenuGridProps) {
                 }
 
                 // Dynamic Import for Modularity
-                const { getInventory } = await import('@/lib/modules/inventory/api');
-                const inventoryItems = await getInventory(siteId);
+                const { isModuleEnabled } = await import('@/lib/modules/registry');
+                const inventoryEnabled = await isModuleEnabled('inventory');
 
-                const invById: Record<string, InventoryItem> = {};
-                inventoryItems.forEach(invItem => {
-                    invById[invItem.id] = invItem;
-                });
-                setInventoryById(invById);
+                if (inventoryEnabled) {
+                    const { getInventory } = await import('@/lib/modules/inventory/api');
+                    const inventoryItems = await getInventory(siteId);
+
+                    const invById: Record<string, InventoryItem> = {};
+                    inventoryItems.forEach(invItem => {
+                        invById[invItem.id] = invItem;
+                    });
+                    setInventoryById(invById);
+                }
             } catch (e) {
                 console.error("Failed to init POS", e);
             }
@@ -144,8 +149,13 @@ export function MenuGrid({ initialItems, initialInventoryMap }: MenuGridProps) {
     useEffect(() => {
         if (!siteId) return;
 
-        import('@/lib/modules/inventory/api').then(({ getInventory }) => {
-            getInventory(siteId).then(inv => {
+        async function loadInventoryMaps() {
+            const { isModuleEnabled } = await import('@/lib/modules/registry');
+            const inventoryEnabled = await isModuleEnabled('inventory');
+
+            if (inventoryEnabled) {
+                const { getInventory } = await import('@/lib/modules/inventory/api');
+                const inv = await getInventory(siteId);
                 const byLink: Record<string, InventoryItem> = {};
                 const byName: Record<string, InventoryItem> = {};
                 const byId: Record<string, InventoryItem> = {};
@@ -156,8 +166,10 @@ export function MenuGrid({ initialItems, initialInventoryMap }: MenuGridProps) {
                 });
                 setLookupMaps({ byLink, byName });
                 setInventoryById(byId);
-            });
-        });
+            }
+        }
+
+        loadInventoryMaps();
     }, [siteId]);
 
     const getItemStock = (item: POSItem) => {
