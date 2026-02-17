@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminStorage } from '@/lib/firebase-admin';
-// Dynamic require to prevent Turbopack from hashing the module name
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const sharp = require('sharp') as typeof import('sharp');
-import { cookies } from 'next/headers';
 import { v4 as uuidv4 } from 'uuid';
+
+// Map MIME types to file extensions
+const MIME_TO_EXT: Record<string, string> = {
+    'image/jpeg': 'jpg',
+    'image/png': 'png',
+    'image/webp': 'webp',
+    'image/gif': 'gif',
+};
 
 export async function POST(req: NextRequest) {
     try {
@@ -17,7 +21,7 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'No file provided' }, { status: 400 });
         }
 
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+        const allowedTypes = Object.keys(MIME_TO_EXT);
         if (!allowedTypes.includes(file.type)) {
             console.warn('[Upload Avatar] Invalid file type:', file.type);
             return NextResponse.json({ error: 'Invalid file type' }, { status: 400 });
@@ -29,13 +33,6 @@ export async function POST(req: NextRequest) {
         }
 
         const buffer = Buffer.from(await file.arrayBuffer());
-
-        // Process image with Sharp
-        console.log('[Upload Avatar] Processing image with Sharp...');
-        const processedBuffer = await sharp(buffer)
-            .resize({ width: 500, height: 500, fit: 'cover' }) // Optimization
-            .webp({ quality: 80 })
-            .toBuffer();
 
         const bucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
         console.log('[Upload Avatar] Storage bucket:', bucketName);
@@ -51,24 +48,24 @@ export async function POST(req: NextRequest) {
         const siteId = req.headers.get('x-site-id') || 'platform';
         const storagePrefix = siteId === 'platform' ? 'profile' : `sites/${siteId}/profile`;
 
-        const fileName = `${storagePrefix}/avatar_${Date.now()}_${Math.random().toString(36).substring(7)}.webp`;
+        const ext = MIME_TO_EXT[file.type] || 'jpg';
+        const fileName = `${storagePrefix}/avatar_${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
         const fileRef = bucket.file(fileName);
 
-        // Generate a unique token for the download URL (Standard Firebase Client way)
+        // Generate a unique token for the download URL
         const downloadToken = uuidv4();
 
         console.log('[Upload Avatar] Saving to:', fileName);
-        await fileRef.save(processedBuffer, {
+        await fileRef.save(buffer, {
             metadata: {
-                contentType: 'image/webp',
+                contentType: file.type,
                 metadata: {
                     firebaseStorageDownloadTokens: downloadToken
                 }
             },
         });
 
-        // Construct the Firebase Storage Download URL (No makePublic needed)
-        // Format: https://firebasestorage.googleapis.com/v0/b/[BUCKET]/o/[PATH]?alt=media&token=[TOKEN]
+        // Construct the Firebase Storage Download URL
         const encodedPath = encodeURIComponent(fileName);
         const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${bucketName}/o/${encodedPath}?alt=media&token=${downloadToken}`;
 
