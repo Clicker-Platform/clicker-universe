@@ -15,8 +15,8 @@ interface POSInterfaceProps {
 function POSInterface({ settings }: POSInterfaceProps) {
     const { siteId } = useSite();
 
-    // Use businessName from POS settings, fallback to general site name 'QUATTRO'
-    const businessName = settings?.businessName || 'QUATTRO';
+    // Use businessName from POS settings, fallback to generic name
+    const businessName = settings?.businessName || 'Self Order';
 
     return (
         <div className="min-h-screen bg-gray-50 pb-32">

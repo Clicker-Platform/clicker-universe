@@ -2,8 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { Upload, X, Loader2 } from 'lucide-react';
-import { storage } from '@/lib/firebase';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { uploadToStorage } from '@/lib/upload';
 import { useSite } from '@/lib/site-context';
 
 interface AvatarUploadProps {
@@ -56,19 +55,7 @@ export function AvatarUpload({ currentAvatarUrl, onUploadComplete }: AvatarUploa
         setUploading(true);
 
         try {
-            // Build site-aware storage path
-            const storagePrefix = siteId === 'platform' ? 'profile' : `sites/${siteId}/profile`;
-            const ext = file.name.split('.').pop() || 'jpg';
-            const fileName = `${storagePrefix}/avatar_${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
-
-            // Upload directly to Firebase Storage from client
-            const storageRef = ref(storage, fileName);
-            await uploadBytes(storageRef, file, {
-                contentType: file.type,
-            });
-
-            // Get the download URL
-            const url = await getDownloadURL(storageRef);
+            const url = await uploadToStorage({ file, folder: 'profile', siteId });
             onUploadComplete(url);
         } catch (err: any) {
             console.error('[AvatarUpload] Error:', err);
