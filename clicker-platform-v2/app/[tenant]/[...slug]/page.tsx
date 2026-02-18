@@ -63,7 +63,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function TenantCatchAllPage({ params, searchParams }: Props) {
     const { tenant, slug } = await params;
-    const { t } = await searchParams;
+    const resolvedSearchParams = await searchParams;
+    const { t } = resolvedSearchParams;
     const path = getPath(slug);
     const siteId = tenant;
 
@@ -92,8 +93,8 @@ export default async function TenantCatchAllPage({ params, searchParams }: Props
         return (
             <ModuleLoader
                 componentKey={moduleMatch.route.componentKey}
-                params={params}
-                searchParams={searchParams}
+                params={{ tenant, slug }}
+                searchParams={resolvedSearchParams}
                 siteId={siteId}
                 {...initialData}
             />
