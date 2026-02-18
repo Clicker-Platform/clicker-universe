@@ -163,18 +163,22 @@ export function MenuGrid({ initialItems, initialInventoryMap }: MenuGridProps) {
             const inventoryEnabled = await isModuleEnabled('inventory');
 
             if (inventoryEnabled) {
-                const { getInventory } = await import('@/lib/modules/inventory/api');
-                const inv = await getInventory(siteId);
-                const byLink: Record<string, InventoryItem> = {};
-                const byName: Record<string, InventoryItem> = {};
-                const byId: Record<string, InventoryItem> = {};
-                inv.forEach(i => {
-                    byId[i.id] = i;
-                    if (i.linkedPosItemId) byLink[i.linkedPosItemId] = i;
-                    byName[i.name] = i;
-                });
-                setLookupMaps({ byLink, byName });
-                setInventoryById(byId);
+                try {
+                    const { getInventory } = await import('@/lib/modules/inventory/api');
+                    const inv = await getInventory(siteId);
+                    const byLink: Record<string, InventoryItem> = {};
+                    const byName: Record<string, InventoryItem> = {};
+                    const byId: Record<string, InventoryItem> = {};
+                    inv.forEach(i => {
+                        byId[i.id] = i;
+                        if (i.linkedPosItemId) byLink[i.linkedPosItemId] = i;
+                        byName[i.name] = i;
+                    });
+                    setLookupMaps({ byLink, byName });
+                    setInventoryById(byId);
+                } catch (err: any) {
+                    console.warn("Inventory access restricted (Public POS).", err.code);
+                }
             }
         }
 
