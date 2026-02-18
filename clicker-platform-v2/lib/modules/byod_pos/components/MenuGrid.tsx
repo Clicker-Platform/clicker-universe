@@ -66,14 +66,23 @@ export function MenuGrid({ initialItems, initialInventoryMap }: MenuGridProps) {
                 const inventoryEnabled = await isModuleEnabled('inventory');
 
                 if (inventoryEnabled) {
-                    const { getInventory } = await import('@/lib/modules/inventory/api');
-                    const inventoryItems = await getInventory(siteId);
+                    try {
+                        const { getInventory } = await import('@/lib/modules/inventory/api');
+                        const inventoryItems = await getInventory(siteId);
 
-                    const invById: Record<string, InventoryItem> = {};
-                    inventoryItems.forEach(invItem => {
-                        invById[invItem.id] = invItem;
-                    });
-                    setInventoryById(invById);
+                        const invById: Record<string, InventoryItem> = {};
+                        inventoryItems.forEach(invItem => {
+                            invById[invItem.id] = invItem;
+                        });
+                        setInventoryById(invById);
+                    } catch (inventoryError: any) {
+                        // Gracefully handle permission errors for Public POS
+                        if (inventoryError.code === 'permission-denied') {
+                            console.warn("Inventory access restricted (Public POS). Stock levels will not be tracked.");
+                        } else {
+                            throw inventoryError;
+                        }
+                    }
                 }
             } catch (e) {
                 console.error("Failed to init POS", e);
