@@ -77,7 +77,7 @@ export function MenuGrid({ initialItems, initialInventoryMap }: MenuGridProps) {
                         setInventoryById(invById);
                     } catch (inventoryError: any) {
                         // Gracefully handle permission errors for Public POS
-                        if (inventoryError.code === 'permission-denied') {
+                        if (inventoryError.code === 'permission-denied' || inventoryError.message?.includes('permission-denied') || inventoryError.message?.includes('Missing or insufficient permissions')) {
                             console.warn("Inventory access restricted (Public POS). Stock levels will not be tracked.");
                         } else {
                             throw inventoryError;
