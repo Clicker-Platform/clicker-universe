@@ -32,7 +32,7 @@ function POSInterface({ siteId, settings }: POSInterfaceProps) {
 
             {/* Content */}
             <main className="max-w-md mx-auto md:max-w-4xl pt-4">
-                {/* POSWidget is now rendered directly in OrderPage's main content */}
+                <POSWidget settings={settings || undefined} />
             </main>
         </div>
     );
