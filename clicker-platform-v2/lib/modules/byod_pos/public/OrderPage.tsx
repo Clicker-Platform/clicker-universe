@@ -9,12 +9,11 @@ import { getPOSSettings } from '@/lib/modules/byod_pos/api';
 import { POSSettings } from '@/lib/modules/byod_pos/types';
 
 interface POSInterfaceProps {
+    siteId: string;
     settings: POSSettings | null;
 }
 
-function POSInterface({ settings }: POSInterfaceProps) {
-    const { siteId } = useSite();
-
+function POSInterface({ siteId, settings }: POSInterfaceProps) {
     // Use businessName from POS settings, fallback to generic name
     const businessName = settings?.businessName || 'Self Order';
 
@@ -33,7 +32,7 @@ function POSInterface({ settings }: POSInterfaceProps) {
 
             {/* Content */}
             <main className="max-w-md mx-auto md:max-w-4xl pt-4">
-                <POSWidget />
+                {/* POSWidget is now rendered directly in OrderPage's main content */}
             </main>
         </div>
     );
@@ -42,15 +41,32 @@ function POSInterface({ settings }: POSInterfaceProps) {
 import { OrderTrackerProvider } from '../order-tracker-context';
 import { OrderTracker } from '../components/OrderTracker';
 
-export default function OrderPage() {
-    const { siteId } = useSite();
-    const [settings, setSettings] = useState<POSSettings | null>(null);
+interface Props {
+    searchParams: { [key: string]: string | string[] | undefined };
+    params: { tenant: string }; // siteId
+    initialSettings?: POSSettings;
+}
 
+export default function OrderPage({ params, searchParams, initialSettings }: Props) {
+    const siteId = params.tenant;
+
+    // Check if initialSettings provided, if not fetch them client-side
+    const [settings, setSettings] = useState<POSSettings | null>(initialSettings || null);
+    const [loadingSettings, setLoadingSettings] = useState(!initialSettings);
+
+    // Fetch Settings if not provided (Client-side Fallback)
     useEffect(() => {
-        if (siteId) {
-            getPOSSettings(siteId).then(setSettings);
+        if (!initialSettings) {
+            getPOSSettings(siteId).then(s => {
+                setSettings(s);
+                setLoadingSettings(false);
+            });
         }
-    }, [siteId]);
+    }, [siteId, initialSettings]);
+
+    // Use settings or fallback
+    const businessName = settings?.businessName || 'Loading...';
+    // Logo is inside settings too now.
 
     if (!siteId) {
         return <div className="p-4 text-center">Loading...</div>;
@@ -59,7 +75,7 @@ export default function OrderPage() {
     return (
         <OrderTrackerProvider siteId={siteId}>
             <CartProvider>
-                <POSInterface settings={settings} />
+                <POSInterface siteId={siteId} settings={settings} />
                 <OrderTracker />
             </CartProvider>
         </OrderTrackerProvider>

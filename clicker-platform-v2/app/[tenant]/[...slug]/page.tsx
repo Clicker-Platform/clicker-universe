@@ -75,12 +75,27 @@ export default async function TenantCatchAllPage({ params, searchParams }: Props
     const moduleMatch = await findModuleForRoute(path);
 
     if (moduleMatch) {
+        // LCP Optimization: Fetch POS Settings on Server for OrderPage
+        // This avoids the waterfall effect of Client Component -> useEffect -> Fetch
+        let initialData = {};
+        if (moduleMatch.route.componentKey === 'byod_pos:OrderPage') {
+            try {
+                // Dynamic import to avoid bundling POS logic in main bundle if not needed
+                const { getPOSSettings } = await import('@/lib/modules/byod_pos/api');
+                const settings = await getPOSSettings(siteId);
+                initialData = { initialSettings: settings };
+            } catch (e) {
+                console.error("Failed to fetch POS settings on server", e);
+            }
+        }
+
         return (
             <ModuleLoader
                 componentKey={moduleMatch.route.componentKey}
                 params={params}
                 searchParams={searchParams}
                 siteId={siteId}
+                {...initialData}
             />
         );
     }

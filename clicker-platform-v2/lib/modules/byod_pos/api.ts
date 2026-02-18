@@ -154,11 +154,11 @@ export async function getMenuItems(
     pageSize: number = 20,
     lastDoc: QueryDocumentSnapshot | null = null
 ): Promise<{ items: POSItem[], lastDoc: QueryDocumentSnapshot | null }> {
-    let constraints: any[] = [orderBy('name'), limit(pageSize)];
+    let constraints: any[] = [orderBy('name'), limit(pageSize + 1)]; // Fetch one extra to check for "next"
 
     // Category Filter
     if (category && category !== 'All') {
-        constraints = [where('category', '==', category), orderBy('name'), limit(pageSize)];
+        constraints = [where('category', '==', category), orderBy('name'), limit(pageSize + 1)];
     }
 
     // Search Filter (Prefix)
@@ -167,7 +167,7 @@ export async function getMenuItems(
             where('name', '>=', searchQuery),
             where('name', '<=', searchQuery + '\uf8ff'),
             orderBy('name'),
-            limit(pageSize)
+            limit(pageSize + 1)
         ];
     }
 
@@ -178,7 +178,14 @@ export async function getMenuItems(
     const q = query(collection(db, 'sites', siteId, 'modules/byod_pos/menu_items'), ...constraints);
     const snapshot = await getDocs(q);
 
-    const items = snapshot.docs.map(doc => {
+    // Determines if there are more items
+    const hasNextPage = snapshot.docs.length > pageSize;
+
+    // Slice off the extra item if exists
+    const docs = hasNextPage ? snapshot.docs.slice(0, pageSize) : snapshot.docs;
+    const lastVisible = docs.length > 0 ? docs[docs.length - 1] : null;
+
+    const items = docs.map(doc => {
         const data = doc.data();
         return {
             id: doc.id,
@@ -194,7 +201,9 @@ export async function getMenuItems(
 
     return {
         items,
-        lastDoc: snapshot.docs.length === pageSize ? snapshot.docs[snapshot.docs.length - 1] : null
+        // We checked +1.
+        // If !hasNextPage, we can force lastDoc to null to signal end.
+        lastDoc: hasNextPage ? lastVisible : null
     };
 }
 

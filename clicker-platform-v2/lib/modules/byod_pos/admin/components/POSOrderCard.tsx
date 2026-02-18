@@ -104,7 +104,7 @@ export function POSOrderCard({ order, onUpdateStatus, onCancel, onProcessPayment
                     {/* KDS: Show Timer & Order Type */}
                     {kds && (
                         <div className="flex flex-col items-start gap-1 mt-1">
-                            <div className={`flex items-center gap-1 font-mono text-xl font-bold ${parseInt(elapsedTime.split(':')[0]) >= 10 ? 'text-red-600 animate-pulse' : 'text-gray-500'
+                            <div className={`flex items-center gap-1 font-mono text-xl font-bold ${parseInt(elapsedTime.split(':')[0]) >= 20 ? 'text-red-600 animate-pulse' : 'text-gray-500'
                                 }`}>
                                 <Clock size={16} />
                                 {elapsedTime}
