@@ -62,14 +62,28 @@ export function MenuGrid({ initialItems, initialInventoryMap }: MenuGridProps) {
                 }
 
                 // Dynamic Import for Modularity
-                const { getInventory } = await import('@/lib/modules/inventory/api');
-                const inventoryItems = await getInventory(siteId);
+                const { isModuleEnabled } = await import('@/lib/modules/registry');
+                const inventoryEnabled = await isModuleEnabled('inventory');
 
-                const invById: Record<string, InventoryItem> = {};
-                inventoryItems.forEach(invItem => {
-                    invById[invItem.id] = invItem;
-                });
-                setInventoryById(invById);
+                if (inventoryEnabled) {
+                    try {
+                        const { getInventory } = await import('@/lib/modules/inventory/api');
+                        const inventoryItems = await getInventory(siteId);
+
+                        const invById: Record<string, InventoryItem> = {};
+                        inventoryItems.forEach(invItem => {
+                            invById[invItem.id] = invItem;
+                        });
+                        setInventoryById(invById);
+                    } catch (inventoryError: any) {
+                        // Gracefully handle permission errors for Public POS
+                        if (inventoryError.code === 'permission-denied' || inventoryError.message?.includes('permission-denied') || inventoryError.message?.includes('Missing or insufficient permissions')) {
+                            console.warn("Inventory access restricted (Public POS). Stock levels will not be tracked.");
+                        } else {
+                            throw inventoryError;
+                        }
+                    }
+                }
             } catch (e) {
                 console.error("Failed to init POS", e);
             }
@@ -144,20 +158,31 @@ export function MenuGrid({ initialItems, initialInventoryMap }: MenuGridProps) {
     useEffect(() => {
         if (!siteId) return;
 
-        import('@/lib/modules/inventory/api').then(({ getInventory }) => {
-            getInventory(siteId).then(inv => {
-                const byLink: Record<string, InventoryItem> = {};
-                const byName: Record<string, InventoryItem> = {};
-                const byId: Record<string, InventoryItem> = {};
-                inv.forEach(i => {
-                    byId[i.id] = i;
-                    if (i.linkedPosItemId) byLink[i.linkedPosItemId] = i;
-                    byName[i.name] = i;
-                });
-                setLookupMaps({ byLink, byName });
-                setInventoryById(byId);
-            });
-        });
+        async function loadInventoryMaps() {
+            const { isModuleEnabled } = await import('@/lib/modules/registry');
+            const inventoryEnabled = await isModuleEnabled('inventory');
+
+            if (inventoryEnabled) {
+                try {
+                    const { getInventory } = await import('@/lib/modules/inventory/api');
+                    const inv = await getInventory(siteId);
+                    const byLink: Record<string, InventoryItem> = {};
+                    const byName: Record<string, InventoryItem> = {};
+                    const byId: Record<string, InventoryItem> = {};
+                    inv.forEach(i => {
+                        byId[i.id] = i;
+                        if (i.linkedPosItemId) byLink[i.linkedPosItemId] = i;
+                        byName[i.name] = i;
+                    });
+                    setLookupMaps({ byLink, byName });
+                    setInventoryById(byId);
+                } catch (err: any) {
+                    console.warn("Inventory access restricted (Public POS).", err.code);
+                }
+            }
+        }
+
+        loadInventoryMaps();
     }, [siteId]);
 
     const getItemStock = (item: POSItem) => {

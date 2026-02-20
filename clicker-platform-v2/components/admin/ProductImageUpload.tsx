@@ -2,6 +2,8 @@
 
 import { useState, useRef } from 'react';
 import { Upload, X, Loader2, Image as ImageIcon } from 'lucide-react';
+import { uploadToStorage } from '@/lib/upload';
+import { useSite } from '@/lib/site-context';
 
 interface ProductImageUploadProps {
     currentImageUrl?: string;
@@ -13,6 +15,7 @@ export function ProductImageUpload({ currentImageUrl, onUpload, onRemove }: Prod
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const { siteId } = useSite();
 
     const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -33,22 +36,10 @@ export function ProductImageUpload({ currentImageUrl, onUpload, onRemove }: Prod
         }
 
         setUploading(true);
-        const formData = new FormData();
-        formData.append('file', file);
 
         try {
-            const res = await fetch('/api/upload/image?folder=products', {
-                method: 'POST',
-                body: formData,
-            });
-
-            const data = await res.json();
-
-            if (!res.ok) {
-                throw new Error(data.error || 'Upload failed');
-            }
-
-            onUpload(data.url);
+            const url = await uploadToStorage({ file, folder: 'products', siteId });
+            onUpload(url);
         } catch (err: any) {
             console.error(err);
             setError(err.message || 'Error uploading');

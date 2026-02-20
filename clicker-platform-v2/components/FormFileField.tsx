@@ -3,6 +3,8 @@
 import React, { useRef, useState } from 'react';
 import { Upload, X, Loader2, Image as ImageIcon, Check } from 'lucide-react';
 import { convertToWebP, validateImageFile } from '@/lib/imageUtils';
+import { uploadToStorage } from '@/lib/upload';
+import { useSite } from '@/lib/site-context';
 
 interface FormFileFieldProps {
     label: string;
@@ -15,6 +17,7 @@ export const FormFileField: React.FC<FormFileFieldProps> = ({ label, required, o
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const { siteId } = useSite();
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -33,19 +36,8 @@ export const FormFileField: React.FC<FormFileFieldProps> = ({ label, required, o
             const webpBlob = await convertToWebP(file);
             const webpFile = new File([webpBlob], file.name.replace(/\.[^/.]+$/, "") + ".webp", { type: 'image/webp' });
 
-            const formData = new FormData();
-            formData.append('file', webpFile);
-            formData.append('folder', 'form-uploads'); // Specific folder for organized storage
-
-            const res = await fetch('/api/upload/image', {
-                method: 'POST',
-                body: formData
-            });
-
-            if (!res.ok) throw new Error('Upload failed');
-
-            const data = await res.json();
-            onChange(data.url);
+            const url = await uploadToStorage({ file: webpFile, folder: 'form-uploads', siteId });
+            onChange(url);
         } catch (err) {
             console.error('Upload Error:', err);
             setError('Failed to upload image. Please try again.');

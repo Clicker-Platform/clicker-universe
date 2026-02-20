@@ -21,34 +21,62 @@ import { useSite } from '@/lib/site-context'; // New import
 interface POSWidgetProps {
     initialItems?: any[];
     initialInventoryMap?: Record<string, any>;
+    settings?: POSSettings;
 }
 
-export function POSWidget({ initialItems, initialInventoryMap }: POSWidgetProps) {
+export function POSWidget({ initialItems, initialInventoryMap, settings: propSettings }: POSWidgetProps) {
     const { siteId } = useSite();
     const { items, total, itemCount, removeFromCart, updateQuantity, clearCart, taxBreakdown } = useCart();
-    const { trackOrder, activeOrderIds, orders, clearCompletedOrders } = useOrderTracker();
+    const { trackOrder, activeOrderIds, orders, clearCompletedOrders, user } = useOrderTracker();
     const { printReceipt } = useReceiptPrinter();
     const [successOrder, setSuccessOrder] = useState<any | null>(null);
 
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [isCheckingOut, setIsCheckingOut] = useState(false);
     const [member, setMember] = useState<Member | null>(null);
-    const [settings, setSettings] = useState<POSSettings | null>(null);
+    const [settings, setSettings] = useState<POSSettings | null>(propSettings || null); // Use prop if available
     const [manualTableNumber, setManualTableNumber] = useState(''); // NEW STATE
     const searchParams = useSearchParams();
     const tableParam = searchParams.get('table');
 
-    const [loadingSettings, setLoadingSettings] = useState(true);
+    const [loadingSettings, setLoadingSettings] = useState(!propSettings); // Loading if no prop
 
-    // Initial Settings Load
-    // Use useEffect for side effects, not useState initializer
+    // Initial Settings Load if not provided via props
     useEffect(() => {
-        if (!siteId) return;
-        getPOSSettings(siteId).then((data) => {
-            setSettings(data);
+        if (!propSettings) {
+            if (siteId) {
+                getPOSSettings(siteId).then((data) => {
+                    setSettings(data);
+                    setLoadingSettings(false);
+                });
+            }
+        } else {
+            // If propSettings changes, update state
+            setSettings(propSettings);
             setLoadingSettings(false);
-        });
-    }, [siteId]);
+        }
+    }, [siteId, propSettings]);
+
+    // Order Cancellation Listener
+    useEffect(() => {
+        if (orders.length > 0) {
+            const cancelledOrder = orders.find(o => o.status === 'cancelled' && o.paymentStatus !== 'paid');
+            if (cancelledOrder) {
+                // Alert user
+                toast.error("Order Cancelled", {
+                    description: `Order #${cancelledOrder.id.slice(-4)} was cancelled by the kitchen/admin.`,
+                    duration: 5000
+                });
+                // Clear it from view? 
+                // clearCompletedOrders() currently removes cancelled ones. 
+                // We might want to remove it after showing the toast to avoid loop?
+                // But clearCompletedOrders depends on user action or automatic?
+                // logic in clearCompletedOrders: orders.filter(o => o.paymentStatus !== 'paid' && o.status !== 'cancelled')
+                // So calling it will remove this cancelled order.
+                clearCompletedOrders();
+            }
+        }
+    }, [orders, clearCompletedOrders]);
 
     // activeOrder detection: Any order that is NOT paid and NOT cancelled is an active open bill.
     const activeOrderDetection = activeOrderIds.find(id => {
@@ -315,7 +343,7 @@ export function POSWidget({ initialItems, initialInventoryMap }: POSWidgetProps)
                                 {isCheckingOut || loadingSettings ? 'Processing...' : (
                                     <>
                                         <ShoppingBag size={20} />
-                                        {hasActiveOpenBill ? `Add to Open Bill` : (settings?.mode === 'open-bill' ? 'Start Open Bill' : 'Place Order')}
+                                        {hasActiveOpenBill ? `Add to Open Bill` : 'Start Order'}
                                     </>
                                 )}
                             </button>

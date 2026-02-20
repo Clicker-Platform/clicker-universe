@@ -1,0 +1,882 @@
+[debug] [2026-02-16T11:42:27.294Z] ----------------------------------------------------------------------
+[debug] [2026-02-16T11:42:27.295Z] Command:       /Users/mac/.local/share/fnm/node-versions/v22.22.0/installation/bin/node /opt/homebrew/bin/firebase deploy --only hosting --debug
+[debug] [2026-02-16T11:42:27.295Z] CLI Version:   15.2.1
+[debug] [2026-02-16T11:42:27.296Z] Platform:      darwin
+[debug] [2026-02-16T11:42:27.296Z] Node Version:  v22.22.0
+[debug] [2026-02-16T11:42:27.296Z] Time:          Mon Feb 16 2026 18:42:27 GMT+0700 (Western Indonesia Time)
+[debug] [2026-02-16T11:42:27.296Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-02-16T11:42:28.069Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-02-16T11:42:28.070Z] > authorizing via signed-in user (kukuhadafi99@gmail.com)
+[debug] [2026-02-16T11:42:28.070Z] [iam] checking project clicker-platform for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2026-02-16T11:42:28.070Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:42:28.070Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:42:28.071Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/clicker-platform:testIamPermissions [none]
+[debug] [2026-02-16T11:42:28.071Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/clicker-platform:testIamPermissions x-goog-quota-user=projects/clicker-platform
+[debug] [2026-02-16T11:42:28.071Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/clicker-platform:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-02-16T11:42:28.456Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/clicker-platform:testIamPermissions 200
+[debug] [2026-02-16T11:42:28.457Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/clicker-platform:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-02-16T11:42:28.457Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:42:28.458Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:42:28.458Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/clicker-platform [none]
+[debug] [2026-02-16T11:42:29.063Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/clicker-platform 200
+[debug] [2026-02-16T11:42:29.063Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/clicker-platform {"projectId":"clicker-platform","projectNumber":"807906903254","displayName":"Clicker Platform","name":"projects/clicker-platform","resources":{"hostingSite":"clicker-platform"},"state":"ACTIVE","etag":"1_e480fb3a-14e1-4fed-a1c0-976dead20806"}
+[debug] [2026-02-16T11:42:29.912Z] defaultcredentials: writing to file /Users/mac/.config/firebase/kukuhadafi99_gmail_com_application_default_credentials.json
+[debug] [2026-02-16T11:42:29.913Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:42:29.913Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:42:29.913Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/clicker-platform/sites pageToken=&pageSize=10
+[debug] [2026-02-16T11:42:31.603Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/clicker-platform/sites 200
+[debug] [2026-02-16T11:42:31.603Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/clicker-platform/sites {"sites":[{"name":"projects/clicker-platform/sites/clicker-platform","defaultUrl":"https://clicker-platform.web.app","type":"DEFAULT_SITE"},{"name":"projects/clicker-platform/sites/clicker-properti","defaultUrl":"https://clicker-properti.web.app","appId":"1:807906903254:web:46d8dbc9784d9b5cce7577","type":"USER_SITE"}]}
+[info] 
+   Thank you for trying our early preview of Next.js support on Firebase Hosting.
+   During the preview, support is best-effort and breaking changes can be expected. Proceed with caution.
+   The integration is known to work with Next.js version 12 - 15.0. You may encounter errors.
+
+   Documentation: https://firebase.google.com/docs/hosting/frameworks/nextjs
+   File a bug: https://github.com/firebase/firebase-tools/issues/new?template=bug_report.md
+   Submit a feature request: https://github.com/firebase/firebase-tools/issues/new?template=feature_request.md
+
+   We'd love to learn from you. Express your interest in helping us shape the future of Firebase Hosting: https://goo.gle/41enW5X
+
+[debug] [2026-02-16T11:42:33.224Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:42:33.224Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:42:33.225Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/clicker-platform/sites/clicker-platform [none]
+[debug] [2026-02-16T11:42:33.768Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/clicker-platform/sites/clicker-platform 200
+[debug] [2026-02-16T11:42:33.768Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/clicker-platform/sites/clicker-platform {"name":"projects/clicker-platform/sites/clicker-platform","defaultUrl":"https://clicker-platform.web.app","type":"DEFAULT_SITE"}
+[info] ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of /Users/mac/Documents/AI Project/Clicker/clicker-platform/main/package-lock.json as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * /Users/mac/Documents/AI Project/Clicker/clicker-platform/main/clicker-platform-v2/package-lock.json
+
+
+[info] ▲ Next.js 16.1.1 (Turbopack)
+
+[info] - Environments: .env.production
+
+
+[info] ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+
+[info]   Creating an optimized production build ...
+
+[info] 
+
+[info] [210.40ms] [@tailwindcss/postcss] app/globals.css
+[  0.10ms]   ↳ Quick bail check
+[ 72.75ms]   ↳ Setup compiler
+[  0.57ms]     ↳ PostCSS AST -> Tailwind CSS AST
+[ 71.98ms]     ↳ Create compiler
+
+[info] [  0.10ms]   ↳ Register full rebuild paths
+[  0.76ms]   ↳ Setup scanner
+[ 27.33ms]   ↳ Scan for candidates
+
+[info] [ 18.86ms]   ↳ Register dependency messages
+
+[info] [ 47.61ms]   ↳ Build utilities
+
+[info] [ 37.61ms]   ↳ Optimization
+
+[info] [  0.95ms]     ↳ AST -> CSS
+
+[info] [ 15.91ms]     ↳ Lightning CSS
+
+[info] [ 20.73ms]     ↳ CSS -> PostCSS AST
+[  4.67ms]   ↳ Update PostCSS AST
+
+[info] 
+
+[info] ✓ Compiled successfully in 6.5s
+
+[info]   Running TypeScript ...
+
+[info]   Collecting page data using 7 workers ...
+
+[info] [Firebase] Initialized with config: {
+  projectId: 'clicker-universe',
+  authDomain: 'clicker-universe.firebaseapp.com'
+}
+
+[info] [firebase-admin] Initializing with ADC (Production/Cloud Mode)...
+
+[info] [firebase-admin] Initializing with ADC (Production/Cloud Mode)...
+
+[info] [firebase-admin] Initializing with ADC (Production/Cloud Mode)...
+
+[info] [firebase-admin] Initializing with ADC (Production/Cloud Mode)...
+
+[info] [firebase-admin] Initializing with ADC (Production/Cloud Mode)...
+
+[info] [firebase-admin] Initializing with ADC (Production/Cloud Mode)...
+
+[info] [firebase-admin] Initializing with ADC (Production/Cloud Mode)...
+
+[info] [Firebase] Initialized with config: {
+  projectId: 'clicker-universe',
+  authDomain: 'clicker-universe.firebaseapp.com'
+}
+
+[info] [Firebase] Initialized with config: {
+  projectId: 'clicker-universe',
+  authDomain: 'clicker-universe.firebaseapp.com'
+}
+
+[info] [Firebase] Initialized with config: {
+  projectId: 'clicker-universe',
+  authDomain: 'clicker-universe.firebaseapp.com'
+}
+
+[info] [Firebase] Initialized with config: {
+  projectId: 'clicker-universe',
+  authDomain: 'clicker-universe.firebaseapp.com'
+}
+
+[info] [Firebase] Initialized with config: {
+  projectId: 'clicker-universe',
+  authDomain: 'clicker-universe.firebaseapp.com'
+}
+
+[info] [Firebase] Initialized with config: {
+  projectId: 'clicker-universe',
+  authDomain: 'clicker-universe.firebaseapp.com'
+}
+
+[info] [Firebase] Initialized with config: {
+  projectId: 'clicker-universe',
+  authDomain: 'clicker-universe.firebaseapp.com'
+}
+
+[info]   Generating static pages using 7 workers (0/25) ...
+
+[info] [Firebase] Initialized with config: {
+  projectId: 'clicker-universe',
+  authDomain: 'clicker-universe.firebaseapp.com'
+}
+
+[info]   Generating static pages using 7 workers (6/25) 
+
+[info] [Firebase] Initialized with config: {
+  projectId: 'clicker-universe',
+  authDomain: 'clicker-universe.firebaseapp.com'
+}
+
+[info]   Generating static pages using 7 workers (12/25) 
+
+[info]   Generating static pages using 7 workers (18/25) 
+
+[info] ✓ Generating static pages using 7 workers (25/25) in 253.9ms
+
+[info]   Finalizing page optimization ...
+
+[info] 
+
+[info] Route (app)
+┌ ƒ /
+├ ƒ /_not-found
+├ ƒ /[tenant]
+├ ƒ /[tenant]/[...slug]
+├ ƒ /admin
+├ ƒ /admin/[...slug]
+├ ƒ /admin/appearance
+├ ƒ /admin/auth/callback
+├ ƒ /admin/business
+├ ƒ /admin/claim-admin
+├ ƒ /admin/debug-auth
+├ ƒ /admin/forms
+├ ƒ /admin/forms/builder
+├ ƒ /admin/inbox
+├ ƒ /admin/links
+├ ƒ /admin/login
+├ ƒ /admin/pages
+├ ƒ /admin/pages/[id]
+├ ƒ /admin/pos/reports
+├ ƒ /admin/pos/settings
+├ ƒ /admin/products
+├ ƒ /admin/profile
+├ ƒ /admin/sales-pipeline
+├ ƒ /admin/seed-modules
+├ ƒ /admin/seed-pos-test
+├ ƒ /admin/settings
+├ ƒ /admin/settings/team
+├ ƒ /admin/setup-membership
+├ ƒ /api/admin/knowledge/sync
+├ ƒ /api/admin/knowledge/verify
+├ ƒ /api/admin/modules/ai-sales-agent/config
+├ ƒ /api/admin/seed-templates
+├ ƒ /api/admin/team/add
+├ ƒ /api/admin/team/remove
+├ ƒ /api/ai-sales-agent/chat
+├ ƒ /api/analytics/track
+├ ƒ /api/auth/check-access
+├ ƒ /api/debug-firebase
+├ ƒ /api/forms
+├ ƒ /api/forms/create
+├ ƒ /api/forms/delete
+├ ƒ /api/forms/submit
+├ ƒ /api/forms/update
+├ ƒ /api/submissions/update
+├ ƒ /api/upload/avatar
+├ ƒ /api/upload/image
+├ ƒ /catalog
+├ ƒ /member
+├ ƒ /member/dashboard
+├ ƒ /member/login
+└ ƒ /member/login/verify
+
+
+ƒ Proxy (Middleware)
+
+
+[info] ƒ  (Dynamic)  server-rendered on demand
+
+
+[info] Building a Cloud Function to run this application. This is needed due to:
+[info]  • middleware
+[info]  • Image Optimization
+[info]  • non-static component /[tenant]/[...slug]/page
+[info]  • non-static component /[tenant]/page
+[info]  • non-static component /_not-found/page
+[debug] [2026-02-16T11:42:49.600Z]  • non-static component /admin/(dashboard)/[...slug]/page
+[debug] [2026-02-16T11:42:49.600Z]  • non-static component /admin/(dashboard)/appearance/page
+[debug] [2026-02-16T11:42:49.600Z]  • non-static component /admin/(dashboard)/business/page
+[debug] [2026-02-16T11:42:49.600Z]  • non-static component /admin/(dashboard)/debug-auth/page
+[debug] [2026-02-16T11:42:49.600Z]  • non-static component /admin/(dashboard)/forms/builder/page
+[debug] [2026-02-16T11:42:49.600Z]  • non-static component /admin/(dashboard)/forms/page
+[debug] [2026-02-16T11:42:49.600Z]  • non-static component /admin/(dashboard)/inbox/page
+[debug] [2026-02-16T11:42:49.600Z]  • non-static component /admin/(dashboard)/links/page
+[debug] [2026-02-16T11:42:49.600Z]  • non-static component /admin/(dashboard)/page
+[debug] [2026-02-16T11:42:49.600Z]  • non-static component /admin/(dashboard)/pages/[id]/page
+[debug] [2026-02-16T11:42:49.600Z]  • non-static component /admin/(dashboard)/pages/page
+[debug] [2026-02-16T11:42:49.600Z]  • non-static component /admin/(dashboard)/pos/reports/page
+[debug] [2026-02-16T11:42:49.600Z]  • non-static component /admin/(dashboard)/pos/settings/page
+[debug] [2026-02-16T11:42:49.600Z]  • non-static component /admin/(dashboard)/products/page
+[debug] [2026-02-16T11:42:49.600Z]  • non-static component /admin/(dashboard)/profile/page
+[debug] [2026-02-16T11:42:49.600Z]  • non-static component /admin/(dashboard)/sales-pipeline/page
+[debug] [2026-02-16T11:42:49.600Z]  • non-static component /admin/(dashboard)/seed-modules/page
+[debug] [2026-02-16T11:42:49.600Z]  • non-static component /admin/(dashboard)/settings/page
+[debug] [2026-02-16T11:42:49.600Z]  • non-static component /admin/(dashboard)/settings/team/page
+[debug] [2026-02-16T11:42:49.600Z]  • non-static component /admin/auth/callback/page
+[debug] [2026-02-16T11:42:49.600Z]  • non-static component /admin/claim-admin/page
+[debug] [2026-02-16T11:42:49.600Z]  • non-static component /admin/login/page
+[debug] [2026-02-16T11:42:49.600Z]  • non-static component /admin/seed-pos-test/page
+[debug] [2026-02-16T11:42:49.600Z]  • non-static component /admin/setup-membership/page
+[debug] [2026-02-16T11:42:49.600Z]  • non-static component /api/admin/knowledge/sync/route
+[debug] [2026-02-16T11:42:49.600Z]  • non-static component /api/admin/knowledge/verify/route
+[debug] [2026-02-16T11:42:49.601Z]  • non-static component /api/admin/modules/ai-sales-agent/config/route
+[debug] [2026-02-16T11:42:49.601Z]  • non-static component /api/admin/seed-templates/route
+[debug] [2026-02-16T11:42:49.601Z]  • non-static component /api/admin/team/add/route
+[debug] [2026-02-16T11:42:49.601Z]  • non-static component /api/admin/team/remove/route
+[debug] [2026-02-16T11:42:49.601Z]  • non-static component /api/ai-sales-agent/chat/route
+[debug] [2026-02-16T11:42:49.601Z]  • non-static component /api/analytics/track/route
+[debug] [2026-02-16T11:42:49.601Z]  • non-static component /api/auth/check-access/route
+[debug] [2026-02-16T11:42:49.601Z]  • non-static component /api/debug-firebase/route
+[debug] [2026-02-16T11:42:49.601Z]  • non-static component /api/forms/create/route
+[debug] [2026-02-16T11:42:49.601Z]  • non-static component /api/forms/delete/route
+[debug] [2026-02-16T11:42:49.601Z]  • non-static component /api/forms/route
+[debug] [2026-02-16T11:42:49.601Z]  • non-static component /api/forms/submit/route
+[debug] [2026-02-16T11:42:49.601Z]  • non-static component /api/forms/update/route
+[debug] [2026-02-16T11:42:49.601Z]  • non-static component /api/submissions/update/route
+[debug] [2026-02-16T11:42:49.601Z]  • non-static component /api/upload/avatar/route
+[debug] [2026-02-16T11:42:49.601Z]  • non-static component /api/upload/image/route
+[debug] [2026-02-16T11:42:49.601Z]  • non-static component /catalog/page
+[debug] [2026-02-16T11:42:49.601Z]  • non-static component /member/dashboard/page
+[debug] [2026-02-16T11:42:49.601Z]  • non-static component /member/login/page
+[debug] [2026-02-16T11:42:49.601Z]  • non-static component /member/login/verify/page
+[debug] [2026-02-16T11:42:49.601Z]  • non-static component /member/page
+[debug] [2026-02-16T11:42:49.601Z]  • non-static component /page
+[info] 
+[debug] [2026-02-16T11:42:49.972Z] skipping /_global-error due to it matching an unsupported rewrite/redirect/header or middlware
+[debug] [2026-02-16T11:42:49.972Z] skipping /500 due to it matching an unsupported rewrite/redirect/header or middlware
+[debug] [2026-02-16T11:42:52.810Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:42:52.811Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:42:52.811Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/clicker-platform/sites/clicker-platform [none]
+[debug] [2026-02-16T11:42:54.272Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/clicker-platform/sites/clicker-platform 200
+[debug] [2026-02-16T11:42:54.272Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/clicker-platform/sites/clicker-platform {"name":"projects/clicker-platform/sites/clicker-platform","defaultUrl":"https://clicker-platform.web.app","type":"DEFAULT_SITE"}
+[debug] [2026-02-16T11:43:08.737Z] [web frameworks] effective firebase.json:  {
+  "hosting": [
+    {
+      "source": ".",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "!**/.env.local",
+        "!**/.env.production",
+        "!**/.env",
+        "**/node_modules/**"
+      ],
+      "site": "clickerapps",
+      "frameworksBackend": {
+        "region": "us-central1"
+      },
+      "rewrites": [
+        {
+          "source": "**",
+          "function": {
+            "functionId": "ssrclickerapps",
+            "region": "us-central1",
+            "pinTag": true
+          }
+        }
+      ],
+      "redirects": [],
+      "headers": [
+        {
+          "source": "/_global-error",
+          "headers": [
+            {
+              "key": "x-nextjs-stale-time",
+              "value": "300"
+            },
+            {
+              "key": "x-nextjs-prerender",
+              "value": "1"
+            },
+            {
+              "key": "x-next-cache-tags",
+              "value": "_N_T_/layout,_N_T_/_global-error/layout,_N_T_/_global-error/page,_N_T_/_global-error"
+            }
+          ]
+        }
+      ],
+      "cleanUrls": true,
+      "trailingSlash": false,
+      "public": ".firebase/clickerapps/hosting",
+      "webFramework": "next_ssr"
+    }
+  ],
+  "functions": [
+    {
+      "source": ".firebase/clickerapps/functions",
+      "codebase": "firebase-frameworks-clickerapps"
+    }
+  ]
+}
+[debug] [2026-02-16T11:43:08.738Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-02-16T11:43:08.738Z] > authorizing via signed-in user (kukuhadafi99@gmail.com)
+[debug] [2026-02-16T11:43:08.738Z] [iam] checking project clicker-platform for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]
+[debug] [2026-02-16T11:43:08.739Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:43:08.739Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:43:08.739Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/clicker-platform:testIamPermissions [none]
+[debug] [2026-02-16T11:43:08.739Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/clicker-platform:testIamPermissions x-goog-quota-user=projects/clicker-platform
+[debug] [2026-02-16T11:43:08.739Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/clicker-platform:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2026-02-16T11:43:09.083Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/clicker-platform:testIamPermissions 200
+[debug] [2026-02-16T11:43:09.083Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/clicker-platform:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2026-02-16T11:43:09.083Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:43:09.083Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:43:09.083Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v1/projects/clicker-platform/locations/-/functions [none]
+[debug] [2026-02-16T11:43:09.892Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v1/projects/clicker-platform/locations/-/functions 200
+[debug] [2026-02-16T11:43:09.892Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v1/projects/clicker-platform/locations/-/functions {}
+[debug] [2026-02-16T11:43:09.892Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:43:09.892Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:43:09.892Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v2/projects/clicker-platform/locations/-/functions filter=environment%3D%22GEN_2%22
+[debug] [2026-02-16T11:43:11.424Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v2/projects/clicker-platform/locations/-/functions 200
+[debug] [2026-02-16T11:43:11.424Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v2/projects/clicker-platform/locations/-/functions {"functions":[{"name":"projects/clicker-platform/locations/us-central1/functions/ssrclickerproperti","buildConfig":{"build":"projects/807906903254/locations/us-central1/builds/8ccc60b0-f8b1-44b2-8240-e631e34b7a31","runtime":"nodejs24","entryPoint":"ssrclickerproperti","source":{"storageSource":{"bucket":"gcf-v2-sources-807906903254-us-central1","object":"ssrclickerproperti/function-source.zip","generation":"1769153400679160"}},"environmentVariables":{"GOOGLE_NODE_RUN_SCRIPTS":""},"dockerRepository":"projects/clicker-platform/locations/us-central1/repositories/gcf-artifacts","sourceProvenance":{"resolvedStorageSource":{"bucket":"gcf-v2-sources-807906903254-us-central1","object":"ssrclickerproperti/function-source.zip","generation":"1769153400679160"}},"dockerRegistry":"ARTIFACT_REGISTRY","serviceAccount":"projects/clicker-platform/serviceAccounts/807906903254-compute@developer.gserviceaccount.com","automaticUpdatePolicy":{}},"serviceConfig":{"service":"projects/clicker-platform/locations/us-central1/services/ssrclickerproperti","timeoutSeconds":60,"environmentVariables":{"NEXT_PUBLIC_FIREBASE_API_KEY":"AIzaSyA1AgkjhV8PTSc6V6HPeXzT5ADqVa9pENg","NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN":"clicker-platform.firebaseapp.com","NEXT_PUBLIC_FIREBASE_PROJECT_ID":"clicker-platform","NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET":"clicker-platform.firebasestorage.app","NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID":"807906903254","NEXT_PUBLIC_FIREBASE_APP_ID":"1:807906903254:web:46d8dbc9784d9b5cce7577","NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID":"G-9B52JK2FBG","VERCEL_URL":"clicker-platform.web.app","__FIREBASE_FRAMEWORKS_ENTRY__":"next.js","__FIREBASE_DEFAULTS__":"{\"config\":{\"projectId\":\"clicker-platform\",\"appId\":\"1:807906903254:web:46d8dbc9784d9b5cce7577\",\"storageBucket\":\"clicker-platform.firebasestorage.app\",\"apiKey\":\"AIzaSyA1AgkjhV8PTSc6V6HPeXzT5ADqVa9pENg\",\"authDomain\":\"clicker-platform.firebaseapp.com\",\"messagingSenderId\":\"807906903254\",\"measurementId\":\"G-9B52JK2FBG\",\"projectNumber\":\"807906903254\",\"version\":\"2\"},\"_authTokenSyncURL\":\"/__session\"}","FIREBASE_CONFIG":"{\"projectId\":\"clicker-platform\",\"storageBucket\":\"clicker-platform.firebasestorage.app\"}","GCLOUD_PROJECT":"clicker-platform","EVENTARC_CLOUD_EVENT_SOURCE":"projects/clicker-platform/locations/us-central1/services/ssrclickerproperti","FUNCTION_TARGET":"ssrclickerproperti","LOG_EXECUTION_ID":"true"},"maxInstanceCount":20,"ingressSettings":"ALLOW_ALL","uri":"https://ssrclickerproperti-an2lulk6wa-uc.a.run.app","serviceAccountEmail":"807906903254-compute@developer.gserviceaccount.com","availableMemory":"256Mi","allTrafficOnLatestRevision":true,"revision":"ssrclickerproperti-00003-pud","maxInstanceRequestConcurrency":80,"availableCpu":"1"},"state":"ACTIVE","updateTime":"2026-01-23T07:32:23.925181363Z","labels":{"deployment-tool":"cli-firebase","firebase-functions-codebase":"firebase-frameworks-clicker-properti","firebase-functions-hash":"403ea976d03ab19b881dbb94263f064b2d3e4d18"},"environment":"GEN_2","url":"https://us-central1-clicker-platform.cloudfunctions.net/ssrclickerproperti","createTime":"2026-01-23T07:20:31.564173999Z","satisfiesPzi":true},{"name":"projects/clicker-platform/locations/us-central1/functions/ssrclickerapps","buildConfig":{"build":"projects/807906903254/locations/us-central1/builds/73ee11c6-95e2-4430-a403-2d432490c21c","runtime":"nodejs22","entryPoint":"ssrclickerapps","source":{"storageSource":{"bucket":"gcf-v2-sources-807906903254-us-central1","object":"ssrclickerapps/function-source.zip","generation":"1771241754432529"}},"environmentVariables":{"GOOGLE_NODE_RUN_SCRIPTS":""},"dockerRepository":"projects/clicker-platform/locations/us-central1/repositories/gcf-artifacts","sourceProvenance":{"resolvedStorageSource":{"bucket":"gcf-v2-sources-807906903254-us-central1","object":"ssrclickerapps/function-source.zip","generation":"1771241754432529"}},"dockerRegistry":"ARTIFACT_REGISTRY","serviceAccount":"projects/clicker-platform/serviceAccounts/807906903254-compute@developer.gserviceaccount.com","automaticUpdatePolicy":{}},"serviceConfig":{"service":"projects/clicker-platform/locations/us-central1/services/ssrclickerapps","timeoutSeconds":60,"environmentVariables":{"VERCEL_URL":"clicker-platform.web.app","__FIREBASE_FRAMEWORKS_ENTRY__":"next.js","FIREBASE_CONFIG":"{\"projectId\":\"clicker-platform\",\"storageBucket\":\"clicker-platform.firebasestorage.app\"}","GCLOUD_PROJECT":"clicker-platform","EVENTARC_CLOUD_EVENT_SOURCE":"projects/clicker-platform/locations/us-central1/services/ssrclickerapps","FUNCTION_TARGET":"ssrclickerapps","LOG_EXECUTION_ID":"true"},"ingressSettings":"ALLOW_ALL","uri":"https://ssrclickerapps-an2lulk6wa-uc.a.run.app","serviceAccountEmail":"807906903254-compute@developer.gserviceaccount.com","availableMemory":"256Mi","allTrafficOnLatestRevision":true,"revision":"ssrclickerapps-00001-mex","maxInstanceRequestConcurrency":80,"availableCpu":"1"},"state":"ACTIVE","updateTime":"2026-02-16T11:39:16.745217237Z","labels":{"deployment-tool":"cli-firebase","firebase-functions-codebase":"firebase-frameworks-clickerapps","firebase-functions-hash":"d26a6839d8d1089e7e870f56e8312ed3dee9ecb1"},"environment":"GEN_2","url":"https://us-central1-clicker-platform.cloudfunctions.net/ssrclickerapps","createTime":"2026-02-16T11:35:54.736623138Z","satisfiesPzi":true}]}
+[info] i  hosting: The following function(s) are pinned to site clickerapps and will be deployed as well: ssrclickerapps 
+[info] 
+[info] === Deploying to 'clicker-platform'...
+[info] 
+[info] i  deploying functions, hosting 
+[debug] [2026-02-16T11:43:11.429Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:43:11.429Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:43:11.429Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/clicker-platform [none]
+[debug] [2026-02-16T11:43:11.694Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/clicker-platform 200
+[debug] [2026-02-16T11:43:11.694Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/clicker-platform {"projectNumber":"807906903254","projectId":"clicker-platform","lifecycleState":"ACTIVE","name":"Clicker Platform","labels":{"firebase":"enabled","firebase-core":"disabled"},"createTime":"2025-12-06T13:30:32.234105Z"}
+[info] i  functions: preparing codebase firebase-frameworks-clickerapps for deployment 
+[info] i  functions: ensuring required API cloudfunctions.googleapis.com is enabled... 
+[info] i  functions: ensuring required API cloudbuild.googleapis.com is enabled... 
+[info] i  artifactregistry: ensuring required API artifactregistry.googleapis.com is enabled... 
+[debug] [2026-02-16T11:43:11.696Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:43:11.696Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:43:11.696Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/clicker-platform/adminSdkConfig [none]
+[debug] [2026-02-16T11:43:12.616Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/clicker-platform/adminSdkConfig 200
+[debug] [2026-02-16T11:43:12.616Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/clicker-platform/adminSdkConfig {"projectId":"clicker-platform","storageBucket":"clicker-platform.firebasestorage.app"}
+[debug] [2026-02-16T11:43:12.617Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:43:12.617Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:43:12.617Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/clicker-platform/configs [none]
+[debug] [2026-02-16T11:43:13.035Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/clicker-platform/configs 200
+[debug] [2026-02-16T11:43:13.035Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/clicker-platform/configs {}
+[debug] [2026-02-16T11:43:13.037Z] Validating nodejs source
+[warn] ⚠  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory. 
+[warn] ⚠  functions: Please note that there will be breaking changes when you upgrade. 
+[debug] [2026-02-16T11:43:13.621Z] > [functions] package.json contents: {
+  "name": "temp_nextbox",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": "22"
+  },
+  "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@google/generative-ai": "^0.24.1",
+    "@opentelemetry/api": "^1.9.0",
+    "@tiptap/extension-image": "^3.15.3",
+    "@tiptap/extension-link": "^3.15.3",
+    "@tiptap/extension-placeholder": "^3.15.3",
+    "@tiptap/react": "^3.15.3",
+    "@tiptap/starter-kit": "^3.15.3",
+    "cheerio": "^1.1.2",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
+    "date-fns-tz": "^3.2.0",
+    "dotenv": "^17.2.3",
+    "firebase": "^12.7.0",
+    "firebase-admin": "^13.6.0",
+    "lucide-react": "^0.561.0",
+    "next": "16.1.1",
+    "pdf-parse": "^1.1.1",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "sharp": "^0.32 || ^0.33",
+    "sonner": "^2.0.7",
+    "tailwind-merge": "^3.4.0",
+    "uuid": "^13.0.0",
+    "firebase-frameworks": "^0.11.0",
+    "firebase-functions": "^6.0.1"
+  },
+  "main": "server.js"
+}
+[debug] [2026-02-16T11:43:13.621Z] Building nodejs source
+[info] i  functions: Loading and analyzing source code for codebase firebase-frameworks-clickerapps to determine what to deploy 
+[debug] [2026-02-16T11:43:13.621Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-02-16T11:43:13.626Z] Found firebase-functions binary at '/Users/mac/Documents/AI Project/Clicker/clicker-platform/main/clicker-platform-v2/.firebase/clickerapps/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8249
+
+[debug] [2026-02-16T11:43:14.036Z] Got response from /__/functions.yaml {"endpoints":{"ssrclickerapps":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["us-central1"],"labels":{},"httpsTrigger":{},"entryPoint":"ssrclickerapps"}},"specVersion":"v1alpha1","requiredAPIs":[],"extensions":{}}
+[info] i  extensions: ensuring required API firebaseextensions.googleapis.com is enabled... 
+[debug] [2026-02-16T11:43:18.055Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-02-16T11:43:18.055Z] > authorizing via signed-in user (kukuhadafi99@gmail.com)
+[debug] [2026-02-16T11:43:18.055Z] [iam] checking project clicker-platform for permissions ["firebase.projects.get","firebaseextensions.instances.list"]
+[debug] [2026-02-16T11:43:18.056Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:43:18.056Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:43:18.056Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/clicker-platform:testIamPermissions [none]
+[debug] [2026-02-16T11:43:18.056Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/clicker-platform:testIamPermissions x-goog-quota-user=projects/clicker-platform
+[debug] [2026-02-16T11:43:18.056Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/clicker-platform:testIamPermissions {"permissions":["firebase.projects.get","firebaseextensions.instances.list"]}
+[debug] [2026-02-16T11:43:18.384Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/clicker-platform:testIamPermissions 200
+[debug] [2026-02-16T11:43:18.385Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/clicker-platform:testIamPermissions {"permissions":["firebase.projects.get","firebaseextensions.instances.list"]}
+[debug] [2026-02-16T11:43:18.385Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:43:18.385Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:43:18.385Z] >>> [apiv2][query] GET https://firebaseextensions.googleapis.com/v1beta/projects/clicker-platform/instances pageSize=100&pageToken=
+[debug] [2026-02-16T11:44:46.723Z] ----------------------------------------------------------------------
+[debug] [2026-02-16T11:44:46.725Z] Command:       /Users/mac/.local/share/fnm/node-versions/v22.22.0/installation/bin/node /opt/homebrew/bin/firebase deploy --only hosting
+[debug] [2026-02-16T11:44:46.725Z] CLI Version:   15.2.1
+[debug] [2026-02-16T11:44:46.725Z] Platform:      darwin
+[debug] [2026-02-16T11:44:46.725Z] Node Version:  v22.22.0
+[debug] [2026-02-16T11:44:46.726Z] Time:          Mon Feb 16 2026 18:44:46 GMT+0700 (Western Indonesia Time)
+[debug] [2026-02-16T11:44:46.726Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-02-16T11:44:47.478Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-02-16T11:44:47.478Z] > authorizing via signed-in user (kukuhadafi99@gmail.com)
+[debug] [2026-02-16T11:44:47.478Z] [iam] checking project clicker-platform for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2026-02-16T11:44:47.479Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:44:47.479Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:44:47.479Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/clicker-platform:testIamPermissions [none]
+[debug] [2026-02-16T11:44:47.479Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/clicker-platform:testIamPermissions x-goog-quota-user=projects/clicker-platform
+[debug] [2026-02-16T11:44:47.479Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/clicker-platform:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-02-16T11:44:47.770Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/clicker-platform:testIamPermissions 200
+[debug] [2026-02-16T11:44:47.770Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/clicker-platform:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-02-16T11:44:47.771Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:44:47.771Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:44:47.771Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/clicker-platform [none]
+[debug] [2026-02-16T11:44:48.112Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/clicker-platform 200
+[debug] [2026-02-16T11:44:48.113Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/clicker-platform {"projectId":"clicker-platform","projectNumber":"807906903254","displayName":"Clicker Platform","name":"projects/clicker-platform","resources":{"hostingSite":"clicker-platform"},"state":"ACTIVE","etag":"1_e480fb3a-14e1-4fed-a1c0-976dead20806"}
+[debug] [2026-02-16T11:44:48.861Z] defaultcredentials: writing to file /Users/mac/.config/firebase/kukuhadafi99_gmail_com_application_default_credentials.json
+[debug] [2026-02-16T11:44:48.862Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:44:48.862Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:44:48.862Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/clicker-platform/sites pageToken=&pageSize=10
+[debug] [2026-02-16T11:44:50.599Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/clicker-platform/sites 200
+[debug] [2026-02-16T11:44:50.599Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/clicker-platform/sites {"sites":[{"name":"projects/clicker-platform/sites/clicker-platform","defaultUrl":"https://clicker-platform.web.app","type":"DEFAULT_SITE"},{"name":"projects/clicker-platform/sites/clicker-properti","defaultUrl":"https://clicker-properti.web.app","appId":"1:807906903254:web:46d8dbc9784d9b5cce7577","type":"USER_SITE"}]}
+[info] 
+   Thank you for trying our early preview of Next.js support on Firebase Hosting.
+   During the preview, support is best-effort and breaking changes can be expected. Proceed with caution.
+   The integration is known to work with Next.js version 12 - 15.0. You may encounter errors.
+
+   Documentation: https://firebase.google.com/docs/hosting/frameworks/nextjs
+   File a bug: https://github.com/firebase/firebase-tools/issues/new?template=bug_report.md
+   Submit a feature request: https://github.com/firebase/firebase-tools/issues/new?template=feature_request.md
+
+   We'd love to learn from you. Express your interest in helping us shape the future of Firebase Hosting: https://goo.gle/41enW5X
+
+[debug] [2026-02-16T11:44:52.232Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:44:52.232Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:44:52.232Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/clicker-platform/sites/clicker-platform [none]
+[debug] [2026-02-16T11:44:52.744Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/clicker-platform/sites/clicker-platform 200
+[debug] [2026-02-16T11:44:52.744Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/clicker-platform/sites/clicker-platform {"name":"projects/clicker-platform/sites/clicker-platform","defaultUrl":"https://clicker-platform.web.app","type":"DEFAULT_SITE"}
+[info] ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of /Users/mac/Documents/AI Project/Clicker/clicker-platform/main/package-lock.json as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * /Users/mac/Documents/AI Project/Clicker/clicker-platform/main/clicker-platform-v2/package-lock.json
+
+
+[info] ▲ Next.js 16.1.1 (Turbopack)
+
+[info] - Environments: .env.production
+
+
+[info] ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+
+[info]   Creating an optimized production build ...
+
+[info] ✓ Compiled successfully in 6.2s
+
+[info]   Running TypeScript ...
+
+[info]   Collecting page data using 7 workers ...
+
+[info] [Firebase] Initialized with config: {
+  projectId: 'clicker-universe',
+  authDomain: 'clicker-universe.firebaseapp.com'
+}
+
+[info] [Firebase] Initialized with config: {
+  projectId: 'clicker-universe',
+  authDomain: 'clicker-universe.firebaseapp.com'
+}
+
+[info] [firebase-admin] Initializing with ADC (Production/Cloud Mode)...
+
+[info] [firebase-admin] Initializing with ADC (Production/Cloud Mode)...
+
+[info] [firebase-admin] Initializing with ADC (Production/Cloud Mode)...
+
+[info] [firebase-admin] Initializing with ADC (Production/Cloud Mode)...
+
+[info] [firebase-admin] Initializing with ADC (Production/Cloud Mode)...
+
+[info] [firebase-admin] Initializing with ADC (Production/Cloud Mode)...
+
+[info] [firebase-admin] Initializing with ADC (Production/Cloud Mode)...
+
+[info] [Firebase] Initialized with config: {
+  projectId: 'clicker-universe',
+  authDomain: 'clicker-universe.firebaseapp.com'
+}
+
+[info] [Firebase] Initialized with config: {
+  projectId: 'clicker-universe',
+  authDomain: 'clicker-universe.firebaseapp.com'
+}
+
+[info] [Firebase] Initialized with config: {
+  projectId: 'clicker-universe',
+  authDomain: 'clicker-universe.firebaseapp.com'
+}
+
+[info] [Firebase] Initialized with config: {
+  projectId: 'clicker-universe',
+  authDomain: 'clicker-universe.firebaseapp.com'
+}
+
+[info] [Firebase] Initialized with config: {
+  projectId: 'clicker-universe',
+  authDomain: 'clicker-universe.firebaseapp.com'
+}
+
+[info] [Firebase] Initialized with config: {
+  projectId: 'clicker-universe',
+  authDomain: 'clicker-universe.firebaseapp.com'
+}
+
+[info]   Generating static pages using 7 workers (0/25) ...
+
+[info] [Firebase] Initialized with config: {
+  projectId: 'clicker-universe',
+  authDomain: 'clicker-universe.firebaseapp.com'
+}
+
+[info]   Generating static pages using 7 workers (6/25) 
+
+[info] [Firebase] Initialized with config: {
+  projectId: 'clicker-universe',
+  authDomain: 'clicker-universe.firebaseapp.com'
+}
+
+[info]   Generating static pages using 7 workers (12/25) 
+
+[info]   Generating static pages using 7 workers (18/25) 
+
+[info] ✓ Generating static pages using 7 workers (25/25) in 234.9ms
+
+[info]   Finalizing page optimization ...
+
+[info] 
+
+[info] Route (app)
+┌ ƒ /
+├ ƒ /_not-found
+├ ƒ /[tenant]
+├ ƒ /[tenant]/[...slug]
+├ ƒ /admin
+├ ƒ /admin/[...slug]
+├ ƒ /admin/appearance
+├ ƒ /admin/auth/callback
+├ ƒ /admin/business
+├ ƒ /admin/claim-admin
+├ ƒ /admin/debug-auth
+├ ƒ /admin/forms
+├ ƒ /admin/forms/builder
+├ ƒ /admin/inbox
+├ ƒ /admin/links
+├ ƒ /admin/login
+├ ƒ /admin/pages
+├ ƒ /admin/pages/[id]
+├ ƒ /admin/pos/reports
+├ ƒ /admin/pos/settings
+├ ƒ /admin/products
+├ ƒ /admin/profile
+├ ƒ /admin/sales-pipeline
+├ ƒ /admin/seed-modules
+├ ƒ /admin/seed-pos-test
+├ ƒ /admin/settings
+├ ƒ /admin/settings/team
+├ ƒ /admin/setup-membership
+├ ƒ /api/admin/knowledge/sync
+├ ƒ /api/admin/knowledge/verify
+├ ƒ /api/admin/modules/ai-sales-agent/config
+├ ƒ /api/admin/seed-templates
+├ ƒ /api/admin/team/add
+├ ƒ /api/admin/team/remove
+├ ƒ /api/ai-sales-agent/chat
+├ ƒ /api/analytics/track
+├ ƒ /api/auth/check-access
+├ ƒ /api/debug-firebase
+├ ƒ /api/forms
+├ ƒ /api/forms/create
+├ ƒ /api/forms/delete
+├ ƒ /api/forms/submit
+├ ƒ /api/forms/update
+├ ƒ /api/submissions/update
+├ ƒ /api/upload/avatar
+├ ƒ /api/upload/image
+├ ƒ /catalog
+├ ƒ /member
+├ ƒ /member/dashboard
+├ ƒ /member/login
+└ ƒ /member/login/verify
+
+
+ƒ Proxy (Middleware)
+
+
+[info] ƒ  (Dynamic)  server-rendered on demand
+
+
+[info] Building a Cloud Function to run this application. This is needed due to:
+[info]  • middleware
+[info]  • Image Optimization
+[info]  • non-static component /[tenant]/[...slug]/page
+[info]  • non-static component /[tenant]/page
+[info]  • non-static component /_not-found/page
+[debug] [2026-02-16T11:45:08.219Z]  • non-static component /admin/(dashboard)/[...slug]/page
+[debug] [2026-02-16T11:45:08.219Z]  • non-static component /admin/(dashboard)/appearance/page
+[debug] [2026-02-16T11:45:08.219Z]  • non-static component /admin/(dashboard)/business/page
+[debug] [2026-02-16T11:45:08.219Z]  • non-static component /admin/(dashboard)/debug-auth/page
+[debug] [2026-02-16T11:45:08.219Z]  • non-static component /admin/(dashboard)/forms/builder/page
+[debug] [2026-02-16T11:45:08.219Z]  • non-static component /admin/(dashboard)/forms/page
+[debug] [2026-02-16T11:45:08.219Z]  • non-static component /admin/(dashboard)/inbox/page
+[debug] [2026-02-16T11:45:08.219Z]  • non-static component /admin/(dashboard)/links/page
+[debug] [2026-02-16T11:45:08.219Z]  • non-static component /admin/(dashboard)/page
+[debug] [2026-02-16T11:45:08.219Z]  • non-static component /admin/(dashboard)/pages/[id]/page
+[debug] [2026-02-16T11:45:08.219Z]  • non-static component /admin/(dashboard)/pages/page
+[debug] [2026-02-16T11:45:08.219Z]  • non-static component /admin/(dashboard)/pos/reports/page
+[debug] [2026-02-16T11:45:08.219Z]  • non-static component /admin/(dashboard)/pos/settings/page
+[debug] [2026-02-16T11:45:08.219Z]  • non-static component /admin/(dashboard)/products/page
+[debug] [2026-02-16T11:45:08.219Z]  • non-static component /admin/(dashboard)/profile/page
+[debug] [2026-02-16T11:45:08.219Z]  • non-static component /admin/(dashboard)/sales-pipeline/page
+[debug] [2026-02-16T11:45:08.219Z]  • non-static component /admin/(dashboard)/seed-modules/page
+[debug] [2026-02-16T11:45:08.219Z]  • non-static component /admin/(dashboard)/settings/page
+[debug] [2026-02-16T11:45:08.219Z]  • non-static component /admin/(dashboard)/settings/team/page
+[debug] [2026-02-16T11:45:08.219Z]  • non-static component /admin/auth/callback/page
+[debug] [2026-02-16T11:45:08.219Z]  • non-static component /admin/claim-admin/page
+[debug] [2026-02-16T11:45:08.219Z]  • non-static component /admin/login/page
+[debug] [2026-02-16T11:45:08.220Z]  • non-static component /admin/seed-pos-test/page
+[debug] [2026-02-16T11:45:08.220Z]  • non-static component /admin/setup-membership/page
+[debug] [2026-02-16T11:45:08.220Z]  • non-static component /api/admin/knowledge/sync/route
+[debug] [2026-02-16T11:45:08.220Z]  • non-static component /api/admin/knowledge/verify/route
+[debug] [2026-02-16T11:45:08.220Z]  • non-static component /api/admin/modules/ai-sales-agent/config/route
+[debug] [2026-02-16T11:45:08.220Z]  • non-static component /api/admin/seed-templates/route
+[debug] [2026-02-16T11:45:08.220Z]  • non-static component /api/admin/team/add/route
+[debug] [2026-02-16T11:45:08.220Z]  • non-static component /api/admin/team/remove/route
+[debug] [2026-02-16T11:45:08.220Z]  • non-static component /api/ai-sales-agent/chat/route
+[debug] [2026-02-16T11:45:08.220Z]  • non-static component /api/analytics/track/route
+[debug] [2026-02-16T11:45:08.220Z]  • non-static component /api/auth/check-access/route
+[debug] [2026-02-16T11:45:08.220Z]  • non-static component /api/debug-firebase/route
+[debug] [2026-02-16T11:45:08.220Z]  • non-static component /api/forms/create/route
+[debug] [2026-02-16T11:45:08.220Z]  • non-static component /api/forms/delete/route
+[debug] [2026-02-16T11:45:08.220Z]  • non-static component /api/forms/route
+[debug] [2026-02-16T11:45:08.220Z]  • non-static component /api/forms/submit/route
+[debug] [2026-02-16T11:45:08.220Z]  • non-static component /api/forms/update/route
+[debug] [2026-02-16T11:45:08.220Z]  • non-static component /api/submissions/update/route
+[debug] [2026-02-16T11:45:08.220Z]  • non-static component /api/upload/avatar/route
+[debug] [2026-02-16T11:45:08.220Z]  • non-static component /api/upload/image/route
+[debug] [2026-02-16T11:45:08.220Z]  • non-static component /catalog/page
+[debug] [2026-02-16T11:45:08.220Z]  • non-static component /member/dashboard/page
+[debug] [2026-02-16T11:45:08.220Z]  • non-static component /member/login/page
+[debug] [2026-02-16T11:45:08.220Z]  • non-static component /member/login/verify/page
+[debug] [2026-02-16T11:45:08.220Z]  • non-static component /member/page
+[debug] [2026-02-16T11:45:08.220Z]  • non-static component /page
+[info]  • and 48 other reasons, use --debug to see more
+[info] 
+[debug] [2026-02-16T11:45:08.582Z] skipping /_global-error due to it matching an unsupported rewrite/redirect/header or middlware
+[debug] [2026-02-16T11:45:08.583Z] skipping /500 due to it matching an unsupported rewrite/redirect/header or middlware
+[debug] [2026-02-16T11:45:09.539Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:45:09.539Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:45:09.539Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/clicker-platform/sites/clicker-platform [none]
+[debug] [2026-02-16T11:45:11.256Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/clicker-platform/sites/clicker-platform 200
+[debug] [2026-02-16T11:45:11.256Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/clicker-platform/sites/clicker-platform {"name":"projects/clicker-platform/sites/clicker-platform","defaultUrl":"https://clicker-platform.web.app","type":"DEFAULT_SITE"}
+[debug] [2026-02-16T11:45:12.329Z] [web frameworks] effective firebase.json:  {
+  "hosting": [
+    {
+      "source": ".",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "!**/.env.local",
+        "!**/.env.production",
+        "!**/.env",
+        "**/node_modules/**"
+      ],
+      "site": "clickerapps",
+      "frameworksBackend": {
+        "region": "us-central1"
+      },
+      "rewrites": [
+        {
+          "source": "**",
+          "function": {
+            "functionId": "ssrclickerapps",
+            "region": "us-central1",
+            "pinTag": true
+          }
+        }
+      ],
+      "redirects": [],
+      "headers": [
+        {
+          "source": "/_global-error",
+          "headers": [
+            {
+              "key": "x-nextjs-stale-time",
+              "value": "300"
+            },
+            {
+              "key": "x-nextjs-prerender",
+              "value": "1"
+            },
+            {
+              "key": "x-next-cache-tags",
+              "value": "_N_T_/layout,_N_T_/_global-error/layout,_N_T_/_global-error/page,_N_T_/_global-error"
+            }
+          ]
+        }
+      ],
+      "cleanUrls": true,
+      "trailingSlash": false,
+      "public": ".firebase/clickerapps/hosting",
+      "webFramework": "next_ssr"
+    }
+  ],
+  "functions": [
+    {
+      "source": ".firebase/clickerapps/functions",
+      "codebase": "firebase-frameworks-clickerapps"
+    }
+  ]
+}
+[debug] [2026-02-16T11:45:12.329Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-02-16T11:45:12.329Z] > authorizing via signed-in user (kukuhadafi99@gmail.com)
+[debug] [2026-02-16T11:45:12.329Z] [iam] checking project clicker-platform for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]
+[debug] [2026-02-16T11:45:12.329Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:45:12.329Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:45:12.329Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/clicker-platform:testIamPermissions [none]
+[debug] [2026-02-16T11:45:12.329Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/clicker-platform:testIamPermissions x-goog-quota-user=projects/clicker-platform
+[debug] [2026-02-16T11:45:12.329Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/clicker-platform:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2026-02-16T11:45:12.604Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/clicker-platform:testIamPermissions 200
+[debug] [2026-02-16T11:45:12.604Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/clicker-platform:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2026-02-16T11:45:12.605Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:45:12.605Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:45:12.605Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v1/projects/clicker-platform/locations/-/functions [none]
+[debug] [2026-02-16T11:45:13.403Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v1/projects/clicker-platform/locations/-/functions 200
+[debug] [2026-02-16T11:45:13.403Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v1/projects/clicker-platform/locations/-/functions {}
+[debug] [2026-02-16T11:45:13.403Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:45:13.404Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:45:13.404Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v2/projects/clicker-platform/locations/-/functions filter=environment%3D%22GEN_2%22
+[debug] [2026-02-16T11:45:15.057Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v2/projects/clicker-platform/locations/-/functions 200
+[debug] [2026-02-16T11:45:15.057Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v2/projects/clicker-platform/locations/-/functions {"functions":[{"name":"projects/clicker-platform/locations/us-central1/functions/ssrclickerproperti","buildConfig":{"build":"projects/807906903254/locations/us-central1/builds/8ccc60b0-f8b1-44b2-8240-e631e34b7a31","runtime":"nodejs24","entryPoint":"ssrclickerproperti","source":{"storageSource":{"bucket":"gcf-v2-sources-807906903254-us-central1","object":"ssrclickerproperti/function-source.zip","generation":"1769153400679160"}},"environmentVariables":{"GOOGLE_NODE_RUN_SCRIPTS":""},"dockerRepository":"projects/clicker-platform/locations/us-central1/repositories/gcf-artifacts","sourceProvenance":{"resolvedStorageSource":{"bucket":"gcf-v2-sources-807906903254-us-central1","object":"ssrclickerproperti/function-source.zip","generation":"1769153400679160"}},"dockerRegistry":"ARTIFACT_REGISTRY","serviceAccount":"projects/clicker-platform/serviceAccounts/807906903254-compute@developer.gserviceaccount.com","automaticUpdatePolicy":{}},"serviceConfig":{"service":"projects/clicker-platform/locations/us-central1/services/ssrclickerproperti","timeoutSeconds":60,"environmentVariables":{"NEXT_PUBLIC_FIREBASE_API_KEY":"AIzaSyA1AgkjhV8PTSc6V6HPeXzT5ADqVa9pENg","NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN":"clicker-platform.firebaseapp.com","NEXT_PUBLIC_FIREBASE_PROJECT_ID":"clicker-platform","NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET":"clicker-platform.firebasestorage.app","NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID":"807906903254","NEXT_PUBLIC_FIREBASE_APP_ID":"1:807906903254:web:46d8dbc9784d9b5cce7577","NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID":"G-9B52JK2FBG","VERCEL_URL":"clicker-platform.web.app","__FIREBASE_FRAMEWORKS_ENTRY__":"next.js","__FIREBASE_DEFAULTS__":"{\"config\":{\"projectId\":\"clicker-platform\",\"appId\":\"1:807906903254:web:46d8dbc9784d9b5cce7577\",\"storageBucket\":\"clicker-platform.firebasestorage.app\",\"apiKey\":\"AIzaSyA1AgkjhV8PTSc6V6HPeXzT5ADqVa9pENg\",\"authDomain\":\"clicker-platform.firebaseapp.com\",\"messagingSenderId\":\"807906903254\",\"measurementId\":\"G-9B52JK2FBG\",\"projectNumber\":\"807906903254\",\"version\":\"2\"},\"_authTokenSyncURL\":\"/__session\"}","FIREBASE_CONFIG":"{\"projectId\":\"clicker-platform\",\"storageBucket\":\"clicker-platform.firebasestorage.app\"}","GCLOUD_PROJECT":"clicker-platform","EVENTARC_CLOUD_EVENT_SOURCE":"projects/clicker-platform/locations/us-central1/services/ssrclickerproperti","FUNCTION_TARGET":"ssrclickerproperti","LOG_EXECUTION_ID":"true"},"maxInstanceCount":20,"ingressSettings":"ALLOW_ALL","uri":"https://ssrclickerproperti-an2lulk6wa-uc.a.run.app","serviceAccountEmail":"807906903254-compute@developer.gserviceaccount.com","availableMemory":"256Mi","allTrafficOnLatestRevision":true,"revision":"ssrclickerproperti-00003-pud","maxInstanceRequestConcurrency":80,"availableCpu":"1"},"state":"ACTIVE","updateTime":"2026-01-23T07:32:23.925181363Z","labels":{"firebase-functions-hash":"403ea976d03ab19b881dbb94263f064b2d3e4d18","deployment-tool":"cli-firebase","firebase-functions-codebase":"firebase-frameworks-clicker-properti"},"environment":"GEN_2","url":"https://us-central1-clicker-platform.cloudfunctions.net/ssrclickerproperti","createTime":"2026-01-23T07:20:31.564173999Z","satisfiesPzi":true},{"name":"projects/clicker-platform/locations/us-central1/functions/ssrclickerapps","buildConfig":{"build":"projects/807906903254/locations/us-central1/builds/73ee11c6-95e2-4430-a403-2d432490c21c","runtime":"nodejs22","entryPoint":"ssrclickerapps","source":{"storageSource":{"bucket":"gcf-v2-sources-807906903254-us-central1","object":"ssrclickerapps/function-source.zip","generation":"1771241754432529"}},"environmentVariables":{"GOOGLE_NODE_RUN_SCRIPTS":""},"dockerRepository":"projects/clicker-platform/locations/us-central1/repositories/gcf-artifacts","sourceProvenance":{"resolvedStorageSource":{"bucket":"gcf-v2-sources-807906903254-us-central1","object":"ssrclickerapps/function-source.zip","generation":"1771241754432529"}},"dockerRegistry":"ARTIFACT_REGISTRY","serviceAccount":"projects/clicker-platform/serviceAccounts/807906903254-compute@developer.gserviceaccount.com","automaticUpdatePolicy":{}},"serviceConfig":{"service":"projects/clicker-platform/locations/us-central1/services/ssrclickerapps","timeoutSeconds":60,"environmentVariables":{"VERCEL_URL":"clicker-platform.web.app","__FIREBASE_FRAMEWORKS_ENTRY__":"next.js","FIREBASE_CONFIG":"{\"projectId\":\"clicker-platform\",\"storageBucket\":\"clicker-platform.firebasestorage.app\"}","GCLOUD_PROJECT":"clicker-platform","EVENTARC_CLOUD_EVENT_SOURCE":"projects/clicker-platform/locations/us-central1/services/ssrclickerapps","FUNCTION_TARGET":"ssrclickerapps","LOG_EXECUTION_ID":"true"},"ingressSettings":"ALLOW_ALL","uri":"https://ssrclickerapps-an2lulk6wa-uc.a.run.app","serviceAccountEmail":"807906903254-compute@developer.gserviceaccount.com","availableMemory":"256Mi","allTrafficOnLatestRevision":true,"revision":"ssrclickerapps-00001-mex","maxInstanceRequestConcurrency":80,"availableCpu":"1"},"state":"ACTIVE","updateTime":"2026-02-16T11:39:16.745217237Z","labels":{"deployment-tool":"cli-firebase","firebase-functions-codebase":"firebase-frameworks-clickerapps","firebase-functions-hash":"d26a6839d8d1089e7e870f56e8312ed3dee9ecb1"},"environment":"GEN_2","url":"https://us-central1-clicker-platform.cloudfunctions.net/ssrclickerapps","createTime":"2026-02-16T11:35:54.736623138Z","satisfiesPzi":true}]}
+[info] i  hosting: The following function(s) are pinned to site clickerapps and will be deployed as well: ssrclickerapps 
+[info] 
+[info] === Deploying to 'clicker-platform'...
+[info] 
+[info] i  deploying functions, hosting 
+[debug] [2026-02-16T11:45:15.064Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:45:15.064Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:45:15.064Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/clicker-platform [none]
+[debug] [2026-02-16T11:45:15.353Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/clicker-platform 200
+[debug] [2026-02-16T11:45:15.353Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/clicker-platform {"projectNumber":"807906903254","projectId":"clicker-platform","lifecycleState":"ACTIVE","name":"Clicker Platform","labels":{"firebase":"enabled","firebase-core":"disabled"},"createTime":"2025-12-06T13:30:32.234105Z"}
+[info] i  functions: preparing codebase firebase-frameworks-clickerapps for deployment 
+[info] i  functions: ensuring required API cloudfunctions.googleapis.com is enabled... 
+[info] i  functions: ensuring required API cloudbuild.googleapis.com is enabled... 
+[info] i  artifactregistry: ensuring required API artifactregistry.googleapis.com is enabled... 
+[debug] [2026-02-16T11:45:15.357Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:45:15.357Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:45:15.357Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/clicker-platform/adminSdkConfig [none]
+[debug] [2026-02-16T11:45:16.667Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/clicker-platform/adminSdkConfig 200
+[debug] [2026-02-16T11:45:16.667Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/clicker-platform/adminSdkConfig {"projectId":"clicker-platform","storageBucket":"clicker-platform.firebasestorage.app"}
+[debug] [2026-02-16T11:45:16.668Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:45:16.668Z] Checked if tokens are valid: true, expires at: 1771244622016
+[debug] [2026-02-16T11:45:16.668Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/clicker-platform/configs [none]
+[debug] [2026-02-16T11:45:17.027Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/clicker-platform/configs 200
+[debug] [2026-02-16T11:45:17.028Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/clicker-platform/configs {}
+[debug] [2026-02-16T11:45:17.029Z] Validating nodejs source
+[warn] ⚠  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory. 
+[warn] ⚠  functions: Please note that there will be breaking changes when you upgrade. 
+[debug] [2026-02-16T11:45:17.423Z] > [functions] package.json contents: {
+  "name": "temp_nextbox",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": "22"
+  },
+  "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@google/generative-ai": "^0.24.1",
+    "@opentelemetry/api": "^1.9.0",
+    "@tiptap/extension-image": "^3.15.3",
+    "@tiptap/extension-link": "^3.15.3",
+    "@tiptap/extension-placeholder": "^3.15.3",
+    "@tiptap/react": "^3.15.3",
+    "@tiptap/starter-kit": "^3.15.3",
+    "cheerio": "^1.1.2",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
+    "date-fns-tz": "^3.2.0",
+    "dotenv": "^17.2.3",
+    "firebase": "^12.7.0",
+    "firebase-admin": "^13.6.0",
+    "lucide-react": "^0.561.0",
+    "next": "16.1.1",
+    "pdf-parse": "^1.1.1",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "sharp": "^0.32 || ^0.33",
+    "sonner": "^2.0.7",
+    "tailwind-merge": "^3.4.0",
+    "uuid": "^13.0.0",
+    "firebase-frameworks": "^0.11.0",
+    "firebase-functions": "^6.0.1"
+  },
+  "main": "server.js"
+}
+[debug] [2026-02-16T11:45:17.423Z] Building nodejs source
+[info] i  functions: Loading and analyzing source code for codebase firebase-frameworks-clickerapps to determine what to deploy 
+[debug] [2026-02-16T11:45:17.424Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-02-16T11:45:17.429Z] Found firebase-functions binary at '/Users/mac/Documents/AI Project/Clicker/clicker-platform/main/clicker-platform-v2/.firebase/clickerapps/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8393
+
+[debug] [2026-02-16T11:45:17.660Z] Got response from /__/functions.yaml {"endpoints":{"ssrclickerapps":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["us-central1"],"labels":{},"httpsTrigger":{},"entryPoint":"ssrclickerapps"}},"specVersion":"v1alpha1","requiredAPIs":[],"extensions":{}}

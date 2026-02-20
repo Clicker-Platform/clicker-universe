@@ -1,7 +1,8 @@
 
 import { NextResponse } from 'next/server';
 import { adminApp, adminAuth } from '@/lib/firebase-admin';
-import { getApps } from 'firebase-admin/app';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { getApps } = require('firebase-admin/app') as typeof import('firebase-admin/app');
 import { cookies } from 'next/headers';
 
 export async function GET() {

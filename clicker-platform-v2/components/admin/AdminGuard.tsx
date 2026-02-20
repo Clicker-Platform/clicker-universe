@@ -96,8 +96,8 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
                     </p>
 
                     <div className="flex flex-col gap-3">
-                        <a href="/quattro/admin" className="px-6 py-3 bg-brand-dark text-white rounded-xl font-bold hover:bg-black transition-colors">
-                            Go to Demo Store (Quattro)
+                        <a href="/demo/admin" className="px-6 py-3 bg-brand-dark text-white rounded-xl font-bold hover:bg-black transition-colors">
+                            Go to Demo Store
                         </a>
                         <p className="text-xs text-gray-400 mt-2">
                             Current Site ID: {siteId}<br />

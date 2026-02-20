@@ -26,7 +26,8 @@
                 "**/node_modules/**"
             ],
             "frameworksBackend": {
-                "region": "us-central1"
+                "region": "us-central1",
+                "memory": 1024
             }
         },
         {
@@ -38,7 +39,8 @@
                 "**/node_modules/**"
             ],
             "frameworksBackend": {
-                "region": "us-central1"
+                "region": "us-central1",
+                "memory": 1024
             }
         },
         {
@@ -50,19 +52,8 @@
                 "**/node_modules/**"
             ],
             "frameworksBackend": {
-                "region": "us-central1"
-            }
-        },
-        {
-            "site": "clicker-universe",
-            "source": "clicker-platform-v2",
-            "ignore": [
-                "firebase.json",
-                "**/.*",
-                "**/node_modules/**"
-            ],
-            "frameworksBackend": {
-                "region": "us-central1"
+                "region": "us-central1",
+                "memory": 1024
             }
         }
     ],

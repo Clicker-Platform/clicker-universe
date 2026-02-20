@@ -74,6 +74,7 @@ export interface POSSettings {
     // Branding
     businessName?: string;
     businessAddress?: string;
+    businessLogo?: string;
 }
 
 export interface POSItem {

@@ -2,6 +2,8 @@
 
 import { useState, useRef } from 'react';
 import { Upload, X, Loader2, Image as ImageIcon } from 'lucide-react';
+import { uploadToStorage } from '@/lib/upload';
+import { useSite } from '@/lib/site-context';
 
 interface CompactImageUploadProps {
     currentUrl?: string;
@@ -14,6 +16,7 @@ export function CompactImageUpload({ currentUrl, onUpload, onRemove, label = "Up
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const { siteId } = useSite();
 
     const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -34,23 +37,10 @@ export function CompactImageUpload({ currentUrl, onUpload, onRemove, label = "Up
         }
 
         setUploading(true);
-        const formData = new FormData();
-        formData.append('file', file);
 
         try {
-            // Reusing the existing generic image upload route
-            const res = await fetch('/api/upload/image?folder=assets', {
-                method: 'POST',
-                body: formData,
-            });
-
-            const data = await res.json();
-
-            if (!res.ok) {
-                throw new Error(data.error || 'Upload failed');
-            }
-
-            onUpload(data.url);
+            const url = await uploadToStorage({ file, folder: 'assets', siteId });
+            onUpload(url);
         } catch (err: any) {
             console.error(err);
             setError(err.message || 'Error uploading');

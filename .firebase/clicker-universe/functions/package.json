@@ -2,6 +2,9 @@
   "name": "temp_nextbox",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": "22"
+  },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
@@ -18,13 +21,13 @@
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
     "dotenv": "^17.2.3",
-    "firebase": "^12.6.0",
+    "firebase": "^12.7.0",
     "firebase-admin": "^13.6.0",
     "lucide-react": "^0.561.0",
-    "next": "16.0.10",
+    "next": "16.1.1",
     "pdf-parse": "^1.1.1",
-    "react": "19.2.1",
-    "react-dom": "19.2.1",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
     "sharp": "^0.32 || ^0.33",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",
@@ -32,8 +35,5 @@
     "firebase-frameworks": "^0.11.0",
     "firebase-functions": "^6.0.1"
   },
-  "main": "server.js",
-  "engines": {
-    "node": "24"
-  }
+  "main": "server.js"
 }

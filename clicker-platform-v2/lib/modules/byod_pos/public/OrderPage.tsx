@@ -8,17 +8,14 @@ import { useEffect, useState } from 'react';
 import { getPOSSettings } from '@/lib/modules/byod_pos/api';
 import { POSSettings } from '@/lib/modules/byod_pos/types';
 
-function POSInterface() {
-    const { siteId } = useSite();
-    const [settings, setSettings] = useState<POSSettings | null>(null);
+interface POSInterfaceProps {
+    siteId: string;
+    settings: POSSettings | null;
+}
 
-    useEffect(() => {
-        if (!siteId) return;
-        getPOSSettings(siteId).then(setSettings);
-    }, [siteId]);
-
-    // Use businessName from POS settings, fallback to general site name 'QUATTRO'
-    const businessName = settings?.businessName || 'QUATTRO';
+function POSInterface({ siteId, settings }: POSInterfaceProps) {
+    // Use businessName from POS settings, fallback to generic name
+    const businessName = settings?.businessName || 'Self Order';
 
     return (
         <div className="min-h-screen bg-gray-50 pb-32">
@@ -35,7 +32,7 @@ function POSInterface() {
 
             {/* Content */}
             <main className="max-w-md mx-auto md:max-w-4xl pt-4">
-                <POSWidget />
+                <POSWidget settings={settings || undefined} />
             </main>
         </div>
     );
@@ -44,8 +41,32 @@ function POSInterface() {
 import { OrderTrackerProvider } from '../order-tracker-context';
 import { OrderTracker } from '../components/OrderTracker';
 
-export default function OrderPage() {
-    const { siteId } = useSite();
+interface Props {
+    searchParams: { [key: string]: string | string[] | undefined };
+    params: { tenant: string }; // siteId
+    initialSettings?: POSSettings;
+}
+
+export default function OrderPage({ params, searchParams, initialSettings }: Props) {
+    const siteId = params.tenant;
+
+    // Check if initialSettings provided, if not fetch them client-side
+    const [settings, setSettings] = useState<POSSettings | null>(initialSettings || null);
+    const [loadingSettings, setLoadingSettings] = useState(!initialSettings);
+
+    // Fetch Settings if not provided (Client-side Fallback)
+    useEffect(() => {
+        if (!initialSettings) {
+            getPOSSettings(siteId).then(s => {
+                setSettings(s);
+                setLoadingSettings(false);
+            });
+        }
+    }, [siteId, initialSettings]);
+
+    // Use settings or fallback
+    const businessName = settings?.businessName || 'Loading...';
+    // Logo is inside settings too now.
 
     if (!siteId) {
         return <div className="p-4 text-center">Loading...</div>;
@@ -54,7 +75,7 @@ export default function OrderPage() {
     return (
         <OrderTrackerProvider siteId={siteId}>
             <CartProvider>
-                <POSInterface />
+                <POSInterface siteId={siteId} settings={settings} />
                 <OrderTracker />
             </CartProvider>
         </OrderTrackerProvider>

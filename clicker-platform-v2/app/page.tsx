@@ -67,7 +67,7 @@ export default function LandingPage() {
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
             <Link
-              href="/quattro"
+              href="/demo"
               className="flex items-center gap-2 px-8 py-4 bg-white text-brand-dark font-bold rounded-2xl border-[3px] border-brand-dark hover:bg-brand-dark hover:text-white transition-all"
             >
               <Globe className="w-5 h-5" />

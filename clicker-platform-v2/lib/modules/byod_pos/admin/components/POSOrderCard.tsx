@@ -70,7 +70,7 @@ export function POSOrderCard({ order, onUpdateStatus, onCancel, onProcessPayment
         const updateTimer = () => {
             const now = new Date();
             // Handle Firebase Timestamp or standard number/date
-            const created = order.createdAt.seconds ? new Date(order.createdAt.seconds * 1000) : new Date();
+            const created = order.createdAt.seconds ? new Date(order.createdAt.seconds * 1000) : new Date(order.createdAt as any);
             const diff = Math.floor((now.getTime() - created.getTime()) / 1000);
 
             const mm = Math.floor(diff / 60).toString().padStart(2, '0');
@@ -104,7 +104,7 @@ export function POSOrderCard({ order, onUpdateStatus, onCancel, onProcessPayment
                     {/* KDS: Show Timer & Order Type */}
                     {kds && (
                         <div className="flex flex-col items-start gap-1 mt-1">
-                            <div className={`flex items-center gap-1 font-mono text-xl font-bold ${parseInt(elapsedTime) > 20 ? 'text-red-600 animate-pulse' : 'text-gray-500'
+                            <div className={`flex items-center gap-1 font-mono text-xl font-bold ${parseInt(elapsedTime.split(':')[0]) >= 20 ? 'text-red-600 animate-pulse' : 'text-gray-500'
                                 }`}>
                                 <Clock size={16} />
                                 {elapsedTime}

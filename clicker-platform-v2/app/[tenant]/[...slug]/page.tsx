@@ -63,7 +63,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function TenantCatchAllPage({ params, searchParams }: Props) {
     const { tenant, slug } = await params;
-    const { t } = await searchParams;
+    const resolvedSearchParams = await searchParams;
+    const { t } = resolvedSearchParams;
     const path = getPath(slug);
     const siteId = tenant;
 
@@ -75,12 +76,27 @@ export default async function TenantCatchAllPage({ params, searchParams }: Props
     const moduleMatch = await findModuleForRoute(path);
 
     if (moduleMatch) {
+        // LCP Optimization: Fetch POS Settings on Server for OrderPage
+        // This avoids the waterfall effect of Client Component -> useEffect -> Fetch
+        let initialData = {};
+        if (moduleMatch.route.componentKey === 'byod_pos:OrderPage') {
+            try {
+                // Dynamic import to avoid bundling POS logic in main bundle if not needed
+                const { getPOSSettings } = await import('@/lib/modules/byod_pos/api');
+                const settings = await getPOSSettings(siteId);
+                initialData = { initialSettings: settings };
+            } catch (e) {
+                console.error("Failed to fetch POS settings on server", e);
+            }
+        }
+
         return (
             <ModuleLoader
                 componentKey={moduleMatch.route.componentKey}
-                params={params}
-                searchParams={searchParams}
+                params={{ tenant, slug }}
+                searchParams={resolvedSearchParams}
                 siteId={siteId}
+                {...initialData}
             />
         );
     }

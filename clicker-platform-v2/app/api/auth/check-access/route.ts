@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminAuth, adminDb } from '@/lib/firebase-admin';
-import { Timestamp } from 'firebase-admin/firestore';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { Timestamp } = require('firebase-admin/firestore') as typeof import('firebase-admin/firestore');
 
 export async function POST(req: NextRequest) {
     try {
