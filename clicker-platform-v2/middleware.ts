@@ -169,9 +169,12 @@ export async function middleware(request: NextRequest) {
             // Redirect to 'https://:siteId.clicker.id/admin...' to enforce tenant subdomain.
             // Exclude auth callbacks to prevent loops.
             if (activeSite && !pathname.startsWith('/admin/auth/')) {
-                // Construct new URL
-                const newUrl = `${protocol}://${activeSite}.${baseDomain}${pathname}`;
-                return NextResponse.redirect(newUrl);
+                const targetHost = `${activeSite}.${baseDomain}`;
+                if (currentHost !== targetHost) {
+                    // Construct new URL
+                    const newUrl = `${protocol}://${targetHost}${pathname}`;
+                    return NextResponse.redirect(newUrl);
+                }
             }
 
             requestHeaders.set('x-site-id', siteId);
