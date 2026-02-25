@@ -54,10 +54,14 @@ export async function middleware(request: NextRequest) {
     const isLocal = hostname.includes('localhost');
     const protocol = isLocal ? 'http' : 'https';
 
-    let currentHost = hostname;
+    // Prioritize Cloudflare's original host header since Firebase Hosting overrides 'host' to .web.app
+    const rawForwardedHost = request.headers.get('x-clicker-original-host') || request.headers.get('x-forwarded-host');
+    const forwardedHost = (rawForwardedHost && !rawForwardedHost.includes('.web.app')) ? rawForwardedHost : null;
+
+    let currentHost = forwardedHost || hostname;
     if (process.env.NODE_ENV === 'development') {
         // Handle localhost if needed, e.g. kasisehat.localhost:3000
-        currentHost = hostname.replace('.localhost:3000', `.${baseDomain}`);
+        currentHost = currentHost.replace('.localhost:3000', `.${baseDomain}`);
     }
 
     // Check if subdomain
@@ -121,15 +125,6 @@ export async function middleware(request: NextRequest) {
             // Auth Gateway URL (centralized login)
             const gatewayUrl = process.env.NEXT_PUBLIC_AUTH_GATEWAY_URL || 'https://auth.clicker.id';
             const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'clicker.id';
-
-            // Get the masked domain from Cloudflare headers
-            // IMPORTANT: Firebase Hosting overwrites x-forwarded-host to .web.app domains
-            // so we MUST prefer our custom header x-clicker-original-host set by the Worker
-            const rawForwardedHost = request.headers.get('x-clicker-original-host')
-                || request.headers.get('x-forwarded-host');
-            // Reject any .web.app domains to prevent leaking unmasked URLs
-            const forwardedHost = (rawForwardedHost && !rawForwardedHost.includes('.web.app'))
-                ? rawForwardedHost : null;
             const tenantSlug = request.headers.get('x-tenant-slug');
 
             // Explicitly signal subdomain status to Server Components
@@ -193,11 +188,17 @@ export async function middleware(request: NextRequest) {
     // ===================================
     // 0. DOUBLE PREFIX SANITIZER (Safety Net)
     // ===================================
-    // If path starts with /tenant/tenant (e.g. /hi-clicker/hi-clicker/...), redirect to /tenant/...
+    // If path starts with /tenant/tenant (e.g. /hi-clicker/hi-clicker/...), redirect to the clean path
     if (segments.length >= 2 && segments[0] === segments[1]) {
-        const cleanPath = '/' + segments.slice(1).join('/');
         const url = request.nextUrl.clone();
-        url.pathname = cleanPath;
+        if (isSubdomain) {
+            // Drop BOTH prefixes for the browser redirect on subdomain (e.g. /demo/demo/admin -> /admin)
+            // Because Cloudflare will prepend the first one automatically
+            url.pathname = '/' + segments.slice(2).join('/');
+        } else {
+            // Drop ONE prefix on root domain
+            url.pathname = '/' + segments.slice(1).join('/');
+        }
         return NextResponse.redirect(url);
     }
 
@@ -232,9 +233,7 @@ export async function middleware(request: NextRequest) {
             // Auth Gateway URL
             const gatewayUrl = process.env.NEXT_PUBLIC_AUTH_GATEWAY_URL || 'https://auth.clicker.id';
 
-            // Get the masked domain from Cloudflare headers
-            // Prioritize custom header to avoid Firebase Hosting overwrites
-            const forwardedHost = request.headers.get('x-clicker-original-host') || request.headers.get('x-forwarded-host');
+            // Use the top-level forwardedHost (which strips .web.app domains)
 
             // Build full redirect URL with masked domain
             const buildRedirectUrl = (path: string): string => {
@@ -271,9 +270,10 @@ export async function middleware(request: NextRequest) {
             url.pathname = newPath;
 
             // Explicitly signal subdomain status to Server Components
-            if (forwardedHost && forwardedHost !== 'clicker.id' && forwardedHost.endsWith('.clicker.id')) {
-                requestHeaders.set('x-clicker-is-subdomain', 'true');
-            }
+            // Since this block is only hit when Cloudflare rewrites a request from a subdomain
+            // (e.g. clicker.id/admin hits the special routes block instead),
+            // we can definitively set this to true, bypassing the unreliability of Firebase headers.
+            requestHeaders.set('x-clicker-is-subdomain', 'true');
 
             return NextResponse.rewrite(url, {
                 request: {

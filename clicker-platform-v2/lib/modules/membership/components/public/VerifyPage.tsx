@@ -12,8 +12,12 @@ export default function VerifyPage() {
     const [error, setError] = useState('');
     const [email, setEmail] = useState('');
     const [user, setUser] = useState<User | null>(null);
+    const hasAttempted = React.useRef(false);
 
     useEffect(() => {
+        if (hasAttempted.current) return;
+        hasAttempted.current = true;
+
         // 1. Check if it's a valid email link
         if (!isSignInWithEmailLink(auth, window.location.href)) {
             setStatus('ERROR');

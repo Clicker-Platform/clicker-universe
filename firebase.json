@@ -27,7 +27,7 @@
             ],
             "frameworksBackend": {
                 "region": "us-central1",
-                "memory": 1024
+                "memory": "1GB"
             }
         },
         {
@@ -40,7 +40,7 @@
             ],
             "frameworksBackend": {
                 "region": "us-central1",
-                "memory": 1024
+                "memory": "1GB"
             }
         },
         {
@@ -53,7 +53,7 @@
             ],
             "frameworksBackend": {
                 "region": "us-central1",
-                "memory": 1024
+                "memory": "1GB"
             }
         }
     ],

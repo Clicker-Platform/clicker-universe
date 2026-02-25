@@ -1,38 +1,37 @@
 /**
  * Firebase Admin SDK initialization for server-side operations.
  * 
- * IMPORTANT: Uses dynamic require() to bypass Turbopack's static analysis
- * which otherwise generates hashed module identifiers that fail at runtime
- * in Firebase Cloud Functions. This is a known Turbopack bug (#87737).
- * 
- * CORE STRATEGY: "Hybrid Identity"
- * 1. PRODUCTION: Use Application Default Credentials (ADC) - No keys needed.
- * 2. LOCAL DEV: Optionally use GCP_SERVICE_ACCOUNT_KEY if ADC (gcloud) is not set up.
+ * CRITICAL FIX FOR FIREBASE HOSTING:
+ * We MUST use a dynamic require() to bypass Turbopack's static analysis.
+ * Next.js 15 Turbopack has a bug (#87737) where modules in `serverExternalPackages`
+ * get their module IDs mangled in production (e.g., 'firebase-admin-021ca263...').
+ * Using a dynamic string prevents Turbopack from seeing the require statement.
+ * DO NOT REVERT TO ES6 IMPORTS OR STANDARD REQUIRE. IT WILL BREAK ALL API ROUTES.
  */
+import type * as AdminTypes from 'firebase-admin';
+const pkgName = 'firebase' + '-admin';
+// @ts-ignore
+const admin = require(pkgName) as typeof AdminTypes;
 
-// Dynamic require to prevent Turbopack from hashing the module name
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const firebaseAdminApp = require('firebase-admin/app') as typeof import('firebase-admin/app');
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const firebaseAdminAuth = require('firebase-admin/auth') as typeof import('firebase-admin/auth');
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const firebaseAdminFirestore = require('firebase-admin/firestore') as typeof import('firebase-admin/firestore');
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const firebaseAdminStorage = require('firebase-admin/storage') as typeof import('firebase-admin/storage');
+const initializeApp = (opts?: any) => admin.initializeApp(opts);
+const getApps = () => admin.apps || [];
+const cert = (cred: any) => admin.credential.cert(cred);
 
-const { initializeApp, getApps, cert } = firebaseAdminApp;
-const { getAuth } = firebaseAdminAuth;
-const { getFirestore } = firebaseAdminFirestore;
-const { getStorage } = firebaseAdminStorage;
+const getAuth = (app?: any) => admin.auth(app);
+const getFirestore = (app?: any) => admin.firestore(app);
+const getStorage = (app?: any) => admin.storage(app);
 
 import type { App } from 'firebase-admin/app';
+import type { Auth } from 'firebase-admin/auth';
+import type { Firestore } from 'firebase-admin/firestore';
+import type { Storage } from 'firebase-admin/storage';
 
 function initializeAdminApp(): App {
     const apps = getApps();
 
     // singleton pattern: return existing app if available
     if (apps.length > 0) {
-        return apps[0];
+        return apps[0] as App;
     }
 
     // LOCAL FALLBACK: Check for Service Account Key in env
@@ -60,7 +59,7 @@ function initializeAdminApp(): App {
                 credential: cert(credential),
                 projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
                 storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
-            });
+            }) as App;
         } catch (error) {
             console.error('[firebase-admin] Failed to load/parse GCP_SERVICE_ACCOUNT_KEY:', error);
             // Fallthrough to ADC if key is invalid
@@ -73,10 +72,11 @@ function initializeAdminApp(): App {
     return initializeApp({
         projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
         storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
-    });
+    }) as App;
 }
 
-export const adminApp = initializeAdminApp();
-export const adminAuth = getAuth(adminApp);
-export const adminDb = getFirestore(adminApp);
-export const adminStorage = getStorage(adminApp);
+export const adminApp: App = initializeAdminApp();
+export const adminAuth: Auth = getAuth(adminApp);
+export const adminDb: Firestore = getFirestore(adminApp);
+export const adminStorage: Storage = getStorage(adminApp);
+export const firebaseAdmin = admin;
