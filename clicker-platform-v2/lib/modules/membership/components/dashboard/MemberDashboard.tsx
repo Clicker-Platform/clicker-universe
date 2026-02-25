@@ -42,6 +42,7 @@ export default function MemberDashboard() {
     // 2. Fetch Member Data
     const loadMember = async (authUser: User, currentSiteId: string) => {
         try {
+            console.log("DEBUG: Loading member...", { currentSiteId, email: authUser.email, uid: authUser.uid });
             // A. Try finding by Linked UID
             let foundMember = await findMemberByAuthId(currentSiteId, authUser.uid);
 

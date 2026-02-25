@@ -69,7 +69,7 @@ export default {
         if (subdomain && subdomain !== 'www' && !RESERVED_SUBDOMAINS.includes(subdomain)) {
             // IMPORTANT: Don't prefix static assets and API routes with tenant slug
             // These paths should pass through as-is to Firebase
-            const staticPaths = ['/_next/', '/favicon', '/robots', '/sitemap', '/manifest', '/__nextjs', '/seed/', '/api/'];
+            const staticPaths = ['/_next/', '/favicon', '/robots', '/sitemap', '/manifest', '/__nextjs', '/seed/', '/api/', '/member/'];
             const isStaticPath = staticPaths.some(prefix => pathname.startsWith(prefix));
 
 
@@ -131,23 +131,31 @@ async function proxyRequest(request, targetHost, targetPath, tenantSlug = null) 
     const targetUrl = `https://${targetHost}${targetPath}${originalUrl.search}`;
 
     try {
-        // Use direct fetch with minimal options
-        const response = await fetch(targetUrl, {
+        // Construct headers from original request so we don't lose Content-Type, Authorization, etc.
+        const headers = new Headers(request.headers);
+        headers.set('Host', targetHost);
+        headers.set('X-Forwarded-Host', request.headers.get('Host') || '');
+        headers.set('X-Clicker-Original-Host', request.headers.get('Host') || ''); // Custom header to bypass Firebase overwrites
+        headers.set('X-Forwarded-Proto', 'https');
+        if (tenantSlug) {
+            headers.set('X-Tenant-Slug', tenantSlug);
+        }
+
+        const fetchOptions = {
             method: request.method,
-            headers: {
-                'Host': targetHost,
-                'Accept': request.headers.get('Accept') || '*/*',
-                'Accept-Language': request.headers.get('Accept-Language') || 'en-US,en;q=0.9',
-                'Cookie': request.headers.get('Cookie') || '',
-                'User-Agent': request.headers.get('User-Agent') || 'CloudflareWorker',
-                // Pass through for Next.js middleware
-                'X-Forwarded-Host': request.headers.get('Host') || '',
-                'X-Clicker-Original-Host': request.headers.get('Host') || '', // Custom header to bypass Firebase overwrites
-                'X-Forwarded-Proto': 'https',
-                'X-Tenant-Slug': tenantSlug || '',
-            },
+            headers: headers,
             redirect: 'manual',
-        });
+        };
+
+        // Forward the request body for methods that support it
+        if (request.method !== 'GET' && request.method !== 'HEAD') {
+            fetchOptions.body = request.body;
+            // Cloudflare Workers requires duplex: 'half' when streaming the request body
+            fetchOptions.duplex = 'half';
+        }
+
+        // Use direct fetch with constructed options
+        const response = await fetch(targetUrl, fetchOptions);
 
         // Create new response with modified headers
         const newResponse = new Response(response.body, {

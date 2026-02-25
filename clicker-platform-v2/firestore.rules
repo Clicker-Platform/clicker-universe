@@ -148,7 +148,12 @@ service cloud.firestore {
         allow write: if isValidUser(siteId) && isOwner(siteId);
       }
 
-      // ANALYTICS (Read only by authenticated staff)
+      // ANALYTICS (Read only by authenticated staff, except siteStats for tracking)
+      match /analytics/siteStats {
+        allow read: if true;
+        allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['pageViews', 'totalClicks']);
+        allow create: if request.resource.data.keys().hasOnly(['pageViews', 'totalClicks']);
+      }
       match /analytics/{docId} {
         allow read: if hasSiteAccess(siteId);
         allow write: if false; // Server-side only
@@ -160,8 +165,16 @@ service cloud.firestore {
       match /pages/{pageId} { allow read: if true; allow write: if hasSiteAccess(siteId); }
       match /content/{docId} { allow read: if true; allow write: if hasSiteAccess(siteId); }
       match /posts/{postId} { allow read: if true; allow write: if hasSiteAccess(siteId); }
-      match /products/{productId} { allow read: if true; allow write: if hasSiteAccess(siteId); }
-      match /links/{linkId} { allow read: if true; allow write: if hasSiteAccess(siteId); }
+      match /products/{productId} { 
+        allow read: if true; 
+        allow update: if hasSiteAccess(siteId) || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clicks']);
+        allow create, delete: if hasSiteAccess(siteId);
+      }
+      match /links/{linkId} { 
+        allow read: if true; 
+        allow update: if hasSiteAccess(siteId) || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clicks']);
+        allow create, delete: if hasSiteAccess(siteId);
+      }
       match /forms/{formId} { allow read: if true; allow write: if hasSiteAccess(siteId); }
       match /branches/{branchId} { allow read: if true; allow write: if hasSiteAccess(siteId); }
 
@@ -243,11 +256,21 @@ service cloud.firestore {
 
       // 4. MEMBERSHIP (Strictly Nested)
       match /modules/membership/members/{memberId} {
-        allow read: if isValidUser(siteId) && isModuleEnabled(siteId, 'membership');
-        allow write: if hasWritePermission(siteId, 'membership', 'members');
+        allow read: if isModuleEnabled(siteId, 'membership') && (
+            isValidUser(siteId) || 
+            (request.auth != null && (resource.data.email == request.auth.token.email || resource.data.uid == request.auth.uid))
+        );
+        allow update: if isModuleEnabled(siteId, 'membership') && (
+            hasWritePermission(siteId, 'membership', 'members') ||
+            (request.auth != null && resource.data.email == request.auth.token.email) // Self-link uid
+        );
+        allow create, delete: if hasWritePermission(siteId, 'membership', 'members');
       }
       match /modules/membership/transactions/{txnId} {
-        allow read: if isValidUser(siteId) && isModuleEnabled(siteId, 'membership');
+        allow read: if isModuleEnabled(siteId, 'membership') && (
+            isValidUser(siteId) || 
+            (request.auth != null && get(/databases/$(database)/documents/sites/$(siteId)/modules/membership/members/$(resource.data.memberId)).data.uid == request.auth.uid)
+        );
         allow write: if hasWritePermission(siteId, 'membership', 'transactions'); // Usually system writes
       }
       match /modules/membership/settings/{settingId} {
