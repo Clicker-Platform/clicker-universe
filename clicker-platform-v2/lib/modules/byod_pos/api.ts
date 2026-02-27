@@ -476,7 +476,9 @@ export async function getPOSSettings(siteId: string): Promise<POSSettings> {
 
 export async function updatePOSSettings(siteId: string, settings: POSSettings): Promise<void> {
     const docRef = doc(db, 'sites', siteId, SETTINGS_DOC);
-    await setDoc(docRef, settings);
+    // Firestore rejects `undefined` values — strip them before writing
+    const cleanSettings = JSON.parse(JSON.stringify(settings));
+    await setDoc(docRef, cleanSettings);
 }
 
 /**
