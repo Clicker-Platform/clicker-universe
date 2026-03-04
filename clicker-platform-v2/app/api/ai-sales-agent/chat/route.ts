@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { generateSalesResponse, listAvailableModels } from "@/lib/modules/ai-sales-agent/server/gemini-client";
 import { adminDb } from "@/lib/firebase-admin";
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
     try {
         const siteId = req.headers.get('x-site-id');

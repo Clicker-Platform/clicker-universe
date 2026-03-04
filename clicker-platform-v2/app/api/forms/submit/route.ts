@@ -1,7 +1,7 @@
-import { adminDb } from '@/lib/firebase-admin';
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { FieldValue } = require('firebase-admin').firestore;
+import { adminDb, FieldValue } from '@/lib/firebase-admin';
 import { NextResponse } from 'next/server';
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
     try {

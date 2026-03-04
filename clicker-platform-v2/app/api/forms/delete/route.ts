@@ -2,6 +2,8 @@ import { adminDb } from '@/lib/firebase-admin';
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
+export const dynamic = 'force-dynamic';
+
 export async function DELETE(request: Request) {
     try {
         // const session = (await cookies()).get('session')?.value;

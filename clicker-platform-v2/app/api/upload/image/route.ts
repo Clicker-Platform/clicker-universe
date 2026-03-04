@@ -6,6 +6,8 @@ const sharp = require('sharp') as typeof import('sharp');
 import { cookies } from 'next/headers';
 import { v4 as uuidv4 } from 'uuid';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
     try {
         console.log('[Upload Image] Starting upload process...');

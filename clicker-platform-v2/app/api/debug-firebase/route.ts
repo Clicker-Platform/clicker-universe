@@ -1,9 +1,9 @@
 
 import { NextResponse } from 'next/server';
-import { adminApp, adminAuth } from '@/lib/firebase-admin';
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const getApps = () => require('firebase-admin').apps || [];
+import { adminApp, adminAuth, firebaseAdmin } from '@/lib/firebase-admin';
 import { cookies } from 'next/headers';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
     // Block access in production environment
@@ -21,7 +21,7 @@ export async function GET() {
     });
 
     try {
-        const apps = getApps().map((a: any) => a.name);
+        const apps = (firebaseAdmin.apps || []).map((a: any) => a.name);
         const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
         const envKey = process.env.GCP_SERVICE_ACCOUNT_KEY ? 'Present (Length ' + process.env.GCP_SERVICE_ACCOUNT_KEY.length + ')' : 'Missing';
 

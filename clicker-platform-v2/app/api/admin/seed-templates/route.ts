@@ -4,6 +4,8 @@ import { saveTemplate } from '@/lib/templates/service';
 import { TemplateDocument } from '@/lib/templates/types';
 import { Timestamp } from 'firebase/firestore';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
     try {
         const results = [];

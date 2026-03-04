@@ -1,6 +1,8 @@
 import { adminDb } from '@/lib/firebase-admin';
 import { NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');

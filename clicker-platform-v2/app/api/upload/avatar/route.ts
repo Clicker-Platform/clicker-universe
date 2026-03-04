@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { adminStorage } from '@/lib/firebase-admin';
 import { v4 as uuidv4 } from 'uuid';
 
+export const dynamic = 'force-dynamic';
+
 // Map MIME types to file extensions
 const MIME_TO_EXT: Record<string, string> = {
     'image/jpeg': 'jpg',

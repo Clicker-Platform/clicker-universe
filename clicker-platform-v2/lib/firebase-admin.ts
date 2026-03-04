@@ -1,17 +1,14 @@
 /**
  * Firebase Admin SDK initialization for server-side operations.
  * 
- * CRITICAL FIX FOR FIREBASE HOSTING:
- * We MUST use a dynamic require() to bypass Turbopack's static analysis.
- * Next.js 15 Turbopack has a bug (#87737) where modules in `serverExternalPackages`
- * get their module IDs mangled in production (e.g., 'firebase-admin-021ca263...').
- * Using a dynamic string prevents Turbopack from seeing the require statement.
- * DO NOT REVERT TO ES6 IMPORTS OR STANDARD REQUIRE. IT WILL BREAK ALL API ROUTES.
+ * Uses require() for firebase-admin because it is listed in 
+ * serverExternalPackages in next.config.mjs, which tells webpack
+ * to externalize this package (not bundle it) and resolve it 
+ * from node_modules at runtime.
  */
 import type * as AdminTypes from 'firebase-admin';
-const pkgName = 'firebase' + '-admin';
-// @ts-ignore
-const admin = require(pkgName) as typeof AdminTypes;
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const admin = require('firebase-admin') as typeof AdminTypes;
 
 const initializeApp = (opts?: any) => admin.initializeApp(opts);
 const getApps = () => admin.apps || [];
@@ -80,3 +77,8 @@ export const adminAuth: Auth = getAuth(adminApp);
 export const adminDb: Firestore = getFirestore(adminApp);
 export const adminStorage: Storage = getStorage(adminApp);
 export const firebaseAdmin = admin;
+
+// Re-export commonly used Firestore types via the dynamic admin reference
+// so API routes don't need their own require('firebase-admin') calls
+export const Timestamp = admin.firestore.Timestamp;
+export const FieldValue = admin.firestore.FieldValue;

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adminAuth, adminDb } from '@/lib/firebase-admin';
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { Timestamp } = require('firebase-admin').firestore;
+import { adminAuth, adminDb, Timestamp } from '@/lib/firebase-admin';
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
     try {
