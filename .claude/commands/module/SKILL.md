@@ -2,10 +2,13 @@
 name: module
 description: >
   Scaffold, audit, and manage Clicker Platform modules. Use this skill whenever
-  working with the module system: creating a new module, adding routes to an existing
-  module, auditing module registration, or checking module status.
-  Trigger on: "create module", "add module", "audit module", "add route to", "module status",
-  or any request touching lib/modules/, definitions.ts, components.tsx, or the module registry.
+  working with the module system, even if the user doesn't say "module" explicitly —
+  adding a new feature area, wiring up a new admin page, checking why a route isn't
+  appearing in the sidebar, or reviewing what's registered all qualify.
+  Trigger on: "create module", "add module", "new feature module", "add a route", "add an
+  admin page", "module not showing", "audit module", "module status", "register component",
+  or any request touching lib/modules/, definitions.ts, components.tsx, client-registry.tsx,
+  or the module registry.
 ---
 
 # /module — Clicker Platform Module Workflow Skill
@@ -56,11 +59,12 @@ Before writing any code, collect from the user:
 - Client-side Firestore operations using Firebase Client SDK only
 - Export collection path constants at top: `export const ITEMS_COLLECTION = 'modules/{moduleId}/items';`
 - Import from `firebase/firestore` and `@/lib/firebase`
-- NEVER import `firebase-admin`
+- Do not import `firebase-admin` — this file runs on the client
 - Reference pattern: `lib/modules/membership/api.ts`
 
 **`dev/clicker-platform-v2/lib/modules/{moduleId}/admin/{Name}Page.tsx`**
-- MUST have `'use client'` at top
+
+- Add `'use client'` at top — required because these pages use hooks
 - Import `useSite` from `@/lib/site-context` for siteId
 - Import `usePermission` from `@/lib/hooks/use-permission` for edit/view checks
 - Reference pattern: `lib/modules/membership/admin/MemberListPage.tsx`
@@ -227,11 +231,11 @@ FUNCTIONS (dev/functions/):
 
 ---
 
-## Architecture Rules (never violate)
+## Architecture Rules
 
-- `componentKey` format is strictly `{moduleId}:{ComponentName}` — must match exactly in both definitions and MODULE_COMPONENTS
-- `routeId` = last URL path segment only — plan paths with this in mind
-- All admin page components must have `'use client'` at top
-- Never import `firebase-admin` in `components.tsx` or `client-registry.tsx`
-- Both `definitions.ts` files (platform + backyard) must always be updated together
-- Per-site `sites/{siteId}.modules[moduleId]` must be `true` for module to appear in sidebar — global `enabled` alone is not enough
+- **`componentKey` format is `{moduleId}:{ComponentName}` — exact match required.** The key in `adminRoutes` and the key in `MODULE_COMPONENTS` must be identical strings. A mismatch causes a silent "component not found" render — no error thrown.
+- **Route `path` uses the last URL segment only.** The catch-all route at `app/admin/(dashboard)/[...slug]/page.tsx` resolves components by the final path segment. Nested dynamic params won't resolve correctly.
+- **Admin page components need `'use client'` at top.** These components use hooks (`useSite`, `usePermission`, etc.) — without the directive they'll fail with a server component error.
+- **Never import `firebase-admin` in `components.tsx` or `client-registry.tsx`.** These files are bundled for the browser. `firebase-admin` is Node.js-only and will break the client build.
+- **Both `definitions.ts` files must be updated together.** Platform (`lib/modules/definitions.ts`) and Backyard (`dev/backyard/lib/modules/definitions.ts`) are separate apps that share the same route definitions. Updating only one causes the other to fall out of sync silently.
+- **Per-site module flag controls sidebar visibility.** `sites/{siteId}.modules[moduleId]: true` must be set for the module to appear — the global `enabled` flag in seed data only controls whether the module is available to assign, not whether it shows for a given site.

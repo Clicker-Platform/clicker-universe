@@ -2,11 +2,13 @@
 name: template
 description: >
   Scaffold, audit, and manage Clicker Platform visual templates. Use this skill whenever
-  working with the template system: creating a new template, swapping header/background
-  components, auditing template registration, or checking template status.
-  Trigger on: "create template", "add template", "audit template", "template status",
-  "add-component", or any request touching lib/templates/, definitions.ts, registry.ts,
-  or the template system.
+  working with the template system, even if the user doesn't say "template" explicitly —
+  creating a new site theme, swapping a header component, checking why a template isn't
+  showing, or reviewing which templates are registered all qualify.
+  Trigger on: "create template", "new theme", "add header", "swap header", "template not
+  loading", "audit template", "template status", "template gallery", or any request
+  touching lib/templates/, definitions.ts, registry.ts, AppearanceClient.tsx, or
+  components/headers/.
 ---
 
 # /template — Clicker Platform Template Workflow Skill
@@ -59,19 +61,19 @@ Before writing any code, collect from the user:
 13. **containerWidth** — `'narrow'` (480px) | `'boxed'` (1024px) | `'full'` (100%) | `'tablet'` (768px)
 14. **navMode** — `'mobile-only'` (always bottom bar) | `'adaptive'` (mobile → desktop top bar)
 15. **Grid** — columns per breakpoint + gap class:
-   - mobile: usually `1`
-   - tablet: usually `1` or `2`
-   - desktop: usually `1`, `2`, or `3`
-   - gap: `'gap-4'` | `'gap-6'` | `'gap-8'`
+    - mobile: usually `1`
+    - tablet: usually `1` or `2`
+    - desktop: usually `1`, `2`, or `3`
+    - gap: `'gap-4'` | `'gap-6'` | `'gap-8'`
 16. **allowThemeColorOverride** — `true` (user can change colors) | `false` (locked brand colors)
 17. **backgroundElements** — list of floating SVG icons (or `[]` for none):
-   - Each item: `{ icon: 'Croissant', position: 'top-10 left-4', rotation: -15, size: 'w-16 h-16' }`
-   - Available icons: `Croissant`, `Coffee`, `Sparkles`, `Clock`, `Flame`, `Star`, `Leaf`, `Heart`
+    - Each item: `{ icon: 'Croissant', position: 'top-10 left-4', rotation: -15, size: 'w-16 h-16' }`
+    - Available icons: `Croissant`, `Coffee`, `Sparkles`, `Clock`, `Flame`, `Star`, `Leaf`, `Heart`
 18. **Header component** — reuse existing or create new:
-   - `ClassicProfileHeader` — bold centered layout with background art
-   - `ModernProfileHeader` — left-aligned, structured
-   - `ShuvoHeader` — minimal architectural style
-   - Or: create new `{Name}Header.tsx`
+    - `ClassicProfileHeader` — bold centered layout with background art
+    - `ModernProfileHeader` — left-aligned, structured
+    - `ShuvoHeader` — minimal architectural style
+    - Or: create new `{Name}Header.tsx`
 19. **Background component** — `BackgroundDecorations` (floating SVG icons) | `() => null` (no background)
 
 ### Step 1 — Add to `lib/templates/definitions.ts`
@@ -123,6 +125,7 @@ Add entry to the `templateDefinitions` object:
 ```
 
 **cardStyle mapping** (deprecated but required for compatibility):
+
 - `cardVariant: 'shadow'` → `cardStyle: 'clean'`
 - `cardVariant: 'outlined'` → `cardStyle: 'glass'`
 - `cardVariant: 'flat'` → `cardStyle: 'clean'`
@@ -146,7 +149,10 @@ import { {HeaderComponent} } from '@/components/headers/{HeaderComponent}';
 
 If creating a **new header component**, create first:
 
-**`dev/clicker-platform-v2/components/headers/{Name}Header.tsx`**
+```text
+dev/clicker-platform-v2/components/headers/{Name}Header.tsx
+```
+
 - Reference pattern: `components/headers/ModernProfileHeader.tsx`
 - Use `useTemplate()` from `@/lib/templates/TemplateProvider` to access theme values
 - Use `useSite()` from `@/lib/site-context` if site-specific data needed
@@ -194,16 +200,20 @@ To swap or add a Header or Background component for an existing template `{templ
 
 1. If creating new component: create `components/headers/{NewName}Header.tsx` (reference: `ModernProfileHeader.tsx`)
 2. Add import to top of `lib/templates/registry.ts`:
+
    ```typescript
    import { {NewName}Header } from '@/components/headers/{NewName}Header';
    ```
+
 3. Update `templateComponents['{templateId}']`:
+
    ```typescript
    '{templateId}': {
        Header: {NewName}Header,  // changed
        Background: BackgroundDecorations,
    },
    ```
+
 4. No Firestore update needed — component changes are code-only (registry.ts is not seeded)
 5. No `AppearanceClient.tsx` update needed
 
@@ -212,10 +222,12 @@ To swap or add a Header or Background component for an existing template `{templ
 ## Action: `status`
 
 Read these files and produce a cross-reference table:
+
 - `lib/templates/definitions.ts` — all templateIds and their configs
 - `lib/templates/registry.ts` — all entries in templateComponents
 
 Output format:
+
 ```
 Template: {id} — "{name}"
   Tier: free/premium  |  containerWidth: narrow/boxed/full/tablet
@@ -251,13 +263,13 @@ PLATFORM (dev/clicker-platform-v2/):
 
 ---
 
-## Architecture Rules (never violate)
+## Architecture Rules
 
-- Template ID must match in BOTH `templateDefinitions` (definitions.ts) AND `templateComponents` (registry.ts) — mismatched IDs cause silent fallback to `classic`
-- `cardStyle` is deprecated but MUST be set alongside `cardVariant` for backward compatibility
-- `allowThemeColorOverride: false` is intentional for brand-locked templates — do not remove
-- Header components use **static imports** in registry.ts (NOT dynamic like module components)
-- Never import `firebase-admin` anywhere in `lib/templates/` or `components/headers/`
-- After ANY change to `definitions.ts`, run `GET /api/admin/seed-templates` to sync Firestore
-- Per-site active template lives at `sites/{siteId}/content/siteSettings.layoutStyle` — changing a template definition does NOT change any site's active template
-- `getTemplate(id)` in registry.ts falls back to `classic` if ID not found — always test with the real ID
+- **Template ID must match in both files.** `templateDefinitions` (definitions.ts) and `templateComponents` (registry.ts) are keyed by the same ID — a mismatch causes a silent fallback to `classic` with no error thrown, which is hard to debug.
+- **Always set `cardStyle` alongside `cardVariant`.** `cardStyle` is deprecated but still read by older components. Without it, cards may render incorrectly on sites that haven't fully migrated. Use the mapping: `shadow → clean`, `outlined → glass`, `flat → clean`.
+- **`allowThemeColorOverride: false` is intentional.** This locks the palette for brand templates where user overrides would break the design intent. Don't remove it assuming it's a mistake.
+- **Header components use static imports in registry.ts.** Unlike module components, the template registry is evaluated synchronously at render time — dynamic imports won't work here.
+- **Never import `firebase-admin` in `lib/templates/` or `components/headers/`.** These files run on the client; firebase-admin is server-only and will cause a build error.
+- **After any change to `definitions.ts`, seed Firestore.** The UI reads from Firestore, not the static file directly. Run `GET /api/admin/seed-templates` or use the "Seed Templates" button in `/admin/appearance`.
+- **Changing a definition does not affect active sites.** Per-site active template is stored at `sites/{siteId}/content/siteSettings.layoutStyle`. Updating definitions.ts only affects what's available to choose — it doesn't reassign anyone.
+- **`getTemplate(id)` falls back to `classic` silently.** Always verify with the actual template ID; a typo will appear to "work" but render the wrong template.
