@@ -39,34 +39,33 @@ function AdminLoginForm() {
       setStatus('Redirecting to dashboard...');
 
       // Determine the platform URL - prefer masked domains
-      let platformUrl: string = 'https://clicker.id'; // Default to masked root domain
+      let platformUrl: string = '';
 
-      if (window.location.hostname === 'localhost') {
-        platformUrl = 'http://localhost:3010';
-      } else {
-        // 1. Try to get domain from redirect param
-        if (redirectTo && redirectTo.startsWith('http')) {
-          try {
-            platformUrl = new URL(redirectTo).origin;
-          } catch {
-            // Invalid URL in redirect param
-          }
+      // 1. Try to get domain from redirect param
+      if (redirectTo && redirectTo.startsWith('http')) {
+        try {
+          platformUrl = new URL(redirectTo).origin;
+        } catch {
+          // Invalid URL in redirect param
         }
+      }
 
-        // 2. If no valid redirect domain, try to infer from tenant cookie
-        if (!platformUrl) {
-          // Check for tenant cookie set during login
-          const tenantMatch = document.cookie.match(/__tenant=([^;]+)/);
-          const tenantSlug = tenantMatch ? tenantMatch[1] : null;
+      // 2. If no valid redirect domain, try to infer from tenant cookie
+      if (!platformUrl) {
+        // Check for tenant cookie set during login
+        const tenantMatch = document.cookie.match(/__tenant=([^;]+)/);
+        const tenantSlug = tenantMatch ? tenantMatch[1] : null;
 
-          if (tenantSlug) {
-            // Construct masked domain from tenant
-            platformUrl = `https://${tenantSlug}.clicker.id`;
-          } else {
-            // 3. Last resort fallback
-            // Prefer generic masked domain over Firebase URL
-            platformUrl = 'https://clicker.id';
-          }
+        if (tenantSlug) {
+          // Construct masked domain from tenant
+          platformUrl = `https://${tenantSlug}.clicker.id`;
+        } else if (window.location.hostname === 'localhost') {
+          // Fallback for local development to main platform port
+          platformUrl = 'http://localhost:3000';
+        } else {
+          // 3. Last resort fallback
+          // Prefer generic masked domain over Firebase URL
+          platformUrl = 'https://clicker.id';
         }
       }
 

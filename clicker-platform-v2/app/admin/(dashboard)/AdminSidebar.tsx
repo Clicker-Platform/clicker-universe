@@ -44,8 +44,7 @@ export function AdminSidebar() {
         try {
             document.cookie = '__session=; path=/; max-age=0';
             await signOut(auth);
-            // HARDCODED: Ensure strict redirect to masked auth domain
-            const gatewayUrl = 'https://auth.clicker.id';
+            const gatewayUrl = process.env.NEXT_PUBLIC_AUTH_GATEWAY_URL || 'https://auth.clicker.id';
             window.location.href = `${gatewayUrl}/logout`;
         } catch (error) {
             console.error('Logout failed:', error);

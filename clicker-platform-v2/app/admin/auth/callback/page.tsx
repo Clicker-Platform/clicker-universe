@@ -47,7 +47,7 @@ function AuthCallbackHandler() {
                 if (!processedRef.current) {
                     setError('No authentication token provided. Redirecting to login...');
                     setTimeout(() => {
-                        window.location.href = 'https://auth.clicker.id';
+                        window.location.href = process.env.NEXT_PUBLIC_AUTH_GATEWAY_URL || 'https://auth.clicker.id';
                     }, 2000);
                 }
                 return;
@@ -134,8 +134,9 @@ function AuthCallbackHandler() {
                     const targetSite = sites[0];
 
                     const domainAttribute = isProduction ? `; Domain=.${baseDomain}` : '';
+                    const secureAttribute = isProduction ? '; Secure' : '';
 
-                    const cookieValue = `__session=${targetSite.siteId}; path=/; max-age=${60 * 60 * 24 * 30}; SameSite=Lax; Secure${domainAttribute}`;
+                    const cookieValue = `__session=${targetSite.siteId}; path=/; max-age=${60 * 60 * 24 * 30}; SameSite=Lax${secureAttribute}${domainAttribute}`;
                     document.cookie = cookieValue;
 
                     console.log('[Auth Callback] Cookie set:', cookieValue);
@@ -157,7 +158,7 @@ function AuthCallbackHandler() {
                     setError('Tidak ditemukan keanggotaan situs. Hubungi administrator.');
                     await auth.signOut();
                     // Clear __session cookie to prevent middleware redirect loop
-                    document.cookie = '__session=; path=/; max-age=0; SameSite=Lax; Secure';
+                    document.cookie = `__session=; path=/; max-age=0; SameSite=Lax${isProduction ? '; Secure' : ''}`;
                     if (isProduction) {
                         document.cookie = `__session=; path=/; max-age=0; Domain=.${baseDomain}; SameSite=Lax; Secure`;
                     }
@@ -168,8 +169,10 @@ function AuthCallbackHandler() {
                 setError(`Gagal Masuk: ${err.message || 'Unknown error'}`);
                 // Clear stale cookies to prevent loops on retry
                 try { await auth.signOut(); } catch { }
-                document.cookie = '__session=; path=/; max-age=0; SameSite=Lax; Secure';
-                document.cookie = '__session=; path=/; max-age=0; Domain=.clicker.id; SameSite=Lax; Secure';
+                document.cookie = `__session=; path=/; max-age=0; SameSite=Lax${isProduction ? '; Secure' : ''}`;
+                if (isProduction) {
+                    document.cookie = `__session=; path=/; max-age=0; Domain=.${baseDomain}; SameSite=Lax; Secure`;
+                }
             }
         };
 
@@ -189,11 +192,16 @@ function AuthCallbackHandler() {
                         <button
                             onClick={() => {
                                 auth.signOut().then(() => {
-                                    document.cookie = '__session=; path=/; max-age=0; SameSite=Lax; Secure';
-                                    document.cookie = '__session=; path=/; max-age=0; Domain=.clicker.id; SameSite=Lax; Secure';
-                                    window.location.href = 'https://auth.clicker.id?error=no_membership';
+                                    const isProd = window.location.hostname.includes('clicker.id');
+                                    document.cookie = `__session=; path=/; max-age=0; SameSite=Lax${isProd ? '; Secure' : ''}`;
+                                    if (isProd) {
+                                        document.cookie = '__session=; path=/; max-age=0; Domain=.clicker.id; SameSite=Lax; Secure';
+                                    }
+                                    const gw = process.env.NEXT_PUBLIC_AUTH_GATEWAY_URL || 'https://auth.clicker.id';
+                                    window.location.href = `${gw}?error=no_membership`;
                                 }).catch(() => {
-                                    window.location.href = 'https://auth.clicker.id?error=no_membership';
+                                    const gw = process.env.NEXT_PUBLIC_AUTH_GATEWAY_URL || 'https://auth.clicker.id';
+                                    window.location.href = `${gw}?error=no_membership`;
                                 });
                             }}
                             className="mt-2 w-full bg-gray-800 text-white font-bold py-3 rounded-xl hover:bg-gray-700 transition-colors text-sm"

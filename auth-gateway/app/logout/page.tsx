@@ -16,8 +16,12 @@ export default function LogoutPage() {
                 console.log('Logged out of Gateway');
 
                 // Clear __session cookie at all domain levels to prevent stale auth
-                document.cookie = '__session=; path=/; max-age=0; SameSite=Lax; Secure';
-                document.cookie = '__session=; path=/; max-age=0; Domain=.clicker.id; SameSite=Lax; Secure';
+                const isSecure = window.location.protocol === 'https:';
+                const secureFlag = isSecure ? '; Secure' : '';
+                document.cookie = `__session=; path=/; max-age=0; SameSite=Lax${secureFlag}`;
+                if (isSecure) {
+                    document.cookie = '__session=; path=/; max-age=0; Domain=.clicker.id; SameSite=Lax; Secure';
+                }
 
                 // Clear any local storage if needed
                 localStorage.clear();

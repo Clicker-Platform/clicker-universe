@@ -160,10 +160,10 @@ export async function middleware(request: NextRequest) {
 
 
             // STRICT MULTI-TENANT REDIRECT:
-            // If we have an active site, but the URL is generic '/admin...', 
+            // If we have an active site, but the URL is generic '/admin...',
             // Redirect to 'https://:siteId.clicker.id/admin...' to enforce tenant subdomain.
-            // Exclude auth callbacks to prevent loops.
-            if (activeSite && !pathname.startsWith('/admin/auth/')) {
+            // Exclude auth callbacks to prevent loops. Skip in local dev to stay on localhost.
+            if (!isLocal && activeSite && !pathname.startsWith('/admin/auth/')) {
                 const targetHost = `${activeSite}.${baseDomain}`;
                 if (currentHost !== targetHost) {
                     // Construct new URL
