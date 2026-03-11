@@ -1,6 +1,8 @@
 {
   "projects": {
-    "default": "clicker-universe"
+    "default": "clicker-universe-stagging",
+    "staging": "clicker-universe-stagging",
+    "prod": "clicker-universe"
   },
   "targets": {},
   "etags": {}

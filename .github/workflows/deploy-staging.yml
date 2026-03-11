@@ -56,9 +56,8 @@ jobs:
         
       - name: Deploy to Firebase Staging
         # Explicitly targets the staging project and enables web frameworks to support Next.js deploying
-        run: |
-          firebase experiments:enable webframeworks
-          firebase deploy --project clicker-universe-stagging --non-interactive
+        run: firebase deploy --project clicker-universe-stagging --non-interactive
         env:
+          FIREBASE_CLI_EXPERIMENTS: webframeworks
           # This token needs to be added to GitHub Secrets
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
