@@ -77,3 +77,14 @@ const app = initializeApp(firebaseConfig);
     ...
   }
 }
+## Staging Environment (`dev` branch)
+To connect to the Staging Firebase project (`clicker-universe-stagging`) locally, create a `.env.local` file in each module (`auth-gateway`, `backyard`, `clicker-platform-v2`) with the following content:
+
+```env
+NEXT_PUBLIC_FIREBASE_API_KEY="AIzaSyDk_b_wMPuniEWxYebMB4aLfPb5kBDtLSA"
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN="clicker-universe-stagging.firebaseapp.com"
+NEXT_PUBLIC_FIREBASE_PROJECT_ID="clicker-universe-stagging"
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET="clicker-universe-stagging.firebasestorage.app"
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID="603624012885"
+NEXT_PUBLIC_FIREBASE_APP_ID="1:603624012885:web:2098c7fd9b1f06f440e8dc"
+```
