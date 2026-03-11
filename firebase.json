@@ -18,7 +18,7 @@
     },
     "hosting": [
         {
-            "site": "clickerapps",
+            "target": "core",
             "source": "clicker-platform-v2",
             "ignore": [
                 "firebase.json",
@@ -31,7 +31,7 @@
             }
         },
         {
-            "site": "clicker-auth-gateway",
+            "target": "auth",
             "source": "auth-gateway",
             "ignore": [
                 "firebase.json",
@@ -44,7 +44,7 @@
             }
         },
         {
-            "site": "clicker-backyard-app",
+            "target": "backyard",
             "source": "backyard",
             "ignore": [
                 "firebase.json",

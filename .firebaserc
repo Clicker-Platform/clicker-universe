@@ -1,6 +1,7 @@
 {
   "projects": {
-    "default": "clicker-universe"
+    "prod": "clicker-universe",
+    "staging": "clicker-universe-stagging"
   },
   "targets": {
     "clicker-universe": {
@@ -13,6 +14,19 @@
         ],
         "auth": [
           "clicker-auth-gateway"
+        ]
+      }
+    },
+    "clicker-universe-stagging": {
+      "hosting": {
+        "backyard": [
+          "clicker-universe-stagging-backyard"
+        ],
+        "core": [
+          "clicker-universe-stagging-core"
+        ],
+        "auth": [
+          "clicker-universe-stagging-auth"
         ]
       }
     }
