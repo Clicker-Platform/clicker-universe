@@ -20,13 +20,13 @@
     "clicker-universe-stagging": {
       "hosting": {
         "backyard": [
-          "clicker-universe-stagging-backyard"
+          "stg-clicker-backyard"
         ],
         "core": [
-          "clicker-universe-stagging-core"
+          "stg-clicker-core"
         ],
         "auth": [
-          "clicker-universe-stagging-auth"
+          "stg-clicker-auth"
         ]
       }
     }
