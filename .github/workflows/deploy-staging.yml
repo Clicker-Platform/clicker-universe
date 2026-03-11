@@ -63,10 +63,11 @@ jobs:
           npm run build
           cd ..
 
-      - name: Install Functions Dependencies
+      - name: Build Functions
         run: |
           cd functions
           npm install
+          npm run build
           cd ..
           
       - name: Install Firebase CLI
