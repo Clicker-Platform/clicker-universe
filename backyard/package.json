@@ -9,18 +9,20 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@google-cloud/functions-framework": "^3.5.1",
     "clsx": "^2.1.1",
-    "firebase": "^12.10.0",
+    "firebase": "^12.7.0",
     "lucide-react": "^0.562.0",
     "next": "16.1.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "sonner": "^2.0.7",
-    "tailwind-merge": "^3.4.0"
+    "tailwind-merge": "^3.4.0",
+    "sharp": "0.33.5"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
-    "@types/node": "^20.19.37",
+    "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "babel-plugin-react-compiler": "1.0.0",

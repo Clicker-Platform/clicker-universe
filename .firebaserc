@@ -1,5 +1,6 @@
 {
   "projects": {
+    "default": "clicker-universe-stagging",
     "prod": "clicker-universe",
     "staging": "clicker-universe-stagging"
   },
