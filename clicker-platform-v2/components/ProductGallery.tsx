@@ -23,6 +23,7 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({ products, title 
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const { templateId, theme } = useTemplate();
     const isClean = theme.cardStyle === 'clean';
+    const isGlass = theme.cardStyle === 'glass';
 
     const handleProductClick = (product: Product) => {
         track({ type: 'product_click', id: product.id, siteId });
@@ -45,38 +46,44 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({ products, title 
         <div className="mb-12">
             {/* Section Title */}
             {title && (
-                <div className="flex justify-center mb-6">
-                    <div
-                        className={`
-                        px-8 py-3 rounded-full transition-transform
-                        ${isClean
-                                ? 'bg-white shadow-sm border border-gray-200'
-                                : 'bg-brand-white border-[3px] rotate-1 hover:rotate-0'
-                            }
-                    `}
-                        style={!isClean ? containerStyle : {}}
-                    >
-                        <h2
-                            className="font-extrabold uppercase tracking-wider text-base"
-                            style={textStyle}
-                        >
+                <div className={isGlass ? 'mb-6' : 'flex justify-center mb-6'}>
+                    {isGlass ? (
+                        <h2 className="text-slate-400 text-xs font-bold uppercase tracking-[0.2em]">
                             {title}
                         </h2>
-                    </div>
+                    ) : (
+                        <div
+                            className={`
+                            px-8 py-3 rounded-full transition-transform
+                            ${theme.cardStyle === 'clean'
+                                    ? 'bg-white shadow-sm border border-gray-200'
+                                    : 'bg-brand-white border-[3px] rotate-1 hover:rotate-0'
+                                }
+                        `}
+                            style={theme.cardStyle === 'brutalist' ? containerStyle : {}}
+                        >
+                            <h2
+                                className="font-extrabold uppercase tracking-wider text-base"
+                                style={textStyle}
+                            >
+                                {title}
+                            </h2>
+                        </div>
+                    )}
                 </div>
             )}
 
 
 
             {/* Grid Layout */}
-            <div className={`grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-4 ${isClean ? 'gap-y-6' : ''}`}>
+            <div className={`grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-4 ${isClean || isGlass ? 'gap-y-6' : ''}`}>
                 {products.map((product, index) => (
                     <ProductCard
                         key={product.id}
                         product={product}
                         onClick={() => handleProductClick(product)}
-                        className={isClean ? '' : (index % 2 === 0 ? 'rotate-1' : '-rotate-1')}
-                        layoutStyle={templateId}
+                        className={isClean || isGlass ? '' : (index % 2 === 0 ? 'rotate-1' : '-rotate-1')}
+                        templateId={templateId}
                     />
                 ))}
             </div>
@@ -86,10 +93,13 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({ products, title 
                 <div className="mt-8 flex justify-center">
                     <a
                         href={viewAllHref}
-                        className={`inline-flex items-center gap-2 px-8 py-3 rounded-xl font-bold transition-colors ${isClean
-                            ? 'bg-transparent text-brand-dark border-2 border-brand-dark hover:bg-brand-dark hover:text-white'
-                            : 'bg-brand-dark text-white hover:bg-brand-green hover:text-brand-dark shadow-sm'
-                            }`}
+                        className={`inline-flex items-center gap-2 px-8 py-3 rounded-xl font-bold transition-colors ${
+                            isClean
+                                ? 'bg-transparent text-gray-800 border-2 border-gray-800 hover:bg-gray-800 hover:text-white'
+                                : isGlass
+                                    ? 'bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm border border-white/20'
+                                    : 'bg-brand-dark text-white hover:bg-brand-green hover:text-brand-dark shadow-sm'
+                        }`}
                         onClick={() => track({ type: 'view_all_click', id: 'catalog', siteId })}
                     >
                         View More ...

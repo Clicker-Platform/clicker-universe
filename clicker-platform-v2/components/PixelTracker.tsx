@@ -63,7 +63,7 @@ export const PixelTracker = ({ pixels }: PixelTrackerProps) => {
         <>
             {/* Facebook Pixel */}
             {facebookPixelId && (
-                <Script id="facebook-pixel" strategy="afterInteractive">
+                <Script id="facebook-pixel" strategy="lazyOnload">
                     {`
                         !function(f,b,e,v,n,t,s)
                         {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -84,7 +84,7 @@ export const PixelTracker = ({ pixels }: PixelTrackerProps) => {
                 <>
                     <Script
                         src={`https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsId}`}
-                        strategy="afterInteractive"
+                        strategy="lazyOnload"
                         onLoad={() => {
                             (window as any).dataLayer = (window as any).dataLayer || [];
                             function gtag(...args: any[]) { (window as any).dataLayer.push(arguments); }

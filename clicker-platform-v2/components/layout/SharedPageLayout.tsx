@@ -31,12 +31,27 @@ export interface SharedLayoutProps {
         customConfig?: any;
     };
     showFooter?: boolean;
+    siteId: string;
+    forceMobile?: boolean;
+    isSubPage?: boolean;
+    pageTitle?: string;
+    heroFirst?: boolean;
 }
 
-export function SharedPageLayout({ templateId, data, children, pageOverrides, showFooter = true }: SharedLayoutProps) {
+export function SharedPageLayout({
+    templateId,
+    data,
+    children,
+    pageOverrides,
+    showFooter = true,
+    siteId,
+    forceMobile = false,
+    isSubPage = false,
+    pageTitle,
+    heroFirst = false
+}: SharedLayoutProps) {
     const {
         profile,
-        layoutStyle,
         themeColor,
         borderRadius,
         footerText,
@@ -48,7 +63,7 @@ export function SharedPageLayout({ templateId, data, children, pageOverrides, sh
 
     // Resolve Template
     // Use the passed templateId (which might be from URL or Page Config)
-    const activeTemplateId = templateId || layoutStyle || 'classic';
+    const activeTemplateId = templateId || 'classic';
     const template = getTemplate(activeTemplateId);
 
     // Components
@@ -83,7 +98,15 @@ export function SharedPageLayout({ templateId, data, children, pageOverrides, sh
         >
             <div className="contents">
                 {/* Navigation */}
-                {profile && <ResponsiveNavBar profile={profile} />}
+                {profile && (
+                    <ResponsiveNavBar 
+                        profile={profile} 
+                        siteId={siteId} 
+                        forceMobile={forceMobile} 
+                        isSubPage={isSubPage}
+                        pageTitle={pageTitle}
+                    />
+                )}
                 <BottomNavBar />
 
                 {/* AI Sales Agent Widget (Strict Modularity: Render if registered) */}
@@ -95,7 +118,7 @@ export function SharedPageLayout({ templateId, data, children, pageOverrides, sh
                 <main
                     className={`
                         min-h-screen py-12 relative overflow-hidden transition-colors duration-300
-                        ${template.config.layout?.navMode === 'adaptive' ? 'md:pt-24' : ''}
+                        ${template.config.layout?.navMode === 'adaptive' && !heroFirst ? 'md:pt-24' : ''}
                     `}
                     style={{ backgroundColor: pageBackgroundColor }}
                     suppressHydrationWarning // Prevent mismatches on dynamic styles
@@ -112,7 +135,7 @@ export function SharedPageLayout({ templateId, data, children, pageOverrides, sh
                     >
                         {/* Header */}
                         {profile && (
-                            <div className="transform scale-90 origin-top">
+                            <div>
                                 <HeaderComponent
                                     profile={profile}
                                     contact={contact}

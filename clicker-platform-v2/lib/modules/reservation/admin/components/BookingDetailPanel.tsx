@@ -40,17 +40,19 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
         async function checkMembership() {
             setCheckingMember(true);
             try {
-                // 1. Is Module Enabled?
                 const { isModuleEnabled } = await import('@/lib/modules/registry');
-                const enabled = await isModuleEnabled('membership');
-                setMembershipEnabled(enabled);
+                const { findMemberByPhone } = await import('@/lib/modules/membership/api');
 
-                if (enabled && booking?.customerPhone && siteId) {
-                    // 2. Is Customer a Member?
-                    const { findMemberByPhone } = await import('@/lib/modules/membership/api');
-                    const member = await findMemberByPhone(siteId, booking.customerPhone);
-                    setIsMember(!!member);
-                }
+                // Run module check and member lookup in parallel
+                const [enabled, member] = await Promise.all([
+                    isModuleEnabled('membership'),
+                    (booking?.customerPhone && siteId)
+                        ? findMemberByPhone(siteId, booking.customerPhone)
+                        : Promise.resolve(null)
+                ]);
+
+                setMembershipEnabled(enabled);
+                setIsMember(enabled && !!member);
             } catch (e) {
                 console.error("Loyalty Check Failed", e);
             } finally {

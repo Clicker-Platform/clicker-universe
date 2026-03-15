@@ -11,6 +11,7 @@ interface DetailsStepProps {
     membershipEnabled: boolean;
     onSubmit: (customerInfo: any) => Promise<void>;
     onShowDialog: (title: string, message: string, variant: 'info' | 'error' | 'success') => void;
+    isGlass?: boolean;
 }
 
 export default function DetailsStep({
@@ -20,7 +21,8 @@ export default function DetailsStep({
     time,
     membershipEnabled,
     onSubmit,
-    onShowDialog
+    onShowDialog,
+    isGlass = false,
 }: DetailsStepProps) {
     const { siteId } = useSite();
     const [loading, setLoading] = useState(false);
@@ -67,29 +69,39 @@ export default function DetailsStep({
         await onSubmit(customerInfo);
     };
 
+    const inputClass = `w-full px-4 py-3 rounded-xl border focus:outline-none ${
+        isGlass
+            ? 'bg-white/5 border-white/10 text-white placeholder-white/30 focus:border-white/30'
+            : 'border-gray-200 focus:border-brand-dark'
+    }`;
+    const labelClass = `block text-xs font-bold uppercase mb-1 ${isGlass ? 'text-white/50' : 'text-gray-500'}`;
+
     return (
         <div className="space-y-4">
-            <div className="bg-gray-50 p-4 rounded-xl mb-4 text-sm">
+            {/* Booking summary */}
+            <div className={`p-4 rounded-xl mb-4 text-sm ${isGlass ? 'bg-white/5' : 'bg-gray-50'}`}>
                 <div className="flex justify-between mb-1">
-                    <span className="text-gray-500">Service:</span>
-                    <span className="font-bold text-brand-dark">{selectedService.name}</span>
+                    <span className={isGlass ? 'text-white/50' : 'text-gray-500'}>Service:</span>
+                    <span className={`font-bold ${isGlass ? 'text-white' : 'text-gray-900'}`}>{selectedService.name}</span>
                 </div>
                 {selectedStaff && (
                     <div className="flex justify-between mb-1">
-                        <span className="text-gray-500">Staff:</span>
-                        <span className="font-bold text-brand-dark">{selectedStaff.name}</span>
+                        <span className={isGlass ? 'text-white/50' : 'text-gray-500'}>Staff:</span>
+                        <span className={`font-bold ${isGlass ? 'text-white' : 'text-gray-900'}`}>{selectedStaff.name}</span>
                     </div>
                 )}
                 <div className="flex justify-between">
-                    <span className="text-gray-500">Time:</span>
-                    <span className="font-bold text-brand-dark">{date.toLocaleDateString()} at {time}</span>
+                    <span className={isGlass ? 'text-white/50' : 'text-gray-500'}>Time:</span>
+                    <span className={`font-bold ${isGlass ? 'text-white' : 'text-gray-900'}`}>{date.toLocaleDateString()} at {time}</span>
                 </div>
             </div>
 
             {/* Membership Toggle */}
             {membershipEnabled && (
-                <div className="border border-brand-blue/20 bg-brand-blue/5 p-4 rounded-xl mb-6">
-                    <h3 className="text-brand-dark font-bold mb-2 text-sm flex items-center gap-2">
+                <div className={`border p-4 rounded-xl mb-6 ${
+                    isGlass ? 'border-white/10 bg-white/5' : 'border-brand-blue/20 bg-brand-blue/5'
+                }`}>
+                    <h3 className={`font-bold mb-2 text-sm flex items-center gap-2 ${isGlass ? 'text-white' : 'text-gray-900'}`}>
                         <User size={16} /> Already a Member?
                     </h3>
                     <div className="flex gap-2">
@@ -98,7 +110,11 @@ export default function DetailsStep({
                             value={memberSearchPhone}
                             onChange={(e) => setMemberSearchPhone(e.target.value)}
                             placeholder="Enter registered phone number"
-                            className="flex-1 px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:border-brand-dark"
+                            className={`flex-1 px-3 py-2 rounded-lg border text-sm focus:outline-none ${
+                                isGlass
+                                    ? 'bg-white/5 border-white/10 text-white placeholder-white/30 focus:border-white/30'
+                                    : 'border-gray-200 focus:border-brand-dark'
+                            }`}
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
                                     e.preventDefault();
@@ -112,7 +128,11 @@ export default function DetailsStep({
                                 checkMember();
                             }}
                             disabled={loading || !memberSearchPhone}
-                            className="bg-brand-dark text-white px-4 py-2 rounded-lg text-sm font-bold disabled:opacity-50"
+                            className={`px-4 py-2 rounded-lg text-sm font-bold disabled:opacity-50 ${
+                                isGlass
+                                    ? 'bg-[var(--theme-primary)] text-black'
+                                    : 'bg-brand-dark text-white'
+                            }`}
                         >
                             Check
                         </button>
@@ -122,15 +142,15 @@ export default function DetailsStep({
 
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Full Name</label>
+                    <label className={labelClass}>Full Name</label>
                     <div className="relative">
-                        <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                        <User className={`absolute left-4 top-1/2 -translate-y-1/2 ${isGlass ? 'text-white/30' : 'text-gray-400'}`} size={18} />
                         <input
                             required
                             type="text"
                             value={customerInfo.name}
                             onChange={e => setCustomerInfo({ ...customerInfo, name: e.target.value })}
-                            className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-dark"
+                            className={`${inputClass} pl-10`}
                             placeholder="Jane Doe"
                         />
                     </div>
@@ -138,35 +158,35 @@ export default function DetailsStep({
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Email</label>
+                        <label className={labelClass}>Email</label>
                         <input
                             required
                             type="email"
                             value={customerInfo.email}
                             onChange={e => setCustomerInfo({ ...customerInfo, email: e.target.value })}
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-dark"
+                            className={inputClass}
                             placeholder="jane@example.com"
                         />
                     </div>
                     <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Phone</label>
+                        <label className={labelClass}>Phone</label>
                         <input
                             required
                             type="tel"
                             value={customerInfo.phone}
                             onChange={e => setCustomerInfo({ ...customerInfo, phone: e.target.value })}
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-dark"
+                            className={inputClass}
                             placeholder="+62..."
                         />
                     </div>
                 </div>
 
                 <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Start Note</label>
+                    <label className={labelClass}>Notes</label>
                     <textarea
                         value={customerInfo.notes}
                         onChange={e => setCustomerInfo({ ...customerInfo, notes: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-dark"
+                        className={inputClass}
                         rows={2}
                         placeholder="Any special requests?"
                     />
@@ -175,7 +195,11 @@ export default function DetailsStep({
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-3 bg-brand-dark text-white font-bold rounded-xl mt-4 hover:bg-brand-dark/90 transition-colors flex items-center justify-center gap-2"
+                    className={`w-full py-3 font-bold rounded-xl mt-4 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                        isGlass
+                            ? 'bg-[var(--theme-primary)] text-black hover:opacity-90'
+                            : 'bg-brand-dark text-white hover:bg-brand-dark/90'
+                    }`}
                 >
                     {loading && <Loader2 size={18} className="animate-spin" />}
                     {loading ? 'Confirming...' : 'Confirm Booking'}

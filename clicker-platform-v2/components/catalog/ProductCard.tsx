@@ -8,7 +8,7 @@ interface ProductCardProps {
     product: Product;
     onClick?: () => void;
     className?: string;
-    layoutStyle?: string;
+    templateId?: string;
 }
 
 import { useTemplate } from '@/components/TemplateProvider';
@@ -17,47 +17,58 @@ function ProductCardComponent({ product, onClick, className = '' }: ProductCardP
     const { theme, templateId } = useTemplate(); // Use context
 
     const isClean = theme.cardStyle === 'clean';
-    //Ideally we rely on theme properties, now mapped to isClean for logic below.
+    const isGlass = theme.cardStyle === 'glass';
+    const isBrutalist = !isClean && !isGlass;
 
     // Dynamic Styles from Theme
-    const cardStyle = isClean
-        ? {}
-        : {
+    const cardStyle = isBrutalist
+        ? {
             borderColor: theme.colors.accent,
             boxShadow: `4px 4px 0px ${theme.colors.accent}`
-        };
+        }
+        : {};
 
-    const priceTagStyle = isClean
-        ? {}
-        : {
+    const priceTagStyle = isBrutalist
+        ? {
             backgroundColor: theme.colors.primary,
             color: theme.colors.accent,
             borderColor: theme.colors.accent
-        };
+        }
+        : isGlass
+        ? {
+            backgroundColor: theme.colors.primary,
+            color: '#FFFFFF'
+        }
+        : {};
 
     const titleStyle = {
-        color: isClean ? theme.colors.foreground : theme.colors.accent
+        color: isClean ? theme.colors.foreground : isGlass ? '#FFFFFF' : theme.colors.accent
     };
 
     return (
         <div
             onClick={onClick}
             className={`
-                bg-white relative flex flex-col group cursor-pointer
-                ${isClean ? 'overflow-hidden' : ''}
+                relative flex flex-col group cursor-pointer overflow-hidden
                 ${isClean
-                    ? 'rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow'
-                    : 'p-3 rounded-2xl border-[3px] transform transition-all duration-200 hover:-translate-y-1'
+                    ? 'bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow'
+                    : isGlass
+                    ? 'bg-black/20 backdrop-blur-md rounded-2xl border border-white/10 shadow-xl transform transition-all duration-200 hover:-translate-y-1'
+                    : 'bg-white p-3 rounded-2xl border-[3px] transform transition-all duration-200 hover:-translate-y-1'
                 }
                 ${className}
             `}
-            style={isClean ? {} : cardStyle}
+            style={isBrutalist ? cardStyle : {}}
         >
             {/* Price Tag */}
             {(product as any).showPrice !== false && (
-                <div className={`absolute z-10 ${isClean ? 'top-3 right-3' : '-top-3 -right-2'}`}>
+                <div className={`absolute z-10 ${isClean ? 'top-3 right-3' : isGlass ? 'top-3 right-3' : 'top-0 right-0 max-w-[50%]'}`}>
                     {isClean ? (
                         <div className="bg-white/90 backdrop-blur-sm text-gray-800 px-3 py-1 rounded-full font-bold text-xs shadow-sm border border-gray-100">
+                            {product.price}
+                        </div>
+                    ) : isGlass ? (
+                        <div className="bg-black/50 backdrop-blur-sm px-3 py-1 rounded-full font-bold text-xs shadow-sm border border-white/10" style={priceTagStyle}>
                             {product.price}
                         </div>
                     ) : (
@@ -73,10 +84,10 @@ function ProductCardComponent({ product, onClick, className = '' }: ProductCardP
 
             {/* Image */}
             <div className={`
-                aspect-square w-full overflow-hidden bg-gray-100 relative
-                ${isClean ? 'rounded-t-xl' : 'rounded-xl border-[2px] mb-3'}
+                aspect-square w-full overflow-hidden relative
+                ${isClean ? 'bg-gray-100 rounded-t-xl' : isGlass ? 'bg-white/5 rounded-t-2xl' : 'bg-gray-100 rounded-xl border-[2px] mb-3'}
             `}
-                style={!isClean ? { borderColor: theme.colors.accent } : {}}
+                style={isBrutalist ? { borderColor: theme.colors.accent } : {}}
             >
                 {product.imageUrl && product.imageUrl.trim() !== '' ? (
                     <Image
@@ -94,10 +105,10 @@ function ProductCardComponent({ product, onClick, className = '' }: ProductCardP
             </div>
 
             {/* Title */}
-            <div className={`${isClean ? 'p-4' : ''} mt-auto`}>
+            <div className={`${isClean ? 'p-4' : isGlass ? 'p-4' : ''} mt-auto`}>
                 <h3 className={`
                     leading-tight
-                    ${isClean ? 'font-bold text-left text-sm text-gray-800' : 'font-extrabold text-center text-base sm:text-lg'}
+                    ${isClean ? 'font-bold text-left text-sm text-gray-800' : isGlass ? 'font-bold text-center text-sm sm:text-base' : 'font-extrabold text-center text-base sm:text-lg'}
                  `}
                     style={titleStyle}
                 >

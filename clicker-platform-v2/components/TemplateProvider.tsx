@@ -50,8 +50,8 @@ export const TemplateProvider: React.FC<TemplateProviderProps> = ({ templateId, 
                             ...staticDef.config,
                             ...doc.config,
                             // Deep merge specific nested objects if needed (like layout)
-                            // Special Case: For 'shuvo', enforce strict layout (ignore DB for now to prevent hydration mismatches)
-                            layout: (doc.id === 'shuvo' ? staticDef.config.layout : {
+                            // Special Case: For 'shuvo' and 'mrb', enforce strict layout (ignore DB for now to prevent hydration mismatches/hidden nav)
+                            layout: (['shuvo', 'mrb'].includes(doc.id) ? staticDef.config.layout : {
                                 ...staticDef.config.layout,
                                 ...(doc.config.layout || {})
                             }),

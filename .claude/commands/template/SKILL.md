@@ -7,7 +7,7 @@ description: >
   showing, or reviewing which templates are registered all qualify.
   Trigger on: "create template", "new theme", "add header", "swap header", "template not
   loading", "audit template", "template status", "template gallery", or any request
-  touching lib/templates/, definitions.ts, registry.ts, AppearanceClient.tsx, or
+  touching lib/templates/, definitions.ts, registry.ts, TemplateClient.tsx, or
   components/headers/.
 ---
 
@@ -73,6 +73,7 @@ Before writing any code, collect from the user:
     - `ClassicProfileHeader` — bold centered layout with background art
     - `ModernProfileHeader` — left-aligned, structured
     - `ShuvoHeader` — minimal architectural style
+    - `MrbHeader` — dark glassmorphic style for dark-mode templates
     - Or: create new `{Name}Header.tsx`
 19. **Background component** — `BackgroundDecorations` (floating SVG icons) | `() => null` (no background)
 
@@ -113,12 +114,21 @@ Add entry to the `templateDefinitions` object:
             containerWidth: 'boxed', // 'narrow' | 'boxed' | 'full' | 'tablet'
             navMode: 'adaptive',     // 'mobile-only' | 'adaptive'
             grid: { mobile: 1, tablet: 1, desktop: 1, gap: 'gap-4' }
-        }
+        },
 
-        // Optional: template-specific overrides
+        defaultBlockLayouts: {
+            hero: 'centered',         // 'centered' | 'split' | 'fullbleed'
+            text: 'prose',            // 'prose' | 'two-column' | 'highlight-box'
+            image: 'standard',        // 'standard' | 'full-width' | 'rounded-card' | 'side-caption'
+            faq: 'simple-list',       // 'simple-list' | 'accordion' | 'grid'
+            map: 'card-with-address', // 'card-with-address' | 'embed-full'
+        },
+
+        // Optional: template-specific settings (used for shuvo, mrb)
         // custom: {
-        //     bottomNavStyle: 'minimal',
+        //     bottomNavStyle: 'minimal', // 'minimal' | 'glass'
         //     heroHeight: 'large',
+        //     hideQuickActionsTitle: true,
         // }
     }
 },
@@ -138,8 +148,18 @@ Add entry to `templateComponents`:
 '{templateId}': {
     Header: {HeaderComponent},   // Import at top of file
     Background: BackgroundDecorations, // or: () => null
+    // Optional: override specific block components for this template
+    // Blocks: {
+    //     Hero: {TemplateId}HeroBlock,
+    //     QuickActions: {TemplateId}QuickActions,
+    //     OperatingHours: {TemplateId}OperatingHours,
+    //     Text: {TemplateId}TextBlock,
+    //     // ... any key from TemplateComponents.Blocks
+    // }
 },
 ```
+
+> **Block overrides** are optional. If a `Blocks` key is present, `BlockRenderer` will use the template-specific component instead of the Default block. MRB uses this pattern for `Hero`, `QuickActions`, and `OperatingHours`. Block override components live in `components/blocks/{templateId}/`.
 
 If reusing an existing header, add the import if not already present:
 
@@ -166,13 +186,13 @@ After updating definitions.ts, sync to the `templates/` Firestore collection:
 GET /api/admin/seed-templates
 ```
 
-Or in admin panel: `/admin/appearance` → click "Seed Templates" button.
+Or in admin panel: `/admin/template` → click "Seed Templates" button.
 
 This saves all `templateDefinitions` entries as `TemplateDocument` records with `type: 'system'`.
 
-### Step 4 — Verify in AppearanceClient
+### Step 4 — Verify in TemplateClient
 
-The template appears automatically in the gallery — no code change needed in `AppearanceClient.tsx`. The gallery reads from `getAvailableTemplates()` which combines static definitions + Firestore docs.
+The template appears automatically in the gallery — no code change needed in `TemplateClient.tsx`. The gallery reads from `getAvailableTemplates()` which combines static definitions + Firestore docs.
 
 ---
 
@@ -183,7 +203,12 @@ Read the following files and check each point for `{templateId}`:
 **Checklist (report ✓/✗ with file path for each):**
 
 1. Entry exists in `lib/templates/definitions.ts` → `templateDefinitions['{templateId}']`
-2. All required `TemplateConfig` fields present: `colors`, `fonts`, `borderRadius`, `cardStyle`, `cardVariant`, `headerLayout`, `homeButtonStyle`, `homeButtonColor`, `taglineStyle`, `layout`
+2. All required `TemplateConfig` fields present:
+   - Core: `colors`, `fonts`, `borderRadius`, `cardStyle`, `cardVariant`
+   - Layout tokens: `headerLayout`, `homeButtonStyle`, `homeButtonColor`, `taglineStyle`
+   - `layout` object with `containerWidth`, `navMode`, `grid`
+   - `defaultBlockLayouts` map (should have at least: `hero`, `text`, `image`, `faq`, `map`)
+   - Optional but check if template is dark-mode / brand-specific: `custom`, `backgroundElements`
 3. Entry exists in `lib/templates/registry.ts` → `templateComponents['{templateId}']`
 4. `Header` component is imported at top of `registry.ts` and file exists on disk
 5. `Background` component is either `BackgroundDecorations` (imported) or explicit `() => null`
@@ -191,6 +216,7 @@ Read the following files and check each point for `{templateId}`:
 7. If `allowThemeColorOverride: false`, it is intentional (brand-locked template)
 8. No `firebase-admin` imports in any file in `lib/templates/`
 9. Template is seeded in Firestore `templates/{templateId}` (verify via seed endpoint or Firestore console)
+10. If `Blocks` key is present in registry entry, confirm each component file exists on disk at `components/blocks/{templateId}/`
 
 ---
 
@@ -215,7 +241,7 @@ To swap or add a Header or Background component for an existing template `{templ
    ```
 
 4. No Firestore update needed — component changes are code-only (registry.ts is not seeded)
-5. No `AppearanceClient.tsx` update needed
+5. No `TemplateClient.tsx` update needed
 
 ---
 
@@ -235,6 +261,7 @@ Template: {id} — "{name}"
   Registry:      ✓/✗  lib/templates/registry.ts
   Header:        ✓/✗  {ComponentName}
   Background:    ✓/✗  {ComponentName or inline}
+  Blocks:        ✓/✗  {list keys or "none"}
   colorOverride: locked/user-customizable
 
 Unregistered definitions (in definitions.ts but no registry entry): ...
@@ -255,10 +282,15 @@ PLATFORM (dev/clicker-platform-v2/):
   components/headers/ClassicProfileHeader.tsx         ← Header: classic
   components/headers/ModernProfileHeader.tsx          ← Header: modern, sojourner
   components/headers/ShuvoHeader.tsx                  ← Header: shuvo
+  components/headers/MrbHeader.tsx                    ← Header: mrb
   components/BackgroundDecorations.tsx                ← Background: classic, sojourner, shuvo
   components/TemplateProvider.tsx                     ← React context, useTemplate(), CSS variable injection
-  app/admin/(dashboard)/appearance/AppearanceClient.tsx  ← template gallery UI (1,326 lines)
+  components/blocks/{templateId}/                     ← Template-specific block overrides (e.g. components/blocks/mrb/)
+  components/blocks/public/cardStyles.ts              ← getCardClasses(), getTextColor() utilities
+  app/admin/(dashboard)/template/TemplateClient.tsx   ← template gallery UI
   app/api/admin/seed-templates/route.ts               ← seeding endpoint (GET /api/admin/seed-templates)
+DOCS (dev/docs/):
+  template-blocks-architecture.md                     ← Reference: Structure and styling rules for Content Blocks
 ```
 
 ---
@@ -270,6 +302,8 @@ PLATFORM (dev/clicker-platform-v2/):
 - **`allowThemeColorOverride: false` is intentional.** This locks the palette for brand templates where user overrides would break the design intent. Don't remove it assuming it's a mistake.
 - **Header components use static imports in registry.ts.** Unlike module components, the template registry is evaluated synchronously at render time — dynamic imports won't work here.
 - **Never import `firebase-admin` in `lib/templates/` or `components/headers/`.** These files run on the client; firebase-admin is server-only and will cause a build error.
-- **After any change to `definitions.ts`, seed Firestore.** The UI reads from Firestore, not the static file directly. Run `GET /api/admin/seed-templates` or use the "Seed Templates" button in `/admin/appearance`.
+- **After any change to `definitions.ts`, seed Firestore.** The UI reads from Firestore, not the static file directly. Run `GET /api/admin/seed-templates` or use the "Seed Templates" button in `/admin/template`.
 - **Changing a definition does not affect active sites.** Per-site active template is stored at `sites/{siteId}/content/siteSettings.layoutStyle`. Updating definitions.ts only affects what's available to choose — it doesn't reassign anyone.
 - **`getTemplate(id)` falls back to `classic` silently.** Always verify with the actual template ID; a typo will appear to "work" but render the wrong template.
+- **Block overrides live in `components/blocks/{templateId}/`.** Template-specific block implementations follow the same props interface as their Default counterparts. Register them in `registry.ts` under `Blocks`. The `BlockRenderer` checks `customBlocks?.[Key]` before falling back to the Default block.
+- **`useTemplate()` is imported from `@/components/TemplateProvider`**, not `@/lib/templates/TemplateProvider`. Use this import in all header and block components.

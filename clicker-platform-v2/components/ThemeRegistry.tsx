@@ -1,14 +1,16 @@
 'use client';
 // Force rebuild
 
-import { useServerInsertedHTML } from 'next/navigation';
+import { useServerInsertedHTML, usePathname } from 'next/navigation';
 import { SiteSettings } from '@/data/mockData';
 
 export default function ThemeRegistry({ initialSettings }: { initialSettings: SiteSettings | null }) {
     const settings = initialSettings;
+    const pathname = usePathname();
+    const isAdmin = pathname?.startsWith('/admin');
 
     useServerInsertedHTML(() => {
-        if (!settings) return null;
+        if (!settings || isAdmin) return null;
 
         const fontFamily = settings.fontFamily || 'var(--font-jakarta)';
         const isCustomFont = !fontFamily.startsWith('var(');
@@ -16,7 +18,14 @@ export default function ThemeRegistry({ initialSettings }: { initialSettings: Si
 
         return (
             <>
-                {isCustomFont && <link href={fontUrl} rel="stylesheet" />}
+                {isCustomFont && (
+                    <>
+                        <link rel="preload" href={fontUrl} as="style" crossOrigin="anonymous" />
+                        <link href={fontUrl} rel="stylesheet" media="print" data-font-swap />
+                        <script dangerouslySetInnerHTML={{ __html: `document.querySelector('link[data-font-swap]').media='all'` }} />
+                        <noscript><link href={fontUrl} rel="stylesheet" /></noscript>
+                    </>
+                )}
                 <style dangerouslySetInnerHTML={{
                     __html: `
                     :root {

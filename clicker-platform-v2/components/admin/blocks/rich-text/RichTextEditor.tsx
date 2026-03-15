@@ -32,7 +32,7 @@ export const RichTextEditor = ({ value, onChange, placeholder = 'Write something
             Link.configure({
                 openOnClick: false,
                 HTMLAttributes: {
-                    class: 'text-brand-dark underline decoration-brand-dark/30 hover:decoration-brand-dark font-medium cursor-pointer',
+                    class: 'text-blue-400 underline decoration-blue-400/30 hover:decoration-blue-400 font-medium cursor-pointer transition-all',
                 },
             }),
             Placeholder.configure({
@@ -44,7 +44,7 @@ export const RichTextEditor = ({ value, onChange, placeholder = 'Write something
             attributes: {
                 // Tailwind Typography Configuration
                 // usage of CSS variables for theme compatibility
-                class: 'prose prose-lg max-w-none focus:outline-none min-h-[150px] px-4 py-4 prose-headings:font-heading prose-headings:text-[var(--theme-foreground)] prose-p:text-[var(--theme-foreground)] prose-p:font-body prose-strong:text-[var(--theme-foreground)] prose-ul:text-[var(--theme-foreground)] prose-ol:text-[var(--theme-foreground)] prose-quote:text-[var(--theme-foreground)] prose-quote:border-l-[var(--theme-primary)] prose-a:text-[var(--theme-primary)]'
+                class: 'prose prose-invert max-w-none focus:outline-none min-h-[150px] px-4 py-4 prose-headings:font-heading prose-headings:text-neutral-100 prose-p:text-neutral-200 prose-p:font-body prose-strong:text-neutral-100 prose-ul:text-neutral-300 prose-ol:text-neutral-300 prose-quote:text-neutral-300 prose-quote:border-l-blue-500 prose-a:text-blue-400'
             }
         },
         immediatelyRender: false, // Fix for SSR hydration mismatch
@@ -67,12 +67,12 @@ export const RichTextEditor = ({ value, onChange, placeholder = 'Write something
 
     return (
         <div
-            className="bg-white rounded-xl border-2 border-gray-200 overflow-hidden focus-within:border-brand-dark transition-colors shadow-sm"
+            className="bg-neutral-900 rounded-2xl border border-neutral-800 overflow-hidden focus-within:border-blue-500/50 transition-all shadow-lg"
             style={{
                 // Fallback variables for Admin Context where TemplateProvider is missing
-                ['--theme-foreground' as any]: '#111827', // gray-900
-                ['--theme-primary' as any]: '#0E3B2E',    // brand-dark
-                ['--theme-radius' as any]: '0.5rem',
+                ['--theme-foreground' as any]: '#e5e5e5', // neutral-200
+                ['--theme-primary' as any]: '#60a5fa',    // blue-400
+                ['--theme-radius' as any]: '1rem',
                 ['--font-heading' as any]: 'inherit',
                 ['--font-body' as any]: 'inherit',
             }}

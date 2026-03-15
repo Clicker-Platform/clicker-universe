@@ -65,9 +65,9 @@ export default async function BookPage({ siteId }: BookPageProps) {
     const safeSlots = weeklySlots.map(s => JSON.parse(JSON.stringify(s)));
 
     return (
-        <div className="min-h-screen bg-gray-50 py-12 px-4">
+        <div className="min-h-screen bg-gray-50 py-12 px-4 text-gray-900">
             <div className="max-w-md mx-auto mb-8 text-center">
-                <h1 className="text-3xl font-black text-brand-dark mb-2">Book Appointment</h1>
+                <h1 className="text-3xl font-black text-gray-900 mb-2">Book Appointment</h1>
                 <p className="text-gray-600">Choose a service and time that works for you.</p>
             </div>
 

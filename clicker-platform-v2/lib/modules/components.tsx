@@ -1,9 +1,11 @@
 import { ComponentType } from 'react';
 import dynamic from 'next/dynamic';
 
+// Server Components: must be imported statically — dynamic() strips async/await capability
+import BookPage from '@/lib/modules/reservation/public/BookPage';
+
 // Dynamic Imports to avoid loading Admin/Server components in Client bundles or wrong contexts
 const OrderPage = dynamic(() => import('@/lib/modules/byod_pos/public/OrderPage'));
-const BookPage = dynamic(() => import('@/lib/modules/reservation/public/BookPage'));
 
 // Admin Pages (POS) - USING CLIENT COMPONENTS DIRECTLY
 // We point to Client libraries because MODULE_COMPONENTS is imported by SharedPageLayout (Client Context)
@@ -31,7 +33,6 @@ const MembershipSettingsPage = dynamic(() => import('@/lib/modules/membership/ad
 
 // Module Block Components
 const ReservationWidget = dynamic(() => import('@/lib/modules/reservation/public/ReservationWidget'));
-const ReservationWidgetServer = dynamic(() => import('@/lib/modules/reservation/public/ReservationWidgetServer'));
 const UpcomingReservationsWidget = dynamic(() => import('@/lib/modules/reservation/public/UpcomingReservationsWidget'));
 // const POSBlockServer = dynamic(() => import('@/lib/modules/byod_pos/components/POSBlockServer'));
 
@@ -54,7 +55,7 @@ export const MODULE_COMPONENTS: Record<string, any> = {
 
     // Reservation Module
     'reservation:BookPage': BookPage,
-    'reservation:BookNowWaitlist': ReservationWidget,
+    'reservation:BookNowWaitlist': ReservationWidget, // Client component — rendered via ModuleBlockLoader in client tree
     'reservation:AdminBookings': CalendarPage,
     'reservation:AdminServices': ServicesPage,
     'reservation:ServiceList': ServicesPage,

@@ -14,9 +14,10 @@ interface ImageGalleryBlockProps {
 
 import { useTemplate } from '@/components/TemplateProvider';
 
-export const ImageGalleryBlock = ({ data }: ImageGalleryBlockProps) => {
+export const DefaultImageGalleryBlock = ({ data }: ImageGalleryBlockProps) => {
     const { theme } = useTemplate();
     const isClean = theme.cardStyle === 'clean';
+    const isGlass = theme.cardStyle === 'glass';
     const [isOpen, setIsOpen] = useState(false);
     const [initialIndex, setInitialIndex] = useState(0);
 
@@ -47,6 +48,8 @@ export const ImageGalleryBlock = ({ data }: ImageGalleryBlockProps) => {
                     w-full relative overflow-hidden cursor-pointer group transition-all
                     ${isClean
                         ? 'rounded-xl border border-gray-200 hover:shadow-md'
+                        : isGlass
+                        ? 'rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md hover:border-white/20 hover:bg-white/10'
                         : 'rounded-2xl border-[3px] border-theme-border shadow-sticker hover:shadow-none hover:translate-y-[2px] hover:translate-x-[2px]'
                     }
                     /* Adaptive Aspect Ratio */

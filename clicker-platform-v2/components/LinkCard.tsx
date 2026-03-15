@@ -26,6 +26,7 @@ export const LinkCard: React.FC<LinkCardProps> = ({ item, siteId, tenantSlug }) 
 
     // Determine style logic based on theme
     const isClean = theme.cardStyle === 'clean';
+    const isGlass = theme.cardStyle === 'glass';
     const isOutlined = theme.cardVariant === 'outlined'; // Keep for specific variant logic if needed, but isClean dominates general layout
 
     // Helper: isBrutalist implies (!isClean)
@@ -118,7 +119,7 @@ export const LinkCard: React.FC<LinkCardProps> = ({ item, siteId, tenantSlug }) 
 
     // Mapping existing toggle: 'isOutlined' variable in JSX controlled the clean look.
     // So we map 'isClean' to that toggle for the JSX below.
-    const renderClean = isClean || isOutlined;
+    const renderClean = !isGlass && (isClean || isOutlined);
 
     return (
         <>
@@ -126,17 +127,21 @@ export const LinkCard: React.FC<LinkCardProps> = ({ item, siteId, tenantSlug }) 
                 {...wrapperProps}
                 className={`
                     group flex items-center p-4 w-full relative overflow-hidden
-                    ${renderClean
+                    ${isGlass
+                        ? 'bg-black/20 backdrop-blur-md rounded-2xl border border-white/10 transition-all duration-200 hover:bg-white/10 hover:border-white/20'
+                        : renderClean
                         ? 'bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-brand-green/30 transition-all duration-200'
                         : 'rounded-2xl bg-white border-[3px] border-brand-dark shadow-sticker transition-all duration-200 hover:-translate-y-1 hover:shadow-sticker-hover active:translate-y-0 active:shadow-sticker'
                     }
-                    ${item.highlight ? (renderClean ? 'ring-2 ring-brand-green/20' : 'ring-4 ring-brand-dark/20 animate-wiggle') : ''}
+                    ${item.highlight ? (isGlass ? 'ring-2 ring-[var(--theme-primary)]/40' : renderClean ? 'ring-2 ring-brand-green/20' : 'ring-4 ring-brand-dark/20 animate-wiggle') : ''}
                 `}
             >
                 <div className="flex items-center gap-4 flex-1">
                     <div className={`
                         p-2 rounded-xl border-[2px] shrink-0
-                        ${renderClean
+                        ${isGlass
+                            ? (isHighlight ? 'bg-[var(--theme-primary)]/20 border-[var(--theme-primary)]/40 text-[var(--theme-primary)]' : 'bg-white/10 border-white/20 text-white/80')
+                            : renderClean
                             ? (isHighlight ? 'bg-brand-green/10 border-brand-green text-brand-green' : 'bg-gray-50 border-gray-200 text-gray-600')
                             : (isHighlight ? 'bg-brand-green border-brand-green text-brand-dark' : 'bg-brand-green border-brand-dark text-brand-dark')
                         }
@@ -144,11 +149,11 @@ export const LinkCard: React.FC<LinkCardProps> = ({ item, siteId, tenantSlug }) 
                         <Icon size={24} strokeWidth={renderClean ? 2 : 2.5} />
                     </div>
                     <div className="text-left">
-                        <h3 className={`leading-tight ${renderClean ? 'font-bold text-gray-900 text-base' : 'font-extrabold text-lg'}`}>
+                        <h3 className={`leading-tight ${isGlass ? 'font-bold text-white text-base' : renderClean ? 'font-bold text-gray-900 text-base' : 'font-extrabold text-lg'}`}>
                             {item.title}
                         </h3>
                         {item.subtitle && (
-                            <p className={`text-sm ${renderClean ? 'font-medium text-gray-500' : 'font-bold'} ${isHighlight ? (renderClean ? 'text-brand-green' : 'text-brand-green/80') : 'text-brand-dark/60'}`}>
+                            <p className={`text-sm ${isGlass ? 'font-medium text-white/60' : renderClean ? 'font-medium text-gray-500' : 'font-bold'} ${!isGlass && isHighlight ? (renderClean ? 'text-brand-green' : 'text-brand-green/80') : isGlass && isHighlight ? 'text-[var(--theme-primary)]' : isGlass ? '' : 'text-brand-dark/60'}`}>
                                 {item.subtitle}
                             </p>
                         )}
@@ -156,8 +161,8 @@ export const LinkCard: React.FC<LinkCardProps> = ({ item, siteId, tenantSlug }) 
                 </div>
 
                 <div className={`
-                    transform transition-transform duration-200 
-                    group-hover:translate-x-1 ${renderClean ? 'text-gray-400' : ''}
+                    transform transition-transform duration-200
+                    group-hover:translate-x-1 ${isGlass ? 'text-white/40' : renderClean ? 'text-gray-400' : ''}
                 `}>
                     {isLoadingForm ? (
                         <div className={`w-6 h-6 border-2 border-t-transparent rounded-full animate-spin ${renderClean ? 'border-brand-green' : 'border-brand-dark'}`}></div>

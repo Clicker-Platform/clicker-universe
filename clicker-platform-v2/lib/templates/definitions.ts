@@ -37,6 +37,13 @@ export const templateDefinitions: Record<string, Omit<TemplateDefinition, 'compo
                 containerWidth: 'narrow',
                 navMode: 'mobile-only',
                 grid: { mobile: 1, tablet: 1, desktop: 1, gap: 'gap-4' }
+            },
+            defaultBlockLayouts: {
+                hero: 'centered',
+                text: 'prose',
+                image: 'standard',
+                faq: 'simple-list',
+                map: 'card-with-address'
             }
         }
     },
@@ -71,6 +78,13 @@ export const templateDefinitions: Record<string, Omit<TemplateDefinition, 'compo
                 containerWidth: 'boxed',
                 navMode: 'adaptive',
                 grid: { mobile: 1, tablet: 1, desktop: 1, gap: 'gap-6' }
+            },
+            defaultBlockLayouts: {
+                hero: 'split',
+                text: 'two-column',
+                image: 'full-width',
+                faq: 'accordion',
+                map: 'embed-full'
             }
         }
     },
@@ -106,6 +120,13 @@ export const templateDefinitions: Record<string, Omit<TemplateDefinition, 'compo
                 containerWidth: 'full',
                 navMode: 'adaptive',
                 grid: { mobile: 1, tablet: 1, desktop: 1, gap: 'gap-8' }
+            },
+            defaultBlockLayouts: {
+                hero: 'fullbleed',
+                text: 'prose',
+                image: 'standard',
+                faq: 'grid',
+                map: 'embed-full'
             }
         }
     },
@@ -143,6 +164,13 @@ export const templateDefinitions: Record<string, Omit<TemplateDefinition, 'compo
                 showBottomNav: true, // Explicitly enable Bottom Bar
                 grid: { mobile: 1, tablet: 1, desktop: 1, gap: 'gap-4' }
             },
+            defaultBlockLayouts: {
+                hero: 'split',
+                text: 'highlight-box',
+                image: 'rounded-card',
+                faq: 'accordion',
+                map: 'card-with-address'
+            },
 
             // Shuvo-Specific Customizations
             custom: {
@@ -152,6 +180,53 @@ export const templateDefinitions: Record<string, Omit<TemplateDefinition, 'compo
                 hideQuickActionsTitle: true // Hides the "HOME" / "Quick Actions" button label
             }
         }
+    },
+    'mrb': {
+        id: 'mrb',
+        name: 'Mr Brightside',
+        description: 'Dark mode elegance with neon accents and glassmorphism styling.',
+        config: {
+            colors: {
+                primary: '#ec5b13', // Neon Orange
+                accent: '#ec5b13',
+                background: '#0a0a0a', // Deep Dark
+                foreground: '#f8fafc', // Off-White
+                surface: '#1a1a1a', // Dark Gray Cards
+                border: '#262626', // Subtle Borders
+            },
+            fonts: {
+                // The Stitch HTML uses Public Sans, mapping to Inter for now or closest match
+                heading: 'var(--font-inter), sans-serif',
+                body: 'var(--font-inter), sans-serif',
+            },
+            borderRadius: '1rem',
+            cardStyle: 'glass', // Maps to outlined concept usually
+            cardVariant: 'outlined', // Outlined handles glassmorphic aesthetic often
+            backgroundElements: [], // Keep clean background as per design
+            allowThemeColorOverride: false,
+            headerLayout: 'center',
+            homeButtonStyle: 'pill',
+            homeButtonColor: 'primary',
+            taglineStyle: 'contrast',
+
+            layout: {
+                containerWidth: 'tablet',
+                navMode: 'adaptive',
+                showBottomNav: true,
+                grid: { mobile: 1, tablet: 1, desktop: 1, gap: 'gap-6' }
+            },
+            defaultBlockLayouts: {
+                hero: 'centered',
+                text: 'two-column',
+                image: 'full-width',
+                faq: 'accordion',
+                map: 'embed-full'
+            },
+            custom: {
+                bottomNavStyle: 'glass',
+            }
+        },
+        homeBlockOrder: ['hero', 'quick_actions', 'branches', 'featured', 'gallery', 'hours'],
     }
 };
 

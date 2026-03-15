@@ -22,6 +22,8 @@ import { createPortal } from 'react-dom';
 
 export function ProductDetailModal({ product, isOpen, onClose, phoneNumber = '15551234567', whatsappSettings }: ProductDetailModalProps) {
     const { theme } = useTemplate();
+    const isClean = theme.cardStyle === 'clean';
+    const isGlass = theme.cardStyle === 'glass';
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [isFullScreenOpen, setIsFullScreenOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
@@ -217,7 +219,9 @@ export function ProductDetailModal({ product, isOpen, onClose, phoneNumber = '15
                         </div>
                         {showPrice && (
                             <div
-                                className="border-2 px-3 py-1 rounded-xl font-black text-lg shadow-sm -rotate-2 whitespace-nowrap"
+                                className={`px-3 py-1 rounded-xl font-black text-lg whitespace-nowrap ${
+                                    isClean ? 'shadow-sm border' : isGlass ? 'shadow-sm border border-white/20 backdrop-blur-md' : 'border-2 shadow-sm -rotate-2'
+                                }`}
                                 style={priceTagStyle}
                             >
                                 {product.price}

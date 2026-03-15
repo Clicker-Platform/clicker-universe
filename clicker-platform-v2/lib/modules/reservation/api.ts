@@ -79,46 +79,24 @@ export async function getBookings(
     limitCount: number = 20,
     lastDoc: QueryDocumentSnapshot | null = null
 ): Promise<{ bookings: Booking[], lastDoc: QueryDocumentSnapshot | null }> {
-    // If we have a status filter, Firestore requires a composite index for orderBy.
-    // To avoid this for now, we query without orderBy if status is present and sort in-memory,
-    // or we just tell the user to add the index. 
-    // Given the multi-tenant nature, it's better to keep it robust.
+    // Requires composite index: status (==) + createdAt (desc), and status (in) + createdAt (desc)
+    // Firestore index can be created at: Firebase Console > Firestore > Indexes
+    const coll = collection(db, 'sites', siteId, BOOKINGS_COLLECTION);
 
-    let baseQuery = collection(db, 'sites', siteId, BOOKINGS_COLLECTION);
-    let q;
+    let q = status
+        ? Array.isArray(status)
+            ? query(coll, where('status', 'in', status), orderBy('createdAt', 'desc'))
+            : query(coll, where('status', '==', status), orderBy('createdAt', 'desc'))
+        : query(coll, orderBy('createdAt', 'desc'));
 
-    if (status) {
-        // When filtering by status, we don't include orderBy in the Firestore query to avoid index requirement
-        q = query(baseQuery);
-        if (Array.isArray(status)) {
-            q = query(q, where('status', 'in', status));
-        } else {
-            q = query(q, where('status', '==', status));
-        }
-        // Note: Without orderBy in query, pagination (lastDoc) might be inconsistent if results are many.
-        // For MVP, we'll fetch and sort.
-    } else {
-        q = query(baseQuery, orderBy('createdAt', 'desc'));
-    }
-
-    if (lastDoc && !status) { // Only use startAfter if we have server-side ordering
+    if (lastDoc) {
         q = query(q, startAfter(lastDoc));
     }
 
     q = query(q, limit(limitCount));
 
     const snapshot = await getDocs(q);
-    let bookings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Booking));
-
-    // In-memory sort if we couldn't do it on server
-    if (status) {
-        bookings.sort((a, b) => {
-            const dateA = a.createdAt?.toDate?.()?.getTime() || a.startAt?.toDate?.()?.getTime() || 0;
-            const dateB = b.createdAt?.toDate?.()?.getTime() || b.startAt?.toDate?.()?.getTime() || 0;
-            return dateB - dateA; // Descending
-        });
-    }
-
+    const bookings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Booking));
     const newLastDoc = snapshot.docs.length === limitCount ? snapshot.docs[snapshot.docs.length - 1] : null;
 
     return { bookings, lastDoc: newLastDoc };
@@ -262,47 +240,36 @@ export async function saveWeeklySlots(siteId: string, slots: Omit<TimeSlot, 'id'
 }
 
 export async function checkAvailability(siteId: string, serviceId: string, startAt: Date, durationMinutes: number): Promise<boolean> {
-    // 1. Calculate end time
     const endAt = new Date(startAt.getTime() + durationMinutes * 60000);
-    const startTimestamp = Timestamp.fromDate(startAt);
-    const endTimestamp = Timestamp.fromDate(endAt);
 
-    // 2. Query overlapping bookings
-    // Firestore cannot do comprehensive range intersection in one query easily without composite indexes or multiple queries.
-    // For MVP, we'll fetch bookings for that day and filter in memory or use a simple overlap check if volume is low.
-
-    // 1. Get Resource Limit
-    const activeStaff = await getStaffMembers(siteId, true);
-    const maxCapacity = activeStaff.length;
-
-    if (maxCapacity === 0) return false; // No staff, no bookings possible
-
-    // 2. Fetch bookings for the day to check overlaps
     const startOfDay = new Date(startAt);
     startOfDay.setHours(0, 0, 0, 0);
     const endOfDay = new Date(startAt);
     endOfDay.setHours(23, 59, 59, 999);
 
-    const q = query(
+    const dayQuery = query(
         collection(db, 'sites', siteId, BOOKINGS_COLLECTION),
         where('startAt', '>=', Timestamp.fromDate(startOfDay)),
         where('startAt', '<=', Timestamp.fromDate(endOfDay))
     );
 
-    const snapshot = await getDocs(q);
-    const dayBookings = snapshot.docs.map(d => d.data() as Booking);
+    // Fetch staff and day bookings in parallel
+    const [activeStaff, snapshot] = await Promise.all([
+        getStaffMembers(siteId, true),
+        getDocs(dayQuery)
+    ]);
 
-    // 3. Count Overlaps
+    const maxCapacity = activeStaff.length;
+    if (maxCapacity === 0) return false;
+
     const newStart = startAt.getTime();
-    const newEnd = endAt.getTime(); // Calculated above
+    const newEnd = endAt.getTime();
 
+    const dayBookings = snapshot.docs.map(d => d.data() as Booking);
     const concurrentBookings = dayBookings.filter(booking => {
-        if (booking.status === 'cancelled' || booking.status === 'completed') return false; // Count pending/confirmed
-
+        if (booking.status === 'cancelled' || booking.status === 'completed') return false;
         const bStart = booking.startAt.toDate().getTime();
         const bEnd = booking.endAt.toDate().getTime();
-
-        // Check Overlap: (StartA < EndB) and (EndA > StartB)
         return (bStart < newEnd) && (bEnd > newStart);
     });
 
@@ -320,25 +287,18 @@ export interface ReservationSettings {
 
 export async function getReservationSettings(siteId: string): Promise<ReservationSettings> {
     const docRef = doc(db, 'sites', siteId, SETTINGS_DOC);
-    const docSnap = await getDoc(docRef);
-    let settings: ReservationSettings = { allowStaffSelection: false };
 
-    if (docSnap.exists()) {
-        settings = docSnap.data() as ReservationSettings;
-    }
+    // Fetch settings doc and module status check in parallel
+    const [docSnap, membershipEnabled] = await Promise.all([
+        getDoc(docRef),
+        isModuleEnabled('membership').catch(() => false)
+    ]);
 
-    // Centrally inject module status to ensure strict modularity
-    // This prop propagates to BookingForm via BookPage, ReservationWidgetServer, and ReservationWidget
-    try {
-        const membershipEnabled = await isModuleEnabled('membership');
-        return {
-            ...settings,
-            membershipEnabled
-        };
-    } catch (error) {
-        console.error("Failed to check membership module status:", error);
-        return settings;
-    }
+    const settings: ReservationSettings = docSnap.exists()
+        ? (docSnap.data() as ReservationSettings)
+        : { allowStaffSelection: false };
+
+    return { ...settings, membershipEnabled };
 }
 
 export async function updateReservationSettings(siteId: string, settings: Partial<ReservationSettings>): Promise<void> {

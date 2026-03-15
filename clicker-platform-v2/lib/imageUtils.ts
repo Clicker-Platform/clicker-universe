@@ -5,6 +5,9 @@
  * @returns Promise resolving to a WebP Blob
  */
 export const convertToWebP = async (file: File, quality: number = 0.8): Promise<Blob> => {
+    if (file.type === 'image/webp') {
+        return file;
+    }
     return new Promise((resolve, reject) => {
         const img = new Image();
         img.onload = () => {

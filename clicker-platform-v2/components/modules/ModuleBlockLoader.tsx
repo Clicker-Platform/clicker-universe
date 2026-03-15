@@ -1,4 +1,6 @@
-import React from 'react';
+'use client';
+
+import React, { useState, useEffect } from 'react';
 import { findModuleForBlock } from '@/lib/modules/registry';
 import { ModuleLoader } from './ModuleLoader';
 
@@ -8,16 +10,17 @@ interface ModuleBlockLoaderProps {
     siteId?: string;
 }
 
-export async function ModuleBlockLoader({ type, data, siteId }: ModuleBlockLoaderProps) {
-    // 1. Resolve the module that owns this block type
-    // This function checks ENABLED modules only.
-    const result = await findModuleForBlock(type);
+export function ModuleBlockLoader({ type, data, siteId }: ModuleBlockLoaderProps) {
+    const [componentKey, setComponentKey] = useState<string | null | undefined>(undefined);
 
-    if (!result) {
-        // Module not found or disabled, or block type not registered
-        return null;
-    }
+    useEffect(() => {
+        findModuleForBlock(type).then(result => {
+            setComponentKey(result ? result.componentKey : null);
+        });
+    }, [type]);
 
-    // 2. Render the component using the generic ModuleLoader
-    return <ModuleLoader componentKey={result.componentKey} data={data} siteId={siteId} />;
+    // undefined = still loading, null = not found
+    if (componentKey === undefined || componentKey === null) return null;
+
+    return <ModuleLoader componentKey={componentKey} data={data} siteId={siteId} />;
 }

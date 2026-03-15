@@ -35,6 +35,7 @@ const ICON_MAP: Record<string, any> = {
 export const Footer: React.FC<FooterProps> = ({ socialLinks, footerText, contact, hideContact }) => {
     const { templateId, theme } = useTemplate();
     const isClean = theme.cardStyle === 'clean';
+    const isGlass = theme.cardStyle === 'glass';
 
     return (
         <footer className="flex flex-col items-center gap-6 pb-8 text-center">
@@ -50,19 +51,21 @@ export const Footer: React.FC<FooterProps> = ({ socialLinks, footerText, contact
                             className={`
                                 p-3 rounded-full transition-all duration-200
                                 ${isClean
-                                    ? 'bg-white border border-gray-200 text-gray-600 hover:text-brand-green hover:border-brand-green hover:shadow-md'
+                                    ? 'bg-white border border-gray-200 text-gray-600 hover:shadow-md'
+                                    : isGlass
+                                    ? 'bg-black/20 border border-white/20 text-white hover:bg-white/10 hover:shadow-md'
                                     : 'bg-white border-[3px] border-brand-dark text-brand-dark hover:bg-brand-dark hover:text-brand-green shadow-sticker hover:shadow-none hover:translate-y-[2px] hover:translate-x-[2px]'
                                 }
                             `}
                         >
-                            <Icon size={24} strokeWidth={isClean ? 2 : 2.5} />
+                            <Icon size={24} strokeWidth={isClean || isGlass ? 2 : 2.5} />
                         </a>
                     );
                 })}
             </div>
 
             {contact && !hideContact && (
-                <div className="space-y-2 text-brand-dark/80 font-medium text-sm">
+                <div className={`space-y-2 font-medium text-sm ${isGlass ? 'text-white/80' : 'text-gray-800'}`} style={!isClean && !isGlass ? { color: theme.colors.foreground } : {}}>
                     {contact.address && (
                         <div className="flex items-center justify-center gap-2">
                             <MapPin size={16} />
@@ -92,7 +95,9 @@ export const Footer: React.FC<FooterProps> = ({ socialLinks, footerText, contact
                 </div>
             )}
 
-            <p className="font-bold text-brand-dark/40 text-sm">{footerText || '© 2024 SunnySide'}</p>
+            <p className={`font-bold text-sm ${isGlass ? 'text-white/40' : 'opacity-60'}`} style={!isGlass ? { color: theme.colors.foreground } : {}}>
+                {footerText || '© 2024 SunnySide'}
+            </p>
         </footer>
     );
 };

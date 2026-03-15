@@ -16,7 +16,9 @@ interface ProductsBlockClientProps {
 export const ProductsBlockClient = ({ data, products, phoneNumber, whatsappSettings }: ProductsBlockClientProps) => {
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const { templateId, theme } = useTemplate();
-    const isBold = theme.cardStyle !== 'clean';
+    const isClean = theme.cardStyle === 'clean';
+    const isGlass = theme.cardStyle === 'glass';
+    const isBold = !isClean && !isGlass;
 
     return (
         <section className="">
@@ -31,15 +33,30 @@ export const ProductsBlockClient = ({ data, products, phoneNumber, whatsappSetti
             <div className="grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-4">
                 {products.map(product => {
                     // Dynamic card styles
-                    const cardStyle = {
-                        borderRadius: `var(--theme-radius)`,
-                        borderColor: isBold ? theme.colors.foreground : 'rgba(0,0,0,0.1)',
-                        boxShadow: isBold ? `4px 4px 0px 0px ${theme.colors.border}` : '0 1px 3px 0 rgb(0 0 0 / 0.1)',
+                    const cardStyle = isGlass ? {
+                        borderRadius: 'var(--theme-radius)',
+                        background: 'rgba(26, 26, 26, 0.6)',
+                        backdropFilter: 'blur(12px)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
+                    } : isBold ? {
+                        borderRadius: 'var(--theme-radius)',
+                        borderColor: theme.colors.foreground,
+                        boxShadow: `4px 4px 0px 0px ${theme.colors.border}`,
+                        backgroundColor: '#FFFFFF'
+                    } : {
+                        borderRadius: 'var(--theme-radius)',
+                        borderColor: 'rgba(0,0,0,0.1)',
+                        boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)',
                         backgroundColor: '#FFFFFF'
                     };
 
                     // Scale down radius for image since it's inside
-                    const imageStyle = {
+                    const imageStyle = isGlass ? {
+                        borderRadius: 'calc(var(--theme-radius) * 0.75)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        background: 'rgba(255,255,255,0.05)'
+                    } : {
                         borderRadius: `calc(var(--theme-radius) * 0.75)`,
                         borderColor: isBold ? theme.colors.foreground : 'rgba(0,0,0,0.1)',
                         borderWidth: isBold ? '3px' : '1px'
@@ -54,12 +71,12 @@ export const ProductsBlockClient = ({ data, products, phoneNumber, whatsappSetti
                             onClick={() => setSelectedProduct(product)}
                             className={`
                                 p-4 flex flex-col gap-4 cursor-pointer group transition-all duration-300
-                                ${isBold ? 'border-[3px] hover:-translate-y-1' : 'border hover:shadow-md'}
+                                ${isGlass ? 'border hover:-translate-y-1' : isBold ? 'border-[3px] hover:-translate-y-1' : 'border hover:shadow-md'}
                             `}
                             style={cardStyle}
                         >
                             <div
-                                className="w-full aspect-[4/3] bg-gray-100 flex-shrink-0 overflow-hidden relative"
+                                className={`w-full aspect-[4/3] flex-shrink-0 overflow-hidden relative ${isGlass ? '' : 'bg-gray-100'}`}
                                 style={imageStyle}
                             >
                                 {(product.imageUrl || (product as any).image) && (
@@ -81,7 +98,10 @@ export const ProductsBlockClient = ({ data, products, phoneNumber, whatsappSetti
                                         {product.name || (product as any).title}
                                     </h3>
                                     {showLabel && product.category && (
-                                        <span className="text-xs font-bold uppercase tracking-wider opacity-60 bg-gray-100 px-2 py-1 rounded" style={{ fontFamily: theme.fonts.body, color: theme.colors.foreground }}>
+                                        <span
+                                            className={`text-xs font-bold uppercase tracking-wider opacity-60 px-2 py-1 rounded ${isGlass ? 'bg-white/10 text-white' : 'bg-gray-100'}`}
+                                            style={{ fontFamily: theme.fonts.body, color: isGlass ? undefined : theme.colors.foreground }}
+                                        >
                                             {product.category}
                                         </span>
                                     )}

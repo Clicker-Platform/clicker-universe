@@ -5,6 +5,8 @@ import { BusinessProfile, BusinessContact } from '@/data/mockData';
 import { MapPin, Star } from 'lucide-react';
 import Image from 'next/image';
 import { useTemplate } from '@/components/TemplateProvider';
+import { useSite } from '@/lib/site-context';
+import Link from 'next/link';
 
 interface HeaderProps {
     profile: BusinessProfile;
@@ -14,11 +16,13 @@ interface HeaderProps {
 
 export const ShuvoHeader: React.FC<HeaderProps> = ({ profile, contact, showAddress }) => {
     const { theme } = useTemplate();
+    const { siteId } = useSite();
+
 
     return (
         <div className="flex flex-col relative z-10 transition-all duration-300">
             {/* Top Row: 2-Column Layout (Logo | Name + Tagline) */}
-            <div className="flex flex-row items-center gap-6 mb-6">
+            <Link href={`/${siteId}`} className="flex flex-row items-center gap-6 mb-6 hover:opacity-80 transition-opacity">
                 {/* Left Column: Logo/Avatar */}
                 <div className="relative shrink-0">
                     <div
@@ -56,7 +60,7 @@ export const ShuvoHeader: React.FC<HeaderProps> = ({ profile, contact, showAddre
                         <p className="font-bold text-xs tracking-wide uppercase whitespace-nowrap">{profile.tagline}</p>
                     </div>
                 </div>
-            </div>
+            </Link>
 
             {/* Description (Full Width Below) */}
             <div className="w-full px-0">

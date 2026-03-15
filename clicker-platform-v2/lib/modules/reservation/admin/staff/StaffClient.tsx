@@ -30,15 +30,12 @@ export default function StaffClient({ initialStaff }: StaffClientProps) {
 
         async function loadData() {
             try {
-                // Fetch Settings
-                const settingsData = await getReservationSettings(siteId);
+                const [settingsData, staffData] = await Promise.all([
+                    getReservationSettings(siteId),
+                    initialStaff ? Promise.resolve(initialStaff) : getStaffMembers(siteId)
+                ]);
                 setSettings(settingsData);
-
-                // Fetch Staff if not provided
-                if (!initialStaff) {
-                    const staffData = await getStaffMembers(siteId);
-                    setStaffList(staffData);
-                }
+                setStaffList(staffData);
             } catch (error) {
                 console.error("Failed to load data:", error);
             } finally {

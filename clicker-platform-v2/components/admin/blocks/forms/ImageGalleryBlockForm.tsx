@@ -115,7 +115,7 @@ export const ImageGalleryBlockForm = ({ data, onChange }: ImageGalleryBlockFormP
     return (
         <div className="space-y-4">
             <div className="flex justify-between items-center">
-                <label className="block text-sm font-bold text-gray-700">Gallery Images ({images.length}/10)</label>
+                <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider">Gallery Images ({images.length}/10)</label>
                 <input
                     type="file"
                     ref={fileInputRef}
@@ -128,9 +128,9 @@ export const ImageGalleryBlockForm = ({ data, onChange }: ImageGalleryBlockFormP
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploading || images.length >= 10}
-                    className="flex items-center gap-2 text-xs font-bold text-brand-dark bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                    className="flex items-center gap-2 text-xs font-bold text-neutral-200 bg-neutral-800 border border-neutral-700 hover:bg-neutral-700 px-4 py-2 rounded-xl transition-all disabled:opacity-50 active:scale-95 shadow-sm"
                 >
-                    {uploading ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+                    {uploading ? <Loader2 size={14} className="animate-spin text-blue-500" /> : <Plus size={14} />}
                     Add Images
                 </button>
             </div>
@@ -138,17 +138,17 @@ export const ImageGalleryBlockForm = ({ data, onChange }: ImageGalleryBlockFormP
             {images.length === 0 ? (
                 <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="border-2 border-dashed border-gray-200 rounded-xl p-8 flex flex-col items-center justify-center text-gray-400 cursor-pointer hover:border-brand-dark/30 hover:bg-gray-50 transition-all"
+                    className="border-2 border-dashed border-neutral-800 bg-neutral-900/50 rounded-2xl p-10 flex flex-col items-center justify-center text-neutral-500 cursor-pointer hover:border-neutral-700 hover:bg-neutral-800/50 transition-all group"
                 >
-                    <ImageIcon size={32} className="mb-2 opacity-50" />
-                    <p className="text-sm font-medium">Click to upload images</p>
-                    <p className="text-xs mt-1">PNG, JPG, WebP (Max 5MB)</p>
+                    <ImageIcon size={32} className="mb-3 opacity-30 group-hover:opacity-100 group-hover:text-blue-500 transition-all" />
+                    <p className="text-sm font-bold text-neutral-400">Click to upload images</p>
+                    <p className="text-xs mt-1 font-medium opacity-60">PNG, JPG, WebP (Max 5MB)</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                     {images.map((url, index) => (
-                        <div key={index} className="group relative aspect-square bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
-                            <img src={url} alt={`Gallery ${index + 1}`} className="w-full h-full object-cover" />
+                        <div key={index} className="group relative aspect-square bg-neutral-900 rounded-xl overflow-hidden border border-neutral-800 shadow-inner">
+                            <img src={url} alt={`Gallery ${index + 1}`} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
 
                             {/* Overlay Actions */}
                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
@@ -156,23 +156,24 @@ export const ImageGalleryBlockForm = ({ data, onChange }: ImageGalleryBlockFormP
                                     type="button"
                                     onClick={() => setCover(url)}
                                     title="Set as Cover"
-                                    className={`p-1.5 rounded-full ${coverImage === url ? 'bg-yellow-400 text-white' : 'bg-white/20 text-white hover:bg-white/40'}`}
+                                    className={`p-2 rounded-full backdrop-blur-md transition-all active:scale-90 ${coverImage === url ? 'bg-yellow-500 text-black' : 'bg-white/10 text-white hover:bg-white/20'}`}
                                 >
-                                    <Star size={16} fill={coverImage === url ? "currentColor" : "none"} />
+                                    <Star size={18} fill={coverImage === url ? "currentColor" : "none"} />
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => removeImage(url)}
                                     title="Remove Image"
-                                    className="p-1.5 rounded-full bg-white/20 text-white hover:bg-red-500/80 transition-colors"
+                                    className="p-2 rounded-full backdrop-blur-md bg-white/10 text-white hover:bg-red-500 hover:text-white transition-all active:scale-90"
                                 >
-                                    <X size={16} />
+                                    <X size={18} />
                                 </button>
                             </div>
 
-                            {/* Cover Indicator (Visible when not hovering/always if active) */}
+                            {/* Cover Indicator */}
                             {coverImage === url && (
-                                <div className="absolute top-2 left-2 bg-yellow-400 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+                                <div className="absolute top-2 left-2 bg-yellow-500 text-black text-[9px] font-black px-2.5 py-1 rounded-full shadow-lg flex items-center gap-1 border border-yellow-600/20">
+                                    <Star size={8} fill="currentColor" />
                                     COVER
                                 </div>
                             )}
@@ -181,7 +182,7 @@ export const ImageGalleryBlockForm = ({ data, onChange }: ImageGalleryBlockFormP
                 </div>
             )}
 
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-neutral-500 font-medium leading-relaxed">
                 The cover image will be displayed on your page. Clicking it will open the full gallery.
             </p>
         </div>

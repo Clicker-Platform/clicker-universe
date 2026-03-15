@@ -5,6 +5,8 @@ import { BusinessProfile, BusinessContact } from '@/data/mockData';
 import { MapPin } from 'lucide-react';
 import Image from 'next/image';
 import { useTemplate } from '@/components/TemplateProvider';
+import { useSite } from '@/lib/site-context';
+import Link from 'next/link';
 
 interface HeaderProps {
     profile: BusinessProfile;
@@ -14,10 +16,12 @@ interface HeaderProps {
 
 export const ModernProfileHeader: React.FC<HeaderProps> = ({ profile, contact, showAddress }) => {
     const { theme } = useTemplate();
+    const { siteId } = useSite();
+
 
     return (
         <div className="flex flex-col mb-10 relative z-10 transition-all duration-300 items-center md:items-start text-center md:text-left">
-            <div className="relative mb-6 flex flex-col md:flex-row items-center gap-4 md:gap-6">
+            <Link href={`/${siteId}`} className="relative mb-6 flex flex-col md:flex-row items-center gap-4 md:gap-6 hover:opacity-80 transition-opacity">
                 <div
                     className="w-32 h-32 bg-white rounded-full overflow-hidden relative z-10 shrink-0 flex items-center justify-center border-[4px]"
                     style={{ borderColor: theme.colors.border }}
@@ -67,7 +71,7 @@ export const ModernProfileHeader: React.FC<HeaderProps> = ({ profile, contact, s
                         </p>
                     </div>
                 </div>
-            </div>
+            </Link>
 
             <div className="w-full px-0 md:px-0">
                 <p className="text-theme-foreground font-bold text-lg leading-snug mx-auto">

@@ -60,12 +60,12 @@ export const BlockImageUploader = ({ label = "Upload Image", currentUrl, onUploa
     };
 
     return (
-        <div className="space-y-2">
-            {label && <label className="block text-xs font-bold text-gray-500">{label}</label>}
+        <div className="space-y-4">
+            {label && <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider">{label}</label>}
 
-            <div className="flex items-start gap-4">
+            <div className="flex items-start gap-4 p-4 bg-neutral-900/50 rounded-2xl border border-neutral-800 shadow-sm">
                 {/* Preview / Placeholder */}
-                <div className="w-20 h-20 bg-gray-50 rounded-lg border border-gray-200 overflow-hidden flex-shrink-0 relative group">
+                <div className="w-20 h-20 bg-neutral-800 rounded-xl border border-neutral-700 overflow-hidden flex-shrink-0 relative group shadow-inner">
                     {currentUrl ? (
                         <>
                             <Image
@@ -84,7 +84,7 @@ export const BlockImageUploader = ({ label = "Upload Image", currentUrl, onUploa
                             </button>
                         </>
                     ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-300">
+                        <div className="w-full h-full flex items-center justify-center text-neutral-700 bg-neutral-800/50">
                             <ImageIcon size={24} />
                         </div>
                     )}
@@ -103,7 +103,7 @@ export const BlockImageUploader = ({ label = "Upload Image", currentUrl, onUploa
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
                         disabled={uploading}
-                        className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-bold text-gray-700 hover:bg-gray-50 focus:ring-2 focus:ring-brand-dark/20 disabled:opacity-50 transition-all"
+                        className="flex items-center gap-2 px-4 py-2 bg-neutral-800 border-2 border-neutral-700 rounded-xl text-sm font-bold text-neutral-200 hover:bg-neutral-700 hover:border-neutral-600 focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 transition-all active:scale-[0.98] shadow-sm"
                     >
                         {uploading ? (
                             <>
@@ -115,8 +115,9 @@ export const BlockImageUploader = ({ label = "Upload Image", currentUrl, onUploa
                             </>
                         )}
                     </button>
-                    <p className="text-[10px] text-gray-400 mt-2">
-                        Max 5MB. Formats: PNG, JPG, WebP. Auto-converted to WebP.
+                    <p className="text-[10px] text-neutral-500 mt-3 font-medium flex items-center gap-1.5">
+                        <span className="w-1 h-1 rounded-full bg-neutral-700" />
+                        Max 5MB. Formats: PNG, JPG, WebP.
                     </p>
                 </div>
             </div>

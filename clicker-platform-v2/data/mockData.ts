@@ -127,7 +127,9 @@ export interface SiteSettings {
     themeColor: string;
     accentColor: string;
     fontFamily: string;
-    layoutStyle: TemplateId;
+    templateId: TemplateId;
+    /** @deprecated Use templateId instead. Kept for backward compatibility with existing Firestore data. */
+    layoutStyle?: TemplateId;
     backgroundImageUrl: string;
     socialLinkItems?: SocialLinkItem[];
     footerText?: string;

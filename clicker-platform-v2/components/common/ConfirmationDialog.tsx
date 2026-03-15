@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, AlertTriangle } from 'lucide-react';
 
 interface ConfirmationDialogProps {
@@ -28,17 +29,19 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
     children,
     hideFooter = false,
 }) => {
-    if (!isOpen) return null;
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => { setMounted(true); }, []);
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+    if (!isOpen || !mounted) return null;
+
+    const dialog = (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
             <div
                 className="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200"
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="dialog-title"
             >
-                {/* Header */}
                 <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-white">
                     <div className="flex items-center gap-2 text-gray-900">
                         {isDestructive && <AlertTriangle className="text-red-500" size={20} />}
@@ -53,14 +56,10 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
                         <X size={20} />
                     </button>
                 </div>
-
-                {/* Content */}
                 <div className="p-6">
                     <p className="text-gray-600 font-medium mb-4">{message}</p>
                     {children}
                 </div>
-
-                {/* Footer */}
                 {!hideFooter && (
                     <div className="flex gap-3 p-4 bg-gray-50 border-t border-gray-100">
                         <button
@@ -73,14 +72,7 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
                         <button
                             onClick={onConfirm}
                             disabled={isLoading}
-                            className={`
-                                flex-1 px-4 py-2.5 rounded-lg font-bold shadow-sm transition-all hover:bg-opacity-90 active:scale-95
-                                disabled:opacity-70 disabled:cursor-wait
-                                ${isDestructive
-                                    ? 'bg-red-500 text-white hover:bg-red-600'
-                                    : 'bg-brand-dark text-white hover:bg-gray-800'
-                                }
-                            `}
+                            className={`flex-1 px-4 py-2.5 rounded-lg font-bold shadow-sm transition-all hover:bg-opacity-90 active:scale-95 disabled:opacity-70 disabled:cursor-wait ${isDestructive ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-brand-dark text-white hover:bg-gray-800'}`}
                         >
                             {isLoading ? (
                                 <span className="flex items-center justify-center gap-2">
@@ -94,4 +86,7 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
             </div>
         </div>
     );
+
+    return createPortal(dialog, document.body);
 };
+

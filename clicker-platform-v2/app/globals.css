@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
@@ -27,9 +25,7 @@
   --background: #ffffff;
   --foreground: #171717;
 
-  /* Font Variables fallback */
-  --font-inter: 'Inter', sans-serif;
-  --font-space: 'Space Mono', monospace;
+  /* Font fallbacks - next/font/google sets --font-inter and --font-space on body via class */
 
   /* Default Theme Defaults (Sunny Side Up) */
   --theme-primary: var(--color-brand-green);

@@ -98,10 +98,10 @@ export const Toolbar = ({ editor }: ToolbarProps) => {
             }}
             title={title}
             className={`
-                p-2 rounded-lg transition-colors
+                p-2 rounded-xl transition-all active:scale-95
                 ${isActive
-                    ? 'bg-brand-dark text-white'
-                    : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
+                    ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20'
+                    : 'text-neutral-500 hover:bg-neutral-800 hover:text-neutral-200'
                 }
             `}
         >
@@ -110,9 +110,9 @@ export const Toolbar = ({ editor }: ToolbarProps) => {
     );
 
     return (
-        <div className="border-b border-gray-200 bg-gray-50/50 p-2 flex flex-wrap gap-1 items-center sticky top-0 z-10">
+        <div className="border-b border-neutral-800 bg-neutral-900/80 backdrop-blur-md p-2 flex flex-wrap gap-1 items-center sticky top-0 z-10">
             {/* History */}
-            <div className="flex gap-1 mr-2 border-r border-gray-200 pr-2">
+            <div className="flex gap-1 mr-2 border-r border-neutral-800 pr-2">
                 <ToggleButton
                     onClick={() => editor.chain().focus().undo().run()}
                     title="Undo"
@@ -128,7 +128,7 @@ export const Toolbar = ({ editor }: ToolbarProps) => {
             </div>
 
             {/* Typography */}
-            <div className="flex gap-1 mr-2 border-r border-gray-200 pr-2">
+            <div className="flex gap-1 mr-2 border-r border-neutral-800 pr-2">
                 <ToggleButton
                     isActive={editor.isActive('heading', { level: 2 })}
                     onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
@@ -174,7 +174,7 @@ export const Toolbar = ({ editor }: ToolbarProps) => {
             </div>
 
             {/* Formatting */}
-            <div className="flex gap-1 mr-2 border-r border-gray-200 pr-2">
+            <div className="flex gap-1 mr-2 border-r border-neutral-800 pr-2">
                 <ToggleButton
                     isActive={editor.isActive('bulletList')}
                     onClick={() => editor.chain().focus().toggleBulletList().run()}
@@ -227,10 +227,10 @@ export const Toolbar = ({ editor }: ToolbarProps) => {
                     disabled={uploading}
                     title="Upload Image"
                     className={`
-                        p-2 rounded-lg transition-colors text-gray-500 hover:bg-gray-100 hover:text-gray-900 disabled:opacity-50
+                        p-2 rounded-xl transition-all active:scale-95 text-neutral-500 hover:bg-neutral-800 hover:text-neutral-200 disabled:opacity-50
                     `}
                 >
-                    {uploading ? <Loader2 size={16} className="animate-spin" /> : <ImageIcon size={16} />}
+                    {uploading ? <Loader2 size={16} className="animate-spin text-blue-500" /> : <ImageIcon size={16} />}
                 </button>
             </div>
         </div>

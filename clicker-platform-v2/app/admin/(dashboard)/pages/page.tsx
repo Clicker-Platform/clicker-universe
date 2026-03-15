@@ -1,96 +1,133 @@
 'use client';
-import { useState, useEffect } from 'react';
-import { db } from "@/lib/firebase";
-import { collection, getDocs } from "firebase/firestore";
-import Link from 'next/link';
-import { Plus, Search, FileText } from 'lucide-react';
-import { Page } from '@/data/mockData';
-import { PagesSkeleton } from '@/components/skeletons/PagesSkeleton';
 
-import { useSite } from '@/lib/site-context';
+import { Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { Loader2, AlertCircle } from 'lucide-react';
+import { PageStudioProvider, usePageStudio } from '@/components/admin/blocks/PageStudioContext';
+import { EditorProvider } from '@/components/admin/blocks/EditorContext';
+import { CanvasStudio } from '@/components/admin/blocks/CanvasStudio';
+import { StudioTopBar } from '@/components/admin/blocks/StudioTopBar';
+import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
+import { useState } from 'react';
 
-export default function PagesList() {
-    const { siteId } = useSite();
-    const [pages, setPages] = useState<Page[]>([]);
-    const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        if (!siteId) return;
+function PageStudioInner() {
+    const {
+        formData,
+        setBlocks,
+        globalSettings,
+        pagesLoading,
+        error,
+        activePageId,
+        pendingSwitch,
+        confirmDiscard,
+        confirmSaveAndSwitch,
+        cancelSwitch,
+        setContent,
+        deletePage,
+    } = usePageStudio();
 
-        const fetchPages = async () => {
-            try {
-                const querySnapshot = await getDocs(collection(db, "sites", siteId, "pages"));
-                const fetchedPages = querySnapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                } as Page));
-                setPages(fetchedPages);
-            } catch (error) {
-                console.error("Error fetching pages:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
 
-        fetchPages();
-    }, [siteId]);
+    if (pagesLoading) {
+        return (
+            <div className="flex h-64 items-center justify-center">
+                <Loader2 className="animate-spin text-brand-dark" size={32} />
+            </div>
+        );
+    }
 
     return (
-        <div>
-            <div className="flex justify-between items-center mb-6">
-                <div>
-                    <h1 className="text-2xl font-bold font-heading text-brand-dark">Pages</h1>
-                    <p className="text-gray-500">Create and manage your internal pages</p>
-                </div>
-                <Link
-                    href="/admin/pages/create"
-                    className="flex items-center gap-2 bg-brand-dark text-white px-4 py-2 rounded-xl font-bold hover:bg-black transition-colors"
-                >
-                    <Plus size={20} />
-                    Create Page
-                </Link>
-            </div>
-
-            {loading ? (
-                <PagesSkeleton />
-            ) : pages.length === 0 ? (
-                <div className="text-center py-20 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
-                    <div className="bg-white p-4 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 shadow-sm">
-                        <FileText size={32} className="text-gray-400" />
-                    </div>
-                    <h3 className="text-lg font-bold text-gray-900">No pages yet</h3>
-                    <p className="text-gray-500 mb-6">Start by creating your first page</p>
-                    <Link
-                        href="/admin/pages/create"
-                        className="text-brand-dark font-bold hover:underline"
-                    >
-                        Create a page
-                    </Link>
-                </div>
-            ) : (
-                <div className="grid gap-4">
-                    {pages.map(page => (
-                        <Link
-                            key={page.id}
-                            href={`/admin/pages/${page.id}`}
-                            className="bg-white p-4 rounded-xl border-2 border-gray-100 hover:border-brand-dark transition-colors flex items-center justify-between group"
-                        >
-                            <div className="flex items-center gap-4">
-                                <div className="p-2 bg-brand-green/10 rounded-lg text-brand-dark">
-                                    <FileText size={20} />
-                                </div>
-                                <div>
-                                    <h3 className="font-bold text-gray-900 group-hover:text-brand-dark">{page.title}</h3>
-                                    <p className="text-sm text-gray-500">/{page.slug}</p>
-                                </div>
-                            </div>
-                            <div className="text-sm font-medium text-gray-400">
-                                {new Date(page.updatedAt?.seconds * 1000).toLocaleDateString()}
-                            </div>
-                        </Link>
-                    ))}
+        <div className="-m-4 md:-m-8">
+            {error && (
+                <div className="mx-4 md:mx-8 mt-4 md:mt-8 mb-0 p-4 bg-red-50 text-red-700 rounded-xl flex items-center gap-2 border border-red-200">
+                    <AlertCircle size={20} />
+                    {error}
                 </div>
             )}
+
+            {/* Legacy HTML warning */}
+            {activePageId && formData.content && formData.blocks.length === 0 && (
+                <div className="mx-4 md:mx-8 mt-4 md:mt-8 bg-amber-50 p-4 rounded-xl border border-amber-200">
+                    <h3 className="font-bold text-amber-800 mb-2">Legacy HTML Content Detected</h3>
+                    <p className="text-sm text-amber-700 mb-4">This page was built with the old editor. You can clear it to start using the new Block Builder.</p>
+                    <button type="button" onClick={() => setContent('')} className="text-xs font-bold text-red-600 hover:underline">
+                        Clear Legacy Content & Use Blocks
+                    </button>
+                </div>
+            )}
+
+            <EditorProvider blocks={formData.blocks} onChange={setBlocks}>
+                <div className="flex flex-col h-screen">
+                    <StudioTopBar />
+                    <div className="flex-1 min-h-0 flex">
+                        <CanvasStudio
+                            globalSettings={globalSettings}
+                            pageSlug={formData.slug}
+                            pageTitle={formData.title}
+                        />
+                    </div>
+                </div>
+            </EditorProvider>
+
+            {/* Unsaved changes dialog */}
+            <ConfirmationDialog
+                isOpen={!!pendingSwitch}
+                title="Unsaved Changes"
+                message="You have unsaved changes. What would you like to do?"
+                onConfirm={confirmSaveAndSwitch}
+                onCancel={cancelSwitch}
+                confirmLabel="Save & Switch"
+                cancelLabel="Cancel"
+                isDestructive={false}
+            >
+                <button
+                    type="button"
+                    onClick={confirmDiscard}
+                    className="w-full px-4 py-2.5 rounded-lg font-bold text-red-600 hover:bg-red-50 transition-colors mb-2"
+                >
+                    Discard Changes
+                </button>
+            </ConfirmationDialog>
+
+            {/* Delete page dialog */}
+            <ConfirmationDialog
+                isOpen={deleteDialogOpen}
+                title="Delete Page"
+                message="Are you sure you want to delete this page? This action cannot be undone."
+                onConfirm={async () => {
+                    setIsDeleting(true);
+                    await deletePage();
+                    setIsDeleting(false);
+                    setDeleteDialogOpen(false);
+                }}
+                onCancel={() => setDeleteDialogOpen(false)}
+                isLoading={isDeleting}
+            />
         </div>
+    );
+}
+
+function PageStudioWithParams() {
+    const searchParams = useSearchParams();
+    const pageId = searchParams.get('pageId');
+
+    return (
+        <PageStudioProvider initialPageId={pageId}>
+            <PageStudioInner />
+        </PageStudioProvider>
+    );
+}
+
+export default function PageStudioPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex h-64 items-center justify-center">
+                <Loader2 className="animate-spin text-brand-dark" size={32} />
+            </div>
+        }>
+            <PageStudioWithParams />
+        </Suspense>
     );
 }

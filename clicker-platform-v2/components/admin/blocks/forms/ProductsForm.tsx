@@ -57,27 +57,32 @@ export const ProductsForm = ({ data, onChange }: ProductsFormProps) => {
         onChange({ ...safeData, productIds: newIds });
     };
 
-    if (loading) return <div className="py-4 text-center"><Loader2 className="animate-spin mx-auto text-gray-400" size={20} /></div>;
+    if (loading) return <div className="py-12 bg-neutral-900/30 rounded-2xl border border-neutral-800/50 flex flex-col items-center justify-center gap-3">
+        <Loader2 className="animate-spin text-blue-500" size={24} />
+        <p className="text-xs font-bold text-neutral-500 uppercase tracking-widest">Loading Catalog</p>
+    </div>;
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-6">
             <div>
-                <label className="block text-xs font-bold text-gray-500 mb-1">Section Title (Optional)</label>
+                <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Section Title (Optional)</label>
                 <input
                     type="text"
                     value={safeData.title || ''}
                     onChange={(e) => onChange({ ...safeData, title: e.target.value })}
-                    className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-brand-dark focus:ring-0"
+                    className="w-full px-4 py-2 bg-neutral-900 border border-neutral-800 rounded-xl text-sm font-bold text-neutral-200 placeholder-neutral-600 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none"
                     placeholder="e.g. Featured Products"
                 />
             </div>
 
             <div>
-                <label className="block text-xs font-bold text-gray-500 mb-2">Select Products</label>
+                <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Select Products</label>
                 {products.length === 0 ? (
-                    <p className="text-sm text-gray-500 italic">No products found in catalog.</p>
+                    <div className="p-10 bg-neutral-900/50 rounded-2xl border-2 border-dashed border-neutral-800 text-center">
+                        <p className="text-sm font-medium text-neutral-500">No products found in catalog.</p>
+                    </div>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-60 overflow-y-auto pr-1">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-72 overflow-y-auto pr-1 thin-scrollbar">
                         {products.map(product => {
                             const isSelected = selectedIds.includes(product.id);
                             return (
@@ -85,20 +90,23 @@ export const ProductsForm = ({ data, onChange }: ProductsFormProps) => {
                                     key={product.id}
                                     onClick={() => toggleProduct(product.id)}
                                     className={`
-                                        p-2 rounded-lg border-2 cursor-pointer flex items-center gap-3 transition-colors
-                                        ${isSelected ? 'border-brand-green bg-brand-green/5' : 'border-gray-100 hover:border-gray-200 bg-white'}
+                                        p-3 rounded-xl border-2 cursor-pointer flex items-center gap-4 transition-all active:scale-[0.98]
+                                        ${isSelected 
+                                            ? 'border-blue-500 bg-blue-500/10 shadow-[0_0_15px_-5px_italic] shadow-blue-500/20' 
+                                            : 'border-neutral-800 bg-neutral-900 hover:border-neutral-700 hover:bg-neutral-800'
+                                        }
                                     `}
                                 >
-                                    <div className="w-10 h-10 bg-gray-100 rounded flex-shrink-0 overflow-hidden">
+                                    <div className="w-12 h-12 bg-neutral-800/50 rounded-lg flex-shrink-0 overflow-hidden border border-neutral-700/30">
                                         {(product.imageUrl || (product as any).image) && (
                                             <img src={product.imageUrl || (product as any).image} className="w-full h-full object-cover" />
                                         )}
                                     </div>
-                                    <div className="min-w-0">
-                                        <p className={`text-sm font-bold ${isSelected ? 'text-brand-dark' : 'text-gray-700'}`}>{product.name}</p>
-                                        <p className="text-xs text-gray-500">{product.price}</p>
+                                    <div className="min-w-0 flex-1">
+                                        <p className={`text-sm font-black truncate ${isSelected ? 'text-neutral-100' : 'text-neutral-400 group-hover:text-neutral-200'}`}>{product.name}</p>
+                                        <p className="text-xs font-bold text-neutral-500 mt-0.5">{product.price}</p>
                                     </div>
-                                    {isSelected && <div className="ml-auto w-2 h-2 rounded-full bg-brand-green" />}
+                                    {isSelected && <div className="ml-auto w-2 h-2 rounded-full bg-blue-500" />}
                                 </div>
                             );
                         })}

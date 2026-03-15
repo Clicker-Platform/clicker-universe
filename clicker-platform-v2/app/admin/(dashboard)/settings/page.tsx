@@ -22,7 +22,7 @@ export default function SettingsPage() {
         themeColor: '#B6FF2E',
         accentColor: '#0E3B2E',
         fontFamily: 'Plus Jakarta Sans',
-        layoutStyle: 'classic',
+        templateId: 'classic',
         backgroundImageUrl: ''
     });
     const [loading, setLoading] = useState(true);
@@ -50,7 +50,7 @@ export default function SettingsPage() {
                     themeColor: '#B6FF2E',
                     accentColor: '#0E3B2E',
                     fontFamily: 'Plus Jakarta Sans',
-                    layoutStyle: 'classic',
+                    templateId: 'classic',
                     backgroundImageUrl: ''
                 });
             }

@@ -47,33 +47,37 @@ export const LinkBlockForm = ({ data, onChange }: LinkBlockFormProps) => {
     };
 
     if (loading) {
-        return <div className="flex justify-center p-4"><Loader2 className="animate-spin text-gray-400" /></div>;
+        return <div className="flex justify-center p-8 bg-neutral-900/30 rounded-2xl border border-neutral-800/50"><Loader2 className="animate-spin text-blue-500" /></div>;
     }
 
     return (
-        <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">Select Link Card</label>
-            <p className="text-xs text-gray-500 mb-3">
-                Choose an existing link from your Links page to display here.
-            </p>
+        <div className="space-y-4">
+            <div>
+                <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Select Link Card</label>
+                <p className="text-xs text-neutral-500 mb-4 leading-relaxed">
+                    Choose an existing link from your Links page to display here.
+                </p>
 
-            <select
-                value={safeData.linkId || ''}
-                onChange={handleChange}
-                className="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-brand-dark focus:ring-0 transition-colors bg-white font-medium"
-            >
-                <option value="">-- Select a Link --</option>
-                {links.map(link => (
-                    <option key={link.id} value={link.id}>
-                        {link.title} {link.subtitle ? `(${link.subtitle})` : ''}
-                    </option>
-                ))}
-            </select>
+                <select
+                    value={safeData.linkId || ''}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-sm font-bold text-neutral-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none appearance-none cursor-pointer"
+                >
+                    <option value="" className="bg-neutral-900 text-neutral-400">-- Select a Link --</option>
+                    {links.map(link => (
+                        <option key={link.id} value={link.id} className="bg-neutral-900 text-neutral-200">
+                            {link.title} {link.subtitle ? `(${link.subtitle})` : ''}
+                        </option>
+                    ))}
+                </select>
+            </div>
 
             {links.length === 0 && (
-                <p className="text-sm text-red-500 mt-2">
-                    No links found. Please create some links in the "Links" menu first.
-                </p>
+                <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
+                    <p className="text-xs font-bold text-red-400 leading-relaxed">
+                        No links found. Please create some links in the "Links" menu first.
+                    </p>
+                </div>
             )}
         </div>
     );

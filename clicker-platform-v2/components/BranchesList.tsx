@@ -15,6 +15,7 @@ export const BranchesList: React.FC<BranchesListProps> = ({ contact, branches })
 
     const { templateId, theme } = useTemplate();
     const isClean = theme.cardStyle === 'clean';
+    const isGlass = theme.cardStyle === 'glass';
 
     // If no data, don't render
     if (!contact.address && branches.length === 0) return null;
@@ -24,26 +25,23 @@ export const BranchesList: React.FC<BranchesListProps> = ({ contact, branches })
             {/* Main Location Card */}
             {contact.address && (
                 <div className={`
-                    bg-white p-1 mb-4
+                    p-4 mb-4 rounded-2xl
                     ${isClean
-                        ? 'rounded-2xl border border-gray-200 shadow-sm'
-                        : 'rounded-2xl border-[3px] border-brand-dark shadow-sticker'
+                        ? 'bg-white border border-gray-200 shadow-sm'
+                        : isGlass ? 'bg-black/20 backdrop-blur-md border border-white/10 shadow-xl'
+                        : 'bg-white border-[3px] border-theme-border shadow-sticker'
                     }
                 `}>
-                    <div className={`
-                        rounded-xl p-4
-                        ${isClean ? 'bg-white' : 'bg-brand-green/10'}
-                    `}>
                         <div className="flex items-start gap-4">
                             <div className={`
                                 p-3 rounded-xl shrink-0
-                                ${isClean ? 'bg-green-50 text-brand-green' : 'bg-brand-dark text-brand-green'}
+                                ${isClean ? 'bg-green-50 text-brand-green' : isGlass ? 'bg-primary/20 text-primary' : 'bg-brand-dark text-brand-green'}
                             `}>
                                 <MapPin size={24} />
                             </div>
                             <div className="flex-1">
-                                <h3 className={`uppercase mb-1 ${isClean ? 'font-bold text-gray-900 text-base' : 'font-black text-brand-dark text-lg'}`}>Main Location</h3>
-                                <p className={`leading-relaxed mb-3 whitespace-pre-line ${isClean ? 'text-gray-500 font-medium text-sm' : 'text-gray-700 font-medium text-sm'}`}>
+                                <h3 className={`uppercase mb-1 ${isClean ? 'font-bold text-gray-900 text-base' : isGlass ? 'font-bold text-white text-lg' : 'font-black text-brand-dark text-lg'}`}>Main Location</h3>
+                                <p className={`leading-relaxed mb-3 whitespace-pre-line ${isClean ? 'text-gray-500 font-medium text-sm' : isGlass ? 'text-white/70 font-medium text-sm' : 'text-gray-700 font-medium text-sm'}`}>
                                     {contact.address}
                                 </p>
 
@@ -57,6 +55,8 @@ export const BranchesList: React.FC<BranchesListProps> = ({ contact, branches })
                                                 inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase transition-colors
                                                 ${isClean
                                                     ? 'bg-brand-dark text-white hover:bg-brand-green'
+                                                    : isGlass
+                                                    ? 'bg-primary text-white hover:bg-primary/90'
                                                     : 'bg-brand-dark text-white hover:bg-brand-green hover:text-brand-dark'
                                                 }
                                             `}
@@ -67,36 +67,39 @@ export const BranchesList: React.FC<BranchesListProps> = ({ contact, branches })
                                 </div>
                             </div>
                         </div>
-                    </div>
                 </div>
             )}
 
             {/* Branches Accordion */}
             {branches.length > 0 && (
                 <div className={`
-                    bg-white rounded-3xl overflow-hidden
-                    ${!isClean
-                        ? 'border-[3px] border-brand-dark shadow-sticker'
-                        : 'border border-gray-200'
+                    rounded-3xl overflow-hidden
+                    ${isClean
+                        ? 'bg-white border border-gray-200'
+                        : isGlass
+                        ? 'bg-black/20 backdrop-blur-md border border-white/10'
+                        : 'bg-white border-[3px] border-theme-border shadow-sticker'
                     }
                 `}>
                     <button
                         onClick={() => setIsExpanded(!isExpanded)}
-                        className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-colors"
+                        className={`w-full flex items-center justify-between p-4 transition-colors ${
+                            isClean ? 'bg-gray-50 hover:bg-gray-100' : isGlass ? 'bg-white/5 hover:bg-white/10' : 'bg-transparent hover:bg-gray-50'
+                        }`}
                     >
-                        <span className="font-bold text-brand-dark flex items-center gap-2">
+                        <span className={`font-bold flex items-center gap-2 ${isGlass ? 'text-white' : 'text-brand-dark'}`}>
                             <MapPin size={18} />
                             Other Locations ({branches.length})
                         </span>
-                        {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                        {isExpanded ? <ChevronUp size={20} className={isGlass ? 'text-white/70' : ''} /> : <ChevronDown size={20} className={isGlass ? 'text-white/70' : ''} />}
                     </button>
 
                     {isExpanded && (
-                        <div className="divide-y divide-gray-100">
+                        <div className={`divide-y ${isGlass ? 'divide-white/10' : 'divide-gray-100'}`}>
                             {branches.map((branch) => (
-                                <div key={branch.id} className="p-4 hover:bg-gray-50 transition-colors">
-                                    <h4 className="font-bold text-brand-dark mb-1">{branch.name}</h4>
-                                    <p className="text-sm text-gray-600 whitespace-pre-line mb-3">{branch.address}</p>
+                                <div key={branch.id} className={`p-4 transition-colors ${isGlass ? 'hover:bg-white/5' : 'hover:bg-gray-50'}`}>
+                                    <h4 className={`font-bold mb-1 ${isGlass ? 'text-white' : 'text-brand-dark'}`}>{branch.name}</h4>
+                                    <p className={`text-sm whitespace-pre-line mb-3 ${isGlass ? 'text-white/70' : 'text-gray-600'}`}>{branch.address}</p>
 
                                     <div className="flex gap-3">
                                         {branch.mapUrl && (

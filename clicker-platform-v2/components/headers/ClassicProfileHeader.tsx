@@ -5,44 +5,8 @@ import { BusinessProfile, BusinessContact } from '@/data/mockData';
 import { MapPin, Star } from 'lucide-react';
 import Image from 'next/image';
 import { useTemplate } from '@/components/TemplateProvider';
-import { usePathname, useRouter } from 'next/navigation';
 import { useSite } from '@/lib/site-context';
-import { Home } from 'lucide-react';
-
-const HeaderHomeButton = () => {
-    const pathname = usePathname();
-    const router = useRouter();
-    const { siteId } = useSite();
-    const { theme } = useTemplate();
-
-    const [mounted, setMounted] = React.useState(false);
-    React.useEffect(() => { setMounted(true); }, []);
-
-    if (!mounted || !siteId) return null;
-
-    // Check if we are on root
-    const isRoot = pathname === `/${siteId}` || pathname === `/${siteId}/` || pathname === '/';
-
-    if (isRoot) return null;
-
-    // Use high contrast colors: White background, Dark/Primary text
-    return (
-        <div className="mt-6 flex justify-center">
-            <button
-                onClick={() => router.push(`/${siteId}`)}
-                className="flex items-center gap-2 px-6 py-3 rounded-full font-black text-sm uppercase tracking-wide shadow-sticker transition-transform hover:scale-105 active:scale-95 border-[3px]"
-                style={{
-                    backgroundColor: 'var(--theme-foreground)', // Dark background like the tagline
-                    color: 'var(--theme-primary)', // Neon/Primary text
-                    borderColor: 'var(--theme-foreground)'
-                }}
-            >
-                <Home size={18} strokeWidth={3} />
-                <span>Home</span>
-            </button>
-        </div>
-    );
-};
+import Link from 'next/link';
 
 interface HeaderProps {
     profile: BusinessProfile;
@@ -52,38 +16,41 @@ interface HeaderProps {
 
 export const ClassicProfileHeader: React.FC<HeaderProps> = ({ profile, contact, showAddress }) => {
     const { theme } = useTemplate();
+    const { siteId } = useSite();
 
     return (
         <div className="flex flex-col mb-10 relative z-10 transition-all duration-300 items-center text-center">
-            <div className="relative mb-6">
-                <div
-                    className="w-32 h-32 bg-white rounded-full overflow-hidden relative z-10 shrink-0 flex items-center justify-center mx-auto border-[4px]"
-                    style={{ borderColor: theme.colors.border }}
-                >
-                    {profile.avatarUrl ? (
-                        <Image
-                            src={profile.avatarUrl}
-                            alt={profile.name}
-                            fill
-                            priority
-                            sizes="(max-width: 768px) 100vw, 128px"
-                            className="object-cover"
-                        />
-                    ) : (
-                        <div className="text-gray-300">
-                            <span className="text-4xl font-bold uppercase">{profile.name.charAt(0) || 'S'}</span>
-                        </div>
-                    )}
+            <Link href={`/${siteId}`} className="flex flex-col items-center hover:opacity-80 transition-opacity">
+                <div className="relative mb-6">
+                    <div
+                        className="w-32 h-32 bg-white rounded-full overflow-hidden relative z-10 shrink-0 flex items-center justify-center mx-auto border-[4px]"
+                        style={{ borderColor: theme.colors.border }}
+                    >
+                        {profile.avatarUrl ? (
+                            <Image
+                                src={profile.avatarUrl}
+                                alt={profile.name}
+                                fill
+                                priority
+                                sizes="(max-width: 768px) 100vw, 128px"
+                                className="object-cover"
+                            />
+                        ) : (
+                            <div className="text-gray-300">
+                                <span className="text-4xl font-bold uppercase">{profile.name.charAt(0) || 'S'}</span>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="absolute -right-4 -top-2 bg-theme-surface border-[3px] border-theme-border rounded-full p-2 rotate-12 z-20 shadow-sticker left-24 top-0 right-auto">
+                        <Star size={20} className="fill-theme-primary text-theme-foreground" />
+                    </div>
                 </div>
 
-                <div className="absolute -right-4 -top-2 bg-theme-surface border-[3px] border-theme-border rounded-full p-2 rotate-12 z-20 shadow-sticker left-24 top-0 right-auto">
-                    <Star size={20} className="fill-theme-primary text-theme-foreground" />
-                </div>
-            </div>
-
-            <h1 className="text-4xl font-black text-theme-foreground mb-2 tracking-tight leading-none uppercase">
-                {profile.name}
-            </h1>
+                <h1 className="text-4xl font-black text-theme-foreground mb-2 tracking-tight leading-none uppercase">
+                    {profile.name}
+                </h1>
+            </Link>
 
             <div className="inline-block bg-theme-foreground text-theme-primary px-4 py-1 rounded-full border-[2px] border-theme-foreground mb-5 transform -rotate-1 shadow-[4px_4px_0px_0px_var(--theme-border)] hover:shadow-[2px_2px_0px_0px_var(--theme-border)] transition-shadow">
                 <p className="font-bold text-sm tracking-wide uppercase">{profile.tagline}</p>
@@ -93,7 +60,6 @@ export const ClassicProfileHeader: React.FC<HeaderProps> = ({ profile, contact, 
                 <p className="text-theme-foreground font-bold text-lg leading-snug mx-auto">
                     {profile.description}
                 </p>
-                <HeaderHomeButton />
             </div>
 
             {/* Address removed to avoid duplication with Footer

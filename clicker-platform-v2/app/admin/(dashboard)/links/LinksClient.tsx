@@ -455,7 +455,7 @@ export default function LinksManager({ initialLinks }: LinksClientProps) {
                     <input
                         placeholder="Title (e.g. Order Online)"
                         className="px-4 py-2 rounded-lg border border-gray-200"
-                        value={newLink.title}
+                        value={newLink.title || ''}
                         onChange={e => setNewLink({ ...newLink, title: e.target.value })}
                         required
                     />
@@ -492,7 +492,7 @@ export default function LinksManager({ initialLinks }: LinksClientProps) {
                         <input
                             placeholder="URL (https://...)"
                             className="px-4 py-2 rounded-lg border border-gray-200"
-                            value={newLink.url}
+                            value={newLink.url || ''}
                             onChange={e => setNewLink({ ...newLink, url: e.target.value })}
                             required
                         />
@@ -501,7 +501,7 @@ export default function LinksManager({ initialLinks }: LinksClientProps) {
                     <input
                         placeholder="Subtitle (Optional)"
                         className="px-4 py-2 rounded-lg border border-gray-200 md:col-span-2"
-                        value={newLink.subtitle}
+                        value={newLink.subtitle || ''}
                         onChange={e => setNewLink({ ...newLink, subtitle: e.target.value })}
                     />
 

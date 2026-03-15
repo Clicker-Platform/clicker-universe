@@ -10,7 +10,11 @@ import { ICON_MAP } from '@/data/icons';
 import { Home, PlusCircle } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
 
-export const BottomNavBar: React.FC = () => {
+interface BottomNavBarProps {
+    previewMode?: boolean;
+}
+
+export const BottomNavBar: React.FC<BottomNavBarProps> = ({ previewMode = false }) => {
     const { theme } = useTemplate();
     const { siteId } = useSite();
     const { layout } = theme;
@@ -79,7 +83,7 @@ export const BottomNavBar: React.FC = () => {
         return () => unsub();
     }, []);
 
-    // Render ONLY if explicitly enabled by the template (check 'shuvo' definition)
+    // Render ONLY if explicitly enabled by the template
     if (!layout?.showBottomNav) {
         return null;
     }
@@ -98,16 +102,31 @@ export const BottomNavBar: React.FC = () => {
     // FAB Icon
     const FabIcon = fab?.icon ? getIcon(fab.icon) : PlusCircle;
 
+    // Theme-derived styles
+    const barBg = theme.colors.background + 'f0'; // ~94% opacity
+    const borderColor = theme.colors.border;
+    const inactiveColor = theme.colors.foreground + '60';
+    const activeColor = theme.colors.primary;
+    const fabBg = theme.colors.accent || theme.colors.primary;
+
+    // Positioning: fixed on live site, relative in canvas preview
+    const positionClass = previewMode
+        ? 'relative w-full'
+        : 'md:hidden fixed bottom-0 left-0 right-0 z-50';
+
     return (
         <>
             <nav
-                className="
-                    md:hidden 
-                    fixed bottom-0 left-0 right-0 z-50 
-                    h-16 bg-white/95 backdrop-blur-md border-t border-gray-200
+                className={`
+                    ${positionClass}
+                    h-16 backdrop-blur-md border-t
                     flex items-center justify-around px-2
                     safe-area-bottom
-                "
+                `}
+                style={{
+                    backgroundColor: barBg,
+                    borderColor: borderColor,
+                }}
             >
                 {leftItems.map((item) => {
                     const IconComponent = getIcon(item.icon);
@@ -116,7 +135,8 @@ export const BottomNavBar: React.FC = () => {
                             key={item.id}
                             href={getHref(item.value)}
                             onClick={(e) => handleItemClick(e, item)}
-                            className="flex flex-col items-center justify-center w-12 h-full text-gray-400 hover:text-theme-primary transition-colors"
+                            className="flex flex-col items-center justify-center w-12 h-full transition-colors"
+                            style={{ color: inactiveColor }}
                         >
                             <IconComponent size={22} />
                             <span className="text-[10px] font-medium mt-1">{item.label}</span>
@@ -131,12 +151,15 @@ export const BottomNavBar: React.FC = () => {
                             href={getHref(fab.value)}
                             onClick={(e) => handleItemClick(e, fab)}
                             className="
-                                w-12 h-12 rounded-full 
-                                flex items-center justify-center 
-                                text-white shadow-lg 
+                                w-14 h-14 rounded-full
+                                flex items-center justify-center
+                                text-white shadow-lg
                                 transform active:scale-95 transition-all
                             "
-                            style={{ backgroundColor: theme.colors.accent || theme.colors.primary }}
+                            style={{
+                                backgroundColor: fabBg,
+                                boxShadow: `0 0 20px ${fabBg}60`,
+                            }}
                         >
                             <FabIcon size={24} />
                         </Link>
@@ -150,7 +173,8 @@ export const BottomNavBar: React.FC = () => {
                             key={item.id}
                             href={getHref(item.value)}
                             onClick={(e) => handleItemClick(e, item)}
-                            className="flex flex-col items-center justify-center w-12 h-full text-gray-400 hover:text-theme-primary transition-colors"
+                            className="flex flex-col items-center justify-center w-12 h-full transition-colors"
+                            style={{ color: inactiveColor }}
                         >
                             <IconComponent size={22} />
                             <span className="text-[10px] font-medium mt-1">{item.label}</span>

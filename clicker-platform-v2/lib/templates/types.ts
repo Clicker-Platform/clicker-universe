@@ -47,6 +47,9 @@ export interface TemplateConfig {
     // --- New Responsive Layout Engine (Phase 2) ---
     layout?: TemplateLayoutConfig;
 
+    // --- Block Layout Variants (Phase 4) ---
+    defaultBlockLayouts?: Record<string, string>;
+
     // --- Template-Specific Configuration (Phase 3) ---
     // Flexible bucket for settings specific to a single template (e.g. Shuvo-only options)
     custom?: Record<string, any>;
@@ -84,7 +87,25 @@ export interface TemplateComponents {
     // We will type these more strictly as we create the specific component props
     Header: React.ElementType<any>;
     Background: React.ElementType<any>;
-    // Future: LinkCard, Footer, etc.
+    // Optional overrides for system and custom page blocks
+    Blocks?: {
+        // System Blocks
+        QuickActions?: React.ElementType<any>;
+        OperatingHours?: React.ElementType<any>;
+        Branches?: React.ElementType<any>;
+        FeaturedProduct?: React.ElementType<any>;
+
+        // Custom Page Content Blocks
+        Hero?: React.ElementType<any>;
+        Text?: React.ElementType<any>;
+        Image?: React.ElementType<any>;
+        Button?: React.ElementType<any>;
+        Products?: React.ElementType<any>;
+        FAQ?: React.ElementType<any>;
+        Link?: React.ElementType<any>;
+        Map?: React.ElementType<any>;
+        ImageGallery?: React.ElementType<any>;
+    };
 }
 
 export interface TemplateDefinition {
@@ -94,6 +115,7 @@ export interface TemplateDefinition {
     isPro?: boolean;
     config: ThemeConfig;
     components?: TemplateComponents; // Optional during transition
+    homeBlockOrder?: string[];
     thumbnailUrl?: string;
 }
 

@@ -74,7 +74,7 @@ const siteSettingsData = {
     themeColor: "#000000",
     accentColor: "#FF5733",
     fontFamily: "Inter",
-    layoutStyle: "classic",
+    templateId: "classic",
     backgroundImageUrl: "",
     socialLinkItems: [],
     footerText: "© 2024 Aletra",

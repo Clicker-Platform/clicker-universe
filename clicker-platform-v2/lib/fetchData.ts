@@ -1,6 +1,6 @@
 import { db } from "@/lib/firebase";
 import { doc, getDoc, collection, getDocs, query, where, orderBy } from "firebase/firestore";
-import { BusinessProfile, LinkItem, Product, SocialLink, SiteSettings, SocialLinkItem, initialBusinessHours, BusinessHours, Page, BusinessContact, Branch, initialBusinessContact, LinkSettings, ProductSettings } from "@/data/mockData";
+import { BusinessProfile, LinkItem, Product, SocialLink, SiteSettings, SocialLinkItem, initialBusinessHours, BusinessHours, Page, PageBlock, BusinessContact, Branch, initialBusinessContact, LinkSettings, ProductSettings } from "@/data/mockData";
 import { TemplateId } from "@/lib/templates/types";
 import { ICON_MAP } from "@/data/icons";
 
@@ -25,7 +25,6 @@ export async function fetchPublicData(siteId: string, options: { includeProducts
             businessHours: initialBusinessHours,
             contact: initialBusinessContact,
             branches: [],
-            layoutStyle: 'classic',
             templateId: 'classic',
             footerText: '',
             hideFooterContact: false,
@@ -176,8 +175,7 @@ export async function fetchPublicData(siteId: string, options: { includeProducts
         businessHours,
         contact,
         branches,
-        layoutStyle: (settings?.layoutStyle || 'classic') as TemplateId,
-        templateId: (settings?.layoutStyle || 'classic') as TemplateId,
+        templateId: (settings?.templateId || settings?.layoutStyle || 'classic') as TemplateId,
         footerText: settings?.footerText || '© 2024 SunnySide',
         hideFooterContact: settings?.hideFooterContact || false,
         showHeaderAddress: settings?.showHeaderAddress || false,
@@ -292,8 +290,7 @@ export async function fetchLightweightPublicData(siteId: string) {
         businessHours,
         contact,
         branches: [], // Not fetched
-        layoutStyle: (settings?.layoutStyle || 'classic') as TemplateId,
-        templateId: (settings?.layoutStyle || 'classic') as TemplateId,
+        templateId: (settings?.templateId || settings?.layoutStyle || 'classic') as TemplateId,
         footerText: settings?.footerText || '© 2024 SunnySide',
         hideFooterContact: settings?.hideFooterContact || false,
         showHeaderAddress: settings?.showHeaderAddress || false,
@@ -318,4 +315,95 @@ export async function fetchLightweightPublicData(siteId: string) {
         homepageSlug: settings?.homepageSlug,
         businessSchedule: businessHours.schedule
     };
+}
+
+export async function hydratePageBlocks(siteId: string, blocks: PageBlock[]) {
+    const data: {
+        links?: LinkItem[];
+        products?: Product[];
+        featuredProduct?: Product | null;
+        branches?: Branch[];
+        linkSettings?: LinkSettings;
+        productSettings?: ProductSettings;
+    } = {};
+
+    if (!blocks || blocks.length === 0) return data;
+
+    const blockTypes = blocks.map(b => b.type);
+    
+    const needsLinks = blockTypes.includes('quick_actions');
+    const needsProducts = blockTypes.includes('products');
+    const needsFeatured = blockTypes.includes('featured_product');
+    const needsBranches = blockTypes.includes('branches');
+
+    const promises: Promise<void>[] = [];
+
+    if (needsLinks) {
+        promises.push(
+            getDocs(collection(db, "sites", siteId, "links"))
+                .then(snap => {
+                    const links = snap.docs.map(doc => ({ ...doc.data(), id: doc.id } as LinkItem));
+                    links.sort((a, b) => (a.order || 0) - (b.order || 0));
+                    data.links = links;
+                })
+                .catch(e => { console.error("Error fetching links", e); data.links = []; }),
+            fetchLinkSettings(siteId)
+                .then(res => { if (res) data.linkSettings = res; })
+                .catch(e => console.error("Error fetching link settings", e))
+        );
+    }
+
+    if (needsProducts || needsFeatured) {
+        promises.push(
+            getDocs(collection(db, "sites", siteId, "products"))
+                .then(async snap => {
+                    const products = snap.docs.map(doc => {
+                        const productData = doc.data();
+                        return {
+                            ...productData,
+                            id: doc.id,
+                            name: productData.name || productData.title || 'Untitled Product',
+                            price: productData.price ? String(productData.price) : '',
+                            imageUrl: productData.imageUrl || productData.image || '',
+                            description: productData.description || '',
+                            category: productData.category || 'All',
+                            images: productData.images || [],
+                            isActive: productData.isActive !== false,
+                            showPrice: productData.showPrice !== false,
+                            showLabel: productData.showLabel !== false
+                        } as Product;
+                    }).filter(p => p.isActive).sort((a, b) => a.name.localeCompare(b.name));
+                    
+                    data.products = products;
+
+                    if (needsFeatured) {
+                        const featuredSnap = await getDoc(doc(db, "sites", siteId, "content", "featuredProduct"));
+                        if (featuredSnap.exists()) {
+                            const featuredData = featuredSnap.data();
+                            const featuredId = featuredData?.productId || featuredData?.originalId;
+                            data.featuredProduct = products.find(p => p.id === featuredId) || null;
+                        } else {
+                            data.featuredProduct = null;
+                        }
+                    }
+                })
+                .catch(e => { console.error("Error fetching products", e); data.products = []; data.featuredProduct = null; }),
+            fetchProductSettings(siteId)
+                .then(res => { if (res) data.productSettings = res; })
+                .catch(e => console.error("Error fetching product settings", e))
+        );
+    }
+
+    if (needsBranches) {
+        promises.push(
+            getDocs(query(collection(db, "sites", siteId, "branches"), orderBy("order", "asc")))
+                .then(snap => {
+                    data.branches = snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Branch));
+                })
+                .catch(e => { console.error("Error fetching branches", e); data.branches = []; })
+        );
+    }
+
+    await Promise.all(promises);
+    return data;
 }

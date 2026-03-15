@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { LayoutDashboard, Link as LinkIcon, ShoppingBag, User, LogOut, Menu, X, Settings, Map as MapIcon, Palette, FileText, Inbox, Box, Zap, Calendar, List, Users, Globe } from 'lucide-react';
+import { LayoutDashboard, Link as LinkIcon, ShoppingBag, User, LogOut, Menu, X, Settings, Map as MapIcon, Palette, FileText, Inbox, Box, Zap, Calendar, List, Users, Globe, Navigation } from 'lucide-react';
 import { collection, query, where, onSnapshot, doc } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase';
 import { signOut, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
@@ -149,7 +149,8 @@ export function AdminSidebar() {
             { icon: FileText, label: 'Forms Builder', href: `${baseUrl}/admin/forms`, permission: 'biolink' },
             { icon: ShoppingBag, label: 'Products', href: `${baseUrl}/admin/products`, permission: 'biolink' },
             { icon: MapIcon, label: 'Business', href: `${baseUrl}/admin/business`, permission: 'biolink' },
-            { icon: Palette, label: 'Appearance', href: `${baseUrl}/admin/appearance`, permission: 'biolink' },
+            { icon: Palette, label: 'Template', href: `${baseUrl}/admin/template`, permission: 'biolink' },
+            { icon: Navigation, label: 'Navigation', href: `${baseUrl}/admin/navigation`, permission: 'biolink' },
             { icon: User, label: 'Profile', href: `${baseUrl}/admin/profile`, permission: null },
             { icon: Users, label: 'Team', href: `${baseUrl}/admin/settings/team`, permission: 'manage_team' },
             { icon: Settings, label: 'Settings', href: `${baseUrl}/admin/settings`, permission: 'settings' },
@@ -212,7 +213,7 @@ export function AdminSidebar() {
                 title: 'Workspace',
                 match: (item: NavItem) => {
                     const label = item.label === 'Settings' ? 'Website' : (item.label === 'Profile' ? 'My Account' : item.label);
-                    return ['Overview', 'Business', 'My Account', 'Appearance', 'Website'].includes(label);
+                    return ['Overview', 'Business', 'My Account', 'Template', 'Navigation', 'Website'].includes(label);
                 }
             },
             {
@@ -287,7 +288,7 @@ export function AdminSidebar() {
                 fixed inset-y-0 left-0 z-40 bg-white border-r border-gray-200 flex flex-col transition-all duration-300 ease-in-out
                 w-full md:sticky md:top-0 md:h-screen
                 ${sidebarOpen ? 'translate-x-0 shadow-xl' : '-translate-x-full shadow-none'}
-                ${isCollapsed ? 'md:w-24' : 'md:w-64'}
+                ${isCollapsed ? 'md:w-16' : 'md:w-64'}
                 md:translate-x-0
             `}>
                 <div className={`p-6 pb-2 flex items-center ${(isCollapsed && !sidebarOpen) ? 'justify-center' : 'justify-between'}`}>
@@ -376,7 +377,7 @@ export function AdminSidebar() {
                     {/* Custom Tooltip Portal */}
                     {(isCollapsed && !sidebarOpen) && hoveredItem && (
                         <div
-                            className="fixed left-24 z-[60] bg-gray-900 text-white text-sm font-bold px-3 py-1.5 rounded-lg shadow-xl animate-in fade-in slide-in-from-left-2 duration-150 pointer-events-none whitespace-nowrap"
+                            className="fixed left-16 z-[60] bg-gray-900 text-white text-sm font-bold px-3 py-1.5 rounded-lg shadow-xl animate-in fade-in slide-in-from-left-2 duration-150 pointer-events-none whitespace-nowrap"
                             style={{ top: hoveredItem.top + 6 }}
                         >
                             {hoveredItem.label}

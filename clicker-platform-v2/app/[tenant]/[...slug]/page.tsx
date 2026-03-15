@@ -1,4 +1,4 @@
-import { fetchPageBySlug, fetchPublicData, fetchLightweightPublicData } from '@/lib/fetchData';
+import { fetchPageBySlug, fetchPublicData, fetchLightweightPublicData, hydratePageBlocks } from '@/lib/fetchData';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { BlockRenderer } from "@/components/blocks/BlockRenderer";
@@ -14,7 +14,7 @@ type Props = {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60; // ISR: revalidate every 60 seconds
 
 // Helper: Resolve path from slug array
 const getPath = (slug: string[]) => `/${slug.join('/')}`;
@@ -118,6 +118,9 @@ export default async function TenantCatchAllPage({ params, searchParams }: Props
         notFound();
     }
 
+    // Hydrate system blocks if the custom page uses them
+    const hydratedData = await hydratePageBlocks(siteId, page.blocks || []);
+
     const {
         profile,
         socialLinks,
@@ -130,7 +133,8 @@ export default async function TenantCatchAllPage({ params, searchParams }: Props
         borderRadius,
         globalPixels,
         linkSettings,
-        productSettings
+        productSettings,
+        businessHours
     } = publicData;
 
     const effectivePixels = {
@@ -144,10 +148,16 @@ export default async function TenantCatchAllPage({ params, searchParams }: Props
     const safeTemplateId = overrideTemplate || pageTemplate || templateId || 'classic';
     const template = getTemplate(safeTemplateId);
 
+    const heroFirst = (page.blocks?.[0]?.type === 'hero');
+
     return (
         <SharedPageLayout
             templateId={safeTemplateId}
             data={publicData}
+            siteId={siteId}
+            isSubPage={true}
+            heroFirst={heroFirst}
+            pageTitle={page.title}
             pageOverrides={{
                 borderRadius: borderRadius,
                 themeColor: themeColor,
@@ -166,13 +176,24 @@ export default async function TenantCatchAllPage({ params, searchParams }: Props
                                     block={block}
                                     phoneNumber={contact?.whatsapp}
                                     whatsappSettings={{
-                                        label: productSettings?.whatsappBtnLabel,
-                                        messageTemplate: productSettings?.whatsappMessageTemplate,
-                                        bgColor: productSettings?.whatsappBtnColor,
-                                        textColor: productSettings?.whatsappBtnTextColor
+                                        label: hydratedData.productSettings?.whatsappBtnLabel || productSettings?.whatsappBtnLabel,
+                                        messageTemplate: hydratedData.productSettings?.whatsappMessageTemplate || productSettings?.whatsappMessageTemplate,
+                                        bgColor: hydratedData.productSettings?.whatsappBtnColor || productSettings?.whatsappBtnColor,
+                                        textColor: hydratedData.productSettings?.whatsappBtnTextColor || productSettings?.whatsappBtnTextColor
                                     }}
                                     theme={template.config}
                                     siteId={siteId}
+                                    templateId={safeTemplateId}
+                                    links={hydratedData.links}
+                                    products={hydratedData.products}
+                                    featuredProduct={hydratedData.featuredProduct}
+                                    branches={hydratedData.branches}
+                                    linkSettings={hydratedData.linkSettings || linkSettings}
+                                    profile={profile}
+                                    productSettings={hydratedData.productSettings || productSettings}
+                                    businessHours={businessHours}
+                                    businessSchedule={page.templateConfig?.customConfig?.businessSchedule || publicData.businessSchedule || {}}
+                                    contact={contact}
                                 />
                             </div>
                         );

@@ -51,24 +51,25 @@ export default function ReservationDashboard() {
 
         async function loadStaticData() {
             try {
-                const [services, settingsData, staffData, slotsData] = await Promise.all([
+                const [services, settingsData, staffData, slotsData, _counts] = await Promise.all([
                     getServices(siteId),
                     getReservationSettings(siteId),
                     getStaffMembers(siteId),
-                    getWeeklySlots(siteId)
+                    getWeeklySlots(siteId),
+                    getBookingCounts(siteId)
                 ]);
 
                 setAllServices(services);
                 setSettings(settingsData);
                 setAllStaff(staffData);
                 setWeeklySlots(slotsData);
+                setCounts(_counts);
             } catch (error) {
                 console.error("Error fetching reservation setup:", error);
                 toast.error("Failed to load setup data");
             }
         }
         loadStaticData();
-        refreshCounts();
     }, [siteId]);
 
     // Fetch Bookings when Link Tab changes or Reload

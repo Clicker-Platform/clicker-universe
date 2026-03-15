@@ -34,7 +34,9 @@ export const FeaturedProduct: React.FC<FeaturedProductProps> = ({
     const { track } = useAnalytics();
     const { templateId, theme } = useTemplate();
     const { siteId } = useSite();
-    const isBold = theme.cardStyle !== 'clean';
+    const isClean = theme.cardStyle === 'clean';
+    const isGlass = theme.cardStyle === 'glass';
+    const isBold = !isClean && !isGlass;
 
     const handleOrderClick = () => {
         track({ type: 'product_click', id: product.id, siteId });
@@ -66,21 +68,23 @@ export const FeaturedProduct: React.FC<FeaturedProductProps> = ({
     const containerStyle = {
         borderRadius: `var(--theme-radius)`,
         // For Bold style, use foreground color for border to ensure high contrast (matches LinkCard brand-dark)
-        borderColor: isBold ? theme.colors.foreground : 'rgba(0,0,0,0.1)',
-        boxShadow: isBold ? `4px 4px 0px 0px ${theme.colors.border}` : '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)'
+        borderColor: isBold ? theme.colors.foreground : isGlass ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+        boxShadow: isBold ? `4px 4px 0px 0px ${theme.colors.border}` : isGlass ? '0 8px 32px 0 rgba(0, 0, 0, 0.3)' : '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)'
     };
 
     const imageContainerStyle = {
         borderRadius: `calc(var(--theme-radius) * 0.75)`,
-        borderColor: isBold ? theme.colors.foreground : theme.colors.border
+        borderColor: isBold ? theme.colors.foreground : isGlass ? 'rgba(255,255,255,0.1)' : theme.colors.border
     };
 
     return (
         <div className="relative">
             {/* Floating Badge */}
             {showBadge && (
-                <div className={`absolute -top-5 left-1/2 -translate-x-1/2 z-20 w-max`}>
-                    {!isBold ? (
+                <div className={isGlass ? 'mb-4' : 'absolute -top-5 left-1/2 -translate-x-1/2 z-20 w-max'}>
+                    {isGlass ? (
+                        <span className="text-slate-400 text-xs font-bold uppercase tracking-[0.2em]">{badgeText}</span>
+                    ) : !isBold ? (
                         <div
                             className="px-4 py-1 rounded-full shadow-sm flex items-center gap-2"
                             style={{ ...badgeStyle, fontFamily: theme.fonts.body }}
@@ -108,9 +112,12 @@ export const FeaturedProduct: React.FC<FeaturedProductProps> = ({
             {/* Card Container */}
             <div
                 className={`
-                    group relative bg-white p-4 transition-all duration-300
-                    ${isBold ? 'border-[3px]' : 'border'}
+                    group relative transition-all duration-300
                     ${!isBold ? 'hover:shadow-md' : 'hover:-translate-y-1'}
+                    ${theme.cardStyle === 'clean' ? 'bg-white p-4' : ''}
+                    ${theme.cardStyle === 'glass' ? 'bg-black/20 backdrop-blur-md p-4' : ''}
+                    ${!theme.cardStyle || theme.cardStyle === 'brutalist' ? 'bg-white p-4' : ''}
+                    ${isBold ? 'border-[3px]' : 'border'}
                 `}
                 style={containerStyle}
             >
@@ -118,7 +125,8 @@ export const FeaturedProduct: React.FC<FeaturedProductProps> = ({
                 {/* Image Container */}
                 <div
                     className={`
-                        w-full aspect-[4/3] overflow-hidden mb-5 relative bg-gray-100
+                        w-full aspect-[4/3] overflow-hidden mb-5 relative
+                        ${theme.cardStyle === 'glass' ? 'bg-white/5' : 'bg-gray-100'}
                         ${isBold ? 'border-[3px]' : ''}
                     `}
                     style={imageContainerStyle}
@@ -178,7 +186,7 @@ export const FeaturedProduct: React.FC<FeaturedProductProps> = ({
                             } : { fontFamily: theme.fonts.body }}
                         >
                             {!isBold ? (
-                                <div className="bg-white/90 backdrop-blur-md text-gray-900 px-3 py-1.5 rounded-lg font-bold text-lg shadow-sm border border-gray-200">
+                                <div className={`px-3 py-1.5 rounded-lg font-bold text-lg border shadow-sm ${isGlass ? 'bg-black/50 backdrop-blur-md text-white border-white/20' : 'bg-white/90 backdrop-blur-md text-gray-900 border-gray-200'}`}>
                                     {product.price}
                                 </div>
                             ) : product.price}
@@ -206,8 +214,8 @@ export const FeaturedProduct: React.FC<FeaturedProductProps> = ({
                             borderRadius: 'calc(var(--theme-radius) * 0.6)',
                             backgroundColor: isBold ? theme.colors.foreground : theme.colors.primary,
                             color: isBold ? '#FFFFFF' : (theme.colors.accent === theme.colors.primary ? '#FFFFFF' : theme.colors.accent),
-                            border: isBold ? `3px solid ${theme.colors.foreground}` : 'none',
-                            boxShadow: isBold ? `4px 4px 0px 0px ${theme.colors.border}` : '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                            border: isBold ? `3px solid ${theme.colors.foreground}` : isGlass ? '1px solid rgba(255,255,255,0.2)' : 'none',
+                            boxShadow: isBold ? `4px 4px 0px 0px ${theme.colors.border}` : isGlass ? '0 4px 12px rgba(0, 0, 0, 0.4)' : '0 4px 6px -1px rgb(0 0 0 / 0.1)',
                             fontWeight: isBold ? 800 : 700,
                             textTransform: isBold ? 'uppercase' : 'none',
                             letterSpacing: isBold ? '0.05em' : 'normal',

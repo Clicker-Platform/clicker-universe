@@ -1,12 +1,11 @@
 'use client';
 
-import { useState, useContext, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { createBooking } from '@/lib/modules/reservation/api';
 import { Service, TimeSlot, Staff } from '@/lib/modules/reservation/types';
 import { Check, ChevronLeft } from 'lucide-react';
 import { AlertDialog } from '@/components/common/AlertDialog';
-import { useSite } from '@/lib/site-context'; // New import
-import { TemplateContext } from '@/components/TemplateProvider';
+import { useTemplate } from '@/components/TemplateProvider';
 import ServiceStep from './steps/ServiceStep';
 import StaffStep from './steps/StaffStep';
 import TimeStep from './steps/TimeStep';
@@ -28,8 +27,9 @@ export default function BookingForm({
     siteId
 }: BookingFormProps) {
     // const { siteId } = useSite(); // Use prop instead of context for robust widget behavior
-    const { theme } = useContext(TemplateContext) || { theme: { cardStyle: 'brutalist' } as any };
-    const isClean = theme.cardStyle === 'clean';
+
+    const { theme } = useTemplate();
+    const isGlass = theme.cardStyle === 'glass';
 
     const [step, setStep] = useState(1);
     // ... rest of state
@@ -135,19 +135,31 @@ export default function BookingForm({
 
     if (step === 5) {
         return (
-            <div className="text-center p-8 bg-green-50 rounded-2xl border border-green-100 animate-in fade-in">
-                <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className={`text-center p-8 rounded-2xl animate-in fade-in ${
+                isGlass
+                    ? 'bg-black/20 backdrop-blur-md border border-white/10 text-white'
+                    : 'bg-green-50 border border-green-100 text-gray-900'
+            }`}>
+                <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${
+                    isGlass ? 'bg-white/10 text-white' : 'bg-green-100 text-green-600'
+                }`}>
                     <Check size={32} strokeWidth={3} />
                 </div>
-                <h2 className="text-2xl font-black text-brand-dark mb-2">Booking Confirmed!</h2>
-                <p className="text-gray-600 mb-6">Your appointment for <span className="font-bold">{selectedService?.name}</span> has been received.</p>
-                <div className="bg-white p-4 rounded-xl border border-dashed border-green-200 inline-block text-left text-sm text-gray-500 mb-6">
-                    <p>Reference: <span className="font-mono text-brand-dark">{bookingRef}</span></p>
-                    <p>Date: <span suppressHydrationWarning className="font-bold text-brand-dark">{date?.toLocaleDateString()} at {selectedTime}</span></p>
+                <h2 className={`text-2xl font-black mb-2 ${isGlass ? 'text-white' : 'text-brand-dark'}`}>Booking Confirmed!</h2>
+                <p className={`mb-6 ${isGlass ? 'text-white/70' : 'text-gray-600'}`}>Your appointment for <span className="font-bold">{selectedService?.name}</span> has been received.</p>
+                <div className={`p-4 rounded-xl border border-dashed inline-block text-left text-sm mb-6 ${
+                    isGlass ? 'bg-white/5 border-white/20 text-white/70' : 'bg-white border-green-200 text-gray-500'
+                }`}>
+                    <p>Reference: <span className={`font-mono font-bold ${isGlass ? 'text-white' : 'text-brand-dark'}`}>{bookingRef}</span></p>
+                    <p>Date: <span suppressHydrationWarning className={`font-bold ${isGlass ? 'text-white' : 'text-brand-dark'}`}>{date?.toLocaleDateString()} at {selectedTime}</span></p>
                 </div>
                 <button
                     onClick={() => window.location.reload()}
-                    className="block w-full py-3 bg-brand-dark text-white font-bold rounded-xl"
+                    className={`block w-full py-3 font-bold rounded-xl ${
+                        isGlass
+                            ? 'bg-[var(--theme-primary)] text-black hover:opacity-90'
+                            : 'bg-brand-dark text-white hover:bg-brand-dark/90'
+                    }`}
                 >
                     Book Another
                 </button>
@@ -156,30 +168,29 @@ export default function BookingForm({
     }
 
     return (
-        <div
-            className={`
-                bg-white overflow-hidden max-w-md mx-auto transition-all duration-200
-                ${isClean
-                    ? 'border border-gray-200 shadow-sm hover:shadow-md'
-                    : 'border-[3px] border-theme-border shadow-sticker'
-                }
-            `}
-            style={{ borderRadius: 'var(--theme-radius)' }}
-        >
+        <div className={`overflow-hidden max-w-md mx-auto transition-all duration-200 rounded-2xl ${
+            isGlass
+                ? 'bg-black/20 backdrop-blur-md border border-white/10 shadow-xl'
+                : 'bg-white border border-gray-200 shadow-sm'
+        }`}>
             {/* Header */}
-            <div className={`p-6 transition-all ${isClean ? 'bg-gray-900 text-white' : 'bg-theme-foreground text-theme-background'}`}>
+            <div className={`p-6 rounded-t-2xl ${
+                isGlass
+                    ? 'bg-white/5 border-b border-white/10'
+                    : 'bg-gray-900'
+            }`}>
                 <div className="flex items-center justify-between mb-2">
                     {step > 1 && (
                         <button onClick={() => setStep(step - 1)} className="p-1 hover:bg-white/10 rounded-lg">
-                            <ChevronLeft size={20} />
+                            <ChevronLeft size={20} className="text-white" />
                         </button>
                     )}
-                    <span className="font-bold text-sm tracking-uppercase opacity-80">
+                    <span className="font-bold text-sm text-white/80">
                         Step {step} of 4
                     </span>
                     <div className="w-6"></div> {/* Spacer */}
                 </div>
-                <h2 className="text-2xl font-black">
+                <h2 className="text-2xl font-black text-white">
                     {step === 1 && "Select Service"}
                     {step === 2 && "Select Staff"}
                     {step === 3 && "Select Time"}
@@ -188,11 +199,12 @@ export default function BookingForm({
             </div>
 
             {/* Content */}
-            <div className="p-6 min-h-[400px]">
+            <div className={`p-6 min-h-[400px] ${isGlass ? 'text-white' : 'text-gray-900'}`}>
                 {step === 1 && (
                     <ServiceStep
                         services={services}
                         onSelect={handleServiceSelect}
+                        isGlass={isGlass}
                     />
                 )}
 
@@ -200,6 +212,7 @@ export default function BookingForm({
                     <StaffStep
                         staffList={staffList}
                         onSelect={handleStaffSelect}
+                        isGlass={isGlass}
                     />
                 )}
 
@@ -213,6 +226,7 @@ export default function BookingForm({
                         staffList={staffList}
                         weeklySlots={initialWeeklySlots}
                         onSelectTime={handleTimeSelect}
+                        isGlass={isGlass}
                     />
                 )}
 
@@ -225,6 +239,7 @@ export default function BookingForm({
                         membershipEnabled={settings.membershipEnabled || false}
                         onSubmit={handleSubmit}
                         onShowDialog={handleShowDialog}
+                        isGlass={isGlass}
                     />
                 )}
             </div>

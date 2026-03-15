@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import dynamic from 'next/dynamic';
 import { ClassicProfileHeader } from "@/components/headers/ClassicProfileHeader";
 import { FeaturedProduct } from "@/components/FeaturedProduct";
 import { ProductGallery } from "@/components/ProductGallery";
@@ -27,7 +28,7 @@ import { SharedPageLayout } from '@/components/layout/SharedPageLayout';
 // Registry imports Server Components? No, headers are 'use client'.
 // Let's use the explicit map here to be safe but cleaner.
 
-function HeaderSelector({ layoutStyle, props }: { layoutStyle: string, props: any }) {
+function HeaderSelector({ templateId, props }: { templateId: string, props: any }) {
     // This looks redundant if we can use dynamic Registry.
     // Ideally: const Component = registry[layoutStyle].Header;
     // But let's look at the mapping logic I updated in task 232.
@@ -37,7 +38,7 @@ function HeaderSelector({ layoutStyle, props }: { layoutStyle: string, props: an
     // STRICT FIX: logic should rely on definition if possible? No, strictly registry mapping.
     // Let's keep HeaderSelector but make it cleaner or just rely on the fallback.
     // Actually, the user wants "perfect". Perfect means no ad-hoc switches.
-    const template = getTemplate(layoutStyle);
+    const template = getTemplate(templateId);
     const HeaderComponent = template.components?.Header || ClassicProfileHeader;
     return <HeaderComponent {...props} />;
 }
@@ -49,7 +50,7 @@ export interface PublicPageProps {
         featuredProduct: Product | null;
         products: Product[];
         socialLinks: SocialLinkItem[];
-        layoutStyle: TemplateId;
+        templateId: TemplateId;
         businessHours: BusinessHours;
         footerText: string;
         hideFooterContact: boolean;
@@ -67,16 +68,18 @@ export interface PublicPageProps {
         homepageSlug?: string;
         businessSchedule?: DaySchedule[];
     };
+    forceMobile?: boolean;
+    siteId?: string;
 }
 
-export function PublicPageRenderer({ data }: PublicPageProps) {
+export function PublicPageRenderer({ data, forceMobile = false, siteId }: PublicPageProps) {
     const {
         profile,
         links,
         featuredProduct,
         products,
         socialLinks,
-        layoutStyle,
+        templateId,
         businessHours,
         footerText,
         contact,
@@ -91,7 +94,7 @@ export function PublicPageRenderer({ data }: PublicPageProps) {
     } = data;
 
     // Use getTemplate to get both config and components
-    const template = getTemplate(layoutStyle || 'classic');
+    const template = getTemplate(templateId || 'classic');
     const activeTemplate = template; // Alias for compatibility with existing code if needed, or just use template
 
 
@@ -124,18 +127,23 @@ export function PublicPageRenderer({ data }: PublicPageProps) {
     // suppressHydrationWarning here is the key to preventing crashes on dynamic attributes
     return (
         <SharedPageLayout
-            templateId={layoutStyle || 'classic'}
+            templateId={templateId || 'classic'}
             data={data}
+            forceMobile={forceMobile}
+            siteId={siteId || 'preview'}
         >
             <PublicContentContent data={data} />
         </SharedPageLayout>
     );
 }
 
+const HeroBlock = dynamic(() => import('@/components/blocks/public/DefaultHeroBlock').then(mod => mod.DefaultHeroBlock));
+
 // Renamed from PublicContent to PublicContentContent to avoid name clash or just inline it.
 // Actually, extracting the block rendering logic is cleaner.
 function PublicContentContent({ data }: { data: any }) {
     const {
+        profile,
         links,
         featuredProduct,
         products,
@@ -147,8 +155,11 @@ function PublicContentContent({ data }: { data: any }) {
         businessHours,
         businessSchedule,
         footerText,
-        socialLinks
+        socialLinks,
+        templateId
     } = data;
+
+    const template = getTemplate(templateId || 'classic');
 
     return (
         <div id="content-wrapper" className="w-full relative z-10 flex flex-col gap-4">
@@ -157,8 +168,12 @@ function PublicContentContent({ data }: { data: any }) {
                 .filter((blockId: string) => !(hiddenBlockIds || []).includes(blockId)) // Filter out hidden blocks
                 .map((blockId: string) => {
                     switch (blockId) {
+                        case 'hero':
+                            const HeroComponent = template.components?.Blocks?.Hero || HeroBlock;
+                            return <HeroComponent key={blockId} profile={profile} theme={template.config} />;
                         case 'quick_actions':
-                            return <QuickActions key={blockId} links={links} contact={contact} settings={linkSettings} />;
+                            const QuickActionsComponent = template.components?.Blocks?.QuickActions || QuickActions;
+                            return <QuickActionsComponent key={blockId} links={links} contact={contact} settings={linkSettings} />;
                         case 'branches':
                             return <BranchesList key={blockId} contact={contact} branches={branches} />;
                         case 'featured':
@@ -202,7 +217,8 @@ function PublicContentContent({ data }: { data: any }) {
                                 />
                             );
                         case 'hours':
-                            return <OperatingHours key={blockId} data={businessHours} schedule={businessSchedule} />;
+                            const OperatingHoursComponent = template.components?.Blocks?.OperatingHours || OperatingHours;
+                            return <OperatingHoursComponent key={blockId} data={businessHours} schedule={businessSchedule} />;
                         default:
                             return null;
                     }
