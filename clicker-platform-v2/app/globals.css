@@ -43,6 +43,11 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+/* Admin dark mode: override brand-green body color with neutral for legibility */
+.dark body {
+  color: #e5e5e5;
+}
+
 /* Dynamic Grid Layout for Block System */
 .dynamic-grid {
   display: grid;
