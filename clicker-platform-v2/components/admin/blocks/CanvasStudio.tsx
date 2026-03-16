@@ -158,7 +158,6 @@ export function CanvasStudio({
                                     <BlockManager
                                         blocks={blocks}
                                         onChange={setBlocks}
-                                        templateId={templateId}
                                         onAddClick={() => setLeftPanel('add')}
                                     />
                                 </div>
