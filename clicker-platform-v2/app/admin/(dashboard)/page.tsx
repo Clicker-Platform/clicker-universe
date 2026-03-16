@@ -131,25 +131,25 @@ export default function AdminDashboard() {
                 <TrendingUp size={24} /> Content Overview
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-                <div className="bg-white p-6 rounded-2xl border-[3px] border-brand-dark shadow-sticker">
+                <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
                     <div className="flex items-center gap-3 mb-2 text-brand-dark/70">
                         <LinkIcon size={20} /> <span className="font-bold">Total Links</span>
                     </div>
                     <p className="text-4xl font-black text-brand-dark">{stats.linksCount}</p>
                 </div>
-                <div className="bg-white p-6 rounded-2xl border-[3px] border-brand-dark shadow-sticker">
+                <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
                     <div className="flex items-center gap-3 mb-2 text-brand-dark/70">
                         <ShoppingBag size={20} /> <span className="font-bold">Products</span>
                     </div>
                     <p className="text-4xl font-black text-brand-dark">{stats.productsCount}</p>
                 </div>
-                <div className="bg-white p-6 rounded-2xl border-[3px] border-brand-dark shadow-sticker bg-blue-50">
+                <div className="bg-blue-50 p-6 rounded-2xl border border-gray-200 shadow-sm">
                     <div className="flex items-center gap-3 mb-2 text-blue-600">
                         <Eye size={20} /> <span className="font-bold">Total Page Views</span>
                     </div>
                     <p className="text-4xl font-black text-brand-dark">{stats.pageViews}</p>
                 </div>
-                <div className="bg-white p-6 rounded-2xl border-[3px] border-brand-dark shadow-sticker bg-green-50">
+                <div className="bg-green-50 p-6 rounded-2xl border border-gray-200 shadow-sm">
                     <div className="flex items-center gap-3 mb-2 text-green-700">
                         <MousePointer2 size={20} /> <span className="font-bold">Total Clicks</span>
                     </div>
@@ -165,7 +165,7 @@ export default function AdminDashboard() {
                     <h2 className="text-xl font-bold mb-4 text-brand-dark flex items-center gap-2">
                         Top Links <span className="text-sm font-normal text-gray-500">(by clicks)</span>
                     </h2>
-                    <div className="bg-white rounded-3xl border-[3px] border-brand-dark overflow-hidden shadow-sm">
+                    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
                         {topLinks.length === 0 ? (
                             <p className="p-6 text-gray-500 text-center">No data yet.</p>
                         ) : (
@@ -191,7 +191,7 @@ export default function AdminDashboard() {
                     <h2 className="text-xl font-bold mb-4 text-brand-dark flex items-center gap-2">
                         Top Products <span className="text-sm font-normal text-gray-500">(by clicks)</span>
                     </h2>
-                    <div className="bg-white rounded-3xl border-[3px] border-brand-dark overflow-hidden shadow-sm">
+                    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
                         {topProducts.length === 0 ? (
                             <p className="p-6 text-gray-500 text-center">No data yet.</p>
                         ) : (

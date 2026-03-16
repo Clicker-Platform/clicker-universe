@@ -118,7 +118,7 @@ export function AccountSecurity() {
 
             <div className="space-y-8">
                 {/* Change Email Section */}
-                <div className="bg-white p-8 rounded-3xl border-[3px] border-brand-dark shadow-sm">
+                <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm">
                     <h3 className="text-xl font-bold text-brand-dark mb-6 flex items-center gap-2">
                         <Mail size={24} /> Change Email
                     </h3>
@@ -142,7 +142,7 @@ export function AccountSecurity() {
                                 type="email"
                                 value={newEmail}
                                 onChange={(e) => setNewEmail(e.target.value)}
-                                className="w-full px-4 py-3 rounded-xl border-[2px] border-gray-200 focus:border-brand-dark outline-none font-medium transition-colors"
+                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 outline-none font-medium transition-colors"
                                 placeholder="name@example.com"
                                 required
                             />
@@ -154,7 +154,7 @@ export function AccountSecurity() {
                                 type="password"
                                 value={emailPassword}
                                 onChange={(e) => setEmailPassword(e.target.value)}
-                                className="w-full px-4 py-3 rounded-xl border-[2px] border-gray-200 focus:border-brand-dark outline-none font-medium transition-colors"
+                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 outline-none font-medium transition-colors"
                                 placeholder="Confirm your password"
                                 required
                             />
@@ -170,7 +170,7 @@ export function AccountSecurity() {
                 </div>
 
                 {/* Change Password Section */}
-                <div className="bg-white p-8 rounded-3xl border-[3px] border-brand-dark shadow-sm">
+                <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm">
                     <h3 className="text-xl font-bold text-brand-dark mb-6 flex items-center gap-2">
                         <Key size={24} /> Change Password
                     </h3>
@@ -189,7 +189,7 @@ export function AccountSecurity() {
                                 type="password"
                                 value={currentPassword}
                                 onChange={(e) => setCurrentPassword(e.target.value)}
-                                className="w-full px-4 py-3 rounded-xl border-[2px] border-gray-200 focus:border-brand-dark outline-none font-medium transition-colors"
+                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 outline-none font-medium transition-colors"
                                 placeholder="Enter current password"
                                 required
                             />
@@ -201,7 +201,7 @@ export function AccountSecurity() {
                                 type="password"
                                 value={newPassword}
                                 onChange={(e) => setNewPassword(e.target.value)}
-                                className="w-full px-4 py-3 rounded-xl border-[2px] border-gray-200 focus:border-brand-dark outline-none font-medium transition-colors"
+                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 outline-none font-medium transition-colors"
                                 placeholder="Enter new password (min. 6 chars)"
                                 required
                             />
@@ -213,7 +213,7 @@ export function AccountSecurity() {
                                 type="password"
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value)}
-                                className="w-full px-4 py-3 rounded-xl border-[2px] border-gray-200 focus:border-brand-dark outline-none font-medium transition-colors"
+                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 outline-none font-medium transition-colors"
                                 placeholder="Re-enter new password"
                                 required
                             />

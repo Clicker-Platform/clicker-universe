@@ -65,7 +65,7 @@ export const ProductsForm = ({ data, onChange }: ProductsFormProps) => {
     return (
         <div className="space-y-6">
             <div>
-                <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Section Title (Optional)</label>
+                <label className="block text-xs font-medium text-neutral-500 mb-2">Section Title (Optional)</label>
                 <input
                     type="text"
                     value={safeData.title || ''}
@@ -76,7 +76,7 @@ export const ProductsForm = ({ data, onChange }: ProductsFormProps) => {
             </div>
 
             <div>
-                <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Select Products</label>
+                <label className="block text-xs font-medium text-neutral-500 mb-2">Select Products</label>
                 {products.length === 0 ? (
                     <div className="p-10 bg-neutral-900/50 rounded-2xl border-2 border-dashed border-neutral-800 text-center">
                         <p className="text-sm font-medium text-neutral-500">No products found in catalog.</p>
@@ -90,7 +90,7 @@ export const ProductsForm = ({ data, onChange }: ProductsFormProps) => {
                                     key={product.id}
                                     onClick={() => toggleProduct(product.id)}
                                     className={`
-                                        p-3 rounded-xl border-2 cursor-pointer flex items-center gap-4 transition-all active:scale-[0.98]
+                                        p-3 rounded-xl border cursor-pointer flex items-center gap-4 transition-all active:scale-[0.98]
                                         ${isSelected 
                                             ? 'border-blue-500 bg-blue-500/10 shadow-[0_0_15px_-5px_italic] shadow-blue-500/20' 
                                             : 'border-neutral-800 bg-neutral-900 hover:border-neutral-700 hover:bg-neutral-800'

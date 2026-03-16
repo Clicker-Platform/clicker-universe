@@ -43,7 +43,7 @@ export function ChromeHeaderPanel({ siteId }: { siteId: string }) {
 
             <Link
                 href={`${baseUrl}/admin/navigation`}
-                className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-neutral-800 border-2 border-neutral-700 text-neutral-200 rounded-xl font-bold hover:bg-neutral-700 hover:border-neutral-600 transition-all shadow-sm active:scale-[0.98]"
+                className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-neutral-800 border border-neutral-700 text-neutral-200 rounded-xl font-bold hover:bg-neutral-700 hover:border-neutral-600 transition-all shadow-sm active:scale-[0.98]"
             >
                 Edit Navigation Settings
                 <ExternalLink size={16} />
@@ -109,7 +109,7 @@ export function ChromeFooterPanel({
                 <h5 className="font-bold text-neutral-200 text-sm mb-3">Bottom Navigation & FAB</h5>
                 <Link
                     href={`${baseUrl}/admin/navigation`}
-                    className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-neutral-800 border-2 border-neutral-700 text-neutral-300 rounded-xl font-bold hover:bg-neutral-700 hover:text-neutral-100 transition-all shadow-sm active:scale-[0.98]"
+                    className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-neutral-800 border border-neutral-700 text-neutral-300 rounded-xl font-bold hover:bg-neutral-700 hover:text-neutral-100 transition-all shadow-sm active:scale-[0.98]"
                 >
                     Edit Navigation Settings
                     <ExternalLink size={16} />
@@ -157,7 +157,7 @@ export function ChromeBottomNavPanel() {
 
             <Link
                 href={`${baseUrl}/admin/navigation`}
-                className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-neutral-800 border-2 border-neutral-700 text-neutral-200 rounded-xl font-bold hover:bg-neutral-700 hover:border-neutral-600 transition-all shadow-sm active:scale-[0.98]"
+                className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-neutral-800 border border-neutral-700 text-neutral-200 rounded-xl font-bold hover:bg-neutral-700 hover:border-neutral-600 transition-all shadow-sm active:scale-[0.98]"
             >
                 Edit Navigation Settings
                 <ExternalLink size={16} />

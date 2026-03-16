@@ -15,7 +15,7 @@ export const ButtonForm = ({ data, onChange }: ButtonFormProps) => {
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
-                <label className="block text-xs font-bold text-neutral-500 mb-2 uppercase tracking-wider">Button Text</label>
+                <label className="block text-xs font-medium text-neutral-500 mb-2">Button Text</label>
                 <input
                     type="text"
                     value={safeData.label || ''}
@@ -25,7 +25,7 @@ export const ButtonForm = ({ data, onChange }: ButtonFormProps) => {
                 />
             </div>
             <div className="md:col-span-2">
-                <label className="block text-xs font-bold text-neutral-500 mb-2 uppercase tracking-wider">Target URL</label>
+                <label className="block text-xs font-medium text-neutral-500 mb-2">Target URL</label>
                 <input
                     type="text"
                     value={safeData.url || ''}
@@ -35,7 +35,7 @@ export const ButtonForm = ({ data, onChange }: ButtonFormProps) => {
                 />
             </div>
             <div>
-                <label className="block text-xs font-bold text-neutral-500 mb-2 uppercase tracking-wider">Style</label>
+                <label className="block text-xs font-medium text-neutral-500 mb-2">Style</label>
                 <select
                     value={safeData.variant || 'primary'}
                     onChange={(e) => handleChange('variant', e.target.value)}
@@ -47,7 +47,7 @@ export const ButtonForm = ({ data, onChange }: ButtonFormProps) => {
                 </select>
             </div>
             <div>
-                <label className="block text-xs font-bold text-neutral-500 mb-2 uppercase tracking-wider">Alignment</label>
+                <label className="block text-xs font-medium text-neutral-500 mb-2">Alignment</label>
                 <select
                     value={safeData.align || 'center'}
                     onChange={(e) => handleChange('align', e.target.value)}

@@ -223,7 +223,7 @@ export default function TemplateClient() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
                 <div className="flex flex-col gap-6">
                     {/* Editor Form */}
-                    <form onSubmit={handleSave} className={`space-y-6 bg-white p-8 rounded-3xl border-[3px] border-brand-dark shadow-sm h-fit transition-opacity duration-200 ${saving ? 'opacity-50 pointer-events-none' : ''}`}>
+                    <form onSubmit={handleSave} className={`space-y-6 bg-white p-8 rounded-2xl border border-gray-200 shadow-sm h-fit transition-opacity duration-200 ${saving ? 'opacity-50 pointer-events-none' : ''}`}>
 
                                             <div className="space-y-8 animate-fade-in">
                                 <div>
@@ -267,11 +267,11 @@ export default function TemplateClient() {
                                                         });
                                                     }}
                                                     className={`
-                                                    group relative flex flex-col p-5 rounded-3xl transition-all duration-300 text-left overflow-hidden
-                                                    ${template.id === 'sojourner' ? 'border' : 'border-[3px]'}
+                                                    group relative flex flex-col p-5 rounded-2xl transition-all duration-300 text-left overflow-hidden
+                                                    border
                                                     ${isSelected
-                                                            ? (template.id === 'sojourner' ? 'border-brand-green bg-white shadow-md ring-1 ring-brand-green' : 'border-brand-dark bg-white shadow-md scale-[1.01]')
-                                                            : 'border-gray-100 hover:border-brand-dark/30 hover:shadow-sm bg-white'
+                                                            ? (template.id === 'sojourner' ? 'border-brand-green bg-white shadow-md ring-1 ring-brand-green' : 'border-brand-dark bg-white shadow-md')
+                                                            : 'border-gray-100 hover:border-gray-300 hover:shadow-sm bg-white'
                                                         }
                                                 `}
                                                 >
@@ -341,9 +341,9 @@ export default function TemplateClient() {
                                                             type="button"
                                                             onClick={() => setSettings({ ...settings, themeColor: theme.bg, accentColor: theme.accent })}
                                                             className={`
-                                                            group relative flex flex-col items-center gap-3 p-4 rounded-2xl border-[3px] transition-all duration-200
+                                                            group relative flex flex-col items-center gap-3 p-4 rounded-2xl border transition-all duration-200
                                                             ${isSelected
-                                                                    ? 'border-brand-dark shadow-md scale-[1.02] bg-gray-50'
+                                                                    ? 'border-brand-dark shadow-sm bg-gray-50'
                                                                     : 'border-gray-100 hover:border-gray-200 hover:shadow-sm'
                                                                 }
                                                         `}
@@ -354,7 +354,7 @@ export default function TemplateClient() {
                                                             <span className={`text-sm font-bold ${isSelected ? 'text-brand-dark' : 'text-gray-500'}`}>{theme.name}</span>
 
                                                             {isSelected && (
-                                                                <div className="absolute top-3 right-3 w-4 h-4 bg-brand-dark rounded-full border-[2px] border-white shadow-sm animate-fade-in"></div>
+                                                                <div className="absolute top-3 right-3 w-4 h-4 bg-brand-dark rounded-full border border-white shadow-sm animate-fade-in"></div>
                                                             )}
                                                         </button>
                                                     );
@@ -370,7 +370,7 @@ export default function TemplateClient() {
                                                         type="color"
                                                         value={settings.themeColor || '#B6FF2E'}
                                                         onChange={(e) => setSettings({ ...settings, themeColor: e.target.value })}
-                                                        className="w-12 h-12 rounded-lg border-2 border-gray-200 p-1 cursor-pointer"
+                                                        className="w-12 h-12 rounded-lg border border-gray-200 p-1 cursor-pointer"
                                                     />
                                                     <span className="text-sm font-mono text-gray-500 uppercase">{settings.themeColor || '#B6FF2E'}</span>
                                                 </div>
@@ -382,7 +382,7 @@ export default function TemplateClient() {
                                                         type="color"
                                                         value={settings.accentColor || '#0E3B2E'}
                                                         onChange={(e) => setSettings({ ...settings, accentColor: e.target.value })}
-                                                        className="w-12 h-12 rounded-lg border-2 border-gray-200 p-1 cursor-pointer"
+                                                        className="w-12 h-12 rounded-lg border border-gray-200 p-1 cursor-pointer"
                                                     />
                                                     <span className="text-sm font-mono text-gray-500 uppercase">{settings.accentColor || '#0E3B2E'}</span>
                                                 </div>
@@ -418,7 +418,7 @@ export default function TemplateClient() {
                                     <select
                                         value={settings.fontFamily || 'Plus Jakarta Sans'}
                                         onChange={(e) => setSettings({ ...settings, fontFamily: e.target.value })}
-                                        className="w-full px-4 py-3 rounded-xl border-[2px] border-gray-200 focus:border-brand-dark outline-none font-medium"
+                                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 outline-none font-medium"
                                     >
                                         <option value="Plus Jakarta Sans">Plus Jakarta Sans (Default)</option>
                                         <option value="Inter">Inter</option>
@@ -435,13 +435,13 @@ export default function TemplateClient() {
                                         value={settings.footerText || ''}
                                         onChange={(e) => setSettings({ ...settings, footerText: e.target.value })}
                                         placeholder="© 2024 Your Company"
-                                        className="w-full px-4 py-3 rounded-xl border-[2px] border-gray-200 focus:border-brand-dark outline-none font-medium"
+                                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 outline-none font-medium"
                                     />
                                 </div>
                             </div>
 
                         <div className="pt-4 border-t border-gray-100">
-                            <SubmitButton isLoading={saving} label="Save Changes" className="w-full bg-brand-dark text-white py-4 rounded-3xl font-black uppercase tracking-widest hover:bg-brand-dark/90 transition-all shadow-lg active:scale-[0.98]" />
+                            <SubmitButton isLoading={saving} label="Save Changes" className="w-full bg-brand-dark text-white py-4 rounded-xl font-black uppercase tracking-widest hover:bg-brand-dark/90 transition-all shadow-lg active:scale-[0.98]" />
                         </div>
                     </form>
                 </div>
@@ -456,7 +456,7 @@ export default function TemplateClient() {
                             <div className="w-2.5 h-2.5 rounded-full bg-green-400" />
                         </div>
                     </div>
-                    <div className="bg-brand-dark rounded-[2.5rem] p-4 shadow-2xl border-[8px] border-brand-dark relative">
+                    <div className="bg-brand-dark rounded-[2.5rem] p-4 shadow-2xl border-4 border-gray-200 relative">
                         <div className="aspect-[9/19] bg-white rounded-[2rem] overflow-hidden border-4 border-brand-dark/5 shadow-inner">
                             <ThemeMockup
                                 template={templatesToDisplay.find(t => t.id === settings.templateId) || templatesToDisplay[0]}

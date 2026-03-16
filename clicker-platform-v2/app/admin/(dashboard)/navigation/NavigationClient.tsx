@@ -36,7 +36,7 @@ function SortableNavItem({ item, onRemove, onUpdate, forms, pages }: { item: any
     const Icon = item.icon && ICON_MAP[item.icon as keyof typeof ICON_MAP] ? ICON_MAP[item.icon as keyof typeof ICON_MAP] : LinkIcon;
 
     return (
-        <div ref={setNodeRef} style={style} className="bg-white rounded-xl border-2 border-gray-100 shadow-sm overflow-hidden mb-2 transition-all hover:border-brand-dark/50 group">
+        <div ref={setNodeRef} style={style} className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mb-2 transition-all hover:border-gray-300 group">
             <div className="flex items-center justify-between p-3 bg-gray-50 border-b border-gray-100">
                 <div className="flex items-center gap-3">
                     <div {...attributes} {...listeners} className="p-1.5 text-gray-400 hover:text-brand-dark hover:bg-gray-200 rounded cursor-grab active:cursor-grabbing">
@@ -378,7 +378,7 @@ export default function NavigationClient() {
 
             <form id="navigation-form" onSubmit={handleSave} className="space-y-8">
                 {/* Top Navigation */}
-                <div className="bg-white rounded-3xl p-8 border border-gray-200 shadow-sm">
+                <div className="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm">
                     <div className="flex items-center justify-between mb-6">
                         <div>
                             <h2 className="text-xl font-black text-brand-dark block">Top Navigation</h2>
@@ -408,7 +408,7 @@ export default function NavigationClient() {
                             </SortableContext>
                         </DndContext>
                         {(!navigation?.topNav || navigation.topNav.length === 0) && (
-                            <div className="text-gray-400 text-sm italic text-center py-8 border-2 border-dashed border-gray-100 rounded-2xl">
+                            <div className="text-gray-400 text-sm italic text-center py-8 border border-dashed border-gray-200 rounded-2xl">
                                 No links yet. Add one to get started.
                             </div>
                         )}
@@ -416,7 +416,7 @@ export default function NavigationClient() {
                 </div>
 
                 {/* Top Navigation Actions (CTA) */}
-                <div className="bg-white border-2 border-dashed border-gray-200 rounded-3xl p-8">
+                <div className="bg-white border-2 border-dashed border-gray-200 rounded-2xl p-8">
                     <label className="block text-brand-dark font-black text-lg mb-4 flex items-center gap-2">
                         <span className="bg-brand-green/20 text-brand-dark p-1 rounded-md text-[10px] uppercase tracking-wider">Feature</span>
                         Header Action Button
@@ -577,7 +577,7 @@ export default function NavigationClient() {
                 </div>
 
                 {/* Bottom Navigation */}
-                <div className="bg-white rounded-3xl p-8 border border-gray-200 shadow-sm">
+                <div className="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm">
                     <div className="flex items-center justify-between mb-4">
                         <div>
                             <h2 className="block text-brand-dark font-black text-xl mb-1">Bottom Navigation</h2>
@@ -607,7 +607,7 @@ export default function NavigationClient() {
                             </SortableContext>
                         </DndContext>
                         {(!navigation?.bottomNav || navigation.bottomNav.length === 0) && (
-                            <div className="text-gray-400 text-sm italic text-center py-8 border-2 border-dashed border-gray-100 rounded-2xl">
+                            <div className="text-gray-400 text-sm italic text-center py-8 border border-dashed border-gray-200 rounded-2xl">
                                 No bottom links configured. Add one to get started.
                             </div>
                         )}
@@ -615,7 +615,7 @@ export default function NavigationClient() {
                 </div>
 
                 {/* Center Floating Action Button (FAB) */}
-                <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-8">
+                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8">
                     <div className="flex items-center justify-between mb-4">
                         <div>
                             <p className="font-black text-brand-dark text-lg">Center FAB Button</p>

@@ -1,9 +1,8 @@
 'use client';
 
-import { Monitor, Tablet, Smartphone, Home, Loader2, Save } from 'lucide-react';
+import { Monitor, Tablet, Smartphone, Home, Loader2, Save, FileText } from 'lucide-react';
 import { usePageStudio } from './PageStudioContext';
 import { useEditor } from './EditorContext';
-import { PageSwitcherDropdown } from './PageSwitcherDropdown';
 import { useState } from 'react';
 
 export function StudioTopBar() {
@@ -34,9 +33,17 @@ export function StudioTopBar() {
 
     return (
         <div className="flex items-center justify-between px-4 h-12 bg-neutral-900 border-b border-neutral-800 flex-shrink-0">
-            {/* Left — Page Switcher */}
-            <div className="flex-1 flex items-center">
-                <PageSwitcherDropdown />
+            {/* Left — Current page name */}
+            <div className="flex-1 flex items-center gap-2 min-w-0">
+                <FileText size={13} className="text-neutral-500 flex-shrink-0" />
+                <span className="text-sm font-medium text-neutral-300 truncate">
+                    {formData.title || 'Untitled'}
+                </span>
+                {formData.slug && (
+                    <span className="text-xs text-neutral-600 truncate hidden sm:block">
+                        /{formData.slug}
+                    </span>
+                )}
             </div>
 
             {/* Center — Device toggle */}
@@ -96,6 +103,7 @@ export function StudioTopBar() {
                     )}
                 </button>
             </div>
+
             {tooltip && (
                 <div
                     className="fixed z-[100] bg-gray-900 text-white text-xs font-bold px-2.5 py-1.5 rounded-lg shadow-xl animate-in fade-in duration-150 pointer-events-none whitespace-nowrap -translate-x-1/2"

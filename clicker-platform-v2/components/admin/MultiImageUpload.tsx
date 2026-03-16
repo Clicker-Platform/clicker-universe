@@ -158,7 +158,7 @@ export function MultiImageUpload({ images, onImagesChange, maxImages = 10 }: Mul
                             key={`${url}-${index}`}
                             className={`
                                 relative aspect-square rounded-xl overflow-hidden border group shadow-sm
-                                ${index === 0 ? 'border-brand-dark ring-2 ring-brand-dark ring-offset-2' : 'border-gray-200'}
+                                ${index === 0 ? 'border-gray-400 ring-2 ring-gray-400 ring-offset-2' : 'border-gray-200'}
                             `}
                         >
                             <Image

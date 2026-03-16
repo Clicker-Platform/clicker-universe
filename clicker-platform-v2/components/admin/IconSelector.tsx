@@ -61,7 +61,7 @@ export function IconSelector({ selectedIcon, onSelect, onClose }: IconSelectorPr
                                         flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all
                                         hover:scale-105 active:scale-95
                                         ${isSelected
-                                            ? 'border-brand-dark bg-brand-green/20 text-brand-dark shadow-md'
+                                            ? 'border-gray-400 bg-gray-100 text-brand-dark shadow-md'
                                             : 'border-white bg-white hover:border-brand-green hover:shadow-sm text-gray-600'
                                         }
                                     `}

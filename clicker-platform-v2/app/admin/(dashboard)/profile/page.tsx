@@ -84,14 +84,14 @@ export default function ProfileEditor() {
                 </div>
             )}
 
-            <form onSubmit={handleSave} className={`space-y-6 bg-white p-8 rounded-3xl border-[3px] border-brand-dark shadow-sm transition-opacity duration-200 ${saving ? 'opacity-50 pointer-events-none' : ''}`}>
+            <form onSubmit={handleSave} className={`space-y-6 bg-white p-8 rounded-2xl border border-gray-200 shadow-sm transition-opacity duration-200 ${saving ? 'opacity-50 pointer-events-none' : ''}`}>
                 <div>
                     <label className="block text-brand-dark font-bold mb-2">Business Name</label>
                     <input
                         type="text"
                         value={profile.name}
                         onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl border-[2px] border-gray-200 focus:border-brand-dark outline-none font-medium"
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 outline-none font-medium"
                         placeholder="e.g. SunnySide Sales"
                     />
                 </div>
@@ -102,7 +102,7 @@ export default function ProfileEditor() {
                         type="text"
                         value={profile.tagline}
                         onChange={(e) => setProfile({ ...profile, tagline: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl border-[2px] border-gray-200 focus:border-brand-dark outline-none font-medium"
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 outline-none font-medium"
                         placeholder="e.g. Best Deals in Town"
                     />
                 </div>
@@ -112,7 +112,7 @@ export default function ProfileEditor() {
                     <textarea
                         value={profile.description}
                         onChange={(e) => setProfile({ ...profile, description: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl border-[2px] border-gray-200 focus:border-brand-dark outline-none font-medium h-32"
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 outline-none font-medium h-32"
                         placeholder="Tell us about your business..."
                     />
                 </div>

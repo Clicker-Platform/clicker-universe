@@ -71,7 +71,7 @@ export const LayoutVariantPicker = ({ blockType, currentVariant, templateDefault
                             key={v.id}
                             onClick={() => onChange(v.id)}
                             className={cn(
-                                "relative flex flex-col items-center justify-center p-3 rounded-xl border-2 text-sm font-bold transition-all group",
+                                "relative flex flex-col items-center justify-center p-3 rounded-xl border text-sm font-bold transition-all group",
                                 isActive 
                                     ? "border-blue-500 bg-neutral-700 text-blue-400 shadow-lg" 
                                     : "border-transparent bg-neutral-900/50 text-neutral-500 hover:border-neutral-700 hover:bg-neutral-700 hover:text-neutral-300 shadow-sm"

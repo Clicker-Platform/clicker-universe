@@ -24,7 +24,7 @@ export const TextForm = ({ data, onChange }: TextFormProps) => {
     const safeData = data || {};
     return (
         <div className="space-y-4">
-            <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider">Content</label>
+            <label className="block text-xs font-medium text-neutral-500">Content</label>
             <div className="min-h-[200px] rounded-2xl overflow-hidden border border-neutral-800 bg-neutral-900/50">
                 <RichTextEditor
                     value={safeData.content || ''}

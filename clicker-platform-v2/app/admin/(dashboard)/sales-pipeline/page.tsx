@@ -48,7 +48,7 @@ export default function SalesPipelinePage() {
     }
 
     return (
-        <div className="bg-white rounded-3xl border-[3px] border-brand-dark shadow-sm overflow-hidden flex flex-col h-[calc(100vh-2rem)] md:h-[calc(100vh-6rem)]">
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col h-[calc(100vh-2rem)] md:h-[calc(100vh-6rem)]">
             <PipelineBoard stages={stages} leads={leads} />
         </div>
     );

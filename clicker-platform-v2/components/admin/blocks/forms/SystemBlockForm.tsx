@@ -41,7 +41,7 @@ export function SystemBlockForm({ data, onChange, blockType }: SystemBlockFormPr
 
             <div className="space-y-4">
                 <div>
-                    <label className="flex items-center gap-2 text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">
+                    <label className="flex items-center gap-2 text-xs font-medium text-neutral-500 mb-2">
                         <Type size={14} className="text-neutral-500" />
                         Section Title Override
                     </label>

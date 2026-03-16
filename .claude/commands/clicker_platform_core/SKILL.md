@@ -110,7 +110,51 @@ All tenant-specific data must be stored under the tenant's exact `siteId`.
 
 ---
 
-## 6. Security Rules
+## 6. Admin UI Style Conventions
+
+The admin dashboard uses a **neutral productivity-dashboard aesthetic** — clean, minimal, similar to Figma or Linear. Do not introduce brutalist styles.
+
+### Card / Container pattern
+
+```tsx
+<div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+```
+
+### Input fields
+
+```tsx
+<input className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 outline-none" />
+```
+
+### Action buttons (primary)
+
+```tsx
+<button className="bg-brand-dark text-white px-6 py-3 rounded-xl font-bold hover:bg-brand-dark/90 shadow-sm transition-all">
+```
+
+### Status/badge pattern
+
+```tsx
+<div className={`px-3 py-1 rounded-full text-xs font-semibold border ${
+  isActive ? 'bg-green-50 border-green-200 text-green-700'
+           : 'bg-gray-100 border-gray-200 text-gray-400'
+}`}>
+```
+
+### Rules
+
+- **Never use** `border-[3px]`, `border-[2px]`, `border-brand-dark` on admin containers or cards
+- **Never use** `shadow-sticker` or offset box-shadows in admin UI
+- **Never use** `hover:-translate-y-1` lift effects on admin cards
+- Border: always `border border-gray-200` (1px)
+- Shadow: always `shadow-sm` at rest, `shadow-md` on hover (for interactive cards)
+- Focus: always `focus:border-gray-400` on inputs
+- Dividers: `border-t border-gray-100` (not `border-t-2`)
+- Note: `shadow-sticker` and `border-brand-dark` ARE used on the **public tenant site** (via templates). This rule applies to admin UI only.
+
+---
+
+## 7. Security Rules
 
 Before executing **any write operation** inside a client component dashboard screen, always check RBAC:
 

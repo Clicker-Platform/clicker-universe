@@ -115,7 +115,7 @@ export function ProductFormModal({ isOpen, onClose, onSubmit, initialData, isSub
                             </div>
 
                             {/* Price Section */}
-                            <div className="bg-white rounded-xl border-2 border-gray-100 shadow-sm overflow-hidden group hover:border-brand-dark/50 transition-colors">
+                            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden group hover:border-gray-300 transition-colors">
                                 <div className="flex items-center justify-between p-3 bg-gray-50 border-b border-gray-100">
                                     <label className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2">
                                         Price
@@ -153,7 +153,7 @@ export function ProductFormModal({ isOpen, onClose, onSubmit, initialData, isSub
                             </div>
 
                             {/* Label (Category) Section */}
-                            <div className="bg-white rounded-xl border-2 border-gray-100 shadow-sm overflow-hidden group hover:border-brand-dark/50 transition-colors">
+                            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden group hover:border-gray-300 transition-colors">
                                 <div className="flex items-center justify-between p-3 bg-gray-50 border-b border-gray-100">
                                     <label className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2">
                                         Label / Category

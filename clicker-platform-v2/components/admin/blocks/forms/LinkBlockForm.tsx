@@ -53,7 +53,7 @@ export const LinkBlockForm = ({ data, onChange }: LinkBlockFormProps) => {
     return (
         <div className="space-y-4">
             <div>
-                <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Select Link Card</label>
+                <label className="block text-xs font-medium text-neutral-500 mb-2">Select Link Card</label>
                 <p className="text-xs text-neutral-500 mb-4 leading-relaxed">
                     Choose an existing link from your Links page to display here.
                 </p>

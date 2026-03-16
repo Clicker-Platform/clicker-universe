@@ -103,7 +103,7 @@ export const BlockImageUploader = ({ label = "Upload Image", currentUrl, onUploa
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
                         disabled={uploading}
-                        className="flex items-center gap-2 px-4 py-2 bg-neutral-800 border-2 border-neutral-700 rounded-xl text-sm font-bold text-neutral-200 hover:bg-neutral-700 hover:border-neutral-600 focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 transition-all active:scale-[0.98] shadow-sm"
+                        className="flex items-center gap-2 px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-xl text-sm font-bold text-neutral-200 hover:bg-neutral-700 hover:border-neutral-600 focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 transition-all active:scale-[0.98] shadow-sm"
                     >
                         {uploading ? (
                             <>

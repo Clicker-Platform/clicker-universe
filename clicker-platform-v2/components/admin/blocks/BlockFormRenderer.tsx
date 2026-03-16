@@ -150,7 +150,7 @@ export const BlockFormRenderer = memo(({ block, onChange, templateId = 'classic'
                         {moduleInfo.manageUrl && (
                             <Link 
                                 href={moduleInfo.manageUrl}
-                                className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-neutral-800 border-2 border-neutral-700 text-neutral-300 rounded-xl font-bold hover:bg-neutral-700 hover:text-neutral-100 transition-all shadow-sm"
+                                className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-neutral-800 border border-neutral-700 text-neutral-300 rounded-xl font-bold hover:bg-neutral-700 hover:text-neutral-100 transition-all shadow-sm"
                             >
                                 <ExternalLink size={18} />
                                 Configure {moduleInfo.name} Settings

@@ -115,7 +115,7 @@ export const ImageGalleryBlockForm = ({ data, onChange }: ImageGalleryBlockFormP
     return (
         <div className="space-y-4">
             <div className="flex justify-between items-center">
-                <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider">Gallery Images ({images.length}/10)</label>
+                <label className="block text-xs font-medium text-neutral-500">Gallery Images ({images.length}/10)</label>
                 <input
                     type="file"
                     ref={fileInputRef}

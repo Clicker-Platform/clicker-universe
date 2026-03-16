@@ -49,29 +49,28 @@ export const BlockOutlineItem = memo(({ block, isSelected, onClick, onDelete }: 
     };
 
     return (
-        <div 
-            ref={setNodeRef} 
-            style={style} 
-            className={`flex items-center gap-2 p-2 rounded-xl cursor-pointer transition-all border group ${
-                isSelected 
-                ? 'bg-blue-500/10 border-blue-500/30 text-blue-400 font-medium shadow-lg' 
-                : 'bg-neutral-800 border-transparent hover:bg-neutral-700 text-neutral-400 hover:text-neutral-200'
+        <div
+            ref={setNodeRef}
+            style={style}
+            className={`flex items-center gap-1.5 px-2 py-1.5 cursor-pointer transition-colors group ${
+                isSelected
+                ? 'bg-blue-500/10 text-blue-400'
+                : 'text-neutral-400 hover:bg-neutral-800 hover:text-neutral-200'
             }`}
             onClick={onClick}
         >
-            <div 
-                {...attributes} 
-                {...listeners} 
-                className={`p-1 rounded cursor-grab active:cursor-grabbing hover:bg-neutral-600 transition-colors ${isSelected ? 'text-blue-400' : 'text-neutral-500'}`}
-                onClick={(e) => e.stopPropagation()} // Prevent clicking the drag handle from selecting
+            <div
+                {...attributes}
+                {...listeners}
+                className="p-0.5 rounded cursor-grab active:cursor-grabbing text-neutral-600 hover:text-neutral-400 transition-colors flex-shrink-0"
+                onClick={(e) => e.stopPropagation()}
             >
-                <GripVertical size={16} />
+                <GripVertical size={13} />
             </div>
-            
-            <div className="flex-1 flex items-center gap-2 text-sm truncate">
-                <Box size={14} className={isSelected ? 'text-blue-400' : 'text-neutral-500'} />
-                <span className="truncate">{getBlockLabel(block.type)}</span>
-            </div>
+
+            <Box size={13} className={`flex-shrink-0 ${isSelected ? 'text-blue-400' : 'text-neutral-500'}`} />
+
+            <span className="flex-1 text-xs font-medium truncate">{getBlockLabel(block.type)}</span>
 
             <button
                 type="button"
@@ -79,10 +78,10 @@ export const BlockOutlineItem = memo(({ block, isSelected, onClick, onDelete }: 
                     e.stopPropagation();
                     onDelete(block.id);
                 }}
-                className="p-1.5 text-red-400/70 hover:text-red-400 hover:bg-red-400/10 rounded-lg opacity-0 group-hover:opacity-100 transition-all focus:opacity-100"
+                className="p-1 text-neutral-600 hover:text-red-400 rounded opacity-0 group-hover:opacity-100 transition-all focus:opacity-100 flex-shrink-0"
                 title="Delete block"
             >
-                <Trash2 size={14} />
+                <Trash2 size={12} />
             </button>
         </div>
     );

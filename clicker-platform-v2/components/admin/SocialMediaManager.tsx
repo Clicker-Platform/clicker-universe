@@ -87,7 +87,7 @@ export function SocialMediaManager({ links, onChange }: SocialMediaManagerProps)
                                 value={url}
                                 onChange={(e) => setUrl(e.target.value)}
                                 placeholder={currentPlatform.placeholder}
-                                className="flex-1 px-4 py-2 rounded-xl border-[2px] border-gray-200 focus:border-brand-dark outline-none font-medium text-sm"
+                                className="flex-1 px-4 py-2 rounded-xl border border-gray-200 focus:border-gray-400 outline-none font-medium text-sm"
                             />
                             <button
                                 type="button"

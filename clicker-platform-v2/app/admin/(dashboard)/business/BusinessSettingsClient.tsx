@@ -241,7 +241,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
             </div>
 
             {/* Content Area */}
-            <div className="bg-white p-6 md:px-8 rounded-2xl border-[3px] border-brand-dark shadow-sm min-h-[400px]">
+            <div className="bg-white p-6 md:px-8 rounded-2xl border border-gray-200 shadow-sm min-h-[400px]">
 
                 {/* --- CONTACT TAB --- */}
                 {activeTab === 'contact' && (
@@ -407,7 +407,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                         </div>
 
                         {branches.length === 0 ? (
-                            <div className="text-center py-12 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
+                            <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-200">
                                 <MapPin size={48} className="mx-auto text-gray-300 mb-3" />
                                 <p className="text-gray-500 font-medium">No branches added yet.</p>
                             </div>

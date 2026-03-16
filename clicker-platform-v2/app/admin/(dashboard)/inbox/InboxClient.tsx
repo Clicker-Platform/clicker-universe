@@ -72,7 +72,7 @@ export default function InboxClient({ initialSubmissions, formFieldMap, siteId }
                 counts={counts}
             />
 
-            <div className="bg-white rounded-3xl border-[3px] border-brand-dark shadow-sticker overflow-hidden">
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                 <SubmissionList
                     submissions={filteredSubmissions}
                     formFieldMap={formFieldMap}

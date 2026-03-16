@@ -72,7 +72,7 @@ export default function FormsPage() {
                 </div>
                 <Link
                     href="/admin/forms/builder"
-                    className="inline-flex items-center gap-2 bg-brand-dark text-brand-green px-6 py-3 rounded-xl font-bold hover:bg-gray-800 transition-all shadow-sticker hover:shadow-sticker-hover transform hover:-translate-y-1"
+                    className="inline-flex items-center gap-2 bg-brand-dark text-brand-green px-6 py-3 rounded-xl font-bold hover:bg-gray-800 transition-all shadow-sm"
                 >
                     <Plus size={20} strokeWidth={3} />
                     Create Form
@@ -86,7 +86,7 @@ export default function FormsPage() {
                         <FormCard key={form.id} form={form} />
                     ))
                 ) : (
-                    <div className="col-span-full py-20 text-center bg-white rounded-3xl border-[3px] border-dashed border-gray-300">
+                    <div className="col-span-full py-20 text-center bg-white rounded-2xl border border-dashed border-gray-300">
                         <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4 text-gray-400">
                             <FileText size={32} />
                         </div>

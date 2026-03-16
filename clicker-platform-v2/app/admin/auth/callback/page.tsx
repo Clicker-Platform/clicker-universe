@@ -184,7 +184,7 @@ function AuthCallbackHandler() {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-100">
-            <div className="bg-white p-8 rounded-2xl shadow-lg max-w-sm w-full border-[3px] border-brand-dark text-center">
+            <div className="bg-white p-8 rounded-2xl shadow-lg max-w-sm w-full border border-gray-200 text-center">
                 {error ? (
                     <div className="text-red-600 font-bold">
                         <p className="text-4xl mb-4">⚠️</p>
@@ -217,14 +217,14 @@ function AuthCallbackHandler() {
                                 <p className="font-bold mb-4">{status}</p>
                                 <button
                                     onClick={() => window.location.href = `${window.location.origin}${safeNextPath}`}
-                                    className="w-full bg-brand-green text-brand-dark font-black uppercase py-3 rounded-xl border-[3px] border-brand-dark hover:scale-105 transition-transform"
+                                    className="w-full bg-brand-green text-brand-dark font-black uppercase py-3 rounded-xl border border-gray-200 hover:scale-105 transition-transform"
                                 >
                                     Buka Dashboard
                                 </button>
                             </>
                         ) : (
                             <>
-                                <div className="animate-spin rounded-full h-12 w-12 border-4 border-brand-dark border-t-transparent mx-auto mb-4"></div>
+                                <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-300 border-t-transparent mx-auto mb-4"></div>
                                 <p className="font-bold">{status}</p>
                             </>
                         )}

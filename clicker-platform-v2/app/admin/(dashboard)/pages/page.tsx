@@ -1,7 +1,5 @@
 'use client';
 
-import { Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { PageStudioProvider, usePageStudio } from '@/components/admin/blocks/PageStudioContext';
 import { EditorProvider } from '@/components/admin/blocks/EditorContext';
@@ -109,25 +107,20 @@ function PageStudioInner() {
     );
 }
 
-function PageStudioWithParams() {
-    const searchParams = useSearchParams();
-    const pageId = searchParams.get('pageId');
-
-    return (
-        <PageStudioProvider initialPageId={pageId}>
-            <PageStudioInner />
-        </PageStudioProvider>
-    );
+// Read pageId once from the URL at mount time — avoids useSearchParams() which
+// would wrap the tree in a Suspense boundary and cause full remounts on any
+// state change (the root cause of blocks disappearing after being added).
+function getInitialPageId(): string | null {
+    if (typeof window === 'undefined') return null;
+    return new URL(window.location.href).searchParams.get('pageId');
 }
 
 export default function PageStudioPage() {
+    const [initialPageId] = useState(getInitialPageId);
+
     return (
-        <Suspense fallback={
-            <div className="flex h-64 items-center justify-center">
-                <Loader2 className="animate-spin text-brand-dark" size={32} />
-            </div>
-        }>
-            <PageStudioWithParams />
-        </Suspense>
+        <PageStudioProvider initialPageId={initialPageId}>
+            <PageStudioInner />
+        </PageStudioProvider>
     );
 }

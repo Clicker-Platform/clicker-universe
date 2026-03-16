@@ -1,12 +1,11 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, doc, getDoc, updateDoc, deleteDoc, setDoc, getDocs, serverTimestamp, query, where } from 'firebase/firestore';
 import { Page, PageBlock } from '@/data/mockData';
 import { fetchPublicData } from '@/lib/fetchData';
 import { useSite } from '@/lib/site-context';
-import { useRouter, useSearchParams } from 'next/navigation';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -106,8 +105,6 @@ const PageStudioContext = createContext<PageStudioContextType | undefined>(undef
 
 export function PageStudioProvider({ children, initialPageId }: { children: ReactNode; initialPageId?: string | null }) {
     const { siteId } = useSite();
-    const router = useRouter();
-    const searchParams = useSearchParams();
 
     // Page list
     const [pages, setPages] = useState<PageListItem[]>([]);
@@ -209,12 +206,16 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
     useEffect(() => {
         if (!siteId) return;
 
+        let isMounted = true;
+
         const loadInitial = async () => {
             try {
                 const [pagesSnap, settings] = await Promise.all([
                     getDocs(collection(db, 'sites', siteId, 'pages')),
                     fetchPublicData(siteId, { includeProducts: false }),
                 ]);
+
+                if (!isMounted) return;
 
                 const fetchedPages: PageListItem[] = pagesSnap.docs.map(d => ({
                     id: d.id,
@@ -235,13 +236,15 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
                 }
                 // If no pages, stay in create mode (activePageId = null)
             } catch (err) {
-                console.error('Error loading page studio:', err);
+                if (isMounted) console.error('Error loading page studio:', err);
             } finally {
-                setPagesLoading(false);
+                if (isMounted) setPagesLoading(false);
             }
         };
 
         loadInitial();
+
+        return () => { isMounted = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [siteId]);
 
@@ -311,19 +314,6 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
 
     // ── Switch page (with dirty check) ─────────────────────────────────────
 
-    const switchPage = useCallback(async (pageId: string | 'create'): Promise<boolean> => {
-        // If switching to same page, no-op
-        if (pageId === activePageId) return true;
-        if (pageId === 'create' && activePageId === null) return true;
-
-        if (isDirty) {
-            setPendingSwitch(pageId);
-            return false; // Caller should not proceed — dialog will handle it
-        }
-
-        return await executeSwitchPage(pageId);
-    }, [activePageId, isDirty]);
-
     const executeSwitchPage = useCallback(async (pageId: string | 'create'): Promise<boolean> => {
         if (pageId === 'create') {
             const newData = { ...emptyFormData };
@@ -342,6 +332,19 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
         await loadPage(pageId);
         return true;
     }, [loadPage, getSnapshot]);
+
+    const switchPage = useCallback(async (pageId: string | 'create'): Promise<boolean> => {
+        // If switching to same page, no-op
+        if (pageId === activePageId) return true;
+        if (pageId === 'create' && activePageId === null) return true;
+
+        if (isDirty) {
+            setPendingSwitch(pageId);
+            return false; // Caller should not proceed — dialog will handle it
+        }
+
+        return await executeSwitchPage(pageId);
+    }, [activePageId, isDirty, executeSwitchPage]);
 
     // Unsaved changes dialog handlers
     const confirmDiscard = useCallback(() => {

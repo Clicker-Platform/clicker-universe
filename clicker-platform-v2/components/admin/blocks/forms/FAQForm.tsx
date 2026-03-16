@@ -34,7 +34,7 @@ export const FAQForm = ({ data, onChange }: FAQFormProps) => {
     return (
         <div className="space-y-4">
             <div className="flex justify-between items-center mb-2">
-                <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider">FAQ Items</label>
+                <label className="text-xs font-medium text-neutral-500">FAQ Items</label>
                 <button
                     type="button"
                     onClick={handleAddItem}

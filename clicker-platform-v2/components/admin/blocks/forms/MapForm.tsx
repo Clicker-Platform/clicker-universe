@@ -18,7 +18,7 @@ export const MapForm = ({ data, onChange }: MapFormProps) => {
     return (
         <div className="space-y-4">
             <div>
-                <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Address</label>
+                <label className="block text-xs font-medium text-neutral-500 mb-2">Address</label>
                 <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-neutral-500">
                         <MapPin size={18} />

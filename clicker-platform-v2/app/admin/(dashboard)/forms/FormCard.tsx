@@ -52,7 +52,7 @@ export const FormCard: React.FC<FormCardProps> = ({ form }) => {
 
     if (isDeleting) {
         return (
-            <div className="bg-white p-6 rounded-3xl border-[3px] border-red-100 shadow-sm flex flex-col items-center justify-center min-h-[200px] animate-pulse">
+            <div className="bg-white p-6 rounded-2xl border border-red-100 shadow-sm flex flex-col items-center justify-center min-h-[200px] animate-pulse">
                 <Trash2 className="text-red-300 mb-2" size={32} />
                 <p className="text-red-300 font-bold">Deleting...</p>
             </div>
@@ -63,7 +63,7 @@ export const FormCard: React.FC<FormCardProps> = ({ form }) => {
         <>
             <Link
                 href={`/admin/forms/builder?id=${form.id}`}
-                className="group bg-white p-6 rounded-3xl border-[3px] border-brand-dark shadow-sticker hover:shadow-sticker-hover transition-all duration-200 transform hover:-translate-y-1 block relative"
+                className="group bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 block relative"
             >
                 {/* Delete Button */}
                 <button
@@ -75,11 +75,11 @@ export const FormCard: React.FC<FormCardProps> = ({ form }) => {
                 </button>
 
                 {/* Status Badge */}
-                <div className={`absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border-2 ${form.isPublished ? 'bg-brand-green border-brand-dark text-brand-dark' : 'bg-gray-100 border-gray-300 text-gray-400'}`}>
+                <div className={`absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide border ${form.isPublished ? 'bg-green-50 border-green-200 text-green-700' : 'bg-gray-100 border-gray-200 text-gray-400'}`}>
                     {form.isPublished ? 'Published' : 'Draft'}
                 </div>
 
-                <div className="w-12 h-12 bg-gray-50 rounded-2xl border-2 border-brand-dark flex items-center justify-center mb-4 text-brand-dark group-hover:bg-brand-green/20 transition-colors mt-8">
+                <div className="w-12 h-12 bg-gray-50 rounded-xl border border-gray-200 flex items-center justify-center mb-4 text-brand-dark group-hover:bg-gray-100 transition-colors mt-8">
                     <FileText size={24} strokeWidth={2.5} />
                 </div>
 
@@ -88,7 +88,7 @@ export const FormCard: React.FC<FormCardProps> = ({ form }) => {
                     {form.fields?.length || 0} fields • {form.buttonText}
                 </p>
 
-                <div className="border-t-2 border-gray-100 pt-4 flex items-center text-gray-400 text-sm font-bold gap-2">
+                <div className="border-t border-gray-100 pt-4 flex items-center text-gray-400 text-sm font-medium gap-2">
                     <Calendar size={16} />
                     <span suppressHydrationWarning>
                         {form.createdAt ? new Date(form.createdAt).toLocaleDateString() : 'Unknown date'}

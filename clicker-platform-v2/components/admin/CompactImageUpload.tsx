@@ -100,7 +100,7 @@ export function CompactImageUpload({ currentUrl, onUpload, onRemove, label = "Up
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploading}
                     className={`
-                        w-full flex items-center gap-3 px-4 py-3 rounded-xl border-[2px] border-dashed border-gray-300
+                        w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-dashed border-gray-300
                         text-gray-500 font-bold hover:border-brand-dark hover:bg-gray-50 transition-all text-sm
                         ${uploading ? 'opacity-70 cursor-wait' : ''}
                     `}

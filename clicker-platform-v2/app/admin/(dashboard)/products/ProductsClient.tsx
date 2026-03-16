@@ -413,7 +413,7 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
                         return (
                             <div key={product.id} className={`
                                 bg-white p-4 rounded-xl border transition-all duration-300 group flex flex-col md:flex-row md:items-center gap-4 
-                                ${isFeatured ? 'border-2 border-yellow-400 shadow-sm' : 'border-gray-200'}
+                                ${isFeatured ? 'border border-yellow-300 shadow-sm' : 'border-gray-200'}
                                 ${!isActive ? 'opacity-60 bg-gray-50' : ''}
                             `}>
                                 <div className="flex items-start gap-4 flex-1 w-full">
@@ -488,7 +488,7 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
                     return (
                         <div key={product.id} className={`
                             bg-white p-4 rounded-xl border transition-all duration-300 group relative overflow-hidden 
-                            ${isFeatured ? 'border-[3px] border-yellow-400 shadow-md scale-[1.02]' : 'border-gray-200'}
+                            ${isFeatured ? 'border border-yellow-300 shadow-sm' : 'border-gray-200'}
                             ${!isActive ? 'opacity-70' : ''}
                         `}>
 

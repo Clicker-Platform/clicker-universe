@@ -252,7 +252,7 @@ export default function TeamPage() {
             </div>
 
             {/* Active Members */}
-            <div className="bg-white rounded-3xl border-[3px] border-brand-dark shadow-sm overflow-hidden mb-8">
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mb-8">
                 <div className="p-6 border-b border-gray-100 bg-gray-50/50">
                     <h2 className="font-bold text-lg flex items-center gap-2">
                         <User size={20} className="text-brand-dark" />
@@ -342,7 +342,7 @@ export default function TeamPage() {
                                     onChange={(e) => setMemberEmail(e.target.value)}
                                     placeholder="colleague@example.com"
                                     disabled={!!editingMember}
-                                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-brand-dark outline-none transition-colors disabled:bg-gray-100 disabled:text-gray-500"
+                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 outline-none transition-colors disabled:bg-gray-100 disabled:text-gray-500"
                                 />
                             </div>
 
@@ -357,7 +357,7 @@ export default function TeamPage() {
                                     onChange={(e) => setMemberPassword(e.target.value)}
                                     placeholder="••••••••"
                                     minLength={6}
-                                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-brand-dark outline-none transition-colors"
+                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 outline-none transition-colors"
                                 />
                                 <p className="text-xs text-gray-400 mt-1">Min. 6 characters. If user exists, this will be ignored.</p>
                             </div>

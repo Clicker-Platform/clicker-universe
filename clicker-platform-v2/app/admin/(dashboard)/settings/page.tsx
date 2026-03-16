@@ -99,7 +99,7 @@ export default function SettingsPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Editor Form */}
-                <form onSubmit={handleSave} className={`space-y-6 bg-white p-8 rounded-3xl border-[3px] border-brand-dark shadow-sm h-fit transition-opacity duration-200 ${saving ? 'opacity-50 pointer-events-none' : ''}`}>
+                <form onSubmit={handleSave} className={`space-y-6 bg-white p-8 rounded-2xl border border-gray-200 shadow-sm h-fit transition-opacity duration-200 ${saving ? 'opacity-50 pointer-events-none' : ''}`}>
                     <div>
                         <label className="block text-brand-dark font-bold mb-2">Page Title</label>
                         <p className="text-xs text-gray-500 mb-2">Results in 50-60 chars typically work best.</p>
@@ -107,7 +107,7 @@ export default function SettingsPage() {
                             type="text"
                             value={settings.title}
                             onChange={(e) => setSettings({ ...settings, title: e.target.value })}
-                            className="w-full px-4 py-3 rounded-xl border-[2px] border-gray-200 focus:border-brand-dark outline-none font-medium"
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 outline-none font-medium"
                             placeholder="e.g. SunnySide - Best Coffee in Town"
                         />
                     </div>
@@ -119,7 +119,7 @@ export default function SettingsPage() {
                             type="text"
                             value={settings.homepageSlug || ''}
                             onChange={(e) => setSettings({ ...settings, homepageSlug: e.target.value })}
-                            className="w-full px-4 py-3 rounded-xl border-[2px] border-gray-200 focus:border-brand-dark outline-none font-medium"
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 outline-none font-medium"
                             placeholder="home"
                         />
                     </div>
@@ -130,7 +130,7 @@ export default function SettingsPage() {
                         <textarea
                             value={settings.description}
                             onChange={(e) => setSettings({ ...settings, description: e.target.value })}
-                            className="w-full px-4 py-3 rounded-xl border-[2px] border-gray-200 focus:border-brand-dark outline-none font-medium h-24"
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 outline-none font-medium h-24"
                             placeholder="A brief description of your site for search engines."
                         />
                     </div>
@@ -167,7 +167,7 @@ export default function SettingsPage() {
                                             type="text"
                                             value={settings.pixels?.facebookPixelId || ''}
                                             onChange={(e) => setSettings({ ...settings, pixels: { ...settings.pixels, facebookPixelId: e.target.value } })}
-                                            className="w-full px-4 py-2 rounded-xl border-[2px] border-gray-200 focus:border-brand-dark outline-none font-medium text-sm"
+                                            className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-gray-400 outline-none font-medium text-sm"
                                             placeholder="1234567890"
                                         />
                                     </div>
@@ -177,7 +177,7 @@ export default function SettingsPage() {
                                             type="text"
                                             value={settings.pixels?.googleAnalyticsId || ''}
                                             onChange={(e) => setSettings({ ...settings, pixels: { ...settings.pixels, googleAnalyticsId: e.target.value } })}
-                                            className="w-full px-4 py-2 rounded-xl border-[2px] border-gray-200 focus:border-brand-dark outline-none font-medium text-sm"
+                                            className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-gray-400 outline-none font-medium text-sm"
                                             placeholder="G-XXXXXXXXXX"
                                         />
                                     </div>
@@ -187,7 +187,7 @@ export default function SettingsPage() {
                                             type="text"
                                             value={settings.pixels?.tiktokPixelId || ''}
                                             onChange={(e) => setSettings({ ...settings, pixels: { ...settings.pixels, tiktokPixelId: e.target.value } })}
-                                            className="w-full px-4 py-2 rounded-xl border-[2px] border-gray-200 focus:border-brand-dark outline-none font-medium text-sm"
+                                            className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-gray-400 outline-none font-medium text-sm"
                                             placeholder="CXXXXXXXXXXXX"
                                         />
                                     </div>

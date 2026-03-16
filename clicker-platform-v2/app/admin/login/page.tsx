@@ -48,7 +48,7 @@ function AdminLoginForm() {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-100">
-            <div className="bg-white p-8 rounded-2xl shadow-lg max-w-sm w-full border-[3px] border-brand-dark">
+            <div className="bg-white p-8 rounded-2xl shadow-lg max-w-sm w-full border border-gray-200">
                 <div className="flex justify-center mb-6">
                     <div className="relative w-20 h-20">
                         <Image
@@ -75,7 +75,7 @@ function AdminLoginForm() {
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full px-4 py-2 rounded-lg border-[2px] border-gray-300 focus:border-brand-dark focus:ring-0 outline-none transition-colors"
+                            className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-gray-400 focus:ring-0 outline-none transition-colors"
                             required
                         />
                     </div>
@@ -85,14 +85,14 @@ function AdminLoginForm() {
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full px-4 py-2 rounded-lg border-[2px] border-gray-300 focus:border-brand-dark focus:ring-0 outline-none transition-colors"
+                            className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-gray-400 focus:ring-0 outline-none transition-colors"
                             required
                         />
                     </div>
 
                     <button
                         type="submit"
-                        className="w-full bg-brand-dark text-brand-green font-black uppercase py-3 rounded-xl border-[3px] border-brand-dark hover:bg-brand-green hover:text-brand-dark transition-all shadow-sticker hover:shadow-none translate-x-0 hover:translate-x-[2px] hover:translate-y-[2px]"
+                        className="w-full bg-brand-dark text-brand-green font-black uppercase py-3 rounded-xl border border-gray-200 hover:bg-brand-green hover:text-brand-dark transition-all shadow-sm translate-x-0 hover:translate-x-[2px] hover:translate-y-[2px]"
                     >
                         Enter Dashboard
                     </button>

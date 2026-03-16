@@ -75,7 +75,7 @@ function FocalPointPicker({ imageUrl, value, onChange }: {
 
     return (
         <div>
-            <label className="block text-xs font-bold text-neutral-500 mb-2 uppercase tracking-wider">
+            <label className="block text-xs font-medium text-neutral-500 mb-2">
                 Focal Point <span className="normal-case font-normal text-neutral-600 ml-1">drag to set focus area</span>
             </label>
             <div
@@ -115,7 +115,7 @@ const TITLE_SIZES = [
 ];
 
 const inputClass = "w-full px-4 py-2.5 bg-neutral-800 border border-neutral-700 rounded-xl text-sm text-neutral-200 placeholder-neutral-600 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-medium";
-const labelClass = "block text-xs font-bold text-neutral-500 mb-1 uppercase tracking-wider";
+const labelClass = "block text-xs font-medium text-neutral-500 mb-1";
 const sectionClass = "p-3 bg-neutral-900/50 rounded-xl border border-neutral-800 space-y-3";
 
 const ColorInput = ({ label, value, onChange, onClear }: {
@@ -183,7 +183,7 @@ export const HeroForm = ({ data, onChange }: HeroFormProps) => {
                 <input type="text" value={safeData.tagline || ''} onChange={(e) => handleChange('tagline', e.target.value)}
                     className={inputClass} placeholder="e.g. Your quality brand" />
                 <div className="mt-1.5">
-                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider block mb-1">Tagline Color</label>
+                    <label className="text-xs font-medium text-neutral-500 block mb-1">Tagline Color</label>
                     <ColorInput value={safeData.taglineColor} onChange={(hex) => handleChange('taglineColor', hex)}
                         onClear={() => handleChange('taglineColor', null)} label="Tagline Color" />
                 </div>
@@ -207,7 +207,7 @@ export const HeroForm = ({ data, onChange }: HeroFormProps) => {
                     ))}
                 </div>
                 <div className="mt-2">
-                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider block mb-1">Title Color</label>
+                    <label className="text-xs font-medium text-neutral-500 block mb-1">Title Color</label>
                     <ColorInput value={safeData.titleColor} onChange={(hex) => handleChange('titleColor', hex)}
                         onClear={() => handleChange('titleColor', null)} label="Title Color" />
                 </div>
@@ -219,7 +219,7 @@ export const HeroForm = ({ data, onChange }: HeroFormProps) => {
                 <input type="text" value={safeData.subtitle || ''} onChange={(e) => handleChange('subtitle', e.target.value)}
                     className={inputClass} placeholder="Brief description or tagline" />
                 <div className="mt-1.5">
-                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider block mb-1">Subtitle Color</label>
+                    <label className="text-xs font-medium text-neutral-500 block mb-1">Subtitle Color</label>
                     <ColorInput value={safeData.subtitleColor} onChange={(hex) => handleChange('subtitleColor', hex)}
                         onClear={() => handleChange('subtitleColor', null)} label="Subtitle Color" />
                 </div>

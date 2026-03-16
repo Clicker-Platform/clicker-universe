@@ -236,7 +236,7 @@ export default function POSReportsPage() {
             </div>
 
             {/* SCREEN ONLY VIEW */}
-            <div className="bg-white rounded-3xl border-[3px] border-brand-dark shadow-sm overflow-hidden flex flex-col min-h-[600px] h-full print:hidden">
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col min-h-[600px] h-full print:hidden">
                 {/* Header / Toolbar (Controls) */}
                 <div className="p-4 border-b border-gray-100 bg-white flex flex-col xl:flex-row gap-4 justify-between items-start xl:items-center">
                     {/* Left Side: Tabs & Date */}
