@@ -106,7 +106,9 @@ app/admin/(dashboard)/AdminSidebar.tsx          ← toggle button (Moon/Sun icon
 | Badge green | `bg-green-50 text-green-700` | `dark:bg-green-950/30 dark:text-green-400` |
 | Badge blue | `bg-blue-100 text-blue-700` | `dark:bg-blue-950/30 dark:text-blue-400` |
 
-**Never change:** `text-brand-dark`, `bg-brand-dark`, `text-brand-green`, `bg-brand-green` — brand colors work on both themes.
+**Never change:** `text-brand-green`, `bg-brand-green` — these brand accent colors work on both themes.
+
+**Note on `text-brand-dark`:** This class is globally overridden in `.dark` scope via `globals.css` (`.dark .text-brand-dark { color: #e5e5e5 }`). Do not add per-element `dark:text-neutral-*` overrides for `text-brand-dark` — the CSS rule handles it globally.
 
 ---
 

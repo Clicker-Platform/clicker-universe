@@ -91,7 +91,7 @@ export default function AdminDashboard() {
         <div>
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
                 <div>
-                    <h1 className="text-3xl font-black text-brand-dark dark:text-neutral-100 mb-2 uppercase">Dashboard</h1>
+                    <h1 className="text-3xl font-black text-brand-dark mb-2 uppercase">Dashboard</h1>
                     <p className="text-gray-600 dark:text-neutral-400 font-medium">Welcome back! Manage your content below.</p>
                 </div>
 
@@ -107,7 +107,7 @@ export default function AdminDashboard() {
                     <button
                         onClick={() => setAutoRefresh(!autoRefresh)}
                         className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 ${autoRefresh
-                            ? 'bg-brand-green/10 text-brand-dark dark:text-neutral-200'
+                            ? 'bg-brand-green/10 text-brand-dark'
                             : 'bg-gray-50 dark:bg-neutral-800 text-gray-500 dark:text-neutral-500 hover:bg-gray-100 dark:hover:bg-neutral-700'
                             }`}
                     >
@@ -127,33 +127,33 @@ export default function AdminDashboard() {
             </div>
 
             {/* Content Overview */}
-            <h2 className="text-xl font-bold mb-4 text-brand-dark dark:text-neutral-100 flex items-center gap-2">
+            <h2 className="text-xl font-bold mb-4 text-brand-dark flex items-center gap-2">
                 <TrendingUp size={24} /> Content Overview
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
                 <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm">
-                    <div className="flex items-center gap-3 mb-2 text-brand-dark/70 dark:text-neutral-400">
+                    <div className="flex items-center gap-3 mb-2 text-brand-dark/70">
                         <LinkIcon size={20} /> <span className="font-bold">Total Links</span>
                     </div>
-                    <p className="text-4xl font-black text-brand-dark dark:text-neutral-100">{stats.linksCount}</p>
+                    <p className="text-4xl font-black text-brand-dark">{stats.linksCount}</p>
                 </div>
                 <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm">
-                    <div className="flex items-center gap-3 mb-2 text-brand-dark/70 dark:text-neutral-400">
+                    <div className="flex items-center gap-3 mb-2 text-brand-dark/70">
                         <ShoppingBag size={20} /> <span className="font-bold">Products</span>
                     </div>
-                    <p className="text-4xl font-black text-brand-dark dark:text-neutral-100">{stats.productsCount}</p>
+                    <p className="text-4xl font-black text-brand-dark">{stats.productsCount}</p>
                 </div>
                 <div className="bg-blue-50 dark:bg-blue-950/30 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm">
                     <div className="flex items-center gap-3 mb-2 text-blue-600">
                         <Eye size={20} /> <span className="font-bold">Total Page Views</span>
                     </div>
-                    <p className="text-4xl font-black text-brand-dark dark:text-neutral-100">{stats.pageViews}</p>
+                    <p className="text-4xl font-black text-brand-dark">{stats.pageViews}</p>
                 </div>
                 <div className="bg-green-50 dark:bg-green-950/30 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm">
                     <div className="flex items-center gap-3 mb-2 text-green-700 dark:text-neutral-300">
                         <MousePointer2 size={20} /> <span className="font-bold">Total Clicks</span>
                     </div>
-                    <p className="text-4xl font-black text-brand-dark dark:text-neutral-100">{stats.totalClicks}</p>
+                    <p className="text-4xl font-black text-brand-dark">{stats.totalClicks}</p>
                 </div>
             </div>
 
@@ -162,7 +162,7 @@ export default function AdminDashboard() {
 
                 {/* Top Links */}
                 <div>
-                    <h2 className="text-xl font-bold mb-4 text-brand-dark dark:text-neutral-100 flex items-center gap-2">
+                    <h2 className="text-xl font-bold mb-4 text-brand-dark flex items-center gap-2">
                         Top Links <span className="text-sm font-normal text-gray-500 dark:text-neutral-500">(by clicks)</span>
                     </h2>
                     <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 overflow-hidden shadow-sm">
@@ -173,10 +173,10 @@ export default function AdminDashboard() {
                                 {topLinks.map(data => (
                                     <div key={data.id} className="p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-neutral-800">
                                         <div className="flex-1 min-w-0 pr-4">
-                                            <p className="font-bold text-brand-dark dark:text-neutral-200 truncate">{data.title}</p>
+                                            <p className="font-bold text-brand-dark truncate">{data.title}</p>
                                             <p className="text-sm text-gray-500 dark:text-neutral-500 truncate">{data.url}</p>
                                         </div>
-                                        <div className="bg-brand-green/20 text-brand-dark dark:text-neutral-200 px-3 py-1 rounded-full font-bold text-sm">
+                                        <div className="bg-brand-green/20 text-brand-dark px-3 py-1 rounded-full font-bold text-sm">
                                             {data.clicks || 0} clicks
                                         </div>
                                     </div>
@@ -188,7 +188,7 @@ export default function AdminDashboard() {
 
                 {/* Top Products */}
                 <div>
-                    <h2 className="text-xl font-bold mb-4 text-brand-dark dark:text-neutral-100 flex items-center gap-2">
+                    <h2 className="text-xl font-bold mb-4 text-brand-dark flex items-center gap-2">
                         Top Products <span className="text-sm font-normal text-gray-500 dark:text-neutral-500">(by clicks)</span>
                     </h2>
                     <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 overflow-hidden shadow-sm">
@@ -209,7 +209,7 @@ export default function AdminDashboard() {
                                                     </div>
                                                 )}
                                                 <div>
-                                                    <p className="font-bold text-brand-dark dark:text-neutral-200 truncate">{productName}</p>
+                                                    <p className="font-bold text-brand-dark truncate">{productName}</p>
                                                     <p className="text-sm text-gray-500 dark:text-neutral-500">{data.price}</p>
                                                 </div>
                                             </div>

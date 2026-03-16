@@ -43,8 +43,12 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Admin dark mode: override brand-green body color with neutral for legibility */
+/* Admin dark mode: override brand-green body color and text-brand-dark with neutral for legibility */
 .dark body {
+  color: #e5e5e5;
+}
+
+.dark .text-brand-dark {
   color: #e5e5e5;
 }
 
