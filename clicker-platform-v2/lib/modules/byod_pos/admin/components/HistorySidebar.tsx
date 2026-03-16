@@ -110,8 +110,8 @@ export function HistorySidebar({ isOpen, onClose, group }: HistorySidebarProps) 
                                 <div className="flex justify-between items-start mb-6">
                                     <div>
                                         <h3 className="text-2xl font-black text-gray-900 dark:text-neutral-100 mb-1">{group.label}</h3>
-                                        <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${group.status === 'paid' ? 'bg-green-100 text-green-700' :
-                                            group.status === 'cancelled' ? 'bg-red-100 text-red-700' : 'bg-gray-100 dark:bg-neutral-800 text-gray-700 dark:text-neutral-300'
+                                        <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${group.status === 'paid' ? 'bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-400' :
+                                            group.status === 'cancelled' ? 'bg-red-100 dark:bg-red-950/30 text-red-700 dark:text-red-400' : 'bg-gray-100 dark:bg-neutral-800 text-gray-700 dark:text-neutral-300'
                                             }`}>
                                             {group.status === 'paid' ? <CheckCircle size={12} /> : <XCircle size={12} />}
                                             {group.status}
@@ -207,7 +207,7 @@ export function HistorySidebar({ isOpen, onClose, group }: HistorySidebarProps) 
                                                     >
                                                         <Printer size={16} />
                                                     </button>
-                                                    <div className={`font-bold ${order.status === 'cancelled' ? 'text-red-600' : 'text-green-600'
+                                                    <div className={`font-bold ${order.status === 'cancelled' ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'
                                                         }`}>
                                                         {order.status.toUpperCase()}
                                                     </div>

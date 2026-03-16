@@ -166,7 +166,7 @@ export default function AgentSettingsPage() {
                                     className="sr-only peer"
                                 />
                                 <div className="w-14 h-7 bg-gray-200 dark:bg-neutral-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 dark:after:border-neutral-700 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-green-500"></div>
-                                <span className={`ml-3 text-sm font-medium ${config.enabled ? 'text-green-600' : 'text-gray-500 dark:text-neutral-500'}`}>
+                                <span className={`ml-3 text-sm font-medium ${config.enabled ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-neutral-500'}`}>
                                     {config.enabled ? 'Active' : 'Disabled'}
                                 </span>
                             </label>

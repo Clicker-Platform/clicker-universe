@@ -124,7 +124,7 @@ export function AccountSecurity() {
                     </h3>
 
                     {emailMessage.text && (
-                        <div className={`p-4 rounded-xl mb-6 font-bold flex items-center gap-2 ${emailMessage.type === 'error' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                        <div className={`p-4 rounded-xl mb-6 font-bold flex items-center gap-2 ${emailMessage.type === 'error' ? 'bg-red-100 dark:bg-red-950/30 text-red-700 dark:text-red-400' : 'bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-400'}`}>
                             {emailMessage.type === 'error' ? <AlertTriangle size={20} /> : <CheckCircle size={20} />}
                             {emailMessage.text}
                         </div>
@@ -176,7 +176,7 @@ export function AccountSecurity() {
                     </h3>
 
                     {passwordMessage.text && (
-                        <div className={`p-4 rounded-xl mb-6 font-bold flex items-center gap-2 ${passwordMessage.type === 'error' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                        <div className={`p-4 rounded-xl mb-6 font-bold flex items-center gap-2 ${passwordMessage.type === 'error' ? 'bg-red-100 dark:bg-red-950/30 text-red-700 dark:text-red-400' : 'bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-400'}`}>
                             {passwordMessage.type === 'error' ? <AlertTriangle size={20} /> : <CheckCircle size={20} />}
                             {passwordMessage.text}
                         </div>

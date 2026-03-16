@@ -20,11 +20,11 @@ export function POSOrderRow({ order, onClick, expanded }: POSOrderRowProps) {
             `}
         >
             <div className="flex items-center gap-4 min-w-0">
-                <div className={`p-2 rounded-full ${order.status === 'completed' ? 'bg-green-100 text-green-600' :
-                    order.status === 'ready' ? 'bg-emerald-100 text-emerald-600' :
-                        order.status === 'preparing' ? 'bg-blue-100 text-blue-600' :
-                            (order.status === 'pending' || order.paymentStatus === 'pending_confirmation') ? 'bg-yellow-100 text-yellow-600' :
-                                'bg-red-100 text-red-600'
+                <div className={`p-2 rounded-full ${order.status === 'completed' ? 'bg-green-100 dark:bg-green-950/30 text-green-600 dark:text-green-400' :
+                    order.status === 'ready' ? 'bg-emerald-100 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400' :
+                        order.status === 'preparing' ? 'bg-blue-100 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400' :
+                            (order.status === 'pending' || order.paymentStatus === 'pending_confirmation') ? 'bg-yellow-100 dark:bg-yellow-950/30 text-yellow-600 dark:text-yellow-400' :
+                                'bg-red-100 dark:bg-red-950/30 text-red-600 dark:text-red-400'
                     }`}>
                     {order.status === 'completed' ? <CheckCircle size={18} /> :
                         order.status === 'ready' ? <CheckCircle size={18} /> :

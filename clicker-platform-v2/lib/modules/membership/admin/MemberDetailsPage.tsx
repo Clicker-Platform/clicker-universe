@@ -197,7 +197,7 @@ export default function MemberDetailsPage() {
                             <button
                                 onClick={() => handleManualAdjustmentClick(parsedAmount)}
                                 disabled={adjusting || parsedAmount <= 0 || !canEdit}
-                                className="w-full flex items-center justify-center gap-2 bg-green-50 text-green-700 p-2.5 rounded-xl font-bold hover:bg-green-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                                className="w-full flex items-center justify-center gap-2 bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-400 p-2.5 rounded-xl font-bold hover:bg-green-100 dark:hover:bg-green-950/50 disabled:opacity-50 disabled:cursor-not-allowed transition"
                             >
                                 <PlusCircle size={18} /> Give {parsedAmount > 0 ? parsedAmount : ''} Pts
                             </button>
@@ -224,7 +224,7 @@ export default function MemberDetailsPage() {
                             history.map(tx => (
                                 <div key={tx.id} className="p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-neutral-800/50">
                                     <div className="flex items-center gap-4">
-                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg ${tx.pointsDelta > 0 ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg ${tx.pointsDelta > 0 ? 'bg-green-100 dark:bg-green-950/30 text-green-600 dark:text-green-400' : 'bg-red-100 dark:bg-red-950/30 text-red-600 dark:text-red-400'}`}>
                                             {tx.pointsDelta > 0 ? '+' : '-'}
                                         </div>
                                         <div>
@@ -242,7 +242,7 @@ export default function MemberDetailsPage() {
                                                 {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(tx.spendAmount)}
                                             </p>
                                         ) : null}
-                                        <p className={`font-bold text-sm ${tx.pointsDelta > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                        <p className={`font-bold text-sm ${tx.pointsDelta > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                                             {tx.pointsDelta > 0 ? '+' : ''}{tx.pointsDelta} pts
                                         </p>
                                         <span title={`Ref: ${tx.sourceRefId}`} className="text-[10px] text-gray-300 dark:text-neutral-700 font-mono cursor-help">

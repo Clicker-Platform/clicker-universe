@@ -92,7 +92,7 @@ export default function ClaimAdminPage() {
 
                 <div className="space-y-4">
                     {status === 'success' ? (
-                        <div className="bg-green-50 text-green-700 p-3 rounded-md font-medium">
+                        <div className="bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-400 p-3 rounded-md font-medium">
                             {message}
                         </div>
                     ) : status === 'error' ? (

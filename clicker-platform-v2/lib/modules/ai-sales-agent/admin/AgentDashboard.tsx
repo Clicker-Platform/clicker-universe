@@ -54,7 +54,7 @@ export default function AgentDashboard() {
                         <div className="p-3 bg-purple-50 rounded-xl">
                             <Bot className="h-6 w-6 text-purple-600" />
                         </div>
-                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${status?.enabled ? 'bg-green-100 text-green-700' : 'bg-gray-100 dark:bg-neutral-800 text-gray-500 dark:text-neutral-500'}`}>
+                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${status?.enabled ? 'bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-neutral-800 text-gray-500 dark:text-neutral-500'}`}>
                             {status?.enabled ? 'ACTIVE' : 'DISABLED'}
                         </span>
                     </div>

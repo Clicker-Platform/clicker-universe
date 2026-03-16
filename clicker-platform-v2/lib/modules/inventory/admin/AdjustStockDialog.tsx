@@ -74,8 +74,8 @@ export function AdjustStockDialog({ isOpen, onClose, item, onConfirm }: AdjustSt
                             autoFocus
                         />
                         <p className="text-xs text-gray-500 dark:text-neutral-500 mt-1 flex items-center gap-1">
-                            Use <span className="font-mono bg-green-100 text-green-700 px-1 rounded">+</span> to add,
-                            <span className="font-mono bg-red-100 text-red-700 px-1 rounded">-</span> to remove.
+                            Use <span className="font-mono bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-400 px-1 rounded">+</span> to add,
+                            <span className="font-mono bg-red-100 dark:bg-red-950/30 text-red-700 dark:text-red-400 px-1 rounded">-</span> to remove.
                         </p>
                     </div>
 

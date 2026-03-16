@@ -74,7 +74,7 @@ export default function SetupMembershipPage() {
             </p>
 
             {status === 'success' && (
-                <div className="bg-green-100 text-green-800 p-4 rounded-lg mb-4">
+                <div className="bg-green-100 dark:bg-green-950/30 text-green-800 dark:text-green-400 p-4 rounded-lg mb-4">
                     ✅ Success! Access the <a href="/admin/membership/settings" className="underline font-bold">Settings Page</a> now.
                 </div>
             )}

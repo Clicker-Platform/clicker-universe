@@ -40,14 +40,14 @@ export function HistoryBillRow({ group, onClick }: HistoryBillRowProps) {
 
     // Determine aggregate status color/icon
     let StatusIcon = CheckCircle;
-    let statusColor = 'text-green-500 bg-green-50';
+    let statusColor = 'text-green-500 dark:text-green-400 bg-green-50 dark:bg-green-950/30';
 
     if (group.status === 'cancelled') {
         StatusIcon = XCircle;
-        statusColor = 'text-red-500 bg-red-50';
+        statusColor = 'text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-950/30';
     } else if (group.status === 'mixed') {
         StatusIcon = Clock; // Or some other icon for mixed
-        statusColor = 'text-orange-500 bg-orange-50';
+        statusColor = 'text-orange-500 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/30';
     }
 
     return (
@@ -94,8 +94,8 @@ export function HistoryBillRow({ group, onClick }: HistoryBillRowProps) {
                     <div className="font-bold text-gray-900 dark:text-neutral-100">
                         {formatCurrency(group.total)}
                     </div>
-                    <div className={`text-xs font-bold uppercase ${group.status === 'paid' ? 'text-green-600' :
-                        group.status === 'cancelled' ? 'text-red-600' : 'text-gray-500 dark:text-neutral-500'
+                    <div className={`text-xs font-bold uppercase ${group.status === 'paid' ? 'text-green-600 dark:text-green-400' :
+                        group.status === 'cancelled' ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-neutral-500'
                         }`}>
                         {group.status}
                     </div>

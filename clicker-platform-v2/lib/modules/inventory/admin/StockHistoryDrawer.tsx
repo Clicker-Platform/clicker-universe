@@ -89,14 +89,14 @@ export function StockHistoryDrawer({ isOpen, onClose, item }: StockHistoryDrawer
                                     <div key={tx.id} className="p-6 hover:bg-gray-50 dark:hover:bg-neutral-800/50 transition-colors flex gap-4">
                                         <div className={`
                                             flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center
-                                            ${isPositive ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}
+                                            ${isPositive ? 'bg-green-100 dark:bg-green-950/30 text-green-600 dark:text-green-400' : 'bg-red-100 dark:bg-red-950/30 text-red-600 dark:text-red-400'}
                                         `}>
                                             {isPositive ? <TrendingUp size={18} /> : <TrendingDown size={18} />}
                                         </div>
 
                                         <div className="flex-1 min-w-0">
                                             <div className="flex justify-between items-start mb-1">
-                                                <span className={`font-bold text-lg ${isPositive ? 'text-green-700' : 'text-red-700'}`}>
+                                                <span className={`font-bold text-lg ${isPositive ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}>
                                                     {isPositive ? '+' : ''}{tx.change} {item.unit}
                                                 </span>
                                                 <span className="text-xs font-medium px-2 py-1 rounded-md bg-gray-100 dark:bg-neutral-800 text-gray-600 dark:text-neutral-400 uppercase tracking-wide">

@@ -276,7 +276,7 @@ export default function InventoryPage() {
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4 text-center">
-                                                        <span className={`inline-block px-3 py-1 rounded-full text-sm font-bold ${isLowStock ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-700'
+                                                        <span className={`inline-block px-3 py-1 rounded-full text-sm font-bold ${isLowStock ? 'bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400' : 'bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-400'
                                                             }`}>
                                                             {item.currentStock}
                                                         </span>
@@ -345,7 +345,7 @@ export default function InventoryPage() {
                                                         </div>
                                                         <h3 className="font-bold text-brand-dark text-lg leading-tight">{item.name}</h3>
                                                     </div>
-                                                    <span className={`inline-flex items-center justify-center min-w-[3rem] px-2 py-1 rounded-lg text-sm font-bold ${isLowStock ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-700'
+                                                    <span className={`inline-flex items-center justify-center min-w-[3rem] px-2 py-1 rounded-lg text-sm font-bold ${isLowStock ? 'bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400' : 'bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-400'
                                                         }`}>
                                                         {item.currentStock} <span className="text-[10px] ml-1 opacity-70 uppercase">{item.unit}</span>
                                                     </span>

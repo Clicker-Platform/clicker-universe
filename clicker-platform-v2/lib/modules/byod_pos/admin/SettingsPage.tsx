@@ -147,7 +147,7 @@ export default function POSSettingsPage() {
                 {/* Payment Methods */}
                 <div className="col-span-1 xl:col-span-2 bg-white dark:bg-neutral-900 rounded-3xl border-[3px] border-brand-dark p-6 shadow-sm">
                     <div className="flex items-center gap-3 mb-6">
-                        <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 border border-green-200">
+                        <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-950/30 flex items-center justify-center text-green-600 dark:text-green-400 border border-green-200 dark:border-green-900/50">
                             <CreditCard size={20} />
                         </div>
                         <h3 className="font-bold text-xl text-gray-800 dark:text-neutral-200">Accepted Payment Methods</h3>
