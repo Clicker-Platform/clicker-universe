@@ -74,7 +74,7 @@ export function AvatarUpload({ currentAvatarUrl, onUploadComplete }: AvatarUploa
                 className={`
                     flex flex-col items-center justify-center w-full h-48 
                     border-[3px] border-dashed rounded-xl cursor-pointer transition-colors
-                    ${isDragging ? 'border-brand-dark bg-gray-50' : 'border-gray-300 hover:border-brand-dark hover:bg-gray-50'}
+                    ${isDragging ? 'border-brand-dark bg-gray-50 dark:bg-neutral-800/50' : 'border-gray-300 dark:border-neutral-700 hover:border-brand-dark hover:bg-gray-50 dark:hover:bg-neutral-800/50'}
                     ${uploading ? 'opacity-50 pointer-events-none' : ''}
                 `}
                 onDragOver={handleDragOver}
@@ -91,7 +91,7 @@ export function AvatarUpload({ currentAvatarUrl, onUploadComplete }: AvatarUploa
                 />
 
                 {uploading ? (
-                    <div className="flex flex-col items-center text-gray-500">
+                    <div className="flex flex-col items-center text-gray-500 dark:text-neutral-500">
                         <Loader2 className="animate-spin mb-2" size={32} />
                         <span className="font-bold">Uploading...</span>
                     </div>
@@ -104,18 +104,18 @@ export function AvatarUpload({ currentAvatarUrl, onUploadComplete }: AvatarUploa
                                     alt="Current Avatar"
                                     className="w-32 h-32 rounded-full object-cover border-[3px] border-white shadow-md"
                                 />
-                                <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl">
+                                <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 dark:bg-neutral-900/80 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl">
                                     <Upload size={32} className="text-brand-dark mb-2" />
                                     <span className="font-bold text-brand-dark">Change Avatar</span>
                                     <span className="text-sm text-gray-500">Max 5MB</span>
                                 </div>
                             </div>
                         ) : (
-                            <div className="flex flex-col items-center text-gray-500">
-                                <Upload size={48} className="mb-3 text-gray-300" />
+                            <div className="flex flex-col items-center text-gray-500 dark:text-neutral-500">
+                                <Upload size={48} className="mb-3 text-gray-300 dark:text-neutral-600" />
                                 <span className="font-bold text-lg mb-1">Upload Avatar</span>
                                 <span className="text-sm">Drag & drop or click to upload</span>
-                                <span className="text-xs mt-2 text-gray-400">Max 5MB</span>
+                                <span className="text-xs mt-2 text-gray-400 dark:text-neutral-600">Max 5MB</span>
                             </div>
                         )}
                     </>

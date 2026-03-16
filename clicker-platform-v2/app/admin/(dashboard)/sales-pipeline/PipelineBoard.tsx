@@ -104,17 +104,17 @@ export function PipelineBoard({ stages, leads }: PipelineBoardProps) {
     return (
         <div className="flex flex-col h-full overflow-hidden">
             {/* Toolbar */}
-            <div className="p-4 border-b border-gray-100 bg-white flex justify-between items-center flex-shrink-0">
+            <div className="p-4 border-b border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 flex justify-between items-center flex-shrink-0">
                 <div className="flex items-center gap-2">
-                    <h2 className="text-lg font-bold text-gray-800">Pipeline</h2>
-                    <span className="text-xs px-2 py-0.5 bg-gray-100 rounded-full text-gray-500 font-mono">
+                    <h2 className="text-lg font-bold text-gray-800 dark:text-neutral-200">Pipeline</h2>
+                    <span className="text-xs px-2 py-0.5 bg-gray-100 dark:bg-neutral-800 rounded-full text-gray-500 dark:text-neutral-500 font-mono">
                         {leads.length} Leads
                     </span>
                 </div>
                 <div className="flex items-center gap-2">
                     <button
                         onClick={() => setIsSettingsOpen(true)}
-                        className="p-2 text-gray-400 hover:text-brand-dark hover:bg-gray-100 rounded-lg transition-colors"
+                        className="p-2 text-gray-400 dark:text-neutral-600 hover:text-brand-dark hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-lg transition-colors"
                         title="Pipeline Settings"
                     >
                         <Settings className="w-5 h-5" />
@@ -135,7 +135,7 @@ export function PipelineBoard({ stages, leads }: PipelineBoardProps) {
                 onDragStart={handleDragStart}
                 onDragEnd={handleDragEnd}
             >
-                <div className="flex-1 overflow-x-auto overflow-y-hidden p-4 bg-gray-50/30">
+                <div className="flex-1 overflow-x-auto overflow-y-hidden p-4 bg-gray-50/30 dark:bg-neutral-900/30">
                     <div className="flex h-full gap-4 min-w-max">
                         {stages.map(stage => (
                             <StageColumn

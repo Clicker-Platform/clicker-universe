@@ -73,7 +73,7 @@ export default function KDSClient({ initialOrders = [] }: { initialOrders?: POSO
                         <Grid size={32} />
                         Kitchen Display
                     </h1>
-                    <p className="text-gray-600 font-medium">Order fulfillment & production queue</p>
+                    <p className="text-gray-600 dark:text-neutral-400 font-medium">Order fulfillment & production queue</p>
                 </div>
                 <div className="ml-auto flex items-center gap-2">
                     <span className="bg-brand-dark text-white px-3 py-1 rounded-full font-bold text-sm">
@@ -98,7 +98,7 @@ export default function KDSClient({ initialOrders = [] }: { initialOrders?: POSO
                 ))}
 
                 {kdsOrders.length === 0 && (
-                    <div className="col-span-full py-20 flex flex-col items-center justify-center text-gray-400 bg-white rounded-xl border border-dashed border-gray-200">
+                    <div className="col-span-full py-20 flex flex-col items-center justify-center text-gray-400 dark:text-neutral-600 bg-white dark:bg-neutral-900 rounded-xl border border-dashed border-gray-200 dark:border-neutral-800">
                         <ShoppingBag size={48} className="mb-4 opacity-20" />
                         <p className="font-bold text-lg">All caught up!</p>
                         <p className="text-sm">No active orders to prepare.</p>

@@ -16,7 +16,7 @@ export function BusinessSkeleton() {
             </div>
 
             {/* Content Area Skeleton */}
-            <div className="bg-white p-6 md:px-8 rounded-2xl border-[3px] border-gray-100 min-h-[400px]">
+            <div className="bg-white dark:bg-neutral-900 p-6 md:px-8 rounded-2xl border-[3px] border-gray-100 dark:border-neutral-800 min-h-[400px]">
                 <Skeleton className="h-20 w-full mb-6 rounded-xl" />
 
                 <div className="grid grid-cols-1 gap-6">
@@ -40,7 +40,7 @@ export function BusinessSkeleton() {
                     </div>
                 </div>
 
-                <div className="pt-6 mt-6 border-t border-gray-100">
+                <div className="pt-6 mt-6 border-t border-gray-100 dark:border-neutral-800">
                     <Skeleton className="h-12 w-48 rounded-xl" />
                 </div>
             </div>

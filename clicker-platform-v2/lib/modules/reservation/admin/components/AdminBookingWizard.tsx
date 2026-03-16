@@ -288,12 +288,12 @@ export default function AdminBookingWizard({
 
     if (step === 5) {
         return (
-            <div className="text-center p-8 bg-green-50 rounded-2xl border border-green-100 animate-in fade-in">
-                <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="text-center p-8 bg-green-50 dark:bg-green-950/30 rounded-2xl border border-green-100 animate-in fade-in">
+                <div className="w-16 h-16 bg-green-100 dark:bg-green-950/30 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Check size={32} strokeWidth={3} />
                 </div>
                 <h2 className="text-2xl font-black text-brand-dark mb-2">Booking Confirmed!</h2>
-                <div className="bg-white p-4 rounded-xl border border-dashed border-green-200 inline-block text-left text-sm text-gray-500 mb-6">
+                <div className="bg-white dark:bg-neutral-900 p-4 rounded-xl border border-dashed border-green-200 inline-block text-left text-sm text-gray-500 dark:text-neutral-500 mb-6">
                     <p>Reference: <span className="font-mono text-brand-dark">{bookingRef}</span></p>
                     <p>Date: <span className="font-bold text-brand-dark">{date.toLocaleDateString()} at {selectedTime}</span></p>
                 </div>
@@ -308,18 +308,18 @@ export default function AdminBookingWizard({
     }
 
     return (
-        <div className="bg-white min-h-[500px] flex flex-col">
+        <div className="bg-white dark:bg-neutral-900 min-h-[500px] flex flex-col">
             {/* Header Steps */}
-            <div className="bg-gray-50 border-b border-gray-100 p-4">
+            <div className="bg-gray-50 dark:bg-neutral-800/50 border-b border-gray-100 dark:border-neutral-800 p-4">
                 <div className="flex items-center justify-between mb-2">
                     {step > 1 ? (
-                        <button onClick={() => setStep(step - 1)} className="p-1 hover:bg-gray-200 rounded-lg text-gray-600">
+                        <button onClick={() => setStep(step - 1)} className="p-1 hover:bg-gray-200 dark:hover:bg-neutral-700 rounded-lg text-gray-600 dark:text-neutral-400">
                             <ChevronLeft size={20} /> Back
                         </button>
                     ) : (
                         <div />
                     )}
-                    <span className="font-bold text-xs uppercase text-gray-400">
+                    <span className="font-bold text-xs uppercase text-gray-400 dark:text-neutral-500">
                         Step {step} of 4
                     </span>
                     <div className="w-16"></div>
@@ -338,13 +338,13 @@ export default function AdminBookingWizard({
                 {step === 1 && (
                     <div className="space-y-3">
                         {services?.length === 0 ? (
-                            <div className="text-center py-10 text-gray-400">No services found.</div>
+                            <div className="text-center py-10 text-gray-400 dark:text-neutral-500">No services found.</div>
                         ) : (
                             services?.filter(s => s.isActive).map(service => (
                                 <button
                                     key={service.id}
                                     onClick={() => handleServiceSelect(service)}
-                                    className="w-full text-left p-4 rounded-xl border border-gray-100 hover:border-brand-dark hover:shadow-md transition-all group"
+                                    className="w-full text-left p-4 rounded-xl border border-gray-100 dark:border-neutral-800 hover:border-brand-dark hover:shadow-md transition-all group"
                                 >
                                     <div className="flex justify-between items-start mb-1">
                                         <h3 className="font-bold text-brand-dark group-hover:text-brand-blue transition-colors">
@@ -354,7 +354,7 @@ export default function AdminBookingWizard({
                                             {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(service.price)}
                                         </span>
                                     </div>
-                                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                                    <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-neutral-500">
                                         <Clock size={12} /> {service.durationMinutes} mins
                                     </div>
                                 </button>
@@ -368,14 +368,14 @@ export default function AdminBookingWizard({
                     <div className="space-y-3">
                         <button
                             onClick={() => handleStaffSelect(null)}
-                            className="w-full text-left p-4 rounded-xl border border-gray-100 hover:border-brand-dark hover:shadow-md transition-all flex items-center gap-4"
+                            className="w-full text-left p-4 rounded-xl border border-gray-100 dark:border-neutral-800 hover:border-brand-dark hover:shadow-md transition-all flex items-center gap-4"
                         >
-                            <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-400">
+                            <div className="w-10 h-10 bg-gray-100 dark:bg-neutral-800 rounded-full flex items-center justify-center text-gray-400 dark:text-neutral-500">
                                 <User size={20} />
                             </div>
                             <div>
                                 <h3 className="font-bold text-brand-dark">Any Available Staff</h3>
-                                <p className="text-xs text-gray-500">Auto-assign</p>
+                                <p className="text-xs text-gray-500 dark:text-neutral-500">Auto-assign</p>
                             </div>
                         </button>
 
@@ -383,7 +383,7 @@ export default function AdminBookingWizard({
                             <button
                                 key={staff.id}
                                 onClick={() => handleStaffSelect(staff)}
-                                className="w-full text-left p-4 rounded-xl border border-gray-100 hover:border-brand-dark hover:shadow-md transition-all flex items-center gap-4"
+                                className="w-full text-left p-4 rounded-xl border border-gray-100 dark:border-neutral-800 hover:border-brand-dark hover:shadow-md transition-all flex items-center gap-4"
                             >
                                 <div className="w-10 h-10 bg-brand-blue/10 text-brand-blue rounded-full flex items-center justify-center font-bold">
                                     {staff.name.charAt(0)}
@@ -392,7 +392,7 @@ export default function AdminBookingWizard({
                                     <h3 className="font-bold text-brand-dark">{staff.name}</h3>
                                     <div className="flex flex-wrap gap-1 mt-0.5">
                                         {(staff.label || 'Staff').split(',').map((tag, i) => (
-                                            <span key={i} className="text-[10px] uppercase font-bold text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
+                                            <span key={i} className="text-[10px] uppercase font-bold text-gray-500 dark:text-neutral-500 bg-gray-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded">
                                                 {tag.trim()}
                                             </span>
                                         ))}
@@ -406,27 +406,27 @@ export default function AdminBookingWizard({
                 {/* STEP 3: DATE & TIME */}
                 {step === 3 && (
                     <div>
-                        <div className="flex items-center justify-between mb-6 bg-gray-50 p-2 rounded-xl sticky top-0 z-10">
-                            <button onClick={() => handleDateChange(-1)} className="p-2 hover:bg-white rounded-lg transition-colors">
+                        <div className="flex items-center justify-between mb-6 bg-gray-50 dark:bg-neutral-800/50 p-2 rounded-xl sticky top-0 z-10">
+                            <button onClick={() => handleDateChange(-1)} className="p-2 hover:bg-white dark:hover:bg-neutral-700 rounded-lg transition-colors">
                                 <ChevronLeft size={20} />
                             </button>
                             <div className="text-center">
-                                <p className="text-xs font-bold text-gray-400 uppercase">{date.toLocaleDateString(undefined, { weekday: 'long' })}</p>
+                                <p className="text-xs font-bold text-gray-400 dark:text-neutral-500 uppercase">{date.toLocaleDateString(undefined, { weekday: 'long' })}</p>
                                 <p className="font-black text-brand-dark">{date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</p>
                             </div>
-                            <button onClick={() => handleDateChange(1)} className="p-2 hover:bg-white rounded-lg transition-colors">
+                            <button onClick={() => handleDateChange(1)} className="p-2 hover:bg-white dark:hover:bg-neutral-700 rounded-lg transition-colors">
                                 <ChevronRight size={20} />
                             </button>
                         </div>
 
                         <div className="grid grid-cols-3 gap-3">
                             {loadingSlots ? (
-                                <div className="col-span-3 text-center py-8 text-gray-400 flex flex-col items-center">
+                                <div className="col-span-3 text-center py-8 text-gray-400 dark:text-neutral-500 flex flex-col items-center">
                                     <Loader2 className="animate-spin mb-2" />
                                     Checking availability...
                                 </div>
                             ) : generatedSlots.length === 0 ? (
-                                <div className="col-span-3 text-center py-8 text-gray-400">
+                                <div className="col-span-3 text-center py-8 text-gray-400 dark:text-neutral-500">
                                     No slots available for this date.
                                 </div>
                             ) : (
@@ -436,7 +436,7 @@ export default function AdminBookingWizard({
                                         onClick={() => handleTimeSelect(time)}
                                         className={`py-3 rounded-xl text-sm font-bold border transition-all ${selectedTime === time
                                             ? 'bg-brand-dark text-white border-brand-dark scale-105 shadow-lg'
-                                            : 'bg-white text-gray-600 border-gray-200 hover:border-brand-dark hover:text-brand-dark'
+                                            : 'bg-white dark:bg-neutral-800 text-gray-600 dark:text-neutral-400 border-gray-200 dark:border-neutral-700 hover:border-brand-dark hover:text-brand-dark'
                                             }`}
                                     >
                                         {time}
@@ -444,7 +444,7 @@ export default function AdminBookingWizard({
                                 )))}
                         </div>
 
-                        <div className="mt-8 flex justify-end sticky bottom-0 bg-white pt-4 border-t border-gray-50">
+                        <div className="mt-8 flex justify-end sticky bottom-0 bg-white dark:bg-neutral-900 pt-4 border-t border-gray-50 dark:border-neutral-800">
                             <button
                                 disabled={!selectedTime}
                                 onClick={() => setStep(4)}
@@ -459,19 +459,19 @@ export default function AdminBookingWizard({
                 {/* STEP 4: DETAILS */}
                 {step === 4 && (
                     <form onSubmit={handleSubmit} className="space-y-4">
-                        <div className="bg-gray-50 p-4 rounded-xl mb-6 text-sm">
+                        <div className="bg-gray-50 dark:bg-neutral-800/50 p-4 rounded-xl mb-6 text-sm">
                             <div className="flex justify-between mb-1">
-                                <span className="text-gray-500">Service:</span>
+                                <span className="text-gray-500 dark:text-neutral-500">Service:</span>
                                 <span className="font-bold text-brand-dark">{selectedService?.name}</span>
                             </div>
                             {selectedStaff && (
                                 <div className="flex justify-between mb-1">
-                                    <span className="text-gray-500">Staff:</span>
+                                    <span className="text-gray-500 dark:text-neutral-500">Staff:</span>
                                     <span className="font-bold text-brand-dark">{selectedStaff.name}</span>
                                 </div>
                             )}
                             <div className="flex justify-between">
-                                <span className="text-gray-500">Time:</span>
+                                <span className="text-gray-500 dark:text-neutral-500">Time:</span>
                                 <span className="font-bold text-brand-dark">{date.toLocaleDateString()} at {selectedTime}</span>
                             </div>
                         </div>
@@ -487,12 +487,12 @@ export default function AdminBookingWizard({
                                     value={searchTerm}
                                     onChange={e => handleSearch(e.target.value)}
                                     placeholder="Search by name or phone..."
-                                    className="w-full pl-9 pr-4 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:border-brand-dark"
+                                    className="w-full pl-9 pr-4 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 text-sm focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
                                 />
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-neutral-600" size={14} />
 
                                 {(searchResults?.length > 0) && (
-                                    <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-xl border border-gray-100 z-50 max-h-[200px] overflow-y-auto">
+                                    <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-neutral-900 rounded-xl shadow-xl border border-gray-100 dark:border-neutral-800 z-50 max-h-[200px] overflow-y-auto">
                                         {searchResults.map((member: any) => (
                                             <button
                                                 key={member.id}
@@ -508,11 +508,11 @@ export default function AdminBookingWizard({
                                                     setSearchTerm('');
                                                     setSearchResults([]);
                                                 }}
-                                                className="w-full text-left p-3 hover:bg-gray-50 border-b border-gray-50 flex items-center justify-between group"
+                                                className="w-full text-left p-3 hover:bg-gray-50 dark:hover:bg-neutral-800 border-b border-gray-50 dark:border-neutral-800 flex items-center justify-between group"
                                             >
                                                 <div>
-                                                    <div className="font-bold text-gray-800 text-sm group-hover:text-brand-dark">{member.fullName}</div>
-                                                    <div className="text-xs text-gray-500">{member.phoneNumber}</div>
+                                                    <div className="font-bold text-gray-800 dark:text-neutral-200 text-sm group-hover:text-brand-dark">{member.fullName}</div>
+                                                    <div className="text-xs text-gray-500 dark:text-neutral-500">{member.phoneNumber}</div>
                                                 </div>
                                                 <div className="text-xs font-bold text-brand-blue px-2 py-1 bg-brand-blue/10 rounded">Select</div>
                                             </button>
@@ -523,15 +523,15 @@ export default function AdminBookingWizard({
                         </div>
 
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Full Name</label>
+                            <label className="block text-xs font-bold text-gray-500 dark:text-neutral-500 uppercase mb-1">Full Name</label>
                             <div className="relative">
-                                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-neutral-600" size={18} />
                                 <input
                                     required
                                     type="text"
                                     value={customerInfo.name}
                                     onChange={e => setCustomerInfo({ ...customerInfo, name: e.target.value })}
-                                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-dark"
+                                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
                                     placeholder="Guest Name / Walk-in"
                                 />
                             </div>
@@ -539,33 +539,33 @@ export default function AdminBookingWizard({
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Phone</label>
+                                <label className="block text-xs font-bold text-gray-500 dark:text-neutral-500 uppercase mb-1">Phone</label>
                                 <input
                                     type="tel"
                                     value={customerInfo.phone}
                                     onChange={e => setCustomerInfo({ ...customerInfo, phone: e.target.value })}
-                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-dark"
+                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
                                     placeholder="+62..."
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Email (Optional)</label>
+                                <label className="block text-xs font-bold text-gray-500 dark:text-neutral-500 uppercase mb-1">Email (Optional)</label>
                                 <input
                                     type="email"
                                     value={customerInfo.email}
                                     onChange={e => setCustomerInfo({ ...customerInfo, email: e.target.value })}
-                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-dark"
+                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
                                     placeholder="email@example.com"
                                 />
                             </div>
                         </div>
 
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Notes</label>
+                            <label className="block text-xs font-bold text-gray-500 dark:text-neutral-500 uppercase mb-1">Notes</label>
                             <textarea
                                 value={customerInfo.notes}
                                 onChange={e => setCustomerInfo({ ...customerInfo, notes: e.target.value })}
-                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-dark"
+                                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
                                 rows={2}
                                 placeholder="Any special notes?"
                             />

@@ -23,13 +23,13 @@ export const AlertDialog: React.FC<AlertDialogProps> = ({
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
             <div
-                className="bg-white rounded-2xl border-[3px] border-brand-dark shadow-xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200"
+                className="bg-white dark:bg-neutral-900 rounded-2xl border-[3px] border-brand-dark dark:border-neutral-700 shadow-xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200"
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="alert-dialog-title"
             >
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-gray-50">
+                <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-800/50">
                     <div className="flex items-center gap-2 text-brand-dark">
                         {variant === 'error' && <AlertCircle className="text-red-500" size={20} />}
                         {variant === 'info' && <Info className="text-blue-500" size={20} />}
@@ -38,7 +38,7 @@ export const AlertDialog: React.FC<AlertDialogProps> = ({
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-1 rounded-lg text-gray-400 hover:bg-gray-200 hover:text-gray-600 transition-colors"
+                        className="p-1 rounded-lg text-gray-400 dark:text-neutral-600 hover:bg-gray-200 dark:hover:bg-neutral-700 hover:text-gray-600 dark:hover:text-neutral-300 transition-colors"
                         aria-label="Close"
                     >
                         <X size={20} />
@@ -47,11 +47,11 @@ export const AlertDialog: React.FC<AlertDialogProps> = ({
 
                 {/* Content */}
                 <div className="p-6">
-                    <p className="text-gray-600 font-medium">{message}</p>
+                    <p className="text-gray-600 dark:text-neutral-400 font-medium">{message}</p>
                 </div>
 
                 {/* Footer */}
-                <div className="flex p-4 bg-gray-50 border-t border-gray-100">
+                <div className="flex p-4 bg-gray-50 dark:bg-neutral-800/50 border-t border-gray-100 dark:border-neutral-800">
                     <button
                         onClick={onClose}
                         className={`

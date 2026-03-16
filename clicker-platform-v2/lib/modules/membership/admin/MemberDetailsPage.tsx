@@ -117,14 +117,14 @@ export default function MemberDetailsPage() {
         setConfirmConfig(prev => ({ ...prev, isOpen: false }));
     };
 
-    if (loading) return <div className="p-8 text-center text-gray-500">Loading...</div>;
+    if (loading) return <div className="p-8 text-center text-gray-500 dark:text-neutral-500">Loading...</div>;
     if (!member) return <div className="p-8 text-center text-red-500">Member not found.</div>;
 
     const parsedAmount = parseInt(pointsAmount) || 0;
 
     return (
         <div className="p-6 max-w-5xl mx-auto">
-            <Link href={`${tenantSlug ? `/${tenantSlug}` : ''}/admin/membership/list`} className="inline-flex items-center text-gray-500 hover:text-gray-800 mb-6 gap-2">
+            <Link href={`${tenantSlug ? `/${tenantSlug}` : ''}/admin/membership/list`} className="inline-flex items-center text-gray-500 dark:text-neutral-500 hover:text-gray-800 dark:hover:text-neutral-200 mb-6 gap-2">
                 <ArrowLeft size={18} /> Back to List
             </Link>
 
@@ -140,55 +140,55 @@ export default function MemberDetailsPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Profile Card */}
                 <div className="md:col-span-1 space-y-6">
-                    <div className="bg-white p-6 rounded-3xl shadow-sm border-[3px] border-brand-dark text-center">
-                        <div className="w-24 h-24 mx-auto bg-blue-100 rounded-full flex items-center justify-center text-3xl font-bold text-blue-600 mb-4">
+                    <div className="bg-white dark:bg-neutral-900 p-6 rounded-3xl shadow-sm border-[3px] border-brand-dark text-center">
+                        <div className="w-24 h-24 mx-auto bg-blue-100 dark:bg-blue-950/30 rounded-full flex items-center justify-center text-3xl font-bold text-blue-600 dark:text-blue-400 mb-4">
                             {member.fullName.charAt(0)}
                         </div>
-                        <h2 className="text-xl font-bold text-gray-900">{member.fullName}</h2>
-                        <p className="text-gray-500 font-medium">{member.phoneNumber}</p>
-                        <p className="text-sm text-gray-400 mb-6">{member.email}</p>
+                        <h2 className="text-xl font-bold text-gray-900 dark:text-neutral-100">{member.fullName}</h2>
+                        <p className="text-gray-500 dark:text-neutral-500 font-medium">{member.phoneNumber}</p>
+                        <p className="text-sm text-gray-400 dark:text-neutral-600 mb-6">{member.email}</p>
 
-                        <div className="bg-gray-50 p-4 rounded-lg mb-4">
-                            <span className="block text-xs uppercase tracking-wider text-gray-500 mb-1">Current Balance</span>
+                        <div className="bg-gray-50 dark:bg-neutral-800 p-4 rounded-lg mb-4">
+                            <span className="block text-xs uppercase tracking-wider text-gray-500 dark:text-neutral-500 mb-1">Current Balance</span>
                             <span className="text-3xl font-bold text-indigo-600">{member.currentPoints.toLocaleString()} pts</span>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-gray-50 p-3 rounded-lg">
-                                <span className="block text-[10px] uppercase tracking-wider text-gray-500 mb-1">Total Spent</span>
-                                <span className="font-bold text-gray-900">
+                            <div className="bg-gray-50 dark:bg-neutral-800 p-3 rounded-lg">
+                                <span className="block text-[10px] uppercase tracking-wider text-gray-500 dark:text-neutral-500 mb-1">Total Spent</span>
+                                <span className="font-bold text-gray-900 dark:text-neutral-100">
                                     {(member.totalSpent || 0).toLocaleString()}
                                 </span>
                             </div>
-                            <div className="bg-gray-50 p-3 rounded-lg">
-                                <span className="block text-[10px] uppercase tracking-wider text-gray-500 mb-1">Transactions</span>
-                                <span className="font-bold text-gray-900">
+                            <div className="bg-gray-50 dark:bg-neutral-800 p-3 rounded-lg">
+                                <span className="block text-[10px] uppercase tracking-wider text-gray-500 dark:text-neutral-500 mb-1">Transactions</span>
+                                <span className="font-bold text-gray-900 dark:text-neutral-100">
                                     {(member.totalTransactions || 0).toLocaleString()}
                                 </span>
                             </div>
                         </div>
                     </div>
 
-                    <div className="bg-white p-6 rounded-3xl shadow-sm border-[3px] border-brand-dark">
+                    <div className="bg-white dark:bg-neutral-900 p-6 rounded-3xl shadow-sm border-[3px] border-brand-dark">
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-bold text-gray-700">Actions</h3>
+                            <h3 className="font-bold text-gray-700 dark:text-neutral-300">Actions</h3>
                             <button
                                 onClick={() => checkAccess('edit') && setIsEditModalOpen(true)}
-                                className={`text-xs font-bold text-brand-dark hover:underline ${!canEdit ? 'cursor-not-allowed text-gray-400 no-underline hover:no-underline' : ''}`}
+                                className={`text-xs font-bold text-brand-dark hover:underline ${!canEdit ? 'cursor-not-allowed text-gray-400 dark:text-neutral-600 no-underline hover:no-underline' : ''}`}
                             >
                                 {canEdit ? 'Edit Profile' : 'View Only'}
                             </button>
                         </div>
 
                         <div className="mb-4">
-                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Points Amount</label>
+                            <label className="block text-xs font-bold text-gray-500 dark:text-neutral-500 uppercase mb-1">Points Amount</label>
                             <input
                                 type="number"
                                 min="1"
                                 value={pointsAmount}
                                 disabled={!canEdit}
                                 onChange={(e) => setPointsAmount(e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-dark/20 font-bold text-center text-lg disabled:bg-gray-50"
+                                className="w-full px-3 py-2 border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-dark/20 font-bold text-center text-lg disabled:bg-gray-50 dark:disabled:bg-neutral-800"
                                 placeholder="0"
                             />
                         </div>
@@ -213,39 +213,39 @@ export default function MemberDetailsPage() {
                 </div>
 
                 {/* History */}
-                <div className="md:col-span-2 bg-white rounded-3xl shadow-sm border-[3px] border-brand-dark overflow-hidden">
-                    <div className="p-6 border-b border-gray-100">
-                        <h3 className="font-bold text-gray-800">Transaction History</h3>
+                <div className="md:col-span-2 bg-white dark:bg-neutral-900 rounded-3xl shadow-sm border-[3px] border-brand-dark overflow-hidden">
+                    <div className="p-6 border-b border-gray-100 dark:border-neutral-800">
+                        <h3 className="font-bold text-gray-800 dark:text-neutral-200">Transaction History</h3>
                     </div>
-                    <div className="divide-y divide-gray-100">
+                    <div className="divide-y divide-gray-100 dark:divide-neutral-800">
                         {history.length === 0 ? (
-                            <div className="p-8 text-center text-gray-400">No transactions yet.</div>
+                            <div className="p-8 text-center text-gray-400 dark:text-neutral-600">No transactions yet.</div>
                         ) : (
                             history.map(tx => (
-                                <div key={tx.id} className="p-4 flex items-center justify-between hover:bg-gray-50">
+                                <div key={tx.id} className="p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-neutral-800/50">
                                     <div className="flex items-center gap-4">
                                         <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg ${tx.pointsDelta > 0 ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
                                             {tx.pointsDelta > 0 ? '+' : '-'}
                                         </div>
                                         <div>
-                                            <p className="font-medium text-gray-800">
+                                            <p className="font-medium text-gray-800 dark:text-neutral-200">
                                                 {tx.description.replace(/^(Completed reservation for |Reservation for )/i, '')}
                                             </p>
-                                            <p className="text-xs text-gray-500 uppercase tracking-wide">
+                                            <p className="text-xs text-gray-500 dark:text-neutral-500 uppercase tracking-wide">
                                                 {tx.createdAt?.toDate ? tx.createdAt.toDate().toLocaleDateString() : 'Just now'} • {tx.source === 'RESERVATION' ? 'Reservation' : tx.source}
                                             </p>
                                         </div>
                                     </div>
                                     <div className="text-right">
                                         {tx.spendAmount ? (
-                                            <p className="font-bold text-gray-900">
+                                            <p className="font-bold text-gray-900 dark:text-neutral-100">
                                                 {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(tx.spendAmount)}
                                             </p>
                                         ) : null}
                                         <p className={`font-bold text-sm ${tx.pointsDelta > 0 ? 'text-green-600' : 'text-red-600'}`}>
                                             {tx.pointsDelta > 0 ? '+' : ''}{tx.pointsDelta} pts
                                         </p>
-                                        <span title={`Ref: ${tx.sourceRefId}`} className="text-[10px] text-gray-300 font-mono cursor-help">
+                                        <span title={`Ref: ${tx.sourceRefId}`} className="text-[10px] text-gray-300 dark:text-neutral-700 font-mono cursor-help">
                                             #{tx.sourceRefId.slice(0, 8)}...
                                         </span>
                                     </div>
@@ -270,8 +270,8 @@ export default function MemberDetailsPage() {
             {/* Edit Profile Modal */}
             {isEditModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setIsEditModalOpen(false)}>
-                    <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
-                        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                    <div className="bg-white dark:bg-neutral-900 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+                        <div className="p-6 border-b border-gray-100 dark:border-neutral-800 flex justify-between items-center bg-gray-50 dark:bg-neutral-800/50">
                             <h2 className="text-xl font-black text-brand-dark">Edit Member Profile</h2>
                         </div>
                         <form
@@ -295,31 +295,31 @@ export default function MemberDetailsPage() {
                             className="p-6 space-y-4"
                         >
                             <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Full Name</label>
+                                <label className="block text-xs font-bold text-gray-500 dark:text-neutral-500 uppercase mb-1">Full Name</label>
                                 <input
                                     required
                                     type="text"
-                                    className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-dark/20"
+                                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:outline-none focus:ring-2 focus:ring-brand-dark/20"
                                     value={editFormData.fullName}
                                     onChange={e => setEditFormData({ ...editFormData, fullName: e.target.value })}
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Phone Number</label>
+                                <label className="block text-xs font-bold text-gray-500 dark:text-neutral-500 uppercase mb-1">Phone Number</label>
                                 <input
                                     required
                                     type="tel"
-                                    className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-dark/20"
+                                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:outline-none focus:ring-2 focus:ring-brand-dark/20"
                                     value={editFormData.phoneNumber}
                                     onChange={e => setEditFormData({ ...editFormData, phoneNumber: e.target.value })}
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Email</label>
+                                <label className="block text-xs font-bold text-gray-500 dark:text-neutral-500 uppercase mb-1">Email</label>
                                 <input
                                     required
                                     type="email"
-                                    className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-dark/20"
+                                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:outline-none focus:ring-2 focus:ring-brand-dark/20"
                                     value={editFormData.email}
                                     onChange={e => setEditFormData({ ...editFormData, email: e.target.value })}
                                 />
@@ -328,7 +328,7 @@ export default function MemberDetailsPage() {
                                 <button
                                     type="button"
                                     onClick={() => setIsEditModalOpen(false)}
-                                    className="flex-1 py-2.5 font-bold text-gray-500 hover:bg-gray-100 rounded-xl transition"
+                                    className="flex-1 py-2.5 font-bold text-gray-500 dark:text-neutral-500 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-xl transition"
                                 >
                                     Cancel
                                 </button>

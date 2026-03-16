@@ -62,29 +62,29 @@ export function BillCard({ group, onProcessPayment, disabled }: BillCardProps) {
     };
 
     return (
-        <div className="bg-white rounded-3xl border-[3px] border-brand-dark shadow-sm overflow-hidden scale-100 hover:scale-[1.01] transition-transform duration-300">
+        <div className="bg-white dark:bg-neutral-900 rounded-3xl border-[3px] border-brand-dark shadow-sm overflow-hidden scale-100 hover:scale-[1.01] transition-transform duration-300">
             {/* Header */}
-            <div className="p-4 flex justify-between items-start bg-white border-b border-gray-100">
+            <div className="p-4 flex justify-between items-start bg-white dark:bg-neutral-900 border-b border-gray-100 dark:border-neutral-800">
                 <div className="flex-1">
                     <div className="flex justify-between items-start mb-2">
                         <div className="flex items-center gap-3">
                             <div className={`p-2 rounded-full ${group.type === 'table' ? 'bg-brand-dark text-white' :
-                                group.type === 'member' ? 'bg-brand-green/10 text-brand-dark' : 'bg-gray-100 text-gray-500'
+                                group.type === 'member' ? 'bg-brand-green/10 text-brand-dark' : 'bg-gray-100 dark:bg-neutral-800 text-gray-500 dark:text-neutral-500'
                                 }`}>
                                 {getIcon(group.type)}
                             </div>
                             <div>
-                                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">{group.type}</span>
+                                <span className="text-xs font-bold text-gray-400 dark:text-neutral-600 uppercase tracking-wider">{group.type}</span>
                                 <h3 className="font-black text-xl text-brand-dark leading-none">{group.label}</h3>
                             </div>
                         </div>
 
                         {/* Top Right Status (A) */}
                         <div className="text-right">
-                            <div className="text-sm font-medium text-gray-500 mb-1">
+                            <div className="text-sm font-medium text-gray-500 dark:text-neutral-500 mb-1">
                                 {group.orders.length} order{group.orders.length > 1 ? 's' : ''}
                             </div>
-                            <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold ${group.aggregatedStatus === 'pending_confirmation' ? 'bg-amber-100 text-amber-700' : 'bg-red-50 text-red-500'
+                            <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold ${group.aggregatedStatus === 'pending_confirmation' ? 'bg-amber-100 text-amber-700' : 'bg-red-50 dark:bg-red-950/30 text-red-500'
                                 }`}>
                                 {group.aggregatedStatus === 'pending_confirmation' ? 'Confirm' : 'Unpaid'}
                             </span>
@@ -92,7 +92,7 @@ export function BillCard({ group, onProcessPayment, disabled }: BillCardProps) {
                     </div>
 
                     {/* Last Update Line (B) */}
-                    <div className="flex items-center gap-2 text-sm text-gray-400 font-medium ml-1">
+                    <div className="flex items-center gap-2 text-sm text-gray-400 dark:text-neutral-600 font-medium ml-1">
                         <Clock size={14} />
                         <span>Last update: {formatTime(group.updatedAt)}</span>
                     </div>
@@ -100,9 +100,9 @@ export function BillCard({ group, onProcessPayment, disabled }: BillCardProps) {
             </div>
 
             {/* List of Orders (Always Expanded) */}
-            <div className="bg-white">
+            <div className="bg-white dark:bg-neutral-900">
                 {group.orders.map(order => (
-                    <div key={order.id} className="border-b border-gray-100 last:border-0 relative">
+                    <div key={order.id} className="border-b border-gray-100 dark:border-neutral-800 last:border-0 relative">
                         {/* Order Header */}
                         <POSOrderCard
                             order={order}
@@ -112,13 +112,13 @@ export function BillCard({ group, onProcessPayment, disabled }: BillCardProps) {
                         {/* List Items (C: Removed pl-12) */}
                         <div className="p-4 text-sm space-y-2">
                             {order.items.map((item, idx) => (
-                                <div key={idx} className="flex justify-between items-center text-gray-600 group/item relative pl-6">
+                                <div key={idx} className="flex justify-between items-center text-gray-600 dark:text-neutral-400 group/item relative pl-6">
                                     <div className="flex gap-2 items-center">
                                         {/* Cancel Button - Only show if not paid/processed */}
                                         {order.status !== 'completed' && order.status !== 'cancelled' && order.paymentStatus !== 'paid' && (
                                             <button
                                                 onClick={() => setCancelTarget({ order, itemIndex: idx, itemName: item.name })}
-                                                className="absolute left-0 top-1/2 -translate-y-1/2 p-1 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full w-6 h-6 flex items-center justify-center transition-colors"
+                                                className="absolute left-0 top-1/2 -translate-y-1/2 p-1 text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-full w-6 h-6 flex items-center justify-center transition-colors"
                                                 title="Cancel Item"
                                             >
                                                 <X size={14} />
@@ -127,7 +127,7 @@ export function BillCard({ group, onProcessPayment, disabled }: BillCardProps) {
                                         <span className="font-bold text-brand-dark">{item.quantity}x</span>
                                         <span>{item.name} {item.variantName && `(${item.variantName})`}</span>
                                     </div>
-                                    <span className="font-medium text-gray-900">
+                                    <span className="font-medium text-gray-900 dark:text-neutral-100">
                                         {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(item.price * item.quantity)}
                                     </span>
                                 </div>
@@ -138,25 +138,25 @@ export function BillCard({ group, onProcessPayment, disabled }: BillCardProps) {
             </div>
 
             {/* Aggregated Bill Footer */}
-            <div className="p-4 bg-white border-t border-gray-200">
+            <div className="p-4 bg-white dark:bg-neutral-900 border-t border-gray-200 dark:border-neutral-800">
                 <div className="space-y-1 text-sm mb-4">
-                    <div className="flex justify-between text-gray-500">
+                    <div className="flex justify-between text-gray-500 dark:text-neutral-500">
                         <span>Subtotal</span>
                         <span>{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(billTotals.subtotal)}</span>
                     </div>
                     {billTotals.serviceCharge > 0 && (
-                        <div className="flex justify-between text-gray-500">
+                        <div className="flex justify-between text-gray-500 dark:text-neutral-500">
                             <span>Service ({billTotals.serviceChargeRate}%)</span>
                             <span>{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(billTotals.serviceCharge)}</span>
                         </div>
                     )}
                     {billTotals.restaurantTax > 0 && (
-                        <div className="flex justify-between text-gray-500">
+                        <div className="flex justify-between text-gray-500 dark:text-neutral-500">
                             <span>PB1 ({billTotals.restaurantTaxRate}%)</span>
                             <span>{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(billTotals.restaurantTax)}</span>
                         </div>
                     )}
-                    <div className="flex justify-between font-black text-xl text-brand-dark pt-3 border-t border-dashed border-gray-200 mt-3">
+                    <div className="flex justify-between font-black text-xl text-brand-dark pt-3 border-t border-dashed border-gray-200 dark:border-neutral-800 mt-3">
                         <span>Total</span>
                         <span>{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(billTotals.total)}</span>
                     </div>

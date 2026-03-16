@@ -1,25 +1,33 @@
-import { headers } from 'next/headers';
+'use client';
+
+import React from 'react';
 import { AdminSidebar } from './AdminSidebar';
 import AdminGuard from '@/components/admin/AdminGuard';
 import { UserProvider } from '@/lib/user-context';
+import { AdminThemeProvider, useAdminTheme } from '@/lib/use-admin-theme';
 
-export const dynamic = 'force-dynamic';
+function AdminContentWrapper({ children }: { children: React.ReactNode }) {
+    const { isDark } = useAdminTheme();
 
-export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-    // Simplified: AdminLayout just wraps content. 
-    // Subdomain context is now handled globally in RootLayout -> SiteProvider.
+    return (
+        <div className={`min-h-screen flex flex-col md:flex-row transition-colors ${isDark ? 'dark bg-neutral-950' : 'bg-gray-100'}`}>
+            <AdminSidebar />
+            <main className="flex-1 p-4 md:p-8 min-w-0 overflow-x-hidden text-neutral-900 dark:text-neutral-100">
+                {children}
+            </main>
+        </div>
+    );
+}
 
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
     return (
         <AdminGuard>
             <UserProvider>
-                <div className="min-h-screen bg-gray-100 flex flex-col md:flex-row">
-                    <AdminSidebar />
-
-                    {/* Main Content */}
-                    <main className="flex-1 p-4 md:p-8 min-w-0 overflow-x-hidden">
+                <AdminThemeProvider>
+                    <AdminContentWrapper>
                         {children}
-                    </main>
-                </div>
+                    </AdminContentWrapper>
+                </AdminThemeProvider>
             </UserProvider>
         </AdminGuard>
     );

@@ -3,9 +3,9 @@ import { Skeleton } from "@/components/ui/skeleton"
 
 export function AdminShellSkeleton() {
     return (
-        <div className="min-h-screen bg-gray-100 flex flex-col md:flex-row">
+        <div className="min-h-screen bg-gray-100 dark:bg-neutral-950 flex flex-col md:flex-row">
             {/* Sidebar Skeleton */}
-            <aside className="hidden md:flex flex-col w-64 bg-white border-r border-gray-200 p-6 h-screen sticky top-0">
+            <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-neutral-900 border-r border-gray-200 dark:border-neutral-800 p-6 h-screen sticky top-0">
                 <div className="flex items-center gap-3 mb-10">
                     <Skeleton className="w-10 h-10 rounded-full" />
                     <Skeleton className="h-6 w-24 rounded" />
@@ -19,7 +19,7 @@ export function AdminShellSkeleton() {
             </aside>
 
             {/* Mobile Header Skeleton */}
-            <div className="md:hidden bg-white border-b border-gray-200 p-4 flex items-center justify-between sticky top-0 z-20">
+            <div className="md:hidden bg-white dark:bg-neutral-900 border-b border-gray-200 dark:border-neutral-800 p-4 flex items-center justify-between sticky top-0 z-20">
                 <div className="flex items-center gap-3">
                     <Skeleton className="w-8 h-8 rounded-full" />
                     <Skeleton className="h-6 w-20 rounded" />

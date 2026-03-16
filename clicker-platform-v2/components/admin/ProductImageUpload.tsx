@@ -53,11 +53,11 @@ export function ProductImageUpload({ currentImageUrl, onUpload, onRemove }: Prod
 
     return (
         <div className="w-full">
-            <div
+             <div
                 className={`
-                    relative w-full h-40 bg-gray-50 rounded-xl border-2 border-dashed
+                    relative w-full h-40 bg-gray-50 dark:bg-neutral-800/50 rounded-xl border-2 border-dashed
                     flex flex-col items-center justify-center cursor-pointer overflow-hidden group transition-all
-                    ${error ? 'border-red-300 bg-red-50' : 'border-gray-300 hover:border-brand-dark hover:bg-white'}
+                    ${error ? 'border-red-300 bg-red-50 dark:border-red-900/50 dark:bg-red-900/20' : 'border-gray-300 dark:border-neutral-700 hover:border-brand-dark dark:hover:border-neutral-600 hover:bg-white dark:hover:bg-neutral-800'}
                     ${uploading ? 'opacity-70 pointer-events-none' : ''}
                 `}
                 onClick={() => !uploading && fileInputRef.current?.click()}
@@ -71,7 +71,7 @@ export function ProductImageUpload({ currentImageUrl, onUpload, onRemove }: Prod
                 />
 
                 {uploading ? (
-                    <div className="flex flex-col items-center text-gray-500">
+                    <div className="flex flex-col items-center text-gray-500 dark:text-neutral-400">
                         <Loader2 className="animate-spin mb-2" size={24} />
                         <span className="text-xs font-bold">Uploading...</span>
                     </div>
@@ -93,7 +93,7 @@ export function ProductImageUpload({ currentImageUrl, onUpload, onRemove }: Prod
                                     e.stopPropagation();
                                     onRemove();
                                 }}
-                                className="absolute top-2 right-2 p-1 bg-white text-red-500 rounded-md shadow-sm opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50"
+                                className="absolute top-2 right-2 p-1 bg-white dark:bg-neutral-800 text-red-500 dark:text-red-400 rounded-md shadow-sm opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50 dark:hover:bg-red-900/20"
                                 title="Remove Image"
                             >
                                 <X size={16} />
@@ -101,9 +101,9 @@ export function ProductImageUpload({ currentImageUrl, onUpload, onRemove }: Prod
                         )}
                     </>
                 ) : (
-                    <div className="flex flex-col items-center text-gray-400 p-4 text-center">
+                    <div className="flex flex-col items-center text-gray-400 dark:text-neutral-500 p-4 text-center">
                         <ImageIcon size={32} className="mb-2" />
-                        <span className="text-xs font-bold text-gray-500">Upload Image</span>
+                        <span className="text-xs font-bold text-gray-500 dark:text-neutral-400">Upload Image</span>
                         <span className="text-[10px] mt-1">Max 5MB (WebP)</span>
                     </div>
                 )}

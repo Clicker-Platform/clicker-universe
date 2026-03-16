@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export function HistoryBillRowSkeleton() {
     return (
-        <div className="border-b border-gray-100 last:border-0 p-4 flex items-center gap-4">
+        <div className="border-b border-gray-100 dark:border-neutral-800 last:border-0 p-4 flex items-center gap-4">
             {/* Icon Skeleton */}
             <Skeleton className="w-10 h-10 rounded-full shrink-0" />
 

@@ -97,7 +97,7 @@ export default function CalendarClient() {
             <div className="flex items-center justify-between mb-8">
                 <div>
                     <h1 className="text-3xl font-black text-brand-dark mb-2 uppercase">Calendar Settings</h1>
-                    <p className="text-gray-600 font-medium">Manage your business hours and availability</p>
+                    <p className="text-gray-600 dark:text-neutral-400 font-medium">Manage your business hours and availability</p>
                 </div>
                 <div className="flex items-center gap-4">
                     {showSuccess && (

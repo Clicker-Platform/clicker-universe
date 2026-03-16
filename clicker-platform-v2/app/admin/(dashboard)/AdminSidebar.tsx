@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { LayoutDashboard, Link as LinkIcon, ShoppingBag, User, LogOut, Menu, X, Settings, Map as MapIcon, Palette, FileText, Inbox, Box, Zap, Calendar, List, Users, Globe, Navigation } from 'lucide-react';
+import { LayoutDashboard, Link as LinkIcon, ShoppingBag, User, LogOut, Menu, X, Settings, Map as MapIcon, Palette, FileText, Inbox, Box, Zap, Calendar, List, Users, Globe, Navigation, Sun, Moon } from 'lucide-react';
 import { collection, query, where, onSnapshot, doc } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase';
 import { signOut, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
@@ -13,6 +13,7 @@ import { STATIC_MODULE_DEFINITIONS } from '@/lib/modules/definitions';
 import { ModuleDefinition } from '@/lib/modules/types';
 import { useSite } from '@/lib/site-context';
 import { useUser } from '@/lib/user-context';
+import { useAdminTheme } from '@/lib/use-admin-theme';
 
 interface NavItem {
     icon: any;
@@ -79,6 +80,7 @@ export function AdminSidebar() {
 
 
     const { permissions: userPermissions, isOwner, hasAccess } = useUser();
+    const { isDark, toggle: toggleDark } = useAdminTheme();
     const [siteEnabledModules, setSiteEnabledModules] = useState<Record<string, boolean>>({});
 
     useEffect(() => {
@@ -258,7 +260,7 @@ export function AdminSidebar() {
     return (
         <>
             {/* Mobile Header */}
-            <div className="md:hidden bg-white border-b border-gray-200 p-4 flex items-center justify-between sticky top-0 z-20">
+            <div className="md:hidden bg-white dark:bg-neutral-900 border-b border-gray-200 dark:border-neutral-800 p-4 flex items-center justify-between sticky top-0 z-20">
                 <div className="flex items-center gap-3">
                     <div className="relative w-8 h-8">
                         <Image
@@ -285,7 +287,7 @@ export function AdminSidebar() {
 
             {/* Sidebar */}
             <aside className={`
-                fixed inset-y-0 left-0 z-40 bg-white border-r border-gray-200 flex flex-col transition-all duration-300 ease-in-out
+                fixed inset-y-0 left-0 z-40 bg-white dark:bg-neutral-900 border-r border-gray-200 dark:border-neutral-800 flex flex-col transition-all duration-300 ease-in-out
                 w-full md:sticky md:top-0 md:h-screen
                 ${sidebarOpen ? 'translate-x-0 shadow-xl' : '-translate-x-full shadow-none'}
                 ${isCollapsed ? 'md:w-16' : 'md:w-64'}
@@ -325,7 +327,7 @@ export function AdminSidebar() {
                     {groupedNavItems.map((group) => (
                         <div key={group.title} className={(isCollapsed && !sidebarOpen) ? 'text-center' : ''}>
                             {(!isCollapsed || sidebarOpen) && (
-                                <h3 className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 truncate">
+                                <h3 className="px-3 text-xs font-semibold text-gray-400 dark:text-neutral-600 uppercase tracking-wider mb-2 truncate">
                                     {group.title}
                                 </h3>
                             )}
@@ -352,7 +354,7 @@ export function AdminSidebar() {
                                             onMouseLeave={() => setHoveredItem(null)}
                                             className={`flex items-center gap-3 px-3 py-2 rounded-xl font-bold transition-all text-sm group relative ${isActive
                                                 ? 'bg-brand-dark text-brand-green shadow-sm'
-                                                : 'text-gray-500 hover:bg-gray-50 hover:text-brand-dark'
+                                                : 'text-gray-500 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800 hover:text-brand-dark dark:hover:text-neutral-200'
                                                 } ${(isCollapsed && !sidebarOpen) ? 'justify-center' : 'justify-between'}`}
                                         >
                                             <div className="flex items-center gap-3">
@@ -387,19 +389,28 @@ export function AdminSidebar() {
                 </nav>
 
                 {/* Footer Area - FIXED BOTTOM */}
-                <div className="p-3 border-t border-gray-100 bg-white shrink-0">
+                <div className="p-3 border-t border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 shrink-0">
                     <button
                         onClick={handleLogout}
                         title="Logout"
-                        className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl font-bold text-gray-500 hover:text-red-500 hover:bg-red-50 transition-colors text-sm mb-2 ${(isCollapsed && !sidebarOpen) ? 'justify-center' : ''}`}
+                        className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl font-bold text-gray-500 dark:text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors text-sm mb-2 ${(isCollapsed && !sidebarOpen) ? 'justify-center' : ''}`}
                     >
                         <LogOut size={20} className="shrink-0" />
                         {(!isCollapsed || sidebarOpen) && <span>Logout</span>}
                     </button>
 
                     <button
+                        onClick={toggleDark}
+                        title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                        className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl font-bold text-gray-500 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800 hover:text-brand-dark dark:hover:text-neutral-200 transition-colors text-sm mb-1 ${(isCollapsed && !sidebarOpen) ? 'justify-center' : ''}`}
+                    >
+                        {isDark ? <Sun size={18} className="shrink-0" /> : <Moon size={18} className="shrink-0" />}
+                        {(!isCollapsed || sidebarOpen) && <span>{isDark ? 'Light Mode' : 'Dark Mode'}</span>}
+                    </button>
+
+                    <button
                         onClick={toggleSidebarCollapse}
-                        className="hidden md:flex w-full items-center justify-center p-2 text-gray-400 hover:bg-gray-50 rounded-lg transition-colors border-t border-dashed border-gray-200 mt-1"
+                        className="hidden md:flex w-full items-center justify-center p-2 text-gray-400 dark:text-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-800 rounded-lg transition-colors border-t border-dashed border-gray-200 dark:border-neutral-800 mt-1"
                     >
                         {isCollapsed ? <Menu size={18} /> : (
                             <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider">
@@ -409,7 +420,7 @@ export function AdminSidebar() {
                     </button>
 
                     {!isCollapsed && !sidebarOpen && (
-                        <div className="mt-2 p-2 bg-gray-50 rounded text-[10px] text-gray-400 font-mono break-all text-center">
+                        <div className="mt-2 p-2 bg-gray-50 dark:bg-neutral-800 rounded text-[10px] text-gray-400 dark:text-neutral-600 font-mono break-all text-center">
                             Site: {siteId} | [tenant]: {tenantSlug}
                         </div>
                     )}

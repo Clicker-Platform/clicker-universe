@@ -22,13 +22,13 @@ export const SubmissionList = memo(function SubmissionList({
     if (submissions.length === 0) {
         return (
             <div className="p-20 text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4 text-gray-400">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 dark:bg-neutral-800 rounded-full mb-4 text-gray-400 dark:text-neutral-500">
                     {filterStatus === 'archived' ? <Archive size={32} /> : <Mail size={32} />}
                 </div>
-                <h3 className="text-xl font-black text-gray-400 mb-2">
+                <h3 className="text-xl font-black text-gray-400 dark:text-neutral-500 mb-2">
                     {filterStatus === 'archived' ? 'No Archived Items' : 'Inbox Empty'}
                 </h3>
-                <p className="text-gray-500 font-medium">
+                <p className="text-gray-500 dark:text-neutral-400 font-medium">
                     {filterStatus === 'archived' ? 'Archived submissions will appear here.' : 'No new submissions yet.'}
                 </p>
             </div>
@@ -36,7 +36,7 @@ export const SubmissionList = memo(function SubmissionList({
     }
 
     return (
-        <div className="divide-y-2 divide-gray-100">
+        <div className="divide-y-2 divide-gray-100 dark:divide-neutral-800">
             {submissions.map((sub) => (
                 <SubmissionCard
                     key={sub.id}

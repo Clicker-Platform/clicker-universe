@@ -92,23 +92,23 @@ export default function AdminDashboard() {
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
                 <div>
                     <h1 className="text-3xl font-black text-brand-dark mb-2 uppercase">Dashboard</h1>
-                    <p className="text-gray-600 font-medium">Welcome back! Manage your content below.</p>
+                    <p className="text-gray-600 dark:text-neutral-400 font-medium">Welcome back! Manage your content below.</p>
                 </div>
 
-                <div className="flex items-center gap-4 bg-white p-2 rounded-xl border border-gray-100 shadow-sm">
+                <div className="flex items-center gap-4 bg-white dark:bg-neutral-900 p-2 rounded-xl border border-gray-100 dark:border-neutral-800/50 shadow-sm">
                     {lastUpdated && (
-                        <p className="text-xs text-gray-400 font-medium hidden sm:block">
+                        <p className="text-xs text-gray-400 dark:text-neutral-600 font-medium hidden sm:block">
                             Updated: {lastUpdated.toLocaleTimeString()}
                         </p>
                     )}
 
-                    <div className="h-6 w-px bg-gray-200 mx-1 hidden sm:block"></div>
+                    <div className="h-6 w-px bg-gray-200 dark:bg-neutral-700 mx-1 hidden sm:block"></div>
 
                     <button
                         onClick={() => setAutoRefresh(!autoRefresh)}
                         className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 ${autoRefresh
                             ? 'bg-brand-green/10 text-brand-dark'
-                            : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                            : 'bg-gray-50 dark:bg-neutral-800 text-gray-500 dark:text-neutral-500 hover:bg-gray-100 dark:hover:bg-neutral-700'
                             }`}
                     >
                         <div className={`w-2 h-2 rounded-full ${autoRefresh ? 'bg-green-500 animate-pulse' : 'bg-gray-300'}`}></div>
@@ -131,26 +131,26 @@ export default function AdminDashboard() {
                 <TrendingUp size={24} /> Content Overview
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-                <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+                <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm">
                     <div className="flex items-center gap-3 mb-2 text-brand-dark/70">
                         <LinkIcon size={20} /> <span className="font-bold">Total Links</span>
                     </div>
                     <p className="text-4xl font-black text-brand-dark">{stats.linksCount}</p>
                 </div>
-                <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+                <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm">
                     <div className="flex items-center gap-3 mb-2 text-brand-dark/70">
                         <ShoppingBag size={20} /> <span className="font-bold">Products</span>
                     </div>
                     <p className="text-4xl font-black text-brand-dark">{stats.productsCount}</p>
                 </div>
-                <div className="bg-blue-50 p-6 rounded-2xl border border-gray-200 shadow-sm">
+                <div className="bg-blue-50 dark:bg-blue-950/30 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm">
                     <div className="flex items-center gap-3 mb-2 text-blue-600">
                         <Eye size={20} /> <span className="font-bold">Total Page Views</span>
                     </div>
                     <p className="text-4xl font-black text-brand-dark">{stats.pageViews}</p>
                 </div>
-                <div className="bg-green-50 p-6 rounded-2xl border border-gray-200 shadow-sm">
-                    <div className="flex items-center gap-3 mb-2 text-green-700">
+                <div className="bg-green-50 dark:bg-green-950/30 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm">
+                    <div className="flex items-center gap-3 mb-2 text-green-700 dark:text-green-400">
                         <MousePointer2 size={20} /> <span className="font-bold">Total Clicks</span>
                     </div>
                     <p className="text-4xl font-black text-brand-dark">{stats.totalClicks}</p>
@@ -163,18 +163,18 @@ export default function AdminDashboard() {
                 {/* Top Links */}
                 <div>
                     <h2 className="text-xl font-bold mb-4 text-brand-dark flex items-center gap-2">
-                        Top Links <span className="text-sm font-normal text-gray-500">(by clicks)</span>
+                        Top Links <span className="text-sm font-normal text-gray-500 dark:text-neutral-500">(by clicks)</span>
                     </h2>
-                    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+                    <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 overflow-hidden shadow-sm">
                         {topLinks.length === 0 ? (
-                            <p className="p-6 text-gray-500 text-center">No data yet.</p>
+                            <p className="p-6 text-gray-500 dark:text-neutral-500 text-center">No data yet.</p>
                         ) : (
-                            <div className="divide-y divide-gray-100">
+                            <div className="divide-y divide-gray-100 dark:divide-neutral-800">
                                 {topLinks.map(data => (
-                                    <div key={data.id} className="p-4 flex items-center justify-between hover:bg-gray-50">
+                                    <div key={data.id} className="p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-neutral-800">
                                         <div className="flex-1 min-w-0 pr-4">
                                             <p className="font-bold text-brand-dark truncate">{data.title}</p>
-                                            <p className="text-sm text-gray-500 truncate">{data.url}</p>
+                                            <p className="text-sm text-gray-500 dark:text-neutral-500 truncate">{data.url}</p>
                                         </div>
                                         <div className="bg-brand-green/20 text-brand-dark px-3 py-1 rounded-full font-bold text-sm">
                                             {data.clicks || 0} clicks
@@ -189,31 +189,31 @@ export default function AdminDashboard() {
                 {/* Top Products */}
                 <div>
                     <h2 className="text-xl font-bold mb-4 text-brand-dark flex items-center gap-2">
-                        Top Products <span className="text-sm font-normal text-gray-500">(by clicks)</span>
+                        Top Products <span className="text-sm font-normal text-gray-500 dark:text-neutral-500">(by clicks)</span>
                     </h2>
-                    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+                    <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 overflow-hidden shadow-sm">
                         {topProducts.length === 0 ? (
-                            <p className="p-6 text-gray-500 text-center">No data yet.</p>
+                            <p className="p-6 text-gray-500 dark:text-neutral-500 text-center">No data yet.</p>
                         ) : (
-                            <div className="divide-y divide-gray-100">
+                            <div className="divide-y divide-gray-100 dark:divide-neutral-800">
                                 {topProducts.map(data => {
                                     const productName = data.name || data.title || 'Untitled';
                                     const productImage = data.imageUrl || data.image;
 
                                     return (
-                                        <div key={data.id} className="p-4 flex items-center justify-between hover:bg-gray-50">
+                                        <div key={data.id} className="p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-neutral-800">
                                             <div className="flex items-center gap-3 flex-1 min-w-0 pr-4">
                                                 {productImage && (
-                                                    <div className="w-10 h-10 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0 border border-gray-200">
+                                                    <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-neutral-800 overflow-hidden flex-shrink-0 border border-gray-200 dark:border-neutral-700">
                                                         <img src={productImage} alt={productName} className="w-full h-full object-cover" />
                                                     </div>
                                                 )}
                                                 <div>
                                                     <p className="font-bold text-brand-dark truncate">{productName}</p>
-                                                    <p className="text-sm text-gray-500">{data.price}</p>
+                                                    <p className="text-sm text-gray-500 dark:text-neutral-500">{data.price}</p>
                                                 </div>
                                             </div>
-                                            <div className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full font-bold text-sm">
+                                            <div className="bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 px-3 py-1 rounded-full font-bold text-sm">
                                                 {data.clicks || 0} clicks
                                             </div>
                                         </div>

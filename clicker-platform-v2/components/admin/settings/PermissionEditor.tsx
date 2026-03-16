@@ -165,27 +165,27 @@ export function PermissionEditor({ value, onChange, siteModules }: PermissionEdi
     return (
         <div className="space-y-4">
             {/* Toolbar */}
-            <div className="flex flex-col gap-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
+            <div className="flex flex-col gap-4 bg-gray-50 dark:bg-neutral-900 p-4 rounded-xl border border-gray-100 dark:border-neutral-800">
                 <div className="flex flex-col sm:flex-row justify-between gap-4 items-center">
                     <div className="flex items-center gap-2">
-                        <span className="text-xs font-medium text-gray-500">Quick Presets:</span>
+                        <span className="text-xs font-medium text-gray-500 dark:text-neutral-500">Quick Presets:</span>
                         <div className="flex gap-2">
-                            <button type="button" onClick={() => applyPreset('cashier')} className="text-xs bg-white border border-dashed border-gray-300 px-2.5 py-1.5 rounded-lg hover:border-brand-dark hover:text-brand-dark transition font-medium">Cashier</button>
+                            <button type="button" onClick={() => applyPreset('cashier')} className="text-xs bg-white dark:bg-neutral-800 border border-dashed border-gray-300 dark:border-neutral-700 px-2.5 py-1.5 rounded-lg hover:border-brand-dark dark:hover:border-neutral-500 hover:text-brand-dark dark:hover:text-neutral-200 transition font-medium text-gray-700 dark:text-neutral-300">Cashier</button>
                         </div>
                     </div>
                     <div className="flex gap-2">
                         <button
                             type="button"
                             onClick={handleSelectAll}
-                            className="text-xs font-bold text-brand-dark hover:bg-white/50 px-2 py-1 rounded transition"
+                            className="text-xs font-bold text-brand-dark dark:text-neutral-400 hover:bg-white/50 dark:hover:bg-neutral-800 px-2 py-1 rounded transition"
                         >
                             Select All
                         </button>
-                        <span className="text-gray-300">|</span>
+                        <span className="text-gray-300 dark:text-neutral-700">|</span>
                         <button
                             type="button"
                             onClick={handleClearAll}
-                            className="text-xs font-bold text-red-500 hover:bg-white/50 px-2 py-1 rounded transition"
+                            className="text-xs font-bold text-red-500 hover:bg-white/50 dark:hover:bg-neutral-800 px-2 py-1 rounded transition"
                         >
                             Clear All
                         </button>
@@ -193,15 +193,15 @@ export function PermissionEditor({ value, onChange, siteModules }: PermissionEdi
                 </div>
 
                 {/* Category Tabs */}
-                <div className="flex gap-1 p-1 bg-gray-200/50 rounded-lg overflow-x-auto no-scrollbar">
+                <div className="flex gap-1 p-1 bg-gray-200/50 dark:bg-neutral-800/50 rounded-lg overflow-x-auto no-scrollbar">
                     {sortedCategories.map(cat => (
                         <button
                             key={cat}
                             type="button"
                             onClick={() => setActiveCategory(cat)}
                             className={`px-4 py-2 rounded-md text-sm font-bold whitespace-nowrap transition-all ${activeCategory === cat
-                                ? 'bg-white text-brand-dark shadow-sm'
-                                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
+                                ? 'bg-white dark:bg-neutral-700 text-brand-dark dark:text-neutral-100 shadow-sm'
+                                : 'text-gray-500 dark:text-neutral-500 hover:text-gray-700 dark:hover:text-neutral-300 hover:bg-gray-200/50 dark:hover:bg-neutral-700/50'
                                 }`}
                         >
                             {cat}
@@ -222,32 +222,32 @@ export function PermissionEditor({ value, onChange, siteModules }: PermissionEdi
                             if (routes.length === 0) return null;
 
                             return (
-                                <div key={module.id} className="border border-gray-200 rounded-xl overflow-hidden h-fit bg-white shadow-sm hover:border-brand-dark/20 transition-colors">
+                                <div key={module.id} className="border border-gray-200 dark:border-neutral-800 rounded-xl overflow-hidden h-fit bg-white dark:bg-neutral-900 shadow-sm hover:border-brand-dark/20 dark:hover:border-neutral-700 transition-colors">
                                     {/* Module Header */}
-                                    <div className="bg-gray-50/50 p-3 flex items-center justify-between border-b border-gray-100">
+                                    <div className="bg-gray-50/50 dark:bg-neutral-800/50 p-3 flex items-center justify-between border-b border-gray-100 dark:border-neutral-800">
                                         <div className="flex items-center gap-3">
                                             <button
                                                 type="button"
                                                 onClick={() => toggleExpanded(module.id)}
-                                                className="text-gray-400 hover:text-gray-600 focus:outline-none"
+                                                className="text-gray-400 dark:text-neutral-600 hover:text-gray-600 dark:hover:text-neutral-400 focus:outline-none"
                                             >
                                                 {expandedModules[module.id] ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
                                             </button>
                                             <label className="flex items-center gap-2 cursor-pointer select-none">
                                                 <input
                                                     type="checkbox"
-                                                    className="w-4 h-4 rounded border-gray-300 text-brand-dark focus:ring-brand-dark"
+                                                    className="w-4 h-4 rounded border-gray-300 dark:border-neutral-700 text-brand-dark dark:text-neutral-400 focus:ring-brand-dark dark:focus:ring-neutral-700 dark:bg-neutral-800"
                                                     checked={isModuleEnabled}
                                                     onChange={(e) => toggleModule(module.id, e.target.checked)}
                                                 />
-                                                <span className="font-bold text-gray-800">{module.displayName || module.id}</span>
+                                                <span className="font-bold text-gray-800 dark:text-neutral-200">{module.displayName || module.id}</span>
                                             </label>
                                         </div>
                                     </div>
 
                                     {/* Sub Routes */}
                                     {expandedModules[module.id] && (
-                                        <div className="p-3 pl-11 space-y-2 bg-white">
+                                        <div className="p-3 pl-11 space-y-2 bg-white dark:bg-neutral-900">
                                             {routes.map(route => {
                                                 const routeId = getRouteId(route.path);
                                                 const accessLevel = value.moduleAccess[module.id]?.[routeId];
@@ -255,10 +255,10 @@ export function PermissionEditor({ value, onChange, siteModules }: PermissionEdi
 
                                                 return (
                                                     <div key={route.path} className="flex items-center justify-between group py-1">
-                                                        <span className="text-sm text-gray-600">{route.label}</span>
+                                                        <span className="text-sm text-gray-600 dark:text-neutral-400">{route.label}</span>
 
                                                         {/* Access Level Selector */}
-                                                        <div className="flex bg-gray-100 p-0.5 rounded-lg border border-gray-200">
+                                                        <div className="flex bg-gray-100 dark:bg-neutral-800 p-0.5 rounded-lg border border-gray-200 dark:border-neutral-700">
                                                             {(['none', 'view', 'full'] as const).map((level) => {
                                                                 const isSelected = (level === 'none' && !value.moduleAccess[module.id]?.[routeId]) ||
                                                                     (value.moduleAccess[module.id]?.[routeId] === level);
@@ -271,10 +271,10 @@ export function PermissionEditor({ value, onChange, siteModules }: PermissionEdi
                                                                         className={`
                                                                             px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all
                                                                             ${isSelected
-                                                                                ? (level === 'none' ? 'bg-white text-gray-400 shadow-sm' :
-                                                                                    level === 'view' ? 'bg-blue-100 text-blue-700 shadow-sm border border-blue-200' :
-                                                                                        'bg-brand-dark text-white shadow-sm')
-                                                                                : 'text-gray-400 hover:text-gray-600 hover:bg-gray-200/50'}
+                                                                                ? (level === 'none' ? 'bg-white dark:bg-neutral-700 text-gray-400 dark:text-neutral-500 shadow-sm' :
+                                                                                    level === 'view' ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 shadow-sm border border-blue-200 dark:border-blue-800' :
+                                                                                        'bg-brand-dark dark:bg-neutral-600 text-white shadow-sm')
+                                                                                : 'text-gray-400 dark:text-neutral-600 hover:text-gray-600 dark:hover:text-neutral-400 hover:bg-gray-200/50 dark:hover:bg-neutral-700/50'}
                                                                         `}
                                                                     >
                                                                         {level}
@@ -295,7 +295,7 @@ export function PermissionEditor({ value, onChange, siteModules }: PermissionEdi
             </div>
 
             {modules.length === 0 && (
-                <div className="text-center py-12 text-gray-400">
+                <div className="text-center py-12 text-gray-400 dark:text-neutral-600">
                     <Shield size={48} className="mx-auto mb-4 opacity-20" />
                     <p className="font-medium">No active modules found.</p>
                     <p className="text-sm mt-1">Enable modules in Site Settings first.</p>

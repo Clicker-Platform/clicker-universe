@@ -205,7 +205,7 @@ export default function InventoryPage() {
                     <h1 className="text-3xl font-black text-brand-dark mb-2 uppercase tracking-tight flex items-center gap-3">
                         <Box size={32} className="text-brand-dark" /> Inventory
                     </h1>
-                    <p className="text-gray-500 font-medium">Manage products, stock levels and usage</p>
+                    <p className="text-gray-500 dark:text-neutral-500 font-medium">Manage products, stock levels and usage</p>
                 </div>
             </div>
             {!isViewOnly && (
@@ -219,23 +219,23 @@ export default function InventoryPage() {
 
 
             {/* Inventory List Container */}
-            <div className="bg-white rounded-3xl border-[3px] border-brand-dark shadow-sm overflow-hidden flex flex-col min-h-[600px]">
+            <div className="bg-white dark:bg-neutral-900 rounded-3xl border-[3px] border-brand-dark shadow-sm overflow-hidden flex flex-col min-h-[600px]">
                 {/* Search Header */}
-                <div className="p-4 border-b border-gray-100 bg-white">
+                <div className="p-4 border-b border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900">
                     <div className="relative max-w-md">
-                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-neutral-600" size={18} />
                         <input
                             type="text"
                             placeholder="Search by Name or SKU..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-dark/10 focus:border-brand-dark transition-all text-sm font-medium"
+                            className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder-neutral-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-dark/10 focus:border-brand-dark transition-all text-sm font-medium"
                         />
                     </div>
                 </div>
 
                 {/* Table Content */}
-                <div className="flex-1 overflow-auto bg-gray-50/30">
+                <div className="flex-1 overflow-auto bg-gray-50/30 dark:bg-neutral-800/20">
                     {loading ? (
                         <div className="p-4">
                             <InventorySkeleton />
@@ -245,22 +245,22 @@ export default function InventoryPage() {
                             {/* Desktop Table View */}
                             <div className="hidden xl:block">
                                 <table className="w-full text-left">
-                                    <thead className="bg-gray-50 text-gray-500 font-bold text-xs uppercase tracking-wider sticky top-0 z-10">
+                                    <thead className="bg-gray-50 dark:bg-neutral-800/50 text-gray-500 dark:text-neutral-500 font-bold text-xs uppercase tracking-wider sticky top-0 z-10">
                                         <tr>
-                                            <th className="px-6 py-4 border-b border-gray-100">SKU</th>
-                                            <th className="px-6 py-4 border-b border-gray-100">Item Name</th>
-                                            <th className="px-6 py-4 border-b border-gray-100 text-center">Stock</th>
-                                            <th className="px-6 py-4 border-b border-gray-100 text-center">Unit</th>
-                                            <th className="px-6 py-4 border-b border-gray-100 text-right">Actions</th>
+                                            <th className="px-6 py-4 border-b border-gray-100 dark:border-neutral-800">SKU</th>
+                                            <th className="px-6 py-4 border-b border-gray-100 dark:border-neutral-800">Item Name</th>
+                                            <th className="px-6 py-4 border-b border-gray-100 dark:border-neutral-800 text-center">Stock</th>
+                                            <th className="px-6 py-4 border-b border-gray-100 dark:border-neutral-800 text-center">Unit</th>
+                                            <th className="px-6 py-4 border-b border-gray-100 dark:border-neutral-800 text-right">Actions</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-gray-100 bg-white">
+                                    <tbody className="divide-y divide-gray-100 dark:divide-neutral-800 bg-white dark:bg-neutral-900">
                                         {filteredItems.map(item => {
                                             const isLowStock = item.currentStock <= item.lowStockThreshold;
                                             return (
-                                                <tr key={item.id} className="hover:bg-gray-50/80 transition-colors group">
-                                                    <td className="px-6 py-4 font-mono text-sm text-gray-500">{item.sku}</td>
-                                                    <td className="px-6 py-4 font-medium text-gray-800">
+                                                <tr key={item.id} className="hover:bg-gray-50/80 dark:hover:bg-neutral-800/50 transition-colors group">
+                                                    <td className="px-6 py-4 font-mono text-sm text-gray-500 dark:text-neutral-500">{item.sku}</td>
+                                                    <td className="px-6 py-4 font-medium text-gray-800 dark:text-neutral-200">
                                                         <div className="flex items-center gap-2">
                                                             {item.name}
                                                             {isLowStock && (
@@ -281,20 +281,20 @@ export default function InventoryPage() {
                                                             {item.currentStock}
                                                         </span>
                                                     </td>
-                                                    <td className="px-6 py-4 text-center text-gray-500 text-sm">{item.unit}</td>
+                                                    <td className="px-6 py-4 text-center text-gray-500 dark:text-neutral-500 text-sm">{item.unit}</td>
                                                     <td className="px-6 py-4 text-right">
                                                         <div className="flex items-center justify-end gap-2 opacity-80 group-hover:opacity-100 transition-opacity">
                                                             {!isViewOnly && (
                                                                 <button
                                                                     onClick={() => setAdjustItem(item)}
-                                                                    className="text-brand-dark hover:bg-gray-100 hover:text-black px-3 py-1.5 rounded-lg text-sm font-semibold border border-gray-200 transition-colors"
+                                                                    className="text-brand-dark hover:bg-gray-100 dark:hover:bg-neutral-700 hover:text-black dark:hover:text-white px-3 py-1.5 rounded-lg text-sm font-semibold border border-gray-200 dark:border-neutral-700 transition-colors"
                                                                 >
                                                                     Adjust
                                                                 </button>
                                                             )}
                                                             <button
                                                                 onClick={() => setHistoryItem(item)}
-                                                                className="p-2 text-gray-400 hover:text-brand-dark hover:bg-gray-100 rounded-lg transition-colors"
+                                                                className="p-2 text-gray-400 dark:text-neutral-600 hover:text-brand-dark hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-lg transition-colors"
                                                                 title="History"
                                                             >
                                                                 <History size={18} />
@@ -303,14 +303,14 @@ export default function InventoryPage() {
                                                                 <>
                                                                     <button
                                                                         onClick={() => openEditModal(item)}
-                                                                        className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                                                        className="p-2 text-gray-400 dark:text-neutral-600 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30 rounded-lg transition-colors"
                                                                         title="Edit"
                                                                     >
                                                                         <Pencil size={18} />
                                                                     </button>
                                                                     <button
                                                                         onClick={() => handleDeleteClick(item.id)}
-                                                                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                                        className="p-2 text-gray-400 dark:text-neutral-600 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors"
                                                                         title="Delete"
                                                                     >
                                                                         <Trash2 size={18} />
@@ -332,11 +332,11 @@ export default function InventoryPage() {
                                     {filteredItems.map(item => {
                                         const isLowStock = item.currentStock <= item.lowStockThreshold;
                                         return (
-                                            <div key={item.id} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col">
+                                            <div key={item.id} className="bg-white dark:bg-neutral-900 p-5 rounded-2xl border border-gray-100 dark:border-neutral-800 shadow-sm hover:shadow-md transition-all flex flex-col">
                                                 <div className="flex justify-between items-start mb-3">
                                                     <div>
                                                         <div className="flex items-center gap-2 mb-1">
-                                                            <span className="font-mono text-xs text-gray-400 bg-gray-50 px-2 py-0.5 rounded">{item.sku}</span>
+                                                            <span className="font-mono text-xs text-gray-400 dark:text-neutral-600 bg-gray-50 dark:bg-neutral-800 px-2 py-0.5 rounded">{item.sku}</span>
                                                             {isLowStock && (
                                                                 <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-700">
                                                                     Low Stock
@@ -351,11 +351,11 @@ export default function InventoryPage() {
                                                     </span>
                                                 </div>
 
-                                                <div className="mt-auto pt-4 flex items-center justify-between border-t border-gray-50 gap-2">
+                                                <div className="mt-auto pt-4 flex items-center justify-between border-t border-gray-50 dark:border-neutral-800 gap-2">
                                                     {!isViewOnly && (
                                                         <button
                                                             onClick={() => setAdjustItem(item)}
-                                                            className="flex-1 bg-gray-50 hover:bg-gray-100 text-brand-dark text-sm font-bold py-2 rounded-lg transition-colors border border-gray-200"
+                                                            className="flex-1 bg-gray-50 dark:bg-neutral-800 hover:bg-gray-100 dark:hover:bg-neutral-700 text-brand-dark text-sm font-bold py-2 rounded-lg transition-colors border border-gray-200 dark:border-neutral-700"
                                                         >
                                                             Adjust
                                                         </button>
@@ -363,7 +363,7 @@ export default function InventoryPage() {
                                                     <div className="flex gap-1">
                                                         <button
                                                             onClick={() => setHistoryItem(item)}
-                                                            className="p-2 text-gray-400 hover:text-brand-dark hover:bg-gray-100 rounded-lg transition-colors border border-transparent hover:border-gray-200"
+                                                            className="p-2 text-gray-400 dark:text-neutral-600 hover:text-brand-dark hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-lg transition-colors border border-transparent hover:border-gray-200 dark:hover:border-neutral-700"
                                                         >
                                                             <History size={18} />
                                                         </button>
@@ -371,13 +371,13 @@ export default function InventoryPage() {
                                                             <>
                                                                 <button
                                                                     onClick={() => openEditModal(item)}
-                                                                    className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors border border-transparent hover:border-blue-100"
+                                                                    className="p-2 text-gray-400 dark:text-neutral-600 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30 rounded-lg transition-colors border border-transparent hover:border-blue-100"
                                                                 >
                                                                     <Pencil size={18} />
                                                                 </button>
                                                                 <button
                                                                     onClick={() => handleDeleteClick(item.id)}
-                                                                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-100"
+                                                                    className="p-2 text-gray-400 dark:text-neutral-600 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors border border-transparent hover:border-red-100"
                                                                 >
                                                                     <Trash2 size={18} />
                                                                 </button>
@@ -393,11 +393,11 @@ export default function InventoryPage() {
                         </>
                     ) : (
                         <div className="flex flex-col items-center justify-center text-center h-full p-12">
-                            <div className="bg-gray-50 p-4 rounded-full mb-4">
-                                <PackageOpen size={48} className="text-gray-300" />
+                            <div className="bg-gray-50 dark:bg-neutral-800 p-4 rounded-full mb-4">
+                                <PackageOpen size={48} className="text-gray-300 dark:text-neutral-600" />
                             </div>
-                            <h3 className="text-xl font-bold text-gray-800 mb-2">No items found</h3>
-                            <p className="text-gray-500 max-w-md mx-auto mb-6">
+                            <h3 className="text-xl font-bold text-gray-800 dark:text-neutral-200 mb-2">No items found</h3>
+                            <p className="text-gray-500 dark:text-neutral-500 max-w-md mx-auto mb-6">
                                 We couldn't find any inventory items matching your search. Try adjusting your filters or create a new item.
                             </p>
                             <button

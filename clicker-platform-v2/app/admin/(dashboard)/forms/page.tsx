@@ -68,7 +68,7 @@ export default function FormsPage() {
             <div className="flex items-center justify-between mb-8">
                 <div>
                     <h1 className="text-3xl font-black text-brand-dark mb-2 uppercase tracking-tight">Forms Builder</h1>
-                    <p className="text-gray-600 font-medium">Build and manage your lead capture forms.</p>
+                    <p className="text-gray-600 dark:text-neutral-400 font-medium">Build and manage your lead capture forms.</p>
                 </div>
                 <Link
                     href="/admin/forms/builder"
@@ -86,12 +86,12 @@ export default function FormsPage() {
                         <FormCard key={form.id} form={form} />
                     ))
                 ) : (
-                    <div className="col-span-full py-20 text-center bg-white rounded-2xl border border-dashed border-gray-300">
-                        <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4 text-gray-400">
+                    <div className="col-span-full py-20 text-center bg-white dark:bg-neutral-900 rounded-2xl border border-dashed border-gray-300 dark:border-neutral-700">
+                        <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 dark:bg-neutral-800 rounded-full mb-4 text-gray-400 dark:text-neutral-600">
                             <FileText size={32} />
                         </div>
-                        <h3 className="text-xl font-black text-gray-400 mb-2">No forms yet</h3>
-                        <p className="text-gray-500 font-medium mb-6">Create your first form to start collecting leads.</p>
+                        <h3 className="text-xl font-black text-gray-400 dark:text-neutral-600 mb-2">No forms yet</h3>
+                        <p className="text-gray-500 dark:text-neutral-500 font-medium mb-6">Create your first form to start collecting leads.</p>
                         <Link
                             href="/admin/forms/builder"
                             className="inline-flex items-center gap-2 bg-brand-dark text-white px-6 py-3 rounded-xl font-bold hover:bg-gray-800 transition-colors"

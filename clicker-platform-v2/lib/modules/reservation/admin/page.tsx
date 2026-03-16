@@ -193,7 +193,7 @@ export default function ReservationDashboard() {
             <div className="flex items-center justify-between mb-8">
                 <div>
                     <h1 className="text-3xl font-black text-brand-dark mb-2 uppercase">Reservation</h1>
-                    <p className="text-gray-600 font-medium">Manage bookings and services</p>
+                    <p className="text-gray-600 dark:text-neutral-400 font-medium">Manage bookings and services</p>
                 </div>
                 <div>
                     <button
@@ -216,7 +216,7 @@ export default function ReservationDashboard() {
             />
 
             {/* Inbox Unified Container */}
-            <div className="bg-white rounded-3xl border-[3px] border-brand-dark shadow-sm overflow-hidden grid grid-cols-1 lg:grid-cols-3 divide-y lg:divide-y-0 lg:divide-x divide-gray-100 h-[700px]">
+            <div className="bg-white dark:bg-neutral-900 rounded-3xl border-[3px] border-brand-dark shadow-sm overflow-hidden grid grid-cols-1 lg:grid-cols-3 divide-y lg:divide-y-0 lg:divide-x divide-gray-100 dark:divide-neutral-800 h-[700px]">
                 <BookingList
                     bookings={bookings}
                     selectedId={selectedBooking?.id || null}
@@ -229,7 +229,7 @@ export default function ReservationDashboard() {
                     loadingMore={loadingMore}
                 />
 
-                <div className="hidden lg:flex lg:col-span-2 h-full overflow-y-auto bg-white flex-col relative">
+                <div className="hidden lg:flex lg:col-span-2 h-full overflow-y-auto bg-white dark:bg-neutral-900 flex-col relative">
                     <BookingDetailPanel
                         booking={selectedBooking}
                         onClose={() => setSelectedBooking(null)}
@@ -250,7 +250,7 @@ export default function ReservationDashboard() {
 
                     {/* Responsive Panel: Bottom Sheet (Mobile) -> Sidebar (Tablet) */}
                     <div className="
-                        relative z-10 bg-white shadow-2xl flex flex-col overflow-hidden
+                        relative z-10 bg-white dark:bg-neutral-900 shadow-2xl flex flex-col overflow-hidden
                         w-full h-[85vh] rounded-t-3xl animate-in slide-in-from-bottom duration-300
                         md:w-[600px] md:h-full md:rounded-none md:slide-in-from-right
                     ">

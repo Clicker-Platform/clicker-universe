@@ -74,7 +74,7 @@ export function FormBuilderClient({ initialForm }: FormBuilderClientProps) {
             {/* Header */}
             <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-4">
-                    <button onClick={() => router.back()} className="p-2 bg-white rounded-full hover:bg-gray-100 transition-colors">
+                    <button onClick={() => router.back()} className="p-2 bg-white dark:bg-neutral-900 rounded-full hover:bg-gray-100 dark:hover:bg-neutral-700 transition-colors">
                         <ArrowLeft size={24} />
                     </button>
                     <div>
@@ -97,27 +97,27 @@ export function FormBuilderClient({ initialForm }: FormBuilderClientProps) {
                 {/* Left Column: Settings & Fields */}
                 <div className="lg:col-span-2 space-y-8">
                     {/* General Settings */}
-                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+                    <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm">
                         <h2 className="text-xl font-black text-brand-dark mb-4 flex items-center gap-2">
                             <Settings size={20} /> General Settings
                         </h2>
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Form Title</label>
+                                <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">Form Title</label>
                                 <input
                                     type="text"
                                     value={form.title}
                                     onChange={e => setForm(prev => ({ ...prev, title: e.target.value }))}
-                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-gray-400 focus:ring-0 transition-colors font-bold"
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 focus:ring-0 transition-colors font-bold"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Button Text</label>
+                                <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">Button Text</label>
                                 <input
                                     type="text"
                                     value={form.buttonText}
                                     onChange={e => setForm(prev => ({ ...prev, buttonText: e.target.value }))}
-                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-gray-400 focus:ring-0 transition-colors"
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 focus:ring-0 transition-colors"
                                 />
                             </div>
                             <div className="flex items-center gap-4">
@@ -126,19 +126,19 @@ export function FormBuilderClient({ initialForm }: FormBuilderClientProps) {
                                         type="checkbox"
                                         checked={form.isPublished}
                                         onChange={e => setForm(prev => ({ ...prev, isPublished: e.target.checked }))}
-                                        className="w-5 h-5 rounded-md border border-gray-300 text-brand-green focus:ring-brand-green"
+                                        className="w-5 h-5 rounded-md border border-gray-300 dark:border-neutral-700 text-brand-green focus:ring-brand-green"
                                     />
-                                    <span className="font-bold text-gray-700">Published</span>
+                                    <span className="font-bold text-gray-700 dark:text-neutral-300">Published</span>
                                 </label>
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Notification Email (Optional)</label>
+                                <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">Notification Email (Optional)</label>
                                 <input
                                     type="email"
                                     value={form.emailNotificationTo || ''}
                                     onChange={e => setForm(prev => ({ ...prev, emailNotificationTo: e.target.value }))}
                                     placeholder="Enter email to receive alerts"
-                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-gray-400 focus:ring-0 transition-colors"
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 focus:ring-0 transition-colors"
                                 />
                             </div>
                         </div>
@@ -150,31 +150,31 @@ export function FormBuilderClient({ initialForm }: FormBuilderClientProps) {
                             <h2 className="text-xl font-black text-brand-dark">Form Fields</h2>
                             <button
                                 onClick={addField}
-                                className="inline-flex items-center gap-2 bg-gray-100 text-brand-dark px-4 py-2 rounded-xl font-bold hover:bg-gray-200 transition-colors"
+                                className="inline-flex items-center gap-2 bg-gray-100 dark:bg-neutral-800 text-brand-dark px-4 py-2 rounded-xl font-bold hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors"
                             >
                                 <Plus size={18} /> Add Field
                             </button>
                         </div>
 
                         {form.fields?.map((field, index) => (
-                            <div key={field.id} className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm group">
+                            <div key={field.id} className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm group">
                                 <div className="flex items-start justify-between mb-4">
-                                    <div className="flex items-center gap-2 text-gray-400">
+                                    <div className="flex items-center gap-2 text-gray-400 dark:text-neutral-600">
                                         <GripVertical size={20} className="cursor-move" />
                                         <span className="font-bold text-xs uppercase">Field {index + 1}</span>
                                     </div>
-                                    <button onClick={() => removeField(field.id)} className="text-gray-400 hover:text-red-500 transition-colors">
+                                    <button onClick={() => removeField(field.id)} className="text-gray-400 dark:text-neutral-600 hover:text-red-500 transition-colors">
                                         <Trash2 size={20} />
                                     </button>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-xs font-bold text-gray-500 mb-1 uppercase">Type</label>
+                                        <label className="block text-xs font-bold text-gray-500 dark:text-neutral-500 mb-1 uppercase">Type</label>
                                         <select
                                             value={field.type}
                                             onChange={e => updateField(field.id, { type: e.target.value as any })}
-                                            className="w-full px-3 py-2 rounded-xl border border-gray-200 focus:border-gray-400 bg-gray-50 font-medium"
+                                            className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 bg-gray-50 font-medium"
                                         >
                                             <option value="text">Text Input</option>
                                             <option value="email">Email</option>
@@ -185,34 +185,34 @@ export function FormBuilderClient({ initialForm }: FormBuilderClientProps) {
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-bold text-gray-500 mb-1 uppercase">Label</label>
+                                        <label className="block text-xs font-bold text-gray-500 dark:text-neutral-500 mb-1 uppercase">Label</label>
                                         <input
                                             type="text"
                                             value={field.label}
                                             onChange={e => updateField(field.id, { label: e.target.value })}
-                                            className="w-full px-3 py-2 rounded-xl border border-gray-200 focus:border-gray-400"
+                                            className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400"
                                         />
                                     </div>
                                     <div className="col-span-1 md:col-span-2">
-                                        <label className="block text-xs font-bold text-gray-500 mb-1 uppercase">Placeholder</label>
+                                        <label className="block text-xs font-bold text-gray-500 dark:text-neutral-500 mb-1 uppercase">Placeholder</label>
                                         <input
                                             type="text"
                                             value={field.placeholder || ''}
                                             onChange={e => updateField(field.id, { placeholder: e.target.value })}
-                                            className="w-full px-3 py-2 rounded-xl border border-gray-200 focus:border-gray-400"
+                                            className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400"
                                         />
                                     </div>
 
                                     {/* Dropdown Options Editor */}
                                     {field.type === 'select' && (
-                                        <div className="col-span-1 md:col-span-2 bg-yellow-50 p-4 rounded-xl border border-yellow-100">
-                                            <label className="block text-xs font-bold text-yellow-700 mb-1 uppercase">Options (comma separated)</label>
+                                        <div className="col-span-1 md:col-span-2 bg-yellow-50 dark:bg-yellow-950/30 p-4 rounded-xl border border-yellow-100">
+                                            <label className="block text-xs font-bold text-yellow-700 dark:text-amber-400 mb-1 uppercase">Options (comma separated)</label>
                                             <input
                                                 type="text"
                                                 value={field.options?.join(', ') || ''}
                                                 onChange={e => updateField(field.id, { options: e.target.value.split(',').map(s => s.trim()) })}
                                                 placeholder="Option 1, Option 2, Option 3"
-                                                className="w-full px-3 py-2 rounded-xl border border-yellow-200 focus:border-yellow-400"
+                                                className="w-full px-3 py-2 rounded-xl border border-yellow-200 focus:border-yellow-400 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
                                             />
                                         </div>
                                     )}
@@ -223,9 +223,9 @@ export function FormBuilderClient({ initialForm }: FormBuilderClientProps) {
                                                 type="checkbox"
                                                 checked={field.required}
                                                 onChange={e => updateField(field.id, { required: e.target.checked })}
-                                                className="w-4 h-4 rounded border border-gray-300 text-brand-dark focus:ring-gray-400"
+                                                className="w-4 h-4 rounded border border-gray-300 dark:border-neutral-700 text-brand-dark focus:ring-gray-400"
                                             />
-                                            <span className="font-medium text-sm text-gray-600">Required field</span>
+                                            <span className="font-medium text-sm text-gray-600 dark:text-neutral-400">Required field</span>
                                         </label>
                                     </div>
                                 </div>
@@ -237,35 +237,35 @@ export function FormBuilderClient({ initialForm }: FormBuilderClientProps) {
                 {/* Right Column: Preview */}
                 <div className="lg:col-span-1">
                     <div className="sticky top-8">
-                        <h2 className="text-sm font-black text-gray-400 uppercase tracking-widest mb-4 text-center">Live Preview</h2>
-                        <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm min-h-[400px] flex flex-col relative overflow-hidden">
+                        <h2 className="text-sm font-black text-gray-400 dark:text-neutral-600 uppercase tracking-widest mb-4 text-center">Live Preview</h2>
+                        <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm min-h-[400px] flex flex-col relative overflow-hidden">
                             {/* Decorative Header */}
                             <div className="absolute top-0 inset-x-0 h-2 bg-brand-green"></div>
 
                             <div className="mb-6">
                                 <h3 className="font-extrabold text-2xl text-brand-dark leading-tight mb-2">{form.title || 'Untitled Form'}</h3>
-                                <p className="text-gray-500 text-sm">Fill out the details below.</p>
+                                <p className="text-gray-500 dark:text-neutral-500 text-sm">Fill out the details below.</p>
                             </div>
 
                             <div className="space-y-4 flex-1">
                                 {form.fields?.map(field => (
                                     <div key={field.id}>
-                                        <label className="block text-sm font-bold text-gray-700 mb-1">
+                                        <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">
                                             {field.label} {field.required && <span className="text-red-500">*</span>}
                                         </label>
                                         {field.type === 'textarea' ? (
                                             <textarea
                                                 placeholder={field.placeholder}
-                                                className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-gray-50 resize-none h-24"
+                                                className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 bg-gray-50 resize-none h-24"
                                                 readOnly
                                             ></textarea>
                                         ) : field.type === 'select' ? (
-                                            <select className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-gray-50" disabled>
+                                            <select className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 bg-gray-50" disabled>
                                                 <option value="">Select option...</option>
                                                 {field.options?.map(opt => <option key={opt}>{opt}</option>)}
                                             </select>
                                         ) : field.type === 'file' ? (
-                                            <div className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-gray-50 flex items-center gap-2 text-gray-500">
+                                            <div className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 bg-gray-50 flex items-center gap-2 text-gray-500 dark:text-neutral-500">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" x2="12" y1="3" y2="15" /></svg>
                                                 <span className="text-sm">Choose File...</span>
                                             </div>
@@ -273,7 +273,7 @@ export function FormBuilderClient({ initialForm }: FormBuilderClientProps) {
                                             <input
                                                 type={field.type}
                                                 placeholder={field.placeholder}
-                                                className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-gray-50"
+                                                className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 bg-gray-50"
                                                 readOnly
                                             />
                                         )}

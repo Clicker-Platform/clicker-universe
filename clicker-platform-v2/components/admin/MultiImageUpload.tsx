@@ -126,23 +126,23 @@ export function MultiImageUpload({ images, onImagesChange, maxImages = 10 }: Mul
                     }}
                     className={`
                         w-full border-2 border-dashed rounded-xl p-8 mb-6 flex flex-col items-center justify-center cursor-pointer transition-all duration-200
-                        ${error ? 'border-red-300 bg-red-50' : 'border-gray-300 hover:border-brand-green hover:bg-brand-green/5'}
+                        ${error ? 'border-red-300 bg-red-50 dark:border-red-900/50 dark:bg-red-900/20' : 'border-gray-300 dark:border-neutral-700 hover:border-brand-green dark:hover:border-brand-green hover:bg-brand-green/5 dark:hover:bg-brand-green/10'}
                         ${uploading ? 'opacity-50 pointer-events-none' : ''}
                     `}
                 >
                     {uploading ? (
                         <div className="flex flex-col items-center gap-3">
-                            <Loader2 className="animate-spin text-brand-dark" size={32} />
-                            <p className="text-sm font-bold text-gray-500">Uploading...</p>
+                            <Loader2 className="animate-spin text-brand-dark dark:text-neutral-200" size={32} />
+                            <p className="text-sm font-bold text-gray-500 dark:text-neutral-400">Uploading...</p>
                         </div>
                     ) : (
                         <>
-                            <div className="bg-gray-100 p-4 rounded-full mb-3 group-hover:bg-white group-hover:shadow-sm transition-all">
-                                <Upload className="text-gray-400 group-hover:text-brand-green transition-colors" size={24} />
+                            <div className="bg-gray-100 dark:bg-neutral-800 p-4 rounded-full mb-3 group-hover:bg-white dark:group-hover:bg-neutral-700 group-hover:shadow-sm transition-all">
+                                <Upload className="text-gray-400 dark:text-neutral-500 group-hover:text-brand-green transition-colors" size={24} />
                             </div>
-                            <h3 className="text-brand-dark font-bold text-base mb-1">Click to upload or drag and drop</h3>
-                            <p className="text-gray-400 text-sm mb-1">SVG, PNG, JPG or WEBP (max. 5MB)</p>
-                            <p className="text-xs font-bold text-gray-300">
+                            <h3 className="text-brand-dark dark:text-neutral-200 font-bold text-base mb-1">Click to upload or drag and drop</h3>
+                            <p className="text-gray-400 dark:text-neutral-500 text-sm mb-1">SVG, PNG, JPG or WEBP (max. 5MB)</p>
+                            <p className="text-xs font-bold text-gray-300 dark:text-neutral-600">
                                 {images.length}/{maxImages} images used
                             </p>
                         </>
@@ -158,7 +158,7 @@ export function MultiImageUpload({ images, onImagesChange, maxImages = 10 }: Mul
                             key={`${url}-${index}`}
                             className={`
                                 relative aspect-square rounded-xl overflow-hidden border group shadow-sm
-                                ${index === 0 ? 'border-gray-400 ring-2 ring-gray-400 ring-offset-2' : 'border-gray-200'}
+                                ${index === 0 ? 'border-gray-400 dark:border-neutral-500 ring-2 ring-gray-400 dark:ring-neutral-500 ring-offset-2 dark:ring-offset-neutral-900' : 'border-gray-200 dark:border-neutral-800'}
                             `}
                         >
                             <Image
@@ -175,7 +175,7 @@ export function MultiImageUpload({ images, onImagesChange, maxImages = 10 }: Mul
                                     <button
                                         type="button"
                                         onClick={() => setMainImage(index)}
-                                        className="text-[10px] bg-white text-brand-dark font-bold px-2 py-1 rounded hover:bg-brand-green hover:text-white transition-colors w-full"
+                                        className="text-[10px] bg-white dark:bg-neutral-800 text-brand-dark dark:text-neutral-200 font-bold px-2 py-1 rounded hover:bg-brand-green hover:text-white transition-colors w-full"
                                     >
                                         Set as Cover
                                     </button>
@@ -191,7 +191,7 @@ export function MultiImageUpload({ images, onImagesChange, maxImages = 10 }: Mul
                             </div>
 
                             {index === 0 && (
-                                <div className="absolute top-0 left-0 bg-brand-dark text-white text-[10px] uppercase font-bold px-2 py-1 rounded-br-lg z-10">
+                                <div className="absolute top-0 left-0 bg-brand-dark dark:bg-neutral-700 text-white text-[10px] uppercase font-bold px-2 py-1 rounded-br-lg z-10">
                                     Cover
                                 </div>
                             )}
@@ -215,7 +215,7 @@ export function MultiImageUpload({ images, onImagesChange, maxImages = 10 }: Mul
                 </div>
             )}
 
-            <p className="text-xs text-gray-400 text-center mt-2">
+            <p className="text-xs text-gray-400 dark:text-neutral-500 text-center mt-2">
                 First image is cover. Drag or upload multiple. Max {maxImages} images total.
             </p>
         </div>

@@ -79,19 +79,19 @@ export default function ProfileEditor() {
             <h1 className="text-3xl font-black text-brand-dark mb-8 uppercase">Edit Profile</h1>
 
             {message && (
-                <div className={`p-4 rounded-xl mb-6 font-bold ${message.includes('Error') ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                <div className={`p-4 rounded-xl mb-6 font-bold ${message.includes('Error') ? 'bg-red-100 text-red-700 dark:bg-red-950/30 dark:text-red-400' : 'bg-green-100 text-green-700 dark:bg-green-950/30 dark:text-green-400'}`}>
                     {message}
                 </div>
             )}
 
-            <form onSubmit={handleSave} className={`space-y-6 bg-white p-8 rounded-2xl border border-gray-200 shadow-sm transition-opacity duration-200 ${saving ? 'opacity-50 pointer-events-none' : ''}`}>
+            <form onSubmit={handleSave} className={`space-y-6 bg-white dark:bg-neutral-900 p-8 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm transition-opacity duration-200 ${saving ? 'opacity-50 pointer-events-none' : ''}`}>
                 <div>
                     <label className="block text-brand-dark font-bold mb-2">Business Name</label>
                     <input
                         type="text"
                         value={profile.name}
                         onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 outline-none font-medium"
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 outline-none font-medium"
                         placeholder="e.g. SunnySide Sales"
                     />
                 </div>
@@ -102,7 +102,7 @@ export default function ProfileEditor() {
                         type="text"
                         value={profile.tagline}
                         onChange={(e) => setProfile({ ...profile, tagline: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 outline-none font-medium"
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 outline-none font-medium"
                         placeholder="e.g. Best Deals in Town"
                     />
                 </div>
@@ -112,7 +112,7 @@ export default function ProfileEditor() {
                     <textarea
                         value={profile.description}
                         onChange={(e) => setProfile({ ...profile, description: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 outline-none font-medium h-32"
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 outline-none font-medium h-32"
                         placeholder="Tell us about your business..."
                     />
                 </div>

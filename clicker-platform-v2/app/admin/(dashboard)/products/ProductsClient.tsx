@@ -212,21 +212,21 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
                     </button>
                     <button
                         onClick={() => setShowSettings(!showSettings)}
-                        className="flex items-center gap-2 bg-gray-100 px-4 py-2 rounded-xl font-bold text-gray-700 hover:bg-gray-200 transition-colors border border-gray-200"
+                        className="flex items-center gap-2 bg-gray-100 dark:bg-neutral-800 px-4 py-2 rounded-xl font-bold text-gray-700 dark:text-neutral-300 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors border border-gray-200 dark:border-neutral-700"
                     >
                         <Settings size={18} /> Configure
                     </button>
-                    <div className="flex bg-gray-100 p-1 rounded-lg border border-gray-200">
+                    <div className="flex bg-gray-100 dark:bg-neutral-800 p-1 rounded-lg border border-gray-200 dark:border-neutral-700">
                         <button
                             onClick={() => setViewMode('grid')}
-                            className={`p-2 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white text-brand-dark shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                            className={`p-2 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-neutral-900 text-brand-dark shadow-sm' : 'text-gray-400 dark:text-neutral-600 hover:text-gray-600 dark:hover:text-neutral-300'}`}
                             title="Grid View"
                         >
                             <LayoutGrid size={20} />
                         </button>
                         <button
                             onClick={() => setViewMode('list')}
-                            className={`p-2 rounded-md transition-all ${viewMode === 'list' ? 'bg-white text-brand-dark shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                            className={`p-2 rounded-md transition-all ${viewMode === 'list' ? 'bg-white dark:bg-neutral-900 text-brand-dark shadow-sm' : 'text-gray-400 dark:text-neutral-600 hover:text-gray-600 dark:hover:text-neutral-300'}`}
                             title="List View"
                         >
                             <List size={20} />
@@ -237,30 +237,30 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
 
             {/* Settings Panel */}
             {showSettings && (
-                <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm mb-8 animate-in slide-in-from-top-2">
+                <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm mb-8 animate-in slide-in-from-top-2">
                     <h2 className="text-lg font-bold text-brand-dark mb-4">Gallery Settings</h2>
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-1">Section Title</label>
+                            <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">Section Title</label>
                             <input
                                 type="text"
                                 value={settings.galleryTitle || ''}
                                 onChange={(e) => setSettings({ ...settings, galleryTitle: e.target.value })}
-                                className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-brand-dark focus:ring-0"
+                                className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-brand-dark focus:ring-0"
                                 placeholder="e.g. More Treats"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-1">Items to Show (Home Page)</label>
+                            <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">Items to Show (Home Page)</label>
                             <input
                                 type="number"
                                 value={settings.itemsToShow || 6}
                                 onChange={(e) => setSettings({ ...settings, itemsToShow: parseInt(e.target.value) || 6 })}
-                                className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-brand-dark focus:ring-0"
+                                className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-brand-dark focus:ring-0"
                                 min={1}
                             />
-                            <p className="text-xs text-gray-400 mt-1">If you have more active products than this limit, a "View More" button will appear.</p>
+                            <p className="text-xs text-gray-400 dark:text-neutral-600 mt-1">If you have more active products than this limit, a "View More" button will appear.</p>
                         </div>
 
                         <label className="flex items-center gap-3 cursor-pointer">
@@ -268,38 +268,38 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
                                 type="checkbox"
                                 checked={!!settings.showSectionTitle}
                                 onChange={(e) => setSettings({ ...settings, showSectionTitle: e.target.checked })}
-                                className="w-5 h-5 rounded text-brand-dark focus:ring-brand-dark border-gray-300"
+                                className="w-5 h-5 rounded text-brand-dark focus:ring-brand-dark border-gray-300 dark:border-neutral-700"
                             />
                             <div>
-                                <span className="block font-bold text-sm text-gray-900">Show Section Title</span>
-                                <span className="block text-xs text-gray-500">If unchecked, the title will be hidden, but products will still be shown.</span>
+                                <span className="block font-bold text-sm text-gray-900 dark:text-neutral-100">Show Section Title</span>
+                                <span className="block text-xs text-gray-500 dark:text-neutral-500">If unchecked, the title will be hidden, but products will still be shown.</span>
                             </div>
                         </label>
 
                     </div>
 
                     {/* Featured Product Settings */}
-                    <div className="mt-8 pt-8 border-t border-gray-100">
+                    <div className="mt-8 pt-8 border-t border-gray-100 dark:border-neutral-800/50">
                         <h2 className="text-lg font-bold text-brand-dark mb-4">Featured Product Settings</h2>
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Badge Text (Section Title)</label>
+                                <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">Badge Text (Section Title)</label>
                                 <input
                                     type="text"
                                     value={(settings as any).featuredTitle || 'Star Pick'}
                                     onChange={(e) => setSettings({ ...settings, featuredTitle: e.target.value } as any)}
-                                    className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-brand-dark focus:ring-0"
+                                    className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-brand-dark focus:ring-0"
                                     placeholder="e.g. Star Pick"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Button Text</label>
+                                <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">Button Text</label>
                                 <input
                                     type="text"
                                     value={(settings as any).featuredBtnText || 'Order This Now'}
                                     onChange={(e) => setSettings({ ...settings, featuredBtnText: e.target.value } as any)}
-                                    className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-brand-dark focus:ring-0"
+                                    className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-brand-dark focus:ring-0"
                                     placeholder="e.g. Order This Now"
                                 />
                             </div>
@@ -309,45 +309,45 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
                                     type="checkbox"
                                     checked={(settings as any).showFeaturedTitle !== false} // Default true
                                     onChange={(e) => setSettings({ ...settings, showFeaturedTitle: e.target.checked } as any)}
-                                    className="w-5 h-5 rounded text-brand-dark focus:ring-brand-dark border-gray-300"
+                                    className="w-5 h-5 rounded text-brand-dark focus:ring-brand-dark border-gray-300 dark:border-neutral-700"
                                 />
                                 <div>
-                                    <span className="block font-bold text-sm text-gray-900">Show Badge/Title</span>
-                                    <span className="block text-xs text-gray-500">If unchecked, the "Star Pick" badge will be hidden.</span>
+                                    <span className="block font-bold text-sm text-gray-900 dark:text-neutral-100">Show Badge/Title</span>
+                                    <span className="block text-xs text-gray-500 dark:text-neutral-500">If unchecked, the "Star Pick" badge will be hidden.</span>
                                 </div>
                             </label>
                         </div>
                     </div>
 
                     {/* Whatsapp Button Settings */}
-                    <div className="mt-8 pt-8 border-t border-gray-100">
+                    <div className="mt-8 pt-8 border-t border-gray-100 dark:border-neutral-800/50">
                         <h2 className="text-lg font-bold text-brand-dark mb-4">Whatsapp Button Settings</h2>
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Button Label</label>
+                                <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">Button Label</label>
                                 <input
                                     type="text"
                                     value={(settings as any).whatsappBtnLabel || 'Order on WhatsApp'}
                                     onChange={(e) => setSettings({ ...settings, whatsappBtnLabel: e.target.value } as any)}
-                                    className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-brand-dark focus:ring-0"
+                                    className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-brand-dark focus:ring-0"
                                     placeholder="e.g. Order on WhatsApp"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Message Template</label>
+                                <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">Message Template</label>
                                 <textarea
                                     value={(settings as any).whatsappMessageTemplate || "Hi! I'd like to order the ${productName} for ${productPrice}."}
                                     onChange={(e) => setSettings({ ...settings, whatsappMessageTemplate: e.target.value } as any)}
-                                    className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-brand-dark focus:ring-0 min-h-[80px]"
+                                    className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-brand-dark focus:ring-0 min-h-[80px]"
                                     placeholder="Use ${productName} and ${productPrice} as placeholders."
                                 />
-                                <p className="text-xs text-gray-400 mt-1">Available placeholders: <code>${'{productName}'}</code>, <code>${'{productPrice}'}</code></p>
+                                <p className="text-xs text-gray-400 dark:text-neutral-600 mt-1">Available placeholders: <code>${'{productName}'}</code>, <code>${'{productPrice}'}</code></p>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-1">Button Color</label>
+                                    <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">Button Color</label>
                                     <div className="flex items-center gap-2">
                                         <input
                                             type="color"
@@ -359,12 +359,12 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
                                             type="text"
                                             value={(settings as any).whatsappBtnColor || '#25D366'}
                                             onChange={(e) => setSettings({ ...settings, whatsappBtnColor: e.target.value } as any)}
-                                            className="flex-1 px-4 py-2 rounded-lg border border-gray-200 focus:border-brand-dark focus:ring-0 uppercase"
+                                            className="flex-1 px-4 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-brand-dark focus:ring-0 uppercase"
                                         />
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-1">Text Color</label>
+                                    <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">Text Color</label>
                                     <div className="flex items-center gap-2">
                                         <input
                                             type="color"
@@ -376,7 +376,7 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
                                             type="text"
                                             value={(settings as any).whatsappBtnTextColor || '#FFFFFF'}
                                             onChange={(e) => setSettings({ ...settings, whatsappBtnTextColor: e.target.value } as any)}
-                                            className="flex-1 px-4 py-2 rounded-lg border border-gray-200 focus:border-brand-dark focus:ring-0 uppercase"
+                                            className="flex-1 px-4 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-brand-dark focus:ring-0 uppercase"
                                         />
                                     </div>
                                 </div>
@@ -384,7 +384,7 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
                         </div>
                     </div>
 
-                    <div className="flex justify-end pt-6 border-t border-gray-100 mt-6">
+                    <div className="flex justify-end pt-6 border-t border-gray-100 dark:border-neutral-800/50 mt-6">
                         <button
                             onClick={saveSettings}
                             disabled={isSavingSettings}
@@ -412,12 +412,12 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
                     if (viewMode === 'list') {
                         return (
                             <div key={product.id} className={`
-                                bg-white p-4 rounded-xl border transition-all duration-300 group flex flex-col md:flex-row md:items-center gap-4 
-                                ${isFeatured ? 'border border-yellow-300 shadow-sm' : 'border-gray-200'}
-                                ${!isActive ? 'opacity-60 bg-gray-50' : ''}
+                                bg-white dark:bg-neutral-900 p-4 rounded-xl border transition-all duration-300 group flex flex-col md:flex-row md:items-center gap-4
+                                ${isFeatured ? 'border border-yellow-300 shadow-sm' : 'border-gray-200 dark:border-neutral-800'}
+                                ${!isActive ? 'opacity-60 bg-gray-50 dark:bg-neutral-800/50' : ''}
                             `}>
                                 <div className="flex items-start gap-4 flex-1 w-full">
-                                    <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 relative">
+                                    <div className="w-16 h-16 bg-gray-100 dark:bg-neutral-800 rounded-lg overflow-hidden flex-shrink-0 relative">
                                         <Image
                                             src={displayImage}
                                             alt={displayTitle}
@@ -435,11 +435,11 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
                                     <div className="flex-1 min-w-0 flex flex-col justify-center">
                                         <div className="flex items-start justify-between gap-2">
                                             <h3 className="font-bold text-brand-dark line-clamp-2 leading-tight">{displayTitle}</h3>
-                                            {!isActive && <span className="text-[10px] font-bold bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded whitespace-nowrap">HIDDEN</span>}
+                                            {!isActive && <span className="text-[10px] font-bold bg-gray-200 dark:bg-neutral-700 text-gray-500 dark:text-neutral-500 px-1.5 py-0.5 rounded whitespace-nowrap">HIDDEN</span>}
                                         </div>
                                         <div className="flex items-center gap-2 mt-1.5">
                                             {showPrice && <p className="text-sm text-brand-green font-bold bg-brand-dark inline-block px-2 py-0.5 rounded">{product.price}</p>}
-                                            {showLabel && product.category && <span className="text-xs text-gray-500 font-bold bg-gray-100 px-2 py-0.5 rounded">{product.category}</span>}
+                                            {showLabel && product.category && <span className="text-xs text-gray-500 dark:text-neutral-500 font-bold bg-gray-100 dark:bg-neutral-800 px-2 py-0.5 rounded">{product.category}</span>}
                                             {isFeatured && (
                                                 <span className="text-xs font-bold text-yellow-600 bg-yellow-100 px-2 py-0.5 rounded-full flex items-center gap-1">
                                                     <Star size={10} fill="currentColor" /> Featured
@@ -449,11 +449,11 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
                                     </div>
                                 </div>
 
-                                <div className="flex items-center justify-end gap-2 w-full md:w-auto border-t md:border-t-0 pt-3 md:pt-0 border-gray-100">
+                                <div className="flex items-center justify-end gap-2 w-full md:w-auto border-t md:border-t-0 pt-3 md:pt-0 border-gray-100 dark:border-neutral-800/50">
                                     {/* Visibility Toggle */}
                                     <button
                                         onClick={() => toggleProductVisibility(product)}
-                                        className={`p-2 rounded-lg transition-colors ${isActive ? 'text-gray-400 hover:text-brand-dark hover:bg-gray-100' : 'text-gray-400 hover:text-brand-dark hover:bg-gray-100'}`}
+                                        className={`p-2 rounded-lg transition-colors ${isActive ? 'text-gray-400 dark:text-neutral-600 hover:text-brand-dark hover:bg-gray-100 dark:hover:bg-neutral-700' : 'text-gray-400 dark:text-neutral-600 hover:text-brand-dark hover:bg-gray-100 dark:hover:bg-neutral-700'}`}
                                         title={isActive ? "Hide Product" : "Show Product"}
                                     >
                                         {isActive ? <Eye size={18} /> : <EyeOff size={18} />}
@@ -487,8 +487,8 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
 
                     return (
                         <div key={product.id} className={`
-                            bg-white p-4 rounded-xl border transition-all duration-300 group relative overflow-hidden 
-                            ${isFeatured ? 'border border-yellow-300 shadow-sm' : 'border-gray-200'}
+                            bg-white dark:bg-neutral-900 p-4 rounded-xl border transition-all duration-300 group relative overflow-hidden
+                            ${isFeatured ? 'border border-yellow-300 shadow-sm' : 'border-gray-200 dark:border-neutral-800'}
                             ${!isActive ? 'opacity-70' : ''}
                         `}>
 
@@ -504,7 +504,7 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
                                 </div>
                             )}
 
-                            <div className="aspect-square bg-gray-100 rounded-lg mb-3 overflow-hidden relative">
+                            <div className="aspect-square bg-gray-100 dark:bg-neutral-800 rounded-lg mb-3 overflow-hidden relative">
                                 <Image
                                     src={displayImage}
                                     alt={displayTitle}
@@ -521,7 +521,7 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
                             <h3 className="font-bold text-brand-dark">{displayTitle}</h3>
                             <div className="flex flex-wrap gap-2 mt-1">
                                 {showPrice && <p className="text-sm text-brand-green font-bold bg-brand-dark inline-block px-2 py-0.5 rounded">{product.price}</p>}
-                                {showLabel && product.category && <span className="text-xs text-gray-500 font-bold bg-gray-100 px-2 py-0.5 rounded flex items-center">{product.category}</span>}
+                                {showLabel && product.category && <span className="text-xs text-gray-500 dark:text-neutral-500 font-bold bg-gray-100 dark:bg-neutral-800 px-2 py-0.5 rounded flex items-center">{product.category}</span>}
                             </div>
 
                             <div className="absolute top-3 right-2 flex flex-col gap-2">
@@ -557,7 +557,7 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
                         </div>
                     );
                 })}
-                {products.length === 0 && <p className="col-span-3 text-gray-500 text-center py-10">No products found.</p>}
+                {products.length === 0 && <p className="col-span-3 text-gray-500 dark:text-neutral-500 text-center py-10">No products found.</p>}
             </div>
 
             <ConfirmationDialog

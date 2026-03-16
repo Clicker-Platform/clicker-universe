@@ -52,7 +52,7 @@ export const FormCard: React.FC<FormCardProps> = ({ form }) => {
 
     if (isDeleting) {
         return (
-            <div className="bg-white p-6 rounded-2xl border border-red-100 shadow-sm flex flex-col items-center justify-center min-h-[200px] animate-pulse">
+            <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-red-100 shadow-sm flex flex-col items-center justify-center min-h-[200px] animate-pulse">
                 <Trash2 className="text-red-300 mb-2" size={32} />
                 <p className="text-red-300 font-bold">Deleting...</p>
             </div>
@@ -63,32 +63,32 @@ export const FormCard: React.FC<FormCardProps> = ({ form }) => {
         <>
             <Link
                 href={`/admin/forms/builder?id=${form.id}`}
-                className="group bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 block relative"
+                className="group bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm hover:shadow-md transition-all duration-200 block relative"
             >
                 {/* Delete Button */}
                 <button
                     onClick={handleDeleteClick}
-                    className="absolute top-4 right-4 p-2 bg-white rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors z-10 border-2 border-transparent hover:border-red-100"
+                    className="absolute top-4 right-4 p-2 bg-white dark:bg-neutral-900 rounded-full text-gray-400 dark:text-neutral-600 hover:text-red-500 hover:bg-red-50 transition-colors z-10 border-2 border-transparent hover:border-red-100"
                     title="Delete Form"
                 >
                     <Trash2 size={18} />
                 </button>
 
                 {/* Status Badge */}
-                <div className={`absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide border ${form.isPublished ? 'bg-green-50 border-green-200 text-green-700' : 'bg-gray-100 border-gray-200 text-gray-400'}`}>
+                <div className={`absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide border ${form.isPublished ? 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-neutral-800 border-gray-200 dark:border-neutral-700 text-gray-400 dark:text-neutral-600'}`}>
                     {form.isPublished ? 'Published' : 'Draft'}
                 </div>
 
-                <div className="w-12 h-12 bg-gray-50 rounded-xl border border-gray-200 flex items-center justify-center mb-4 text-brand-dark group-hover:bg-gray-100 transition-colors mt-8">
+                <div className="w-12 h-12 bg-gray-50 dark:bg-neutral-800/50 rounded-xl border border-gray-200 dark:border-neutral-700 flex items-center justify-center mb-4 text-brand-dark group-hover:bg-gray-100 dark:group-hover:bg-neutral-700 transition-colors mt-8">
                     <FileText size={24} strokeWidth={2.5} />
                 </div>
 
                 <h3 className="font-extrabold text-xl text-brand-dark mb-2 truncate pr-4">{form.title}</h3>
-                <p className="text-gray-500 font-medium text-sm mb-6 line-clamp-2">
+                <p className="text-gray-500 dark:text-neutral-500 font-medium text-sm mb-6 line-clamp-2">
                     {form.fields?.length || 0} fields • {form.buttonText}
                 </p>
 
-                <div className="border-t border-gray-100 pt-4 flex items-center text-gray-400 text-sm font-medium gap-2">
+                <div className="border-t border-gray-100 dark:border-neutral-800/50 pt-4 flex items-center text-gray-400 dark:text-neutral-600 text-sm font-medium gap-2">
                     <Calendar size={16} />
                     <span suppressHydrationWarning>
                         {form.createdAt ? new Date(form.createdAt).toLocaleDateString() : 'Unknown date'}

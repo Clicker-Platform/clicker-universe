@@ -228,28 +228,28 @@ export default function POSReportsPage() {
             {/* Page Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 md:mb-8 print:hidden">
                 <div>
-                    <h1 className="text-2xl md:text-3xl font-black text-brand-dark uppercase flex items-center gap-3">
+                    <h1 className="text-2xl md:text-3xl font-black text-brand-dark dark:text-brand-dark uppercase flex items-center gap-3">
                         <BarChart3 size={32} className="hidden md:block" /> POS Reports
                     </h1>
-                    <p className="text-gray-600 font-medium text-sm md:text-base">View your sales performance and analytics</p>
+                    <p className="text-gray-600 dark:text-neutral-400 font-medium text-sm md:text-base">View your sales performance and analytics</p>
                 </div>
             </div>
 
             {/* SCREEN ONLY VIEW */}
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col min-h-[600px] h-full print:hidden">
+            <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden flex flex-col min-h-[600px] h-full print:hidden">
                 {/* Header / Toolbar (Controls) */}
-                <div className="p-4 border-b border-gray-100 bg-white flex flex-col xl:flex-row gap-4 justify-between items-start xl:items-center">
+                <div className="p-4 border-b border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 flex flex-col xl:flex-row gap-4 justify-between items-start xl:items-center">
                     {/* Left Side: Tabs & Date */}
                     <div className="flex flex-col md:flex-row gap-4 w-full xl:w-auto">
                         {/* Reporting Period Tabs */}
-                        <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg p-1 w-full md:w-auto overflow-x-auto">
+                        <div className="flex items-center gap-2 bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-lg p-1 w-full md:w-auto overflow-x-auto">
                             {['daily', 'weekly', 'monthly'].map((tab) => (
                                 <button
                                     key={tab}
                                     onClick={() => setActiveTab(tab as any)}
                                     className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors flex-1 md:flex-none text-center whitespace-nowrap ${activeTab === tab
-                                        ? 'bg-black text-white shadow-sm'
-                                        : 'text-gray-600 hover:bg-gray-100'
+                                        ? 'bg-black dark:bg-white text-white dark:text-black shadow-sm'
+                                        : 'text-gray-600 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-700'
                                         }`}
                                 >
                                     {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -264,7 +264,7 @@ export default function POSReportsPage() {
                                     type="date"
                                     value={selectedDate}
                                     onChange={(e) => setSelectedDate(e.target.value)}
-                                    className="bg-white border border-gray-200 text-gray-900 text-sm rounded-lg block w-full p-2.5 h-10 md:w-40"
+                                    className="bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 text-gray-900 dark:text-neutral-100 text-sm rounded-lg block w-full p-2.5 h-10 md:w-40"
                                 />
                             )}
                             {activeTab === 'weekly' && (
@@ -272,7 +272,7 @@ export default function POSReportsPage() {
                                     type="date"
                                     value={selectedWeekStart}
                                     onChange={(e) => setSelectedWeekStart(e.target.value)}
-                                    className="bg-white border border-gray-200 text-gray-900 text-sm rounded-lg block w-full p-2.5 h-10 md:w-40"
+                                    className="bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 text-gray-900 dark:text-neutral-100 text-sm rounded-lg block w-full p-2.5 h-10 md:w-40"
                                 />
                             )}
                             {activeTab === 'monthly' && (
@@ -280,7 +280,7 @@ export default function POSReportsPage() {
                                     type="month"
                                     value={selectedMonth}
                                     onChange={(e) => setSelectedMonth(e.target.value)}
-                                    className="bg-white border border-gray-200 text-gray-900 text-sm rounded-lg block w-full p-2.5 h-10 md:w-40"
+                                    className="bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 text-gray-900 dark:text-neutral-100 text-sm rounded-lg block w-full p-2.5 h-10 md:w-40"
                                 />
                             )}
                         </div>
@@ -291,7 +291,7 @@ export default function POSReportsPage() {
                         <button
                             onClick={handleExport}
                             disabled={loading || totalOrdersCount === 0}
-                            className="flex items-center justify-center gap-2 px-3 py-2.5 md:py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50 text-gray-700 disabled:opacity-50"
+                            className="flex items-center justify-center gap-2 px-3 py-2.5 md:py-2 bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-neutral-700 text-gray-700 dark:text-neutral-200 disabled:opacity-50"
                         >
                             <Download className="w-4 h-4" />
                             <span className="md:hidden lg:inline">Export CSV</span>
@@ -299,7 +299,7 @@ export default function POSReportsPage() {
                         </button>
                         <button
                             onClick={handlePrint}
-                            className="flex items-center justify-center gap-2 px-3 py-2.5 md:py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800"
+                            className="flex items-center justify-center gap-2 px-3 py-2.5 md:py-2 bg-black dark:bg-white text-white dark:text-black rounded-lg text-sm font-medium hover:bg-gray-800 dark:hover:bg-neutral-100"
                         >
                             <Printer className="w-4 h-4" />
                             Print
@@ -308,59 +308,59 @@ export default function POSReportsPage() {
                 </div>
 
                 {/* Content Area */}
-                <div className="flex-1 overflow-auto p-6 bg-gray-50/30">
+                <div className="flex-1 overflow-auto p-6 bg-gray-50/30 dark:bg-neutral-950">
                     {/* Summary Cards */}
                     {summary ? (
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 mb-4 md:mb-6">
-                            <div className="bg-white p-3 md:p-4 rounded-lg md:rounded-xl border md:border-gray-100 shadow-none md:shadow-sm print:border-gray-300">
-                                <p className="text-[10px] md:text-xs text-gray-500 font-medium uppercase">Total Sales</p>
-                                <p className="text-xl md:text-2xl font-bold mt-1">
+                            <div className="bg-white dark:bg-neutral-900 p-3 md:p-4 rounded-lg md:rounded-xl border md:border-gray-100 dark:md:border-neutral-800 shadow-none md:shadow-sm print:border-gray-300">
+                                <p className="text-[10px] md:text-xs text-gray-500 dark:text-neutral-500 font-medium uppercase">Total Sales</p>
+                                <p className="text-xl md:text-2xl font-bold mt-1 dark:text-neutral-100">
                                     {formatCurrency(summary.totalSales)}
                                 </p>
                             </div>
-                            <div className="bg-white p-3 md:p-4 rounded-lg md:rounded-xl border md:border-gray-100 shadow-none md:shadow-sm print:border-gray-300">
-                                <p className="text-[10px] md:text-xs text-gray-500 font-medium uppercase">Total Orders</p>
-                                <p className="text-xl md:text-2xl font-bold mt-1">{summary.totalOrders}</p>
+                            <div className="bg-white dark:bg-neutral-900 p-3 md:p-4 rounded-lg md:rounded-xl border md:border-gray-100 dark:md:border-neutral-800 shadow-none md:shadow-sm print:border-gray-300">
+                                <p className="text-[10px] md:text-xs text-gray-500 dark:text-neutral-500 font-medium uppercase">Total Orders</p>
+                                <p className="text-xl md:text-2xl font-bold mt-1 dark:text-neutral-100">{summary.totalOrders}</p>
                             </div>
-                            <div className="bg-white p-3 md:p-4 rounded-lg md:rounded-xl border md:border-gray-100 shadow-none md:shadow-sm print:border-gray-300">
-                                <p className="text-[10px] md:text-xs text-gray-500 font-medium uppercase">Avg. Ticket</p>
-                                <p className="text-xl md:text-2xl font-bold mt-1">
+                            <div className="bg-white dark:bg-neutral-900 p-3 md:p-4 rounded-lg md:rounded-xl border md:border-gray-100 dark:md:border-neutral-800 shadow-none md:shadow-sm print:border-gray-300">
+                                <p className="text-[10px] md:text-xs text-gray-500 dark:text-neutral-500 font-medium uppercase">Avg. Ticket</p>
+                                <p className="text-xl md:text-2xl font-bold mt-1 dark:text-neutral-100">
                                     {formatCurrency(summary.averageOrderValue)}
                                 </p>
                             </div>
-                            <div className="bg-white p-3 md:p-4 rounded-lg md:rounded-xl border md:border-gray-100 shadow-none md:shadow-sm print:border-gray-300">
-                                <p className="text-[10px] md:text-xs text-gray-500 font-medium uppercase">Cancelled</p>
-                                <p className="text-xl md:text-2xl font-bold mt-1 text-red-500">
-                                    {summary.cancelledOrders} <span className="text-xs md:text-sm font-normal text-gray-400">({formatCurrency(summary.cancelledValue)})</span>
+                            <div className="bg-white dark:bg-neutral-900 p-3 md:p-4 rounded-lg md:rounded-xl border md:border-gray-100 dark:md:border-neutral-800 shadow-none md:shadow-sm print:border-gray-300">
+                                <p className="text-[10px] md:text-xs text-gray-500 dark:text-neutral-500 font-medium uppercase">Cancelled</p>
+                                <p className="text-xl md:text-2xl font-bold mt-1 text-red-500 dark:text-red-400">
+                                    {summary.cancelledOrders} <span className="text-xs md:text-sm font-normal text-gray-400 dark:text-neutral-600">({formatCurrency(summary.cancelledValue)})</span>
                                 </p>
                             </div>
 
                             {/* Payment Breakdown Card */}
-                            <div className="bg-white p-3 md:p-4 rounded-lg md:rounded-xl border md:border-gray-100 shadow-none md:shadow-sm print:border-gray-300 col-span-2 md:col-span-4 lg:col-span-4">
-                                <p className="text-[10px] md:text-xs text-gray-500 font-medium uppercase mb-2 md:mb-3">Payment Breakdown</p>
+                            <div className="bg-white dark:bg-neutral-900 p-3 md:p-4 rounded-lg md:rounded-xl border md:border-gray-100 dark:md:border-neutral-800 shadow-none md:shadow-sm print:border-gray-300 col-span-2 md:col-span-4 lg:col-span-4">
+                                <p className="text-[10px] md:text-xs text-gray-500 dark:text-neutral-500 font-medium uppercase mb-2 md:mb-3">Payment Breakdown</p>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
                                     {(Object.entries(summary.paymentBreakdown || {})).length > 0 ? (
                                         Object.entries(summary.paymentBreakdown).map(([method, amount]) => (
                                             <div key={method} className="flex flex-col">
-                                                <span className="text-[10px] md:text-xs capitalize text-gray-400">{method.replace('_', ' ')}</span>
-                                                <span className="font-bold text-base md:text-lg">{formatCurrency(amount)}</span>
+                                                <span className="text-[10px] md:text-xs capitalize text-gray-400 dark:text-neutral-500">{method.replace('_', ' ')}</span>
+                                                <span className="font-bold text-base md:text-lg dark:text-neutral-200">{formatCurrency(amount)}</span>
                                             </div>
                                         ))
                                     ) : (
-                                        <p className="text-sm text-gray-400 italic col-span-4">No payment data available.</p>
+                                        <p className="text-sm text-gray-400 dark:text-neutral-600 italic col-span-4">No payment data available.</p>
                                     )}
                                 </div>
                             </div>
 
                             {/* ITEM SALES / PRODUCT PERFORMANCE CARD */}
-                            <div className="bg-white p-3 md:p-4 rounded-lg md:rounded-xl border md:border-gray-100 shadow-none md:shadow-sm print:border-gray-300 col-span-2 md:col-span-4 lg:col-span-4">
+                            <div className="bg-white dark:bg-neutral-900 p-3 md:p-4 rounded-lg md:rounded-xl border md:border-gray-100 dark:md:border-neutral-800 shadow-none md:shadow-sm print:border-gray-300 col-span-2 md:col-span-4 lg:col-span-4">
                                 <div className="flex justify-between items-center mb-2 md:mb-3">
-                                    <p className="text-[10px] md:text-xs text-gray-500 font-medium uppercase">Product Performance</p>
-                                    <span className="text-[10px] text-gray-400 font-mono">Top Selling (Completed)</span>
+                                    <p className="text-[10px] md:text-xs text-gray-500 dark:text-neutral-500 font-medium uppercase">Product Performance</p>
+                                    <span className="text-[10px] text-gray-400 dark:text-neutral-500 font-mono">Top Selling (Completed)</span>
                                 </div>
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-xs md:text-sm text-left">
-                                        <thead className="bg-gray-50 text-gray-500 font-medium border-b border-gray-100">
+                                        <thead className="bg-gray-50 dark:bg-neutral-800 text-gray-500 dark:text-neutral-400 font-medium border-b border-gray-100 dark:border-neutral-700">
                                             <tr>
                                                 <th className="py-2 px-2 md:px-3 w-8 md:w-12">#</th>
                                                 <th className="py-2 px-2 md:px-3">Product Name</th>
@@ -370,18 +370,18 @@ export default function POSReportsPage() {
                                         </thead>
                                         <tbody>
                                             {loadingItems ? (
-                                                <tr><td colSpan={4} className="p-8 text-center text-gray-400 text-xs">Loading product data...</td></tr>
+                                                <tr><td colSpan={4} className="p-8 text-center text-gray-400 dark:text-neutral-600 text-xs">Loading product data...</td></tr>
                                             ) : itemsSummary.length > 0 ? (
                                                 itemsSummary.slice(0, 10).map((item, index) => (
-                                                    <tr key={item.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50">
-                                                        <td className="py-2 px-2 md:px-3 font-mono text-gray-400 text-xs">{index + 1}</td>
-                                                        <td className="py-2 px-2 md:px-3 font-medium text-gray-700">{item.name}</td>
-                                                        <td className="py-2 px-2 md:px-3 text-right font-mono text-gray-600">{item.quantity}</td>
-                                                        <td className="py-2 px-2 md:px-3 text-right font-medium text-gray-800">{formatCurrency(item.revenue)}</td>
+                                                    <tr key={item.id} className="border-b border-gray-50 dark:border-neutral-800 last:border-0 hover:bg-gray-50/50 dark:hover:bg-neutral-800/50">
+                                                        <td className="py-2 px-2 md:px-3 font-mono text-gray-400 dark:text-neutral-600 text-xs">{index + 1}</td>
+                                                        <td className="py-2 px-2 md:px-3 font-medium text-gray-700 dark:text-neutral-300">{item.name}</td>
+                                                        <td className="py-2 px-2 md:px-3 text-right font-mono text-gray-600 dark:text-neutral-400">{item.quantity}</td>
+                                                        <td className="py-2 px-2 md:px-3 text-right font-medium text-gray-800 dark:text-neutral-200">{formatCurrency(item.revenue)}</td>
                                                     </tr>
                                                 ))
                                             ) : (
-                                                <tr><td colSpan={4} className="p-8 text-center text-gray-400 text-xs italic">No items sold in this period.</td></tr>
+                                                <tr><td colSpan={4} className="p-8 text-center text-gray-400 dark:text-neutral-600 text-xs italic">No items sold in this period.</td></tr>
                                             )}
                                             {!loadingItems && itemsSummary.length > 10 && (
                                                 <tr>
@@ -406,7 +406,7 @@ export default function POSReportsPage() {
                         // Skeleton / Loading State for Summary
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                             {[1, 2, 3, 4].map(i => (
-                                <div key={i} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm h-24 animate-pulse bg-gray-50" />
+                                <div key={i} className="bg-white dark:bg-neutral-900 p-4 rounded-xl border border-gray-100 dark:border-neutral-800 shadow-sm h-24 animate-pulse bg-gray-50 dark:bg-neutral-800" />
                             ))}
                         </div>
                     )}
@@ -414,33 +414,33 @@ export default function POSReportsPage() {
                     {/* Order List Table */}
                     <div className="mt-8 break-before-page">
                         <div className="flex justify-between items-end mb-3">
-                            <h3 className="text-sm font-bold text-gray-700">Detailed Orders</h3>
-                            <span className="text-xs text-gray-400">
+                            <h3 className="text-sm font-bold text-gray-700 dark:text-neutral-300">Detailed Orders</h3>
+                            <span className="text-xs text-gray-400 dark:text-neutral-500">
                                 Showing {orders.length > 0 ? ((currentPage - 1) * ITEMS_PER_PAGE + 1) : 0} - {Math.min(currentPage * ITEMS_PER_PAGE, totalOrdersCount)} of {totalOrdersCount}
                             </span>
                         </div>
 
-                        <div className="bg-transparent md:bg-white rounded-none md:rounded-xl border-none md:border md:border-gray-100 shadow-none md:shadow-sm overflow-hidden print:border-gray-300 flex flex-col min-h-[400px]">
-                            <div className="flex-1 overflow-x-auto">
+                        <div className="bg-transparent md:bg-white dark:md:bg-neutral-900 rounded-none md:rounded-xl border-none md:border md:border-gray-100 dark:md:border-neutral-800 shadow-none md:shadow-sm overflow-hidden print:border-gray-300 flex flex-col min-h-[400px]">
+                             <div className="flex-1 overflow-x-auto">
                                 <table className="w-full text-left text-sm min-w-full">
-                                    <thead className="bg-gray-50 border-b border-gray-100">
+                                    <thead className="bg-gray-50 dark:bg-neutral-800 border-b border-gray-100 dark:border-neutral-700">
                                         <tr>
-                                            <th className="px-2 md:px-4 py-2 md:py-3 font-medium text-gray-600 text-xs md:text-sm whitespace-nowrap w-[80px] md:w-auto">Time</th>
-                                            <th className="px-2 md:px-4 py-2 md:py-3 font-medium text-gray-600 text-xs md:text-sm w-full min-w-[140px]">Order</th>
-                                            <th className="px-2 md:px-4 py-2 md:py-3 font-medium text-gray-600 text-xs md:text-sm text-right whitespace-nowrap">Total</th>
+                                            <th className="px-2 md:px-4 py-2 md:py-3 font-medium text-gray-600 dark:text-neutral-400 text-xs md:text-sm whitespace-nowrap w-[80px] md:w-auto">Time</th>
+                                            <th className="px-2 md:px-4 py-2 md:py-3 font-medium text-gray-600 dark:text-neutral-400 text-xs md:text-sm w-full min-w-[140px]">Order</th>
+                                            <th className="px-2 md:px-4 py-2 md:py-3 font-medium text-gray-600 dark:text-neutral-400 text-xs md:text-sm text-right whitespace-nowrap">Total</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                        <tbody>
                                         {loading ? (
-                                            <tr><td colSpan={4} className="p-12 text-center text-gray-400">Loading orders...</td></tr>
+                                            <tr><td colSpan={4} className="p-12 text-center text-gray-400 dark:text-neutral-600">Loading orders...</td></tr>
                                         ) : orders.map(order => {
                                             const date = order.createdAt instanceof Timestamp ? order.createdAt.toDate() : new Date(order.createdAt);
                                             const isCancelled = order.status === 'cancelled';
                                             const itemsSummary = order.items.map(i => `${i.quantity}x ${i.name}`).join(', ');
 
                                             return (
-                                                <tr key={order.id} className={`border-b border-gray-50 last:border-0 hover:bg-gray-50/50 ${isCancelled ? 'opacity-60 bg-gray-50' : ''}`}>
-                                                    <td className="px-4 py-3 text-gray-500 whitespace-nowrap align-top">
+                                                <tr key={order.id} className={`border-b border-gray-50 dark:border-neutral-800 last:border-0 hover:bg-gray-50/50 dark:hover:bg-neutral-800/50 ${isCancelled ? 'opacity-60 bg-gray-50 dark:bg-neutral-800/50' : ''}`}>
+                                                    <td className="px-4 py-3 text-gray-500 dark:text-neutral-500 whitespace-nowrap align-top">
                                                         {activeTab === 'daily'
                                                             ? date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                                                             : date.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
@@ -448,13 +448,13 @@ export default function POSReportsPage() {
                                                     </td>
                                                     <td className="px-4 py-3 align-top text-sm">
                                                         {/* Items Summary (Primary Info) */}
-                                                        <span className="font-medium text-gray-800 block line-clamp-2" title={itemsSummary}>
+                                                        <span className="font-medium text-gray-800 dark:text-neutral-200 block line-clamp-2" title={itemsSummary}>
                                                             {itemsSummary}
                                                         </span>
 
                                                         {/* Customer / Table Info (Secondary) */}
                                                         {(order.customerName || order.tableNumber) && (
-                                                            <div className="text-xs text-gray-500 mt-0.5 flex items-center gap-2">
+                                                            <div className="text-xs text-gray-500 dark:text-neutral-500 mt-0.5 flex items-center gap-2">
                                                                 {order.customerName && <span>👤 {order.customerName}</span>}
                                                                 {order.tableNumber && <span>🍽️ Table {order.tableNumber}</span>}
                                                             </div>
@@ -462,32 +462,32 @@ export default function POSReportsPage() {
 
                                                         {/* ID & Status (Tertiary) */}
                                                         <div className="flex items-center gap-2 mt-1">
-                                                            <span className="font-mono text-[10px] text-gray-300">#{order.id.slice(0, 5)}</span>
+                                                            <span className="font-mono text-[10px] text-gray-300 dark:text-neutral-600">#{order.id.slice(0, 5)}</span>
 
                                                             {isCancelled && (
-                                                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-red-100 text-red-700">
+                                                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-red-100 dark:bg-red-950/30 text-red-700 dark:text-red-400">
                                                                     Cancelled
                                                                 </span>
                                                             )}
                                                             {order.status !== 'completed' && order.status !== 'cancelled' && (
-                                                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-600 capitalize">
+                                                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 capitalize">
                                                                     {order.status}
                                                                 </span>
                                                             )}
                                                         </div>
                                                     </td>
-                                                    <td className="px-4 py-3 capitalize text-gray-600">
+                                                    <td className="px-4 py-3 capitalize text-gray-600 dark:text-neutral-400">
                                                         {order.paymentMethod || '-'}
-                                                        {order.paymentStatus === 'pending_confirmation' && <span className="text-orange-500 text-xs ml-1">(Pending)</span>}
+                                                        {order.paymentStatus === 'pending_confirmation' && <span className="text-orange-500 dark:text-orange-400 text-xs ml-1">(Pending)</span>}
                                                     </td>
-                                                    <td className={`px-4 py-3 text-right font-medium ${isCancelled ? 'line-through text-gray-400' : ''}`}>
+                                                    <td className={`px-4 py-3 text-right font-medium ${isCancelled ? 'line-through text-gray-400 dark:text-neutral-600' : 'dark:text-neutral-200'}`}>
                                                         {formatCurrency(order.total)}
                                                     </td>
                                                 </tr>
                                             );
                                         })}
                                         {!loading && orders.length === 0 && (
-                                            <tr><td colSpan={4} className="p-12 text-center text-gray-400">No orders found for this period.</td></tr>
+                                            <tr><td colSpan={4} className="p-12 text-center text-gray-400 dark:text-neutral-600">No orders found for this period.</td></tr>
                                         )}
                                     </tbody>
                                 </table>
@@ -495,21 +495,21 @@ export default function POSReportsPage() {
 
                             {/* Pagination Controls */}
                             {totalOrdersCount > ITEMS_PER_PAGE && (
-                                <div className="border-t border-gray-100 p-3 flex justify-between items-center bg-gray-50">
+                                <div className="border-t border-gray-100 dark:border-neutral-800 p-3 flex justify-between items-center bg-gray-50 dark:bg-neutral-900">
                                     <button
                                         onClick={handlePrevPage}
                                         disabled={currentPage === 1 || loading}
-                                        className="flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-lg border bg-white disabled:opacity-50 hover:bg-gray-50"
+                                        className="flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-lg border dark:border-neutral-700 bg-white dark:bg-neutral-800 dark:text-neutral-300 disabled:opacity-50 hover:bg-gray-50 dark:hover:bg-neutral-700"
                                     >
                                         <ChevronLeft size={14} /> Previous
                                     </button>
-                                    <span className="text-xs text-gray-500 font-medium">
+                                    <span className="text-xs text-gray-500 dark:text-neutral-500 font-medium">
                                         Page {currentPage} of {totalPages}
                                     </span>
                                     <button
                                         onClick={handleNextPage}
                                         disabled={currentPage === totalPages || loading}
-                                        className="flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-lg border bg-white disabled:opacity-50 hover:bg-gray-50"
+                                        className="flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-lg border dark:border-neutral-700 bg-white dark:bg-neutral-800 dark:text-neutral-300 disabled:opacity-50 hover:bg-gray-50 dark:hover:bg-neutral-700"
                                     >
                                         Next <ChevronRight size={14} />
                                     </button>

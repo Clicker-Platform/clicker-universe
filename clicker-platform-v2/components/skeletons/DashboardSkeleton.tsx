@@ -17,7 +17,7 @@ export function DashboardSkeleton() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
                 {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="bg-white p-6 rounded-2xl border-[3px] border-gray-100">
+                    <div key={i} className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border-[3px] border-gray-100 dark:border-neutral-800">
                         <div className="flex items-center gap-3 mb-2">
                             <Skeleton className="w-5 h-5 rounded" />
                             <Skeleton className="h-5 w-24 rounded" />
@@ -32,8 +32,8 @@ export function DashboardSkeleton() {
                 {/* Top Links */}
                 <div>
                     <Skeleton className="h-8 w-32 mb-4" />
-                    <div className="bg-white rounded-3xl border-[3px] border-gray-100 overflow-hidden">
-                        <div className="divide-y divide-gray-100">
+                    <div className="bg-white dark:bg-neutral-900 rounded-3xl border-[3px] border-gray-100 dark:border-neutral-800 overflow-hidden">
+                        <div className="divide-y divide-gray-100 dark:divide-neutral-800">
                             {[1, 2, 3].map((i) => (
                                 <div key={i} className="p-4 flex items-center justify-between">
                                     <div className="flex-1 pr-4">
@@ -50,8 +50,8 @@ export function DashboardSkeleton() {
                 {/* Top Products */}
                 <div>
                     <Skeleton className="h-8 w-32 mb-4" />
-                    <div className="bg-white rounded-3xl border-[3px] border-gray-100 overflow-hidden">
-                        <div className="divide-y divide-gray-100">
+                    <div className="bg-white dark:bg-neutral-900 rounded-3xl border-[3px] border-gray-100 dark:border-neutral-800 overflow-hidden">
+                        <div className="divide-y divide-gray-100 dark:divide-neutral-800">
                             {[1, 2, 3].map((i) => (
                                 <div key={i} className="p-4 flex items-center justify-between">
                                     <div className="flex items-center gap-3 flex-1 pr-4">

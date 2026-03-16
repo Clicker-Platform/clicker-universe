@@ -3,7 +3,7 @@ import { X } from 'lucide-react';
 import { MultiImageUpload } from '@/components/admin/MultiImageUpload';
 import { SubmitButton } from '@/components/admin/SubmitButton';
 
-// Define Interface locally or import if shared. 
+// Define Interface locally or import if shared.
 // Matching ProductsClient usage for now to ensure compatibility.
 export interface Product {
     id: string;
@@ -83,18 +83,18 @@ export function ProductFormModal({ isOpen, onClose, onSubmit, initialData, isSub
 
     return (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white rounded-2xl w-full max-w-4xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col">
+            <div className="bg-white dark:bg-neutral-900 rounded-2xl w-full max-w-4xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col">
                 {/* Header */}
-                <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 flex-shrink-0">
-                    <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
+                <div className="px-6 py-4 border-b border-gray-100 dark:border-neutral-800/50 flex justify-between items-center bg-gray-50 dark:bg-neutral-800/50 flex-shrink-0">
+                    <h3 className="font-bold text-lg text-gray-800 dark:text-neutral-200 flex items-center gap-2">
                         {initialData ? 'Edit Product' : 'Add New Product'}
                     </h3>
                     <button
                         onClick={onClose}
-                        className="p-1 hover:bg-gray-200 rounded-full transition-colors"
+                        className="p-1 hover:bg-gray-200 dark:hover:bg-neutral-600 rounded-full transition-colors"
                         type="button"
                     >
-                        <X size={20} className="text-gray-400" />
+                        <X size={20} className="text-gray-400 dark:text-neutral-600" />
                     </button>
                 </div>
 
@@ -104,10 +104,10 @@ export function ProductFormModal({ isOpen, onClose, onSubmit, initialData, isSub
                         <div className="md:col-span-2 flex flex-col gap-6">
                             {/* Title */}
                             <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase mb-2 block tracking-wider">Product Name</label>
+                                <label className="text-xs font-bold text-gray-500 dark:text-neutral-500 uppercase mb-2 block tracking-wider">Product Name</label>
                                 <input
                                     placeholder="e.g. Croissant"
-                                    className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-brand-dark font-bold text-lg"
+                                    className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-brand-dark font-bold text-lg"
                                     value={formData.title}
                                     onChange={e => setFormData({ ...formData, title: e.target.value })}
                                     required
@@ -115,17 +115,17 @@ export function ProductFormModal({ isOpen, onClose, onSubmit, initialData, isSub
                             </div>
 
                             {/* Price Section */}
-                            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden group hover:border-gray-300 transition-colors">
-                                <div className="flex items-center justify-between p-3 bg-gray-50 border-b border-gray-100">
-                                    <label className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2">
+                            <div className="bg-white dark:bg-neutral-900 rounded-xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden group hover:border-gray-300 dark:hover:border-neutral-700 transition-colors">
+                                <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-neutral-800/50 border-b border-gray-100 dark:border-neutral-800/50">
+                                    <label className="text-xs font-bold text-gray-700 dark:text-neutral-300 uppercase tracking-wider flex items-center gap-2">
                                         Price
                                     </label>
                                     <button
                                         type="button"
                                         onClick={() => setFormData(p => ({ ...p, showPrice: !p.showPrice }))}
                                         className={`
-                                            relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none 
-                                            ${formData.showPrice ? 'bg-brand-dark' : 'bg-gray-200'}
+                                            relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none
+                                            ${formData.showPrice ? 'bg-brand-dark' : 'bg-gray-200 dark:bg-neutral-700'}
                                         `}
                                     >
                                         <span
@@ -138,32 +138,32 @@ export function ProductFormModal({ isOpen, onClose, onSubmit, initialData, isSub
                                     </button>
                                 </div>
                                 {formData.showPrice && (
-                                    <div className="p-4 bg-white animate-in slide-in-from-top-1">
+                                    <div className="p-4 bg-white dark:bg-neutral-900 animate-in slide-in-from-top-1">
                                         <input
                                             type="text"
                                             placeholder="e.g. 50k, $5.00, Free, Contact us"
-                                            className="w-full px-4 py-2 text-sm border border-gray-200 rounded-lg focus:border-brand-dark focus:ring-0 text-gray-800"
+                                            className="w-full px-4 py-2 text-sm border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 rounded-lg focus:border-brand-dark focus:ring-0 text-gray-800"
                                             value={formData.price}
                                             onChange={e => setFormData({ ...formData, price: e.target.value })}
                                             required={formData.showPrice}
                                         />
-                                        <p className="text-[10px] text-gray-400 mt-2 font-medium">Accepts any text or currency format.</p>
+                                        <p className="text-[10px] text-gray-400 dark:text-neutral-600 mt-2 font-medium">Accepts any text or currency format.</p>
                                     </div>
                                 )}
                             </div>
 
                             {/* Label (Category) Section */}
-                            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden group hover:border-gray-300 transition-colors">
-                                <div className="flex items-center justify-between p-3 bg-gray-50 border-b border-gray-100">
-                                    <label className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2">
+                            <div className="bg-white dark:bg-neutral-900 rounded-xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden group hover:border-gray-300 dark:hover:border-neutral-700 transition-colors">
+                                <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-neutral-800/50 border-b border-gray-100 dark:border-neutral-800/50">
+                                    <label className="text-xs font-bold text-gray-700 dark:text-neutral-300 uppercase tracking-wider flex items-center gap-2">
                                         Label / Category
                                     </label>
                                     <button
                                         type="button"
                                         onClick={() => setFormData(p => ({ ...p, showLabel: !p.showLabel }))}
                                         className={`
-                                            relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none 
-                                            ${formData.showLabel ? 'bg-brand-dark' : 'bg-gray-200'}
+                                            relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none
+                                            ${formData.showLabel ? 'bg-brand-dark' : 'bg-gray-200 dark:bg-neutral-700'}
                                         `}
                                     >
                                         <span
@@ -176,10 +176,10 @@ export function ProductFormModal({ isOpen, onClose, onSubmit, initialData, isSub
                                     </button>
                                 </div>
                                 {formData.showLabel && (
-                                    <div className="p-4 bg-white animate-in slide-in-from-top-1">
+                                    <div className="p-4 bg-white dark:bg-neutral-900 animate-in slide-in-from-top-1">
                                         <input
                                             placeholder="e.g. Pastries, Best Seller, New"
-                                            className="w-full px-4 py-2 text-sm border border-gray-200 rounded-lg focus:border-brand-dark focus:ring-0 text-gray-800"
+                                            className="w-full px-4 py-2 text-sm border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 rounded-lg focus:border-brand-dark focus:ring-0 text-gray-800"
                                             value={formData.category}
                                             onChange={e => setFormData({ ...formData, category: e.target.value })}
                                         />
@@ -188,25 +188,25 @@ export function ProductFormModal({ isOpen, onClose, onSubmit, initialData, isSub
                             </div>
 
                             {/* Visibility Toggle in Form */}
-                            <div className="flex items-center gap-3 bg-gray-50 p-3 rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-100 transition-colors"
+                            <div className="flex items-center gap-3 bg-gray-50 dark:bg-neutral-800/50 p-3 rounded-lg border border-gray-200 dark:border-neutral-700 cursor-pointer hover:bg-gray-100 dark:hover:bg-neutral-700 transition-colors"
                                 onClick={() => setFormData(prev => ({ ...prev, isActive: !prev.isActive }))}
                             >
                                 <div
                                     className={`
                                         relative w-12 h-7 rounded-full transition-colors flex items-center
-                                        ${formData.isActive ? 'bg-brand-green' : 'bg-gray-300'}
+                                        ${formData.isActive ? 'bg-brand-green' : 'bg-gray-300 dark:bg-neutral-600'}
                                     `}
                                 >
                                     <div className={`w-5 h-5 bg-white rounded-full shadow-sm transform transition-transform ml-1 ${formData.isActive ? 'translate-x-5' : ''}`} />
                                 </div>
-                                <span className="text-sm font-bold text-gray-700 select-none">
+                                <span className="text-sm font-bold text-gray-700 dark:text-neutral-300 select-none">
                                     {formData.isActive ? 'Visible to Public' : 'Hidden (Draft Mode)'}
                                 </span>
                             </div>
 
                             <textarea
                                 placeholder="Description (optional)"
-                                className="px-4 py-2 rounded-lg border border-gray-200 min-h-[120px]"
+                                className="px-4 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 min-h-[120px]"
                                 value={formData.description}
                                 onChange={e => setFormData({ ...formData, description: e.target.value })}
                             />
@@ -223,11 +223,11 @@ export function ProductFormModal({ isOpen, onClose, onSubmit, initialData, isSub
                 </div>
 
                 {/* Footer Buttons */}
-                <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 flex-shrink-0">
+                <div className="px-6 py-4 border-t border-gray-100 dark:border-neutral-800/50 bg-gray-50 dark:bg-neutral-800/50 flex justify-end gap-3 flex-shrink-0">
                     <button
                         type="button"
                         onClick={onClose}
-                        className="px-6 py-2 rounded-xl font-bold text-gray-500 hover:bg-gray-200 transition-colors"
+                        className="px-6 py-2 rounded-xl font-bold text-gray-500 dark:text-neutral-500 hover:bg-gray-200 dark:hover:bg-neutral-600 transition-colors"
                     >
                         Cancel
                     </button>

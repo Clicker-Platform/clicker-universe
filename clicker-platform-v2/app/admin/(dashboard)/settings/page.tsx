@@ -92,45 +92,45 @@ export default function SettingsPage() {
             <h1 className="text-3xl font-black text-brand-dark mb-8 uppercase">Site Settings</h1>
 
             {message && (
-                <div className={`p-4 rounded-xl mb-6 font-bold ${message.includes('Error') ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                <div className={`p-4 rounded-xl mb-6 font-bold ${message.includes('Error') ? 'bg-red-100 dark:bg-red-950/30 text-red-700 dark:text-red-400' : 'bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-400'}`}>
                     {message}
                 </div>
             )}
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Editor Form */}
-                <form onSubmit={handleSave} className={`space-y-6 bg-white p-8 rounded-2xl border border-gray-200 shadow-sm h-fit transition-opacity duration-200 ${saving ? 'opacity-50 pointer-events-none' : ''}`}>
+                <form onSubmit={handleSave} className={`space-y-6 bg-white dark:bg-neutral-900 p-8 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm h-fit transition-opacity duration-200 ${saving ? 'opacity-50 pointer-events-none' : ''}`}>
                     <div>
                         <label className="block text-brand-dark font-bold mb-2">Page Title</label>
-                        <p className="text-xs text-gray-500 mb-2">Results in 50-60 chars typically work best.</p>
+                        <p className="text-xs text-gray-500 dark:text-neutral-500 mb-2">Results in 50-60 chars typically work best.</p>
                         <input
                             type="text"
                             value={settings.title}
                             onChange={(e) => setSettings({ ...settings, title: e.target.value })}
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 outline-none font-medium"
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 outline-none font-medium"
                             placeholder="e.g. SunnySide - Best Coffee in Town"
                         />
                     </div>
 
                     <div>
                         <label className="block text-brand-dark font-bold mb-2">Homepage Slug (Optional)</label>
-                        <p className="text-xs text-gray-500 mb-2">The slug of the page to act as your homepage. Defaults to 'home' if empty.</p>
+                        <p className="text-xs text-gray-500 dark:text-neutral-500 mb-2">The slug of the page to act as your homepage. Defaults to 'home' if empty.</p>
                         <input
                             type="text"
                             value={settings.homepageSlug || ''}
                             onChange={(e) => setSettings({ ...settings, homepageSlug: e.target.value })}
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 outline-none font-medium"
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 outline-none font-medium"
                             placeholder="home"
                         />
                     </div>
 
                     <div>
                         <label className="block text-brand-dark font-bold mb-2">Meta Description</label>
-                        <p className="text-xs text-gray-500 mb-2">Keep it under 160 characters for best visibility.</p>
+                        <p className="text-xs text-gray-500 dark:text-neutral-500 mb-2">Keep it under 160 characters for best visibility.</p>
                         <textarea
                             value={settings.description}
                             onChange={(e) => setSettings({ ...settings, description: e.target.value })}
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 outline-none font-medium h-24"
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 outline-none font-medium h-24"
                             placeholder="A brief description of your site for search engines."
                         />
                     </div>
@@ -155,39 +155,39 @@ export default function SettingsPage() {
                         />
                     </div>
 
-                    <div className="border-t-2 border-dashed border-gray-100 pt-6">
-                        <h3 className="font-bold text-gray-500 uppercase text-xs tracking-wider mb-4">SEO & Analytics (Global Defaults)</h3>
+                    <div className="border-t-2 border-dashed border-gray-100 dark:border-neutral-800 pt-6">
+                        <h3 className="font-bold text-gray-500 dark:text-neutral-500 uppercase text-xs tracking-wider mb-4">SEO & Analytics (Global Defaults)</h3>
                         <div className="space-y-4">
                             <div>
-                                <h4 className="text-sm font-bold text-gray-700 mb-2">Tracking Pixels</h4>
+                                <h4 className="text-sm font-bold text-gray-700 dark:text-neutral-300 mb-2">Tracking Pixels</h4>
                                 <div className="space-y-3">
                                     <div>
-                                        <label className="block text-xs font-semibold text-gray-600 mb-1">Facebook Pixel ID</label>
+                                        <label className="block text-xs font-semibold text-gray-600 dark:text-neutral-400 mb-1">Facebook Pixel ID</label>
                                         <input
                                             type="text"
                                             value={settings.pixels?.facebookPixelId || ''}
                                             onChange={(e) => setSettings({ ...settings, pixels: { ...settings.pixels, facebookPixelId: e.target.value } })}
-                                            className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-gray-400 outline-none font-medium text-sm"
+                                            className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 outline-none font-medium text-sm"
                                             placeholder="1234567890"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-semibold text-gray-600 mb-1">Google Analytics ID</label>
+                                        <label className="block text-xs font-semibold text-gray-600 dark:text-neutral-400 mb-1">Google Analytics ID</label>
                                         <input
                                             type="text"
                                             value={settings.pixels?.googleAnalyticsId || ''}
                                             onChange={(e) => setSettings({ ...settings, pixels: { ...settings.pixels, googleAnalyticsId: e.target.value } })}
-                                            className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-gray-400 outline-none font-medium text-sm"
+                                            className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 outline-none font-medium text-sm"
                                             placeholder="G-XXXXXXXXXX"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-semibold text-gray-600 mb-1">TikTok Pixel ID</label>
+                                        <label className="block text-xs font-semibold text-gray-600 dark:text-neutral-400 mb-1">TikTok Pixel ID</label>
                                         <input
                                             type="text"
                                             value={settings.pixels?.tiktokPixelId || ''}
                                             onChange={(e) => setSettings({ ...settings, pixels: { ...settings.pixels, tiktokPixelId: e.target.value } })}
-                                            className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-gray-400 outline-none font-medium text-sm"
+                                            className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 outline-none font-medium text-sm"
                                             placeholder="CXXXXXXXXXXXX"
                                         />
                                     </div>
@@ -215,18 +215,18 @@ export default function SettingsPage() {
 
                 {/* Live Previews */}
                 <div className="space-y-6">
-                    <h3 className="font-bold text-gray-500 uppercase text-sm tracking-wider">Live Previews</h3>
+                    <h3 className="font-bold text-gray-500 dark:text-neutral-500 uppercase text-sm tracking-wider">Live Previews</h3>
 
                     {/* Live Previews - Theme Preview Moved to Appearance */}
 
                     {/* Google Search Preview */}
-                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
-                        <div className="flex items-center gap-2 mb-4 text-gray-500 text-sm font-medium">
+                    <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm">
+                        <div className="flex items-center gap-2 mb-4 text-gray-500 dark:text-neutral-500 text-sm font-medium">
                             <Search size={16} /> Google Search Result
                         </div>
                         <div className="font-sans">
                             <div className="text-sm text-[#202124] flex items-center gap-1 mb-1">
-                                <span className="bg-gray-200 rounded-full w-4 h-4 overflow-hidden flex items-center justify-center text-[8px]">
+                                <span className="bg-gray-200 dark:bg-neutral-700 rounded-full w-4 h-4 overflow-hidden flex items-center justify-center text-[8px]">
                                     {settings.faviconUrl ? <img src={settings.faviconUrl} className="w-full h-full object-cover" /> : <Globe size={10} />}
                                 </span>
                                 <span>example.com</span>
@@ -241,26 +241,26 @@ export default function SettingsPage() {
                     </div>
 
                     {/* Social Media Preview */}
-                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden w-full">
-                        <div className="p-4 border-b border-gray-100 flex items-center gap-2 text-gray-500 text-sm font-medium bg-gray-50">
+                    <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden w-full">
+                        <div className="p-4 border-b border-gray-100 dark:border-neutral-800 flex items-center gap-2 text-gray-500 dark:text-neutral-500 text-sm font-medium bg-gray-50 dark:bg-neutral-800/50">
                             <ImageIcon size={16} /> Social Share Preview
                         </div>
-                        <div className="bg-gray-100 aspect-[1.91/1] w-full flex items-center justify-center overflow-hidden relative">
+                        <div className="bg-gray-100 dark:bg-neutral-800 aspect-[1.91/1] w-full flex items-center justify-center overflow-hidden relative">
                             {settings.ogImageUrl ? (
                                 <img src={settings.ogImageUrl} alt="OG Preview" className="w-full h-full object-cover" />
                             ) : (
-                                <div className="text-gray-400 flex flex-col items-center">
+                                <div className="text-gray-400 dark:text-neutral-600 flex flex-col items-center">
                                     <ImageIcon size={48} />
                                     <span className="text-xs mt-2">No Image Set</span>
                                 </div>
                             )}
                         </div>
-                        <div className="p-4 bg-[#f0f2f5]">
-                            <div className="text-[10px] uppercase text-gray-500 mb-1">EXAMPLE.COM</div>
-                            <div className="font-bold text-[#050505] leading-tight mb-1 truncate">
+                        <div className="p-4 bg-[#f0f2f5] dark:bg-neutral-800/50">
+                            <div className="text-[10px] uppercase text-gray-500 dark:text-neutral-500 mb-1">EXAMPLE.COM</div>
+                            <div className="font-bold text-[#050505] dark:text-neutral-200 leading-tight mb-1 truncate">
                                 {settings.title || 'Page Title'}
                             </div>
-                            <div className="text-xs text-[#65676b] line-clamp-1">
+                            <div className="text-xs text-[#65676b] dark:text-neutral-500 line-clamp-1">
                                 {settings.description || 'Page description...'}
                             </div>
                         </div>

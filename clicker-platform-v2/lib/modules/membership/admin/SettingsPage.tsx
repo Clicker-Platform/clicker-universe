@@ -53,7 +53,7 @@ export default function MembershipSettingsPage() {
         }
     }
 
-    if (loading) return <div className="p-8 text-center text-gray-500">Loading settings...</div>;
+    if (loading) return <div className="p-8 text-center text-gray-500 dark:text-neutral-500">Loading settings...</div>;
     if (!settings) return <div className="p-8 text-center text-red-500">Error loading settings.</div>;
 
     return (
@@ -65,7 +65,7 @@ export default function MembershipSettingsPage() {
                     </div>
                     <div>
                         <h1 className="text-2xl font-black text-brand-dark">Membership Settings</h1>
-                        <p className="text-gray-500">Configure your loyalty program and membership rules.</p>
+                        <p className="text-gray-500 dark:text-neutral-500">Configure your loyalty program and membership rules.</p>
                     </div>
                 </div>
                 {!canEdit && (
@@ -84,22 +84,22 @@ export default function MembershipSettingsPage() {
                 </div>
             )}
 
-            <div className="bg-white rounded-3xl border-[3px] border-brand-dark shadow-sm overflow-hidden flex flex-col min-h-[600px]">
+            <div className="bg-white dark:bg-neutral-900 rounded-3xl border-[3px] border-brand-dark shadow-sm overflow-hidden flex flex-col min-h-[600px]">
                 <div className={`flex-1 overflow-auto p-8 space-y-8 ${!canEdit ? 'opacity-80 pointer-events-none grayscale-[0.5]' : ''}`}>
                     {/* General Settings */}
                     <section>
-                        <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                        <h2 className="text-lg font-bold text-gray-900 dark:text-neutral-100 mb-4 flex items-center gap-2">
                             General Configuration
                         </h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
+                            <div className="bg-gray-50 dark:bg-neutral-800/50 p-6 rounded-2xl border border-gray-100 dark:border-neutral-800">
                                 <label className="flex items-center justify-between cursor-pointer group">
                                     <div>
-                                        <span className="font-bold text-gray-900 block mb-1">Enable Loyalty Program</span>
-                                        <span className="text-sm text-gray-500">Allow members to earn and redeem points.</span>
+                                        <span className="font-bold text-gray-900 dark:text-neutral-100 block mb-1">Enable Loyalty Program</span>
+                                        <span className="text-sm text-gray-500 dark:text-neutral-500">Allow members to earn and redeem points.</span>
                                     </div>
                                     <div
-                                        className={`w-14 h-8 rounded-full p-1 transition-colors duration-200 ${settings.enableLoyalty ? 'bg-green-500' : 'bg-gray-300'}`}
+                                        className={`w-14 h-8 rounded-full p-1 transition-colors duration-200 ${settings.enableLoyalty ? 'bg-green-500' : 'bg-gray-300 dark:bg-neutral-600'}`}
                                         onClick={() => canEdit && setSettings({ ...settings, enableLoyalty: !settings.enableLoyalty })}
                                     >
                                         <div className={`w-6 h-6 bg-white rounded-full shadow-sm transition-transform duration-200 ${settings.enableLoyalty ? 'translate-x-6' : 'translate-x-0'}`} />
@@ -109,14 +109,14 @@ export default function MembershipSettingsPage() {
                         </div>
                     </section>
 
-                    <hr className="border-gray-100" />
+                    <hr className="border-gray-100 dark:border-neutral-800" />
 
                     {/* Currency & Points */}
                     <section className={!settings.enableLoyalty ? 'opacity-50 pointer-events-none' : ''}>
-                        <h2 className="text-lg font-bold text-gray-900 mb-4">Points Configuration</h2>
+                        <h2 className="text-lg font-bold text-gray-900 dark:text-neutral-100 mb-4">Points Configuration</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+                                <label className="block text-xs font-bold text-gray-400 dark:text-neutral-600 uppercase tracking-wider mb-2">
                                     Points Label
                                 </label>
                                 <input
@@ -124,14 +124,14 @@ export default function MembershipSettingsPage() {
                                     value={settings.pointsName}
                                     readOnly={!canEdit}
                                     onChange={(e) => setSettings({ ...settings, pointsName: e.target.value })}
-                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-brand-dark focus:ring-2 focus:ring-brand-dark/10 outline-none transition-all font-bold text-gray-900 disabled:bg-gray-50"
+                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-brand-dark focus:ring-2 focus:ring-brand-dark/10 outline-none transition-all font-bold disabled:bg-gray-50 dark:disabled:bg-neutral-800"
                                     placeholder="e.g. Stars, Coins, Credits"
                                 />
-                                <p className="mt-2 text-xs text-gray-400">What do you call your loyalty currency?</p>
+                                <p className="mt-2 text-xs text-gray-400 dark:text-neutral-600">What do you call your loyalty currency?</p>
                             </div>
 
                             <div>
-                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+                                <label className="block text-xs font-bold text-gray-400 dark:text-neutral-600 uppercase tracking-wider mb-2">
                                     Currency Symbol
                                 </label>
                                 <input
@@ -139,19 +139,19 @@ export default function MembershipSettingsPage() {
                                     value={settings.currency || '$'}
                                     readOnly={!canEdit}
                                     onChange={(e) => setSettings({ ...settings, currency: e.target.value })}
-                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-brand-dark focus:ring-2 focus:ring-brand-dark/10 outline-none transition-all font-bold text-gray-900 disabled:bg-gray-50"
+                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-brand-dark focus:ring-2 focus:ring-brand-dark/10 outline-none transition-all font-bold disabled:bg-gray-50 dark:disabled:bg-neutral-800"
                                     placeholder="$"
                                 />
-                                <p className="mt-2 text-xs text-gray-400">Used for display only.</p>
+                                <p className="mt-2 text-xs text-gray-400 dark:text-neutral-600">Used for display only.</p>
                             </div>
 
                             <div>
-                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+                                <label className="block text-xs font-bold text-gray-400 dark:text-neutral-600 uppercase tracking-wider mb-2">
                                     Earning Rule
                                 </label>
                                 <div className="flex items-center gap-3">
                                     <div className="relative flex-1">
-                                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xs mt-0.5">
+                                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-neutral-600 font-bold text-xs mt-0.5">
                                             {settings.currency || '$'}
                                         </div>
                                         <input
@@ -165,15 +165,15 @@ export default function MembershipSettingsPage() {
                                                 const visiblePoints = settings.earningRatio * (settings.spendBlock || 1);
                                                 setSettings({ ...settings, spendBlock: spend, earningRatio: visiblePoints / spend });
                                             }}
-                                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-brand-dark focus:ring-2 focus:ring-brand-dark/10 outline-none transition-all font-bold text-gray-900 pl-8 disabled:bg-gray-50"
+                                            className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-brand-dark focus:ring-2 focus:ring-brand-dark/10 outline-none transition-all font-bold pl-8 disabled:bg-gray-50 dark:disabled:bg-neutral-800"
                                             placeholder="Spend"
                                         />
                                     </div>
 
-                                    <div className="text-gray-400 font-bold text-sm">EARNS</div>
+                                    <div className="text-gray-400 dark:text-neutral-600 font-bold text-sm">EARNS</div>
 
                                     <div className="relative flex-1">
-                                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xs mt-0.5">➕</div>
+                                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-neutral-600 font-bold text-xs mt-0.5">➕</div>
                                         <input
                                             type="number"
                                             min="1"
@@ -185,13 +185,13 @@ export default function MembershipSettingsPage() {
                                                 const spend = settings.spendBlock || 1;
                                                 setSettings({ ...settings, earningRatio: points / spend });
                                             }}
-                                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-brand-dark focus:ring-2 focus:ring-brand-dark/10 outline-none transition-all font-bold text-gray-900 pl-8 disabled:bg-gray-50"
+                                            className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-brand-dark focus:ring-2 focus:ring-brand-dark/10 outline-none transition-all font-bold pl-8 disabled:bg-gray-50 dark:disabled:bg-neutral-800"
                                             placeholder="Points"
                                         />
-                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-bold">Pts</div>
+                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-neutral-600 text-xs font-bold">Pts</div>
                                     </div>
                                 </div>
-                                <p className="mt-2 text-xs text-gray-400">
+                                <p className="mt-2 text-xs text-gray-400 dark:text-neutral-600">
                                     Every <strong>{settings.currency || '$'}{settings.spendBlock || 1}</strong> spent earns <strong>{Math.round((settings.earningRatio * (settings.spendBlock || 1)) * 100) / 100} {settings.pointsName}</strong>.
                                 </p>
                             </div>
@@ -200,7 +200,7 @@ export default function MembershipSettingsPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="bg-gray-50 px-8 py-6 border-t border-gray-100 flex justify-end">
+                <div className="bg-gray-50 dark:bg-neutral-800/50 px-8 py-6 border-t border-gray-100 dark:border-neutral-800 flex justify-end">
                     <button
                         onClick={handleSave}
                         disabled={saving || !canEdit}

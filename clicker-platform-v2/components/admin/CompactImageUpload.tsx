@@ -63,19 +63,19 @@ export function CompactImageUpload({ currentUrl, onUpload, onRemove, label = "Up
             />
 
             {currentUrl ? (
-                <div className="flex items-center gap-3 p-2 bg-gray-50 border border-gray-200 rounded-xl group hover:border-brand-dark transition-colors">
+                <div className="flex items-center gap-3 p-2 bg-gray-50 dark:bg-neutral-800/50 border border-gray-200 dark:border-neutral-800 rounded-xl group hover:border-brand-dark dark:hover:border-neutral-700 transition-colors">
                     {/* Thumbnail */}
-                    <div className="w-10 h-10 rounded-lg bg-white border border-gray-200 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-lg bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 overflow-hidden flex-shrink-0 flex items-center justify-center">
                         <img src={currentUrl} alt="Preview" className="w-full h-full object-cover" />
                     </div>
 
                     {/* URL / Info */}
                     <div className="flex-1 min-w-0">
-                        <p className="text-xs text-gray-500 truncate font-medium">{currentUrl.split('/').pop() || 'image.jpg'}</p>
+                        <p className="text-xs text-gray-500 dark:text-neutral-400 truncate font-medium">{currentUrl.split('/').pop() || 'image.jpg'}</p>
                         <button
                             type="button"
                             onClick={() => fileInputRef.current?.click()}
-                            className="text-[10px] text-blue-600 font-bold hover:underline"
+                            className="text-[10px] text-blue-600 dark:text-blue-400 font-bold hover:underline"
                             disabled={uploading}
                         >
                             Change Image
@@ -87,7 +87,7 @@ export function CompactImageUpload({ currentUrl, onUpload, onRemove, label = "Up
                         <button
                             type="button"
                             onClick={onRemove}
-                            className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                            className="p-1.5 text-gray-400 dark:text-neutral-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                             title="Remove Image"
                         >
                             <X size={16} />
@@ -100,8 +100,8 @@ export function CompactImageUpload({ currentUrl, onUpload, onRemove, label = "Up
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploading}
                     className={`
-                        w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-dashed border-gray-300
-                        text-gray-500 font-bold hover:border-brand-dark hover:bg-gray-50 transition-all text-sm
+                        w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-dashed border-gray-300 dark:border-neutral-700
+                        text-gray-500 dark:text-neutral-400 font-bold hover:border-brand-dark dark:hover:border-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-800 transition-all text-sm
                         ${uploading ? 'opacity-70 cursor-wait' : ''}
                     `}
                 >

@@ -35,7 +35,7 @@ export function LinksSkeleton() {
             {/* Links List Skeleton */}
             <div className="space-y-4">
                 {[1, 2, 3].map((i) => (
-                    <div key={i} className="bg-white p-4 rounded-xl border border-gray-200 flex items-center justify-between">
+                    <div key={i} className="bg-white dark:bg-neutral-900 p-4 rounded-xl border border-gray-200 dark:border-neutral-800 flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <Skeleton className="w-10 h-10 rounded-lg" />
                             <div>

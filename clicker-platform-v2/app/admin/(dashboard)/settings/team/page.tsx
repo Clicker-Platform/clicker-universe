@@ -218,7 +218,7 @@ export default function TeamPage() {
         return (
             <div className="p-8 flex flex-col items-center justify-center gap-4">
                 <Loader2 className="animate-spin" />
-                <div className="text-sm text-gray-400">
+                <div className="text-sm text-gray-400 dark:text-neutral-600">
                     Loading Team... <br />
                     Site ID: {siteId || 'Waiting...'}
                 </div>
@@ -233,14 +233,14 @@ export default function TeamPage() {
     return (
         <div className="p-8 max-w-5xl mx-auto">
             {/* Debug Info (Can remove later) */}
-            <div className="fixed bottom-4 right-4 text-xs text-gray-300 pointer-events-none">
+            <div className="fixed bottom-4 right-4 text-xs text-gray-300 dark:text-neutral-700 pointer-events-none">
                 {siteId}
             </div>
 
             <div className="flex justify-between items-center mb-8">
                 <div>
                     <h1 className="text-3xl font-black text-brand-dark">Team Management</h1>
-                    <p className="text-gray-500">Manage access to your store dashboard.</p>
+                    <p className="text-gray-500 dark:text-neutral-500">Manage access to your store dashboard.</p>
                 </div>
                 <button
                     onClick={openAddModal}
@@ -252,33 +252,33 @@ export default function TeamPage() {
             </div>
 
             {/* Active Members */}
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mb-8">
-                <div className="p-6 border-b border-gray-100 bg-gray-50/50">
-                    <h2 className="font-bold text-lg flex items-center gap-2">
+            <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden mb-8">
+                <div className="p-6 border-b border-gray-100 dark:border-neutral-800 bg-gray-50/50 dark:bg-neutral-800/50">
+                    <h2 className="font-bold text-lg flex items-center gap-2 dark:text-neutral-200">
                         <User size={20} className="text-brand-dark" />
                         Active Members
                     </h2>
                 </div>
-                <div className="divide-y divide-gray-100">
+                <div className="divide-y divide-gray-100 dark:divide-neutral-800">
                     {members.length === 0 ? (
-                        <div className="p-8 text-center text-gray-500 italic">No members found.</div>
+                        <div className="p-8 text-center text-gray-500 dark:text-neutral-500 italic">No members found.</div>
                     ) : (
                         members.map((member) => (
-                            <div key={member.uid} className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                            <div key={member.uid} className="p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors">
                                 <div className="flex items-center gap-4">
                                     <div className="w-10 h-10 rounded-full bg-brand-green/20 flex items-center justify-center text-brand-dark font-bold">
                                         {member.displayName?.charAt(0) || member.email.charAt(0).toUpperCase()}
                                     </div>
                                     <div>
-                                        <div className="font-bold text-gray-900">{member.displayName || 'User'}</div>
-                                        <div className="text-sm text-gray-500">{member.email}</div>
+                                        <div className="font-bold text-gray-900 dark:text-neutral-100">{member.displayName || 'User'}</div>
+                                        <div className="text-sm text-gray-500 dark:text-neutral-500">{member.email}</div>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-6">
                                     <div className="flex flex-col items-end gap-1">
                                         <span className={`
                                             px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider
-                                            ${(member.role === 'owner' || member.role === 'admin') ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-700'}
+                                            ${(member.role === 'owner' || member.role === 'admin') ? 'bg-purple-100 dark:bg-purple-950/30 text-purple-700 dark:text-purple-400' : 'bg-gray-100 dark:bg-neutral-800 text-gray-700 dark:text-neutral-300'}
                                         `}>
                                             {member.role}
                                         </span>
@@ -298,14 +298,14 @@ export default function TeamPage() {
                                         <div className="flex items-center gap-2">
                                             <button
                                                 onClick={() => openEditModal(member)}
-                                                className="text-gray-400 hover:text-blue-500 transition-colors"
+                                                className="text-gray-400 dark:text-neutral-600 hover:text-blue-500 transition-colors"
                                                 title="Edit Permissions"
                                             >
                                                 <Shield size={18} />
                                             </button>
                                             <button
                                                 onClick={() => setItemToDelete({ id: member.uid, email: member.email })}
-                                                className="text-gray-400 hover:text-red-500 transition-colors"
+                                                className="text-gray-400 dark:text-neutral-600 hover:text-red-500 transition-colors"
                                                 title="Remove Member"
                                             >
                                                 <Trash2 size={18} />
@@ -322,19 +322,19 @@ export default function TeamPage() {
             {/* Member Modal */}
             {isMemberModalOpen && (
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-                    <div className="bg-white rounded-2xl w-full max-w-3xl p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+                    <div className="bg-white dark:bg-neutral-900 rounded-2xl w-full max-w-3xl p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-2xl font-black text-brand-dark">
                                 {editingMember ? 'Edit Member' : 'Add New Member'}
                             </h2>
-                            <button onClick={() => setIsMemberModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+                            <button onClick={() => setIsMemberModalOpen(false)} className="text-gray-400 dark:text-neutral-600 hover:text-gray-600 dark:hover:text-neutral-400">
                                 <X size={24} />
                             </button>
                         </div>
 
                         <form onSubmit={handleSaveMember} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Email Address</label>
+                                <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">Email Address</label>
                                 <input
                                     type="email"
                                     required
@@ -342,12 +342,12 @@ export default function TeamPage() {
                                     onChange={(e) => setMemberEmail(e.target.value)}
                                     placeholder="colleague@example.com"
                                     disabled={!!editingMember}
-                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 outline-none transition-colors disabled:bg-gray-100 disabled:text-gray-500"
+                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 outline-none transition-colors disabled:bg-gray-100 dark:disabled:bg-neutral-700 disabled:text-gray-500 dark:disabled:text-neutral-500"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">
+                                <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">
                                     {editingMember ? 'New Password (Optional)' : 'Password'}
                                 </label>
                                 <input
@@ -357,13 +357,13 @@ export default function TeamPage() {
                                     onChange={(e) => setMemberPassword(e.target.value)}
                                     placeholder="••••••••"
                                     minLength={6}
-                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 outline-none transition-colors"
+                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 outline-none transition-colors"
                                 />
-                                <p className="text-xs text-gray-400 mt-1">Min. 6 characters. If user exists, this will be ignored.</p>
+                                <p className="text-xs text-gray-400 dark:text-neutral-600 mt-1">Min. 6 characters. If user exists, this will be ignored.</p>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-2">Access Permissions</label>
+                                <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-2">Access Permissions</label>
                                 <PermissionEditor
                                     value={{
                                         permissions: memberPermissions,
@@ -375,7 +375,7 @@ export default function TeamPage() {
                                     }}
                                     siteModules={siteModules}
                                 />
-                                <p className="text-xs text-gray-400 mt-2">Select which features this staff member can access.</p>
+                                <p className="text-xs text-gray-400 dark:text-neutral-600 mt-2">Select which features this staff member can access.</p>
                             </div>
 
                             <button

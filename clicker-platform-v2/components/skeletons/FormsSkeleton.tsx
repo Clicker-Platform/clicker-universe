@@ -15,7 +15,7 @@ export function FormsSkeleton() {
             {/* Forms Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[1, 2, 3, 4, 5, 6].map((i) => (
-                    <div key={i} className="bg-white p-6 rounded-2xl border-[3px] border-gray-100 flex flex-col">
+                    <div key={i} className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border-[3px] border-gray-100 dark:border-neutral-800 flex flex-col">
                         <div className="flex justify-between items-start mb-4">
                             <Skeleton className="w-12 h-12 rounded-xl" />
                             <Skeleton className="w-8 h-8 rounded-lg" />
@@ -23,7 +23,7 @@ export function FormsSkeleton() {
                         <Skeleton className="h-6 w-3/4 mb-2 rounded" />
                         <Skeleton className="h-4 w-full mb-4 rounded" />
 
-                        <div className="mt-auto pt-4 border-t border-gray-50 flex justify-between">
+                        <div className="mt-auto pt-4 border-t border-gray-50 dark:border-neutral-800 flex justify-between">
                             <Skeleton className="h-4 w-24 rounded" />
                             <Skeleton className="h-4 w-24 rounded" />
                         </div>

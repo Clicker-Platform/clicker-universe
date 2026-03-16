@@ -36,19 +36,19 @@ function SortableNavItem({ item, onRemove, onUpdate, forms, pages }: { item: any
     const Icon = item.icon && ICON_MAP[item.icon as keyof typeof ICON_MAP] ? ICON_MAP[item.icon as keyof typeof ICON_MAP] : LinkIcon;
 
     return (
-        <div ref={setNodeRef} style={style} className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mb-2 transition-all hover:border-gray-300 group">
-            <div className="flex items-center justify-between p-3 bg-gray-50 border-b border-gray-100">
+        <div ref={setNodeRef} style={style} className="bg-white dark:bg-neutral-900 rounded-xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden mb-2 transition-all hover:border-gray-300 dark:hover:border-neutral-700 group">
+            <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-neutral-800/50 border-b border-gray-100 dark:border-neutral-800">
                 <div className="flex items-center gap-3">
-                    <div {...attributes} {...listeners} className="p-1.5 text-gray-400 hover:text-brand-dark hover:bg-gray-200 rounded cursor-grab active:cursor-grabbing">
+                    <div {...attributes} {...listeners} className="p-1.5 text-gray-400 dark:text-neutral-600 hover:text-brand-dark hover:bg-gray-200 dark:hover:bg-neutral-700 rounded cursor-grab active:cursor-grabbing">
                         <GripVertical size={18} />
                     </div>
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center border border-gray-200 text-brand-dark shadow-sm">
+                        <div className="w-8 h-8 bg-white dark:bg-neutral-900 rounded-lg flex items-center justify-center border border-gray-200 dark:border-neutral-700 text-brand-dark shadow-sm">
                             <Icon size={16} />
                         </div>
                         <div>
-                            <span className="font-bold text-sm text-gray-800 block truncate max-w-[150px]">{item.label || 'New Link'}</span>
-                            <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider mt-0.5">
+                            <span className="font-bold text-sm text-gray-800 dark:text-neutral-200 block truncate max-w-[150px]">{item.label || 'New Link'}</span>
+                            <span className="text-[10px] uppercase font-bold text-gray-400 dark:text-neutral-600 tracking-wider mt-0.5">
                                 {item.type === 'form' ? 'Form Link' : item.type === 'page' ? 'Page Link' : 'External URL'}
                             </span>
                         </div>
@@ -58,14 +58,14 @@ function SortableNavItem({ item, onRemove, onUpdate, forms, pages }: { item: any
                     <button
                         type="button"
                         onClick={() => setIsExpanded(!isExpanded)}
-                        className="p-1.5 text-gray-500 hover:text-brand-dark hover:bg-gray-200 rounded transition-colors"
+                        className="p-1.5 text-gray-500 dark:text-neutral-500 hover:text-brand-dark hover:bg-gray-200 dark:hover:bg-neutral-700 rounded transition-colors"
                     >
                         {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                     </button>
                     <button
                         type="button"
                         onClick={onRemove}
-                        className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                        className="p-1.5 text-gray-400 dark:text-neutral-600 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 rounded transition-colors"
                     >
                         <Trash2 size={18} />
                     </button>
@@ -73,40 +73,40 @@ function SortableNavItem({ item, onRemove, onUpdate, forms, pages }: { item: any
             </div>
 
             {isExpanded && (
-                <div className="p-4 bg-white space-y-4 animate-in slide-in-from-top-2 duration-200">
+                <div className="p-4 bg-white dark:bg-neutral-900 space-y-4 animate-in slide-in-from-top-2 duration-200">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="col-span-1 md:col-span-2">
-                            <label className="text-xs font-bold text-gray-500 uppercase mb-1.5 block tracking-wider">Label</label>
+                            <label className="text-xs font-bold text-gray-500 dark:text-neutral-500 uppercase mb-1.5 block tracking-wider">Label</label>
                             <input
                                 type="text"
                                 value={item.label}
                                 onChange={(e) => onUpdate('label', e.target.value)}
-                                className="w-full px-4 py-2 text-sm border border-gray-200 rounded-lg focus:border-brand-dark focus:ring-0 text-gray-800 font-bold"
+                                className="w-full px-4 py-2 text-sm border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 rounded-lg focus:border-brand-dark focus:ring-0 text-gray-800 font-bold"
                                 placeholder="e.g. Home"
                             />
                         </div>
 
                         <div className="col-span-1 md:col-span-2">
-                            <label className="text-xs font-bold text-gray-500 uppercase mb-2 block tracking-wider">Link Type</label>
-                            <div className="flex items-center gap-2 bg-gray-50 p-1 rounded-lg border border-gray-200 w-fit">
+                            <label className="text-xs font-bold text-gray-500 dark:text-neutral-500 uppercase mb-2 block tracking-wider">Link Type</label>
+                            <div className="flex items-center gap-2 bg-gray-50 dark:bg-neutral-800 p-1 rounded-lg border border-gray-200 dark:border-neutral-700 w-fit">
                                 <button
                                     type="button"
                                     onClick={() => onUpdate('type', 'url')}
-                                    className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${item.type === 'url' || !item.type ? 'bg-white shadow text-brand-dark' : 'text-gray-500 hover:text-gray-700'}`}
+                                    className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${item.type === 'url' || !item.type ? 'bg-white dark:bg-neutral-700 shadow text-brand-dark' : 'text-gray-500 dark:text-neutral-500 hover:text-gray-700 dark:hover:text-neutral-300'}`}
                                 >
                                     External URL
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => onUpdate('type', 'form')}
-                                    className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${item.type === 'form' ? 'bg-white shadow text-purple-600' : 'text-gray-500 hover:text-gray-700'}`}
+                                    className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${item.type === 'form' ? 'bg-white dark:bg-neutral-700 shadow text-purple-600' : 'text-gray-500 dark:text-neutral-500 hover:text-gray-700 dark:hover:text-neutral-300'}`}
                                 >
                                     Link to Form
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => onUpdate('type', 'page')}
-                                    className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${item.type === 'page' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                                    className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${item.type === 'page' ? 'bg-white dark:bg-neutral-700 shadow text-blue-600' : 'text-gray-500 dark:text-neutral-500 hover:text-gray-700 dark:hover:text-neutral-300'}`}
                                 >
                                     Link to Page
                                 </button>
@@ -120,7 +120,7 @@ function SortableNavItem({ item, onRemove, onUpdate, forms, pages }: { item: any
                                     <select
                                         value={item.formId || ''}
                                         onChange={(e) => onUpdate('formId', e.target.value)}
-                                        className="w-full px-4 py-2 text-sm border border-purple-200 bg-purple-50/50 rounded-lg focus:border-purple-500 focus:ring-0 text-gray-800"
+                                        className="w-full px-4 py-2 text-sm border border-purple-200 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-950/20 rounded-lg focus:border-purple-500 focus:ring-0 text-gray-800 dark:text-neutral-200"
                                     >
                                         <option value="">-- Choose a Form --</option>
                                         {forms.map(f => (
@@ -139,7 +139,7 @@ function SortableNavItem({ item, onRemove, onUpdate, forms, pages }: { item: any
                                             onUpdate('pageId', pId);
                                             if (page) onUpdate('value', `/${page.slug}`);
                                         }}
-                                        className="w-full px-4 py-2 text-sm border border-blue-200 bg-blue-50/50 rounded-lg focus:border-blue-500 focus:ring-0 text-gray-800"
+                                        className="w-full px-4 py-2 text-sm border border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-950/20 rounded-lg focus:border-blue-500 focus:ring-0 text-gray-800 dark:text-neutral-200"
                                     >
                                         <option value="">-- Choose a Page --</option>
                                         {pages.map(p => (
@@ -149,12 +149,12 @@ function SortableNavItem({ item, onRemove, onUpdate, forms, pages }: { item: any
                                 </div>
                             ) : (
                                 <div>
-                                    <label className="text-xs font-bold text-gray-500 uppercase mb-1.5 block tracking-wider">URL / Action</label>
+                                    <label className="text-xs font-bold text-gray-500 dark:text-neutral-500 uppercase mb-1.5 block tracking-wider">URL / Action</label>
                                     <input
                                         type="text"
                                         value={item.value || ''}
                                         onChange={(e) => onUpdate('value', e.target.value)}
-                                        className="w-full px-4 py-2 text-sm border border-gray-200 rounded-lg focus:border-brand-dark focus:ring-0 text-gray-600 font-mono"
+                                        className="w-full px-4 py-2 text-sm border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400 rounded-lg focus:border-brand-dark focus:ring-0 text-gray-600 font-mono"
                                         placeholder="/path or https://"
                                     />
                                 </div>
@@ -162,18 +162,18 @@ function SortableNavItem({ item, onRemove, onUpdate, forms, pages }: { item: any
                         </div>
 
                         <div className="col-span-1 md:col-span-2">
-                            <label className="text-xs font-bold text-gray-500 uppercase mb-1.5 block tracking-wider">Icon</label>
+                            <label className="text-xs font-bold text-gray-500 dark:text-neutral-500 uppercase mb-1.5 block tracking-wider">Icon</label>
                             <button
                                 type="button"
                                 onClick={() => setShowIconSelector(true)}
-                                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg border border-gray-200 hover:border-brand-dark hover:bg-gray-50 transition-all text-left group/icon"
+                                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg border border-gray-200 dark:border-neutral-700 hover:border-brand-dark hover:bg-gray-50 dark:hover:bg-neutral-800 transition-all text-left group/icon"
                             >
                                 <div className="w-10 h-10 bg-brand-green/10 rounded-lg flex items-center justify-center text-brand-dark group-hover/icon:bg-brand-green/20 transition-colors">
                                     <Icon size={20} />
                                 </div>
                                 <div className="flex-1">
-                                    <span className="block font-bold text-sm text-gray-800">{item.icon || 'Select Icon'}</span>
-                                    <span className="text-xs text-gray-500">Click to change icon</span>
+                                    <span className="block font-bold text-sm text-gray-800 dark:text-neutral-200">{item.icon || 'Select Icon'}</span>
+                                    <span className="text-xs text-gray-500 dark:text-neutral-500">Click to change icon</span>
                                 </div>
                                 <span className="text-xs text-brand-dark font-bold bg-brand-green/10 px-3 py-1 rounded-full">Change</span>
                             </button>
@@ -205,13 +205,13 @@ function NavIconPicker({ currentIcon, onSelect }: { currentIcon: string, onSelec
             <button
                 type="button"
                 onClick={() => setShowSelector(true)}
-                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg border border-gray-200 hover:border-brand-dark hover:bg-gray-50 transition-all text-left group/icon"
+                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg border border-gray-200 dark:border-neutral-700 hover:border-brand-dark hover:bg-gray-50 dark:hover:bg-neutral-800 transition-all text-left group/icon"
             >
                 <div className="w-8 h-8 bg-brand-green/10 rounded-lg flex items-center justify-center text-brand-dark group-hover/icon:bg-brand-green/20 transition-colors">
                     <Icon size={18} />
                 </div>
                 <div className="flex-1">
-                    <span className="block font-bold text-sm text-gray-800">{currentIcon || 'Select Icon'}</span>
+                    <span className="block font-bold text-sm text-gray-800 dark:text-neutral-200">{currentIcon || 'Select Icon'}</span>
                 </div>
                 <span className="text-xs text-brand-dark font-bold bg-brand-green/10 px-2 py-1 rounded-full">Change</span>
             </button>
@@ -256,10 +256,10 @@ export default function NavigationClient() {
                     getDocs(collection(db, 'sites', siteId, 'pages')),
                     getDoc(doc(db, 'sites', siteId, 'content', 'siteSettings'))
                 ]);
-                
+
                 setForms(formsSnap.docs.map((d: any) => ({ id: d.id, ...d.data() })));
                 setPages(pagesSnap.docs.map((d: any) => ({ id: d.id, ...d.data() })));
-                
+
                 if (settingsSnap.exists()) {
                     const data = settingsSnap.data();
                     if (data.navigation) {
@@ -359,7 +359,7 @@ export default function NavigationClient() {
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-black text-brand-dark mb-2 tracking-tight">Navigation Settings</h1>
-                    <p className="text-gray-500 text-lg">Manage your site's menus and floating buttons.</p>
+                    <p className="text-gray-500 dark:text-neutral-500 text-lg">Manage your site's menus and floating buttons.</p>
                 </div>
                 <SubmitButton
                     isLoading={saving}
@@ -370,7 +370,7 @@ export default function NavigationClient() {
             </div>
 
             {message && (
-                <div className={`p-4 rounded-xl text-sm font-bold flex items-center justify-between ${messageType === 'success' ? 'bg-brand-green/20 text-brand-dark' : 'bg-red-50 text-red-600'}`}>
+                <div className={`p-4 rounded-xl text-sm font-bold flex items-center justify-between ${messageType === 'success' ? 'bg-brand-green/20 text-brand-dark' : 'bg-red-50 dark:bg-red-950/30 text-red-600'}`}>
                     <span>{message}</span>
                     <button onClick={() => setMessage('')} className="ml-4 opacity-50 hover:opacity-100">×</button>
                 </div>
@@ -378,11 +378,11 @@ export default function NavigationClient() {
 
             <form id="navigation-form" onSubmit={handleSave} className="space-y-8">
                 {/* Top Navigation */}
-                <div className="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm">
+                <div className="bg-white dark:bg-neutral-900 rounded-2xl p-8 border border-gray-200 dark:border-neutral-800 shadow-sm">
                     <div className="flex items-center justify-between mb-6">
                         <div>
                             <h2 className="text-xl font-black text-brand-dark block">Top Navigation</h2>
-                            <p className="text-sm text-gray-500">Links shown in header or side menu</p>
+                            <p className="text-sm text-gray-500 dark:text-neutral-500">Links shown in header or side menu</p>
                         </div>
                         <button
                             type="button"
@@ -408,7 +408,7 @@ export default function NavigationClient() {
                             </SortableContext>
                         </DndContext>
                         {(!navigation?.topNav || navigation.topNav.length === 0) && (
-                            <div className="text-gray-400 text-sm italic text-center py-8 border border-dashed border-gray-200 rounded-2xl">
+                            <div className="text-gray-400 dark:text-neutral-600 text-sm italic text-center py-8 border border-dashed border-gray-200 dark:border-neutral-700 rounded-2xl">
                                 No links yet. Add one to get started.
                             </div>
                         )}
@@ -416,7 +416,7 @@ export default function NavigationClient() {
                 </div>
 
                 {/* Top Navigation Actions (CTA) */}
-                <div className="bg-white border-2 border-dashed border-gray-200 rounded-2xl p-8">
+                <div className="bg-white dark:bg-neutral-900 border-2 border-dashed border-gray-200 dark:border-neutral-700 rounded-2xl p-8">
                     <label className="block text-brand-dark font-black text-lg mb-4 flex items-center gap-2">
                         <span className="bg-brand-green/20 text-brand-dark p-1 rounded-md text-[10px] uppercase tracking-wider">Feature</span>
                         Header Action Button
@@ -425,8 +425,8 @@ export default function NavigationClient() {
                     <div className="space-y-4">
                         <label className="flex items-center gap-3 cursor-pointer">
                             <div className={`
-                                relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none 
-                                ${navigation?.topNavActions?.cta?.enabled ? 'bg-brand-dark' : 'bg-gray-200'}
+                                relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none
+                                ${navigation?.topNavActions?.cta?.enabled ? 'bg-brand-dark' : 'bg-gray-200 dark:bg-neutral-700'}
                             `}>
                                 <input
                                     type="checkbox"
@@ -457,13 +457,13 @@ export default function NavigationClient() {
                                     ${navigation?.topNavActions?.cta?.enabled ? 'translate-x-5' : 'translate-x-0'}
                                 `} />
                             </div>
-                            <span className="font-bold text-gray-700 text-sm">Show CTA Button (e.g. Order)</span>
+                            <span className="font-bold text-gray-700 dark:text-neutral-300 text-sm">Show CTA Button (e.g. Order)</span>
                         </label>
 
                         {navigation?.topNavActions?.cta?.enabled && (
                             <div className="pl-14 space-y-4 animate-fade-in-up">
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Button Label</label>
+                                    <label className="block text-xs font-bold text-gray-500 dark:text-neutral-500 uppercase mb-2">Button Label</label>
                                     <input
                                         type="text"
                                         value={navigation?.topNavActions?.cta?.label || ''}
@@ -474,7 +474,7 @@ export default function NavigationClient() {
                                                 cta: { ...prev.topNavActions?.cta, label: e.target.value }
                                             }
                                         }))}
-                                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-brand-green/20 focus:border-brand-green outline-none"
+                                        className="w-full px-4 py-3 bg-gray-50 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 dark:text-neutral-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-brand-green/20 focus:border-brand-green outline-none"
                                         placeholder="e.g. Order Now"
                                     />
                                 </div>
@@ -501,7 +501,7 @@ export default function NavigationClient() {
                                                 px-3 py-2 text-xs font-bold uppercase rounded-xl border transition-all tracking-wider
                                                 ${navigation?.topNavActions?.cta?.linkType === t
                                                     ? 'bg-brand-dark text-white border-brand-dark shadow-sm'
-                                                    : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'}
+                                                    : 'bg-white dark:bg-neutral-800 text-gray-500 dark:text-neutral-500 border-gray-200 dark:border-neutral-700 hover:border-gray-300 dark:hover:border-neutral-600'}
                                             `}
                                         >
                                             {t === 'url' ? 'Link' : t}
@@ -522,7 +522,7 @@ export default function NavigationClient() {
                                                     cta: { ...prev.topNavActions?.cta, linkValue: e.target.value }
                                                 }
                                             }))}
-                                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-brand-green/20 focus:border-brand-green outline-none"
+                                            className="w-full px-4 py-3 bg-gray-50 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 dark:text-neutral-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-brand-green/20 focus:border-brand-green outline-none"
                                         />
                                     )}
 
@@ -540,7 +540,7 @@ export default function NavigationClient() {
                                                     }
                                                 }
                                             }))}
-                                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-brand-green/20 focus:border-brand-green outline-none appearance-none"
+                                            className="w-full px-4 py-3 bg-gray-50 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 dark:text-neutral-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-brand-green/20 focus:border-brand-green outline-none appearance-none"
                                         >
                                             <option value="">Select a Form...</option>
                                             {forms.map(f => <option key={f.id} value={f.id}>{f.title}</option>)}
@@ -564,7 +564,7 @@ export default function NavigationClient() {
                                                     }
                                                 }))
                                             }}
-                                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-brand-green/20 focus:border-brand-green outline-none appearance-none"
+                                            className="w-full px-4 py-3 bg-gray-50 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 dark:text-neutral-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-brand-green/20 focus:border-brand-green outline-none appearance-none"
                                         >
                                             <option value="">Select a Page...</option>
                                             {pages.map(p => <option key={p.id} value={p.id}>{p.title} (/{p.slug})</option>)}
@@ -577,11 +577,11 @@ export default function NavigationClient() {
                 </div>
 
                 {/* Bottom Navigation */}
-                <div className="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm">
+                <div className="bg-white dark:bg-neutral-900 rounded-2xl p-8 border border-gray-200 dark:border-neutral-800 shadow-sm">
                     <div className="flex items-center justify-between mb-4">
                         <div>
                             <h2 className="block text-brand-dark font-black text-xl mb-1">Bottom Navigation</h2>
-                            <p className="text-sm text-gray-500">Ideally 3-5 items for mobile app bars.</p>
+                            <p className="text-sm text-gray-500 dark:text-neutral-500">Ideally 3-5 items for mobile app bars.</p>
                         </div>
                         <button
                             type="button"
@@ -607,7 +607,7 @@ export default function NavigationClient() {
                             </SortableContext>
                         </DndContext>
                         {(!navigation?.bottomNav || navigation.bottomNav.length === 0) && (
-                            <div className="text-gray-400 text-sm italic text-center py-8 border border-dashed border-gray-200 rounded-2xl">
+                            <div className="text-gray-400 dark:text-neutral-600 text-sm italic text-center py-8 border border-dashed border-gray-200 dark:border-neutral-700 rounded-2xl">
                                 No bottom links configured. Add one to get started.
                             </div>
                         )}
@@ -615,11 +615,11 @@ export default function NavigationClient() {
                 </div>
 
                 {/* Center Floating Action Button (FAB) */}
-                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8">
+                <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm p-8">
                     <div className="flex items-center justify-between mb-4">
                         <div>
                             <p className="font-black text-brand-dark text-lg">Center FAB Button</p>
-                            <p className="text-sm text-gray-500">Floating action button in bottom nav</p>
+                            <p className="text-sm text-gray-500 dark:text-neutral-500">Floating action button in bottom nav</p>
                         </div>
                         <label className="relative inline-flex items-center cursor-pointer">
                             <input
@@ -641,13 +641,13 @@ export default function NavigationClient() {
                                     });
                                 }}
                             />
-                            <div className="w-14 h-8 bg-gray-200 peer-checked:bg-brand-dark rounded-full peer-focus:ring-2 peer-focus:ring-brand-green/20 after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:after:translate-x-[24px]"></div>
+                            <div className="w-14 h-8 bg-gray-200 dark:bg-neutral-700 peer-checked:bg-brand-dark rounded-full peer-focus:ring-2 peer-focus:ring-brand-green/20 after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:after:translate-x-[24px]"></div>
                         </label>
                     </div>
                     {navigation?.fab?.enabled && (
-                        <div className="space-y-5 pt-5 border-t border-gray-100 animate-fade-in-up">
+                        <div className="space-y-5 pt-5 border-t border-gray-100 dark:border-neutral-800 animate-fade-in-up">
                             <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Link Type</label>
+                                <label className="text-xs font-bold text-gray-500 dark:text-neutral-500 uppercase tracking-wider mb-2 block">Link Type</label>
                                 <div className="grid grid-cols-3 gap-2">
                                     {(['url', 'form', 'page'] as const).map(t => (
                                         <button
@@ -657,7 +657,7 @@ export default function NavigationClient() {
                                                 ...prev,
                                                 fab: { ...prev.fab!, type: t, formId: null, pageId: null }
                                             }))}
-                                            className={`px-3 py-2.5 text-xs font-bold rounded-xl border uppercase tracking-wider ${navigation?.fab?.type === t ? 'bg-brand-dark text-white border-brand-dark shadow-sm' : 'bg-white text-gray-500 border-gray-200'}`}
+                                            className={`px-3 py-2.5 text-xs font-bold rounded-xl border uppercase tracking-wider ${navigation?.fab?.type === t ? 'bg-brand-dark text-white border-brand-dark shadow-sm' : 'bg-white dark:bg-neutral-800 text-gray-500 dark:text-neutral-500 border-gray-200 dark:border-neutral-700'}`}
                                         >
                                             {t === 'url' ? 'Link' : t}
                                         </button>
@@ -666,12 +666,12 @@ export default function NavigationClient() {
                             </div>
 
                             <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Destination</label>
+                                <label className="text-xs font-bold text-gray-500 dark:text-neutral-500 uppercase tracking-wider mb-2 block">Destination</label>
                                 {navigation?.fab?.type === 'form' ? (
                                     <select
                                         value={navigation.fab.formId || ''}
                                         onChange={(e) => setNavigation((prev: any) => ({ ...prev, fab: { ...prev.fab!, formId: e.target.value } }))}
-                                        className="w-full px-4 py-3 text-sm font-bold border border-gray-200 rounded-xl bg-gray-50 appearance-none outline-none focus:ring-2 focus:ring-brand-green/20"
+                                        className="w-full px-4 py-3 text-sm font-bold border border-gray-200 dark:border-neutral-700 rounded-xl bg-gray-50 dark:bg-neutral-800 dark:text-neutral-200 appearance-none outline-none focus:ring-2 focus:ring-brand-green/20"
                                     >
                                         <option value="">Select Form...</option>
                                         {forms.map(f => <option key={f.id} value={f.id}>{f.title}</option>)}
@@ -683,7 +683,7 @@ export default function NavigationClient() {
                                             const p = pages.find(pg => pg.id === e.target.value);
                                             setNavigation((prev: any) => ({ ...prev, fab: { ...prev.fab!, pageId: e.target.value, value: p ? `/${p.slug}` : '#' } }));
                                         }}
-                                        className="w-full px-4 py-3 text-sm font-bold border border-gray-200 rounded-xl bg-gray-50 appearance-none outline-none focus:ring-2 focus:ring-brand-green/20"
+                                        className="w-full px-4 py-3 text-sm font-bold border border-gray-200 dark:border-neutral-700 rounded-xl bg-gray-50 dark:bg-neutral-800 dark:text-neutral-200 appearance-none outline-none focus:ring-2 focus:ring-brand-green/20"
                                     >
                                         <option value="">Select Page...</option>
                                         {pages.map(p => <option key={p.id} value={p.id}>{p.title} (/{p.slug})</option>)}
@@ -693,14 +693,14 @@ export default function NavigationClient() {
                                         type="text"
                                         value={navigation?.fab?.value || ''}
                                         onChange={(e) => setNavigation((prev: any) => ({ ...prev, fab: { ...prev.fab!, value: e.target.value } }))}
-                                        className="w-full px-4 py-3 text-sm font-bold border border-gray-200 rounded-xl bg-gray-50 outline-none focus:ring-2 focus:ring-brand-green/20"
+                                        className="w-full px-4 py-3 text-sm font-bold border border-gray-200 dark:border-neutral-700 rounded-xl bg-gray-50 dark:bg-neutral-800 dark:text-neutral-200 outline-none focus:ring-2 focus:ring-brand-green/20"
                                         placeholder="https://example.com or /path"
                                     />
                                 )}
                             </div>
 
                             <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Icon</label>
+                                <label className="text-xs font-bold text-gray-500 dark:text-neutral-500 uppercase tracking-wider mb-2 block">Icon</label>
                                 <NavIconPicker
                                     currentIcon={navigation?.fab?.icon || 'PlusCircle'}
                                     onSelect={(icon) => setNavigation((prev: any) => ({

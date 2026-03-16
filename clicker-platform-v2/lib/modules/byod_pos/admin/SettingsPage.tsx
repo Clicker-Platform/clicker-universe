@@ -57,7 +57,7 @@ export default function POSSettingsPage() {
                     <h1 className="text-3xl font-black text-brand-dark mb-2 uppercase tracking-tight flex items-center gap-3">
                         <Settings2 size={32} /> POS SETTINGS
                     </h1>
-                    <p className="text-gray-600 font-medium">Configure POS system</p>
+                    <p className="text-gray-600 dark:text-neutral-400 font-medium">Configure POS system</p>
                 </div>
                 <button
                     onClick={handleSave}
@@ -71,18 +71,18 @@ export default function POSSettingsPage() {
 
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                 {/* Operation Mode */}
-                <div className="bg-white rounded-3xl border-[3px] border-brand-dark p-6 shadow-sm">
+                <div className="bg-white dark:bg-neutral-900 rounded-3xl border-[3px] border-brand-dark p-6 shadow-sm">
                     <div className="flex items-center gap-3 mb-6">
                         <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 border border-blue-200">
                             <LayoutTemplate size={20} />
                         </div>
-                        <h3 className="font-bold text-xl text-gray-800">Operation Mode</h3>
+                        <h3 className="font-bold text-xl text-gray-800 dark:text-neutral-200">Operation Mode</h3>
                     </div>
 
                     <div className="space-y-4">
                         <label className={`
                             flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all
-                            ${settings.mode === 'fast-checkout' ? 'border-brand-dark bg-brand-dark/5' : 'border-gray-100 hover:border-gray-200'}
+                            ${settings.mode === 'fast-checkout' ? 'border-brand-dark bg-brand-dark/5' : 'border-gray-100 dark:border-neutral-800 hover:border-gray-200 dark:hover:border-neutral-700'}
                         `}>
                             <input
                                 type="radio"
@@ -93,14 +93,14 @@ export default function POSSettingsPage() {
                                 className="w-5 h-5 text-brand-dark accent-brand-dark"
                             />
                             <div className="ml-4">
-                                <span className="block font-bold text-gray-800">Fast Checkout (QSR)</span>
-                                <span className="block text-sm text-gray-500">Each order is separate. Ideal for Takeout/Counter Service.</span>
+                                <span className="block font-bold text-gray-800 dark:text-neutral-200">Fast Checkout (QSR)</span>
+                                <span className="block text-sm text-gray-500 dark:text-neutral-500">Each order is separate. Ideal for Takeout/Counter Service.</span>
                             </div>
                         </label>
 
                         <label className={`
                             flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all
-                            ${settings.mode === 'open-bill' ? 'border-brand-dark bg-brand-dark/5' : 'border-gray-100 hover:border-gray-200'}
+                            ${settings.mode === 'open-bill' ? 'border-brand-dark bg-brand-dark/5' : 'border-gray-100 dark:border-neutral-800 hover:border-gray-200 dark:hover:border-neutral-700'}
                         `}>
                             <input
                                 type="radio"
@@ -111,26 +111,26 @@ export default function POSSettingsPage() {
                                 className="w-5 h-5 text-brand-dark accent-brand-dark"
                             />
                             <div className="ml-4">
-                                <span className="block font-bold text-gray-800">Open Bill (Dine-in)</span>
-                                <span className="block text-sm text-gray-500">Add active orders to a Tab. Payment at the end.</span>
+                                <span className="block font-bold text-gray-800 dark:text-neutral-200">Open Bill (Dine-in)</span>
+                                <span className="block text-sm text-gray-500 dark:text-neutral-500">Add active orders to a Tab. Payment at the end.</span>
                             </div>
                         </label>
                     </div>
                 </div>
 
                 {/* Table Management */}
-                <div className="bg-white rounded-3xl border-[3px] border-brand-dark p-6 shadow-sm">
+                <div className="bg-white dark:bg-neutral-900 rounded-3xl border-[3px] border-brand-dark p-6 shadow-sm">
                     <div className="flex items-center gap-3 mb-6">
                         <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 border border-purple-200">
                             <Hash size={20} />
                         </div>
-                        <h3 className="font-bold text-xl text-gray-800">Table Management</h3>
+                        <h3 className="font-bold text-xl text-gray-800 dark:text-neutral-200">Table Management</h3>
                     </div>
 
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl mb-4">
+                    <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-neutral-800/50 rounded-xl mb-4">
                         <div>
-                            <span className="block font-bold text-gray-800">Require Table Number</span>
-                            <span className="block text-sm text-gray-500">Force users to enter table number</span>
+                            <span className="block font-bold text-gray-800 dark:text-neutral-200">Require Table Number</span>
+                            <span className="block text-sm text-gray-500 dark:text-neutral-500">Force users to enter table number</span>
                         </div>
                         <label className="relative inline-flex items-center cursor-pointer">
                             <input
@@ -139,24 +139,24 @@ export default function POSSettingsPage() {
                                 onChange={(e) => setSettings({ ...settings, requireTableNumber: e.target.checked })}
                                 className="sr-only peer"
                             />
-                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-brand-dark/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-dark"></div>
+                            <div className="w-11 h-6 bg-gray-200 dark:bg-neutral-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-brand-dark/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 dark:after:border-neutral-700 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-dark"></div>
                         </label>
                     </div>
                 </div>
 
                 {/* Payment Methods */}
-                <div className="col-span-1 xl:col-span-2 bg-white rounded-3xl border-[3px] border-brand-dark p-6 shadow-sm">
+                <div className="col-span-1 xl:col-span-2 bg-white dark:bg-neutral-900 rounded-3xl border-[3px] border-brand-dark p-6 shadow-sm">
                     <div className="flex items-center gap-3 mb-6">
                         <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 border border-green-200">
                             <CreditCard size={20} />
                         </div>
-                        <h3 className="font-bold text-xl text-gray-800">Accepted Payment Methods</h3>
+                        <h3 className="font-bold text-xl text-gray-800 dark:text-neutral-200">Accepted Payment Methods</h3>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {/* Cash */}
-                        <label className="flex items-center justify-between p-4 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors">
-                            <span className="font-bold text-gray-700">Cash</span>
+                        <label className="flex items-center justify-between p-4 bg-gray-50 dark:bg-neutral-800/50 rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-neutral-700 transition-colors">
+                            <span className="font-bold text-gray-700 dark:text-neutral-300">Cash</span>
                             <input
                                 type="checkbox"
                                 checked={settings.paymentMethods?.cash ?? true}
@@ -172,8 +172,8 @@ export default function POSSettingsPage() {
                         </label>
 
                         {/* Card */}
-                        <label className="flex items-center justify-between p-4 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors">
-                            <span className="font-bold text-gray-700">Credit/Debit Card</span>
+                        <label className="flex items-center justify-between p-4 bg-gray-50 dark:bg-neutral-800/50 rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-neutral-700 transition-colors">
+                            <span className="font-bold text-gray-700 dark:text-neutral-300">Credit/Debit Card</span>
                             <input
                                 type="checkbox"
                                 checked={settings.paymentMethods?.card ?? true}
@@ -189,8 +189,8 @@ export default function POSSettingsPage() {
                         </label>
 
                         {/* QRIS */}
-                        <label className="flex items-center justify-between p-4 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors">
-                            <span className="font-bold text-gray-700">QRIS / E-Wallet</span>
+                        <label className="flex items-center justify-between p-4 bg-gray-50 dark:bg-neutral-800/50 rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-neutral-700 transition-colors">
+                            <span className="font-bold text-gray-700 dark:text-neutral-300">QRIS / E-Wallet</span>
                             <input
                                 type="checkbox"
                                 checked={settings.paymentMethods?.qris ?? true}
@@ -208,21 +208,21 @@ export default function POSSettingsPage() {
                 </div>
 
                 {/* Tax & Service Charge */}
-                <div className="col-span-1 xl:col-span-2 bg-white rounded-3xl border-[3px] border-brand-dark p-6 shadow-sm">
+                <div className="col-span-1 xl:col-span-2 bg-white dark:bg-neutral-900 rounded-3xl border-[3px] border-brand-dark p-6 shadow-sm">
                     <div className="flex items-center gap-3 mb-6">
                         <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 border border-orange-200">
                             <span className="font-bold text-lg">%</span>
                         </div>
-                        <h3 className="font-bold text-xl text-gray-800">Tax & Service Charge</h3>
+                        <h3 className="font-bold text-xl text-gray-800 dark:text-neutral-200">Tax & Service Charge</h3>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Service Charge */}
                         <div className="space-y-3">
-                            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                            <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-neutral-800/50 rounded-xl">
                                 <div>
-                                    <span className="block font-bold text-gray-800">Service Charge</span>
-                                    <span className="block text-sm text-gray-500">Applied to Subtotal</span>
+                                    <span className="block font-bold text-gray-800 dark:text-neutral-200">Service Charge</span>
+                                    <span className="block text-sm text-gray-500 dark:text-neutral-500">Applied to Subtotal</span>
                                 </div>
                                 <label className="relative inline-flex items-center cursor-pointer">
                                     <input
@@ -241,14 +241,14 @@ export default function POSSettingsPage() {
                                         })}
                                         className="sr-only peer"
                                     />
-                                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-brand-dark/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-dark"></div>
+                                    <div className="w-11 h-6 bg-gray-200 dark:bg-neutral-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-brand-dark/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 dark:after:border-neutral-700 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-dark"></div>
                                 </label>
                             </div>
 
                             {/* Rate Input */}
                             <div className={`transition-all duration-300 ${settings.taxSettings?.serviceCharge?.enabled ? 'opacity-100 max-h-20' : 'opacity-50 max-h-20 grayscale pointer-events-none'}`}>
-                                <div className="flex items-center gap-2 p-3 border-2 border-dashed border-gray-200 rounded-xl bg-white">
-                                    <span className="text-gray-500 font-bold text-sm uppercase">Rate (%)</span>
+                                <div className="flex items-center gap-2 p-3 border-2 border-dashed border-gray-200 dark:border-neutral-700 rounded-xl bg-white dark:bg-neutral-800">
+                                    <span className="text-gray-500 dark:text-neutral-500 font-bold text-sm uppercase">Rate (%)</span>
                                     <input
                                         type="number"
                                         min="0"
@@ -272,10 +272,10 @@ export default function POSSettingsPage() {
 
                         {/* Restaurant Tax */}
                         <div className="space-y-3">
-                            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                            <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-neutral-800/50 rounded-xl">
                                 <div>
-                                    <span className="block font-bold text-gray-800">Restaurant Tax (PB1)</span>
-                                    <span className="block text-sm text-gray-500">Applied to (Subtotal + Service)</span>
+                                    <span className="block font-bold text-gray-800 dark:text-neutral-200">Restaurant Tax (PB1)</span>
+                                    <span className="block text-sm text-gray-500 dark:text-neutral-500">Applied to (Subtotal + Service)</span>
                                 </div>
                                 <label className="relative inline-flex items-center cursor-pointer">
                                     <input
@@ -294,13 +294,13 @@ export default function POSSettingsPage() {
                                         })}
                                         className="sr-only peer"
                                     />
-                                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-brand-dark/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-dark"></div>
+                                    <div className="w-11 h-6 bg-gray-200 dark:bg-neutral-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-brand-dark/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 dark:after:border-neutral-700 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-dark"></div>
                                 </label>
                             </div>
                             {/* Rate Input */}
                             <div className={`transition-all duration-300 ${settings.taxSettings?.restaurantTax?.enabled ? 'opacity-100 max-h-20' : 'opacity-50 max-h-20 grayscale pointer-events-none'}`}>
-                                <div className="flex items-center gap-2 p-3 border-2 border-dashed border-gray-200 rounded-xl bg-white">
-                                    <span className="text-gray-500 font-bold text-sm uppercase">Rate (%)</span>
+                                <div className="flex items-center gap-2 p-3 border-2 border-dashed border-gray-200 dark:border-neutral-700 rounded-xl bg-white dark:bg-neutral-800">
+                                    <span className="text-gray-500 dark:text-neutral-500 font-bold text-sm uppercase">Rate (%)</span>
                                     <input
                                         type="number"
                                         min="0"

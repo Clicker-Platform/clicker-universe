@@ -212,7 +212,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                     onClick={() => setActiveTab('contact')}
                     className={`px-6 py-2.5 rounded-full font-bold whitespace-nowrap transition-all flex items-center gap-2 ${activeTab === 'contact'
                         ? 'bg-brand-dark text-brand-green shadow-md'
-                        : 'bg-white text-gray-500 hover:bg-gray-50'
+                        : 'bg-white dark:bg-neutral-900 text-gray-500 dark:text-neutral-500 hover:bg-gray-50 dark:hover:bg-neutral-800'
                         }`}
                 >
                     <User size={18} />
@@ -222,7 +222,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                     onClick={() => setActiveTab('hours')}
                     className={`px-6 py-2.5 rounded-full font-bold whitespace-nowrap transition-all flex items-center gap-2 ${activeTab === 'hours'
                         ? 'bg-brand-dark text-brand-green shadow-md'
-                        : 'bg-white text-gray-500 hover:bg-gray-50'
+                        : 'bg-white dark:bg-neutral-900 text-gray-500 dark:text-neutral-500 hover:bg-gray-50 dark:hover:bg-neutral-800'
                         }`}
                 >
                     <Clock size={18} />
@@ -232,7 +232,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                     onClick={() => setActiveTab('branches')}
                     className={`px-6 py-2.5 rounded-full font-bold whitespace-nowrap transition-all flex items-center gap-2 ${activeTab === 'branches'
                         ? 'bg-brand-dark text-brand-green shadow-md'
-                        : 'bg-white text-gray-500 hover:bg-gray-50'
+                        : 'bg-white dark:bg-neutral-900 text-gray-500 dark:text-neutral-500 hover:bg-gray-50 dark:hover:bg-neutral-800'
                         }`}
                 >
                     <MapPin size={18} />
@@ -241,12 +241,12 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
             </div>
 
             {/* Content Area */}
-            <div className="bg-white p-6 md:px-8 rounded-2xl border border-gray-200 shadow-sm min-h-[400px]">
+            <div className="bg-white dark:bg-neutral-900 p-6 md:px-8 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm min-h-[400px]">
 
                 {/* --- CONTACT TAB --- */}
                 {activeTab === 'contact' && (
                     <form onSubmit={handleSaveSettings} className="space-y-6">
-                        <div className="flex items-center gap-3 mb-6 p-4 bg-blue-50 text-blue-800 rounded-xl border border-blue-100">
+                        <div className="flex items-center gap-3 mb-6 p-4 bg-blue-50 dark:bg-blue-950/30 text-blue-800 dark:text-blue-400 rounded-xl border border-blue-100 dark:border-blue-800">
                             <MapPin size={24} />
                             <div>
                                 <h3 className="font-bold">Main Headquarters</h3>
@@ -262,7 +262,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                                 <textarea
                                     value={contact.address}
                                     onChange={(e) => setContact({ ...contact, address: e.target.value })}
-                                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent min-h-[80px]"
+                                    className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent min-h-[80px]"
                                     placeholder="Enter your full business address..."
                                 />
                             </div>
@@ -276,10 +276,10 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                                         type="tel"
                                         value={contact.whatsapp}
                                         onChange={(e) => setContact({ ...contact, whatsapp: e.target.value })}
-                                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent"
+                                        className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent"
                                         placeholder="e.g. 628123456789"
                                     />
-                                    <p className="text-xs text-gray-400 mt-1">Used for 'Order via WhatsApp'. Include country code, no +.</p>
+                                    <p className="text-xs text-gray-400 dark:text-neutral-600 mt-1">Used for 'Order via WhatsApp'. Include country code, no +.</p>
                                 </div>
                                 <div>
                                     <label className="block text-sm font-bold text-brand-dark mb-2 flex items-center gap-2">
@@ -289,7 +289,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                                         type="email"
                                         value={contact.email}
                                         onChange={(e) => setContact({ ...contact, email: e.target.value })}
-                                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent"
+                                        className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent"
                                         placeholder="contact@example.com"
                                     />
                                 </div>
@@ -303,7 +303,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                                     <input
                                         value={contact.mapUrl}
                                         onChange={(e) => setContact({ ...contact, mapUrl: e.target.value })}
-                                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent"
+                                        className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent"
                                         placeholder="https://maps.google.com/..."
                                     />
                                     {contact.mapUrl && (
@@ -311,7 +311,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                                             href={contact.mapUrl}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="p-3 bg-gray-100 rounded-lg hover:bg-gray-200 text-gray-700"
+                                            className="p-3 bg-gray-100 dark:bg-neutral-800 rounded-lg hover:bg-gray-200 dark:hover:bg-neutral-700 text-gray-700 dark:text-neutral-300"
                                         >
                                             <ExternalLink size={20} />
                                         </a>
@@ -320,7 +320,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                             </div>
                         </div>
 
-                        <div className="pt-6 border-t border-gray-100">
+                        <div className="pt-6 border-t border-gray-100 dark:border-neutral-800/50">
                             <SubmitButton
                                 isLoading={isSubmitting}
                                 label="Save Contact Info"
@@ -335,17 +335,17 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                 {activeTab === 'hours' && (
                     <form onSubmit={handleSaveSettings} className="space-y-6">
                         {/* Visibility Toggle */}
-                        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200 transition-all hover:border-gray-300">
+                        <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-neutral-800/50 rounded-xl border border-gray-200 dark:border-neutral-700 transition-all hover:border-gray-300 dark:hover:border-neutral-600">
                             <div>
                                 <h3 className="font-bold text-lg text-brand-dark">Display Widget</h3>
-                                <p className="text-sm text-gray-500">Show/Hide hours on public page</p>
+                                <p className="text-sm text-gray-500 dark:text-neutral-500">Show/Hide hours on public page</p>
                             </div>
                             <button
                                 type="button"
                                 onClick={() => setHours({ ...hours, enabled: !hours.enabled })}
                                 className={`
                                     relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-brand-green focus:ring-offset-2
-                                    ${hours.enabled ? 'bg-brand-dark' : 'bg-gray-200'}
+                                    ${hours.enabled ? 'bg-brand-dark' : 'bg-gray-200 dark:bg-neutral-700'}
                                 `}
                             >
                                 <span
@@ -366,14 +366,14 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                                     <input
                                         value={hours.label}
                                         onChange={(e) => setHours({ ...hours, label: e.target.value })}
-                                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent"
+                                        className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent"
                                         placeholder="Opening Hours"
                                     />
-                                    <p className="text-xs text-gray-400 mt-1">This title is displayed above the schedule on the public page.</p>
+                                    <p className="text-xs text-gray-400 dark:text-neutral-600 mt-1">This title is displayed above the schedule on the public page.</p>
                                 </div>
                             </div>
 
-                            <hr className="border-gray-100" />
+                            <hr className="border-gray-100 dark:border-neutral-800" />
 
                             {/* Master Schedule Editor */}
                             <ScheduleEditor
@@ -382,7 +382,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                             />
                         </div>
 
-                        <div className="pt-6 border-t border-gray-100">
+                        <div className="pt-6 border-t border-gray-100 dark:border-neutral-800/50">
                             <SubmitButton
                                 isLoading={isSubmitting}
                                 label="Save Hours"
@@ -407,26 +407,26 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                         </div>
 
                         {branches.length === 0 ? (
-                            <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-200">
-                                <MapPin size={48} className="mx-auto text-gray-300 mb-3" />
-                                <p className="text-gray-500 font-medium">No branches added yet.</p>
+                            <div className="text-center py-12 bg-gray-50 dark:bg-neutral-800/50 rounded-xl border border-dashed border-gray-200 dark:border-neutral-700">
+                                <MapPin size={48} className="mx-auto text-gray-300 dark:text-neutral-600 mb-3" />
+                                <p className="text-gray-500 dark:text-neutral-500 font-medium">No branches added yet.</p>
                             </div>
                         ) : (
                             <div className="space-y-4">
                                 {branches.map((branch) => (
-                                    <div key={branch.id} className="bg-gray-50 p-4 rounded-xl border border-gray-200 flex items-start justify-between group hover:border-brand-dark/50 transition-colors">
+                                    <div key={branch.id} className="bg-gray-50 dark:bg-neutral-800/50 p-4 rounded-xl border border-gray-200 dark:border-neutral-700 flex items-start justify-between group hover:border-brand-dark/50 transition-colors">
                                         <div className="flex-1">
                                             <h4 className="font-bold text-lg text-brand-dark">{branch.name}</h4>
-                                            <p className="text-gray-600 text-sm whitespace-pre-line mt-1">{branch.address}</p>
+                                            <p className="text-gray-600 dark:text-neutral-400 text-sm whitespace-pre-line mt-1">{branch.address}</p>
 
                                             <div className="flex gap-4 mt-3">
                                                 {branch.phone && (
-                                                    <span className="flex items-center gap-1.5 text-xs font-bold text-gray-500 bg-white px-2 py-1 rounded-md border border-gray-200">
+                                                    <span className="flex items-center gap-1.5 text-xs font-bold text-gray-500 dark:text-neutral-500 bg-white dark:bg-neutral-900 px-2 py-1 rounded-md border border-gray-200 dark:border-neutral-700">
                                                         <Phone size={12} /> {branch.phone}
                                                     </span>
                                                 )}
                                                 {branch.mapUrl && (
-                                                    <a href={branch.mapUrl} target="_blank" className="flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:underline bg-blue-50 px-2 py-1 rounded-md border border-blue-100">
+                                                    <a href={branch.mapUrl} target="_blank" className="flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:underline bg-blue-50 dark:bg-blue-950/30 px-2 py-1 rounded-md border border-blue-100 dark:border-blue-800">
                                                         <ExternalLink size={12} /> Map Data
                                                     </a>
                                                 )}
@@ -435,13 +435,13 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                                         <div className="flex items-center gap-2 opacity-100 lg:opacity-0 group-hover:opacity-100 transition-opacity">
                                             <button
                                                 onClick={() => openEditBranchModal(branch)}
-                                                className="p-2 bg-white text-gray-600 hover:text-brand-dark border border-gray-200 rounded-lg hover:border-brand-dark transition-colors"
+                                                className="p-2 bg-white dark:bg-neutral-900 text-gray-600 dark:text-neutral-400 hover:text-brand-dark border border-gray-200 dark:border-neutral-700 rounded-lg hover:border-brand-dark transition-colors"
                                             >
                                                 <Edit2 size={18} />
                                             </button>
                                             <button
                                                 onClick={() => confirmDeleteBranch(branch.id)}
-                                                className="p-2 bg-white text-red-400 hover:text-red-500 border border-gray-200 rounded-lg hover:border-red-200 transition-colors"
+                                                className="p-2 bg-white dark:bg-neutral-900 text-red-400 hover:text-red-500 border border-gray-200 dark:border-neutral-700 rounded-lg hover:border-red-200 dark:hover:border-red-800 transition-colors"
                                             >
                                                 <Trash2 size={18} />
                                             </button>
@@ -457,12 +457,12 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
             {/* Branch Modal */}
             {isBranchModalOpen && editingBranch && (
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-                    <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
-                        <div className="p-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white z-10">
+                    <div className="bg-white dark:bg-neutral-900 rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
+                        <div className="p-6 border-b border-gray-100 dark:border-neutral-800/50 flex justify-between items-center sticky top-0 bg-white dark:bg-neutral-900 z-10">
                             <h3 className="text-xl font-bold text-brand-dark">
                                 {editingBranch.id === 'new' ? 'Add New Branch' : 'Edit Branch'}
                             </h3>
-                            <button onClick={() => setIsBranchModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full">
+                            <button onClick={() => setIsBranchModalOpen(false)} className="p-2 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-full">
                                 <Plus size={24} className="rotate-45" />
                             </button>
                         </div>
@@ -474,7 +474,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                                     required
                                     value={editingBranch.name}
                                     onChange={(e) => setEditingBranch({ ...editingBranch, name: e.target.value })}
-                                    className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 ${validationErrors.name ? 'border-red-500 focus:ring-red-200' : 'border-gray-200 focus:ring-brand-green'}`}
+                                    className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 dark:bg-neutral-800 dark:text-neutral-200 ${validationErrors.name ? 'border-red-500 focus:ring-red-200' : 'border-gray-200 dark:border-neutral-700 focus:ring-brand-green'}`}
                                     placeholder="e.g. SunnySide Downtown"
                                 />
                                 {validationErrors.name && <p className="text-red-500 text-xs mt-1">{validationErrors.name}</p>}
@@ -486,7 +486,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                                     required
                                     value={editingBranch.address}
                                     onChange={(e) => setEditingBranch({ ...editingBranch, address: e.target.value })}
-                                    className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 min-h-[80px] ${validationErrors.address ? 'border-red-500 focus:ring-red-200' : 'border-gray-200 focus:ring-brand-green'}`}
+                                    className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 min-h-[80px] dark:bg-neutral-800 dark:text-neutral-200 ${validationErrors.address ? 'border-red-500 focus:ring-red-200' : 'border-gray-200 dark:border-neutral-700 focus:ring-brand-green'}`}
                                     placeholder="Full address..."
                                 />
                                 {validationErrors.address && <p className="text-red-500 text-xs mt-1">{validationErrors.address}</p>}
@@ -497,7 +497,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                                 <input
                                     value={editingBranch.phone || ''}
                                     onChange={(e) => setEditingBranch({ ...editingBranch, phone: e.target.value })}
-                                    className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 ${validationErrors.phone ? 'border-red-500 focus:ring-red-200' : 'border-gray-200 focus:ring-brand-green'}`}
+                                    className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 dark:bg-neutral-800 dark:text-neutral-200 ${validationErrors.phone ? 'border-red-500 focus:ring-red-200' : 'border-gray-200 dark:border-neutral-700 focus:ring-brand-green'}`}
                                     placeholder="e.g. 021-555555"
                                 />
                                 {validationErrors.phone && <p className="text-red-500 text-xs mt-1">{validationErrors.phone}</p>}
@@ -508,7 +508,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                                 <input
                                     value={editingBranch.mapUrl}
                                     onChange={(e) => setEditingBranch({ ...editingBranch, mapUrl: e.target.value })}
-                                    className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 ${validationErrors.mapUrl ? 'border-red-500 focus:ring-red-200' : 'border-gray-200 focus:ring-brand-green'}`}
+                                    className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 dark:bg-neutral-800 dark:text-neutral-200 ${validationErrors.mapUrl ? 'border-red-500 focus:ring-red-200' : 'border-gray-200 dark:border-neutral-700 focus:ring-brand-green'}`}
                                     placeholder="https://maps.google.com/..."
                                 />
                                 {validationErrors.mapUrl && <p className="text-red-500 text-xs mt-1">{validationErrors.mapUrl}</p>}
@@ -518,7 +518,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                                 <button
                                     type="button"
                                     onClick={() => setIsBranchModalOpen(false)}
-                                    className="flex-1 px-4 py-3 font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors"
+                                    className="flex-1 px-4 py-3 font-bold text-gray-600 dark:text-neutral-400 bg-gray-100 dark:bg-neutral-800 hover:bg-gray-200 dark:hover:bg-neutral-700 rounded-xl transition-colors"
                                 >
                                     Cancel
                                 </button>

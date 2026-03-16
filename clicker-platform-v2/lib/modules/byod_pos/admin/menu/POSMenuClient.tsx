@@ -208,16 +208,16 @@ export default function POSMenuClient({ initialItems = [] }: POSMenuClientProps)
                     <h1 className="text-3xl font-black text-brand-dark uppercase flex items-center gap-3">
                         <Store size={32} /> Catalog Manager
                     </h1>
-                    <p className="text-gray-600 font-medium">Manage your product catalog</p>
+                    <p className="text-gray-600 dark:text-neutral-400 font-medium">Manage your product catalog</p>
                 </div>
 
             </div>
 
 
             {/* Brutalist Unified Container */}
-            <div className="bg-white rounded-3xl border-[3px] border-brand-dark shadow-sm overflow-hidden flex flex-col min-h-[600px]">
+            <div className="bg-white dark:bg-neutral-900 rounded-3xl border-[3px] border-brand-dark shadow-sm overflow-hidden flex flex-col min-h-[600px]">
                 {/* Header Controls */}
-                <div className="p-4 border-b border-gray-100 bg-white flex flex-col xl:flex-row gap-4 justify-between items-start xl:items-center">
+                <div className="p-4 border-b border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 flex flex-col xl:flex-row gap-4 justify-between items-start xl:items-center">
                     {/* Category Filter */}
                     <div className="flex gap-2 overflow-x-auto max-w-full pb-2 xl:pb-0 no-scrollbar items-center">
                         {categories.map(cat => (
@@ -228,7 +228,7 @@ export default function POSMenuClient({ initialItems = [] }: POSMenuClientProps)
                                     px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition-colors border
                                     ${selectedCategory === cat
                                         ? 'bg-brand-dark text-white border-brand-dark'
-                                        : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-100'}
+                                        : 'bg-gray-50 dark:bg-neutral-800/50 text-gray-600 dark:text-neutral-400 border-gray-200 dark:border-neutral-800 hover:border-gray-300 dark:hover:border-neutral-700 hover:bg-gray-100 dark:hover:bg-neutral-700'}
                                 `}
                             >
                                 {cat}
@@ -238,17 +238,17 @@ export default function POSMenuClient({ initialItems = [] }: POSMenuClientProps)
 
                     {/* Actions */}
                     <div className="flex gap-3 shrink-0 w-full xl:w-auto">
-                        <div className="flex bg-gray-50 p-1 rounded-lg border border-gray-200 ml-auto xl:ml-0">
+                        <div className="flex bg-gray-50 dark:bg-neutral-800/50 p-1 rounded-lg border border-gray-200 dark:border-neutral-800 ml-auto xl:ml-0">
                             <button
                                 onClick={() => setViewMode('grid')}
-                                className={`p-2 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white text-brand-dark shadow-sm ring-1 ring-gray-200' : 'text-gray-400 hover:text-gray-600'}`}
+                                className={`p-2 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-neutral-900 text-brand-dark shadow-sm ring-1 ring-gray-200 dark:ring-neutral-700' : 'text-gray-400 dark:text-neutral-600 hover:text-gray-600 dark:hover:text-neutral-400'}`}
                                 title="Grid View"
                             >
                                 <LayoutGrid size={18} />
                             </button>
                             <button
                                 onClick={() => setViewMode('list')}
-                                className={`p-2 rounded-md transition-all ${viewMode === 'list' ? 'bg-white text-brand-dark shadow-sm ring-1 ring-gray-200' : 'text-gray-400 hover:text-gray-600'}`}
+                                className={`p-2 rounded-md transition-all ${viewMode === 'list' ? 'bg-white dark:bg-neutral-900 text-brand-dark shadow-sm ring-1 ring-gray-200 dark:ring-neutral-700' : 'text-gray-400 dark:text-neutral-600 hover:text-gray-600 dark:hover:text-neutral-400'}`}
                                 title="List View"
                             >
                                 <List size={18} />
@@ -264,14 +264,14 @@ export default function POSMenuClient({ initialItems = [] }: POSMenuClientProps)
                 </div>
 
                 {/* Content Area */}
-                <div className={`flex-1 overflow-auto ${viewMode === 'grid' ? 'p-6 bg-gray-50/30' : ''}`}>
+                <div className={`flex-1 overflow-auto ${viewMode === 'grid' ? 'p-6 bg-gray-50/30 dark:bg-neutral-800/20' : ''}`}>
                     {isLoading ? (
-                        <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                        <div className="flex flex-col items-center justify-center h-full text-gray-400 dark:text-neutral-600">
                             <Store size={48} className="mb-4 opacity-20 animate-pulse" />
                             <p className="font-bold text-lg animate-pulse">Loading Catalog...</p>
                         </div>
                     ) : (
-                        <div className={viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 animate-in fade-in duration-300" : "divide-y divide-gray-100 animate-in fade-in duration-300"}>
+                        <div className={viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 animate-in fade-in duration-300" : "divide-y divide-gray-100 dark:divide-neutral-800 animate-in fade-in duration-300"}>
                             {filteredItems.map(item => {
                                 const isActive = item.isActive !== false;
                                 const displayImage = (item.images && item.images[0]) || item.imageUrl;
@@ -280,34 +280,34 @@ export default function POSMenuClient({ initialItems = [] }: POSMenuClientProps)
                                     return (
                                         <div key={item.id} className={`
                                         p-4 flex flex-col md:flex-row md:items-center gap-4 transition-colors group
-                                        ${!isActive ? 'opacity-60 bg-gray-50/50' : 'hover:bg-gray-50'}
+                                        ${!isActive ? 'opacity-60 bg-gray-50/50 dark:bg-neutral-800/20' : 'hover:bg-gray-50 dark:hover:bg-neutral-800'}
                                     `}>
                                             <div className="flex items-start gap-4 flex-1 w-full">
-                                                <div className="w-14 h-14 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 border border-gray-200">
+                                                <div className="w-14 h-14 bg-gray-100 dark:bg-neutral-800 rounded-lg overflow-hidden flex-shrink-0 border border-gray-200 dark:border-neutral-700">
                                                     {displayImage ? (
                                                         <img src={displayImage} alt={item.name} className={`w-full h-full object-cover ${!isActive ? 'grayscale' : ''}`} />
                                                     ) : (
-                                                        <div className={`w-full h-full flex items-center justify-center bg-gray-100 text-gray-400 font-bold text-lg ${!isActive ? 'grayscale' : ''}`}>
+                                                        <div className={`w-full h-full flex items-center justify-center bg-gray-100 dark:bg-neutral-800 text-gray-400 dark:text-neutral-600 font-bold text-lg ${!isActive ? 'grayscale' : ''}`}>
                                                             {item.name.slice(0, 2).toUpperCase()}
                                                         </div>
                                                     )}
                                                 </div>
                                                 <div className="flex-1 min-w-0 py-1">
                                                     <div className="flex items-start justify-between gap-2">
-                                                        <h3 className="font-bold text-gray-900">{item.name}</h3>
-                                                        {!isActive && <span className="text-[10px] font-bold bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded whitespace-nowrap">HIDDEN</span>}
+                                                        <h3 className="font-bold text-gray-900 dark:text-neutral-100">{item.name}</h3>
+                                                        {!isActive && <span className="text-[10px] font-bold bg-gray-200 dark:bg-neutral-700 text-gray-500 dark:text-neutral-500 px-1.5 py-0.5 rounded whitespace-nowrap">HIDDEN</span>}
                                                     </div>
                                                     <div className="flex items-center gap-2 mt-1">
                                                         <span className="text-sm text-brand-dark font-black">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(item.price)}</span>
-                                                        <span className="text-xs text-gray-500 font-medium px-2 py-0.5 bg-gray-100 rounded-md">{item.category}</span>
+                                                        <span className="text-xs text-gray-500 dark:text-neutral-500 font-medium px-2 py-0.5 bg-gray-100 dark:bg-neutral-800 rounded-md">{item.category}</span>
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            <div className="flex items-center justify-end gap-1 w-full md:w-auto border-t md:border-t-0 pt-3 md:pt-0 border-gray-100 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <div className="flex items-center justify-end gap-1 w-full md:w-auto border-t md:border-t-0 pt-3 md:pt-0 border-gray-100 dark:border-neutral-800 opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <button
                                                     onClick={() => toggleItemVisibility(item)}
-                                                    className="p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-200 transition-colors"
+                                                    className="p-2 rounded-lg text-gray-400 dark:text-neutral-600 hover:text-gray-700 dark:hover:text-neutral-300 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors"
                                                     title={isActive ? "Hide" : "Show"}
                                                 >
                                                     {isActive ? <Eye size={16} /> : <EyeOff size={16} />}
@@ -331,8 +331,8 @@ export default function POSMenuClient({ initialItems = [] }: POSMenuClientProps)
 
                                 return (
                                     <div key={item.id} className={`
-                                    bg-white p-4 rounded-xl border transition-all duration-300 group relative overflow-hidden 
-                                    ${!isActive ? 'opacity-70 border-gray-200' : 'border-gray-200 hover:border-brand-dark shadow-sm hover:shadow-md'}
+                                    bg-white dark:bg-neutral-900 p-4 rounded-xl border transition-all duration-300 group relative overflow-hidden
+                                    ${!isActive ? 'opacity-70 border-gray-200 dark:border-neutral-800' : 'border-gray-200 dark:border-neutral-800 hover:border-brand-dark shadow-sm hover:shadow-md'}
                                 `}>
                                         {!isActive && (
                                             <div className="absolute top-0 right-0 left-0 bg-gray-800/80 text-white text-xs font-bold py-1 z-10 text-center backdrop-blur-sm">
@@ -340,16 +340,16 @@ export default function POSMenuClient({ initialItems = [] }: POSMenuClientProps)
                                             </div>
                                         )}
 
-                                        <div className="aspect-square bg-gray-100 rounded-lg mb-3 overflow-hidden text-brand-dark border border-gray-100">
+                                        <div className="aspect-square bg-gray-100 dark:bg-neutral-800 rounded-lg mb-3 overflow-hidden text-brand-dark border border-gray-100 dark:border-neutral-800">
                                             {displayImage ? (
                                                 <img src={displayImage} alt={item.name} className={`w-full h-full object-cover ${!isActive ? 'grayscale' : ''}`} />
                                             ) : (
-                                                <div className={`w-full h-full flex items-center justify-center bg-gray-100 text-gray-400 font-bold text-3xl ${!isActive ? 'grayscale' : ''}`}>
+                                                <div className={`w-full h-full flex items-center justify-center bg-gray-100 dark:bg-neutral-800 text-gray-400 dark:text-neutral-600 font-bold text-3xl ${!isActive ? 'grayscale' : ''}`}>
                                                     {item.name.slice(0, 2).toUpperCase()}
                                                 </div>
                                             )}
                                         </div>
-                                        <h3 className="font-bold text-gray-900 leading-tight">{item.name}</h3>
+                                        <h3 className="font-bold text-gray-900 dark:text-neutral-100 leading-tight">{item.name}</h3>
                                         <p className="text-sm text-brand-dark font-black mt-1">
                                             {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(item.price)}
                                         </p>
@@ -362,7 +362,7 @@ export default function POSMenuClient({ initialItems = [] }: POSMenuClientProps)
                                     </div>
                                 );
                             })}
-                            {items.length === 0 && <div className="col-span-full flex flex-col items-center justify-center py-20 text-gray-400">
+                            {items.length === 0 && <div className="col-span-full flex flex-col items-center justify-center py-20 text-gray-400 dark:text-neutral-600">
                                 <Store size={48} className="mb-4 opacity-20" />
                                 <p className="font-bold text-lg">Empty Catalog</p>
                                 <p className="text-sm">Start by adding your first item.</p>

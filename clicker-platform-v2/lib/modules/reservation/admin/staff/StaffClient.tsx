@@ -193,7 +193,7 @@ export default function StaffClient({ initialStaff }: StaffClientProps) {
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
                 <div>
                     <h1 className="text-3xl font-black text-brand-dark mb-2 uppercase">Staff / Resources</h1>
-                    <p className="text-gray-600 font-medium">Manage available staff, rooms, or equipment.</p>
+                    <p className="text-gray-600 dark:text-neutral-400 font-medium">Manage available staff, rooms, or equipment.</p>
                 </div>
                 <button
                     onClick={() => handleOpenModal()}
@@ -204,21 +204,21 @@ export default function StaffClient({ initialStaff }: StaffClientProps) {
             </div>
 
             {/* Global Settings Panel */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-8">
+            <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-100 dark:border-neutral-800 shadow-sm p-5 mb-8">
                 <div className="flex items-center gap-2 mb-4 text-brand-dark">
                     <Settings size={20} className="stroke-[2.5px]" />
                     <h3 className="font-bold text-lg">Configuration</h3>
                 </div>
 
                 {loadingSettings ? (
-                    <div className="flex items-center gap-2 text-gray-400 text-sm">
+                    <div className="flex items-center gap-2 text-gray-400 dark:text-neutral-600 text-sm">
                         <Loader2 size={16} className="animate-spin" /> Loading settings...
                     </div>
                 ) : (
-                    <label className="flex items-center justify-between p-3 rounded-xl border border-gray-200 cursor-pointer hover:border-brand-dark transition-colors bg-gray-50/50 max-w-2xl">
+                    <label className="flex items-center justify-between p-3 rounded-xl border border-gray-200 dark:border-neutral-700 cursor-pointer hover:border-brand-dark transition-colors bg-gray-50/50 dark:bg-neutral-800/50 max-w-2xl">
                         <div>
-                            <span className="block font-bold text-gray-800">Allow Staff Selection</span>
-                            <span className="text-sm text-gray-500">Customers can explicitly choose a specific staff member during booking.</span>
+                            <span className="block font-bold text-gray-800 dark:text-neutral-200">Allow Staff Selection</span>
+                            <span className="text-sm text-gray-500 dark:text-neutral-500">Customers can explicitly choose a specific staff member during booking.</span>
                         </div>
                         <div className={`
                             relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none 
@@ -242,23 +242,23 @@ export default function StaffClient({ initialStaff }: StaffClientProps) {
                         <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
                     </div>
                 ) : staffList.length === 0 ? (
-                    <div className="col-span-full text-center py-12 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
-                        <p className="text-gray-500 font-medium">No resources found.</p>
+                    <div className="col-span-full text-center py-12 bg-gray-50 dark:bg-neutral-800/50 rounded-2xl border-2 border-dashed border-gray-200 dark:border-neutral-700">
+                        <p className="text-gray-500 dark:text-neutral-500 font-medium">No resources found.</p>
                         <button onClick={() => handleOpenModal()} className="text-brand-dark font-bold mt-2 hover:underline">Add your first one</button>
                     </div>
                 ) : (
                     staffList.map(member => (
-                        <div key={member.id} className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all group relative">
+                        <div key={member.id} className="bg-white dark:bg-neutral-900 p-5 rounded-xl border border-gray-100 dark:border-neutral-800 shadow-sm hover:shadow-md transition-all group relative">
                             <div className="flex items-start justify-between mb-4">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center text-gray-400">
+                                    <div className="w-12 h-12 bg-gray-50 dark:bg-neutral-800 rounded-full flex items-center justify-center text-gray-400 dark:text-neutral-600">
                                         <User size={24} />
                                     </div>
                                     <div>
                                         <h3 className="font-bold text-lg text-brand-dark">{member.name}</h3>
                                         <div className="flex flex-wrap gap-1 mt-1">
                                             {(member.label || 'Staff').split(',').map((tag, idx) => (
-                                                <span key={idx} className="inline-block px-2 py-0.5 bg-gray-100 text-gray-500 text-xs font-bold uppercase rounded-md">
+                                                <span key={idx} className="inline-block px-2 py-0.5 bg-gray-100 dark:bg-neutral-800 text-gray-500 dark:text-neutral-500 text-xs font-bold uppercase rounded-md">
                                                     {tag.trim()}
                                                 </span>
                                             ))}
@@ -268,14 +268,14 @@ export default function StaffClient({ initialStaff }: StaffClientProps) {
                                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                     <button
                                         onClick={() => handleOpenModal(member)}
-                                        className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                        className="p-2 text-gray-400 dark:text-neutral-600 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30 rounded-lg transition-colors"
                                         title="Edit"
                                     >
                                         <Edit2 size={16} />
                                     </button>
                                     <button
                                         onClick={() => confirmDelete(member.id)}
-                                        className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                        className="p-2 text-gray-400 dark:text-neutral-600 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors"
                                         title="Delete"
                                     >
                                         <Trash2 size={16} />
@@ -283,12 +283,12 @@ export default function StaffClient({ initialStaff }: StaffClientProps) {
                                 </div>
                             </div>
 
-                            <div className="flex items-center justify-between border-t border-gray-50 pt-4 mt-2">
+                            <div className="flex items-center justify-between border-t border-gray-50 dark:border-neutral-800 pt-4 mt-2">
                                 <button
                                     onClick={() => toggleStatus(member)}
                                     className={`flex items-center gap-2 text-sm font-bold px-3 py-1.5 rounded-lg transition-colors w-full justify-center ${member.isActive
-                                        ? 'bg-green-50 text-green-700 hover:bg-green-100'
-                                        : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                                        ? 'bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-950/50'
+                                        : 'bg-gray-100 dark:bg-neutral-800 text-gray-500 dark:text-neutral-500 hover:bg-gray-200 dark:hover:bg-neutral-700'
                                         }`}
                                 >
                                     {member.isActive ? <CheckCircle size={16} /> : <XCircle size={16} />}
@@ -303,32 +303,32 @@ export default function StaffClient({ initialStaff }: StaffClientProps) {
             {/* Create/Edit Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-                    <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+                    <div className="bg-white dark:bg-neutral-900 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                        <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-neutral-800">
                             <h2 className="text-xl font-bold text-brand-dark">
                                 {editingStaff ? 'Edit Resource' : 'Add New Resource'}
                             </h2>
-                            <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                            <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-full transition-colors">
                                 <X size={20} />
                             </button>
                         </div>
 
                         <form onSubmit={handleSubmit} className="p-6 space-y-4">
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Name</label>
+                                <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">Name</label>
                                 <input
                                     required
                                     type="text"
                                     value={formData.name}
                                     onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-dark"
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
                                     placeholder="e.g. Sarah Jones"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Label (Tags)</label>
-                                <div className="w-full px-2 py-2 rounded-xl border border-gray-200 focus-within:border-brand-dark bg-white flex flex-wrap gap-2 items-center">
+                                <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">Label (Tags)</label>
+                                <div className="w-full px-2 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus-within:border-brand-dark bg-white dark:bg-neutral-800 flex flex-wrap gap-2 items-center">
                                     {tags.map(tag => (
                                         <span key={tag} className="px-2 py-1 bg-brand-dark/10 text-brand-dark text-xs font-bold rounded-lg flex items-center gap-1">
                                             {tag}
@@ -350,7 +350,7 @@ export default function StaffClient({ initialStaff }: StaffClientProps) {
                                         placeholder={tags.length === 0 ? "Type and press comma..." : ""}
                                     />
                                 </div>
-                                <p className="text-xs text-gray-400 mt-1">Press comma (,) or Enter to add a tag.</p>
+                                <p className="text-xs text-gray-400 dark:text-neutral-600 mt-1">Press comma (,) or Enter to add a tag.</p>
                             </div>
 
                             <div className="flex items-center gap-2 pt-2">
@@ -359,9 +359,9 @@ export default function StaffClient({ initialStaff }: StaffClientProps) {
                                     id="isActive"
                                     checked={formData.isActive}
                                     onChange={e => setFormData({ ...formData, isActive: e.target.checked })}
-                                    className="w-5 h-5 rounded border-gray-300 text-brand-dark focus:ring-brand-dark"
+                                    className="w-5 h-5 rounded border-gray-300 dark:border-neutral-700 text-brand-dark focus:ring-brand-dark"
                                 />
-                                <label htmlFor="isActive" className="text-sm font-medium text-gray-700">Available for booking immediately</label>
+                                <label htmlFor="isActive" className="text-sm font-medium text-gray-700 dark:text-neutral-300">Available for booking immediately</label>
                             </div>
 
                             <div className="pt-4 flex gap-3">
@@ -369,7 +369,7 @@ export default function StaffClient({ initialStaff }: StaffClientProps) {
                                     type="button"
                                     disabled={isSubmitting}
                                     onClick={() => setIsModalOpen(false)}
-                                    className="flex-1 py-3 px-4 rounded-xl font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
+                                    className="flex-1 py-3 px-4 rounded-xl font-bold text-gray-600 dark:text-neutral-400 bg-gray-100 dark:bg-neutral-800 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors"
                                 >
                                     Cancel
                                 </button>

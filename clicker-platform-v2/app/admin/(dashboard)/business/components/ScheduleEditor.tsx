@@ -72,7 +72,10 @@ export const ScheduleEditor: React.FC<ScheduleEditorProps> = ({ schedule, onChan
                         key={day.dayOfWeek}
                         className={`
                             flex items-center justify-between p-4 rounded-xl border transition-all
-                            ${day.isOpen ? 'bg-white border-gray-200' : 'bg-gray-50 border-gray-100 opacity-75'}
+                            ${day.isOpen
+                                ? 'bg-white dark:bg-neutral-900 border-gray-200 dark:border-neutral-700'
+                                : 'bg-gray-50 dark:bg-neutral-800/50 border-gray-100 dark:border-neutral-800/50 opacity-75'
+                            }
                         `}
                     >
                         <div className="flex items-center gap-4">
@@ -82,7 +85,7 @@ export const ScheduleEditor: React.FC<ScheduleEditorProps> = ({ schedule, onChan
                                 onClick={() => handleDayToggle(day.dayOfWeek)}
                                 className={`
                                     relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-brand-green focus:ring-offset-2
-                                    ${day.isOpen ? 'bg-brand-green' : 'bg-gray-300'}
+                                    ${day.isOpen ? 'bg-brand-green' : 'bg-gray-300 dark:bg-neutral-600'}
                                 `}
                             >
                                 <span
@@ -92,7 +95,7 @@ export const ScheduleEditor: React.FC<ScheduleEditorProps> = ({ schedule, onChan
                                     `}
                                 />
                             </button>
-                            <span className={`font-bold w-24 ${day.isOpen ? 'text-gray-900' : 'text-gray-400'}`}>
+                            <span className={`font-bold w-24 ${day.isOpen ? 'text-gray-900 dark:text-neutral-100' : 'text-gray-400 dark:text-neutral-600'}`}>
                                 {DAYS[day.dayOfWeek]}
                             </span>
                         </div>
@@ -103,18 +106,18 @@ export const ScheduleEditor: React.FC<ScheduleEditorProps> = ({ schedule, onChan
                                     type="time"
                                     value={day.hours[0]?.start || "09:00"}
                                     onChange={(e) => handleTimeChange(day.dayOfWeek, 'start', e.target.value)}
-                                    className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-mono focus:ring-2 focus:ring-brand-green outline-none"
+                                    className="px-3 py-2 bg-gray-50 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 dark:text-neutral-200 rounded-lg text-sm font-mono focus:ring-2 focus:ring-brand-green outline-none"
                                 />
-                                <span className="text-gray-400 font-bold">-</span>
+                                <span className="text-gray-400 dark:text-neutral-600 font-bold">-</span>
                                 <input
                                     type="time"
                                     value={day.hours[0]?.end || "17:00"}
                                     onChange={(e) => handleTimeChange(day.dayOfWeek, 'end', e.target.value)}
-                                    className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-mono focus:ring-2 focus:ring-brand-green outline-none"
+                                    className="px-3 py-2 bg-gray-50 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 dark:text-neutral-200 rounded-lg text-sm font-mono focus:ring-2 focus:ring-brand-green outline-none"
                                 />
                             </div>
                         ) : (
-                            <span className="text-sm font-medium text-gray-400 italic px-4">Closed</span>
+                            <span className="text-sm font-medium text-gray-400 dark:text-neutral-600 italic px-4">Closed</span>
                         )}
                     </div>
                 ))}

@@ -85,20 +85,20 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
     // Specific Error for Default Site
     if ((siteId === 'default' || siteId === 'pending') && !loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
-                <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-xl border border-gray-100 text-center">
+            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-neutral-950 p-6">
+                <div className="max-w-md w-full bg-white dark:bg-neutral-900 p-8 rounded-2xl shadow-xl border border-gray-100 dark:border-neutral-800 text-center">
                     <ShieldAlert className="w-16 h-16 text-brand-orange mx-auto mb-6" />
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Missing Tenant Context</h2>
-                    <p className="text-gray-500 mb-8">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-neutral-100 mb-2">Missing Tenant Context</h2>
+                    <p className="text-gray-500 dark:text-neutral-400 mb-8">
                         The application could not determine which site you are trying to access.
                         This usually happens if you access <code>/admin</code> directly.
                     </p>
 
                     <div className="flex flex-col gap-3">
-                        <a href="/demo/admin" className="px-6 py-3 bg-brand-dark text-white rounded-xl font-bold hover:bg-black transition-colors">
+                        <a href="/demo/admin" className="px-6 py-3 bg-brand-dark dark:bg-neutral-100 text-white dark:text-neutral-900 rounded-xl font-bold hover:bg-black dark:hover:bg-white transition-colors">
                             Go to Demo Store
                         </a>
-                        <p className="text-xs text-gray-400 mt-2">
+                        <p className="text-xs text-gray-400 dark:text-neutral-500 mt-2">
                             Current Site ID: {siteId}<br />
                             User: {user?.email}
                         </p>
@@ -110,10 +110,10 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-100">
+            <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-neutral-950">
                 <div className="flex flex-col items-center gap-4">
-                    <Loader2 size={48} className="text-brand-dark animate-spin" />
-                    <p className="text-brand-dark font-bold animate-pulse">Verifying Access...</p>
+                    <Loader2 size={48} className="text-brand-dark dark:text-neutral-200 animate-spin" />
+                    <p className="text-brand-dark dark:text-neutral-200 font-bold animate-pulse">Verifying Access...</p>
                 </div>
             </div>
         );
@@ -121,17 +121,17 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
 
     if (unauthorized) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-                <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md text-center border-2 border-red-100">
+            <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-neutral-950 p-4">
+                <div className="bg-white dark:bg-neutral-900 p-8 rounded-2xl shadow-xl max-w-md text-center border-2 border-red-100 dark:border-red-900/30">
                     <div className="flex justify-center mb-6">
-                        <div className="p-4 bg-red-50 rounded-full">
-                            <ShieldAlert size={48} className="text-red-500" />
+                        <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-full">
+                            <ShieldAlert size={48} className="text-red-500 dark:text-red-400" />
                         </div>
                     </div>
-                    <h1 className="text-2xl font-black text-gray-800 mb-2">Access Denied</h1>
-                    <p className="text-gray-500 mb-6 font-medium">
+                    <h1 className="text-2xl font-black text-gray-800 dark:text-neutral-100 mb-2">Access Denied</h1>
+                    <p className="text-gray-500 dark:text-neutral-400 mb-6 font-medium">
                         You do not have permission to access the admin dashboard for
-                        <span className="block mt-1 font-bold text-brand-dark uppercase tracking-wide">{siteId}</span>
+                        <span className="block mt-1 font-bold text-brand-dark dark:text-neutral-200 uppercase tracking-wide">{siteId}</span>
                     </p>
                     <button
                         onClick={() => {
@@ -142,11 +142,11 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
                                 window.location.href = `${gatewayUrl}/logout`;
                             });
                         }}
-                        className="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-colors"
+                        className="w-full py-3 bg-gray-100 dark:bg-neutral-800 hover:bg-gray-200 dark:hover:bg-neutral-700 text-gray-700 dark:text-neutral-200 font-bold rounded-xl transition-colors"
                     >
                         Sign Out
                     </button>
-                    <div className="mt-4 text-xs text-gray-400">
+                    <div className="mt-4 text-xs text-gray-400 dark:text-neutral-500">
                         UID: {user?.uid}
                     </div>
                 </div>

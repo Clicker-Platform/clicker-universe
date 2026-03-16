@@ -15,8 +15,8 @@ export function POSOrderRow({ order, onClick, expanded }: POSOrderRowProps) {
         <div
             onClick={() => onClick?.(order)}
             className={`
-                group flex items-center justify-between p-4 bg-white border-b border-gray-100 last:border-b-0 
-                hover:bg-gray-50 transition-colors cursor-pointer animate-in fade-in slide-in-from-top-1 duration-300
+                group flex items-center justify-between p-4 bg-white dark:bg-neutral-900 border-b border-gray-100 dark:border-neutral-800 last:border-b-0
+                hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors cursor-pointer animate-in fade-in slide-in-from-top-1 duration-300
             `}
         >
             <div className="flex items-center gap-4 min-w-0">
@@ -35,11 +35,11 @@ export function POSOrderRow({ order, onClick, expanded }: POSOrderRowProps) {
 
                 <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                        <span className="font-bold text-gray-900">#{order.id.slice(-4).toUpperCase()}</span>
-                        <span className="text-gray-400 text-xs">•</span>
-                        <span className="text-sm text-gray-600 truncate">{order.items.map(i => `${i.quantity}x ${i.name}`).join(', ')}</span>
+                        <span className="font-bold text-gray-900 dark:text-neutral-100">#{order.id.slice(-4).toUpperCase()}</span>
+                        <span className="text-gray-400 dark:text-neutral-600 text-xs">•</span>
+                        <span className="text-sm text-gray-600 dark:text-neutral-400 truncate">{order.items.map(i => `${i.quantity}x ${i.name}`).join(', ')}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-gray-400 mt-0.5">
+                    <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-neutral-600 mt-0.5">
                         <Clock size={12} />
                         <span>{timeFormatted}</span>
                         {order.customerName && (
@@ -54,11 +54,11 @@ export function POSOrderRow({ order, onClick, expanded }: POSOrderRowProps) {
 
             <div className="flex items-center gap-6 pl-4">
 
-                <span className="font-bold text-gray-900">{totalFormatted}</span>
+                <span className="font-bold text-gray-900 dark:text-neutral-100">{totalFormatted}</span>
                 {expanded ? (
-                    <ChevronDown size={16} className="text-gray-500 transition-transform" />
+                    <ChevronDown size={16} className="text-gray-500 dark:text-neutral-500 transition-transform" />
                 ) : (
-                    <ChevronRight size={16} className="text-gray-300 group-hover:text-gray-500 transition-colors" />
+                    <ChevronRight size={16} className="text-gray-300 dark:text-neutral-700 group-hover:text-gray-500 dark:group-hover:text-neutral-500 transition-colors" />
                 )}
             </div>
         </div>

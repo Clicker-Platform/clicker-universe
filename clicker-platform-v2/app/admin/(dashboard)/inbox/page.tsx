@@ -81,10 +81,10 @@ export default function InboxPage() {
         <div>
             {/* Header */}
             <div className="mb-8">
-                <h1 className="text-3xl font-black text-brand-dark mb-2 uppercase tracking-tight flex items-center gap-3">
+                <h1 className="text-3xl font-black text-brand-dark dark:text-neutral-100 mb-2 uppercase tracking-tight flex items-center gap-3">
                     <Mail size={32} /> Inbox
                 </h1>
-                <p className="text-gray-600 font-medium">Read and manage form submissions from your customers.</p>
+                <p className="text-gray-600 dark:text-neutral-400 font-medium">Read and manage form submissions from your customers.</p>
             </div>
 
             <InboxClient initialSubmissions={submissions} formFieldMap={formFieldMap} siteId={siteId} />

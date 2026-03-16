@@ -22,8 +22,8 @@ interface BookingListProps {
 
 export function BookingList({ bookings, selectedId, onSelect, activeTab, onTabChange, counts, hasMore, onLoadMore, loadingMore }: BookingListProps) {
     return (
-        <div className="flex flex-col h-full bg-gray-50/30 min-h-0">
-            <div className="p-4 border-b border-gray-100 flex-shrink-0 bg-white">
+        <div className="flex flex-col h-full bg-gray-50/30 dark:bg-neutral-800/20 min-h-0">
+            <div className="p-4 border-b border-gray-100 dark:border-neutral-800 flex-shrink-0 bg-white dark:bg-neutral-900">
                 <h2 className="text-lg font-bold text-brand-dark mb-4">Booking List</h2>
 
                 {/* Filter Tabs */}
@@ -59,7 +59,7 @@ export function BookingList({ bookings, selectedId, onSelect, activeTab, onTabCh
 
             <div className="overflow-y-auto flex-1 min-h-0 p-2 space-y-1">
                 {bookings.length === 0 ? (
-                    <p className="p-8 text-center text-gray-500 text-sm">No bookings in this filter.</p>
+                    <p className="p-8 text-center text-gray-500 dark:text-neutral-500 text-sm">No bookings in this filter.</p>
                 ) : (
                     <>
                         {bookings.map((booking, index) => {
@@ -80,17 +80,17 @@ export function BookingList({ bookings, selectedId, onSelect, activeTab, onTabCh
                             return (
                                 <React.Fragment key={booking.id}>
                                     {showDivider && (
-                                        <div className="sticky top-0 z-10 bg-gray-50/95 backdrop-blur-sm py-2 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-100/50 shadow-sm mx-2 rounded-lg mt-2 mb-1">
+                                        <div className="sticky top-0 z-10 bg-gray-50/95 dark:bg-neutral-800/95 backdrop-blur-sm py-2 px-4 text-xs font-bold text-gray-500 dark:text-neutral-500 uppercase tracking-wider border-b border-gray-100/50 dark:border-neutral-700/50 shadow-sm mx-2 rounded-lg mt-2 mb-1">
                                             {dateString}
                                         </div>
                                     )}
                                     <div
                                         onClick={() => onSelect(booking)}
                                         className={`p-4 rounded-xl cursor-pointer transition-all border mx-2 ${selectedId === booking.id
-                                            ? 'bg-white border-brand-dark shadow-sm ring-1 ring-brand-dark/5'
+                                            ? 'bg-white dark:bg-neutral-800 border-brand-dark shadow-sm ring-1 ring-brand-dark/5'
                                             : !booking.isRead
-                                                ? 'bg-orange-50 border-orange-100 shadow-sm'
-                                                : 'bg-transparent border-transparent hover:bg-white hover:border-gray-200 hover:shadow-sm'
+                                                ? 'bg-orange-50 dark:bg-orange-950/20 border-orange-100 dark:border-orange-900/30 shadow-sm'
+                                                : 'bg-transparent border-transparent hover:bg-white dark:hover:bg-neutral-800 hover:border-gray-200 dark:hover:border-neutral-700 hover:shadow-sm'
                                             }`}
                                     >
                                         <div className="flex justify-between items-start mb-1">
@@ -102,13 +102,13 @@ export function BookingList({ bookings, selectedId, onSelect, activeTab, onTabCh
                                             </p>
                                             <StatusBadge status={booking.status} />
                                         </div>
-                                        <p className="text-xs text-gray-600 mb-1 font-medium">{booking.serviceName}</p>
-                                        <div className="mt-2 flex items-center gap-3 text-xs font-bold text-gray-700">
-                                            <span className="flex items-center gap-1.5 bg-gray-50 px-2 py-1 rounded-md border border-gray-100">
+                                        <p className="text-xs text-gray-600 dark:text-neutral-400 mb-1 font-medium">{booking.serviceName}</p>
+                                        <div className="mt-2 flex items-center gap-3 text-xs font-bold text-gray-700 dark:text-neutral-300">
+                                            <span className="flex items-center gap-1.5 bg-gray-50 dark:bg-neutral-800 px-2 py-1 rounded-md border border-gray-100 dark:border-neutral-700">
                                                 <Calendar size={14} className="text-brand-dark" />
                                                 {getDate(booking.startAt).toLocaleDateString()}
                                             </span>
-                                            <span className="flex items-center gap-1.5 bg-gray-50 px-2 py-1 rounded-md border border-gray-100">
+                                            <span className="flex items-center gap-1.5 bg-gray-50 dark:bg-neutral-800 px-2 py-1 rounded-md border border-gray-100 dark:border-neutral-700">
                                                 <Clock size={14} className="text-brand-dark" />
                                                 {getDate(booking.startAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                             </span>
@@ -122,7 +122,7 @@ export function BookingList({ bookings, selectedId, onSelect, activeTab, onTabCh
                             <button
                                 onClick={onLoadMore}
                                 disabled={loadingMore}
-                                className="w-full py-3 text-sm font-bold text-gray-500 hover:text-brand-dark hover:bg-gray-100 rounded-xl mt-2 transition-colors disabled:opacity-50"
+                                className="w-full py-3 text-sm font-bold text-gray-500 dark:text-neutral-500 hover:text-brand-dark hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-xl mt-2 transition-colors disabled:opacity-50"
                             >
                                 {loadingMore ? 'Loading...' : 'Load More'}
                             </button>
@@ -140,11 +140,11 @@ function FilterTab({ label, count, isActive, onClick, colorClass = "bg-gray-100 
             onClick={onClick}
             className={`text-sm font-bold whitespace-nowrap transition-colors relative pb-1 flex items-center gap-2 ${isActive
                 ? 'text-brand-dark border-b-2 border-brand-dark'
-                : 'text-gray-400 hover:text-gray-600 border-b-2 border-transparent'
+                : 'text-gray-400 dark:text-neutral-600 hover:text-gray-600 dark:hover:text-neutral-400 border-b-2 border-transparent'
                 }`}
         >
             {label}
-            <span className={`px-2 py-0.5 rounded-full text-xs ${isActive && colorClass !== "bg-gray-100 text-gray-500" ? colorClass : 'bg-gray-100 text-gray-500'}`}>
+            <span className={`px-2 py-0.5 rounded-full text-xs ${isActive && colorClass !== "bg-gray-100 text-gray-500" ? colorClass : 'bg-gray-100 dark:bg-neutral-800 text-gray-500 dark:text-neutral-500'}`}>
                 {count}
             </span>
         </button>

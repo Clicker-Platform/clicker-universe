@@ -181,12 +181,12 @@ export default function TransactionsClient({ initialOrders = [] }: { initialOrde
                         <History size={32} />
                         Transactions History
                     </h1>
-                    <p className="text-gray-600 font-medium">Consolidated view of past bills and cancellations</p>
+                    <p className="text-gray-600 dark:text-neutral-400 font-medium">Consolidated view of past bills and cancellations</p>
                 </div>
             </div>
 
-            <div className="bg-white rounded-3xl border-[3px] border-brand-dark shadow-sm overflow-hidden animate-in fade-in duration-300">
-                <div className="divide-y divide-gray-100">
+            <div className="bg-white dark:bg-neutral-900 rounded-3xl border-[3px] border-brand-dark shadow-sm overflow-hidden animate-in fade-in duration-300">
+                <div className="divide-y divide-gray-100 dark:divide-neutral-800">
                     {/* Skeleton Loading State */}
                     {isLoading && orders.length === 0 && (
                         Array.from({ length: 5 }).map((_, i) => (
@@ -204,7 +204,7 @@ export default function TransactionsClient({ initialOrders = [] }: { initialOrde
                 </div>
 
                 {historyGroups.length === 0 && !isLoading && (
-                    <div className="py-20 flex flex-col items-center justify-center text-gray-400">
+                    <div className="py-20 flex flex-col items-center justify-center text-gray-400 dark:text-neutral-600">
                         <Clock size={48} className="mb-4 opacity-20" />
                         <p className="font-bold text-lg">No history yet</p>
                         <p className="text-sm">Completed transactions will appear here.</p>
@@ -213,11 +213,11 @@ export default function TransactionsClient({ initialOrders = [] }: { initialOrde
 
                 {/* Load More Trigger */}
                 {historyGroups.length > 0 && hasMore && (
-                    <div className="p-4 flex justify-center bg-gray-50 border-t border-gray-100">
+                    <div className="p-4 flex justify-center bg-gray-50 dark:bg-neutral-800/50 border-t border-gray-100 dark:border-neutral-800">
                         <button
                             onClick={() => loadOrders(false)}
                             disabled={isLoading}
-                            className="flex items-center gap-2 px-6 py-2 bg-white border border-gray-200 rounded-full text-sm font-bold text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-all disabled:opacity-50"
+                            className="flex items-center gap-2 px-6 py-2 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-full text-sm font-bold text-gray-600 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800 hover:border-gray-300 dark:hover:border-neutral-700 transition-all disabled:opacity-50"
                         >
                             {isLoading ? <Loader2 size={16} className="animate-spin" /> : <ChevronDown size={16} />}
                             {isLoading ? 'Loading...' : 'Load More Transactions'}

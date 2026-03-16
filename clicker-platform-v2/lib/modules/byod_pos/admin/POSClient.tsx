@@ -217,19 +217,19 @@ export default function POSClient({ initialOrders = [] }: { initialOrders?: POSO
                         <ShoppingBag size={32} />
                         {activeTab === 'completed' ? 'Order History' : (viewMode === 'kitchen' ? 'Kitchen Display' : 'Cashier Station')}
                     </h1>
-                    <p className="text-gray-600 font-medium">
+                    <p className="text-gray-600 dark:text-neutral-400 font-medium">
                         {activeTab === 'completed' ? 'Past transactions & cancelled orders' : (viewMode === 'kitchen' ? 'Order fulfillment & production' : 'Bill management & payments')}
                     </p>
                 </div>
 
                 <div className="flex items-center gap-4 self-start md:self-auto">
                     {/* Tabs */}
-                    <div className="flex p-1 bg-gray-100 rounded-lg border border-gray-200">
+                    <div className="flex p-1 bg-gray-100 dark:bg-neutral-800 rounded-lg border border-gray-200 dark:border-neutral-800">
                         <button
                             onClick={() => setActiveTab('active')}
                             className={`
                             px-4 py-2 rounded-md font-bold text-sm transition-all duration-200 flex items-center gap-2
-                            ${activeTab === 'active' ? 'bg-white text-brand-dark shadow-sm' : 'text-gray-500 hover:text-gray-700'}
+                            ${activeTab === 'active' ? 'bg-white dark:bg-neutral-900 text-brand-dark shadow-sm' : 'text-gray-500 dark:text-neutral-500 hover:text-gray-700 dark:hover:text-neutral-300'}
                         `}
                         >
                             Active <span className="bg-brand-dark text-white px-1.5 py-0.5 rounded text-[10px]">{kdsOrders.length}</span>
@@ -238,7 +238,7 @@ export default function POSClient({ initialOrders = [] }: { initialOrders?: POSO
                             onClick={() => setActiveTab('completed')}
                             className={`
                             px-4 py-2 rounded-md font-bold text-sm transition-all duration-200 flex items-center gap-2
-                            ${activeTab === 'completed' ? 'bg-white text-brand-dark shadow-sm' : 'text-gray-500 hover:text-gray-700'}
+                            ${activeTab === 'completed' ? 'bg-white dark:bg-neutral-900 text-brand-dark shadow-sm' : 'text-gray-500 dark:text-neutral-500 hover:text-gray-700 dark:hover:text-neutral-300'}
                         `}
                         >
                             History
@@ -247,12 +247,12 @@ export default function POSClient({ initialOrders = [] }: { initialOrders?: POSO
 
                     {/* View Toggle (Only show if Active Tab) */}
                     {activeTab === 'active' && (
-                        <div className="flex p-1 bg-gray-100 rounded-xl">
+                        <div className="flex p-1 bg-gray-100 dark:bg-neutral-800 rounded-xl">
                             <button
                                 onClick={() => setViewMode('kitchen')}
                                 className={`
                                     px-4 py-2 rounded-lg font-bold text-xs transition-all duration-200 flex items-center gap-2
-                                    ${viewMode === 'kitchen' ? 'bg-white text-brand-dark shadow-sm' : 'text-gray-500 hover:text-gray-700'}
+                                    ${viewMode === 'kitchen' ? 'bg-white dark:bg-neutral-900 text-brand-dark shadow-sm' : 'text-gray-500 dark:text-neutral-500 hover:text-gray-700 dark:hover:text-neutral-300'}
                                 `}
                             >
                                 <Grid size={16} /> KDS
@@ -261,7 +261,7 @@ export default function POSClient({ initialOrders = [] }: { initialOrders?: POSO
                                 onClick={() => setViewMode('cashier')}
                                 className={`
                                     px-4 py-2 rounded-lg font-bold text-xs transition-all duration-200 flex items-center gap-2
-                                    ${viewMode === 'cashier' ? 'bg-white text-brand-dark shadow-sm' : 'text-gray-500 hover:text-gray-700'}
+                                    ${viewMode === 'cashier' ? 'bg-white dark:bg-neutral-900 text-brand-dark shadow-sm' : 'text-gray-500 dark:text-neutral-500 hover:text-gray-700 dark:hover:text-neutral-300'}
                                 `}
                             >
                                 <List size={16} /> Cashier
@@ -287,7 +287,7 @@ export default function POSClient({ initialOrders = [] }: { initialOrders?: POSO
                     ))}
 
                     {kdsOrders.length === 0 && (
-                        <div className="col-span-full py-20 flex flex-col items-center justify-center text-gray-400 bg-white rounded-xl border border-dashed border-gray-200">
+                        <div className="col-span-full py-20 flex flex-col items-center justify-center text-gray-400 dark:text-neutral-600 bg-white dark:bg-neutral-900 rounded-xl border border-dashed border-gray-200 dark:border-neutral-800">
                             <ShoppingBag size={48} className="mb-4 opacity-20" />
                             <p className="font-bold text-lg">All caught up!</p>
                             <p className="text-sm">No active orders to prepare.</p>
@@ -307,7 +307,7 @@ export default function POSClient({ initialOrders = [] }: { initialOrders?: POSO
                     ))}
 
                     {billGroups.length === 0 && (
-                        <div className="col-span-full py-20 flex flex-col items-center justify-center text-gray-400 bg-white rounded-xl border border-dashed border-gray-200">
+                        <div className="col-span-full py-20 flex flex-col items-center justify-center text-gray-400 dark:text-neutral-600 bg-white dark:bg-neutral-900 rounded-xl border border-dashed border-gray-200 dark:border-neutral-800">
                             <ShoppingBag size={48} className="mb-4 opacity-20" />
                             <p className="font-bold text-lg">No active bills</p>
                             <p className="text-sm">New orders will appear here automatically.</p>
@@ -320,8 +320,8 @@ export default function POSClient({ initialOrders = [] }: { initialOrders?: POSO
 
             {/* Completed Orders List */}
             {activeTab === 'completed' && (
-                <div className="bg-white rounded-3xl border-[3px] border-brand-dark shadow-sm overflow-hidden animate-in fade-in duration-300">
-                    <div className="divide-y divide-gray-100">
+                <div className="bg-white dark:bg-neutral-900 rounded-3xl border-[3px] border-brand-dark shadow-sm overflow-hidden animate-in fade-in duration-300">
+                    <div className="divide-y divide-gray-100 dark:divide-neutral-800">
                         {completedOrders.map(order => (
                             <POSOrderRow
                                 key={order.id}
@@ -332,7 +332,7 @@ export default function POSClient({ initialOrders = [] }: { initialOrders?: POSO
                     </div>
 
                     {completedOrders.length === 0 && (
-                        <div className="py-20 flex flex-col items-center justify-center text-gray-400">
+                        <div className="py-20 flex flex-col items-center justify-center text-gray-400 dark:text-neutral-600">
                             <Clock size={48} className="mb-4 opacity-20" />
                             <p className="font-bold text-lg">No history yet</p>
                             <p className="text-sm">Completed orders will appear here.</p>

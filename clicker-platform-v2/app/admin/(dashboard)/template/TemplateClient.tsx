@@ -215,7 +215,7 @@ export default function TemplateClient() {
             </h1>
 
             {message && (
-                <div className={`p-4 rounded-xl mb-6 font-bold ${message.includes('Error') ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                <div className={`p-4 rounded-xl mb-6 font-bold ${message.includes('Error') ? 'bg-red-100 dark:bg-red-950/30 text-red-700 dark:text-red-400' : 'bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-400'}`}>
                     {message}
                 </div>
             )}
@@ -223,14 +223,14 @@ export default function TemplateClient() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
                 <div className="flex flex-col gap-6">
                     {/* Editor Form */}
-                    <form onSubmit={handleSave} className={`space-y-6 bg-white p-8 rounded-2xl border border-gray-200 shadow-sm h-fit transition-opacity duration-200 ${saving ? 'opacity-50 pointer-events-none' : ''}`}>
+                    <form onSubmit={handleSave} className={`space-y-6 bg-white dark:bg-neutral-900 p-8 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm h-fit transition-opacity duration-200 ${saving ? 'opacity-50 pointer-events-none' : ''}`}>
 
                                             <div className="space-y-8 animate-fade-in">
                                 <div>
                                     <div className="flex items-center justify-between mb-4">
                                         <div>
                                             <label className="block text-brand-dark font-black text-xl">Template Gallery</label>
-                                            <p className="text-sm text-gray-500 mt-1">
+                                            <p className="text-sm text-gray-500 dark:text-neutral-500 mt-1">
                                                 Choose a comprehensive design package.
                                             </p>
                                         </div>
@@ -238,7 +238,7 @@ export default function TemplateClient() {
                                             type="button"
                                             onClick={handleSeed}
                                             disabled={seeding}
-                                            className="text-xs flex items-center gap-1 text-gray-400 hover:text-brand-dark transition-colors"
+                                            className="text-xs flex items-center gap-1 text-gray-400 dark:text-neutral-600 hover:text-brand-dark transition-colors"
                                         >
                                             <DownloadCloud size={14} />
                                             {seeding ? 'Seeding...' : 'Seed Templates'}
@@ -270,8 +270,8 @@ export default function TemplateClient() {
                                                     group relative flex flex-col p-5 rounded-2xl transition-all duration-300 text-left overflow-hidden
                                                     border
                                                     ${isSelected
-                                                            ? (template.id === 'sojourner' ? 'border-brand-green bg-white shadow-md ring-1 ring-brand-green' : 'border-brand-dark bg-white shadow-md')
-                                                            : 'border-gray-100 hover:border-gray-300 hover:shadow-sm bg-white'
+                                                            ? (template.id === 'sojourner' ? 'border-brand-green bg-white dark:bg-neutral-900 shadow-md ring-1 ring-brand-green' : 'border-brand-dark bg-white dark:bg-neutral-900 shadow-md')
+                                                            : 'border-gray-100 dark:border-neutral-800/50 hover:border-gray-300 dark:hover:border-neutral-700 hover:shadow-sm bg-white dark:bg-neutral-900'
                                                         }
                                                 `}
                                                 >
@@ -302,7 +302,7 @@ export default function TemplateClient() {
                                                     <div className="relative z-10">
                                                         <h3 className="font-bold text-lg text-brand-dark">{template.name}</h3>
                                                         <div className="flex flex-wrap gap-2 mt-2">
-                                                            <span className="inline-flex items-center px-2 py-1 rounded-md bg-gray-100 text-xs font-medium text-gray-600">
+                                                            <span className="inline-flex items-center px-2 py-1 rounded-md bg-gray-100 dark:bg-neutral-800 text-xs font-medium text-gray-600 dark:text-neutral-400">
                                                                 {getLayoutDescription(template.id, template.config)}
                                                             </span>
                                                             {template.tier === 'premium' && (
@@ -311,7 +311,7 @@ export default function TemplateClient() {
                                                                 </span>
                                                             )}
                                                         </div>
-                                                        <p className="text-xs text-gray-400 mt-3 leading-relaxed">
+                                                        <p className="text-xs text-gray-400 dark:text-neutral-600 mt-3 leading-relaxed">
                                                             {template.description}
                                                         </p>
                                                     </div>
@@ -343,15 +343,15 @@ export default function TemplateClient() {
                                                             className={`
                                                             group relative flex flex-col items-center gap-3 p-4 rounded-2xl border transition-all duration-200
                                                             ${isSelected
-                                                                    ? 'border-brand-dark shadow-sm bg-gray-50'
-                                                                    : 'border-gray-100 hover:border-gray-200 hover:shadow-sm'
+                                                                    ? 'border-brand-dark shadow-sm bg-gray-50 dark:bg-neutral-800/50'
+                                                                    : 'border-gray-100 dark:border-neutral-800/50 hover:border-gray-200 dark:hover:border-neutral-700 hover:shadow-sm'
                                                                 }
                                                         `}
                                                         >
                                                             <div className="w-full aspect-square rounded-xl shadow-inner relative overflow-hidden flex items-center justify-center" style={{ backgroundColor: theme.bg }}>
                                                                 <div className="w-8 h-8 rounded-full shadow-sm" style={{ backgroundColor: theme.accent }}></div>
                                                             </div>
-                                                            <span className={`text-sm font-bold ${isSelected ? 'text-brand-dark' : 'text-gray-500'}`}>{theme.name}</span>
+                                                            <span className={`text-sm font-bold ${isSelected ? 'text-brand-dark' : 'text-gray-500 dark:text-neutral-500'}`}>{theme.name}</span>
 
                                                             {isSelected && (
                                                                 <div className="absolute top-3 right-3 w-4 h-4 bg-brand-dark rounded-full border border-white shadow-sm animate-fade-in"></div>
@@ -370,9 +370,9 @@ export default function TemplateClient() {
                                                         type="color"
                                                         value={settings.themeColor || '#B6FF2E'}
                                                         onChange={(e) => setSettings({ ...settings, themeColor: e.target.value })}
-                                                        className="w-12 h-12 rounded-lg border border-gray-200 p-1 cursor-pointer"
+                                                        className="w-12 h-12 rounded-lg border border-gray-200 dark:border-neutral-700 p-1 cursor-pointer"
                                                     />
-                                                    <span className="text-sm font-mono text-gray-500 uppercase">{settings.themeColor || '#B6FF2E'}</span>
+                                                    <span className="text-sm font-mono text-gray-500 dark:text-neutral-500 uppercase">{settings.themeColor || '#B6FF2E'}</span>
                                                 </div>
                                             </div>
                                             <div>
@@ -382,9 +382,9 @@ export default function TemplateClient() {
                                                         type="color"
                                                         value={settings.accentColor || '#0E3B2E'}
                                                         onChange={(e) => setSettings({ ...settings, accentColor: e.target.value })}
-                                                        className="w-12 h-12 rounded-lg border border-gray-200 p-1 cursor-pointer"
+                                                        className="w-12 h-12 rounded-lg border border-gray-200 dark:border-neutral-700 p-1 cursor-pointer"
                                                     />
-                                                    <span className="text-sm font-mono text-gray-500 uppercase">{settings.accentColor || '#0E3B2E'}</span>
+                                                    <span className="text-sm font-mono text-gray-500 dark:text-neutral-500 uppercase">{settings.accentColor || '#0E3B2E'}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -393,7 +393,7 @@ export default function TemplateClient() {
 
                                 <div>
                                     <label className="block text-brand-dark font-bold mb-2">Corner Radius</label>
-                                    <div className="flex bg-gray-100 p-1 rounded-xl">
+                                    <div className="flex bg-gray-100 dark:bg-neutral-800 p-1 rounded-xl">
                                         {(['small', 'medium', 'large'] as const).map((size) => (
                                             <button
                                                 key={size}
@@ -402,8 +402,8 @@ export default function TemplateClient() {
                                                 className={`
                                                 flex-1 py-2 rounded-lg font-bold text-sm capitalize transition-all
                                                 ${(settings.borderRadius || 'large') === size
-                                                        ? 'bg-white text-brand-dark shadow-sm'
-                                                        : 'text-gray-500 hover:text-gray-700'
+                                                        ? 'bg-white dark:bg-neutral-900 text-brand-dark shadow-sm'
+                                                        : 'text-gray-500 dark:text-neutral-500 hover:text-gray-700 dark:hover:text-neutral-200'
                                                     }
                                             `}
                                             >
@@ -418,7 +418,7 @@ export default function TemplateClient() {
                                     <select
                                         value={settings.fontFamily || 'Plus Jakarta Sans'}
                                         onChange={(e) => setSettings({ ...settings, fontFamily: e.target.value })}
-                                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 outline-none font-medium"
+                                        className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 outline-none font-medium"
                                     >
                                         <option value="Plus Jakarta Sans">Plus Jakarta Sans (Default)</option>
                                         <option value="Inter">Inter</option>
@@ -427,7 +427,7 @@ export default function TemplateClient() {
                                         <option value="Poppins">Poppins</option>
                                     </select>
                                 </div>
-                                <hr className="border-gray-100" />
+                                <hr className="border-gray-100 dark:border-neutral-800" />
                                 <div>
                                     <label className="block text-brand-dark font-bold mb-2">Footer Text</label>
                                     <input
@@ -435,12 +435,12 @@ export default function TemplateClient() {
                                         value={settings.footerText || ''}
                                         onChange={(e) => setSettings({ ...settings, footerText: e.target.value })}
                                         placeholder="© 2024 Your Company"
-                                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 outline-none font-medium"
+                                        className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 outline-none font-medium"
                                     />
                                 </div>
                             </div>
 
-                        <div className="pt-4 border-t border-gray-100">
+                        <div className="pt-4 border-t border-gray-100 dark:border-neutral-800/50">
                             <SubmitButton isLoading={saving} label="Save Changes" className="w-full bg-brand-dark text-white py-4 rounded-xl font-black uppercase tracking-widest hover:bg-brand-dark/90 transition-all shadow-lg active:scale-[0.98]" />
                         </div>
                     </form>
@@ -449,14 +449,14 @@ export default function TemplateClient() {
                 {/* Right Column: Live Site Preview */}
                 <div className="sticky top-24 hidden lg:block">
                     <div className="flex items-center justify-between mb-4">
-                        <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Live Site Preview</label>
+                        <label className="text-xs font-black text-gray-400 dark:text-neutral-600 uppercase tracking-widest">Live Site Preview</label>
                         <div className="flex gap-2">
                             <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
                             <div className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
                             <div className="w-2.5 h-2.5 rounded-full bg-green-400" />
                         </div>
                     </div>
-                    <div className="bg-brand-dark rounded-[2.5rem] p-4 shadow-2xl border-4 border-gray-200 relative">
+                    <div className="bg-brand-dark rounded-[2.5rem] p-4 shadow-2xl border-4 border-gray-200 dark:border-neutral-700 relative">
                         <div className="aspect-[9/19] bg-white rounded-[2rem] overflow-hidden border-4 border-brand-dark/5 shadow-inner">
                             <ThemeMockup
                                 template={templatesToDisplay.find(t => t.id === settings.templateId) || templatesToDisplay[0]}
