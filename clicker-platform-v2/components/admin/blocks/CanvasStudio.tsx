@@ -2,7 +2,7 @@
 
 import { useEditor } from './EditorContext';
 import { BlockManager } from './BlockManager';
-import { Settings, Layers, Box, FileText, BarChart2, CheckSquare, Square, X, Plus } from 'lucide-react';
+import { Settings, Layers, Box, FileText, BarChart2, CheckSquare, Square, X, Plus, Link2 } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
 import { TemplateProvider } from '@/components/TemplateProvider';
 import { BlockRenderer } from '@/components/blocks/BlockRenderer';
@@ -22,6 +22,8 @@ const ChromeFooterPanel = dynamic(() => import('./ChromeSlotPanel').then(m => m.
 const ChromeBottomNavPanel = dynamic(() => import('./ChromeSlotPanel').then(m => m.ChromeBottomNavPanel));
 const PagesPanel = dynamic(() => import('./LeftSidebarPanels').then(m => m.PagesPanel));
 const AddBlocksPanel = dynamic(() => import('./LeftSidebarPanels').then(m => m.AddBlocksPanel));
+const SlideOverPanel = dynamic(() => import('./SlideOverPanel').then(m => m.SlideOverPanel));
+const LinksPanel = dynamic(() => import('./panels/LinksPanel').then(m => m.LinksPanel));
 
 export function CanvasStudio({
     globalSettings,
@@ -52,21 +54,29 @@ export function CanvasStudio({
     const [host] = useState(() => typeof window !== 'undefined' ? window.location.host : '');
     const [tooltip, setTooltip] = useState<{ label: string; top: number; left: number; side?: boolean } | null>(null);
     const [leftPanel, setLeftPanel] = useState<'pages' | 'add' | 'navigator' | null>('navigator');
+    const [slideOverPanel, setSlideOverPanel] = useState<'links' | null>(null);
 
     const toggleLeftPanel = (panel: 'pages' | 'add' | 'navigator') => {
         setLeftPanel(prev => prev === panel ? null : panel);
+        setSlideOverPanel(null);
     };
 
-    // Keyboard shortcuts: P = Pages, A = Add, Z = Navigator
+    const toggleSlideOverPanel = (panel: 'links') => {
+        setSlideOverPanel(prev => prev === panel ? null : panel);
+        setLeftPanel(null);
+    };
+
+    // Keyboard shortcuts: P = Pages, A = Add, Z = Navigator, L = Links
     useEffect(() => {
         const handler = (e: KeyboardEvent) => {
             const tag = (e.target as HTMLElement).tagName;
-            if (tag === 'INPUT' || tag === 'TEXTAREA' || (e.target as HTMLElement).isContentEditable) return;
+            if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (e.target as HTMLElement).isContentEditable) return;
             if (e.metaKey || e.ctrlKey || e.altKey) return;
             switch (e.key.toLowerCase()) {
                 case 'p': toggleLeftPanel('pages'); break;
                 case 'a': toggleLeftPanel('add'); break;
                 case 'z': toggleLeftPanel('navigator'); break;
+                case 'l': toggleSlideOverPanel('links'); break;
             }
         };
         window.addEventListener('keydown', handler);
@@ -120,6 +130,7 @@ export function CanvasStudio({
             <div className="flex flex-shrink-0 z-10">
                 {/* Icon Strip */}
                 <div className="w-12 bg-neutral-900 border-r border-neutral-800 flex flex-col items-center pt-2 gap-0.5">
+                    {/* Page editing icons */}
                     {([
                         { id: 'pages' as const, icon: FileText, label: 'Pages', shortcut: 'P' },
                         { id: 'add' as const, icon: Plus, label: 'Add Block', shortcut: 'A' },
@@ -135,6 +146,31 @@ export function CanvasStudio({
                             onMouseLeave={() => setTooltip(null)}
                             className={`w-9 h-9 flex items-center justify-center rounded-lg transition-colors ${
                                 leftPanel === id
+                                    ? 'bg-blue-500/20 text-blue-400'
+                                    : 'text-neutral-500 hover:text-neutral-200 hover:bg-neutral-800'
+                            }`}
+                        >
+                            <Icon size={17} />
+                        </button>
+                    ))}
+
+                    {/* Divider */}
+                    <div className="w-6 border-t border-neutral-800 my-1.5" />
+
+                    {/* Feature management icons */}
+                    {([
+                        { id: 'links' as const, icon: Link2, label: 'Links', shortcut: 'L' },
+                    ]).map(({ id, icon: Icon, label, shortcut }) => (
+                        <button
+                            key={id}
+                            onClick={() => toggleSlideOverPanel(id)}
+                            onMouseEnter={(e) => {
+                                const r = e.currentTarget.getBoundingClientRect();
+                                setTooltip({ label: `${label} (${shortcut})`, top: r.top + r.height / 2, left: r.right + 8, side: true });
+                            }}
+                            onMouseLeave={() => setTooltip(null)}
+                            className={`w-9 h-9 flex items-center justify-center rounded-lg transition-colors ${
+                                slideOverPanel === id
                                     ? 'bg-blue-500/20 text-blue-400'
                                     : 'text-neutral-500 hover:text-neutral-200 hover:bg-neutral-800'
                             }`}
@@ -172,6 +208,17 @@ export function CanvasStudio({
                     </div>
                 )}
             </div>
+
+            {/* Slide-over Panel (Links / Forms / Products) */}
+            {slideOverPanel && (
+                <SlideOverPanel
+                    title={slideOverPanel === 'links' ? 'Links' : slideOverPanel}
+                    icon={slideOverPanel === 'links' ? Link2 : Link2}
+                    onClose={() => setSlideOverPanel(null)}
+                >
+                    {slideOverPanel === 'links' && <LinksPanel />}
+                </SlideOverPanel>
+            )}
 
             {/* Center - Live Canvas */}
             <div className="flex-1 flex justify-center bg-neutral-950 relative overflow-y-auto">
