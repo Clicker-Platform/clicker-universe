@@ -4,7 +4,7 @@ import { createContext, useContext, useState, useEffect, useCallback, useRef, Re
 import { db } from '@/lib/firebase';
 import { collection, addDoc, doc, getDoc, updateDoc, deleteDoc, setDoc, getDocs, serverTimestamp, query, where } from 'firebase/firestore';
 import { Page, PageBlock } from '@/data/mockData';
-import { fetchPublicData } from '@/lib/fetchData';
+import { fetchLightweightPublicData } from '@/lib/fetchData';
 import { useSite } from '@/lib/site-context';
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -212,7 +212,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
             try {
                 const [pagesSnap, settings] = await Promise.all([
                     getDocs(collection(db, 'sites', siteId, 'pages')),
-                    fetchPublicData(siteId, { includeProducts: false }),
+                    fetchLightweightPublicData(siteId),
                 ]);
 
                 if (!isMounted) return;

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect } from 'react';
 import { PageBlock } from '@/data/mockData';
 
 interface EditorContextType {
@@ -23,7 +23,15 @@ const EditorContext = createContext<EditorContextType | undefined>(undefined);
 export function EditorProvider({ children, blocks, onChange }: { children: ReactNode, blocks: PageBlock[], onChange: (blocks: PageBlock[] | ((prev: PageBlock[]) => PageBlock[])) => void }) {
     const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
     const [hoveredBlockId, setHoveredBlockId] = useState<string | null>(null);
-    const [deviceView, setDeviceView] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
+    const [deviceView, setDeviceView] = useState<'desktop' | 'tablet' | 'mobile'>(() => {
+        if (typeof window === 'undefined') return 'desktop';
+        const saved = localStorage.getItem('canvas_studio_device_view');
+        return (saved as 'desktop' | 'tablet' | 'mobile') || 'desktop';
+    });
+
+    useEffect(() => {
+        localStorage.setItem('canvas_studio_device_view', deviceView);
+    }, [deviceView]);
 
     const updateBlockData = useCallback((id: string, data: any) => {
         onChange(prev => prev.map(block => 

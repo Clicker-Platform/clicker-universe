@@ -6,16 +6,22 @@ import { Settings, Layers, Box, FileText, BarChart2, CheckSquare, Square, X, Plu
 import { useSite } from '@/lib/site-context';
 import { TemplateProvider } from '@/components/TemplateProvider';
 import { BlockRenderer } from '@/components/blocks/BlockRenderer';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, startTransition } from 'react';
 import { hydratePageBlocks } from '@/lib/fetchData';
-import { BlockFormRenderer } from './BlockFormRenderer';
+import dynamic from 'next/dynamic';
 import { getTemplate } from '@/lib/templates/registry';
-import { ChromeHeaderPanel, ChromeFooterPanel, ChromeBottomNavPanel } from './ChromeSlotPanel';
 import { ResponsiveNavBar } from '@/components/layout/ResponsiveNavBar';
 import { Footer } from '@/components/Footer';
 import { BottomNavBar } from '@/components/layout/BottomNavBar';
 import { usePageStudio } from './PageStudioContext';
-import { PagesPanel, AddBlocksPanel } from './LeftSidebarPanels';
+
+// Lazy-load sidebar panels — only needed when their respective panels are open
+const BlockFormRenderer = dynamic(() => import('./BlockFormRenderer').then(m => m.BlockFormRenderer));
+const ChromeHeaderPanel = dynamic(() => import('./ChromeSlotPanel').then(m => m.ChromeHeaderPanel));
+const ChromeFooterPanel = dynamic(() => import('./ChromeSlotPanel').then(m => m.ChromeFooterPanel));
+const ChromeBottomNavPanel = dynamic(() => import('./ChromeSlotPanel').then(m => m.ChromeBottomNavPanel));
+const PagesPanel = dynamic(() => import('./LeftSidebarPanels').then(m => m.PagesPanel));
+const AddBlocksPanel = dynamic(() => import('./LeftSidebarPanels').then(m => m.AddBlocksPanel));
 
 export function CanvasStudio({
     globalSettings,
@@ -101,7 +107,7 @@ export function CanvasStudio({
 
         hydratePageBlocks(siteId, blocks).then(data => {
             if (isMounted) {
-                setHydratedData(data);
+                startTransition(() => setHydratedData(data));
             }
         });
 

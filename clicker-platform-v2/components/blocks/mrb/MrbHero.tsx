@@ -66,7 +66,7 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, previewMode }) 
 
     return (
         <div
-            className={`relative flex min-h-[560px] flex-col gap-6 justify-end px-6 md:px-12 pb-16 overflow-hidden w-full ${flexAlignClass}${isFullbleed && !previewMode ? ' rounded-none -mx-4 md:-mx-6' : isFullbleed ? ' rounded-none' : ''}`}
+            className={`relative flex h-[560px] flex-col gap-6 justify-end px-6 md:px-12 pb-16 overflow-hidden w-full ${flexAlignClass}${isFullbleed && !previewMode ? ' rounded-none -mx-4 md:-mx-6' : isFullbleed ? ' rounded-none' : ''}`}
             style={isFullbleed && !previewMode
                 ? { width: '100vw', marginLeft: 'calc(-50vw + 50%)', border: 'none', borderRadius: '0' }
                 : isFullbleed ? { border: 'none', borderRadius: '0' } : { borderRadius }}
@@ -78,6 +78,7 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, previewMode }) 
                     alt=""
                     fill
                     priority
+                    fetchPriority="high"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
                     className="object-cover"
                     style={{ objectPosition: imgPos }}

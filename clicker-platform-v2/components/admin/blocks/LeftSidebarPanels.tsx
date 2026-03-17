@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Home, Plus, FileText } from 'lucide-react';
+import { Home, Plus, FileText, LayoutList, LayoutGrid } from 'lucide-react';
 import { usePageStudio } from './PageStudioContext';
 import { useEditor } from './EditorContext';
 import { BLOCK_OPTIONS, getDefaultData } from './blockDefinitions';
@@ -77,6 +77,14 @@ interface AddBlocksPanelProps {
 export function AddBlocksPanel({ templateId = 'classic', onAfterAdd }: AddBlocksPanelProps) {
     const { addBlock, setSelectedBlockId } = useEditor();
     const [moduleBlocks, setModuleBlocks] = useState<{ type: BlockType; label: string; icon: React.ElementType }[]>([]);
+    const [viewMode, setViewMode] = useState<'list' | 'grid'>(() => {
+        if (typeof window === 'undefined') return 'list';
+        return (localStorage.getItem('canvas_studio_add_block_view') as 'list' | 'grid') || 'list';
+    });
+
+    useEffect(() => {
+        localStorage.setItem('canvas_studio_add_block_view', viewMode);
+    }, [viewMode]);
 
     useEffect(() => {
         const unsubscribe = subscribeToEnabledModules((modules) => {
@@ -114,22 +122,55 @@ export function AddBlocksPanel({ templateId = 'classic', onAfterAdd }: AddBlocks
     return (
         <div className="flex flex-col h-full">
             <div className="px-3 h-10 border-b border-neutral-800 flex items-center flex-shrink-0">
-                <span className="font-bold text-sm text-neutral-200">Add Block</span>
+                <span className="flex-1 font-bold text-sm text-neutral-200">Add Block</span>
+                <div className="flex items-center gap-0.5">
+                    <button
+                        onClick={() => setViewMode('list')}
+                        className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? 'text-white bg-neutral-700' : 'text-neutral-500 hover:text-neutral-200 hover:bg-neutral-800'}`}
+                    >
+                        <LayoutList size={14} />
+                    </button>
+                    <button
+                        onClick={() => setViewMode('grid')}
+                        className={`p-1.5 rounded-md transition-colors ${viewMode === 'grid' ? 'text-white bg-neutral-700' : 'text-neutral-500 hover:text-neutral-200 hover:bg-neutral-800'}`}
+                    >
+                        <LayoutGrid size={14} />
+                    </button>
+                </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto custom-scrollbar py-1">
-                {allOptions.map(opt => (
-                    <button
-                        key={opt.type}
-                        onClick={() => handleAdd(opt.type)}
-                        className="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-neutral-800 transition-colors text-neutral-400 hover:text-neutral-200"
-                    >
-                        <div className="p-1.5 bg-neutral-800 rounded text-neutral-400 flex-shrink-0">
-                            <opt.icon size={14} />
-                        </div>
-                        <span className="text-xs font-medium">{opt.label}</span>
-                    </button>
-                ))}
+            <div className="flex-1 overflow-y-auto custom-scrollbar">
+                {viewMode === 'list' ? (
+                    <div className="py-1">
+                        {allOptions.map(opt => (
+                            <button
+                                key={opt.type}
+                                onClick={() => handleAdd(opt.type)}
+                                className="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-neutral-800 transition-colors text-neutral-400 hover:text-neutral-200"
+                            >
+                                <div className="p-1.5 bg-neutral-800 rounded text-neutral-400 flex-shrink-0">
+                                    <opt.icon size={14} />
+                                </div>
+                                <span className="text-xs font-medium">{opt.label}</span>
+                            </button>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-3 gap-x-2 gap-y-3 p-3">
+                        {allOptions.map(opt => (
+                            <button
+                                key={opt.type}
+                                onClick={() => handleAdd(opt.type)}
+                                className="flex flex-col items-center gap-1.5 text-neutral-400 hover:text-neutral-200 transition-colors group"
+                            >
+                                <div className="w-full aspect-square flex items-center justify-center bg-neutral-800 rounded-md group-hover:bg-neutral-700 transition-colors">
+                                    <opt.icon size={20} />
+                                </div>
+                                <span className="text-[10px] font-medium text-center leading-tight">{opt.label}</span>
+                            </button>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );

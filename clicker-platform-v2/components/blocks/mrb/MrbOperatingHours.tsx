@@ -53,12 +53,13 @@ export const MrbOperatingHours: React.FC<OperatingHoursProps> = ({ data, schedul
                     <div className="max-w-md">
                         <div className="flex items-center gap-3 mb-2">
                             <h2 className="text-white text-2xl font-black">{data.label}</h2>
-                            {statusText && isMounted && (
+                            {statusText && (
                                 <span className={`
                                     inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider
-                                    border
-                                    ${isOpen 
-                                        ? 'bg-green-500/10 text-green-400 border-green-500/20' 
+                                    border transition-opacity duration-300
+                                    ${isMounted ? 'opacity-100' : 'opacity-0'}
+                                    ${isOpen
+                                        ? 'bg-green-500/10 text-green-400 border-green-500/20'
                                         : 'bg-red-500/10 text-red-400 border-red-500/20'}
                                 `}>
                                     {statusText}

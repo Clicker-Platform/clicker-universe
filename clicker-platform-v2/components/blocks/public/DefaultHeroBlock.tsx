@@ -121,6 +121,7 @@ export const DefaultHeroBlock = ({ data, theme }: { data: any, theme?: any }) =>
                             alt={data?.title || 'Hero Image'}
                             fill
                             priority
+                            fetchPriority="high"
                             sizes="(max-width: 768px) 100vw, 50vw"
                             className="object-cover"
                             style={{ objectPosition: imgPos }}
@@ -142,6 +143,7 @@ export const DefaultHeroBlock = ({ data, theme }: { data: any, theme?: any }) =>
                             alt=""
                             fill
                             priority
+                            fetchPriority="high"
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
                             className="object-cover"
                             style={{ objectPosition: imgPos }}

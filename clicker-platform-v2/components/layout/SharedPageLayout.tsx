@@ -48,7 +48,6 @@ export function SharedPageLayout({
     forceMobile = false,
     isSubPage = false,
     pageTitle,
-    heroFirst = false
 }: SharedLayoutProps) {
     const {
         profile,
@@ -118,7 +117,7 @@ export function SharedPageLayout({
                 <main
                     className={`
                         min-h-screen py-12 relative overflow-hidden transition-colors duration-300
-                        ${template.config.layout?.navMode === 'adaptive' && !heroFirst ? 'md:pt-24' : ''}
+                        ${template.config.layout?.navMode === 'adaptive' ? 'md:pt-24' : ''}
                     `}
                     style={{ backgroundColor: pageBackgroundColor }}
                     suppressHydrationWarning // Prevent mismatches on dynamic styles
