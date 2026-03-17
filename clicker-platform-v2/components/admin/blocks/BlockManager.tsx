@@ -25,10 +25,11 @@ import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 interface BlockManagerProps {
     blocks: PageBlock[];
     onChange: (blocks: PageBlock[]) => void;
+    templateId?: string;
     onAddClick?: () => void;
 }
 
-export const BlockManager = ({ blocks, onChange, onAddClick }: BlockManagerProps) => {
+export const BlockManager = ({ blocks, onChange, templateId, onAddClick }: BlockManagerProps) => {
     const { selectedBlockId, setSelectedBlockId } = useEditor();
     const [blockToDelete, setBlockToDelete] = useState<string | null>(null);
 
