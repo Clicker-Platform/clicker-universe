@@ -163,6 +163,7 @@ service cloud.firestore {
       // Pages, Content, Posts, Products, Links, Forms, Branches
       
       match /pages/{pageId} { allow read: if true; allow write: if hasSiteAccess(siteId); }
+      match /pages_trash/{pageId} { allow read, write: if hasSiteAccess(siteId); }
       match /content/{docId} { allow read: if true; allow write: if hasSiteAccess(siteId); }
       match /posts/{postId} { allow read: if true; allow write: if hasSiteAccess(siteId); }
       match /products/{productId} { 

@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, doc, getDoc, updateDoc, deleteDoc, setDoc, getDocs, serverTimestamp, query, where } from 'firebase/firestore';
+import { collection, addDoc, doc, getDoc, updateDoc, deleteDoc, setDoc, getDocs, serverTimestamp, query, where, writeBatch } from 'firebase/firestore';
 import { Page, PageBlock } from '@/data/mockData';
 import { fetchLightweightPublicData } from '@/lib/fetchData';
 import { useSite } from '@/lib/site-context';
@@ -14,6 +14,13 @@ interface PageListItem {
     title: string;
     slug: string;
     updatedAt?: any;
+}
+
+interface TrashedPageListItem {
+    id: string;
+    title: string;
+    slug: string;
+    deletedAt?: any;
 }
 
 interface PageFormData {
@@ -92,6 +99,17 @@ interface PageStudioContextType {
     setHomepage: () => Promise<void>;
     unsetHomepage: () => Promise<void>;
 
+    // Trash
+    trashedPages: TrashedPageListItem[];
+    trashedPagesLoading: boolean;
+    trashPage: () => Promise<void>;
+    trashPageById: (pageId: string) => Promise<void>;
+    loadTrashedPages: () => Promise<void>;
+    restorePage: (pageId: string) => Promise<string>;
+    restoreAllPages: () => Promise<void>;
+    permanentlyDeletePage: (pageId: string) => Promise<void>;
+    permanentlyDeleteAllPages: () => Promise<void>;
+
     // Unsaved changes dialog
     pendingSwitch: string | null;
     confirmDiscard: () => void;
@@ -128,6 +146,10 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
     // Saving
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    // Trash
+    const [trashedPages, setTrashedPages] = useState<TrashedPageListItem[]>([]);
+    const [trashedPagesLoading, setTrashedPagesLoading] = useState(false);
 
     // Unsaved changes dialog
     const [pendingSwitch, setPendingSwitch] = useState<string | null>(null);
@@ -463,13 +485,70 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
         await savePageInternal();
     }, [savePageInternal]);
 
-    // ── Delete page ────────────────────────────────────────────────────────
+    // ── Load trashed pages ─────────────────────────────────────────────────
 
-    const deletePage = useCallback(async () => {
+    const loadTrashedPages = useCallback(async () => {
+        if (!siteId) return;
+        setTrashedPagesLoading(true);
+        try {
+            const snap = await getDocs(collection(db, 'sites', siteId, 'pages_trash'));
+            const items: TrashedPageListItem[] = snap.docs.map(d => ({
+                id: d.id,
+                title: d.data().title || '',
+                slug: d.data().slug || '',
+                deletedAt: d.data().deletedAt,
+            }));
+            // Sort newest first
+            items.sort((a, b) => {
+                const aMs = a.deletedAt?.toMillis?.() ?? 0;
+                const bMs = b.deletedAt?.toMillis?.() ?? 0;
+                return bMs - aMs;
+            });
+            setTrashedPages(items);
+        } catch (err) {
+            console.error('Error loading trash:', err);
+        } finally {
+            setTrashedPagesLoading(false);
+        }
+    }, [siteId]);
+
+    // ── Helper: move active page to trash ─────────────────────────────────
+
+    const _movePageToTrash = useCallback(async (pageId: string) => {
+        if (!siteId) return;
+
+        // Read full page doc
+        const pageSnap = await getDoc(doc(db, 'sites', siteId, 'pages', pageId));
+        if (!pageSnap.exists()) return;
+
+        const pageData = pageSnap.data();
+
+        // Write to pages_trash with deletedAt + originalSlug
+        await setDoc(doc(db, 'sites', siteId, 'pages_trash', pageId), {
+            ...pageData,
+            originalSlug: pageData.slug || '',
+            deletedAt: serverTimestamp(),
+        });
+
+        // Delete from pages
+        await deleteDoc(doc(db, 'sites', siteId, 'pages', pageId));
+    }, [siteId]);
+
+    // ── Trash active page (soft delete) ───────────────────────────────────
+
+    const trashPage = useCallback(async () => {
         if (!siteId || activePageId === null) return;
 
         try {
-            await deleteDoc(doc(db, 'sites', siteId, 'pages', activePageId));
+            await _movePageToTrash(activePageId);
+
+            // Add to local trashed list
+            const trashed: TrashedPageListItem = {
+                id: activePageId,
+                title: formData.title,
+                slug: formData.slug,
+            };
+            setTrashedPages(prev => [trashed, ...prev]);
 
             const remainingPages = pages.filter(p => p.id !== activePageId);
             setPages(remainingPages);
@@ -477,16 +556,146 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
             if (remainingPages.length > 0) {
                 await loadPage(remainingPages[0].id);
             } else {
-                // No pages left — enter create mode
                 setFormData({ ...emptyFormData });
                 setActivePageId(null);
                 savedSnapshotRef.current = getSnapshot(emptyFormData);
             }
         } catch (err) {
-            console.error('Error deleting page:', err);
-            setError('Failed to delete page');
+            console.error('Error trashing page:', err);
+            setError('Failed to move page to trash');
         }
-    }, [siteId, activePageId, pages, loadPage, getSnapshot]);
+    }, [siteId, activePageId, formData, pages, loadPage, getSnapshot, _movePageToTrash]);
+
+    // ── Trash a page by ID (for non-active pages) ─────────────────────────
+
+    const trashPageById = useCallback(async (pageId: string) => {
+        if (!siteId) return;
+
+        // If it's the active page, delegate to trashPage
+        if (pageId === activePageId) {
+            await trashPage();
+            return;
+        }
+
+        try {
+            const pageToTrash = pages.find(p => p.id === pageId);
+            if (!pageToTrash) return;
+
+            await _movePageToTrash(pageId);
+
+            const trashed: TrashedPageListItem = {
+                id: pageId,
+                title: pageToTrash.title,
+                slug: pageToTrash.slug,
+            };
+            setTrashedPages(prev => [trashed, ...prev]);
+            setPages(prev => prev.filter(p => p.id !== pageId));
+        } catch (err) {
+            console.error('Error trashing page:', err);
+            setError('Failed to move page to trash');
+        }
+    }, [siteId, activePageId, pages, trashPage, _movePageToTrash]);
+
+    // ── Keep deletePage as soft-delete alias for backwards compat ─────────
+
+    const deletePage = useCallback(async () => {
+        await trashPage();
+    }, [trashPage]);
+
+    // ── Restore a trashed page ─────────────────────────────────────────────
+
+    const restorePage = useCallback(async (pageId: string): Promise<string> => {
+        if (!siteId) return '';
+
+        try {
+            const trashSnap = await getDoc(doc(db, 'sites', siteId, 'pages_trash', pageId));
+            if (!trashSnap.exists()) return '';
+
+            const pageData = trashSnap.data();
+            let slug = pageData.originalSlug || pageData.slug || '';
+
+            // Check for slug conflict
+            if (slug) {
+                const q = query(collection(db, 'sites', siteId, 'pages'), where('slug', '==', slug));
+                const conflictSnap = await getDocs(q);
+                if (!conflictSnap.empty) {
+                    // Generate unique slug
+                    let suffix = 1;
+                    let candidate = `${slug}-restored`;
+                    while (true) {
+                        const cq = query(collection(db, 'sites', siteId, 'pages'), where('slug', '==', candidate));
+                        const cSnap = await getDocs(cq);
+                        if (cSnap.empty) {
+                            slug = candidate;
+                            break;
+                        }
+                        suffix++;
+                        candidate = `${pageData.originalSlug || pageData.slug}-restored-${suffix}`;
+                    }
+                }
+            }
+
+            // Strip trash-only fields
+            const { originalSlug, deletedAt, ...restoredData } = pageData;
+            const finalData = { ...restoredData, slug, updatedAt: serverTimestamp() };
+
+            // Write back to pages
+            await setDoc(doc(db, 'sites', siteId, 'pages', pageId), finalData);
+
+            // Remove from pages_trash
+            await deleteDoc(doc(db, 'sites', siteId, 'pages_trash', pageId));
+
+            // Update local state
+            setTrashedPages(prev => prev.filter(p => p.id !== pageId));
+            setPages(prev => [...prev, { id: pageId, title: pageData.title || '', slug }]);
+
+            return slug;
+        } catch (err) {
+            console.error('Error restoring page:', err);
+            setError('Failed to restore page');
+            return '';
+        }
+    }, [siteId]);
+
+    // ── Restore all trashed pages ──────────────────────────────────────────
+
+    const restoreAllPages = useCallback(async () => {
+        if (!siteId || trashedPages.length === 0) return;
+        // Restore sequentially to handle slug conflicts individually
+        for (const trashed of trashedPages) {
+            await restorePage(trashed.id);
+        }
+    }, [siteId, trashedPages, restorePage]);
+
+    // ── Permanently delete a trashed page ─────────────────────────────────
+
+    const permanentlyDeletePage = useCallback(async (pageId: string) => {
+        if (!siteId) return;
+        try {
+            await deleteDoc(doc(db, 'sites', siteId, 'pages_trash', pageId));
+            setTrashedPages(prev => prev.filter(p => p.id !== pageId));
+        } catch (err) {
+            console.error('Error permanently deleting page:', err);
+            setError('Failed to permanently delete page');
+        }
+    }, [siteId]);
+
+    // ── Permanently delete all trashed pages ──────────────────────────────
+
+    const permanentlyDeleteAllPages = useCallback(async () => {
+        if (!siteId || trashedPages.length === 0) return;
+        try {
+            const batch = writeBatch(db);
+            trashedPages.forEach(p => {
+                batch.delete(doc(db, 'sites', siteId, 'pages_trash', p.id));
+            });
+            await batch.commit();
+            setTrashedPages([]);
+        } catch (err) {
+            console.error('Error emptying trash:', err);
+            setError('Failed to empty trash');
+        }
+    }, [siteId, trashedPages]);
 
     // ── Set / Unset homepage ───────────────────────────────────────────────
 
@@ -553,6 +762,15 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
             deletePage,
             setHomepage,
             unsetHomepage,
+            trashedPages,
+            trashedPagesLoading,
+            trashPage,
+            trashPageById,
+            loadTrashedPages,
+            restorePage,
+            restoreAllPages,
+            permanentlyDeletePage,
+            permanentlyDeleteAllPages,
             pendingSwitch,
             confirmDiscard,
             confirmSaveAndSwitch,
