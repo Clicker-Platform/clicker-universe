@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Form, FormField } from '@/data/mockData';
 import { Plus, Trash2, Save, ArrowLeft, GripVertical, Settings } from 'lucide-react';
+import { useSite } from '@/lib/site-context';
 
 interface FormBuilderClientProps {
     initialForm?: Form;
@@ -11,6 +12,7 @@ interface FormBuilderClientProps {
 
 export function FormBuilderClient({ initialForm }: FormBuilderClientProps) {
     const router = useRouter();
+    const { siteId } = useSite();
     const [loading, setLoading] = useState(false);
     const [form, setForm] = useState<Partial<Form>>(initialForm || {
         title: 'New Form',
@@ -53,7 +55,7 @@ export function FormBuilderClient({ initialForm }: FormBuilderClientProps) {
             const res = await fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(form)
+                body: JSON.stringify({ ...form, siteId })
             });
 
             if (res.ok) {

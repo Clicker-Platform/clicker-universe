@@ -1,4 +1,5 @@
-import { adminDb, FieldValue } from '@/lib/firebase-admin';
+import { db } from '@/lib/firebase';
+import { collection, addDoc, doc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
@@ -6,43 +7,48 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { formId, formTitle, data, siteId } = body;
+        const { formId, formTitle, data, siteId, fieldLabels } = body;
 
         if (!siteId) {
-            // Fallback or Error. For now, let's error to enforce tenant isolation.
-            // Or we could write to global 'submissions' but Admin won't see it.
             console.warn('Missing siteId in form submission');
             return NextResponse.json({ error: 'Missing siteId' }, { status: 400 });
         }
 
-        const collectionPath = `sites/${siteId}/inbox`;
-
-        await adminDb.collection(collectionPath).add({
+        // Write submission to site-scoped inbox (Firestore rules allow public create)
+        await addDoc(collection(db, 'sites', siteId, 'inbox'), {
             formId,
             formTitle,
             data,
-            submittedAt: FieldValue.serverTimestamp(),
+            submittedAt: serverTimestamp(),
             status: 'new'
         });
 
-        // Email notification logic will be handled by Firebase Functions trigger
-        // watching the 'inbox' collection.
+        // Email notification — fetch form to get emailNotificationTo
+        try {
+            const formDoc = await getDoc(doc(db, 'sites', siteId, 'forms', formId));
+            if (formDoc.exists()) {
+                const emailTo = formDoc.data()?.emailNotificationTo;
+                console.log('[forms/submit] emailNotificationTo:', emailTo ?? '(not set)');
+                if (emailTo) {
+                    const { sendFormNotification } = await import('@/lib/email');
+                    await sendFormNotification(emailTo, formTitle, data, fieldLabels);
+                    console.log('[forms/submit] Email sent to:', emailTo);
+                }
+            } else {
+                console.warn('[forms/submit] Form doc not found:', formId);
+            }
+        } catch (emailError) {
+            // Email failure should not block the submission
+            console.error('[forms/submit] Email notification failed:', emailError);
+        }
 
-        // --- Sales Pipeline Integration (Strict Modularity) ---
-        // Dynamically import to avoid hard dependency using existing module check if possible
-        // Since we don't have a server-side module registry check easily available without generic DB read,
-        // we will just try the dynamic import and fail silently if module not present or logic fails,
-        // or check simple flag. For now, try/catch around the hook is safest and cleanest.
+        // Sales Pipeline Integration (modular — fails silently if not configured)
         try {
             const { handleNewSubmission } = await import('@/lib/modules/sales-pipeline/server-integration');
-            // The function itself handles config checks, so just call it.
             await handleNewSubmission(formId, data);
-        } catch (e) {
-            // Module might not exist or code not loaded for some reason (e.g. tree shaking if not used elsewhere, though unlikely here)
-            // or just not implemented. Ignore or log debug.
-            // console.log('Sales Pipeline hook not executed:', e); 
+        } catch {
+            // Module not installed or not configured — ignore
         }
-        // -----------------------------------------------------
 
         return NextResponse.json({ success: true });
     } catch (error) {

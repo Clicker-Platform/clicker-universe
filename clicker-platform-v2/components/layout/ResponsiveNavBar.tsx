@@ -55,7 +55,7 @@ export const ResponsiveNavBar: React.FC<ResponsiveNavBarProps> = ({
             e.preventDefault();
             try {
                 const snap = await getDoc(doc(db, 'sites', siteId, 'forms', item.formId));
-                if (snap.exists()) {
+                if (snap.exists() && snap.data().isPublished !== false) {
                     setSelectedForm({ id: snap.id, ...snap.data() });
                     setIsFormOpen(true);
                 }
@@ -268,6 +268,7 @@ export const ResponsiveNavBar: React.FC<ResponsiveNavBarProps> = ({
                 isOpen={isFormOpen}
                 onClose={() => setIsFormOpen(false)}
                 form={selectedForm}
+                siteId={siteId}
             />
         </>
     );

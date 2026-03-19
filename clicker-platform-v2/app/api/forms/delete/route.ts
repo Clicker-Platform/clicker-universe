@@ -13,14 +13,19 @@ export async function DELETE(request: Request) {
 
         const { searchParams } = new URL(request.url);
         const id = searchParams.get('id');
+        const siteId = searchParams.get('siteId');
 
         if (!id) {
             return NextResponse.json({ error: 'Missing Form ID' }, { status: 400 });
         }
 
+        if (!siteId) {
+            return NextResponse.json({ error: 'Missing siteId' }, { status: 400 });
+        }
+
         // Check if form is linked to any card
         const linksSnapshot = await adminDb
-            .collection('links')
+            .collection('sites').doc(siteId).collection('links')
             .where('type', '==', 'form')
             .where('formId', '==', id)
             .limit(1)
@@ -36,7 +41,7 @@ export async function DELETE(request: Request) {
             );
         }
 
-        await adminDb.collection('forms').doc(id).delete();
+        await adminDb.collection('sites').doc(siteId).collection('forms').doc(id).delete();
 
 
         return NextResponse.json({ success: true });

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { FileText, Calendar, Trash2 } from 'lucide-react';
 import { Form } from '@/data/mockData';
 import { useRouter } from 'next/navigation';
+import { useSite } from '@/lib/site-context';
 
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 import { AlertDialog } from '@/components/common/AlertDialog';
@@ -15,6 +16,7 @@ interface FormCardProps {
 
 export const FormCard: React.FC<FormCardProps> = ({ form }) => {
     const router = useRouter();
+    const { siteId } = useSite();
     const [isDeleting, setIsDeleting] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [showErrorDialog, setShowErrorDialog] = useState(false);
@@ -28,7 +30,7 @@ export const FormCard: React.FC<FormCardProps> = ({ form }) => {
     const handleConfirmDelete = async () => {
         setIsDeleting(true);
         try {
-            const res = await fetch(`/api/forms/delete?id=${form.id}`, { method: 'DELETE' });
+            const res = await fetch(`/api/forms/delete?id=${form.id}&siteId=${siteId}`, { method: 'DELETE' });
             if (res.ok) {
                 router.refresh();
             } else {

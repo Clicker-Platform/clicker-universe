@@ -17,7 +17,7 @@ export function SystemBlockForm({ data, onChange, blockType }: SystemBlockFormPr
     const getSettingsLink = () => {
         switch (blockType) {
             case 'quick_actions':
-                return { url: '/admin/navigation', label: 'Navigation Settings' };
+                return { url: '/admin/canvas', label: 'Canvas Studio (Header Navigation)' };
             case 'hours':
             case 'branches':
                 return { url: '/admin/profile', label: 'Business Profile' };

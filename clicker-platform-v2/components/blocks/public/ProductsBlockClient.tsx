@@ -90,25 +90,23 @@ export const ProductsBlockClient = ({ data, products, phoneNumber, whatsappSetti
                                 )}
                             </div>
                             <div className="flex-1 flex flex-col justify-start min-w-0">
-                                <div className="flex justify-between items-start gap-2">
-                                    <h3
-                                        className="font-bold text-xl leading-tight mb-2 group-hover:opacity-80 transition-opacity"
-                                        style={{ fontFamily: theme.fonts.heading, color: theme.colors.foreground }}
+                                {showLabel && product.category && (
+                                    <span
+                                        className={`text-[10px] font-bold uppercase tracking-wider opacity-50 mb-1`}
+                                        style={{ fontFamily: theme.fonts.body, color: isGlass ? '#fff' : theme.colors.foreground }}
                                     >
-                                        {product.name || (product as any).title}
-                                    </h3>
-                                    {showLabel && product.category && (
-                                        <span
-                                            className={`text-xs font-bold uppercase tracking-wider opacity-60 px-2 py-1 rounded ${isGlass ? 'bg-white/10 text-white' : 'bg-gray-100'}`}
-                                            style={{ fontFamily: theme.fonts.body, color: isGlass ? undefined : theme.colors.foreground }}
-                                        >
-                                            {product.category}
-                                        </span>
-                                    )}
-                                </div>
+                                        {product.category}
+                                    </span>
+                                )}
+                                <h3
+                                    className="font-bold text-base leading-tight mb-1 group-hover:opacity-80 transition-opacity"
+                                    style={{ fontFamily: theme.fonts.heading, color: theme.colors.foreground }}
+                                >
+                                    {product.name || (product as any).title}
+                                </h3>
                                 {showPrice && (
                                     <p
-                                        className="font-medium text-lg"
+                                        className="font-medium text-sm"
                                         style={{ fontFamily: theme.fonts.body, color: theme.colors.foreground, opacity: 0.7 }}
                                     >
                                         {product.price}

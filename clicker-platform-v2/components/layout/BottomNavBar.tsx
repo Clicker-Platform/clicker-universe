@@ -39,8 +39,8 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({ previewMode = false 
         if (item.type === 'form' && item.formId) {
             e.preventDefault();
             try {
-                const snap = await getDoc(doc(db, 'forms', item.formId));
-                if (snap.exists()) {
+                const snap = await getDoc(doc(db, 'sites', siteId, 'forms', item.formId));
+                if (snap.exists() && snap.data().isPublished !== false) {
                     setSelectedForm({ id: snap.id, ...snap.data() });
                     setIsFormOpen(true);
                 }
@@ -187,6 +187,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({ previewMode = false 
                 isOpen={isFormOpen}
                 onClose={() => setIsFormOpen(false)}
                 form={selectedForm}
+                siteId={siteId}
             />
         </>
     );

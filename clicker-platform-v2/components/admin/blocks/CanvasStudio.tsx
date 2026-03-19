@@ -2,7 +2,7 @@
 
 import { useEditor } from './EditorContext';
 import { BlockManager } from './BlockManager';
-import { Settings, Layers, Box, FileText, BarChart2, CheckSquare, Square, X, Plus, Link2, FileInput } from 'lucide-react';
+import { Settings, Layers, Box, FileText, BarChart2, CheckSquare, Square, X, Plus, Link2, FileInput, ShoppingBag } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
 import { TemplateProvider } from '@/components/TemplateProvider';
 import { BlockRenderer } from '@/components/blocks/BlockRenderer';
@@ -25,6 +25,7 @@ const AddBlocksPanel = dynamic(() => import('./LeftSidebarPanels').then(m => m.A
 const SlideOverPanel = dynamic(() => import('./SlideOverPanel').then(m => m.SlideOverPanel));
 const LinksPanel = dynamic(() => import('./panels/LinksPanel').then(m => m.LinksPanel));
 const FormsPanel = dynamic(() => import('./panels/FormsPanel').then(m => m.FormsPanel));
+const ProductsPanel = dynamic(() => import('./panels/ProductsPanel').then(m => m.ProductsPanel));
 
 export function CanvasStudio({
     globalSettings,
@@ -55,14 +56,14 @@ export function CanvasStudio({
     const [host] = useState(() => typeof window !== 'undefined' ? window.location.host : '');
     const [tooltip, setTooltip] = useState<{ label: string; top: number; left: number; side?: boolean } | null>(null);
     const [leftPanel, setLeftPanel] = useState<'pages' | 'add' | 'navigator' | null>('navigator');
-    const [slideOverPanel, setSlideOverPanel] = useState<'links' | 'forms' | null>(null);
+    const [slideOverPanel, setSlideOverPanel] = useState<'links' | 'forms' | 'products' | null>(null);
 
     const toggleLeftPanel = (panel: 'pages' | 'add' | 'navigator') => {
         setLeftPanel(prev => prev === panel ? null : panel);
         setSlideOverPanel(null);
     };
 
-    const toggleSlideOverPanel = (panel: 'links' | 'forms') => {
+    const toggleSlideOverPanel = (panel: 'links' | 'forms' | 'products') => {
         setSlideOverPanel(prev => prev === panel ? null : panel);
         setLeftPanel(null);
     };
@@ -79,6 +80,7 @@ export function CanvasStudio({
                 case 'z': toggleLeftPanel('navigator'); break;
                 case 'l': toggleSlideOverPanel('links'); break;
                 case 'f': toggleSlideOverPanel('forms'); break;
+                case 'b': toggleSlideOverPanel('products'); break;
             }
         };
         window.addEventListener('keydown', handler);
@@ -163,6 +165,7 @@ export function CanvasStudio({
                     {([
                         { id: 'links' as const, icon: Link2, label: 'Links', shortcut: 'L' },
                         { id: 'forms' as const, icon: FileInput, label: 'Forms', shortcut: 'F' },
+                        { id: 'products' as const, icon: ShoppingBag, label: 'Products', shortcut: 'B' },
                     ]).map(({ id, icon: Icon, label, shortcut }) => (
                         <button
                             key={id}
@@ -215,12 +218,13 @@ export function CanvasStudio({
             {/* Slide-over Panel (Links / Forms / Products) */}
             {slideOverPanel && (
                 <SlideOverPanel
-                    title={slideOverPanel === 'links' ? 'Links' : slideOverPanel === 'forms' ? 'Forms' : slideOverPanel}
-                    icon={slideOverPanel === 'links' ? Link2 : slideOverPanel === 'forms' ? FileInput : Link2}
+                    title={slideOverPanel === 'links' ? 'Links' : slideOverPanel === 'forms' ? 'Forms' : slideOverPanel === 'products' ? 'Products' : slideOverPanel}
+                    icon={slideOverPanel === 'links' ? Link2 : slideOverPanel === 'forms' ? FileInput : slideOverPanel === 'products' ? ShoppingBag : Link2}
                     onClose={() => setSlideOverPanel(null)}
                 >
                     {slideOverPanel === 'links' && <LinksPanel />}
                     {slideOverPanel === 'forms' && <FormsPanel />}
+                    {slideOverPanel === 'products' && <ProductsPanel />}
                 </SlideOverPanel>
             )}
 
@@ -555,7 +559,7 @@ export function CanvasStudio({
                         </div>
                     ) : selectedBlockId?.startsWith('chrome:') ? (
                         selectedBlockId === 'chrome:header' ? (
-                            <ChromeHeaderPanel siteId={siteId!} />
+                            <ChromeHeaderPanel />
                         ) : selectedBlockId === 'chrome:footer' ? (
                             <ChromeFooterPanel
                                 footerText={globalSettings?.footerText || ''}

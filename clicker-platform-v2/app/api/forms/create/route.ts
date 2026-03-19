@@ -13,17 +13,21 @@ export async function POST(request: Request) {
 
         const form = await request.json();
 
-        // Remove id from data if it exists to avoid overwriting document key with inside data
-        const { id, ...data } = form;
+        // Remove id and siteId from data to avoid storing them as fields
+        const { id, siteId, ...data } = form;
+
+        if (!siteId) {
+            return NextResponse.json({ error: 'Missing siteId' }, { status: 400 });
+        }
 
         let docRef;
         if (id) {
             // Update
-            docRef = adminDb.collection('forms').doc(id);
+            docRef = adminDb.collection('sites').doc(siteId).collection('forms').doc(id);
             await docRef.set({ ...data, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
         } else {
             // Create
-            const res = await adminDb.collection('forms').add({
+            const res = await adminDb.collection('sites').doc(siteId).collection('forms').add({
                 ...data,
                 createdAt: FieldValue.serverTimestamp()
             });

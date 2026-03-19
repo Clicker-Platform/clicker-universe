@@ -7,19 +7,21 @@ import { doc, getDoc } from 'firebase/firestore';
 import { FormBuilderClient } from './FormBuilderClient';
 import { Form } from '@/data/mockData';
 import { Loader2 } from 'lucide-react';
+import { useSite } from '@/lib/site-context';
 
 export default function BuilderPage() {
     const searchParams = useSearchParams();
     const formId = searchParams.get('id');
+    const { siteId } = useSite();
     const [initialForm, setInitialForm] = useState<Form | undefined>(undefined);
     const [loading, setLoading] = useState(!!formId);
 
     useEffect(() => {
         async function fetchForm() {
-            if (!formId) return;
+            if (!formId || !siteId) return;
 
             try {
-                const docSnap = await getDoc(doc(db, 'forms', formId));
+                const docSnap = await getDoc(doc(db, 'sites', siteId, 'forms', formId));
                 if (docSnap.exists()) {
                     const data = docSnap.data();
 
@@ -48,7 +50,7 @@ export default function BuilderPage() {
         }
 
         fetchForm();
-    }, [formId]);
+    }, [formId, siteId]);
 
     if (loading) {
         return (

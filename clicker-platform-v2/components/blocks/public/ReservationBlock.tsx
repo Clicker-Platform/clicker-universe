@@ -1,9 +1,21 @@
 'use client';
 
-import ReservationWidget from '@/lib/modules/reservation/public/ReservationWidget';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { Calendar } from 'lucide-react';
+import { Calendar, Loader2 } from 'lucide-react';
 import { useTemplate } from '@/components/TemplateProvider';
+
+const ReservationWidget = dynamic(
+    () => import('@/lib/modules/reservation/public/ReservationWidget'),
+    {
+        loading: () => (
+            <div className="flex items-center justify-center py-16">
+                <Loader2 size={28} className="animate-spin text-[var(--theme-primary,#666)]" />
+            </div>
+        ),
+        ssr: false
+    }
+);
 
 export const ReservationBlock = ({ data, siteId }: { data: any, siteId?: string }) => {
     const { theme } = useTemplate();

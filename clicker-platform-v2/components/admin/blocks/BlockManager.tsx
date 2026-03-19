@@ -129,6 +129,19 @@ export const BlockManager = ({ blocks, onChange, templateId, onAddClick }: Block
                 <span className="flex-1 text-xs font-medium truncate">Site Footer</span>
             </div>
 
+            {/* Pinned Bottom Nav */}
+            <div
+                className={`flex items-center gap-1.5 px-2 py-1.5 cursor-pointer transition-colors ${
+                    selectedBlockId === 'chrome:bottomnav'
+                    ? 'bg-blue-500/10 text-blue-400'
+                    : 'text-neutral-400 hover:bg-neutral-800 hover:text-neutral-200'
+                }`}
+                onClick={() => setSelectedBlockId?.('chrome:bottomnav')}
+            >
+                <Lock size={13} className="flex-shrink-0 text-neutral-600" />
+                <span className="flex-1 text-xs font-medium truncate">Bottom Navigation</span>
+            </div>
+
             <ConfirmationDialog
                 isOpen={!!blockToDelete}
                 title="Delete Block"

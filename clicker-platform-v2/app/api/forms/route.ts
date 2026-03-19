@@ -14,7 +14,7 @@ export async function GET(request: Request) {
 
     try {
         const doc = await adminDb.collection('sites').doc(siteId).collection('forms').doc(id).get();
-        if (!doc.exists) {
+        if (!doc.exists || doc.data()?.isPublished === false) {
             return NextResponse.json({ error: 'Form not found' }, { status: 404 });
         }
         return NextResponse.json({ id: doc.id, ...doc.data() });

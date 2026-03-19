@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { LayoutDashboard, Link as LinkIcon, ShoppingBag, User, LogOut, Menu, X, Settings, Map as MapIcon, Palette, FileText, Inbox, Box, Zap, Calendar, List, Users, Globe, Navigation, Sun, Moon } from 'lucide-react';
+import { LayoutDashboard, User, LogOut, Menu, X, Settings, Map as MapIcon, Palette, Inbox, Box, Zap, Users, Globe, Sun, Moon } from 'lucide-react';
 import { collection, query, where, onSnapshot, doc } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase';
 import { signOut, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
@@ -146,13 +146,9 @@ export function AdminSidebar() {
         const allCoreItems = [
             { icon: LayoutDashboard, label: 'Overview', href: `${baseUrl}/admin`, permission: null },
             { icon: Inbox, label: 'Inbox', href: `${baseUrl}/admin/inbox`, permission: 'biolink' },
-            { icon: LinkIcon, label: 'Links', href: `${baseUrl}/admin/links`, permission: 'biolink' },
-            { icon: FileText, label: 'Pages', href: `${baseUrl}/admin/pages`, permission: 'biolink' },
-            { icon: FileText, label: 'Forms Builder', href: `${baseUrl}/admin/forms`, permission: 'biolink' },
-            { icon: ShoppingBag, label: 'Products', href: `${baseUrl}/admin/products`, permission: 'biolink' },
+            { icon: Box, label: 'Canvas Studio', href: `${baseUrl}/admin/canvas`, permission: 'biolink' },
             { icon: MapIcon, label: 'Business', href: `${baseUrl}/admin/business`, permission: 'biolink' },
             { icon: Palette, label: 'Template', href: `${baseUrl}/admin/template`, permission: 'biolink' },
-            { icon: Navigation, label: 'Navigation', href: `${baseUrl}/admin/navigation`, permission: 'biolink' },
             { icon: User, label: 'Profile', href: `${baseUrl}/admin/profile`, permission: null },
             { icon: Users, label: 'Team', href: `${baseUrl}/admin/settings/team`, permission: 'manage_team' },
             { icon: Settings, label: 'Settings', href: `${baseUrl}/admin/settings`, permission: 'settings' },
@@ -215,12 +211,12 @@ export function AdminSidebar() {
                 title: 'Workspace',
                 match: (item: NavItem) => {
                     const label = item.label === 'Settings' ? 'Website' : (item.label === 'Profile' ? 'My Account' : item.label);
-                    return ['Overview', 'Business', 'My Account', 'Template', 'Navigation', 'Website'].includes(label);
+                    return ['Overview', 'Business', 'My Account', 'Template', 'Website'].includes(label);
                 }
             },
             {
                 title: 'Site & Content',
-                match: (item: NavItem) => ['Pages', 'Forms Builder', 'Products', 'Links'].includes(item.label)
+                match: (item: NavItem) => ['Canvas Studio'].includes(item.label)
             },
             {
                 title: 'Organization',
