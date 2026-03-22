@@ -29,6 +29,7 @@ const LinkBlockForm = dynamic(() => import('./forms/LinkBlockForm').then(mod => 
 const MapForm = dynamic(() => import('./forms/MapForm').then(mod => mod.MapForm), { loading: () => <FormSkeleton /> });
 const ImageGalleryBlockForm = dynamic(() => import('./forms/ImageGalleryBlockForm').then(mod => mod.ImageGalleryBlockForm), { loading: () => <FormSkeleton /> });
 const SystemBlockForm = dynamic(() => import('./forms/SystemBlockForm').then(mod => mod.SystemBlockForm), { loading: () => <FormSkeleton /> });
+const QuickActionsBlockForm = dynamic(() => import('./forms/QuickActionsBlockForm').then(mod => mod.QuickActionsBlockForm), { loading: () => <FormSkeleton /> });
 
 interface BlockFormRendererProps {
     block: PageBlock;
@@ -120,8 +121,10 @@ export const BlockFormRenderer = memo(({ block, onChange, templateId = 'classic'
         case 'map': return renderWithLayoutPicker(<MapForm data={block.data} onChange={handleDataChange} />);
         case 'image_gallery': return renderWithLayoutPicker(<ImageGalleryBlockForm data={block.data} onChange={handleDataChange} />);
         
-        // System blocks (configured elsewhere, with minimal title override)
         case 'quick_actions':
+            return <QuickActionsBlockForm data={block.data} onChange={handleDataChange} />;
+
+        // System blocks (configured elsewhere, with minimal title override)
         case 'hours':
         case 'featured_product':
         case 'branches':

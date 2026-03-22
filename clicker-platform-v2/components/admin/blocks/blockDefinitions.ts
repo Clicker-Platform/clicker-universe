@@ -12,7 +12,7 @@ export const BLOCK_OPTIONS: { type: BlockType; label: string; icon: React.Elemen
     { type: 'link', label: 'Link Card', icon: Link },
     { type: 'map', label: 'Map', icon: Map },
     { type: 'image_gallery', label: 'Image Gallery', icon: ImageIcon },
-    { type: 'quick_actions', label: 'Quick Links', icon: List },
+    { type: 'quick_actions', label: 'Quick Actions', icon: List },
     { type: 'hours', label: 'Operating Hours', icon: Clock },
     { type: 'featured_product', label: 'Featured Product', icon: Star },
     { type: 'branches', label: 'Branches', icon: MapPin },

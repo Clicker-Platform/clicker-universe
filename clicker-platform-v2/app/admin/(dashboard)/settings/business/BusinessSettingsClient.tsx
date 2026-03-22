@@ -1,14 +1,14 @@
 'use client';
-// Force HMR update
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { db } from '@/lib/firebase';
 import { doc, setDoc, collection, addDoc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { BusinessHours, BusinessContact, Branch, defaultBusinessSchedule } from '@/data/mockData';
 import { SubmitButton } from '@/components/admin/SubmitButton';
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 import { ScheduleEditor } from './components/ScheduleEditor';
-import { Map, Clock, Eye, EyeOff, Tag, Phone, Mail, MapPin, ExternalLink, Plus, Trash2, Edit2, Save, Store, User } from 'lucide-react';
+import { SettingsSubNav } from '@/components/admin/SettingsSubNav';
+import { Map, Clock, Eye, EyeOff, Tag, Phone, Mail, MapPin, ExternalLink, Plus, Trash2, Edit2, Save, GitBranch } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useSite } from '@/lib/site-context';
@@ -17,55 +17,50 @@ interface BusinessSettingsClientProps {
     initialHours: BusinessHours;
     initialContact: BusinessContact;
     initialBranches: Branch[];
+    initialHasBranches: boolean;
 }
 
 type Tab = 'contact' | 'hours' | 'branches';
 
-export default function BusinessSettingsClient({ initialHours, initialContact, initialBranches }: BusinessSettingsClientProps) {
+export default function BusinessSettingsClient({ initialHours, initialContact, initialBranches, initialHasBranches }: BusinessSettingsClientProps) {
     const { siteId } = useSite();
     const router = useRouter();
     const [activeTab, setActiveTab] = useState<Tab>('contact');
 
-    // State for Contact & Hours (Single Button Save)
     const [hours, setHours] = useState<BusinessHours>({
         ...initialHours,
         schedule: initialHours.schedule || defaultBusinessSchedule
     });
     const [contact, setContact] = useState<BusinessContact>(initialContact);
+    const [hasBranches, setHasBranches] = useState(initialHasBranches);
 
-    // State for Branches (Immediate CRUD)
     const [branches, setBranches] = useState<Branch[]>(initialBranches);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Branch Editing State
     const [editingBranch, setEditingBranch] = useState<Branch | null>(null);
     const [isBranchModalOpen, setIsBranchModalOpen] = useState(false);
 
-    // Delete Confirmation State
     const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; branchId: string | null }>({
         isOpen: false,
         branchId: null
     });
 
-    // Validation State
     const [validationErrors, setValidationErrors] = useState<{ [key: string]: string }>({});
 
-
-    // Sync branches when initialBranches changes (e.g. after router.refresh)
     useEffect(() => {
         setBranches(initialBranches);
     }, [initialBranches]);
 
-    // --- Main Settings Save (Contact + Hours) ---
-    const handleSaveSettings = async (e: React.FormEvent) => {
+    // --- Main Settings Save (Contact + Hours + hasBranches) ---
+    const handleSaveSettings = useCallback(async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
 
         try {
-            // Merge data into one document 'content/business'
             const mergedData = {
                 ...hours,
-                ...contact
+                ...contact,
+                hasBranches
             };
             if (!siteId) return;
             await setDoc(doc(db, 'sites', siteId, 'content', 'business'), mergedData);
@@ -77,10 +72,22 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
         } finally {
             setIsSubmitting(false);
         }
-    };
+    }, [siteId, hours, contact, hasBranches, router]);
+
+    const handleToggleHasBranches = useCallback(async (value: boolean) => {
+        setHasBranches(value);
+        if (!siteId) return;
+        try {
+            await setDoc(doc(db, 'sites', siteId, 'content', 'business'), { hasBranches: value }, { merge: true });
+            toast.success(value ? 'Branches enabled.' : 'Branches hidden.');
+        } catch {
+            toast.error('Failed to update branch setting.');
+            setHasBranches(!value);
+        }
+    }, [siteId]);
 
     // --- Branch CRUD ---
-    const validateBranch = (branch: Branch): boolean => {
+    const validateBranch = useCallback((branch: Branch): boolean => {
         const errors: { [key: string]: string } = {};
 
         if (!branch.name || branch.name.length < 2) {
@@ -91,28 +98,23 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
             errors.address = 'Address must be at least 5 characters.';
         }
 
-        // Phone: Optional, digits/spaces/dash/+ only
         if (branch.phone && branch.phone.trim() !== '' && !/^[\d\s\-+]+$/.test(branch.phone)) {
             errors.phone = 'Invalid phone format (digits, spaces, -, + only).';
         }
 
-        // Map URL: Optional, must start with http/https
         if (branch.mapUrl && branch.mapUrl.trim() !== '' && !/^https?:\/\/.+/.test(branch.mapUrl)) {
             errors.mapUrl = 'URL must start with http:// or https://';
         }
 
         setValidationErrors(errors);
         return Object.keys(errors).length === 0;
-    };
+    }, []);
 
-    const handleSaveBranch = async (e: React.FormEvent) => {
+    const handleSaveBranch = useCallback(async (e: React.FormEvent) => {
         e.preventDefault();
         if (!editingBranch) return;
 
-        // Run validation
-        if (!validateBranch(editingBranch)) {
-            return;
-        }
+        if (!validateBranch(editingBranch)) return;
 
         setIsSubmitting(true);
         try {
@@ -120,29 +122,22 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
             let updatedBranches = [...branches];
 
             if (editingBranch.id === 'new') {
-                // Create
                 const { id, ...data } = editingBranch;
                 const docRef = await addDoc(collection(db, 'sites', siteId, 'branches'), data);
-
-                // Add to local state immediately
                 const newBranch: Branch = { ...editingBranch, id: docRef.id };
                 updatedBranches.push(newBranch);
             } else {
-                // Update
                 const { id, ...data } = editingBranch;
                 await updateDoc(doc(db, 'sites', siteId, 'branches', id), data);
-
-                // Update local state immediately
                 updatedBranches = updatedBranches.map(b =>
                     b.id === editingBranch.id ? editingBranch : b
                 );
             }
 
             setBranches(updatedBranches);
-            // Refresh server data in background
             router.refresh();
-
             setEditingBranch(null);
+            setIsBranchModalOpen(false);
             setValidationErrors({});
             toast.success('Branch saved successfully!');
         } catch (error) {
@@ -151,37 +146,33 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
         } finally {
             setIsSubmitting(false);
         }
-    };
+    }, [siteId, editingBranch, branches, validateBranch, router]);
 
-    const confirmDeleteBranch = (id: string) => {
+    const confirmDeleteBranch = useCallback((id: string) => {
         setDeleteConfirm({ isOpen: true, branchId: id });
-    };
+    }, []);
 
-    const executeDeleteBranch = async () => {
+    const executeDeleteBranch = useCallback(async () => {
         const id = deleteConfirm.branchId;
         if (!id || !siteId) return;
 
-        setIsSubmitting(true); // Show loading on dialog button if supported, or just block
+        setIsSubmitting(true);
         try {
-            // Optimistic update
-            const previousBranches = [...branches];
             setBranches(branches.filter(b => b.id !== id));
-
             await deleteDoc(doc(db, 'sites', siteId, 'branches', id));
             toast.success('Branch deleted.');
             router.refresh();
         } catch (error) {
             console.error('Error deleting branch:', error);
             toast.error('Failed to delete branch.');
-            // Revert could be here
             router.refresh();
         } finally {
             setIsSubmitting(false);
             setDeleteConfirm({ isOpen: false, branchId: null });
         }
-    };
+    }, [siteId, deleteConfirm.branchId, branches, router]);
 
-    const openNewBranchModal = () => {
+    const openNewBranchModal = useCallback(() => {
         setEditingBranch({
             id: 'new',
             name: '',
@@ -192,19 +183,19 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
             order: branches.length
         });
         setIsBranchModalOpen(true);
-    };
+    }, [branches.length]);
 
-    const openEditBranchModal = (branch: Branch) => {
+    const openEditBranchModal = useCallback((branch: Branch) => {
         setEditingBranch({ ...branch });
         setIsBranchModalOpen(true);
-    };
+    }, []);
 
     return (
-        <div className="max-w-5xl mx-auto pb-20">
-            <h1 className="text-3xl font-black text-brand-dark mb-8 uppercase flex items-center gap-3">
-                <Store size={32} />
-                Business Manager
-            </h1>
+        <div className="max-w-2xl pb-20">
+            <h1 className="text-3xl font-black text-brand-dark dark:text-neutral-100 mb-2 uppercase">Business Information</h1>
+            <p className="text-gray-500 dark:text-neutral-500 text-sm mb-8">Contact details, operating hours, and branch locations.</p>
+
+            <SettingsSubNav />
 
             {/* Tabs */}
             <div className="flex gap-2 overflow-x-auto pb-4 mb-4">
@@ -212,17 +203,17 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                     onClick={() => setActiveTab('contact')}
                     className={`px-6 py-2.5 rounded-full font-bold whitespace-nowrap transition-all flex items-center gap-2 ${activeTab === 'contact'
                         ? 'bg-brand-dark text-brand-green shadow-md'
-                        : 'bg-white dark:bg-neutral-900 text-gray-500 dark:text-neutral-500 hover:bg-gray-50 dark:hover:bg-neutral-800'
+                        : 'bg-white dark:bg-neutral-900 text-gray-500 dark:text-neutral-500 border border-gray-200 dark:border-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-800'
                         }`}
                 >
-                    <User size={18} />
-                    Profile & Contact
+                    <MapPin size={18} />
+                    Contact & Location
                 </button>
                 <button
                     onClick={() => setActiveTab('hours')}
                     className={`px-6 py-2.5 rounded-full font-bold whitespace-nowrap transition-all flex items-center gap-2 ${activeTab === 'hours'
                         ? 'bg-brand-dark text-brand-green shadow-md'
-                        : 'bg-white dark:bg-neutral-900 text-gray-500 dark:text-neutral-500 hover:bg-gray-50 dark:hover:bg-neutral-800'
+                        : 'bg-white dark:bg-neutral-900 text-gray-500 dark:text-neutral-500 border border-gray-200 dark:border-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-800'
                         }`}
                 >
                     <Clock size={18} />
@@ -232,11 +223,11 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                     onClick={() => setActiveTab('branches')}
                     className={`px-6 py-2.5 rounded-full font-bold whitespace-nowrap transition-all flex items-center gap-2 ${activeTab === 'branches'
                         ? 'bg-brand-dark text-brand-green shadow-md'
-                        : 'bg-white dark:bg-neutral-900 text-gray-500 dark:text-neutral-500 hover:bg-gray-50 dark:hover:bg-neutral-800'
+                        : 'bg-white dark:bg-neutral-900 text-gray-500 dark:text-neutral-500 border border-gray-200 dark:border-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-800'
                         }`}
                 >
-                    <MapPin size={18} />
-                    Branches ({branches.length})
+                    <GitBranch size={18} />
+                    Branches {hasBranches && branches.length > 0 && `(${branches.length})`}
                 </button>
             </div>
 
@@ -249,27 +240,27 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                         <div className="flex items-center gap-3 mb-6 p-4 bg-blue-50 dark:bg-blue-950/30 text-blue-800 dark:text-blue-400 rounded-xl border border-blue-100 dark:border-blue-800">
                             <MapPin size={24} />
                             <div>
-                                <h3 className="font-bold">Main Headquarters</h3>
-                                <p className="text-sm opacity-80">This address will be shown on the home page as the main location.</p>
+                                <h3 className="font-bold">Main Location</h3>
+                                <p className="text-sm opacity-80">This address is shown on your public page as the main location.</p>
                             </div>
                         </div>
 
                         <div className="grid grid-cols-1 gap-6">
                             <div>
-                                <label className="block text-sm font-bold text-brand-dark mb-2 flex items-center gap-2">
-                                    <MapPin size={16} /> Business Address
+                                <label className="block text-sm font-bold text-brand-dark dark:text-neutral-200 mb-2 flex items-center gap-2">
+                                    <MapPin size={16} /> Address
                                 </label>
                                 <textarea
                                     value={contact.address}
                                     onChange={(e) => setContact({ ...contact, address: e.target.value })}
                                     className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent min-h-[80px]"
-                                    placeholder="Enter your full business address..."
+                                    placeholder="Enter your full address..."
                                 />
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label className="block text-sm font-bold text-brand-dark mb-2 flex items-center gap-2">
+                                    <label className="block text-sm font-bold text-brand-dark dark:text-neutral-200 mb-2 flex items-center gap-2">
                                         <Phone size={16} /> WhatsApp Number
                                     </label>
                                     <input
@@ -279,10 +270,10 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                                         className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent"
                                         placeholder="e.g. 628123456789"
                                     />
-                                    <p className="text-xs text-gray-400 dark:text-neutral-600 mt-1">Used for 'Order via WhatsApp'. Include country code, no +.</p>
+                                    <p className="text-xs text-gray-400 dark:text-neutral-600 mt-1">Include country code, no +. Used for notifications and direct customer chat.</p>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-bold text-brand-dark mb-2 flex items-center gap-2">
+                                    <label className="block text-sm font-bold text-brand-dark dark:text-neutral-200 mb-2 flex items-center gap-2">
                                         <Mail size={16} /> Email Address
                                     </label>
                                     <input
@@ -296,7 +287,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold text-brand-dark mb-2 flex items-center gap-2">
+                                <label className="block text-sm font-bold text-brand-dark dark:text-neutral-200 mb-2 flex items-center gap-2">
                                     <Map size={16} /> Google Maps Link
                                 </label>
                                 <div className="flex gap-2">
@@ -334,48 +325,36 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                 {/* --- HOURS TAB --- */}
                 {activeTab === 'hours' && (
                     <form onSubmit={handleSaveSettings} className="space-y-6">
-                        {/* Visibility Toggle */}
-                        <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-neutral-800/50 rounded-xl border border-gray-200 dark:border-neutral-700 transition-all hover:border-gray-300 dark:hover:border-neutral-600">
+                        <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-neutral-800/50 rounded-xl border border-gray-200 dark:border-neutral-700">
                             <div>
-                                <h3 className="font-bold text-lg text-brand-dark">Display Widget</h3>
+                                <h3 className="font-bold text-lg text-brand-dark dark:text-neutral-100">Display Widget</h3>
                                 <p className="text-sm text-gray-500 dark:text-neutral-500">Show/Hide hours on public page</p>
                             </div>
                             <button
                                 type="button"
                                 onClick={() => setHours({ ...hours, enabled: !hours.enabled })}
-                                className={`
-                                    relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-brand-green focus:ring-offset-2
-                                    ${hours.enabled ? 'bg-brand-dark' : 'bg-gray-200 dark:bg-neutral-700'}
-                                `}
+                                className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-brand-green focus:ring-offset-2 ${hours.enabled ? 'bg-brand-dark' : 'bg-gray-200 dark:bg-neutral-700'}`}
                             >
-                                <span
-                                    className={`
-                                        inline-block h-6 w-6 transform rounded-full bg-white transition-transform
-                                        ${hours.enabled ? 'translate-x-7' : 'translate-x-1'}
-                                    `}
-                                />
+                                <span className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${hours.enabled ? 'translate-x-7' : 'translate-x-1'}`} />
                             </button>
                         </div>
 
                         <div className={`space-y-6 ${!hours.enabled ? 'opacity-50 pointer-events-none' : ''}`}>
-                            <div className="grid grid-cols-1 gap-6">
-                                <div>
-                                    <label className="block text-sm font-bold text-brand-dark mb-2 flex items-center gap-2">
-                                        <Tag size={16} /> Label
-                                    </label>
-                                    <input
-                                        value={hours.label}
-                                        onChange={(e) => setHours({ ...hours, label: e.target.value })}
-                                        className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent"
-                                        placeholder="Opening Hours"
-                                    />
-                                    <p className="text-xs text-gray-400 dark:text-neutral-600 mt-1">This title is displayed above the schedule on the public page.</p>
-                                </div>
+                            <div>
+                                <label className="block text-sm font-bold text-brand-dark dark:text-neutral-200 mb-2 flex items-center gap-2">
+                                    <Tag size={16} /> Widget Label
+                                </label>
+                                <input
+                                    value={hours.label}
+                                    onChange={(e) => setHours({ ...hours, label: e.target.value })}
+                                    className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent"
+                                    placeholder="Opening Hours"
+                                />
+                                <p className="text-xs text-gray-400 dark:text-neutral-600 mt-1">e.g. "Jam Buka" or "Opening Hours" — displayed above the schedule on your public page.</p>
                             </div>
 
                             <hr className="border-gray-100 dark:border-neutral-800" />
 
-                            {/* Master Schedule Editor */}
                             <ScheduleEditor
                                 schedule={hours.schedule || defaultBusinessSchedule}
                                 onChange={(newSchedule) => setHours({ ...hours, schedule: newSchedule })}
@@ -395,59 +374,84 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
 
                 {/* --- BRANCHES TAB --- */}
                 {activeTab === 'branches' && (
-                    <div>
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="font-bold text-xl text-brand-dark">Locations List</h3>
+                    <div className="space-y-6">
+                        {/* Has Branches Toggle */}
+                        <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-neutral-800/50 rounded-xl border border-gray-200 dark:border-neutral-700">
+                            <div>
+                                <h3 className="font-bold text-lg text-brand-dark dark:text-neutral-100">Has Branches</h3>
+                                <p className="text-sm text-gray-500 dark:text-neutral-500">Enable to manage and display multiple locations</p>
+                            </div>
                             <button
-                                onClick={openNewBranchModal}
-                                className="flex items-center gap-2 bg-brand-dark text-white px-4 py-2 rounded-lg font-bold hover:bg-brand-green hover:text-brand-dark transition-colors"
+                                type="button"
+                                onClick={() => handleToggleHasBranches(!hasBranches)}
+                                className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-brand-green focus:ring-offset-2 ${hasBranches ? 'bg-brand-dark' : 'bg-gray-200 dark:bg-neutral-700'}`}
                             >
-                                <Plus size={18} /> Add Branch
+                                <span className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${hasBranches ? 'translate-x-7' : 'translate-x-1'}`} />
                             </button>
                         </div>
 
-                        {branches.length === 0 ? (
-                            <div className="text-center py-12 bg-gray-50 dark:bg-neutral-800/50 rounded-xl border border-dashed border-gray-200 dark:border-neutral-700">
-                                <MapPin size={48} className="mx-auto text-gray-300 dark:text-neutral-600 mb-3" />
-                                <p className="text-gray-500 dark:text-neutral-500 font-medium">No branches added yet.</p>
-                            </div>
-                        ) : (
-                            <div className="space-y-4">
-                                {branches.map((branch) => (
-                                    <div key={branch.id} className="bg-gray-50 dark:bg-neutral-800/50 p-4 rounded-xl border border-gray-200 dark:border-neutral-700 flex items-start justify-between group hover:border-brand-dark/50 transition-colors">
-                                        <div className="flex-1">
-                                            <h4 className="font-bold text-lg text-brand-dark">{branch.name}</h4>
-                                            <p className="text-gray-600 dark:text-neutral-400 text-sm whitespace-pre-line mt-1">{branch.address}</p>
+                        {hasBranches && (
+                            <div>
+                                <div className="flex justify-between items-center mb-6">
+                                    <h3 className="font-bold text-xl text-brand-dark dark:text-neutral-100">Branch List</h3>
+                                    <button
+                                        onClick={openNewBranchModal}
+                                        className="flex items-center gap-2 bg-brand-dark text-white px-4 py-2 rounded-lg font-bold hover:bg-brand-green hover:text-brand-dark transition-colors"
+                                    >
+                                        <Plus size={18} /> Add Branch
+                                    </button>
+                                </div>
 
-                                            <div className="flex gap-4 mt-3">
-                                                {branch.phone && (
-                                                    <span className="flex items-center gap-1.5 text-xs font-bold text-gray-500 dark:text-neutral-500 bg-white dark:bg-neutral-900 px-2 py-1 rounded-md border border-gray-200 dark:border-neutral-700">
-                                                        <Phone size={12} /> {branch.phone}
-                                                    </span>
-                                                )}
-                                                {branch.mapUrl && (
-                                                    <a href={branch.mapUrl} target="_blank" className="flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:underline bg-blue-50 dark:bg-blue-950/30 px-2 py-1 rounded-md border border-blue-100 dark:border-blue-800">
-                                                        <ExternalLink size={12} /> Map Data
-                                                    </a>
-                                                )}
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-2 opacity-100 lg:opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <button
-                                                onClick={() => openEditBranchModal(branch)}
-                                                className="p-2 bg-white dark:bg-neutral-900 text-gray-600 dark:text-neutral-400 hover:text-brand-dark border border-gray-200 dark:border-neutral-700 rounded-lg hover:border-brand-dark transition-colors"
-                                            >
-                                                <Edit2 size={18} />
-                                            </button>
-                                            <button
-                                                onClick={() => confirmDeleteBranch(branch.id)}
-                                                className="p-2 bg-white dark:bg-neutral-900 text-red-400 hover:text-red-500 border border-gray-200 dark:border-neutral-700 rounded-lg hover:border-red-200 dark:hover:border-red-800 transition-colors"
-                                            >
-                                                <Trash2 size={18} />
-                                            </button>
-                                        </div>
+                                {branches.length === 0 ? (
+                                    <div className="text-center py-12 bg-gray-50 dark:bg-neutral-800/50 rounded-xl border border-dashed border-gray-200 dark:border-neutral-700">
+                                        <GitBranch size={48} className="mx-auto text-gray-300 dark:text-neutral-600 mb-3" />
+                                        <p className="text-gray-500 dark:text-neutral-500 font-medium">No branches added yet.</p>
+                                        <p className="text-sm text-gray-400 dark:text-neutral-600 mt-1">Add your first branch location above.</p>
                                     </div>
-                                ))}
+                                ) : (
+                                    <div className="space-y-4">
+                                        {branches.map((branch) => (
+                                            <div key={branch.id} className="bg-gray-50 dark:bg-neutral-800/50 p-4 rounded-xl border border-gray-200 dark:border-neutral-700 flex items-start justify-between group hover:border-brand-dark/50 transition-colors">
+                                                <div className="flex-1">
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        <h4 className="font-bold text-lg text-brand-dark dark:text-neutral-100">{branch.name}</h4>
+                                                        {!branch.isActive && (
+                                                            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-gray-200 dark:bg-neutral-700 text-gray-500 dark:text-neutral-400">Inactive</span>
+                                                        )}
+                                                    </div>
+                                                    <p className="text-gray-600 dark:text-neutral-400 text-sm whitespace-pre-line">{branch.address}</p>
+
+                                                    <div className="flex gap-4 mt-3">
+                                                        {branch.phone && (
+                                                            <span className="flex items-center gap-1.5 text-xs font-bold text-gray-500 dark:text-neutral-500 bg-white dark:bg-neutral-900 px-2 py-1 rounded-md border border-gray-200 dark:border-neutral-700">
+                                                                <Phone size={12} /> {branch.phone}
+                                                            </span>
+                                                        )}
+                                                        {branch.mapUrl && (
+                                                            <a href={branch.mapUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:underline bg-blue-50 dark:bg-blue-950/30 px-2 py-1 rounded-md border border-blue-100 dark:border-blue-800">
+                                                                <ExternalLink size={12} /> Map
+                                                            </a>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-2 opacity-100 lg:opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <button
+                                                        onClick={() => openEditBranchModal(branch)}
+                                                        className="p-2 bg-white dark:bg-neutral-900 text-gray-600 dark:text-neutral-400 hover:text-brand-dark border border-gray-200 dark:border-neutral-700 rounded-lg hover:border-brand-dark transition-colors"
+                                                    >
+                                                        <Edit2 size={18} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => confirmDeleteBranch(branch.id)}
+                                                        className="p-2 bg-white dark:bg-neutral-900 text-red-400 hover:text-red-500 border border-gray-200 dark:border-neutral-700 rounded-lg hover:border-red-200 dark:hover:border-red-800 transition-colors"
+                                                    >
+                                                        <Trash2 size={18} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
@@ -459,7 +463,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
                     <div className="bg-white dark:bg-neutral-900 rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
                         <div className="p-6 border-b border-gray-100 dark:border-neutral-800/50 flex justify-between items-center sticky top-0 bg-white dark:bg-neutral-900 z-10">
-                            <h3 className="text-xl font-bold text-brand-dark">
+                            <h3 className="text-xl font-bold text-brand-dark dark:text-neutral-100">
                                 {editingBranch.id === 'new' ? 'Add New Branch' : 'Edit Branch'}
                             </h3>
                             <button onClick={() => setIsBranchModalOpen(false)} className="p-2 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-full">
@@ -469,19 +473,19 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
 
                         <form onSubmit={handleSaveBranch} className="p-6 space-y-6">
                             <div>
-                                <label className="block text-sm font-bold text-brand-dark mb-2">Branch Name</label>
+                                <label className="block text-sm font-bold text-brand-dark dark:text-neutral-200 mb-2">Branch Name</label>
                                 <input
                                     required
                                     value={editingBranch.name}
                                     onChange={(e) => setEditingBranch({ ...editingBranch, name: e.target.value })}
                                     className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 dark:bg-neutral-800 dark:text-neutral-200 ${validationErrors.name ? 'border-red-500 focus:ring-red-200' : 'border-gray-200 dark:border-neutral-700 focus:ring-brand-green'}`}
-                                    placeholder="e.g. SunnySide Downtown"
+                                    placeholder="e.g. Downtown"
                                 />
                                 {validationErrors.name && <p className="text-red-500 text-xs mt-1">{validationErrors.name}</p>}
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold text-brand-dark mb-2">Address</label>
+                                <label className="block text-sm font-bold text-brand-dark dark:text-neutral-200 mb-2">Address</label>
                                 <textarea
                                     required
                                     value={editingBranch.address}
@@ -493,7 +497,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold text-brand-dark mb-2">Phone Number (Optional)</label>
+                                <label className="block text-sm font-bold text-brand-dark dark:text-neutral-200 mb-2">Phone Number (Optional)</label>
                                 <input
                                     value={editingBranch.phone || ''}
                                     onChange={(e) => setEditingBranch({ ...editingBranch, phone: e.target.value })}
@@ -504,7 +508,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold text-brand-dark mb-2">Google Maps URL</label>
+                                <label className="block text-sm font-bold text-brand-dark dark:text-neutral-200 mb-2">Google Maps URL (Optional)</label>
                                 <input
                                     value={editingBranch.mapUrl}
                                     onChange={(e) => setEditingBranch({ ...editingBranch, mapUrl: e.target.value })}

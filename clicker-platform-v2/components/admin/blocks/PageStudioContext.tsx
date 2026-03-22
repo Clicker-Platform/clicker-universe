@@ -98,6 +98,7 @@ interface PageStudioContextType {
     deletePage: () => Promise<void>;
     setHomepage: () => Promise<void>;
     unsetHomepage: () => Promise<void>;
+    updateFooterText: (val: string) => Promise<void>;
 
     // Trash
     trashedPages: TrashedPageListItem[];
@@ -729,6 +730,18 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
         }
     }, [siteId]);
 
+    const updateFooterText = useCallback(async (val: string) => {
+        if (!siteId) return;
+        try {
+            await setDoc(doc(db, 'sites', siteId, 'content', 'siteSettings'), {
+                footerText: val,
+            }, { merge: true });
+            setGlobalSettings((prev: any) => prev ? { ...prev, footerText: val } : { footerText: val });
+        } catch (err) {
+            console.error('Error updating footer text:', err);
+        }
+    }, [siteId]);
+
     // ── Context value ──────────────────────────────────────────────────────
 
     return (
@@ -762,6 +775,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
             deletePage,
             setHomepage,
             unsetHomepage,
+            updateFooterText,
             trashedPages,
             trashedPagesLoading,
             trashPage,

@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { LayoutDashboard, User, LogOut, Menu, X, Settings, Map as MapIcon, Palette, Inbox, Box, Zap, Users, Globe, Sun, Moon } from 'lucide-react';
+import { LayoutDashboard, LogOut, Menu, X, Palette, Inbox, Box, Users, Sun, Moon, PanelLeftClose, PanelLeftOpen, User, Fingerprint, Building2, ChevronUp } from 'lucide-react';
 import { collection, query, where, onSnapshot, doc } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase';
 import { signOut, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
@@ -14,6 +14,7 @@ import { ModuleDefinition } from '@/lib/modules/types';
 import { useSite } from '@/lib/site-context';
 import { useUser } from '@/lib/user-context';
 import { useAdminTheme } from '@/lib/use-admin-theme';
+import { InboxSlideOver } from '@/components/admin/InboxSlideOver';
 
 interface NavItem {
     icon: any;
@@ -26,17 +27,16 @@ interface SidebarGroup {
     items: NavItem[];
 }
 
-// interface AdminSidebarProps {
-//    isSubdomain?: boolean;
-// }
-
 export function AdminSidebar() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
     const [modules, setModules] = useState<ModuleDefinition[]>([]);
-    const [isFocusMode, setIsFocusMode] = useState(false);
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [hoveredItem, setHoveredItem] = useState<{ label: string, top: number } | null>(null);
+    const [logoHovered, setLogoHovered] = useState(false);
+    const [settingsOpen, setSettingsOpen] = useState(false);
+    const [inboxOpen, setInboxOpen] = useState(false);
+    const settingsRef = useRef<HTMLDivElement>(null);
     const pathname = usePathname();
     const router = useRouter();
     const { siteId, tenantSlug, isSubdomain } = useSite();
@@ -53,31 +53,17 @@ export function AdminSidebar() {
     };
 
     useEffect(() => {
-        const savedFocus = localStorage.getItem('admin_focus_mode');
-        if (savedFocus !== null) {
-            setIsFocusMode(JSON.parse(savedFocus));
-        }
-
         const savedCollapsed = localStorage.getItem('sidebar_collapsed');
         if (savedCollapsed !== null) {
             setIsCollapsed(JSON.parse(savedCollapsed));
         }
     }, []);
 
-
-
-    const toggleFocusMode = () => {
-        const newValue = !isFocusMode;
-        setIsFocusMode(newValue);
-        localStorage.setItem('admin_focus_mode', JSON.stringify(newValue));
-    };
-
     const toggleSidebarCollapse = () => {
         const newValue = !isCollapsed;
         setIsCollapsed(newValue);
         localStorage.setItem('sidebar_collapsed', JSON.stringify(newValue));
     };
-
 
     const { permissions: userPermissions, isOwner, hasAccess } = useUser();
     const { isDark, toggle: toggleDark } = useAdminTheme();
@@ -138,20 +124,26 @@ export function AdminSidebar() {
         return () => unsubscribe();
     }, []);
 
+    useEffect(() => {
+        if (!settingsOpen) return;
+        const handler = (e: MouseEvent) => {
+            if (settingsRef.current && !settingsRef.current.contains(e.target as Node)) {
+                setSettingsOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, [settingsOpen]);
+
     const groupedNavItems = useMemo(() => {
-        // If on subdomain, URL is root-relative (/admin).
-        // If on root domain, URL is tenant-prefixed (/hi-clicker/admin).
         const baseUrl = (tenantSlug && !isSubdomain) ? `/${tenantSlug}` : '';
 
         const allCoreItems = [
             { icon: LayoutDashboard, label: 'Overview', href: `${baseUrl}/admin`, permission: null },
             { icon: Inbox, label: 'Inbox', href: `${baseUrl}/admin/inbox`, permission: 'biolink' },
             { icon: Box, label: 'Canvas Studio', href: `${baseUrl}/admin/canvas`, permission: 'biolink' },
-            { icon: MapIcon, label: 'Business', href: `${baseUrl}/admin/business`, permission: 'biolink' },
             { icon: Palette, label: 'Template', href: `${baseUrl}/admin/template`, permission: 'biolink' },
-            { icon: User, label: 'Profile', href: `${baseUrl}/admin/profile`, permission: null },
             { icon: Users, label: 'Team', href: `${baseUrl}/admin/settings/team`, permission: 'manage_team' },
-            { icon: Settings, label: 'Settings', href: `${baseUrl}/admin/settings`, permission: 'settings' },
         ];
 
         const hasFullAccess = isOwner || userPermissions.includes('*');
@@ -177,30 +169,19 @@ export function AdminSidebar() {
                     const routeId = getRouteIdFromPath(m.id, r.path);
                     return hasAccess(m.id, routeId);
                 })
-                .map(route => {
-                    let label = route.label;
-
-                    return {
-                        icon: MODULE_ICONS[route.icon || ''] || MODULE_ICONS[m.icon] || Box,
-                        label: label,
-                        href: `${baseUrl}${route.path}`
-                    };
-                });
+                .map(route => ({
+                    icon: MODULE_ICONS[route.icon || ''] || MODULE_ICONS[m.icon] || Box,
+                    label: route.label,
+                    href: `${baseUrl}${route.path}`
+                }));
 
             if (items.length === 0) return null;
 
             let groupTitle = m.displayName || m.id;
             if (groupTitle === 'Self Order' || groupTitle === 'BYOD POS') groupTitle = 'POS';
 
-            return {
-                title: groupTitle,
-                items: items
-            };
+            return { title: groupTitle, items };
         }).filter(Boolean) as SidebarGroup[];
-
-        if (isFocusMode && moduleGroups.length > 0) {
-            return moduleGroups;
-        }
 
         const groupsDef = [
             {
@@ -209,10 +190,7 @@ export function AdminSidebar() {
             },
             {
                 title: 'Workspace',
-                match: (item: NavItem) => {
-                    const label = item.label === 'Settings' ? 'Website' : (item.label === 'Profile' ? 'My Account' : item.label);
-                    return ['Overview', 'Business', 'My Account', 'Template', 'Website'].includes(label);
-                }
+                match: (item: NavItem) => ['Overview', 'Template'].includes(item.label)
             },
             {
                 title: 'Site & Content',
@@ -227,8 +205,6 @@ export function AdminSidebar() {
         const groups: SidebarGroup[] = groupsDef.map(g => ({
             title: g.title,
             items: coreItems.filter(item => g.match(item)).map(item => {
-                if (item.label === 'Settings') return { ...item, label: 'Website', icon: Globe };
-                if (item.label === 'Profile') return { ...item, label: 'My Account' };
                 if (item.label === 'Team') return { ...item, label: 'Users', icon: Users };
                 return item;
             })
@@ -236,7 +212,7 @@ export function AdminSidebar() {
 
         groups.push(...moduleGroups);
         return groups.filter(g => g.items.length > 0);
-    }, [modules, isFocusMode, siteEnabledModules, tenantSlug, userPermissions, isOwner, hasAccess, isSubdomain]);
+    }, [modules, siteEnabledModules, tenantSlug, userPermissions, isOwner, hasAccess, isSubdomain]);
 
     const activeRoute = useMemo(() => {
         const allItems = groupedNavItems.flatMap(g => g.items);
@@ -289,46 +265,59 @@ export function AdminSidebar() {
                 ${isCollapsed ? 'md:w-16' : 'md:w-64'}
                 md:translate-x-0
             `}>
-                <div className={`p-6 pb-2 flex items-center ${(isCollapsed && !sidebarOpen) ? 'justify-center' : 'justify-between'}`}>
-                    <div className="flex items-center gap-3">
-                        <div className="relative w-10 h-10 flex items-center justify-center shrink-0">
-                            <Image
-                                src="/clicker_brand_logo.png"
-                                alt="Clicker Logo"
-                                fill
-                                className="object-contain"
+                {/* Header */}
+                <div className={`py-4 flex items-center shrink-0 ${(!isCollapsed || sidebarOpen) ? 'px-6 justify-between' : 'px-6'}`}>
+                    {/* Logo — doubles as expand button when collapsed */}
+                    <button
+                        onClick={isCollapsed ? toggleSidebarCollapse : undefined}
+                        onMouseEnter={() => isCollapsed && setLogoHovered(true)}
+                        onMouseLeave={() => setLogoHovered(false)}
+                        className={`relative w-6 h-6 flex items-center justify-center shrink-0 rounded-full transition-colors duration-200 ${isCollapsed ? 'cursor-pointer hover:bg-gray-100 dark:hover:bg-neutral-800' : 'cursor-default'}`}
+                        title={isCollapsed ? 'Expand sidebar' : undefined}
+                        tabIndex={isCollapsed ? 0 : -1}
+                    >
+                        <Image
+                            src="/clicker_brand_logo.png"
+                            alt="Clicker Logo"
+                            fill
+                            className={`object-contain rounded-full transition-opacity duration-200 ${(isCollapsed && logoHovered) ? 'opacity-0' : 'opacity-100'}`}
+                        />
+                        {isCollapsed && (
+                            <PanelLeftOpen
+                                size={16}
+                                className={`absolute transition-opacity duration-200 text-brand-dark dark:text-neutral-200 ${logoHovered ? 'opacity-100' : 'opacity-0'}`}
                             />
-                        </div>
-                        {(!isCollapsed || sidebarOpen) && (
-                            <div>
-                                <span className="font-black text-xl text-brand-dark block leading-none">Clicker</span>
-                                {modules.length > 0 && (
-                                    <button
-                                        onClick={toggleFocusMode}
-                                        className="text-[10px] font-bold text-gray-400 hover:text-brand-green uppercase tracking-wider flex items-center gap-1 mt-1"
-                                    >
-                                        {isFocusMode ? 'Focus On' : 'Focus Mode'}
-                                        <Zap size={10} className={isFocusMode ? 'fill-brand-green text-brand-green' : ''} />
-                                    </button>
-                                )}
-                            </div>
                         )}
-                    </div>
-                    <button onClick={() => setSidebarOpen(false)} className="md:hidden p-2 text-gray-400 hover:text-gray-600">
-                        <X size={24} />
                     </button>
+
+                    {/* Title + collapse button row (expanded only) */}
+                    {(!isCollapsed || sidebarOpen) && (
+                        <>
+                            <span className="font-bold text-sm text-brand-dark dark:text-neutral-200 ml-2 flex-1">Clicker</span>
+                            <button
+                                onClick={toggleSidebarCollapse}
+                                title="Collapse sidebar"
+                                className="hidden md:flex p-1.5 rounded-lg text-gray-400 dark:text-neutral-500 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:text-brand-dark dark:hover:text-neutral-200 transition-colors"
+                            >
+                                <PanelLeftClose size={16} />
+                            </button>
+                            <button onClick={() => setSidebarOpen(false)} className="md:hidden p-2 text-gray-400 hover:text-gray-600">
+                                <X size={20} />
+                            </button>
+                        </>
+                    )}
                 </div>
 
                 <nav className="flex-1 overflow-y-auto px-3 pb-4 space-y-6 scrollbar-hide">
                     {groupedNavItems.map((group) => (
-                        <div key={group.title} className={(isCollapsed && !sidebarOpen) ? 'text-center' : ''}>
+                        <div key={group.title}>
                             {(!isCollapsed || sidebarOpen) && (
                                 <h3 className="px-3 text-xs font-semibold text-gray-400 dark:text-neutral-600 uppercase tracking-wider mb-2 truncate">
                                     {group.title}
                                 </h3>
                             )}
                             {(isCollapsed && !sidebarOpen) && (
-                                <div className="h-px bg-gray-100 my-2 mx-2"></div>
+                                <div className="h-px bg-gray-100 dark:bg-neutral-800 my-2 mx-2"></div>
                             )}
                             <div className="space-y-1">
                                 {group.items.map((item) => {
@@ -341,17 +330,14 @@ export function AdminSidebar() {
                                             onMouseEnter={(e) => {
                                                 if (isCollapsed && !sidebarOpen) {
                                                     const rect = e.currentTarget.getBoundingClientRect();
-                                                    setHoveredItem({
-                                                        label: item.label,
-                                                        top: rect.top
-                                                    });
+                                                    setHoveredItem({ label: item.label, top: rect.top });
                                                 }
                                             }}
                                             onMouseLeave={() => setHoveredItem(null)}
-                                            className={`flex items-center gap-3 px-3 py-2 rounded-xl font-bold transition-all text-sm group relative ${isActive
+                                            className={`flex items-center gap-3 px-3 py-2 rounded-xl font-bold transition-colors text-sm group relative ${isActive
                                                 ? 'bg-brand-dark text-brand-green shadow-sm'
                                                 : 'text-gray-500 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800 hover:text-brand-dark dark:hover:text-neutral-200'
-                                                } ${(isCollapsed && !sidebarOpen) ? 'justify-center' : 'justify-between'}`}
+                                                } ${(!isCollapsed || sidebarOpen) ? 'justify-between' : ''}`}
                                         >
                                             <div className="flex items-center gap-3">
                                                 <item.icon size={20} className={`shrink-0 ${isActive ? 'stroke-[2.5px]' : ''}`} />
@@ -372,7 +358,7 @@ export function AdminSidebar() {
                         </div>
                     ))}
 
-                    {/* Custom Tooltip Portal */}
+                    {/* Tooltip for collapsed items */}
                     {(isCollapsed && !sidebarOpen) && hoveredItem && (
                         <div
                             className="fixed left-16 z-[60] bg-gray-900 text-white text-sm font-bold px-3 py-1.5 rounded-lg shadow-xl animate-in fade-in slide-in-from-left-2 duration-150 pointer-events-none whitespace-nowrap"
@@ -384,44 +370,98 @@ export function AdminSidebar() {
                     )}
                 </nav>
 
-                {/* Footer Area - FIXED BOTTOM */}
+                {/* Footer */}
                 <div className="p-3 border-t border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 shrink-0">
-                    <button
-                        onClick={handleLogout}
-                        title="Logout"
-                        className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl font-bold text-gray-500 dark:text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors text-sm mb-2 ${(isCollapsed && !sidebarOpen) ? 'justify-center' : ''}`}
-                    >
-                        <LogOut size={20} className="shrink-0" />
-                        {(!isCollapsed || sidebarOpen) && <span>Logout</span>}
-                    </button>
+                    {/* Collapsed: stacked icons. Expanded: row with Settings + Inbox */}
+                    <div className={`${(isCollapsed && !sidebarOpen) ? 'flex flex-col gap-1 items-center' : 'flex items-center gap-1'}`}>
 
-                    <button
-                        onClick={toggleDark}
-                        title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-                        className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl font-bold text-gray-500 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800 hover:text-brand-dark dark:hover:text-neutral-200 transition-colors text-sm mb-1 ${(isCollapsed && !sidebarOpen) ? 'justify-center' : ''}`}
-                    >
-                        {isDark ? <Sun size={18} className="shrink-0" /> : <Moon size={18} className="shrink-0" />}
-                        {(!isCollapsed || sidebarOpen) && <span>{isDark ? 'Light Mode' : 'Dark Mode'}</span>}
-                    </button>
+                        {/* Settings button + popover */}
+                        <div ref={settingsRef} className={`relative ${(isCollapsed && !sidebarOpen) ? 'w-full' : 'flex-1 min-w-0'}`}>
+                            {/* Settings popover */}
+                            {settingsOpen && (
+                                <div className={`absolute z-50 bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-xl shadow-xl p-1.5 min-w-[200px] ${isCollapsed && !sidebarOpen ? 'left-full ml-2 bottom-0' : 'bottom-full mb-2 left-0'}`}>
+                                    {/* Nav links */}
+                                    {[
+                                        { icon: User, label: 'Account', href: '/admin/settings/account' },
+                                        { icon: Fingerprint, label: 'Identity', href: '/admin/settings/identity' },
+                                        { icon: Building2, label: 'Business', href: '/admin/settings/business' },
+                                        { icon: Users, label: 'Team', href: '/admin/settings/team' },
+                                    ].map(({ icon: Icon, label, href }) => {
+                                        const base = (tenantSlug && !isSubdomain) ? `/${tenantSlug}` : '';
+                                        const fullHref = `${base}${href}`;
+                                        const isActive = pathname?.startsWith(fullHref);
+                                        return (
+                                            <Link
+                                                key={href}
+                                                href={fullHref}
+                                                onClick={() => { setSettingsOpen(false); setSidebarOpen(false); }}
+                                                className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-bold transition-colors ${isActive ? 'bg-brand-dark text-brand-green' : 'text-gray-600 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-700 hover:text-brand-dark dark:hover:text-neutral-100'}`}
+                                            >
+                                                <Icon size={15} className="shrink-0" />
+                                                {label}
+                                            </Link>
+                                        );
+                                    })}
 
-                    <button
-                        onClick={toggleSidebarCollapse}
-                        className="hidden md:flex w-full items-center justify-center p-2 text-gray-400 dark:text-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-800 rounded-lg transition-colors border-t border-dashed border-gray-200 dark:border-neutral-800 mt-1"
-                    >
-                        {isCollapsed ? <Menu size={18} /> : (
-                            <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider">
-                                <Menu size={16} /> <span className="truncate">Collapse Sidebar</span>
-                            </div>
-                        )}
-                    </button>
+                                    <div className="my-1 h-px bg-gray-100 dark:bg-neutral-700" />
 
-                    {!isCollapsed && !sidebarOpen && (
-                        <div className="mt-2 p-2 bg-gray-50 dark:bg-neutral-800 rounded text-[10px] text-gray-400 dark:text-neutral-600 font-mono break-all text-center">
-                            Site: {siteId} | [tenant]: {tenantSlug}
+                                    {/* Utility actions */}
+                                    <button
+                                        onClick={() => { toggleDark(); }}
+                                        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-bold text-gray-600 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-700 hover:text-brand-dark dark:hover:text-neutral-100 transition-colors"
+                                    >
+                                        {isDark ? <Sun size={15} className="shrink-0" /> : <Moon size={15} className="shrink-0" />}
+                                        {isDark ? 'Light Mode' : 'Dark Mode'}
+                                    </button>
+                                    <button
+                                        onClick={handleLogout}
+                                        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-bold text-gray-600 dark:text-neutral-300 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-500 transition-colors"
+                                    >
+                                        <LogOut size={15} className="shrink-0" />
+                                        Logout
+                                    </button>
+                                </div>
+                            )}
+
+                            <button
+                                onClick={() => setSettingsOpen(prev => !prev)}
+                                title="Settings"
+                                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl font-bold transition-colors text-sm relative ${settingsOpen ? 'bg-gray-100 dark:bg-neutral-800 text-brand-dark dark:text-neutral-100' : 'text-gray-500 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800 hover:text-brand-dark dark:hover:text-neutral-200'} ${(isCollapsed && !sidebarOpen) ? 'justify-center' : ''}`}
+                            >
+                                <User size={20} className="shrink-0" />
+                                {(!isCollapsed || sidebarOpen) && (
+                                    <>
+                                        <span className="flex-1 text-left truncate">Settings</span>
+                                        <ChevronUp size={14} className={`shrink-0 transition-transform duration-200 ${settingsOpen ? 'rotate-180' : ''}`} />
+                                    </>
+                                )}
+                            </button>
                         </div>
-                    )}
+
+                        {/* Inbox shortcut button */}
+                        <button
+                            onClick={() => setInboxOpen(true)}
+                            title="Inbox"
+                            className={`relative flex items-center justify-center px-3 py-2 rounded-xl font-bold text-gray-500 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800 hover:text-brand-dark dark:hover:text-neutral-200 transition-colors shrink-0 ${(isCollapsed && !sidebarOpen) ? 'w-full' : ''}`}
+                        >
+                            <Inbox size={20} />
+                            {unreadCount > 0 && (
+                                <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-neutral-900" />
+                            )}
+                        </button>
+                    </div>
                 </div>
             </aside>
+
+            {/* Inbox slide-over */}
+            {inboxOpen && (
+                <InboxSlideOver
+                    onClose={() => setInboxOpen(false)}
+                    siteId={siteId}
+                    baseUrl={(tenantSlug && !isSubdomain) ? `/${tenantSlug}` : ''}
+                    sidebarCollapsed={isCollapsed}
+                />
+            )}
         </>
     );
 }

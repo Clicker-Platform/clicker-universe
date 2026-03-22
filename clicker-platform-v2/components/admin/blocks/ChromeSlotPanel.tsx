@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Type, Globe } from 'lucide-react';
 import { HeaderNavPanel } from './panels/HeaderNavPanel';
 import { ChromeBottomNavProperties } from './panels/ChromeBottomNavProperties';
@@ -13,8 +14,15 @@ export function ChromeFooterPanel({
     onFooterTextChange
 }: {
     footerText: string;
-    onFooterTextChange: (val: string) => void;
+    onFooterTextChange: (val: string) => Promise<void>;
 }) {
+    const [localValue, setLocalValue] = useState(footerText || '');
+
+    // Sync if the external value changes (e.g. initial load)
+    useEffect(() => {
+        setLocalValue(footerText || '');
+    }, [footerText]);
+
     return (
         <div className="space-y-6 animate-fade-in">
             {/* Global Badge */}
@@ -45,13 +53,14 @@ export function ChromeFooterPanel({
                     </label>
                     <input
                         type="text"
-                        value={footerText || ''}
-                        onChange={(e) => onFooterTextChange(e.target.value)}
+                        value={localValue}
+                        onChange={(e) => setLocalValue(e.target.value)}
+                        onBlur={() => onFooterTextChange(localValue)}
                         className="w-full px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-sm text-neutral-200 placeholder-neutral-600 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none font-medium transition-all"
                         placeholder="e.g., © 2026 My Business. All rights reserved."
                     />
                     <p className="text-xs text-neutral-500 mt-2">
-                        This text is saved automatically along with your page settings.
+                        Saved when you click away from the field.
                     </p>
                 </div>
             </div>

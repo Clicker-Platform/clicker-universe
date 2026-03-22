@@ -42,7 +42,7 @@ export const ScheduleEditor: React.FC<ScheduleEditorProps> = ({ schedule, onChan
                 if (newHours.length === 0) {
                     newHours.push({ start: "09:00", end: "17:00" });
                 }
-                const currentRange = newHours[0]; // Logic for single window support MVP
+                const currentRange = newHours[0];
                 newHours[0] = { ...currentRange, [type]: value };
                 return { ...day, hours: newHours };
             }
@@ -51,8 +51,7 @@ export const ScheduleEditor: React.FC<ScheduleEditorProps> = ({ schedule, onChan
         onChange(newSchedule);
     };
 
-    // Helper to sort starting from Monday (1) to Sunday (0)
-    // 1, 2, 3, 4, 5, 6, 0
+    // Sort starting from Monday (1) to Sunday (0)
     const sortedDays = [...fullSchedule].sort((a, b) => {
         const dayA = a.dayOfWeek === 0 ? 7 : a.dayOfWeek;
         const dayB = b.dayOfWeek === 0 ? 7 : b.dayOfWeek;
@@ -79,7 +78,6 @@ export const ScheduleEditor: React.FC<ScheduleEditorProps> = ({ schedule, onChan
                         `}
                     >
                         <div className="flex items-center gap-4">
-                            {/* Custom Toggle since we might not have Switch UI component ready/imported */}
                             <button
                                 type="button"
                                 onClick={() => handleDayToggle(day.dayOfWeek)}

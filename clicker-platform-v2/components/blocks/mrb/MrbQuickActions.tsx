@@ -8,7 +8,7 @@ import { FormModal } from '@/components/FormModal';
 import { useSite } from '@/lib/site-context';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { ICON_MAP } from '@/data/icons';
-import { ExternalLink, ShoppingBag, ArrowRight } from 'lucide-react';
+import { ShoppingBag } from 'lucide-react';
 
 interface QuickActionsProps {
     links: LinkItem[];
@@ -16,9 +16,10 @@ interface QuickActionsProps {
     settings?: LinkSettings;
     siteId?: string;
     tenantSlug?: string;
+    blockData?: { hiddenLinkIds?: string[]; layout?: 'list' | 'grid' };
 }
 
-export const MrbQuickActions: React.FC<QuickActionsProps> = ({ links, contact, settings, siteId, tenantSlug }) => {
+export const MrbQuickActions: React.FC<QuickActionsProps> = ({ links, contact, settings, siteId, tenantSlug, blockData }) => {
     const { theme } = useTemplate();
     const { track } = useAnalytics();
     const { siteId: contextSiteId } = useSite();
@@ -31,9 +32,11 @@ export const MrbQuickActions: React.FC<QuickActionsProps> = ({ links, contact, s
     // Default settings if not provided
     const sectionTitle = settings?.sectionTitle || "Quick Actions";
     const showOnHome = settings?.showOnHome !== false;
+    const hiddenLinkIds: string[] = blockData?.hiddenLinkIds || [];
+    const layout: 'list' | 'grid' = blockData?.layout || 'grid';
 
     const processedLinks = links
-        .filter(link => !link.hideOnHome)
+        .filter(link => !link.hideOnHome && !hiddenLinkIds.includes(link.id))
         .map(link => {
             if (contact?.whatsapp && link.url === '#' && (link.title.toLowerCase().includes('whatsapp') || link.title.toLowerCase().includes('order'))) {
                 return {
@@ -85,7 +88,7 @@ export const MrbQuickActions: React.FC<QuickActionsProps> = ({ links, contact, s
                     {sectionTitle}
                 </h3>
             )}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className={layout === 'list' ? 'flex flex-col gap-3' : 'grid grid-cols-1 sm:grid-cols-3 gap-4'}>
                 {processedLinks.map((link) => {
                     const Icon = link.iconName && ICON_MAP[link.iconName] ? ICON_MAP[link.iconName] : ShoppingBag;
                     const Wrapper = link.type === 'form' ? 'button' : 'a';
@@ -101,13 +104,13 @@ export const MrbQuickActions: React.FC<QuickActionsProps> = ({ links, contact, s
 
                     const isHighlight = link.highlight;
 
-                    // Replicating the distinct glass vertical style from Mr Brightside
                     return (
                         <Wrapper
                             key={link.id}
                             {...wrapperProps}
                             className={`
-                                group relative overflow-hidden rounded-2xl glass-effect p-6 flex flex-col items-center justify-center gap-4 transition-all hover:bg-primary/10 w-full
+                                group relative overflow-hidden rounded-2xl glass-effect transition-all hover:bg-primary/10 w-full
+                                ${layout === 'list' ? 'p-4 flex items-center gap-4' : 'p-6 flex flex-col items-center justify-center gap-4'}
                                 ${isHighlight ? 'neon-border border-primary/50' : 'border-white/10'}
                             `}
                             style={{
@@ -117,18 +120,19 @@ export const MrbQuickActions: React.FC<QuickActionsProps> = ({ links, contact, s
                             }}
                         >
                             <div className={`
-                                size-14 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform
+                                rounded-full flex items-center justify-center group-hover:scale-110 transition-transform
+                                ${layout === 'list' ? 'size-10 shrink-0' : 'size-14'}
                                 ${isHighlight ? 'bg-primary/20 text-primary' : 'bg-white/10 text-white'}
                             `}>
-                                <Icon size={28} strokeWidth={2} />
+                                <Icon size={layout === 'list' ? 20 : 28} strokeWidth={2} />
                             </div>
-                            <div className="text-center">
+                            <div className={layout === 'list' ? 'text-left flex-1' : 'text-center'}>
                                 <p className="text-white font-bold text-lg">{link.title}</p>
                                 {link.subtitle && (
                                     <p className="text-slate-500 text-sm">{link.subtitle}</p>
                                 )}
                             </div>
-                            
+
                             {/* Loading State Overlay */}
                             {isLoadingForm && link.type === 'form' && (
                                 <div className="absolute inset-0 bg-background-dark/50 flex items-center justify-center">

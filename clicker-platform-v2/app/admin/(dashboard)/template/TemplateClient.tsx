@@ -427,17 +427,6 @@ export default function TemplateClient() {
                                         <option value="Poppins">Poppins</option>
                                     </select>
                                 </div>
-                                <hr className="border-gray-100 dark:border-neutral-800" />
-                                <div>
-                                    <label className="block text-brand-dark font-bold mb-2">Footer Text</label>
-                                    <input
-                                        type="text"
-                                        value={settings.footerText || ''}
-                                        onChange={(e) => setSettings({ ...settings, footerText: e.target.value })}
-                                        placeholder="© 2024 Your Company"
-                                        className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 outline-none font-medium"
-                                    />
-                                </div>
                             </div>
 
                         <div className="pt-4 border-t border-gray-100 dark:border-neutral-800/50">

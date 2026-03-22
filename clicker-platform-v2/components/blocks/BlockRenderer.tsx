@@ -110,9 +110,9 @@ export const BlockRenderer = ({
                     <ImageGalleryBlock data={block.data} />;
 
             case 'quick_actions':
-                return customBlocks?.QuickActions ? 
-                    React.createElement(customBlocks.QuickActions, { links: links || [], contact, settings: linkSettings, siteId, tenantSlug }) :
-                    <QuickActions links={links || []} contact={contact} settings={linkSettings} siteId={siteId} tenantSlug={tenantSlug} />;
+                return customBlocks?.QuickActions ?
+                    React.createElement(customBlocks.QuickActions, { links: links || [], contact, settings: linkSettings, siteId, tenantSlug, blockData: block.data }) :
+                    <QuickActions links={links || []} contact={contact} settings={linkSettings} siteId={siteId} tenantSlug={tenantSlug} blockData={block.data} />;
 
             case 'hours':
                 return customBlocks?.OperatingHours ?
