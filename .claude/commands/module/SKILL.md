@@ -11,6 +11,9 @@ description: >
   or the module registry.
 ---
 
+> **Architecture Reference:** Always read [`docs/ARCHITECTURE.md`](../../../clicker-platform-v2/docs/ARCHITECTURE.md) before making any changes.
+
+
 # /module — Clicker Platform Module Workflow Skill
 
 You are helping work with the Clicker Platform module system.

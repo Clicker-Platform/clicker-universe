@@ -9,6 +9,9 @@ description: >
   where admin pages appear white/light when dark mode is active.
 ---
 
+> **Architecture Reference:** Always read [`docs/ARCHITECTURE.md`](../../../clicker-platform-v2/docs/ARCHITECTURE.md) before making any changes.
+
+
 # /admin_dark_theme — Admin Dashboard Dark Theme
 
 The admin dashboard supports a **toggleable dark mode** that matches Canvas Studio's visual language (`bg-neutral-900/950` backgrounds, `bg-neutral-800` cards, `border-neutral-700/800` borders). The toggle is a sun/moon button in the sidebar footer.

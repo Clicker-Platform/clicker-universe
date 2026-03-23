@@ -8,6 +8,9 @@ description: >
   "system prompt", "lib/modules/ai-sales-agent".
 ---
 
+> **Architecture Reference:** Always read [`docs/ARCHITECTURE.md`](../../../clicker-platform-v2/docs/ARCHITECTURE.md) before making any changes.
+
+
 # /ai_sales_agent — AI Sales Agent Module
 
 You are working on the **Clicker Platform AI Sales Agent Module**. This system integrates Google's Gemini API to provide tenants with a customizable chatbot that answers customer queries and attempts to capture lead information.

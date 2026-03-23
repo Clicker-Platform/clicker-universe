@@ -8,6 +8,9 @@ description: >
   "member history", "lib/modules/membership".
 ---
 
+> **Architecture Reference:** Always read [`docs/ARCHITECTURE.md`](../../../clicker-platform-v2/docs/ARCHITECTURE.md) before making any changes.
+
+
 # /membership — Membership & Loyalty Module
 
 You are working on the **Clicker Platform Membership Module**. This system allows tenants to build a customer database, track spending, and run a points-based loyalty program.

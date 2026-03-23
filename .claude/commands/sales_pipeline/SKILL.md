@@ -8,6 +8,9 @@ description: >
   "pipeline stages", "form integration", "lib/modules/sales-pipeline".
 ---
 
+> **Architecture Reference:** Always read [`docs/ARCHITECTURE.md`](../../../clicker-platform-v2/docs/ARCHITECTURE.md) before making any changes.
+
+
 # /sales_pipeline — Sales Pipeline (Kanban CRM) Module
 
 You are working on the **Clicker Platform Sales Pipeline Module**. This system provides a Kanban-style CRM for tenants to track leads through customizable stages (e.g., "New Lead", "Contacted", "Won").

@@ -9,6 +9,9 @@ description: >
   or any block that looks wrong (white background, thick border, green color) on the MRB site.
 ---
 
+> **Architecture Reference:** Always read [`docs/ARCHITECTURE.md`](../../../clicker-platform-v2/docs/ARCHITECTURE.md) before making any changes.
+
+
 # /template_mrb — MRB Template Skill
 
 You are working on the **MRB ("Mr Brightside") template** — a dark-mode glassmorphism template with neon orange accents. This skill covers the design system, block styling rules, file paths, and common pitfalls specific to MRB.

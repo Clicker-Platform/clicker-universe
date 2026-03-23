@@ -9,6 +9,9 @@ description: >
   or any request touching lib/modules/inventory/.
 ---
 
+> **Architecture Reference:** Always read [`docs/ARCHITECTURE.md`](../../../clicker-platform-v2/docs/ARCHITECTURE.md) before making any changes.
+
+
 # /inventory — Clicker Platform Inventory Module Skill
 
 You are helping work with the inventory module — stock management with atomic transaction recording for restaurant and retail tenants.

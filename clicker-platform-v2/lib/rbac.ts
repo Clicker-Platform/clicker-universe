@@ -1,4 +1,4 @@
-export type Role = 'owner' | 'editor' | 'viewer'; // simplified
+export type Role = 'owner' | 'editor' | 'viewer' | 'staff';
 
 export const PERMISSIONS = {
     manage_site: ['owner'],
@@ -16,4 +16,5 @@ export const ROLES = {
     OWNER: 'owner',
     EDITOR: 'editor',
     VIEWER: 'viewer',
+    STAFF: 'staff',
 } as const;

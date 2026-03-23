@@ -9,6 +9,9 @@ description: >
   "lib/systemBlocks.ts".
 ---
 
+> **Architecture Reference:** Always read [`docs/ARCHITECTURE.md`](../../../clicker-platform-v2/docs/ARCHITECTURE.md) before making any changes.
+
+
 # /core_content — Pages, Links & System Blocks
 
 You are working on the **Clicker Platform Core Content System**. This system handles the structural content of a tenant's site, including their custom pages, their Link-in-Bio links, and the ordering of content blocks on their homepage.

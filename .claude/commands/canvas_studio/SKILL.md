@@ -10,6 +10,9 @@ description: >
   "components/admin/blocks/", or any issue with how blocks display in the editor or on the public site.
 ---
 
+> **Architecture Reference:** Always read [`docs/ARCHITECTURE.md`](../../../clicker-platform-v2/docs/ARCHITECTURE.md) before making any changes.
+
+
 # /canvas_studio — Page Builder & Block System
 
 You are working on the **Clicker Platform Canvas Studio** — a full WYSIWYG page builder that lets tenants create custom pages using a block-based system. Blocks are stored as structured JSON in Firestore and rendered both in the admin canvas preview and on the public site.

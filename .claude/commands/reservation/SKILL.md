@@ -8,6 +8,9 @@ description: >
   "appointment booking", "lib/modules/reservation".
 ---
 
+> **Architecture Reference:** Always read [`docs/ARCHITECTURE.md`](../../../clicker-platform-v2/docs/ARCHITECTURE.md) before making any changes.
+
+
 # /reservation — Reservation & Booking Module
 
 You are working on the **Clicker Platform Reservation Module**. This system allows tenants to offer bookable services, manage staff schedules, and handle customer appointments.

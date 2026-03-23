@@ -9,6 +9,9 @@ description: >
   "lib/site-context.tsx", "lib/admin-auth.ts", "lib/rbac.ts".
 ---
 
+> **Architecture Reference:** Always read [`docs/ARCHITECTURE.md`](../../../clicker-platform-v2/docs/ARCHITECTURE.md) before making any changes.
+
+
 # /core_auth_rbac — Authentication & RBAC
 
 You are working on the **Clicker Platform Authentication & Access System**. This system controls who can log in, which tenant (site) they are viewing, and what modules or actions they have permission to access.

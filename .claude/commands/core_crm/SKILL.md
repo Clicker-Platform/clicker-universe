@@ -9,6 +9,9 @@ description: >
   "app/admin/(dashboard)/inbox".
 ---
 
+> **Architecture Reference:** Always read [`docs/ARCHITECTURE.md`](../../../clicker-platform-v2/docs/ARCHITECTURE.md) before making any changes.
+
+
 # /core_crm — Forms & Inbox (Core CRM)
 
 You are working on the **Clicker Platform Core CRM System**. This system provides every tenant with a Form Builder to collect leads, and an Inbox to manage those submissions.

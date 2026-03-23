@@ -9,6 +9,9 @@ description: >
   "app/admin/(dashboard)/appearance".
 ---
 
+> **Architecture Reference:** Always read [`docs/ARCHITECTURE.md`](../../../clicker-platform-v2/docs/ARCHITECTURE.md) before making any changes.
+
+
 # /core_appearance — Themes, Templates & Appearance
 
 You are working on the **Clicker Platform Appearance System**. This system controls the public-facing storefront/website for a tenant, including colors, fonts, layouts, and component swaps.

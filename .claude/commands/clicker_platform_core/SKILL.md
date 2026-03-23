@@ -11,6 +11,9 @@ description: >
   or any request touching lib/core/, lib/site-context.tsx, or app/admin/.
 ---
 
+> **Architecture Reference:** Always read [`docs/ARCHITECTURE.md`](../../../clicker-platform-v2/docs/ARCHITECTURE.md) before making any changes.
+
+
 # /clicker_platform_core — System Architecture & Core Rules
 
 You are working on the **Clicker Platform**, a multi-tenant SaaS application. This document defines the strict architectural boundaries and rules for the system.

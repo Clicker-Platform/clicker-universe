@@ -11,6 +11,9 @@ description: >
   "app/admin/(dashboard)/products".
 ---
 
+> **Architecture Reference:** Always read [`docs/ARCHITECTURE.md`](../../../clicker-platform-v2/docs/ARCHITECTURE.md) before making any changes.
+
+
 # /core_business — Profile, Settings & Products
 
 You are working on the **Clicker Platform Core Business layer**. This system manages the identity, global settings, team access, and the foundational product catalog of a tenant's site.

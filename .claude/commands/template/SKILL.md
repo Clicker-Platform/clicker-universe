@@ -11,6 +11,9 @@ description: >
   components/headers/.
 ---
 
+> **Architecture Reference:** Always read [`docs/ARCHITECTURE.md`](../../../clicker-platform-v2/docs/ARCHITECTURE.md) before making any changes.
+
+
 # /template — Clicker Platform Template Workflow Skill
 
 You are helping work with the Clicker Platform template system — the theming and layout engine that defines how customer sites look.

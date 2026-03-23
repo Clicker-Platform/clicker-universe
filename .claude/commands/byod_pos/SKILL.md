@@ -10,6 +10,9 @@ description: >
   or any request touching lib/modules/byod_pos/.
 ---
 
+> **Architecture Reference:** Always read [`docs/ARCHITECTURE.md`](../../../clicker-platform-v2/docs/ARCHITECTURE.md) before making any changes.
+
+
 # /byod_pos — Clicker Platform Self Order POS Skill
 
 You are helping work with the byod_pos module — the BYOD Self Order Point-of-Sale system for restaurant and retail tenants.
