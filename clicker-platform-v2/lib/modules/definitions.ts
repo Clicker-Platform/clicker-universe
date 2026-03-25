@@ -37,5 +37,16 @@ export const STATIC_MODULE_DEFINITIONS: Record<string, Partial<ModuleDefinition>
             { label: 'Overview', path: '/admin/ai-sales', icon: 'bot', componentKey: 'ai_sales:Dashboard' },
             { label: 'Settings', path: '/admin/ai-sales/settings', icon: 'settings', componentKey: 'ai_sales:AdminSettings' }
         ]
+    },
+    'service_records': {
+        adminRoutes: [
+            { label: 'Service Records', path: '/admin/service-records/records',       icon: 'clipboard-list', componentKey: 'service_records:RecordsListPage' },
+            { label: 'New Record',      path: '/admin/service-records/new',           icon: 'plus',           componentKey: 'service_records:RecordFormPage',   hidden: true },
+            { label: 'Record Detail',   path: '/admin/service-records/detail',        icon: 'file-text',      componentKey: 'service_records:RecordDetailPage', hidden: true },
+            { label: 'Vehicles',        path: '/admin/service-records/vehicles',      icon: 'car',            componentKey: 'service_records:VehiclesPage' },
+            { label: 'Service Types',   path: '/admin/service-records/service-types', icon: 'wrench',         componentKey: 'service_records:ServiceTypesPage', permission: 'settings' },
+            { label: 'Reminders',       path: '/admin/service-records/reminders',     icon: 'bell',           componentKey: 'service_records:RemindersPage',    permission: 'settings' },
+            { label: 'Settings',        path: '/admin/service-records/settings',      icon: 'settings',       componentKey: 'service_records:SettingsPage',     permission: 'settings' },
+        ]
     }
 };

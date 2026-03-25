@@ -22,9 +22,22 @@ const ServicesPage = dynamic(() => import('@/lib/modules/reservation/admin/servi
 const StaffPage = dynamic(() => import('@/lib/modules/reservation/admin/staff/StaffClient'));
 const ReservationDashboard = dynamic(() => import('@/lib/modules/reservation/admin/page'));
 const AdminBookingWizard = dynamic(() => import('@/lib/modules/reservation/admin/components/AdminBookingWizard'));
+const ReservationSettingsPage = dynamic(() => import('@/lib/modules/reservation/admin/settings/ReservationSettingsPage'));
 
 // Admin Pages (Inventory)
 const InventoryAdminPage = dynamic(() => import('@/lib/modules/inventory/admin/InventoryAdminPage'));
+
+// Admin Pages (Service Records)
+const SR_RecordsListPage  = dynamic(() => import('@/lib/modules/service-records/admin/RecordsListPage'));
+const SR_RecordFormPage   = dynamic(() => import('@/lib/modules/service-records/admin/RecordFormPage'));
+const SR_RecordDetailPage = dynamic(() => import('@/lib/modules/service-records/admin/RecordDetailPage'));
+const SR_VehiclesPage     = dynamic(() => import('@/lib/modules/service-records/admin/VehiclesPage'));
+const SR_ServiceTypesPage = dynamic(() => import('@/lib/modules/service-records/admin/ServiceTypesPage'));
+const SR_RemindersPage    = dynamic(() => import('@/lib/modules/service-records/admin/RemindersPage'));
+const SR_SettingsPage     = dynamic(() => import('@/lib/modules/service-records/admin/SettingsPage'));
+// Service Records — Member Dashboard Widgets
+const SR_MemberWarrantyWidget = dynamic(() => import('@/lib/modules/service-records/public/MemberWarrantyWidget'));
+const SR_MemberServiceHistoryWidget = dynamic(() => import('@/lib/modules/service-records/public/MemberServiceHistoryWidget'));
 
 // Admin Pages (Membership)
 const MemberListPage = dynamic(() => import('@/lib/modules/membership/admin/MemberListPage'));
@@ -62,7 +75,7 @@ export const MODULE_COMPONENTS: Record<string, any> = {
     'reservation:AdminStaff': StaffPage,
     'reservation:Dashboard': ReservationDashboard,
     'reservation:AdminBookingWizard': AdminBookingWizard,
-    'reservation:Settings': CalendarPage,
+    'reservation:Settings': ReservationSettingsPage,
     'reservation:UpcomingWidget': UpcomingReservationsWidget,
 
     // Inventory Module
@@ -73,6 +86,17 @@ export const MODULE_COMPONENTS: Record<string, any> = {
     'membership:MemberDetailsPage': MemberDetailsPage,
     'membership:Settings': MembershipSettingsPage,
     'membership:LoginPage': dynamic(() => import('@/lib/modules/membership/components/public/LoginPage')),
+
+    // Service Records Module
+    'service_records:RecordsListPage':  SR_RecordsListPage,
+    'service_records:RecordFormPage':   SR_RecordFormPage,
+    'service_records:RecordDetailPage': SR_RecordDetailPage,
+    'service_records:VehiclesPage':     SR_VehiclesPage,
+    'service_records:ServiceTypesPage': SR_ServiceTypesPage,
+    'service_records:RemindersPage':    SR_RemindersPage,
+    'service_records:SettingsPage':     SR_SettingsPage,
+    'service_records:MemberWarrantyWidget': SR_MemberWarrantyWidget,
+    'service_records:MemberServiceHistoryWidget': SR_MemberServiceHistoryWidget,
 
     // AI Sales Agent Module
     'ai_sales:ChatWidget': dynamic(() => import('@/lib/modules/ai-sales-agent/components/ChatWidget')

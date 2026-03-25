@@ -47,9 +47,17 @@ export const STATIC_MODULE_DEFINITIONS: Record<string, Partial<ModuleDefinition>
             { path: '/admin/ai-sales/settings', label: 'Settings', icon: 'settings', componentKey: 'ai_sales:AdminSettings' }
         ]
     },
-
-
-
+    'service_records': {
+        displayName: 'Service Records',
+        description: 'Vehicle service records, warranty cards, and reminder engine.',
+        adminRoutes: [
+            { path: '/admin/service-records/records',       label: 'Service Records', icon: 'clipboard-list', componentKey: 'service_records:RecordsListPage' },
+            { path: '/admin/service-records/vehicles',      label: 'Vehicles',        icon: 'car',            componentKey: 'service_records:VehiclesPage' },
+            { path: '/admin/service-records/service-types', label: 'Service Types',   icon: 'wrench',         componentKey: 'service_records:ServiceTypesPage', permission: 'settings' },
+            { path: '/admin/service-records/reminders',     label: 'Reminders',       icon: 'bell',           componentKey: 'service_records:RemindersPage',    permission: 'settings' },
+            { path: '/admin/service-records/settings',      label: 'Settings',        icon: 'settings',       componentKey: 'service_records:SettingsPage',     permission: 'settings' },
+        ]
+    },
 };
 
 // Helper for UI iterators (Backyard)

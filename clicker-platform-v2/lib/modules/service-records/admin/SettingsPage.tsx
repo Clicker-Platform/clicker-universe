@@ -1,0 +1,196 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useSite } from '@/lib/site-context';
+import { useUser } from '@/lib/user-context';
+import { getServiceConfig, updateServiceConfig } from '../api';
+import type { ServiceConfig } from '../types';
+
+export default function SettingsPage() {
+    const { siteId } = useSite();
+    const { isOwner } = useUser();
+    const [config, setConfig] = useState<ServiceConfig | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+    const [prefix, setPrefix] = useState('');
+    const [warrantyCardsEnabled, setWarrantyCardsEnabled] = useState(true);
+    const [reminderEngineEnabled, setReminderEngineEnabled] = useState(false);
+
+    useEffect(() => {
+        if (!siteId) return;
+        loadConfig();
+    }, [siteId]);
+
+    async function loadConfig() {
+        setLoading(true);
+        try {
+            const cfg = await getServiceConfig(siteId);
+            setConfig(cfg);
+            setPrefix(cfg.warrantyPrefix || 'SVC');
+            setWarrantyCardsEnabled(cfg.featuresEnabled.warrantyCards);
+            setReminderEngineEnabled(cfg.featuresEnabled.reminderEngine);
+        } catch (err) {
+            console.error('[SR SettingsPage] loadConfig error:', err);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    function showToast(type: 'success' | 'error', message: string) {
+        setToast({ type, message });
+        setTimeout(() => setToast(null), 3000);
+    }
+
+    async function handleSave() {
+        if (!isOwner) {
+            showToast('error', 'Only owners can change settings');
+            return;
+        }
+        const cleanPrefix = prefix.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5);
+        if (!cleanPrefix) {
+            showToast('error', 'Warranty prefix must be 1–5 alphanumeric characters');
+            return;
+        }
+        setSaving(true);
+        try {
+            await updateServiceConfig(siteId, {
+                warrantyPrefix: cleanPrefix,
+                featuresEnabled: {
+                    warrantyCards: warrantyCardsEnabled,
+                    reminderEngine: reminderEngineEnabled,
+                },
+            });
+            setPrefix(cleanPrefix);
+            showToast('success', 'Settings saved');
+        } catch (err) {
+            console.error('[SR SettingsPage] save error:', err);
+            showToast('error', 'Failed to save settings');
+        } finally {
+            setSaving(false);
+        }
+    }
+
+    const previewCode = `${prefix.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5) || 'SVC'}-${new Date().getFullYear()}-A4F9`;
+
+    if (loading) {
+        return (
+            <div className="p-6">
+                <div className="animate-pulse space-y-4">
+                    <div className="h-8 bg-gray-200 rounded w-48" />
+                    <div className="h-40 bg-gray-200 rounded-2xl" />
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="p-6 max-w-2xl space-y-6">
+            {toast && (
+                <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl text-sm font-medium shadow-lg ${
+                    toast.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
+                }`}>
+                    {toast.message}
+                </div>
+            )}
+
+            <div>
+                <h1 className="text-2xl font-bold text-gray-900">Service Records Settings</h1>
+                <p className="text-sm text-gray-500 mt-1">Configure module-wide settings for this outlet.</p>
+            </div>
+
+            {/* Warranty Card Settings */}
+            <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-5">
+                <h2 className="text-base font-semibold text-gray-800">Warranty Card</h2>
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Warranty Code Prefix
+                    </label>
+                    <div className="flex items-center gap-3">
+                        <input
+                            type="text"
+                            value={prefix}
+                            onChange={e => setPrefix(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5))}
+                            disabled={!isOwner}
+                            maxLength={5}
+                            placeholder="SVC"
+                            className="w-32 rounded-xl border border-gray-200 focus:border-gray-400 focus:ring-0 px-3 py-2 text-sm disabled:bg-gray-50 disabled:text-gray-400"
+                        />
+                        <div className="text-sm text-gray-500">
+                            Preview: <span className="font-mono font-semibold text-gray-800">{previewCode}</span>
+                        </div>
+                    </div>
+                    <p className="text-xs text-gray-400 mt-1">1–5 uppercase alphanumeric characters. Used in all warranty codes for this outlet.</p>
+                </div>
+
+                <div className="flex items-center justify-between py-3 border-t border-gray-100">
+                    <div>
+                        <p className="text-sm font-medium text-gray-700">Enable Warranty Cards</p>
+                        <p className="text-xs text-gray-400">When disabled, warranty card UI is hidden for all service types.</p>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => isOwner && setWarrantyCardsEnabled(v => !v)}
+                        disabled={!isOwner}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none disabled:opacity-50 ${
+                            warrantyCardsEnabled ? 'bg-green-500' : 'bg-gray-200'
+                        }`}
+                    >
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                            warrantyCardsEnabled ? 'translate-x-6' : 'translate-x-1'
+                        }`} />
+                    </button>
+                </div>
+            </div>
+
+            {/* Reminder Engine */}
+            <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <p className="text-sm font-semibold text-gray-800">Reminder Engine</p>
+                        <p className="text-xs text-gray-400 mt-0.5">
+                            Enable to write reminder queue entries on record completion. Requires Cloud Functions to be deployed for actual dispatch.
+                        </p>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => isOwner && setReminderEngineEnabled(v => !v)}
+                        disabled={!isOwner}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none disabled:opacity-50 ${
+                            reminderEngineEnabled ? 'bg-green-500' : 'bg-gray-200'
+                        }`}
+                    >
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                            reminderEngineEnabled ? 'translate-x-6' : 'translate-x-1'
+                        }`} />
+                    </button>
+                </div>
+            </div>
+
+            {/* Module Info */}
+            <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                <p className="text-xs text-gray-500">
+                    <span className="font-medium">Module:</span> service_records v1.0.0
+                    {' · '}
+                    <span className="font-medium">Outlet ID:</span> {siteId}
+                </p>
+            </div>
+
+            {isOwner && (
+                <div className="flex justify-end">
+                    <button
+                        onClick={handleSave}
+                        disabled={saving}
+                        className="bg-brand-dark text-white px-6 py-3 rounded-xl text-sm font-medium disabled:opacity-50"
+                    >
+                        {saving ? 'Saving…' : 'Save Settings'}
+                    </button>
+                </div>
+            )}
+            {!isOwner && (
+                <p className="text-xs text-gray-400">Only owners can modify settings.</p>
+            )}
+        </div>
+    );
+}

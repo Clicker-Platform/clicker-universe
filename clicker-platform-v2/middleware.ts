@@ -43,7 +43,8 @@ export async function middleware(request: NextRequest) {
         'setup',
         'dashboard',
         'api',
-        '_next'
+        '_next',
+        'warranty', // Service Records: public warranty card page
     ];
 
     const hostname = request.headers.get('host') || '';

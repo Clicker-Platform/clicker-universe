@@ -179,6 +179,12 @@ service cloud.firestore {
       match /forms/{formId} { allow read: if true; allow write: if hasSiteAccess(siteId); }
       match /branches/{branchId} { allow read: if true; allow write: if hasSiteAccess(siteId); }
 
+      // SERVICE CATALOG (Shared master data — referenced by Reservation + Service Records)
+      match /serviceCatalog/{itemId} {
+        allow read: if true;
+        allow write: if hasSiteAccess(siteId);
+      }
+
       // INBOX (Form Submissions) - Public Create
       match /inbox/{messageId} {
         allow create: if true;
@@ -279,7 +285,37 @@ service cloud.firestore {
         allow write: if hasWritePermission(siteId, 'membership', 'settings');
       }
 
-      // 5. AI SALES AGENT (Strictly Nested)
+      // 5. SERVICE RECORDS (Strictly Nested)
+      match /modules/service_records/serviceRecords/{recordId} {
+        allow read: if isValidUser(siteId) && isModuleEnabled(siteId, 'service_records');
+        allow create: if isValidUser(siteId) && isModuleEnabled(siteId, 'service_records');
+        allow update: if isValidUser(siteId) && isModuleEnabled(siteId, 'service_records');
+        allow delete: if isOwner(siteId);
+      }
+      match /modules/service_records/vehicles/{vehicleId} {
+        allow read: if isValidUser(siteId) && isModuleEnabled(siteId, 'service_records');
+        allow write: if isValidUser(siteId) && isModuleEnabled(siteId, 'service_records');
+      }
+      match /modules/service_records/serviceTypes/{typeId} {
+        allow read: if isValidUser(siteId) && isModuleEnabled(siteId, 'service_records');
+        allow write: if isOwner(siteId) && isModuleEnabled(siteId, 'service_records');
+      }
+      match /modules/service_records/warrantyCards/{cardId} {
+        allow read: if true; // Public — also accessed via collectionGroup on /warranty/{code}
+        allow create: if isValidUser(siteId) && isModuleEnabled(siteId, 'service_records');
+        allow update: if isOwner(siteId) && isModuleEnabled(siteId, 'service_records'); // void only
+        allow delete: if false;
+      }
+      match /modules/service_records/reminderQueue/{entryId} {
+        allow read: if isOwner(siteId) && isModuleEnabled(siteId, 'service_records');
+        allow write: if isValidUser(siteId) && isModuleEnabled(siteId, 'service_records');
+      }
+      match /modules/service_records/serviceConfig/{configId} {
+        allow read: if isValidUser(siteId) && isModuleEnabled(siteId, 'service_records');
+        allow write: if isOwner(siteId) && isModuleEnabled(siteId, 'service_records');
+      }
+
+      // 6. AI SALES AGENT (Strictly Nested)
       match /modules/ai_sales {
         allow read: if true; // Public needs to read config (enabled/greeting)
         allow write: if isValidUser(siteId) && hasRole(siteId, ['owner']);
@@ -296,6 +332,12 @@ service cloud.firestore {
     }
     
     // === COLLECTION GROUP QUERIES ===
+
+    // Public warranty card lookup (/warranty/{code} page — no auth required)
+    match /{path=**}/warrantyCards/{cardId} {
+      allow read: if true;
+    }
+
     match /{path=**}/members/{memberId} {
       allow read: if request.auth != null && (
         resource.data.email == request.auth.token.email || 

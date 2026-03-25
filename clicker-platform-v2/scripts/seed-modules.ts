@@ -129,6 +129,36 @@ const MODULES = [
         blocks: [
             { type: 'ai_chat_widget', label: 'Chat Widget', componentKey: 'ai_sales:ChatWidget' }
         ]
+    },
+    {
+        id: 'service_records',
+        displayName: 'Service Records',
+        description: 'Vehicle service records, warranty cards, and reminder engine.',
+        icon: 'clipboard-list',
+        version: '1.0.0',
+        enabled: true,
+        adminRoutes: [
+            { path: '/admin/service-records/records',       label: 'Service Records', icon: 'clipboard-list', componentKey: 'service_records:RecordsListPage' },
+            { path: '/admin/service-records/new',           label: 'New Record',      icon: 'plus',           componentKey: 'service_records:RecordFormPage',   hidden: true },
+            { path: '/admin/service-records/detail',        label: 'Record Detail',   icon: 'file-text',      componentKey: 'service_records:RecordDetailPage', hidden: true },
+            { path: '/admin/service-records/vehicles',      label: 'Vehicles',        icon: 'car',            componentKey: 'service_records:VehiclesPage' },
+            { path: '/admin/service-records/service-types', label: 'Service Types',   icon: 'wrench',         componentKey: 'service_records:ServiceTypesPage', permission: 'settings' },
+            { path: '/admin/service-records/reminders',     label: 'Reminders',       icon: 'bell',           componentKey: 'service_records:RemindersPage',    permission: 'settings' },
+            { path: '/admin/service-records/settings',      label: 'Settings',        icon: 'settings',       componentKey: 'service_records:SettingsPage',     permission: 'settings' },
+        ],
+        publicRoutes: [],
+        dashboardWidgets: [
+            { location: 'member_dashboard', componentKey: 'service_records:MemberWarrantyWidget',      priority: 20 },
+            { location: 'member_dashboard', componentKey: 'service_records:MemberServiceHistoryWidget', priority: 30 },
+        ],
+        collections: [
+            'modules/service_records/serviceRecords',
+            'modules/service_records/vehicles',
+            'modules/service_records/serviceTypes',
+            'modules/service_records/warrantyCards',
+            'modules/service_records/reminderQueue',
+            'modules/service_records/serviceConfig',
+        ]
     }
 ];
 

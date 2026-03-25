@@ -16,7 +16,12 @@ import {
     Store,
     ClipboardList,
     Monitor,
-    Trophy
+    Trophy,
+    Car,
+    Wrench,
+    Bell,
+    Users,
+    Plus,
 } from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { collection, query, where, onSnapshot, Unsubscribe } from 'firebase/firestore';
@@ -47,22 +52,31 @@ export async function findModuleForRoute(path: string): Promise<{ module: Module
 }
 
 export async function findModuleForAdminRoute(path: string): Promise<{ module: ModuleDefinition, route: AdminRoute } | null> {
+    // Fast path: resolve from static definitions without hitting Firestore
+    for (const [moduleId, staticDef] of Object.entries(STATIC_MODULE_DEFINITIONS)) {
+        const route = staticDef.adminRoutes?.find(r => r.path === path);
+        if (route) {
+            // Verify the module is enabled via Firestore (single doc read, not a collection scan)
+            const docSnap = await getDoc(doc(db, 'modules', moduleId));
+            if (docSnap.exists() && docSnap.data().enabled === true) {
+                return {
+                    module: { id: moduleId, ...docSnap.data() } as ModuleDefinition,
+                    route,
+                };
+            }
+            return null;
+        }
+    }
+
+    // Fallback: scan Firestore for dynamically registered routes not in static definitions
     const q = query(collection(db, 'modules'), where('enabled', '==', true));
     const querySnapshot = await getDocs(q);
 
-    for (const doc of querySnapshot.docs) {
-        const mod = { id: doc.id, ...doc.data() } as ModuleDefinition;
-
-        // MERGE: Use Static Definitions for Admin Routing
-        // This ensures routes defined in code (like /admin/pos/access) are found even if Firestore doesn't have them
-        const staticDef = STATIC_MODULE_DEFINITIONS[mod.id];
-        const adminRoutes = staticDef?.adminRoutes || mod.adminRoutes || [];
-
-        if (adminRoutes) {
-            const route = adminRoutes.find(r => r.path === path);
-            if (route) {
-                return { module: mod, route };
-            }
+    for (const docItem of querySnapshot.docs) {
+        const mod = { id: docItem.id, ...docItem.data() } as ModuleDefinition;
+        const route = mod.adminRoutes?.find(r => r.path === path);
+        if (route) {
+            return { module: mod, route };
         }
     }
     return null;
@@ -103,7 +117,12 @@ export const MODULE_ICONS: Record<string, any> = {
     'clipboard-list': ClipboardList,
     'monitor-dot': Monitor,
     'trophy': Trophy,
-    'sales-pipeline': Trophy
+    'sales-pipeline': Trophy,
+    'car': Car,
+    'wrench': Wrench,
+    'bell': Bell,
+    'users': Users,
+    'plus': Plus,
 };
 
 /**
