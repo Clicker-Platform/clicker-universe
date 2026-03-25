@@ -45,8 +45,12 @@ export function AdminSidebar() {
         try {
             document.cookie = '__session=; path=/; max-age=0';
             await signOut(auth);
-            const gatewayUrl = process.env.NEXT_PUBLIC_AUTH_GATEWAY_URL || 'https://auth.clicker.id';
-            window.location.href = `${gatewayUrl}/logout`;
+            const gatewayUrl = process.env.NEXT_PUBLIC_AUTH_GATEWAY_URL;
+            if (gatewayUrl) {
+                window.location.href = `${gatewayUrl}/logout`;
+            } else {
+                router.push('/login');
+            }
         } catch (error) {
             console.error('Logout failed:', error);
         }

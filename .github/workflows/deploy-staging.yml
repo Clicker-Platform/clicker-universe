@@ -15,8 +15,8 @@ jobs:
       NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: "clicker-universe-stagging.firebasestorage.app"
       NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: "603624012885"
       NEXT_PUBLIC_FIREBASE_APP_ID: "1:603624012885:web:2098c7fd9b1f06f440e8dc"
-      NEXT_PUBLIC_BASE_DOMAIN: "web.app"
-      NEXT_PUBLIC_AUTH_GATEWAY_URL: "https://stg-clicker-auth.web.app"
+      NEXT_PUBLIC_BASE_DOMAIN: "stagging.clicker.id"
+      NEXT_PUBLIC_AUTH_GATEWAY_URL: "https://auth.stagging.clicker.id"
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -29,14 +29,14 @@ jobs:
       - name: Build Backyard App
         run: |
           cd backyard
-          echo "NEXT_PUBLIC_FIREBASE_API_KEY=${NEXT_PUBLIC_FIREBASE_API_KEY}" > .env
-          echo "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=${NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN}" >> .env
-          echo "NEXT_PUBLIC_FIREBASE_PROJECT_ID=${NEXT_PUBLIC_FIREBASE_PROJECT_ID}" >> .env
-          echo "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=${NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET}" >> .env
-          echo "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=${NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID}" >> .env
-          echo "NEXT_PUBLIC_FIREBASE_APP_ID=${NEXT_PUBLIC_FIREBASE_APP_ID}" >> .env
-          echo "NEXT_PUBLIC_BASE_DOMAIN=${NEXT_PUBLIC_BASE_DOMAIN}" >> .env
-          echo "NEXT_PUBLIC_AUTH_GATEWAY_URL=${NEXT_PUBLIC_AUTH_GATEWAY_URL}" >> .env
+          echo "NEXT_PUBLIC_FIREBASE_API_KEY=${NEXT_PUBLIC_FIREBASE_API_KEY}" > .env.production.local
+          echo "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=${NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN}" >> .env.production.local
+          echo "NEXT_PUBLIC_FIREBASE_PROJECT_ID=${NEXT_PUBLIC_FIREBASE_PROJECT_ID}" >> .env.production.local
+          echo "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=${NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET}" >> .env.production.local
+          echo "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=${NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID}" >> .env.production.local
+          echo "NEXT_PUBLIC_FIREBASE_APP_ID=${NEXT_PUBLIC_FIREBASE_APP_ID}" >> .env.production.local
+          echo "NEXT_PUBLIC_BASE_DOMAIN=${NEXT_PUBLIC_BASE_DOMAIN}" >> .env.production.local
+          echo "NEXT_PUBLIC_AUTH_GATEWAY_URL=${NEXT_PUBLIC_AUTH_GATEWAY_URL}" >> .env.production.local
           npm install
           npm run build
           cd ..
@@ -44,14 +44,14 @@ jobs:
       - name: Build Core App (Clicker Platform v2)
         run: |
           cd clicker-platform-v2
-          echo "NEXT_PUBLIC_FIREBASE_API_KEY=${NEXT_PUBLIC_FIREBASE_API_KEY}" > .env
-          echo "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=${NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN}" >> .env
-          echo "NEXT_PUBLIC_FIREBASE_PROJECT_ID=${NEXT_PUBLIC_FIREBASE_PROJECT_ID}" >> .env
-          echo "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=${NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET}" >> .env
-          echo "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=${NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID}" >> .env
-          echo "NEXT_PUBLIC_FIREBASE_APP_ID=${NEXT_PUBLIC_FIREBASE_APP_ID}" >> .env
-          echo "NEXT_PUBLIC_BASE_DOMAIN=${NEXT_PUBLIC_BASE_DOMAIN}" >> .env
-          echo "NEXT_PUBLIC_AUTH_GATEWAY_URL=${NEXT_PUBLIC_AUTH_GATEWAY_URL}" >> .env
+          echo "NEXT_PUBLIC_FIREBASE_API_KEY=${NEXT_PUBLIC_FIREBASE_API_KEY}" > .env.production.local
+          echo "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=${NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN}" >> .env.production.local
+          echo "NEXT_PUBLIC_FIREBASE_PROJECT_ID=${NEXT_PUBLIC_FIREBASE_PROJECT_ID}" >> .env.production.local
+          echo "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=${NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET}" >> .env.production.local
+          echo "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=${NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID}" >> .env.production.local
+          echo "NEXT_PUBLIC_FIREBASE_APP_ID=${NEXT_PUBLIC_FIREBASE_APP_ID}" >> .env.production.local
+          echo "NEXT_PUBLIC_BASE_DOMAIN=${NEXT_PUBLIC_BASE_DOMAIN}" >> .env.production.local
+          echo "NEXT_PUBLIC_AUTH_GATEWAY_URL=${NEXT_PUBLIC_AUTH_GATEWAY_URL}" >> .env.production.local
           npm install
           npm run build
           cd ..
@@ -59,14 +59,14 @@ jobs:
       - name: Build Auth Gateway
         run: |
           cd auth-gateway
-          echo "NEXT_PUBLIC_FIREBASE_API_KEY=${NEXT_PUBLIC_FIREBASE_API_KEY}" > .env
-          echo "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=${NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN}" >> .env
-          echo "NEXT_PUBLIC_FIREBASE_PROJECT_ID=${NEXT_PUBLIC_FIREBASE_PROJECT_ID}" >> .env
-          echo "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=${NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET}" >> .env
-          echo "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=${NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID}" >> .env
-          echo "NEXT_PUBLIC_FIREBASE_APP_ID=${NEXT_PUBLIC_FIREBASE_APP_ID}" >> .env
-          echo "NEXT_PUBLIC_BASE_DOMAIN=${NEXT_PUBLIC_BASE_DOMAIN}" >> .env
-          echo "NEXT_PUBLIC_AUTH_GATEWAY_URL=${NEXT_PUBLIC_AUTH_GATEWAY_URL}" >> .env
+          echo "NEXT_PUBLIC_FIREBASE_API_KEY=${NEXT_PUBLIC_FIREBASE_API_KEY}" > .env.production.local
+          echo "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=${NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN}" >> .env.production.local
+          echo "NEXT_PUBLIC_FIREBASE_PROJECT_ID=${NEXT_PUBLIC_FIREBASE_PROJECT_ID}" >> .env.production.local
+          echo "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=${NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET}" >> .env.production.local
+          echo "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=${NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID}" >> .env.production.local
+          echo "NEXT_PUBLIC_FIREBASE_APP_ID=${NEXT_PUBLIC_FIREBASE_APP_ID}" >> .env.production.local
+          echo "NEXT_PUBLIC_BASE_DOMAIN=${NEXT_PUBLIC_BASE_DOMAIN}" >> .env.production.local
+          echo "NEXT_PUBLIC_AUTH_GATEWAY_URL=${NEXT_PUBLIC_AUTH_GATEWAY_URL}" >> .env.production.local
           npm install
           npm run build
           cd ..
@@ -74,6 +74,7 @@ jobs:
       - name: Build Functions
         run: |
           cd functions
+          echo "BASE_DOMAIN=${NEXT_PUBLIC_BASE_DOMAIN}" > .env.clicker-universe-stagging
           npm install
           npm run build
           cd ..
@@ -86,5 +87,14 @@ jobs:
         run: firebase deploy --project clicker-universe-stagging --non-interactive --force
         env:
           FIREBASE_CLI_EXPERIMENTS: webframeworks
+          # Pass build-time environment variables for Next.js build during deployment
+          NEXT_PUBLIC_FIREBASE_API_KEY: "AIzaSyDk_b_wMPuniEWxYebMB4aLfPb5kBDtLSA"
+          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: "clicker-universe-stagging.firebaseapp.com"
+          NEXT_PUBLIC_FIREBASE_PROJECT_ID: "clicker-universe-stagging"
+          NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: "clicker-universe-stagging.firebasestorage.app"
+          NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: "603624012885"
+          NEXT_PUBLIC_FIREBASE_APP_ID: "1:603624012885:web:2098c7fd9b1f06f440e8dc"
+          NEXT_PUBLIC_BASE_DOMAIN: "stagging.clicker.id"
+          NEXT_PUBLIC_AUTH_GATEWAY_URL: "https://auth.stagging.clicker.id"
           # This token needs to be added to GitHub Secrets
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}

@@ -46,13 +46,17 @@ export async function middleware(request: NextRequest) {
         '_next'
     ];
 
-    // ===================================
-    // DOMAIN & SUBDOMAIN PARSING
-    // ===================================
     const hostname = request.headers.get('host') || '';
-    const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'clicker.id';
+    const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN;
+    if (!baseDomain) {
+        console.error('[Middleware] NEXT_PUBLIC_BASE_DOMAIN is not defined');
+        return new NextResponse('Site Configuration Missing (Base Domain)', { status: 500 });
+    }
     const isLocal = hostname.includes('localhost');
     const protocol = isLocal ? 'http' : 'https';
+    // Firebase default domains (e.g. stg-clicker-core.web.app) don't support custom subdomains.
+    // On these domains, path-based routing must be used instead of subdomain-based routing.
+    const isFirebaseDefaultDomain = baseDomain.includes('.web.app');
 
     // Prioritize Cloudflare's original host header since Firebase Hosting overrides 'host' to .web.app
     const rawForwardedHost = request.headers.get('x-clicker-original-host') || request.headers.get('x-forwarded-host');
@@ -123,12 +127,17 @@ export async function middleware(request: NextRequest) {
             if (activeSite) siteId = activeSite;
 
             // Auth Gateway URL (centralized login)
-            const gatewayUrl = process.env.NEXT_PUBLIC_AUTH_GATEWAY_URL || 'https://auth.clicker.id';
-            const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'clicker.id';
+            const gatewayUrl = process.env.NEXT_PUBLIC_AUTH_GATEWAY_URL;
             const tenantSlug = request.headers.get('x-tenant-slug');
 
+            if (!gatewayUrl) {
+                console.error('[Middleware] NEXT_PUBLIC_AUTH_GATEWAY_URL is not defined');
+                // Return a clear error instead of redirecting to prod
+                return new NextResponse('Authentication Gateway Configuration Missing', { status: 500 });
+            }
+
             // Explicitly signal subdomain status to Server Components
-            if (forwardedHost && forwardedHost !== 'clicker.id' && forwardedHost.endsWith('.clicker.id')) {
+            if (forwardedHost && forwardedHost !== baseDomain && forwardedHost.endsWith(`.${baseDomain}`)) {
                 requestHeaders.set('x-clicker-is-subdomain', 'true');
             }
 
@@ -137,8 +146,12 @@ export async function middleware(request: NextRequest) {
                 if (forwardedHost) {
                     // Use the actual masked domain
                     return `${protocol}://${forwardedHost}${path}`;
+                } else if (tenantSlug && isFirebaseDefaultDomain) {
+                    // Path-based for Firebase default domains (.web.app) — subdomains not supported.
+                    // e.g. https://stg-clicker-core.web.app/stagging/admin
+                    return `${protocol}://${baseDomain}/${tenantSlug}${path}`;
                 } else if (tenantSlug) {
-                    // Fallback: construct from tenant slug
+                    // Subdomain-based for custom domains (e.g. kasisehat.clicker.id/admin)
                     return `${protocol}://${tenantSlug}.${baseDomain}${path}`;
                 }
                 // Last fallback: just the path
@@ -163,7 +176,9 @@ export async function middleware(request: NextRequest) {
             // If we have an active site, but the URL is generic '/admin...',
             // Redirect to 'https://:siteId.clicker.id/admin...' to enforce tenant subdomain.
             // Exclude auth callbacks to prevent loops. Skip in local dev to stay on localhost.
-            if (!isLocal && activeSite && !pathname.startsWith('/admin/auth/')) {
+            // SKIP for .web.app domains (Firebase default domains) — they don't support custom subdomains.
+            // On .web.app, path-based routing is used instead (e.g. /stagging/admin).
+            if (!isLocal && !isFirebaseDefaultDomain && activeSite && !pathname.startsWith('/admin/auth/')) {
                 const targetHost = `${activeSite}.${baseDomain}`;
                 if (currentHost !== targetHost) {
                     // Construct new URL
@@ -217,21 +232,27 @@ export async function middleware(request: NextRequest) {
         // Need auth check before allowing access
         if (segments.length >= 2 && segments[1] === 'admin') {
             const activeSite = request.cookies.get('__session')?.value;
-            const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'clicker.id';
             const hostname = request.headers.get('host') || '';
 
             // CANONICAL REDIRECT:
             // If accessing via root domain (clicker.id/quattro/admin),
             // Redirect to subdomain (quattro.clicker.id/admin).
-            // SKIP this on localhost if the user wants path-based routing (localhost:3000/demo/admin)
-            if (!isLocal && (hostname === baseDomain || hostname === `www.${baseDomain}`)) {
+            // SKIP this on localhost if the user wants path-based routing (localhost:3000/demo/admin).
+            // SKIP for .web.app domains (Firebase default domains) — they don't support custom subdomains.
+            // On .web.app, path-based routing is used (e.g. stg-clicker-core.web.app/stagging/admin).
+            if (!isLocal && !isFirebaseDefaultDomain && (hostname === baseDomain || hostname === `www.${baseDomain}`)) {
                 const cleanPath = '/' + segments.slice(1).join('/'); // /admin/...
                 const newUrl = `https://${tenant}.${baseDomain}${cleanPath}`;
                 return NextResponse.redirect(newUrl);
             }
 
             // Auth Gateway URL
-            const gatewayUrl = process.env.NEXT_PUBLIC_AUTH_GATEWAY_URL || 'https://auth.clicker.id';
+            const gatewayUrl = process.env.NEXT_PUBLIC_AUTH_GATEWAY_URL;
+
+            if (!gatewayUrl) {
+                console.error('[Middleware] NEXT_PUBLIC_AUTH_GATEWAY_URL is not defined for tenant admin');
+                return new NextResponse('Authentication Gateway Configuration Missing', { status: 500 });
+            }
 
             // Use the top-level forwardedHost (which strips .web.app domains)
 
@@ -246,8 +267,12 @@ export async function middleware(request: NextRequest) {
 
                 if (forwardedHost) {
                     return `${protocol}://${forwardedHost}${targetPath}`;
+                } else if (isFirebaseDefaultDomain) {
+                    // Path-based for Firebase default domains (.web.app) — subdomains not supported.
+                    // e.g. https://stg-clicker-core.web.app/stagging/admin
+                    return `${protocol}://${baseDomain}/${tenant}${targetPath}`;
                 } else {
-                    // Use tenant slug to construct domain
+                    // Subdomain-based for custom domains (e.g. quattro.clicker.id/admin)
                     return `${protocol}://${tenant}.${baseDomain}${targetPath}`;
                 }
             };

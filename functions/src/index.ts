@@ -9,12 +9,46 @@ if (process.env.FUNCTIONS_EMULATOR === 'true' || process.env.NODE_ENV === 'devel
     console.log('🔧 [God Mode] Forcing Admin SDK to use Emulators at 127.0.0.1');
 }
 
-// Initialize Firebase Admin SDK once at module load
-// Use Application Default Credentials (ADC) which automatically works in Cloud Functions
-// This completely avoids the service account file loading issue
+// Initialize Firebase Admin SDK
 if (!admin.apps.length) {
-    admin.initializeApp();
-    console.log('✅ [Auth] Firebase Admin SDK initialized with Application Default Credentials.')
+    const projectId = process.env.GCLOUD_PROJECT || 'clicker-universe';
+    console.log(`🚀 [System] Initializing Admin SDK for Project: ${projectId}`);
+
+    try {
+        // Dynamic loading of service account JSON for Staging/Prod
+        // This solves the 'signBlob' permission issue by signing tokens locally with private key
+        let serviceAccount: any = null;
+
+        if (projectId === 'clicker-universe-stagging') {
+            try {
+                serviceAccount = require('../service-account-staging.json');
+                console.log('📂 [Auth] Loaded Staging Service Account JSON.');
+            } catch (e) {
+                console.warn('⚠️ [Auth] Staging JSON not found, falling back to ADC.');
+            }
+        } else if (projectId === 'clicker-universe') {
+            try {
+                serviceAccount = require('../service-account-prod.json');
+                console.log('📂 [Auth] Loaded Production Service Account JSON.');
+            } catch (e) {
+                console.warn('⚠️ [Auth] Production JSON not found, falling back to ADC.');
+            }
+        }
+
+        if (serviceAccount) {
+            admin.initializeApp({
+                credential: admin.credential.cert(serviceAccount),
+                databaseURL: `https://${projectId}.firebaseio.com`
+            });
+            console.log(`✅ [Auth] Firebase Admin SDK initialized with Service Account JSON: ${serviceAccount.client_email}`);
+        } else {
+            admin.initializeApp();
+            console.log('✅ [Auth] Firebase Admin SDK initialized with Application Default Credentials (ADC).');
+        }
+    } catch (error) {
+        console.error('❌ [Auth] Admin SDK Initialization Failed:', error);
+        admin.initializeApp(); // Last ditch fallback
+    }
 }
 
 // Generate Handoff Token for cross-app authentication

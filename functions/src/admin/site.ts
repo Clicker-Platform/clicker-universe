@@ -66,7 +66,7 @@ export const STARTER_TEMPLATE = {
     links: [
         {
             title: "Visit Admin Panel",
-            url: "https://clicker.id/admin",
+            url: `https://${process.env.BASE_DOMAIN || 'clicker.id'}/admin`,
             iconName: "Settings",
             isActive: true,
             order: 0
@@ -84,7 +84,7 @@ export async function performSiteSeeding(db: admin.firestore.Firestore, siteId: 
     const metadata = {
         ...STARTER_TEMPLATE.metadata,
         name: siteName, // Use actual name
-        domain: `${siteId}.clicker.id`, // Default domain
+        domain: `${siteId}.${process.env.BASE_DOMAIN || 'clicker.id'}`, // Default domain
         id: siteId,
         ownerId: ownerId || 'system-seed',
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),

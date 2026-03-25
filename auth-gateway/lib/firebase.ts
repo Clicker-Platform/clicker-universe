@@ -18,6 +18,12 @@ const firebaseConfig = {
 };
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+if (typeof window !== 'undefined') {
+    console.log('[Firebase Gateway] Initialized with config:', {
+        projectId: firebaseConfig.projectId,
+        authDomain: firebaseConfig.authDomain
+    });
+}
 const db = getFirestore(app);
 const auth = getAuth(app);
 const storage = getStorage(app);

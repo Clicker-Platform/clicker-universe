@@ -63,13 +63,14 @@ export default async function RootLayout({
 
   // 3. DETECT SUBDOMAIN (from Middleware with Fallback)
   let isSubdomain = headersList.get('x-clicker-is-subdomain') === 'true';
-  if (!isSubdomain) {
-    const host = headersList.get('x-clicker-original-host') || headersList.get('x-forwarded-host') || headersList.get('host') || '';
-    // Check if it's a subdomain of clicker.id (but not www or root)
-    if (host.endsWith('.clicker.id') && host !== 'clicker.id' && host !== 'www.clicker.id') {
-      isSubdomain = true;
+    if (!isSubdomain) {
+      const host = headersList.get('x-clicker-original-host') || headersList.get('x-forwarded-host') || headersList.get('host') || '';
+      const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'clicker.id';
+      // Check if it's a subdomain of baseDomain (but not www or root)
+      if (host.endsWith(`.${baseDomain}`) && host !== baseDomain && host !== `www.${baseDomain}`) {
+        isSubdomain = true;
+      }
     }
-  }
 
   // 4. THEME REGISTRY requests
   // 2. Fetch Settings (Only if we have a valid siteId)
@@ -82,7 +83,7 @@ export default async function RootLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://clicker-universe.firebaseapp.com" />
+        <link rel="preconnect" href={`https://${process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || 'clicker-universe.firebaseapp.com'}`} />
         <link rel="preconnect" href="https://www.googleapis.com" />
         <link rel="preconnect" href="https://firebasestorage.googleapis.com" />
       </head>

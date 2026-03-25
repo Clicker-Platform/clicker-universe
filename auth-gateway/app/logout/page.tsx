@@ -18,9 +18,10 @@ export default function LogoutPage() {
                 // Clear __session cookie at all domain levels to prevent stale auth
                 const isSecure = window.location.protocol === 'https:';
                 const secureFlag = isSecure ? '; Secure' : '';
+                const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'clicker.id';
                 document.cookie = `__session=; path=/; max-age=0; SameSite=Lax${secureFlag}`;
                 if (isSecure) {
-                    document.cookie = '__session=; path=/; max-age=0; Domain=.clicker.id; SameSite=Lax; Secure';
+                    document.cookie = `__session=; path=/; max-age=0; Domain=.${baseDomain}; SameSite=Lax; Secure`;
                 }
 
                 // Clear any local storage if needed

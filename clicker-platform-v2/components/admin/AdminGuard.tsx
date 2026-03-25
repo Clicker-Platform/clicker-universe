@@ -23,7 +23,13 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
             // 1. AUTHENTICATION CHECK
             if (!currentUser) {
-                const gatewayUrl = process.env.NEXT_PUBLIC_AUTH_GATEWAY_URL || 'https://auth.clicker.id';
+                const gatewayUrl = process.env.NEXT_PUBLIC_AUTH_GATEWAY_URL;
+                if (!gatewayUrl) {
+                    console.error('[AdminGuard] NEXT_PUBLIC_AUTH_GATEWAY_URL is not defined');
+                    setUnauthorized(true);
+                    setLoading(false);
+                    return;
+                }
                 window.location.href = `${gatewayUrl}?redirect=${encodeURIComponent(pathname || '/admin')}`;
                 setLoading(false);
                 return;
@@ -138,8 +144,12 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
                             // Clear __session cookie
                             document.cookie = '__session=; path=/; max-age=0';
                             auth.signOut().then(() => {
-                                const gatewayUrl = process.env.NEXT_PUBLIC_AUTH_GATEWAY_URL || 'https://auth.clicker.id';
-                                window.location.href = `${gatewayUrl}/logout`;
+                                const gatewayUrl = process.env.NEXT_PUBLIC_AUTH_GATEWAY_URL;
+                                if (gatewayUrl) {
+                                    window.location.href = `${gatewayUrl}/logout`;
+                                } else {
+                                    router.push('/login');
+                                }
                             });
                         }}
                         className="w-full py-3 bg-gray-100 dark:bg-neutral-800 hover:bg-gray-200 dark:hover:bg-neutral-700 text-gray-700 dark:text-neutral-200 font-bold rounded-xl transition-colors"

@@ -10,7 +10,7 @@
  * 
  * DNS SETUP:
  * - Add CNAME record: * → <worker-name>.<account>.workers.dev (Proxied)
- * - Add CNAME record: @ → <worker-name>.<account>.workers.dev (Proxied)
+ * - Add CNAME record: @ → <worker-name>.<account>.workers.ddomain ev (Proxied)
  */
 
 const HOSTS = {

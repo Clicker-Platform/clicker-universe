@@ -47,7 +47,12 @@ function AuthCallbackHandler() {
                 if (!processedRef.current) {
                     setError('No authentication token provided. Redirecting to login...');
                     setTimeout(() => {
-                        window.location.href = process.env.NEXT_PUBLIC_AUTH_GATEWAY_URL || 'https://auth.clicker.id';
+                        const gatewayUrl = process.env.NEXT_PUBLIC_AUTH_GATEWAY_URL;
+                        if (gatewayUrl) {
+                            window.location.href = gatewayUrl;
+                        } else {
+                            setError('Configuration error: AUTH_GATEWAY_URL is missing.');
+                        }
                     }, 2000);
                 }
                 return;
@@ -58,8 +63,15 @@ function AuthCallbackHandler() {
             // 1. Mark as processed immediately to lock other executions
             processedRef.current = true;
 
-            const baseDomain = 'clicker.id';
-            const isProduction = window.location.hostname.includes(baseDomain);
+            const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN;
+            const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+            
+            // Production is strictly defined as when the baseDomain is set (e.g., clicker.id) 
+            // AND we are NOT on a staging project.
+            const isProduction = !!baseDomain && 
+                               projectId === 'clicker-universe' && 
+                               window.location.hostname.includes(baseDomain) && 
+                               !window.location.hostname.includes('web.app');
 
             // ============================================================
             // CROSS-ORIGIN RELAY: Firebase Auth IndexedDB is per-origin.
@@ -159,7 +171,7 @@ function AuthCallbackHandler() {
                     await auth.signOut();
                     // Clear __session cookie to prevent middleware redirect loop
                     document.cookie = `__session=; path=/; max-age=0; SameSite=Lax${isProduction ? '; Secure' : ''}`;
-                    if (isProduction) {
+                    if (isProduction && baseDomain) {
                         document.cookie = `__session=; path=/; max-age=0; Domain=.${baseDomain}; SameSite=Lax; Secure`;
                     }
                 }
@@ -170,7 +182,7 @@ function AuthCallbackHandler() {
                 // Clear stale cookies to prevent loops on retry
                 try { await auth.signOut(); } catch { }
                 document.cookie = `__session=; path=/; max-age=0; SameSite=Lax${isProduction ? '; Secure' : ''}`;
-                if (isProduction) {
+                if (isProduction && baseDomain) {
                     document.cookie = `__session=; path=/; max-age=0; Domain=.${baseDomain}; SameSite=Lax; Secure`;
                 }
             }
@@ -192,16 +204,28 @@ function AuthCallbackHandler() {
                         <button
                             onClick={() => {
                                 auth.signOut().then(() => {
-                                    const isProd = window.location.hostname.includes('clicker.id');
-                                    document.cookie = `__session=; path=/; max-age=0; SameSite=Lax${isProd ? '; Secure' : ''}`;
-                                    if (isProd) {
-                                        document.cookie = '__session=; path=/; max-age=0; Domain=.clicker.id; SameSite=Lax; Secure';
+                                    const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN;
+                                    const isProdCheck = !!baseDomain && 
+                                                      process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID === 'clicker-universe' &&
+                                                      window.location.hostname.includes(baseDomain) && 
+                                                      !window.location.hostname.includes('web.app');
+                                    document.cookie = `__session=; path=/; max-age=0; SameSite=Lax${isProdCheck ? '; Secure' : ''}`;
+                                    if (isProdCheck && baseDomain) {
+                                        document.cookie = `__session=; path=/; max-age=0; Domain=.${baseDomain}; SameSite=Lax; Secure`;
                                     }
-                                    const gw = process.env.NEXT_PUBLIC_AUTH_GATEWAY_URL || 'https://auth.clicker.id';
-                                    window.location.href = `${gw}?error=no_membership`;
+                                    const gw = process.env.NEXT_PUBLIC_AUTH_GATEWAY_URL;
+                                    if (gw) {
+                                        window.location.href = `${gw}?error=no_membership`;
+                                    } else {
+                                        setError('Login failed and no auth gateway configured.');
+                                    }
                                 }).catch(() => {
-                                    const gw = process.env.NEXT_PUBLIC_AUTH_GATEWAY_URL || 'https://auth.clicker.id';
-                                    window.location.href = `${gw}?error=no_membership`;
+                                    const gw = process.env.NEXT_PUBLIC_AUTH_GATEWAY_URL;
+                                    if (gw) {
+                                        window.location.href = `${gw}?error=no_membership`;
+                                    } else {
+                                        setError('Login failed and no auth gateway configured.');
+                                    }
                                 });
                             }}
                             className="mt-2 w-full bg-gray-800 text-white font-bold py-3 rounded-xl hover:bg-gray-700 transition-colors text-sm"

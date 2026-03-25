@@ -56,16 +56,24 @@ function AdminLoginForm() {
         const tenantMatch = document.cookie.match(/__tenant=([^;]+)/);
         const tenantSlug = tenantMatch ? tenantMatch[1] : null;
 
+        const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'clicker.id';
+
         if (tenantSlug) {
-          // Construct masked domain from tenant
-          platformUrl = `https://${tenantSlug}.clicker.id`;
+          // Construct domain from tenant
+          if (baseDomain.includes('.web.app')) {
+            // Path-based for default Firebase domains (sub-subdomains like tenant.stg-clicker-core.web.app don't work)
+            platformUrl = `https://${baseDomain}/${tenantSlug}`;
+          } else {
+            // Subdomain-based for custom domains (e.g., tenant.clicker.id)
+            platformUrl = `https://${tenantSlug}.${baseDomain}`;
+          }
         } else if (window.location.hostname === 'localhost') {
           // Fallback for local development to main platform port
           platformUrl = 'http://localhost:3000';
         } else {
           // 3. Last resort fallback
           // Prefer generic masked domain over Firebase URL
-          platformUrl = 'https://clicker.id';
+          platformUrl = `https://${baseDomain}`;
         }
       }
 

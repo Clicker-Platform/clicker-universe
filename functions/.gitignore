@@ -2,3 +2,9 @@ lib/
 node_modules/
 .env
 .DS_Store
+
+# [IMPORTANT] Ensure service account JSONs are uploaded during deploy, 
+# but DO NOT commit them to git if this is a public repository.
+# To keep them out of git while allowing upload, use manual deployment or Secret Manager.
+# For now, we allow them to be uploaded by removing the ignore.
+# service-account-*.json 
