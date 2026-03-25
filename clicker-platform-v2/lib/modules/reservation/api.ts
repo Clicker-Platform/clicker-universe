@@ -18,13 +18,20 @@ import {
     QueryDocumentSnapshot
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Booking, Service, Staff, TimeSlot } from './types';
+import { Booking, Service, ReservationSettings } from './types';
 import { isModuleEnabled } from '../registry';
 import { getStaffMembers } from './staff';
 import { DaySchedule } from '@/lib/core/types';
-import { fetchSiteSettings } from '@/lib/fetchData';
-import { BusinessHours } from '@/data/mockData';
+import {
+    getServiceCatalog,
+    getServiceCatalogItem,
+    createServiceCatalogItem,
+    updateServiceCatalogItem,
+    deleteServiceCatalogItem,
+} from '@/lib/core/serviceCatalog/api';
+import type { ServiceCatalogItem } from '@/lib/core/serviceCatalog/types';
 export { getStaffMembers };
+
 // Helper to sanitize data for Firestore (replaces undefined with null or removes them)
 const sanitize = (data: any) => {
     return Object.fromEntries(
@@ -33,42 +40,73 @@ const sanitize = (data: any) => {
 };
 
 // Collection References
-const SERVICES_COLLECTION = 'modules/reservation/services';
 const BOOKINGS_COLLECTION = 'modules/reservation/bookings';
-const SLOTS_COLLECTION = 'modules/reservation/slots';
 
-// --- Services API ---
+// --- Services API (reads from shared serviceCatalog) ---
+
+function catalogToService(item: ServiceCatalogItem): Service {
+    return {
+        id: item.id,
+        name: item.name,
+        description: item.description,
+        durationMinutes: item.durationMinutes,
+        bookingType: item.reservationConfig?.bookingType ?? 'time_slot',
+        price: item.price,
+        isActive: item.isActive,
+        imageUrl: item.imageUrl,
+        category: item.category,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
+    };
+}
+
+// Returns all active bookable services (those with reservationConfig set)
 export async function getServices(siteId: string): Promise<Service[]> {
-    const q = query(collection(db, 'sites', siteId, SERVICES_COLLECTION), orderBy('name', 'asc'));
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Service));
+    const items = await getServiceCatalog(siteId);
+    return items
+        .filter(i => i.reservationConfig !== undefined && i.reservationConfig !== null)
+        .map(catalogToService);
 }
 
 export async function getService(siteId: string, id: string): Promise<Service | null> {
-    const docRef = doc(db, 'sites', siteId, SERVICES_COLLECTION, id);
-    const docSnap = await getDoc(docRef);
-    return docSnap.exists() ? ({ id: docSnap.id, ...docSnap.data() } as Service) : null;
+    const item = await getServiceCatalogItem(siteId, id);
+    return item ? catalogToService(item) : null;
 }
 
-export async function createService(siteId: string, service: Omit<Service, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
-    const docRef = await addDoc(collection(db, 'sites', siteId, SERVICES_COLLECTION), {
-        ...sanitize(service),
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
+export async function createService(
+    siteId: string,
+    service: Omit<Service, 'id' | 'createdAt' | 'updatedAt'>
+): Promise<string> {
+    return createServiceCatalogItem(siteId, {
+        name: service.name,
+        description: service.description,
+        durationMinutes: service.durationMinutes,
+        price: service.price,
+        isActive: service.isActive ?? true,
+        category: (service.category as any) || 'OTHER',
+        imageUrl: service.imageUrl,
+        reservationConfig: {},   // marks as bookable
     });
-    return docRef.id;
 }
 
-export async function updateService(siteId: string, id: string, updates: Partial<Omit<Service, 'id' | 'createdAt' | 'updatedAt'>>): Promise<void> {
-    const docRef = doc(db, 'sites', siteId, SERVICES_COLLECTION, id);
-    await updateDoc(docRef, {
-        ...sanitize(updates),
-        updatedAt: serverTimestamp()
-    });
+export async function updateService(
+    siteId: string,
+    id: string,
+    updates: Partial<Omit<Service, 'id' | 'createdAt' | 'updatedAt'>>
+): Promise<void> {
+    const patch: Record<string, any> = {};
+    if (updates.name !== undefined) patch.name = updates.name;
+    if (updates.description !== undefined) patch.description = updates.description;
+    if (updates.durationMinutes !== undefined) patch.durationMinutes = updates.durationMinutes;
+    if (updates.price !== undefined) patch.price = updates.price;
+    if (updates.isActive !== undefined) patch.isActive = updates.isActive;
+    if (updates.category !== undefined) patch.category = updates.category;
+    if (updates.imageUrl !== undefined) patch.imageUrl = updates.imageUrl;
+    await updateServiceCatalogItem(siteId, id, patch);
 }
 
 export async function deleteService(siteId: string, id: string): Promise<void> {
-    await deleteDoc(doc(db, 'sites', siteId, SERVICES_COLLECTION, id));
+    await deleteServiceCatalogItem(siteId, id);
 }
 
 // --- Bookings API ---
@@ -174,7 +212,17 @@ export async function updateBookingStatus(siteId: string, bookingId: string, sta
     if (status === 'completed' && booking.status !== 'completed') {
         try {
             const { isModuleEnabled } = await import('../registry');
-            const loyaltyEnabled = await isModuleEnabled('membership');
+
+            // Guard: if service_records module is enabled AND this booking has a linked
+            // service record, skip — points are awarded by the SR approval flow instead.
+            const [loyaltyEnabled, srEnabled] = await Promise.all([
+                isModuleEnabled('membership'),
+                isModuleEnabled('service_records'),
+            ]);
+            if (srEnabled && booking.serviceRecordId) {
+                console.log(`[Loyalty] Skipping points for booking ${bookingId} — handled by Service Records approval`);
+                return;
+            }
             if (loyaltyEnabled && booking.customerPhone) {
                 const { findMemberByPhone, awardPointsWithSpend, getMembershipSettings } = await import('../membership/api');
                 const member = await findMemberByPhone(siteId, booking.customerPhone);
@@ -210,36 +258,9 @@ export async function updateBookingDetails(siteId: string, id: string, updates: 
     await updateDoc(docRef, updates);
 }
 
-// --- Availability / Slots API ---
+// --- Availability API ---
 
-// This mimics a simple rigid slot system for now. 
-// A full implementation would check specific dates against existing bookings.
-export async function getWeeklySlots(siteId: string): Promise<TimeSlot[]> {
-    const q = query(collection(db, 'sites', siteId, SLOTS_COLLECTION));
-    const snapshot = await getDocs(q);
-    const slots = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as TimeSlot));
-
-    // Sort in memory to avoid Firestore composite index requirement
-    return slots.sort((a, b) => {
-        if (a.dayOfWeek !== b.dayOfWeek) return a.dayOfWeek - b.dayOfWeek;
-        return a.startTime.localeCompare(b.startTime);
-    });
-}
-
-export async function saveWeeklySlots(siteId: string, slots: Omit<TimeSlot, 'id'>[]): Promise<void> {
-    // 1. Delete existing slots (simple overwrite strategy for weekly template)
-    // For a robust system, we might want to update individually, but for simple weekly schedule, overwrite is fine.
-    const q = query(collection(db, 'sites', siteId, SLOTS_COLLECTION));
-    const snapshot = await getDocs(q);
-    const deletePromises = snapshot.docs.map(doc => deleteDoc(doc.ref));
-    await Promise.all(deletePromises);
-
-    // 2. Add new slots
-    const addPromises = slots.map(slot => addDoc(collection(db, 'sites', siteId, SLOTS_COLLECTION), slot));
-    await Promise.all(addPromises);
-}
-
-export async function checkAvailability(siteId: string, serviceId: string, startAt: Date, durationMinutes: number): Promise<boolean> {
+export async function checkAvailability(siteId: string, _serviceId: string, startAt: Date, durationMinutes: number): Promise<boolean> {
     const endAt = new Date(startAt.getTime() + durationMinutes * 60000);
 
     const startOfDay = new Date(startAt);
@@ -280,11 +301,6 @@ export async function checkAvailability(siteId: string, serviceId: string, start
 
 const SETTINGS_DOC = 'modules/reservation/settings/config';
 
-export interface ReservationSettings {
-    allowStaffSelection: boolean;
-    membershipEnabled?: boolean;
-}
-
 export async function getReservationSettings(siteId: string): Promise<ReservationSettings> {
     const docRef = doc(db, 'sites', siteId, SETTINGS_DOC);
 
@@ -294,9 +310,10 @@ export async function getReservationSettings(siteId: string): Promise<Reservatio
         isModuleEnabled('membership').catch(() => false)
     ]);
 
+    const defaults: ReservationSettings = { allowStaffSelection: false, staffLabel: 'Staff' };
     const settings: ReservationSettings = docSnap.exists()
-        ? (docSnap.data() as ReservationSettings)
-        : { allowStaffSelection: false };
+        ? { ...defaults, ...(docSnap.data() as ReservationSettings) }
+        : defaults;
 
     return { ...settings, membershipEnabled };
 }
@@ -311,9 +328,7 @@ export async function getGlobalSchedule(siteId: string): Promise<DaySchedule[]> 
     const docRef = doc(db, 'sites', siteId, 'content', 'business');
     const snap = await getDoc(docRef);
     if (snap.exists()) {
-        const data = snap.data() as BusinessHours; // or similar shape with schedule
-        // @ts-ignore - casting or optional check
-        return data.schedule || [];
+        return (snap.data() as any).schedule || [];
     }
     return [];
 }

@@ -26,11 +26,13 @@ export default function DetailsStep({
 }: DetailsStepProps) {
     const { siteId } = useSite();
     const [loading, setLoading] = useState(false);
+    const isRequest = selectedService.bookingType === 'request';
     const [customerInfo, setCustomerInfo] = useState({
         name: '',
         email: '',
         phone: '',
         notes: '',
+        preferredDate: '',
         id: 'guest'
     });
     const [memberSearchPhone, setMemberSearchPhone] = useState('');
@@ -66,7 +68,13 @@ export default function DetailsStep({
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        await onSubmit(customerInfo);
+        if (loading) return;
+        setLoading(true);
+        try {
+            await onSubmit(customerInfo);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const inputClass = `w-full px-4 py-3 rounded-xl border focus:outline-none ${
@@ -90,10 +98,17 @@ export default function DetailsStep({
                         <span className={`font-bold ${isGlass ? 'text-white' : 'text-gray-900'}`}>{selectedStaff.name}</span>
                     </div>
                 )}
-                <div className="flex justify-between">
-                    <span className={isGlass ? 'text-white/50' : 'text-gray-500'}>Time:</span>
-                    <span className={`font-bold ${isGlass ? 'text-white' : 'text-gray-900'}`}>{date.toLocaleDateString()} at {time}</span>
-                </div>
+                {isRequest ? (
+                    <div className="flex justify-between">
+                        <span className={isGlass ? 'text-white/50' : 'text-gray-500'}>Schedule:</span>
+                        <span className={`font-bold ${isGlass ? 'text-white' : 'text-gray-900'}`}>On Request</span>
+                    </div>
+                ) : (
+                    <div className="flex justify-between">
+                        <span className={isGlass ? 'text-white/50' : 'text-gray-500'}>Time:</span>
+                        <span className={`font-bold ${isGlass ? 'text-white' : 'text-gray-900'}`}>{date.toLocaleDateString()} at {time}</span>
+                    </div>
+                )}
             </div>
 
             {/* Membership Toggle */}
@@ -180,6 +195,20 @@ export default function DetailsStep({
                         />
                     </div>
                 </div>
+
+                {isRequest && (
+                    <div>
+                        <label className={labelClass}>Preferred Date <span className={isGlass ? 'text-white/30' : 'text-gray-400'}>(optional)</span></label>
+                        <input
+                            type="date"
+                            min={new Date().toLocaleDateString('en-CA')}
+                            value={customerInfo.preferredDate}
+                            onChange={e => setCustomerInfo({ ...customerInfo, preferredDate: e.target.value })}
+                            className={inputClass}
+                        />
+                        <p className={`text-xs mt-1 ${isGlass ? 'text-white/30' : 'text-gray-400'}`}>We will confirm the final schedule with you.</p>
+                    </div>
+                )}
 
                 <div>
                     <label className={labelClass}>Notes</label>

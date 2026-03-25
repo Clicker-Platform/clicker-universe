@@ -1,4 +1,4 @@
-import { getServices, getWeeklySlots, getReservationSettings } from '@/lib/modules/reservation/api';
+import { getServices, getReservationSettings } from '@/lib/modules/reservation/api';
 import { getStaffMembers } from '@/lib/modules/reservation/staff';
 import BookingForm from '@/lib/modules/reservation/public/BookingForm';
 
@@ -8,7 +8,7 @@ import { doc, getDoc } from 'firebase/firestore';
 export async function generateMetadata() {
     const profileSnap = await getDoc(doc(db, "content", "profile"));
     const profile = profileSnap.exists() ? profileSnap.data() : null;
-    const businessName = profile?.name || 'Clicker App'; // Fallback
+    const businessName = profile?.name || 'Clicker App';
 
     return {
         title: `Book an Appointment | ${businessName}`,
@@ -16,7 +16,6 @@ export async function generateMetadata() {
     };
 }
 
-// Force dynamic rendering because we are fetching data that might change
 export const dynamic = 'force-dynamic';
 
 import { isModuleEnabled } from '@/lib/modules/registry';
@@ -31,38 +30,21 @@ interface BookPageProps {
 export default async function BookPage({ siteId }: BookPageProps) {
     if (!siteId) {
         console.error("BookPage: siteId missing!");
-        // Fallback or Error? 
-        // For now, let it crash or handle gracefully? 
-        // We'll trust the caller passes it, but type definition helps.
     }
-
-    // Modular Check: Verify if module is enabled
-    // Note: isModuleEnabled checks globally or by doc ID? 
-    // It checks 'modules/reservation' doc. 
-    // Usually modules docs are global or site-specific?
-    // In registry.ts: doc(db, 'modules', moduleId). 
-    // If modules are enabled per site, we might need a site-specific check.
-    // For now, keeping existing check but usually we want site specific.
-    // TODO: Verify isModuleEnabled implementation scope. 
-    // Assuming global module toggle for now based on registry.ts read earlier.
 
     const enabled = await isModuleEnabled('reservation');
     if (!enabled) {
         notFound();
     }
 
-    // Fetch all required data on the server with siteId
-    const [services, weeklySlots, staffList, settings] = await Promise.all([
+    const [services, staffList, settings] = await Promise.all([
         getServices(siteId),
-        getWeeklySlots(siteId),
         getStaffMembers(siteId, true),
         getReservationSettings(siteId)
     ]);
 
-    // Filter active services and staff
     const activeServices = services.filter(s => s.isActive).map(s => JSON.parse(JSON.stringify(s)));
     const activeStaff = staffList.map(s => JSON.parse(JSON.stringify(s)));
-    const safeSlots = weeklySlots.map(s => JSON.parse(JSON.stringify(s)));
 
     return (
         <div className="min-h-screen bg-gray-50 py-12 px-4 text-gray-900">
@@ -74,7 +56,6 @@ export default async function BookPage({ siteId }: BookPageProps) {
             <BookingForm
                 siteId={siteId}
                 initialServices={activeServices}
-                initialWeeklySlots={safeSlots}
                 initialStaff={activeStaff}
                 initialSettings={settings}
             />

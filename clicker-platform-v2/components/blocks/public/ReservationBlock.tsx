@@ -4,8 +4,9 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { Calendar, Loader2 } from 'lucide-react';
 import { useTemplate } from '@/components/TemplateProvider';
+import ReservationWidgetDirect from '@/lib/modules/reservation/public/ReservationWidget';
 
-const ReservationWidget = dynamic(
+const ReservationWidgetLazy = dynamic(
     () => import('@/lib/modules/reservation/public/ReservationWidget'),
     {
         loading: () => (
@@ -17,7 +18,7 @@ const ReservationWidget = dynamic(
     }
 );
 
-export const ReservationBlock = ({ data, siteId }: { data: any, siteId?: string }) => {
+export const ReservationBlock = ({ data, siteId, initialServices, initialStaff, initialSettings }: { data: any, siteId?: string, initialServices?: any, initialStaff?: any, initialSettings?: any }) => {
     const { theme } = useTemplate();
     const isClean = theme.cardStyle === 'clean';
     const isGlass = theme.cardStyle === 'glass';
@@ -68,7 +69,10 @@ export const ReservationBlock = ({ data, siteId }: { data: any, siteId?: string 
                     {data.title}
                 </h2>
             )}
-            <ReservationWidget siteId={siteId} />
+            {Array.isArray(initialServices)
+                ? <ReservationWidgetDirect siteId={siteId} initialServices={initialServices} initialStaff={initialStaff} initialSettings={initialSettings} />
+                : <ReservationWidgetLazy siteId={siteId} />
+            }
         </div>
     );
 };

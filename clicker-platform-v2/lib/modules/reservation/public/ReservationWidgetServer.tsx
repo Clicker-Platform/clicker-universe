@@ -1,4 +1,4 @@
-import { getServices, getWeeklySlots, getReservationSettings } from '../api';
+import { getServices, getReservationSettings } from '../api';
 import { getStaffMembers } from '../staff';
 import BookingForm from './BookingForm';
 
@@ -11,24 +11,17 @@ export default async function ReservationWidgetServer({ siteId }: { siteId: stri
 
     if (!siteId) {
         console.error('[ReservationWidgetServer] Missing siteId!');
-        return null; // Guard against missing siteId
+        return null;
     }
 
-    console.log('[ReservationWidgetServer] Fetching data from Firestore...');
-    // Parallel data fetching on the server
-    const [services, staff, slots, settings] = await Promise.all([
+    const [services, staff, settings] = await Promise.all([
         getServices(siteId),
-        getStaffMembers(siteId, true), // active only
-        getWeeklySlots(siteId),
+        getStaffMembers(siteId, true),
         getReservationSettings(siteId)
     ]);
-    console.log('[ReservationWidgetServer] Data fetch complete. Services:', services.length, 'Staff:', staff.length);
 
-    // Force date serialization for Client Components
-    // (Firestore Dates/Timestamps are not directly serializable to Client Components without conversion)
     const serializedServices = JSON.parse(JSON.stringify(services));
     const serializedStaff = JSON.parse(JSON.stringify(staff));
-    const serializedSlots = JSON.parse(JSON.stringify(slots));
     const serializedSettings = JSON.parse(JSON.stringify(settings));
 
     return (
@@ -36,9 +29,8 @@ export default async function ReservationWidgetServer({ siteId }: { siteId: stri
             <BookingForm
                 initialServices={serializedServices}
                 initialStaff={serializedStaff}
-                initialWeeklySlots={serializedSlots}
                 initialSettings={serializedSettings}
-                siteId={siteId} // Pass siteId to Client Form if needed
+                siteId={siteId}
             />
         </div>
     );

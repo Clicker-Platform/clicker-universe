@@ -2,24 +2,39 @@
 
 import { useEffect, useState } from 'react';
 import BookingForm from './BookingForm';
-import { getServices, getWeeklySlots, getReservationSettings } from '../api';
+import { getServices, getReservationSettings } from '../api';
 import { getStaffMembers } from '../staff';
-import { Service, Staff, TimeSlot } from '../types';
+import { Service, Staff } from '../types';
 import { useSite } from '@/lib/site-context';
 
-export default function ReservationWidget({ siteId: propSiteId }: { siteId?: string }) {
+export default function ReservationWidget({
+    siteId: propSiteId,
+    initialServices,
+    initialStaff,
+    initialSettings
+}: {
+    siteId?: string;
+    initialServices?: any[];
+    initialStaff?: any[];
+    initialSettings?: any;
+}) {
     const { siteId: contextSiteId } = useSite();
     const siteId = propSiteId || contextSiteId;
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(!Array.isArray(initialServices));
     const [data, setData] = useState<{
         services: Service[];
         staff: Staff[];
-        slots: TimeSlot[];
         settings: any;
-    } | null>(null);
+    } | null>(
+        Array.isArray(initialServices)
+            ? { services: initialServices as Service[], staff: (initialStaff || []) as Staff[], settings: initialSettings || {} }
+            : null
+    );
 
     useEffect(() => {
         async function load() {
+            if (Array.isArray(initialServices)) return;
+
             if (!siteId) {
                 console.error("ReservationWidget: siteId is missing");
                 setLoading(false);
@@ -27,13 +42,12 @@ export default function ReservationWidget({ siteId: propSiteId }: { siteId?: str
             }
 
             try {
-                const [services, staff, slots, settings] = await Promise.all([
+                const [services, staff, settings] = await Promise.all([
                     getServices(siteId),
-                    getStaffMembers(siteId, true), // active only
-                    getWeeklySlots(siteId),
+                    getStaffMembers(siteId, true),
                     getReservationSettings(siteId)
                 ]);
-                setData({ services, staff, slots, settings });
+                setData({ services, staff, settings });
             } catch (e) {
                 console.error("Failed to load reservation widget data", e);
             } finally {
@@ -57,7 +71,6 @@ export default function ReservationWidget({ siteId: propSiteId }: { siteId?: str
                 siteId={siteId!}
                 initialServices={data.services}
                 initialStaff={data.staff}
-                initialWeeklySlots={data.slots}
                 initialSettings={data.settings}
             />
         </div>

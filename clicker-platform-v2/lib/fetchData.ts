@@ -317,6 +317,9 @@ export async function fetchLightweightPublicData(siteId: string) {
     };
 }
 
+import { getServices, getReservationSettings } from '@/lib/modules/reservation/api';
+import { getStaffMembers } from '@/lib/modules/reservation/staff';
+
 export async function hydratePageBlocks(siteId: string, blocks: PageBlock[]) {
     const data: {
         links?: LinkItem[];
@@ -325,6 +328,9 @@ export async function hydratePageBlocks(siteId: string, blocks: PageBlock[]) {
         branches?: Branch[];
         linkSettings?: LinkSettings;
         productSettings?: ProductSettings;
+        reservationServices?: any[];
+        reservationStaff?: any[];
+        reservationSettings?: any;
     } = {};
 
     if (!blocks || blocks.length === 0) return data;
@@ -335,6 +341,7 @@ export async function hydratePageBlocks(siteId: string, blocks: PageBlock[]) {
     const needsProducts = blockTypes.includes('products');
     const needsFeatured = blockTypes.includes('featured_product');
     const needsBranches = blockTypes.includes('branches');
+    const needsReservation = blockTypes.includes('reservation');
 
     const promises: Promise<void>[] = [];
 
@@ -401,6 +408,29 @@ export async function hydratePageBlocks(siteId: string, blocks: PageBlock[]) {
                     data.branches = snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Branch));
                 })
                 .catch(e => { console.error("Error fetching branches", e); data.branches = []; })
+        );
+    }
+
+    if (needsReservation) {
+        promises.push(
+            Promise.all([
+                getServices(siteId),
+                getStaffMembers(siteId, true),
+                getReservationSettings(siteId)
+            ])
+                .then(([services, staff, settings]) => {
+                    data.reservationServices = JSON.parse(JSON.stringify(
+                        services.filter((s: any) => s.isActive !== false)
+                    ));
+                    data.reservationStaff = JSON.parse(JSON.stringify(staff));
+                    data.reservationSettings = JSON.parse(JSON.stringify(settings));
+                })
+                .catch(e => {
+                    console.error("Error fetching reservation data", e);
+                    data.reservationServices = [];
+                    data.reservationStaff = [];
+                    data.reservationSettings = {};
+                })
         );
     }
 

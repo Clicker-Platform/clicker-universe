@@ -2,13 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { createBooking } from '@/lib/modules/reservation/api';
-import { Service, TimeSlot, Staff } from '@/lib/modules/reservation/types';
+import { Service, Staff } from '@/lib/modules/reservation/types';
 import { Clock, User, Check, ChevronLeft, ChevronRight, Loader2, Search } from 'lucide-react';
 import { useSite } from '@/lib/site-context'; // New import
 
 interface AdminBookingWizardProps {
     initialServices: Service[];
-    initialWeeklySlots: TimeSlot[];
     initialStaff: Staff[];
     initialSettings: { allowStaffSelection: boolean };
     onSuccess: () => void;
@@ -17,7 +16,6 @@ interface AdminBookingWizardProps {
 
 export default function AdminBookingWizard({
     initialServices,
-    initialWeeklySlots,
     initialStaff,
     initialSettings,
     onSuccess,
@@ -35,7 +33,6 @@ export default function AdminBookingWizard({
     const [settings] = useState(initialSettings);
 
     const [date, setDate] = useState<Date>(new Date());
-    const [weeklySlots] = useState<TimeSlot[]>(initialWeeklySlots);
     const [generatedSlots, setGeneratedSlots] = useState<string[]>([]);
     const [loadingSlots, setLoadingSlots] = useState(false);
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
@@ -82,19 +79,14 @@ export default function AdminBookingWizard({
             setLoadingSlots(true);
 
             try {
-                // 1. Get configuration for this day of week
-                const dayOfWeek = date.getDay(); // 0=Sunday
-                const config = weeklySlots.find(s => s.dayOfWeek === dayOfWeek);
+                const dayOfWeek = date.getDay();
 
-                // 2. Fetch data for availability check
                 const { getBookingsForDay, getGlobalSchedule } = await import('@/lib/modules/reservation/api');
                 const [dayBookings, globalSchedule] = await Promise.all([
                     getBookingsForDay(siteId, date),
                     getGlobalSchedule(siteId)
                 ]);
 
-                // Determine Capacity logic
-                // Critical Fix: Only count ACTIVE staff for capacity
                 const activeStaffCount = staffList.filter(s => s.isActive).length;
                 const maxCapacity = selectedStaff ? 1 : activeStaffCount;
 
@@ -104,48 +96,31 @@ export default function AdminBookingWizard({
                     return;
                 }
 
-                // 3. Generate candidate slots
                 const candidates: string[] = [];
-
-                let startHour = 9, startMinute = 0;
-                let endHour = 17, endMinute = 0;
-                let hasEffectiveSchedule = false;
-
-                // Priority 1: Global Schedule
-                const globalDay = globalSchedule.find(d => d.dayOfWeek === dayOfWeek);
                 const parseTime = (t: string) => t.split(':').map(Number);
 
-                if (globalDay && globalDay.isOpen && globalDay.hours.length > 0) {
-                    let minTime = 24 * 60;
-                    let maxTime = 0;
+                const globalDay = globalSchedule.find((d: any) => d.dayOfWeek === dayOfWeek);
 
-                    globalDay.hours.forEach(h => {
-                        const [sH, sM] = parseTime(h.start);
-                        const [eH, eM] = parseTime(h.end);
-                        const startMins = sH * 60 + sM;
-                        const endMins = eH * 60 + eM;
-                        if (startMins < minTime) minTime = startMins;
-                        if (endMins > maxTime) maxTime = endMins;
-                    });
-
-                    startHour = Math.floor(minTime / 60);
-                    startMinute = minTime % 60;
-                    endHour = Math.floor(maxTime / 60);
-                    endMinute = maxTime % 60;
-                    hasEffectiveSchedule = true;
-                }
-                // Priority 2: Legacy Weekly Slots
-                else if (config && config.isActive) {
-                    [startHour, startMinute] = parseTime(config.startTime);
-                    [endHour, endMinute] = parseTime(config.endTime);
-                    hasEffectiveSchedule = true;
-                }
-
-                if (!hasEffectiveSchedule) {
+                if (!globalDay || !globalDay.isOpen || globalDay.hours.length === 0) {
                     setGeneratedSlots([]);
                     setLoadingSlots(false);
                     return;
                 }
+
+                let minTime = 24 * 60, maxTime = 0;
+                globalDay.hours.forEach((h: any) => {
+                    const [sH, sM] = parseTime(h.start);
+                    const [eH, eM] = parseTime(h.end);
+                    const startMins = sH * 60 + sM;
+                    const endMins = eH * 60 + eM;
+                    if (startMins < minTime) minTime = startMins;
+                    if (endMins > maxTime) maxTime = endMins;
+                });
+
+                const startHour = Math.floor(minTime / 60);
+                const startMinute = minTime % 60;
+                const endHour = Math.floor(maxTime / 60);
+                const endMinute = maxTime % 60;
 
                 let current = new Date(date);
                 current.setHours(startHour, startMinute, 0, 0);
@@ -208,7 +183,7 @@ export default function AdminBookingWizard({
         }
 
         fetchAvailability();
-    }, [date, selectedService, weeklySlots, selectedStaff, staffList, siteId]);
+    }, [date, selectedService, selectedStaff, staffList, siteId]);
 
     const handleServiceSelect = (service: Service) => {
         setSelectedService(service);

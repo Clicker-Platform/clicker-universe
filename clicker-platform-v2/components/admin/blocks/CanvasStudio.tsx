@@ -331,6 +331,9 @@ export function CanvasStudio({
                                                                 branches={hydratedData.branches || []}
                                                                 linkSettings={hydratedData.linkSettings || globalSettings?.linkSettings}
                                                                 productSettings={hydratedData.productSettings || globalSettings?.productSettings}
+                                                                reservationServices={hydratedData.reservationServices}
+                                                                reservationStaff={hydratedData.reservationStaff}
+                                                                reservationSettings={hydratedData.reservationSettings}
                                                                 contact={globalSettings?.contact}
                                                                 businessHours={globalSettings?.businessHours}
                                                                 businessSchedule={globalSettings?.businessSchedule}

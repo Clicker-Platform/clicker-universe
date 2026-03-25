@@ -45,7 +45,10 @@ export const BlockRenderer = ({
     businessSchedule,
     linkSettings,
     productSettings,
-    profile
+    profile,
+    reservationServices,
+    reservationStaff,
+    reservationSettings,
 }: {
     block: PageBlock,
     phoneNumber?: string,
@@ -64,7 +67,10 @@ export const BlockRenderer = ({
     businessSchedule?: any,
     linkSettings?: any,
     productSettings?: any,
-    profile?: any
+    profile?: any,
+    reservationServices?: any[],
+    reservationStaff?: any[],
+    reservationSettings?: any,
 }) => {
     const fullTemplate = getTemplate(templateId || 'classic');
 
@@ -158,7 +164,7 @@ export const BlockRenderer = ({
                 );
 
             case 'reservation':
-                return <ReservationBlock data={block.data} siteId={siteId} />;
+                return <ReservationBlock data={block.data} siteId={siteId} initialServices={reservationServices} initialStaff={reservationStaff} initialSettings={reservationSettings} />;
 
             default:
                 return <ModuleBlockLoader type={block.type} data={block.data} siteId={siteId} />;

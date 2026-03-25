@@ -1,7 +1,7 @@
-import { TimeSlot, Service, Staff } from '../../types';
+import { Service, Staff } from '../../types';
 import { ChevronLeft, ChevronRight, Loader2, Calendar as CalendarIcon } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { getOperatingWindows } from '@/lib/core/businessHours/utils';
+
 
 interface TimeStepProps {
     siteId: string;
@@ -10,7 +10,6 @@ interface TimeStepProps {
     selectedService: Service;
     selectedStaff: Staff | null;
     staffList: Staff[];
-    weeklySlots: TimeSlot[];
     onSelectTime: (time: string) => void;
     isGlass?: boolean;
 }
@@ -22,7 +21,6 @@ export default function TimeStep({
     selectedService,
     selectedStaff,
     staffList,
-    weeklySlots,
     onSelectTime,
     isGlass = false,
 }: TimeStepProps) {
@@ -67,81 +65,44 @@ export default function TimeStep({
         async function fetchAvailability() {
             setLoadingSlots(true);
             try {
-                // 1. Get configuration for this day of week
                 const dayOfWeek = date.getDay(); // 0=Sunday
-                const config = weeklySlots.find(s => s.dayOfWeek === dayOfWeek);
 
-                // 2. Fetch data (Dynamic Import to keep bundle safe/small)
                 const { getBookingsForDay, getGlobalSchedule } = await import('@/lib/modules/reservation/api');
                 const [dayBookings, globalSchedule] = await Promise.all([
                     getBookingsForDay(siteId, date),
                     getGlobalSchedule(siteId)
                 ]);
 
-                // Determine Capacity logic
-                // Critical Fix: Only count ACTIVE staff for capacity
                 const activeStaffCount = staffList.filter(s => s.isActive).length;
-                const maxCapacity = selectedStaff ? 1 : activeStaffCount;
+                // If no staff configured, treat capacity as 1 (unmanaged mode — slots based on hours only)
+                const maxCapacity = selectedStaff ? 1 : (activeStaffCount || 1);
 
-                if (maxCapacity === 0 && !selectedStaff) {
-                    setGeneratedSlots([]);
-                    return;
-                }
-
-                // 2b. Get Valid Operating Windows (Core Logic)
-                const validGlobalWindows = getOperatingWindows(date, globalSchedule);
-
-                // Helper to convert HH:MM to minutes
-                const toMinutes = (t: string) => {
-                    const [h, m] = t.split(':').map(Number);
-                    return h * 60 + m;
-                };
-
-                // 3. Generate candidate slots
+                // Generate candidate slots
                 const candidates: SlotStatus[] = [];
 
-                let startHour = 9, startMinute = 0;
-                let endHour = 17, endMinute = 0;
-                let hasEffectiveSchedule = false;
-
-                // Priority 1: Global Schedule (The new single source of truth)
-                const globalDay = globalSchedule.find(d => d.dayOfWeek === dayOfWeek);
-
-                // Helper to parse "HH:MM"
                 const parseTime = (t: string) => t.split(':').map(Number);
 
-                if (globalDay && globalDay.isOpen && globalDay.hours.length > 0) {
-                    // Find outer bounds (Earliest Start, Latest End)
-                    // Assuming hours might be unsorted, though usually sorted.
-                    let minTime = 24 * 60;
-                    let maxTime = 0;
+                const globalDay = globalSchedule.find((d: any) => d.dayOfWeek === dayOfWeek);
 
-                    globalDay.hours.forEach(h => {
-                        const [sH, sM] = parseTime(h.start);
-                        const [eH, eM] = parseTime(h.end);
-                        const startMins = sH * 60 + sM;
-                        const endMins = eH * 60 + eM;
-                        if (startMins < minTime) minTime = startMins;
-                        if (endMins > maxTime) maxTime = endMins;
-                    });
-
-                    startHour = Math.floor(minTime / 60);
-                    startMinute = minTime % 60;
-                    endHour = Math.floor(maxTime / 60);
-                    endMinute = maxTime % 60;
-                    hasEffectiveSchedule = true;
-                }
-                // Priority 2: Legacy Weekly Slots (Fallback if Global Schedule is empty/not configured)
-                else if (config && config.isActive) {
-                    [startHour, startMinute] = parseTime(config.startTime);
-                    [endHour, endMinute] = parseTime(config.endTime);
-                    hasEffectiveSchedule = true;
-                }
-
-                if (!hasEffectiveSchedule) {
+                if (!globalDay || !globalDay.isOpen || globalDay.hours.length === 0) {
                     setGeneratedSlots([]);
                     return;
                 }
+
+                let minTime = 24 * 60, maxTime = 0;
+                globalDay.hours.forEach((h: any) => {
+                    const [sH, sM] = parseTime(h.start);
+                    const [eH, eM] = parseTime(h.end);
+                    const startMins = sH * 60 + sM;
+                    const endMins = eH * 60 + eM;
+                    if (startMins < minTime) minTime = startMins;
+                    if (endMins > maxTime) maxTime = endMins;
+                });
+
+                const startHour = Math.floor(minTime / 60);
+                const startMinute = minTime % 60;
+                const endHour = Math.floor(maxTime / 60);
+                const endMinute = maxTime % 60;
 
                 let current = new Date(date);
                 current.setHours(startHour, startMinute, 0, 0);
@@ -151,43 +112,13 @@ export default function TimeStep({
 
                 // We need to ensure service finishes before the specific slot's end time (as per weeklySlots)
                 // AND fits within Global Schedule.
-                const latestStartTime = new Date(closeTime.getTime() - selectedService.durationMinutes * 60000);
+                const serviceDuration = (selectedService.durationMinutes ?? 60) * 60000;
+                const latestStartTime = new Date(closeTime.getTime() - serviceDuration);
 
                 while (current <= latestStartTime) {
                     const timeString = current.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
                     const slotStart = current.getTime();
-                    const slotEnd = slotStart + selectedService.durationMinutes * 60000;
-
-                    // CHECK 1: Global Business Hours Intersection & Breaks
-                    // Service must fit ENTIRELY within one of the valid windows
-                    const slotStartMinutes = current.getHours() * 60 + current.getMinutes();
-                    const slotEndMinutes = slotStartMinutes + selectedService.durationMinutes;
-
-                    // If no global schedule defined (empty list), we assume OPEN (backward compat). 
-                    // But if schedule exists (even if closed for day), we enforce it.
-                    // getOperatingWindows returns [] if closed.
-                    // Wait, if businessSchedule is undefined in settings, getGlobalSchedule returns [].
-                    // My previous logic said: if empty return true/open.
-                    // But getGlobalSchedule returns [] if not set. 
-                    // getOperatingWindows returns [] if no schedule.
-                    // So if validGlobalWindows is empty, does it mean CLOSED or NOT CONFIGURED?
-                    // Implementation of getGlobalSchedule returns [] if null.
-                    // If Global Schedule is NOT configured, we should rely on Reservation Config (WeeklySlots).
-                    // Logic: If globalSchedule has entries (length > 0), enforce it. Else ignore.
-
-                    let fitsGlobal = true;
-                    if (globalSchedule && globalSchedule.length > 0) {
-                        fitsGlobal = validGlobalWindows.some(window => {
-                            const wStart = toMinutes(window.start);
-                            const wEnd = toMinutes(window.end);
-                            return slotStartMinutes >= wStart && slotEndMinutes <= wEnd;
-                        });
-                    }
-
-                    if (!fitsGlobal) {
-                        current.setHours(current.getHours() + 1);
-                        continue;
-                    }
+                    const slotEnd = slotStart + serviceDuration;
 
                     const activeBookings = dayBookings.filter(b => b.status !== 'cancelled' && b.status !== 'completed');
 
@@ -210,7 +141,7 @@ export default function TimeStep({
                         return (bStart < slotEnd) && (bEnd > slotStart);
                     });
 
-                    const isGlobalAvailable = globalOverlaps.length < activeStaffCount;
+                    const isGlobalAvailable = globalOverlaps.length < maxCapacity;
                     const isSpecificAvailable = conflicts.length === 0;
 
                     let available = false;
@@ -244,7 +175,7 @@ export default function TimeStep({
         }
 
         fetchAvailability();
-    }, [date, selectedService, weeklySlots, selectedStaff, staffList]);
+    }, [date, selectedService, selectedStaff, staffList]);
 
     return (
         <div>

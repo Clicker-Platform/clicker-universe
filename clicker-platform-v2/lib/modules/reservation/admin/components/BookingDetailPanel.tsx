@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Booking } from '@/lib/modules/reservation/types';
-import { User, Calendar, Clock, X, CheckCircle } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Booking, ReservationSettings } from '@/lib/modules/reservation/types';
+import { User, Calendar, Clock, X, CheckCircle, ClipboardList, ExternalLink, Car, Loader2 } from 'lucide-react';
+import type { Vehicle } from '@/lib/modules/service-records/types';
 import { StatusBadge, getStatusLabel } from './StatusBadge';
 import { useSite } from '@/lib/site-context'; // New import
 
@@ -16,10 +17,13 @@ interface BookingDetailPanelProps {
     onClose: () => void;
     onStatusUpdate: (id: string, status: Booking['status']) => Promise<void>;
     onUpdateDetails: (id: string, data: Partial<Booking>) => Promise<void>;
+    settings?: Pick<ReservationSettings, 'allowStaffSelection' | 'staffLabel'>;
 }
 
-export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateDetails }: BookingDetailPanelProps) {
+export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateDetails, settings }: BookingDetailPanelProps) {
     const { siteId } = useSite();
+    const showStaff = settings?.allowStaffSelection ?? false;
+    const staffLabel = settings?.staffLabel || 'Staff';
     const [isEditing, setIsEditing] = useState(false);
     const [editForm, setEditForm] = useState<Partial<Booking> & { startString?: string }>({});
     const [updating, setUpdating] = useState(false);
@@ -31,27 +35,107 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
     const [enrolling, setEnrolling] = useState(false);
     const [showEnrollDialog, setShowEnrollDialog] = useState(false);
 
+    // Service Records State
+    const [srEnabled, setSrEnabled] = useState(false);
+    const [showPlateModal, setShowPlateModal] = useState(false);
+    const [plateInput, setPlateInput] = useState('');
+    const [creatingSR, setCreatingSR] = useState(false);
+    const [vehicleLookup, setVehicleLookup] = useState<{ status: 'idle' | 'loading' | 'found' | 'not_found'; vehicle?: Vehicle }>({ status: 'idle' });
+    const plateDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    // Debounced plate lookup
+    useEffect(() => {
+        const normalized = plateInput.trim().toUpperCase().replace(/\s/g, '');
+        if (!normalized || !siteId) {
+            setVehicleLookup({ status: 'idle' });
+            return;
+        }
+        if (plateDebounceRef.current) clearTimeout(plateDebounceRef.current);
+        setVehicleLookup({ status: 'loading' });
+        plateDebounceRef.current = setTimeout(async () => {
+            try {
+                const { findVehicleByPlate } = await import('@/lib/modules/service-records/api');
+                const vehicle = await findVehicleByPlate(siteId, normalized);
+                setVehicleLookup(vehicle ? { status: 'found', vehicle } : { status: 'not_found' });
+            } catch {
+                setVehicleLookup({ status: 'idle' });
+            }
+        }, 400);
+        return () => { if (plateDebounceRef.current) clearTimeout(plateDebounceRef.current); };
+    }, [plateInput, siteId]);
+
+    const handleStartServiceRecord = async () => {
+        if (!booking || !siteId) return;
+        setCreatingSR(true);
+        try {
+            const { createServiceRecord } = await import('@/lib/modules/service-records/api');
+            const { updateBookingDetails } = await import('@/lib/modules/reservation/api');
+            const { getServiceCatalogItem } = await import('@/lib/core/serviceCatalog/api');
+
+            const foundVehicle = vehicleLookup.status === 'found' ? vehicleLookup.vehicle : undefined;
+            const normalizedPlate = plateInput.toUpperCase().replace(/\s/g, '');
+
+            // Load the catalog item so we can snapshot warranty config at SR creation time
+            const catalogItem = await getServiceCatalogItem(siteId, booking.serviceId);
+            const srConfig = catalogItem?.serviceRecordsConfig;
+
+            const srId = await createServiceRecord(siteId, {
+                vehicleId: foundVehicle?.id ?? normalizedPlate,
+                vehiclePlate: normalizedPlate,
+                ...(foundVehicle?.memberId ? { memberId: foundVehicle.memberId } : {}),
+                memberName: foundVehicle?.memberName || booking.customerName,
+                memberPhone: booking.customerPhone || '',
+                ...(booking.customerEmail ? { memberEmail: booking.customerEmail } : {}),
+                serviceTypeId: booking.serviceId,
+                serviceTypeName: booking.serviceName,
+                hasWarranty: srConfig?.hasWarranty ?? false,
+                warrantyMonths: srConfig?.hasWarranty ? (srConfig.defaultWarrantyMonths ?? 0) : 0,
+                paymentStatus: 'UNPAID',
+                totalAmount: srConfig?.defaultPrice ?? booking.totalPrice ?? 0,
+                amountPaid: 0,
+                bookingId: booking.id,
+                bookingSource: 'reservation',
+                createdBy: 'admin',
+            });
+
+            // Write serviceRecordId back to booking
+            await updateBookingDetails(siteId, booking.id, { serviceRecordId: srId });
+
+            setShowPlateModal(false);
+            // Navigate to the service record detail page
+            window.location.href = `/admin/service-records/detail?id=${srId}`;
+        } catch (e) {
+            console.error('Failed to create service record', e);
+            alert('Failed to create service record. Please try again.');
+        } finally {
+            setCreatingSR(false);
+        }
+    };
+
     // Reset edit state when booking changes
     useEffect(() => {
         setIsEditing(false);
         setEditForm({});
+        setPlateInput('');
 
-        // Modular: Check Membership Status
+        // Modular: Check Membership + Service Records
         async function checkMembership() {
             setCheckingMember(true);
             try {
                 const { isModuleEnabled } = await import('@/lib/modules/registry');
                 const { findMemberByPhone } = await import('@/lib/modules/membership/api');
 
-                // Run module check and member lookup in parallel
-                const [enabled, member] = await Promise.all([
+                // Run all checks in parallel
+                const [enabled, srEnabledVal, member] = await Promise.all([
                     isModuleEnabled('membership'),
+                    isModuleEnabled('service_records'),
                     (booking?.customerPhone && siteId)
                         ? findMemberByPhone(siteId, booking.customerPhone)
                         : Promise.resolve(null)
                 ]);
 
                 setMembershipEnabled(enabled);
+                setSrEnabled(srEnabledVal);
                 setIsMember(enabled && !!member);
             } catch (e) {
                 console.error("Loyalty Check Failed", e);
@@ -253,16 +337,32 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
                         <label className="text-xs font-bold text-gray-400 dark:text-neutral-500 uppercase tracking-wider block mb-3">Service Details</label>
                         <div className="bg-gray-50 dark:bg-neutral-800/50 p-5 rounded-2xl border border-gray-100 dark:border-neutral-800">
                             <p className="font-black text-xl text-brand-dark mb-2">{booking.serviceName}</p>
-                            <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-neutral-400 mb-1">
-                                <Calendar size={16} className="text-brand-dark/60" />
-                                <span className="font-medium">{getDate(booking.startAt).toLocaleDateString()}</span>
-                            </div>
-                            <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-neutral-400">
-                                <Clock size={16} className="text-brand-dark/60" />
-                                <span className="font-medium">
-                                    {getDate(booking.startAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {getDate(booking.endAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                </span>
-                            </div>
+                            {booking.preferredDate ? (
+                                <>
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <span className="text-xs font-bold px-2 py-0.5 bg-amber-100 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 rounded-full">On Request</span>
+                                    </div>
+                                    {booking.preferredDate && (
+                                        <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-neutral-400">
+                                            <Calendar size={16} className="text-brand-dark/60" />
+                                            <span className="font-medium">Preferred: {booking.preferredDate}</span>
+                                        </div>
+                                    )}
+                                </>
+                            ) : (
+                                <>
+                                    <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-neutral-400 mb-1">
+                                        <Calendar size={16} className="text-brand-dark/60" />
+                                        <span className="font-medium">{getDate(booking.startAt).toLocaleDateString()}</span>
+                                    </div>
+                                    <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-neutral-400">
+                                        <Clock size={16} className="text-brand-dark/60" />
+                                        <span className="font-medium">
+                                            {getDate(booking.startAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {getDate(booking.endAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </span>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -284,16 +384,18 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
                                     className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 dark:text-neutral-200"
                                 />
                             </div>
-                            <div>
-                                <label className="text-xs font-bold text-gray-500 dark:text-neutral-500 uppercase block mb-1">Assigned Staff</label>
-                                <input
-                                    type="text"
-                                    value={editForm.staffName || ''}
-                                    onChange={e => setEditForm(prev => ({ ...prev, staffName: e.target.value }))}
-                                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 dark:text-neutral-200"
-                                    placeholder="Assign a therapist..."
-                                />
-                            </div>
+                            {showStaff && (
+                                <div>
+                                    <label className="text-xs font-bold text-gray-500 dark:text-neutral-500 uppercase block mb-1">Assigned {staffLabel}</label>
+                                    <input
+                                        type="text"
+                                        value={editForm.staffName || ''}
+                                        onChange={e => setEditForm(prev => ({ ...prev, staffName: e.target.value }))}
+                                        className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 dark:text-neutral-200"
+                                        placeholder={`Assign a ${staffLabel.toLowerCase()}...`}
+                                    />
+                                </div>
+                            )}
                         </div>
                         <div className="mb-4">
                             <label className="text-xs font-bold text-gray-500 dark:text-neutral-500 uppercase block mb-1">Notes</label>
@@ -317,15 +419,17 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
                 ) : (
                     <div className="mb-8">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <div>
-                                <label className="text-xs font-bold text-gray-400 dark:text-neutral-500 uppercase tracking-wider block mb-3">Assigned Staff</label>
-                                <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-neutral-800/50 rounded-xl border border-gray-100 dark:border-neutral-800">
-                                    <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xs">
-                                        {(booking.staffName || 'A').charAt(0)}
+                            {showStaff && (
+                                <div>
+                                    <label className="text-xs font-bold text-gray-400 dark:text-neutral-500 uppercase tracking-wider block mb-3">Assigned {staffLabel}</label>
+                                    <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-neutral-800/50 rounded-xl border border-gray-100 dark:border-neutral-800">
+                                        <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xs">
+                                            {(booking.staffName || 'A').charAt(0)}
+                                        </div>
+                                        <p className="font-bold text-gray-900 dark:text-neutral-100">{booking.staffName || 'Any Available'}</p>
                                     </div>
-                                    <p className="font-bold text-gray-900 dark:text-neutral-100">{booking.staffName || 'Any Available'}</p>
                                 </div>
-                            </div>
+                            )}
                             <div>
                                 <label className="text-xs font-bold text-gray-400 dark:text-neutral-500 uppercase tracking-wider block mb-3">Additional Notes</label>
                                 <div className="p-4 bg-yellow-50 rounded-xl border border-yellow-100 text-yellow-800 text-sm">
@@ -360,13 +464,35 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
                             )}
                             {booking.status === 'confirmed' && (
                                 <>
-                                    <ActionButton
-                                        onClick={() => handleStatusAction('completed')}
-                                        disabled={updating}
-                                        label="Mark Completed"
-                                        icon={<CheckCircle size={18} />}
-                                        variant="primary"
-                                    />
+                                    {srEnabled && !booking.serviceRecordId && (
+                                        <ActionButton
+                                            onClick={() => setShowPlateModal(true)}
+                                            disabled={updating}
+                                            label="Start Service Record"
+                                            icon={<ClipboardList size={18} />}
+                                            variant="success"
+                                        />
+                                    )}
+                                    {booking.serviceRecordId ? (
+                                        <div className="flex-1 flex items-center gap-2 px-4 py-3 rounded-xl bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 text-sm font-medium">
+                                            <ClipboardList size={16} />
+                                            Service in Progress
+                                            <a
+                                                href={`/admin/service-records/detail?id=${booking.serviceRecordId}`}
+                                                className="ml-auto flex items-center gap-1 font-bold hover:underline"
+                                            >
+                                                View Record <ExternalLink size={14} />
+                                            </a>
+                                        </div>
+                                    ) : (
+                                        <ActionButton
+                                            onClick={() => handleStatusAction('completed')}
+                                            disabled={updating}
+                                            label="Mark Completed"
+                                            icon={<CheckCircle size={18} />}
+                                            variant="primary"
+                                        />
+                                    )}
                                     <ActionButton
                                         onClick={() => handleStatusAction('cancelled')}
                                         disabled={updating}
@@ -380,6 +506,75 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
                     </div>
                 )}
             </div>
+            {/* Vehicle Plate Modal */}
+            {showPlateModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-neutral-900 rounded-2xl w-full max-w-sm shadow-2xl p-6 animate-in fade-in zoom-in-95 duration-200">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-bold text-brand-dark">Start Service Record</h3>
+                            <button onClick={() => { setShowPlateModal(false); setPlateInput(''); setVehicleLookup({ status: 'idle' }); }} className="p-2 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-full">
+                                <X size={18} />
+                            </button>
+                        </div>
+                        <p className="text-sm text-gray-500 dark:text-neutral-500 mb-4">
+                            Enter the vehicle plate number to create a new service record pre-filled with booking data.
+                        </p>
+                        <div className="mb-5">
+                            <label className="text-xs font-bold text-gray-500 dark:text-neutral-500 uppercase block mb-1">Vehicle Plate</label>
+                            <input
+                                type="text"
+                                autoFocus
+                                value={plateInput}
+                                onChange={e => setPlateInput(e.target.value.toUpperCase())}
+                                placeholder="e.g. B 1234 XYZ"
+                                className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 dark:text-neutral-200 font-mono text-lg tracking-widest uppercase focus:outline-none focus:border-brand-dark"
+                                onKeyDown={e => { if (e.key === 'Enter' && plateInput.trim()) handleStartServiceRecord(); }}
+                            />
+                            {vehicleLookup.status === 'loading' && (
+                                <div className="mt-2 flex items-center gap-1.5 text-xs text-gray-400">
+                                    <Loader2 size={12} className="animate-spin" /> Looking up plate…
+                                </div>
+                            )}
+                            {vehicleLookup.status === 'found' && vehicleLookup.vehicle && (
+                                <div className="mt-2 flex items-center gap-2 px-3 py-2 rounded-xl bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 text-xs text-green-800 dark:text-green-300">
+                                    <Car size={13} className="flex-shrink-0" />
+                                    <span className="font-semibold">Vehicle found</span>
+                                    {(vehicleLookup.vehicle.make || vehicleLookup.vehicle.model) && (
+                                        <span className="text-green-600 dark:text-green-400">
+                                            · {[vehicleLookup.vehicle.make, vehicleLookup.vehicle.model].filter(Boolean).join(' ')}
+                                        </span>
+                                    )}
+                                    {vehicleLookup.vehicle.memberName && (
+                                        <span className="text-green-600 dark:text-green-400 ml-auto">· {vehicleLookup.vehicle.memberName}</span>
+                                    )}
+                                </div>
+                            )}
+                            {vehicleLookup.status === 'not_found' && plateInput.trim().length >= 4 && (
+                                <div className="mt-2 flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gray-50 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 text-xs text-gray-500">
+                                    <Car size={13} className="flex-shrink-0" /> New vehicle — will be registered on save
+                                </div>
+                            )}
+                        </div>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => { setShowPlateModal(false); setPlateInput(''); setVehicleLookup({ status: 'idle' }); }}
+                                className="flex-1 py-2.5 rounded-xl font-bold bg-gray-100 dark:bg-neutral-800 text-gray-600 dark:text-neutral-400 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleStartServiceRecord}
+                                disabled={creatingSR || !plateInput.trim()}
+                                className="flex-1 py-2.5 rounded-xl font-bold bg-brand-dark text-white hover:bg-brand-dark/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                            >
+                                <ClipboardList size={16} />
+                                {creatingSR ? 'Creating…' : 'Create Record'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Enrollment Confirmation */}
             <ConfirmationDialog
                 isOpen={showEnrollDialog}

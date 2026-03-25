@@ -352,14 +352,14 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                                 />
                                 <p className="text-xs text-gray-400 dark:text-neutral-600 mt-1">e.g. "Jam Buka" or "Opening Hours" — displayed above the schedule on your public page.</p>
                             </div>
-
-                            <hr className="border-gray-100 dark:border-neutral-800" />
-
-                            <ScheduleEditor
-                                schedule={hours.schedule || defaultBusinessSchedule}
-                                onChange={(newSchedule) => setHours({ ...hours, schedule: newSchedule })}
-                            />
                         </div>
+
+                        <hr className="border-gray-100 dark:border-neutral-800" />
+
+                        <ScheduleEditor
+                            schedule={hours.schedule || defaultBusinessSchedule}
+                            onChange={(newSchedule) => setHours({ ...hours, schedule: newSchedule })}
+                        />
 
                         <div className="pt-6 border-t border-gray-100 dark:border-neutral-800/50">
                             <SubmitButton

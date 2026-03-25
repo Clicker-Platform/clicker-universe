@@ -5,9 +5,10 @@ interface StaffStepProps {
     staffList: Staff[];
     onSelect: (staff: Staff | null) => void;
     isGlass?: boolean;
+    staffLabel?: string;
 }
 
-export default function StaffStep({ staffList, onSelect, isGlass = false }: StaffStepProps) {
+export default function StaffStep({ staffList, onSelect, isGlass = false, staffLabel = 'Staff' }: StaffStepProps) {
     const rowClass = `w-full text-left p-4 rounded-xl border transition-all flex items-center gap-4 ${
         isGlass
             ? 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20'
@@ -23,7 +24,7 @@ export default function StaffStep({ staffList, onSelect, isGlass = false }: Staf
                     <User size={20} />
                 </div>
                 <div>
-                    <h3 className={`font-bold ${isGlass ? 'text-white' : 'text-gray-900'}`}>Any Available Staff</h3>
+                    <h3 className={`font-bold ${isGlass ? 'text-white' : 'text-gray-900'}`}>Any Available {staffLabel}</h3>
                     <p className={`text-xs ${isGlass ? 'text-white/50' : 'text-gray-500'}`}>Maximum flexibility</p>
                 </div>
             </button>

@@ -22,7 +22,7 @@ export default function StaffClient({ initialStaff }: StaffClientProps) {
     const [isLoading, setIsLoading] = useState(!initialStaff);
 
     // Settings State
-    const [settings, setSettings] = useState({ allowStaffSelection: false });
+    const [settings, setSettings] = useState<{ allowStaffSelection: boolean; staffLabel?: string }>({ allowStaffSelection: false });
     const [loadingSettings, setLoadingSettings] = useState(true);
 
     useEffect(() => {
@@ -192,7 +192,7 @@ export default function StaffClient({ initialStaff }: StaffClientProps) {
 
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
                 <div>
-                    <h1 className="text-3xl font-black text-brand-dark mb-2 uppercase">Staff / Resources</h1>
+                    <h1 className="text-3xl font-black text-brand-dark mb-2 uppercase">{settings.staffLabel || 'Staff'} / Resources</h1>
                     <p className="text-gray-600 dark:text-neutral-400 font-medium">Manage available staff, rooms, or equipment.</p>
                 </div>
                 <button
@@ -217,8 +217,8 @@ export default function StaffClient({ initialStaff }: StaffClientProps) {
                 ) : (
                     <label className="flex items-center justify-between p-3 rounded-xl border border-gray-200 dark:border-neutral-700 cursor-pointer hover:border-brand-dark transition-colors bg-gray-50/50 dark:bg-neutral-800/50 max-w-2xl">
                         <div>
-                            <span className="block font-bold text-gray-800 dark:text-neutral-200">Allow Staff Selection</span>
-                            <span className="text-sm text-gray-500 dark:text-neutral-500">Customers can explicitly choose a specific staff member during booking.</span>
+                            <span className="block font-bold text-gray-800 dark:text-neutral-200">Allow {settings.staffLabel || 'Staff'} Selection</span>
+                            <span className="text-sm text-gray-500 dark:text-neutral-500">Customers can explicitly choose a specific {(settings.staffLabel || 'Staff').toLowerCase()} during booking.</span>
                         </div>
                         <div className={`
                             relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none 

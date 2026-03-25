@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { LayoutDashboard, LogOut, Menu, X, Palette, Inbox, Box, Users, Sun, Moon, PanelLeftClose, PanelLeftOpen, User, Fingerprint, Building2, ChevronUp } from 'lucide-react';
+import { LayoutDashboard, LogOut, Menu, X, Palette, Inbox, Box, Users, Sun, Moon, PanelLeftClose, PanelLeftOpen, User, Fingerprint, Building2, ChevronUp, Layers } from 'lucide-react';
 import { collection, query, where, onSnapshot, doc } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase';
 import { signOut, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
@@ -30,6 +30,7 @@ interface SidebarGroup {
 export function AdminSidebar() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
+    const [newBookingCount, setNewBookingCount] = useState(0);
     const [modules, setModules] = useState<ModuleDefinition[]>([]);
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [hoveredItem, setHoveredItem] = useState<{ label: string, top: number } | null>(null);
@@ -76,6 +77,7 @@ export function AdminSidebar() {
     useEffect(() => {
         let unsubscribeSite: (() => void) | null = null;
         let unsubscribeSnapshot: (() => void) | null = null;
+        let unsubscribeBookingSnapshot: (() => void) | null = null;
 
         if (!siteId || siteId === 'default' || siteId === 'pending') return;
 
@@ -97,6 +99,10 @@ export function AdminSidebar() {
                 unsubscribeSnapshot();
                 unsubscribeSnapshot = null;
             }
+            if (unsubscribeBookingSnapshot) {
+                unsubscribeBookingSnapshot();
+                unsubscribeBookingSnapshot = null;
+            }
 
             if (user) {
                 try {
@@ -106,17 +112,26 @@ export function AdminSidebar() {
                     }, (error) => {
                         console.error("Inbox listener error:", error);
                     });
+
+                    const qBookings = query(collection(db, 'sites', siteId, 'modules/reservation/bookings'), where('status', '==', 'pending'));
+                    unsubscribeBookingSnapshot = onSnapshot(qBookings, (snapshot) => {
+                        setNewBookingCount(snapshot.size);
+                    }, (error) => {
+                        console.error("Bookings listener error:", error);
+                    });
                 } catch (e) {
-                    console.error("Error setting up inbox listener:", e);
+                    console.error("Error setting up listeners:", e);
                 }
             } else {
                 setUnreadCount(0);
+                setNewBookingCount(0);
             }
         });
 
         return () => {
             unsubscribeAuth();
             if (unsubscribeSnapshot) unsubscribeSnapshot();
+            if (unsubscribeBookingSnapshot) unsubscribeBookingSnapshot();
             if (unsubscribeSite) unsubscribeSite();
         };
     }, [siteId]);
@@ -147,6 +162,7 @@ export function AdminSidebar() {
             { icon: Inbox, label: 'Inbox', href: `${baseUrl}/admin/inbox`, permission: 'biolink' },
             { icon: Box, label: 'Canvas Studio', href: `${baseUrl}/admin/canvas`, permission: 'biolink' },
             { icon: Palette, label: 'Template', href: `${baseUrl}/admin/template`, permission: 'biolink' },
+            { icon: Layers, label: 'Services', href: `${baseUrl}/admin/services`, permission: null },
             { icon: Users, label: 'Team', href: `${baseUrl}/admin/settings/team`, permission: 'manage_team' },
         ];
 
@@ -198,7 +214,7 @@ export function AdminSidebar() {
             },
             {
                 title: 'Site & Content',
-                match: (item: NavItem) => ['Canvas Studio'].includes(item.label)
+                match: (item: NavItem) => ['Canvas Studio', 'Services'].includes(item.label)
             },
             {
                 title: 'Organization',
@@ -353,7 +369,16 @@ export function AdminSidebar() {
                                                 </span>
                                             )}
                                             {(isCollapsed && !sidebarOpen) && item.label === 'Inbox' && unreadCount > 0 && (
-                                                <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+                                                <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-neutral-900"></span>
+                                            )}
+                                            
+                                            {(!isCollapsed || sidebarOpen) && item.label === 'Bookings' && newBookingCount > 0 && (
+                                                <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full ${isActive ? 'bg-brand-green text-brand-dark' : 'bg-brand-blue text-white'}`}>
+                                                    {newBookingCount}
+                                                </span>
+                                            )}
+                                            {(isCollapsed && !sidebarOpen) && item.label === 'Bookings' && newBookingCount > 0 && (
+                                                <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-brand-blue rounded-full border-2 border-white dark:border-neutral-900"></span>
                                             )}
                                         </Link>
                                     );

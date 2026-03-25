@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { createBooking } from '@/lib/modules/reservation/api';
-import { Service, TimeSlot, Staff } from '@/lib/modules/reservation/types';
+import { Service, Staff } from '@/lib/modules/reservation/types';
 import { Check, ChevronLeft } from 'lucide-react';
 import { AlertDialog } from '@/components/common/AlertDialog';
 import { useTemplate } from '@/components/TemplateProvider';
@@ -13,15 +13,13 @@ import DetailsStep from './steps/DetailsStep';
 
 interface BookingFormProps {
     initialServices: Service[];
-    initialWeeklySlots: TimeSlot[];
     initialStaff: Staff[];
-    initialSettings: { allowStaffSelection: boolean; membershipEnabled?: boolean };
+    initialSettings: { allowStaffSelection: boolean; membershipEnabled?: boolean; staffLabel?: string };
     siteId: string;
 }
 
 export default function BookingForm({
     initialServices,
-    initialWeeklySlots,
     initialStaff,
     initialSettings,
     siteId
@@ -55,17 +53,27 @@ export default function BookingForm({
     const [bookingRef, setBookingRef] = useState<string | null>(null);
 
     const handleServiceSelect = (service: Service) => {
+        if (selectedService?.id !== service.id) {
+            setSelectedTime(null);
+            setSelectedStaff(null);
+        }
         setSelectedService(service);
         if (settings.allowStaffSelection) {
             setStep(2);
+        } else if (service.bookingType === 'request') {
+            setStep(4); // Skip time picker for on-request services
         } else {
-            setStep(3); // Skip staff
+            setStep(3);
         }
     };
 
     const handleStaffSelect = (staff: Staff | null) => {
         setSelectedStaff(staff);
-        setStep(3);
+        if (selectedService?.bookingType === 'request') {
+            setStep(4); // Skip time picker for on-request services
+        } else {
+            setStep(3);
+        }
     };
 
     const handleTimeSelect = (time: string) => {
@@ -96,16 +104,25 @@ export default function BookingForm({
     };
 
     const handleSubmit = async (customerInfo: any) => {
-        if (!selectedService || !selectedTime) return;
+        const isRequest = selectedService?.bookingType === 'request';
+        if (!selectedService || (!isRequest && !selectedTime)) return;
 
         setLoading(true);
         try {
-            // Reconstruct Date object from date + time string
-            const [hours, minutes] = selectedTime.split(':').map(Number);
-            const bookingStart = new Date(date || new Date());
-            bookingStart.setHours(hours, minutes, 0, 0);
+            let bookingStart: Date;
+            let bookingEnd: Date;
 
-            const bookingEnd = new Date(bookingStart.getTime() + selectedService.durationMinutes * 60000);
+            if (isRequest) {
+                // On-request: use current time as placeholder; admin confirms actual schedule
+                bookingStart = new Date();
+                bookingEnd = new Date();
+            } else {
+                // Time-slot: reconstruct Date from date + time string
+                const [hours, minutes] = selectedTime!.split(':').map(Number);
+                bookingStart = new Date(date || new Date());
+                bookingStart.setHours(hours, minutes, 0, 0);
+                bookingEnd = new Date(bookingStart.getTime() + (selectedService.durationMinutes ?? 60) * 60000);
+            }
 
             const id = await createBooking(siteId, {
                 serviceId: selectedService.id,
@@ -119,6 +136,7 @@ export default function BookingForm({
                 endAt: bookingEnd as any,
                 totalPrice: selectedService.price,
                 notes: customerInfo.notes,
+                preferredDate: customerInfo.preferredDate || undefined,
                 staffId: selectedStaff?.id,
                 staffName: selectedStaff?.name
             } as any);
@@ -151,7 +169,10 @@ export default function BookingForm({
                     isGlass ? 'bg-white/5 border-white/20 text-white/70' : 'bg-white border-green-200 text-gray-500'
                 }`}>
                     <p>Reference: <span className={`font-mono font-bold ${isGlass ? 'text-white' : 'text-brand-dark'}`}>{bookingRef}</span></p>
-                    <p>Date: <span suppressHydrationWarning className={`font-bold ${isGlass ? 'text-white' : 'text-brand-dark'}`}>{date?.toLocaleDateString()} at {selectedTime}</span></p>
+                    {selectedService?.bookingType === 'request'
+                        ? <p>We will contact you to confirm the schedule.</p>
+                        : <p>Date: <span suppressHydrationWarning className={`font-bold ${isGlass ? 'text-white' : 'text-brand-dark'}`}>{date?.toLocaleDateString()} at {selectedTime}</span></p>
+                    }
                 </div>
                 <button
                     onClick={() => window.location.reload()}
@@ -181,18 +202,26 @@ export default function BookingForm({
             }`}>
                 <div className="flex items-center justify-between mb-2">
                     {step > 1 && (
-                        <button onClick={() => setStep(step - 1)} className="p-1 hover:bg-white/10 rounded-lg">
+                        <button onClick={() => {
+                            if (step === 4 && selectedService?.bookingType === 'request') {
+                                setStep(settings.allowStaffSelection ? 2 : 1);
+                            } else if (step === 3 && !settings.allowStaffSelection) {
+                                setStep(1);
+                            } else {
+                                setStep(step - 1);
+                            }
+                        }} className="p-1 hover:bg-white/10 rounded-lg">
                             <ChevronLeft size={20} className="text-white" />
                         </button>
                     )}
                     <span className="font-bold text-sm text-white/80">
-                        Step {step} of 4
+                        Step {step} of {selectedService?.bookingType === 'request' ? (settings.allowStaffSelection ? 3 : 2) : 4}
                     </span>
                     <div className="w-6"></div> {/* Spacer */}
                 </div>
                 <h2 className="text-2xl font-black text-white">
                     {step === 1 && "Select Service"}
-                    {step === 2 && "Select Staff"}
+                    {step === 2 && `Select ${settings.staffLabel || 'Staff'}`}
                     {step === 3 && "Select Time"}
                     {step === 4 && "Your Details"}
                 </h2>
@@ -213,6 +242,7 @@ export default function BookingForm({
                         staffList={staffList}
                         onSelect={handleStaffSelect}
                         isGlass={isGlass}
+                        staffLabel={settings.staffLabel}
                     />
                 )}
 
@@ -224,18 +254,18 @@ export default function BookingForm({
                         selectedService={selectedService}
                         selectedStaff={selectedStaff}
                         staffList={staffList}
-                        weeklySlots={initialWeeklySlots}
+
                         onSelectTime={handleTimeSelect}
                         isGlass={isGlass}
                     />
                 )}
 
-                {step === 4 && selectedService && selectedTime && (
+                {step === 4 && selectedService && (selectedTime || selectedService.bookingType === 'request') && (
                     <DetailsStep
                         selectedService={selectedService}
                         selectedStaff={selectedStaff}
                         date={date || new Date()}
-                        time={selectedTime}
+                        time={selectedTime || ''}
                         membershipEnabled={settings.membershipEnabled || false}
                         onSubmit={handleSubmit}
                         onShowDialog={handleShowDialog}

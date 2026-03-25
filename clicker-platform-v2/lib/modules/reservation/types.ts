@@ -1,15 +1,17 @@
 import { Timestamp } from 'firebase/firestore';
 
+// Service is now a projection of ServiceCatalogItem from Core.
+// All reads/writes go through lib/core/serviceCatalog/api.ts.
 export interface Service {
     id: string;
     name: string;
-    description: string;
-    durationMinutes: number;
+    description?: string;
+    durationMinutes?: number;                   // undefined for request-type bookings
+    bookingType?: 'time_slot' | 'request';      // promoted from reservationConfig; defaults to 'time_slot'
     price: number;
-    currency: string;
     isActive: boolean;
     imageUrl?: string;
-    category?: string;
+    category?: string;      // mapped from ServiceCatalogItem.category
     createdAt?: Timestamp;
     updatedAt?: Timestamp;
 }
@@ -30,7 +32,15 @@ export interface Booking {
     staffName?: string;
     notes?: string;
     totalPrice: number;
+    preferredDate?: string;     // ISO date YYYY-MM-DD; set for request-type bookings by the customer
     createdAt: Timestamp;
+    serviceRecordId?: string;   // linked Service Record (set when "Start Service Record" is clicked)
+}
+
+export interface ReservationSettings {
+    allowStaffSelection: boolean;
+    staffLabel?: string;        // label for staff/resource (default: 'Staff'; e.g. 'Technician', 'Therapist')
+    membershipEnabled?: boolean; // derived from module registry, not stored
 }
 
 export interface TimeSlot {

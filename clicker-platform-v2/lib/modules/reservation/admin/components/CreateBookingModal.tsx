@@ -1,20 +1,18 @@
 import React from 'react';
 import { X } from 'lucide-react';
-import { Service, Staff, TimeSlot } from '@/lib/modules/reservation/types';
+import { Service, Staff } from '@/lib/modules/reservation/types';
 import AdminBookingWizard from './AdminBookingWizard';
 
 interface CreateBookingModalProps {
     onClose: () => void;
-    // onSubmit is removed because the wizard handles submission internally
     onSubmit: (data: any) => Promise<void>;
     services: Service[];
     staff: Staff[];
-    weeklySlots: TimeSlot[];
     settings: { allowStaffSelection: boolean };
     isOpen: boolean;
 }
 
-export function CreateBookingModal({ onClose, onSubmit, services, staff, weeklySlots, settings, isOpen }: CreateBookingModalProps) {
+export function CreateBookingModal({ onClose, onSubmit, services, staff, settings, isOpen }: CreateBookingModalProps) {
     if (!isOpen) return null;
 
     return (
@@ -30,7 +28,6 @@ export function CreateBookingModal({ onClose, onSubmit, services, staff, weeklyS
                 <AdminBookingWizard
                     initialServices={services}
                     initialStaff={staff}
-                    initialWeeklySlots={weeklySlots}
                     initialSettings={settings}
                     onSuccess={() => {
                         // Refresh data is usually handled by parent detecting modal close or explicit callback

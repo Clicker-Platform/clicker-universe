@@ -104,14 +104,28 @@ export function BookingList({ bookings, selectedId, onSelect, activeTab, onTabCh
                                         </div>
                                         <p className="text-xs text-gray-600 dark:text-neutral-400 mb-1 font-medium">{booking.serviceName}</p>
                                         <div className="mt-2 flex items-center gap-3 text-xs font-bold text-gray-700 dark:text-neutral-300">
-                                            <span className="flex items-center gap-1.5 bg-gray-50 dark:bg-neutral-800 px-2 py-1 rounded-md border border-gray-100 dark:border-neutral-700">
-                                                <Calendar size={14} className="text-brand-dark" />
-                                                {getDate(booking.startAt).toLocaleDateString()}
-                                            </span>
-                                            <span className="flex items-center gap-1.5 bg-gray-50 dark:bg-neutral-800 px-2 py-1 rounded-md border border-gray-100 dark:border-neutral-700">
-                                                <Clock size={14} className="text-brand-dark" />
-                                                {getDate(booking.startAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                            </span>
+                                            {booking.preferredDate ? (
+                                                <>
+                                                    <span className="flex items-center gap-1.5 bg-amber-50 dark:bg-amber-950/20 px-2 py-1 rounded-md border border-amber-100 dark:border-amber-900/30 text-amber-700 dark:text-amber-400">
+                                                        On Request
+                                                    </span>
+                                                    <span className="flex items-center gap-1.5 bg-gray-50 dark:bg-neutral-800 px-2 py-1 rounded-md border border-gray-100 dark:border-neutral-700">
+                                                        <Calendar size={14} className="text-brand-dark" />
+                                                        {booking.preferredDate}
+                                                    </span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <span className="flex items-center gap-1.5 bg-gray-50 dark:bg-neutral-800 px-2 py-1 rounded-md border border-gray-100 dark:border-neutral-700">
+                                                        <Calendar size={14} className="text-brand-dark" />
+                                                        {getDate(booking.startAt).toLocaleDateString()}
+                                                    </span>
+                                                    <span className="flex items-center gap-1.5 bg-gray-50 dark:bg-neutral-800 px-2 py-1 rounded-md border border-gray-100 dark:border-neutral-700">
+                                                        <Clock size={14} className="text-brand-dark" />
+                                                        {getDate(booking.startAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                    </span>
+                                                </>
+                                            )}
                                         </div>
                                     </div>
                                 </React.Fragment>

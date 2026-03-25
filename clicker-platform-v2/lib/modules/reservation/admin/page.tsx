@@ -5,16 +5,13 @@ import {
     getBookings,
     getServices,
     getReservationSettings,
-    createBooking,
     updateBookingStatus,
     updateBookingDetails,
-    updateReservationSettings,
-    getWeeklySlots,
     getStaffMembers,
     markBookingAsRead,
     getBookingCounts
 } from '@/lib/modules/reservation/api';
-import { Booking, Service, Staff, TimeSlot } from '@/lib/modules/reservation/types';
+import { Booking, Service, Staff } from '@/lib/modules/reservation/types';
 import { useSite } from '@/lib/site-context';
 
 import Link from 'next/link';
@@ -36,7 +33,6 @@ export default function ReservationDashboard() {
 
     const [allServices, setAllServices] = useState<Service[]>([]);
     const [allStaff, setAllStaff] = useState<Staff[]>([]);
-    const [weeklySlots, setWeeklySlots] = useState<TimeSlot[]>([]);
     const [loading, setLoading] = useState(true);
     const [showCreate, setShowCreate] = useState(false);
     const [settings, setSettings] = useState({ allowStaffSelection: false });
@@ -51,18 +47,16 @@ export default function ReservationDashboard() {
 
         async function loadStaticData() {
             try {
-                const [services, settingsData, staffData, slotsData, _counts] = await Promise.all([
+                const [services, settingsData, staffData, _counts] = await Promise.all([
                     getServices(siteId),
                     getReservationSettings(siteId),
                     getStaffMembers(siteId),
-                    getWeeklySlots(siteId),
                     getBookingCounts(siteId)
                 ]);
 
                 setAllServices(services);
                 setSettings(settingsData);
                 setAllStaff(staffData);
-                setWeeklySlots(slotsData);
                 setCounts(_counts);
             } catch (error) {
                 console.error("Error fetching reservation setup:", error);
@@ -211,7 +205,7 @@ export default function ReservationDashboard() {
                 onSubmit={handleCreateBooking}
                 services={allServices}
                 staff={allStaff}
-                weeklySlots={weeklySlots}
+
                 settings={settings}
             />
 
@@ -235,6 +229,7 @@ export default function ReservationDashboard() {
                         onClose={() => setSelectedBooking(null)}
                         onStatusUpdate={handleStatusUpdate}
                         onUpdateDetails={handleUpdateDetails}
+                        settings={settings}
                     />
                 </div>
             </div>
@@ -259,6 +254,7 @@ export default function ReservationDashboard() {
                             onClose={() => setSelectedBooking(null)}
                             onStatusUpdate={handleStatusUpdate}
                             onUpdateDetails={handleUpdateDetails}
+                            settings={settings}
                         />
                     </div>
                 </div>

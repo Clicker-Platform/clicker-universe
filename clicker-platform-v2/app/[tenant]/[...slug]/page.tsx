@@ -191,6 +191,9 @@ export default async function TenantCatchAllPage({ params, searchParams }: Props
                                     linkSettings={hydratedData.linkSettings || linkSettings}
                                     profile={profile}
                                     productSettings={hydratedData.productSettings || productSettings}
+                                    reservationServices={hydratedData.reservationServices}
+                                    reservationStaff={hydratedData.reservationStaff}
+                                    reservationSettings={hydratedData.reservationSettings}
                                     businessHours={businessHours}
                                     businessSchedule={page.templateConfig?.customConfig?.businessSchedule || publicData.businessSchedule || {}}
                                     contact={contact}
