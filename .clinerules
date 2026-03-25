@@ -1,0 +1,53 @@
+# Clicker Universe - Project Rules for AI Assistants
+
+## Project Overview
+This is a pnpm monorepo with multiple Next.js apps and Cloud Functions deployed to Firebase Hosting using the `webframeworks` experiment. Work in the **`main/`** worktree only.
+
+## Critical: package.json Error Prevention
+
+### Rule 1: pnpm Requires ALL Dependencies Explicit
+- pnpm enforces strict dependency resolution — no hoisting of undeclared deps.
+- If Cloud Build fails with a missing dependency, `pnpm add <package>` in the affected directory.
+- Discover all pnpm packages: `find . -name pnpm-lock.yaml -not -path '*/node_modules/*'`
+
+### Rule 2: Keep Shared Dependencies Version-Consistent
+- If multiple packages use the same dependency, they must use the **exact same pinned version** (no `^`).
+- Check: `grep '"<dep-name>"' */package.json`
+- If updating, update ALL packages simultaneously.
+
+### Rule 3: Always Run `pnpm install` After Editing package.json
+- After any change to `package.json`, immediately run `pnpm install` in that directory.
+- Never deploy without syncing the lockfile first.
+
+### Rule 4: Include `engines.node` for Functions
+- Every package that generates Cloud Functions must have:
+  ```json
+  "engines": { "node": "22" }
+  ```
+
+### Rule 5: Hosting Deployment Deploys Functions Too
+- `firebase deploy --only hosting` also deploys SSR Cloud Functions when `FIREBASE_CLI_EXPERIMENTS=webframeworks` is enabled.
+- All hosting packages with SSR must satisfy Cloud Functions build requirements.
+
+## Diagnosis Workflow
+
+When deployment fails with a package.json error:
+
+1. **Read error** → identify the missing/conflicting package name
+2. **Identify directory** → which function/app failed in the build log
+3. **Check package.json** → is the dep listed? correct version?
+4. **Fix** → `pnpm add <package>` or edit version, then `pnpm install`
+5. **Verify monorepo** → check if other packages share the same issue:
+   ```bash
+   grep "<package>" */package.json
+   ```
+
+## Common Error Keywords
+
+| Error Keyword | Cause | Fix |
+|---------------|-------|-----|
+| `not included [X] in your dependencies` | pnpm strict mode | `pnpm add <package>` |
+| `While resolving:` / `Found:` | Version mismatch | Standardize version across all packages |
+| `ERR_PNPM_OUTDATED_LOCKFILE` | Lockfile not synced | `pnpm install` |
+| `Module not found` / `Cannot find module` | Missing dependency | `pnpm add <package>` |
+| `no Node version specified` | Missing `engines.node` | Add `"engines": {"node": "22"}` |
