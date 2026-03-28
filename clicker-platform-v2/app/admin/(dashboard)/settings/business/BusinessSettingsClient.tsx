@@ -192,7 +192,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
 
     return (
         <div className="max-w-2xl pb-20">
-            <h1 className="text-3xl font-black text-brand-dark dark:text-neutral-100 mb-2 uppercase">Business Information</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100 mb-2">Business Information</h1>
             <p className="text-gray-500 dark:text-neutral-500 text-sm mb-8">Contact details, operating hours, and branch locations.</p>
 
             <SettingsSubNav />

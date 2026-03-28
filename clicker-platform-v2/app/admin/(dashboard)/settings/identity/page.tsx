@@ -56,7 +56,7 @@ export default function IdentitySettingsPage() {
 
     if (loading) return (
         <div className="max-w-2xl">
-            <h1 className="text-3xl font-black text-brand-dark dark:text-neutral-100 mb-2 uppercase">Identity / Profile</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100 mb-2">Identity / Profile</h1>
             <p className="text-gray-500 dark:text-neutral-500 text-sm mb-8">Your public-facing name, tagline, and avatar across all templates.</p>
             <SettingsSubNav />
             <FormSkeleton />
@@ -67,7 +67,7 @@ export default function IdentitySettingsPage() {
 
     return (
         <div className="max-w-2xl">
-            <h1 className="text-3xl font-black text-brand-dark dark:text-neutral-100 mb-2 uppercase">Identity / Profile</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100 mb-2">Identity / Profile</h1>
             <p className="text-gray-500 dark:text-neutral-500 text-sm mb-8">Your public-facing name, tagline, and avatar across all templates.</p>
 
             <SettingsSubNav />

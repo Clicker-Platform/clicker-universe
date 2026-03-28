@@ -11,6 +11,7 @@ import { FormModal } from '@/components/FormModal';
 import { Home, Menu, Search, ShoppingBag, ArrowLeft, X } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
 import { useRouter } from 'next/navigation';
+import { useDeviceView } from '@/components/DeviceViewContext';
 
 interface ResponsiveNavBarProps {
     profile: BusinessProfile;
@@ -29,6 +30,8 @@ export const ResponsiveNavBar: React.FC<ResponsiveNavBarProps> = ({
 }) => {
     const router = useRouter();
     const { theme } = useTemplate();
+    const deviceView = useDeviceView();
+    const isPreview = deviceView !== 'responsive';
     const { layout } = theme;
     const [navItems, setNavItems] = React.useState<any[]>([]);
     const [navActions, setNavActions] = React.useState<any>({ showSearch: true, cta: { enabled: true, label: 'Order', linkType: 'url', linkValue: '#' } });
@@ -116,7 +119,7 @@ export const ResponsiveNavBar: React.FC<ResponsiveNavBarProps> = ({
     return (
         <>
             <nav 
-                className={`${forceMobile ? 'relative' : 'fixed top-0 left-0 right-0'} z-50 h-16 border-b px-4 flex items-center justify-between transition-all duration-300`}
+                className={`${(forceMobile || isPreview) ? 'relative' : 'fixed top-0 left-0 right-0'} z-50 h-16 border-b px-4 flex items-center justify-between transition-all duration-300`}
                 style={{ 
                     backgroundColor: '#0a0a0a',
                     borderColor: '#111827', // darker gray-900 for subtle border
@@ -145,6 +148,7 @@ export const ResponsiveNavBar: React.FC<ResponsiveNavBarProps> = ({
                                         width={40}
                                         height={40}
                                         className="object-cover"
+                                        style={{ width: '100%', height: '100%' }}
                                     />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center font-bold text-sm text-black">
@@ -218,7 +222,7 @@ export const ResponsiveNavBar: React.FC<ResponsiveNavBarProps> = ({
 
             {/* Mobile/Tablet Menu Overlay */}
             {isMenuOpen && (
-                <div className={`${forceMobile ? 'absolute' : 'fixed'} inset-0 z-[45] bg-black backdrop-blur-3xl ${forceMobile ? 'flex' : 'lg:hidden flex'} flex-col pt-32 px-10 pb-16 transition-all duration-300 animate-in fade-in slide-in-from-top-4`}>
+                <div className={`${(forceMobile || isPreview) ? 'absolute' : 'fixed'} inset-0 z-[45] bg-black backdrop-blur-3xl ${forceMobile ? 'flex' : 'lg:hidden flex'} flex-col pt-32 px-10 pb-16 transition-all duration-300 animate-in fade-in slide-in-from-top-4`}>
                     <div className="flex flex-col gap-10 items-center text-center">
                         {navItems.map((item) => (
                             <Link

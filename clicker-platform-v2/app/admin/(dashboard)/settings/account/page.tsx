@@ -9,7 +9,7 @@ export default function AccountSettingsPage() {
 
     return (
         <div className="max-w-2xl">
-            <h1 className="text-3xl font-black text-brand-dark dark:text-neutral-100 mb-2 uppercase">Account</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100 mb-2">Account</h1>
             <p className="text-gray-500 dark:text-neutral-500 text-sm mb-8">Manage your login credentials and account security.</p>
 
             <SettingsSubNav />

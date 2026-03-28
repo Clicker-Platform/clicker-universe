@@ -1,12 +1,13 @@
 import Image from 'next/image';
 import { useTemplate } from '@/components/TemplateProvider';
+import { useDeviceView, dv, type DeviceView } from '@/components/DeviceViewContext';
 
-const TITLE_SIZES: Record<string, string> = {
-    sm: 'text-2xl md:text-3xl',
-    md: 'text-4xl md:text-5xl',
-    lg: 'text-5xl md:text-6xl',
-    xl: 'text-6xl md:text-7xl',
-};
+const TITLE_SIZES = (d: DeviceView): Record<string, string> => ({
+    sm: dv(d, 'text-2xl', 'md:text-3xl'),
+    md: dv(d, 'text-4xl', 'md:text-5xl'),
+    lg: dv(d, 'text-5xl', 'md:text-6xl'),
+    xl: dv(d, 'text-6xl', 'md:text-7xl'),
+});
 
 interface CtaBtn { label?: string; url?: string; }
 
@@ -56,6 +57,9 @@ const CtaButtons = ({
 export const DefaultHeroBlock = ({ data, theme }: { data: any, theme?: any }) => {
     if (!data) return null;
 
+    const deviceView = useDeviceView();
+    const d = deviceView;
+
     let cardStyle = 'brutalist';
     let themeColors: any = null;
     try {
@@ -78,7 +82,7 @@ export const DefaultHeroBlock = ({ data, theme }: { data: any, theme?: any }) =>
 
     const variant = data?.layoutVariant || 'centered';
     const imgPos = data?.imagePosition || 'center';
-    const titleSizeClass = TITLE_SIZES[data?.titleSize || 'md'];
+    const titleSizeClass = TITLE_SIZES(d)[data?.titleSize || 'md'];
     const primaryBtn: CtaBtn | null = data?.primaryBtn || null;
     const secondaryBtn: CtaBtn | null = data?.secondaryBtn || null;
 
@@ -97,10 +101,10 @@ export const DefaultHeroBlock = ({ data, theme }: { data: any, theme?: any }) =>
     if (variant === 'split') {
         return (
             <section
-                className={`flex flex-col md:flex-row items-stretch w-full overflow-hidden ${cardClasses}`}
+                className={`flex ${dv(d, 'flex-col', 'md:flex-row')} items-stretch w-full overflow-hidden ${cardClasses}`}
                 style={{ borderRadius: 'var(--theme-radius)' }}
             >
-                <div className={`flex-1 p-8 md:p-12 flex flex-col justify-center ${textAlignClass}`}>
+                <div className={`flex-1 ${dv(d, 'p-8', 'md:p-12')} flex flex-col justify-center ${textAlignClass}`}>
                     {Tagline}
                     <h1 className={`${titleSizeClass} mb-4 ${isClean ? 'font-bold text-gray-900 tracking-tight' : isGlass ? 'font-extrabold text-theme-foreground' : 'font-black text-theme-foreground'}`}
                         style={data?.titleColor ? { color: data.titleColor } : undefined}>
@@ -115,7 +119,7 @@ export const DefaultHeroBlock = ({ data, theme }: { data: any, theme?: any }) =>
                     <CtaButtons primary={primaryBtn} secondary={secondaryBtn} dark={false} align={textAlign} />
                 </div>
                 {data?.imageUrl && (
-                    <div className="flex-1 relative min-h-[300px] md:min-h-full bg-gray-100">
+                    <div className={`flex-1 relative ${dv(d, 'min-h-[300px]', 'md:min-h-full')} bg-gray-100`}>
                         <Image
                             src={data.imageUrl}
                             alt={data?.title || 'Hero Image'}
@@ -166,7 +170,7 @@ export const DefaultHeroBlock = ({ data, theme }: { data: any, theme?: any }) =>
                         {data?.title}
                     </h1>
                     {data?.subtitle && (
-                        <p className="text-xl md:text-2xl text-white/90 font-medium text-shadow-sm"
+                        <p className={`${dv(d, 'text-xl', 'md:text-2xl')} text-white/90 font-medium text-shadow-sm`}
                            style={data?.subtitleColor ? { color: data.subtitleColor } : undefined}>
                             {data.subtitle}
                         </p>
@@ -182,7 +186,7 @@ export const DefaultHeroBlock = ({ data, theme }: { data: any, theme?: any }) =>
     return (
         <section
             className={`relative py-16 px-6 overflow-hidden ${cardClasses} ${
-                fullWidth ? '-mx-4 md:-mx-6 w-[calc(100%+2rem)] md:w-[calc(100%+3rem)]' : 'w-full'
+                fullWidth ? `${dv(d, '-mx-4 w-[calc(100%+2rem)]', 'md:-mx-6 md:w-[calc(100%+3rem)]')}` : 'w-full'
             }`}
             style={{
                 borderRadius: fullWidth ? '0' : 'var(--theme-radius)',

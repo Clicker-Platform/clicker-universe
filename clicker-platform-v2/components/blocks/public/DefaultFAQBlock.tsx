@@ -4,9 +4,11 @@ import React from 'react';
 import { ChevronDown } from 'lucide-react';
 import { useTemplate } from '@/components/TemplateProvider';
 import { getCardClasses, getTextColor } from './cardStyles';
+import { useDeviceView, dv } from '@/components/DeviceViewContext';
 
 export const DefaultFAQBlock = ({ data }: { data: any }) => {
     const { theme } = useTemplate();
+    const d = useDeviceView();
     const cardStyle = theme.cardStyle;
     const isGlass = cardStyle === 'glass';
     const variant = data?.layoutVariant || 'accordion';
@@ -16,9 +18,9 @@ export const DefaultFAQBlock = ({ data }: { data: any }) => {
     // ----- Grid variant -----
     if (variant === 'grid') {
         return (
-            <section className={`p-6 md:p-10 ${getCardClasses(cardStyle)}`} style={{ borderRadius: 'var(--theme-radius)' }}>
+            <section className={`${dv(d, 'p-6', 'md:p-10')} ${getCardClasses(cardStyle)}`} style={{ borderRadius: 'var(--theme-radius)' }}>
                 <h2 className={`text-2xl mb-8 font-black ${getTextColor(cardStyle)}`}>FAQ</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className={`grid ${dv(d, 'grid-cols-1', 'md:grid-cols-2')} gap-6`}>
                     {items.map((item: any, i: number) => (
                         <div
                             key={i}
@@ -40,7 +42,7 @@ export const DefaultFAQBlock = ({ data }: { data: any }) => {
     // ----- Simple list variant -----
     if (variant === 'simple-list') {
         return (
-            <section className="p-6 md:p-10 max-w-3xl mx-auto">
+            <section className={`${dv(d, 'p-6', 'md:p-10')} max-w-3xl mx-auto`}>
                 <h2 className={`text-2xl mb-8 font-black ${getTextColor(cardStyle)}`}>FAQ</h2>
                 <div className="space-y-6">
                     {items.map((item: any, i: number) => (
@@ -56,7 +58,7 @@ export const DefaultFAQBlock = ({ data }: { data: any }) => {
 
     // ----- Default: accordion -----
     return (
-        <section className={`p-6 md:p-10 ${getCardClasses(cardStyle)}`} style={{ borderRadius: 'var(--theme-radius)' }}>
+        <section className={`${dv(d, 'p-6', 'md:p-10')} ${getCardClasses(cardStyle)}`} style={{ borderRadius: 'var(--theme-radius)' }}>
             <h2 className={`text-2xl mb-6 font-black ${getTextColor(cardStyle)}`}>FAQ</h2>
             <div className="space-y-4">
                 {items.map((item: any, i: number) => (

@@ -108,16 +108,11 @@ export function SharedPageLayout({
                 )}
                 <BottomNavBar />
 
-                {/* AI Sales Agent Widget (Strict Modularity: Render if registered) */}
-                {(() => {
-                    const ChatWidget = MODULE_COMPONENTS['ai_sales:ChatWidget'];
-                    return ChatWidget ? <ChatWidget agentName={profile?.name} /> : null;
-                })()}
 
                 <main
                     className={`
                         min-h-screen py-12 relative overflow-hidden transition-colors duration-300
-                        ${template.config.layout?.navMode === 'adaptive' ? 'md:pt-24' : ''}
+                        ${template.config.layout?.navMode === 'adaptive' ? 'pt-16' : ''}
                     `}
                     style={{ backgroundColor: pageBackgroundColor }}
                     suppressHydrationWarning // Prevent mismatches on dynamic styles

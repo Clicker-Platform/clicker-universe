@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { useSite } from '@/lib/site-context';
+import { usePageStudio } from '@/components/admin/blocks/PageStudioContext';
 import { SiteSettings, SocialLinkItem } from '@/data/mockData';
 import { CompactImageUpload } from '@/components/admin/CompactImageUpload';
 import { SubmitButton } from '@/components/admin/SubmitButton';
@@ -98,6 +99,7 @@ function SocialSharePreview({ title, description, ogImageUrl }: { title: string;
 
 export function SiteInfoPanel() {
     const { siteId } = useSite();
+    const { updateGlobalSettings, refreshGlobalSettings } = usePageStudio();
     const [settings, setSettings] = useState<SiteSettings>({
         title: '',
         description: '',
@@ -133,6 +135,7 @@ export function SiteInfoPanel() {
         setSaving(true);
         try {
             await setDoc(doc(db, 'sites', siteId, 'content', 'siteSettings'), settings);
+            await refreshGlobalSettings();
             setSaved(true);
             setTimeout(() => setSaved(false), 2000);
         } catch (err) {
@@ -146,16 +149,17 @@ export function SiteInfoPanel() {
         if (!handle.trim()) return;
         const url = handleToUrl(selectedPlatform, handle.trim());
         const newLink: SocialLinkItem = { platform: selectedPlatform, url };
-        setSettings(s => ({ ...s, socialLinkItems: [...(s.socialLinkItems || []), newLink] }));
+        const updated = [...(settings.socialLinkItems || []), newLink];
+        setSettings(s => ({ ...s, socialLinkItems: updated }));
+        updateGlobalSettings({ socialLinks: updated });
         setHandle('');
     };
 
     const removeSocialLink = (index: number) => {
-        setSettings(s => {
-            const updated = [...(s.socialLinkItems || [])];
-            updated.splice(index, 1);
-            return { ...s, socialLinkItems: updated };
-        });
+        const updated = [...(settings.socialLinkItems || [])];
+        updated.splice(index, 1);
+        setSettings(s => ({ ...s, socialLinkItems: updated }));
+        updateGlobalSettings({ socialLinks: updated });
     };
 
     const currentPlatform = PLATFORMS.find(p => p.name === selectedPlatform) || PLATFORMS[0];

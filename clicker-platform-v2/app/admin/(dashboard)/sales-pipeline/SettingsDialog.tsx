@@ -115,7 +115,7 @@ export function SettingsDialog({ isOpen, onClose, stages: initialStages }: Setti
                             <SettingsIcon className="w-6 h-6 text-brand-dark dark:text-neutral-400" />
                         </div>
                         <div>
-                            <h2 className="text-xl font-black text-brand-dark dark:text-neutral-200">Pipeline Settings</h2>
+                            <h2 className="text-lg font-bold text-gray-900 dark:text-neutral-200">Pipeline Settings</h2>
                             <p className="text-sm text-gray-400 dark:text-neutral-600 font-medium">Configure stages and integrations</p>
                         </div>
                     </div>

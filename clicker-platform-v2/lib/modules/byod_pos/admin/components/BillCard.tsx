@@ -62,7 +62,7 @@ export function BillCard({ group, onProcessPayment, disabled }: BillCardProps) {
     };
 
     return (
-        <div className="bg-white dark:bg-neutral-900 rounded-3xl border-[3px] border-brand-dark shadow-sm overflow-hidden scale-100 hover:scale-[1.01] transition-transform duration-300">
+        <div className="bg-white dark:bg-neutral-900 rounded-3xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden scale-100 hover:scale-[1.01] transition-transform duration-300">
             {/* Header */}
             <div className="p-4 flex justify-between items-start bg-white dark:bg-neutral-900 border-b border-gray-100 dark:border-neutral-800">
                 <div className="flex-1">

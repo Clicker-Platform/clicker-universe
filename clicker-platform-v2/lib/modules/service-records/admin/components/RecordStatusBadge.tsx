@@ -3,11 +3,11 @@
 import type { RecordStatus } from '../../types';
 
 const STATUS_CONFIG: Record<RecordStatus, { label: string; className: string }> = {
-    DRAFT:              { label: 'Draft',            className: 'bg-gray-100 text-gray-600' },
-    IN_PROGRESS:        { label: 'In Progress',      className: 'bg-blue-100 text-blue-700' },
-    PENDING_APPROVAL:   { label: 'Pending Approval', className: 'bg-amber-100 text-amber-700' },
-    COMPLETED:          { label: 'Completed',        className: 'bg-green-100 text-green-700' },
-    CANCELLED:          { label: 'Cancelled',        className: 'bg-red-100 text-red-600' },
+    DRAFT:              { label: 'Draft',            className: 'bg-gray-100 text-gray-600 dark:bg-neutral-800 dark:text-neutral-400' },
+    IN_PROGRESS:        { label: 'In Progress',      className: 'bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400' },
+    PENDING_APPROVAL:   { label: 'Pending Approval', className: 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400' },
+    COMPLETED:          { label: 'Completed',        className: 'bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-400' },
+    CANCELLED:          { label: 'Cancelled',        className: 'bg-red-100 text-red-600 dark:bg-red-950/40 dark:text-red-400' },
 };
 
 interface Props {
@@ -16,7 +16,7 @@ interface Props {
 }
 
 export function RecordStatusBadge({ status, size = 'md' }: Props) {
-    const cfg = STATUS_CONFIG[status] ?? { label: status, className: 'bg-gray-100 text-gray-600' };
+    const cfg = STATUS_CONFIG[status] ?? { label: status, className: 'bg-gray-100 text-gray-600 dark:bg-neutral-800 dark:text-neutral-400' };
     const sizeClass = size === 'sm' ? 'text-xs px-2 py-0.5' : 'text-xs px-2.5 py-1';
     return (
         <span className={`inline-flex items-center rounded-full font-medium ${sizeClass} ${cfg.className}`}>

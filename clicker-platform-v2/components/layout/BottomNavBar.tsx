@@ -9,6 +9,7 @@ import { FormModal } from '@/components/FormModal';
 import { ICON_MAP } from '@/data/icons';
 import { Home, PlusCircle } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
+import { useDeviceView, dv } from '@/components/DeviceViewContext';
 
 interface BottomNavBarProps {
     previewMode?: boolean;
@@ -16,6 +17,7 @@ interface BottomNavBarProps {
 
 export const BottomNavBar: React.FC<BottomNavBarProps> = ({ previewMode = false }) => {
     const { theme } = useTemplate();
+    const deviceView = useDeviceView();
     const { siteId } = useSite();
     const { layout } = theme;
     const [navItems, setNavItems] = React.useState<any[]>([]);
@@ -110,9 +112,10 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({ previewMode = false 
     const fabBg = theme.colors.accent || theme.colors.primary;
 
     // Positioning: fixed on live site, relative in canvas preview
+    // In canvas preview with desktop device, hide it entirely
     const positionClass = previewMode
-        ? 'relative w-full'
-        : 'md:hidden fixed bottom-0 left-0 right-0 z-50';
+        ? (deviceView === 'desktop' ? 'hidden' : 'relative w-full')
+        : `${dv(deviceView, '', 'md:hidden')} fixed bottom-0 left-0 right-0 z-50`;
 
     return (
         <>

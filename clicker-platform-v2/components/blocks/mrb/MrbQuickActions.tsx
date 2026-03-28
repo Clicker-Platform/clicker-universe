@@ -6,6 +6,7 @@ import { useTemplate } from '@/components/TemplateProvider';
 import { getWhatsappUrl } from '@/components/common/WhatsappButton';
 import { FormModal } from '@/components/FormModal';
 import { useSite } from '@/lib/site-context';
+import { useDeviceView, dv } from '@/components/DeviceViewContext';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { ICON_MAP } from '@/data/icons';
 import { ShoppingBag } from 'lucide-react';
@@ -21,6 +22,7 @@ interface QuickActionsProps {
 
 export const MrbQuickActions: React.FC<QuickActionsProps> = ({ links, contact, settings, siteId, tenantSlug, blockData }) => {
     const { theme } = useTemplate();
+    const d = useDeviceView();
     const { track } = useAnalytics();
     const { siteId: contextSiteId } = useSite();
     const effectiveSiteId = siteId || contextSiteId;
@@ -82,13 +84,13 @@ export const MrbQuickActions: React.FC<QuickActionsProps> = ({ links, contact, s
     };
 
     return (
-        <section className="py-10">
+        <section className="w-full">
             {showOnHome && !theme.custom?.hideQuickActionsTitle && (
                 <h3 className="text-slate-400 text-xs font-bold uppercase tracking-[0.2em] mb-6">
                     {sectionTitle}
                 </h3>
             )}
-            <div className={layout === 'list' ? 'flex flex-col gap-3' : 'grid grid-cols-1 sm:grid-cols-3 gap-4'}>
+            <div className={layout === 'list' ? 'flex flex-col gap-3' : `grid ${dv(d, 'grid-cols-1', 'sm:grid-cols-3')} gap-4`}>
                 {processedLinks.map((link) => {
                     const Icon = link.iconName && ICON_MAP[link.iconName] ? ICON_MAP[link.iconName] : ShoppingBag;
                     const Wrapper = link.type === 'form' ? 'button' : 'a';

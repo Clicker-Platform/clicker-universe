@@ -4,13 +4,14 @@ import React from 'react';
 import Image from 'next/image';
 import { BusinessProfile } from '@/data/mockData';
 import { useTemplate } from '@/components/TemplateProvider';
+import { useDeviceView, dv, type DeviceView } from '@/components/DeviceViewContext';
 
-const TITLE_SIZES: Record<string, string> = {
-    sm: 'text-3xl md:text-4xl',
-    md: 'text-5xl md:text-6xl',
-    lg: 'text-6xl md:text-7xl',
-    xl: 'text-7xl md:text-8xl',
-};
+const TITLE_SIZES = (d: DeviceView): Record<string, string> => ({
+    sm: dv(d, 'text-3xl', 'md:text-4xl'),
+    md: dv(d, 'text-5xl', 'md:text-6xl'),
+    lg: dv(d, 'text-6xl', 'md:text-7xl'),
+    xl: dv(d, 'text-7xl', 'md:text-8xl'),
+});
 
 interface CtaBtn { label?: string; url?: string; }
 
@@ -37,12 +38,13 @@ interface MrbHeroProps {
 
 export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, previewMode }) => {
     const { theme } = useTemplate();
+    const d = useDeviceView();
 
     const defaultHero = "https://lh3.googleusercontent.com/aida-public/AB6AXuAHd7B70Bcb1uWEcIBcn_xhhy47_DyI5SXZVEiUzf-tKxj1KFRwGS5Ud_8q_bwMYgtCRfnYaEZHQgdSmWqgw8gvdjBDjpg0DUSN_LDBYpX_1THYO_73OY2hcgMVUVrx75mGZdmaBdiL78ZPKz9UV9yIiSvcwhTkNfJ7F-Wa6nQyo0gmJUQ7nFq2lN3GGAK3YciJGqEhihA8mzcKu9FvF0jopfHK4M99Lp1sqL_7vhXIAAqgQG51V3b89V-ffqXoCGn5rQt2EvC68ayw";
 
     const imageUrl = data?.imageUrl || defaultHero;
     const imgPos = data?.imagePosition || 'center';
-    const titleSizeClass = TITLE_SIZES[data?.titleSize || 'lg']; // MrbHero default is bigger
+    const titleSizeClass = TITLE_SIZES(d)[data?.titleSize || 'lg']; // MrbHero default is bigger
     const borderRadius = data?.imageFullWidth ? '0' : (theme.borderRadius || '1rem');
 
     const isFullbleed = data?.layoutVariant === 'fullbleed';
@@ -66,7 +68,7 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, previewMode }) 
 
     return (
         <div
-            className={`relative flex h-[560px] flex-col gap-6 justify-end px-6 md:px-12 pb-16 overflow-hidden w-full ${flexAlignClass}${isFullbleed && !previewMode ? ' rounded-none -mx-4 md:-mx-6' : isFullbleed ? ' rounded-none' : ''}`}
+            className={`relative flex h-[560px] flex-col gap-6 justify-end ${dv(d, 'px-6', 'md:px-12')} pb-16 overflow-hidden w-full ${flexAlignClass}${isFullbleed && !previewMode ? ` rounded-none ${dv(d, '-mx-4', 'md:-mx-6')}` : isFullbleed ? ' rounded-none' : ''}`}
             style={isFullbleed && !previewMode
                 ? { width: '100vw', marginLeft: 'calc(-50vw + 50%)', border: 'none', borderRadius: '0' }
                 : isFullbleed ? { border: 'none', borderRadius: '0' } : { borderRadius }}
@@ -93,7 +95,7 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, previewMode }) 
 
             {/* Tagline Bubble */}
             {tagline && (
-                <div className={`absolute top-8 z-10 px-6 md:px-12 w-full flex ${justifyClass}`}>
+                <div className={`absolute top-8 z-10 ${dv(d, 'px-6', 'md:px-12')} w-full flex ${justifyClass}`}>
                     <span className="inline-flex items-center rounded-full px-4 py-1.5 text-[10px] font-black uppercase border"
                         style={{
                             backgroundColor: `${theme.colors.primary}15`,

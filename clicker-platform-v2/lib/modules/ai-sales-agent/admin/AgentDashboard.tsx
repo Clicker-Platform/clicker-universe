@@ -49,7 +49,7 @@ export default function AgentDashboard() {
 
             {/* Status Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white dark:bg-neutral-900 rounded-2xl border-[3px] border-brand-dark p-6">
+                <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 p-6">
                     <div className="flex items-center justify-between mb-4">
                         <div className="p-3 bg-purple-50 rounded-xl">
                             <Bot className="h-6 w-6 text-purple-600" />
@@ -62,7 +62,7 @@ export default function AgentDashboard() {
                     <p className="text-gray-500 dark:text-neutral-500 text-sm mt-1">Assistant Name</p>
                 </div>
 
-                <div className="bg-white dark:bg-neutral-900 rounded-2xl border-[3px] border-brand-dark p-6">
+                <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 p-6">
                     <div className="flex items-center justify-between mb-4">
                         <div className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-xl">
                             <MessageSquare className="h-6 w-6 text-blue-600" />
@@ -72,7 +72,7 @@ export default function AgentDashboard() {
                     <p className="text-gray-500 dark:text-neutral-500 text-sm mt-1">Total Conversations</p>
                 </div>
 
-                <div className="bg-white dark:bg-neutral-900 rounded-2xl border-[3px] border-brand-dark p-6 flex flex-col justify-center items-center text-center space-y-3">
+                <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 p-6 flex flex-col justify-center items-center text-center space-y-3">
                     <p className="text-gray-500 dark:text-neutral-500 text-sm">Want to customize behavior?</p>
                     <Link
                         href={`/${siteId}/admin/ai-sales/settings`}

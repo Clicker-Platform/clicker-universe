@@ -91,7 +91,7 @@ export default function AdminDashboard() {
         <div>
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
                 <div>
-                    <h1 className="text-3xl font-black text-brand-dark mb-2 uppercase">Dashboard</h1>
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100 mb-2">Dashboard</h1>
                     <p className="text-gray-600 dark:text-neutral-400 font-medium">Welcome back! Manage your content below.</p>
                 </div>
 
@@ -135,25 +135,25 @@ export default function AdminDashboard() {
                     <div className="flex items-center gap-3 mb-2 text-brand-dark/70">
                         <LinkIcon size={20} /> <span className="font-bold">Total Links</span>
                     </div>
-                    <p className="text-4xl font-black text-brand-dark">{stats.linksCount}</p>
+                    <p className="text-4xl font-bold text-gray-900 dark:text-neutral-100">{stats.linksCount}</p>
                 </div>
                 <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm">
                     <div className="flex items-center gap-3 mb-2 text-brand-dark/70">
                         <ShoppingBag size={20} /> <span className="font-bold">Products</span>
                     </div>
-                    <p className="text-4xl font-black text-brand-dark">{stats.productsCount}</p>
+                    <p className="text-4xl font-bold text-gray-900 dark:text-neutral-100">{stats.productsCount}</p>
                 </div>
                 <div className="bg-blue-50 dark:bg-blue-950/30 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm">
                     <div className="flex items-center gap-3 mb-2 text-blue-600">
                         <Eye size={20} /> <span className="font-bold">Total Page Views</span>
                     </div>
-                    <p className="text-4xl font-black text-brand-dark">{stats.pageViews}</p>
+                    <p className="text-4xl font-bold text-gray-900 dark:text-neutral-100">{stats.pageViews}</p>
                 </div>
                 <div className="bg-green-50 dark:bg-green-950/30 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm">
                     <div className="flex items-center gap-3 mb-2 text-green-700 dark:text-neutral-300">
                         <MousePointer2 size={20} /> <span className="font-bold">Total Clicks</span>
                     </div>
-                    <p className="text-4xl font-black text-brand-dark">{stats.totalClicks}</p>
+                    <p className="text-4xl font-bold text-gray-900 dark:text-neutral-100">{stats.totalClicks}</p>
                 </div>
             </div>
 

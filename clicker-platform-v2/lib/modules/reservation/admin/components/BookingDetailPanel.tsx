@@ -266,7 +266,7 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
             {/* Header */}
             <div className="p-6 border-b border-gray-100 dark:border-neutral-800 flex justify-between items-center bg-white dark:bg-neutral-900 sticky top-0 z-10">
                 <div>
-                    <h2 className="text-2xl font-black text-brand-dark mb-1 flex flex-col items-start md:flex-row md:items-center gap-2 md:gap-3">
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-neutral-100 mb-1 flex flex-col items-start md:flex-row md:items-center gap-2 md:gap-3">
                         Booking Details
                         <StatusBadge status={booking.status} size="lg" />
                     </h2>
@@ -336,7 +336,7 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
                     <div>
                         <label className="text-xs font-bold text-gray-400 dark:text-neutral-500 uppercase tracking-wider block mb-3">Service Details</label>
                         <div className="bg-gray-50 dark:bg-neutral-800/50 p-5 rounded-2xl border border-gray-100 dark:border-neutral-800">
-                            <p className="font-black text-xl text-brand-dark mb-2">{booking.serviceName}</p>
+                            <p className="font-semibold text-lg text-gray-900 dark:text-neutral-100 mb-2">{booking.serviceName}</p>
                             {booking.preferredDate ? (
                                 <>
                                     <div className="flex items-center gap-2 mb-1">
@@ -446,13 +446,35 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
                         <div className="flex flex-wrap gap-4">
                             {booking.status === 'pending' && (
                                 <>
-                                    <ActionButton
-                                        onClick={() => handleStatusAction('confirmed')}
-                                        disabled={updating}
-                                        label="Confirm"
-                                        icon={<CheckCircle size={18} />}
-                                        variant="success"
-                                    />
+                                    {booking.serviceRecordId ? (
+                                        <>
+                                            <div className="flex-1 flex items-center gap-2 px-4 py-3 rounded-xl bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 text-sm font-medium">
+                                                <ClipboardList size={16} />
+                                                Linked Service Record
+                                                <a
+                                                    href={`/admin/service-records/detail?id=${booking.serviceRecordId}`}
+                                                    className="ml-auto flex items-center gap-1 font-bold hover:underline"
+                                                >
+                                                    View Record <ExternalLink size={14} />
+                                                </a>
+                                            </div>
+                                            <ActionButton
+                                                onClick={() => handleStatusAction('completed')}
+                                                disabled={updating}
+                                                label="Mark Completed"
+                                                icon={<CheckCircle size={18} />}
+                                                variant="success"
+                                            />
+                                        </>
+                                    ) : (
+                                        <ActionButton
+                                            onClick={() => handleStatusAction('confirmed')}
+                                            disabled={updating}
+                                            label="Confirm"
+                                            icon={<CheckCircle size={18} />}
+                                            variant="success"
+                                        />
+                                    )}
                                     <ActionButton
                                         onClick={() => handleStatusAction('cancelled')}
                                         disabled={updating}

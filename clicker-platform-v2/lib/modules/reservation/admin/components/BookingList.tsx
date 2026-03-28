@@ -94,7 +94,7 @@ export function BookingList({ bookings, selectedId, onSelect, activeTab, onTabCh
                                             }`}
                                     >
                                         <div className="flex justify-between items-start mb-1">
-                                            <p className={`text-sm ${!booking.isRead ? 'font-black text-brand-dark' : 'font-bold text-brand-dark'}`}>
+                                            <p className={`text-sm ${!booking.isRead ? 'font-bold text-gray-900 dark:text-neutral-100' : 'font-medium text-gray-700 dark:text-neutral-300'}`}>
                                                 {booking.customerName}
                                                 {!booking.isRead && (
                                                     <span className="ml-2 inline-block w-2 h-2 rounded-full bg-brand-dark animate-pulse" />

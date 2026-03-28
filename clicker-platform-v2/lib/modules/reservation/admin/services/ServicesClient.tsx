@@ -42,7 +42,7 @@ export default function ServicesClient({ initialServices = [] }: ServicesClientP
             <ReservationBreadcrumb currentPage="Services" />
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
                 <div>
-                    <h1 className="text-3xl font-black text-brand-dark mb-2 uppercase">Services</h1>
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100 mb-2">Services</h1>
                     <p className="text-gray-600 dark:text-neutral-400 font-medium">Bookable services from the shared catalog</p>
                 </div>
                 <Link
@@ -62,7 +62,7 @@ export default function ServicesClient({ initialServices = [] }: ServicesClientP
             </div>
 
             {/* Services container */}
-            <div className="bg-white dark:bg-neutral-900 rounded-3xl border-[3px] border-brand-dark shadow-sm overflow-hidden flex flex-col min-h-[500px]">
+            <div className="bg-white dark:bg-neutral-900 rounded-3xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden flex flex-col min-h-[500px]">
                 {/* Header Controls */}
                 <div className="p-4 border-b border-gray-100 dark:border-neutral-800 flex flex-col md:flex-row gap-4">
                     <div className="relative flex-1">
@@ -156,7 +156,7 @@ export default function ServicesClient({ initialServices = [] }: ServicesClientP
                                             </span>
                                         </td>
                                         <td className="py-4 px-6">
-                                            <span className="font-black text-brand-dark">
+                                            <span className="font-bold text-gray-900 dark:text-neutral-100">
                                                 {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(service.price)}
                                             </span>
                                         </td>
@@ -183,14 +183,14 @@ export default function ServicesClient({ initialServices = [] }: ServicesClientP
                             {filteredServices.map(service => (
                                 <div key={service.id} className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 p-5 shadow-sm hover:shadow-md transition-all hover:border-brand-dark/20">
                                     <div className="mb-3">
-                                        <h3 className="text-lg font-black text-brand-dark leading-tight">{service.name}</h3>
+                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-neutral-100 leading-tight">{service.name}</h3>
                                         <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-neutral-500 bg-gray-100 dark:bg-neutral-800 px-2 py-0.5 rounded-md inline-block mt-2">
                                             {service.category || 'No Category'}
                                         </span>
                                     </div>
                                     <p className="text-gray-500 dark:text-neutral-500 text-sm mb-4 line-clamp-2 h-10 font-medium">{service.description}</p>
                                     <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100 dark:border-neutral-800">
-                                        <div className="font-black text-brand-dark text-lg">
+                                        <div className="font-bold text-gray-900 dark:text-neutral-100 text-lg">
                                             {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(service.price)}
                                         </div>
                                         <div className="text-xs font-bold text-gray-400 dark:text-neutral-600 flex items-center gap-1 bg-gray-50 dark:bg-neutral-800 px-2 py-1 rounded-full">

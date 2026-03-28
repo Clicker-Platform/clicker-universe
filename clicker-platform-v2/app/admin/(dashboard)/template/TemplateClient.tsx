@@ -209,8 +209,8 @@ export default function TemplateClient() {
 
     return (
         <div className="max-w-4xl">
-            <h1 className="text-3xl font-black text-brand-dark mb-8 uppercase flex items-center gap-3 relative">
-                <Palette size={32} />
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100 mb-8 flex items-center gap-3">
+                <Palette size={26} />
                 Template
             </h1>
 
@@ -229,7 +229,7 @@ export default function TemplateClient() {
                                 <div>
                                     <div className="flex items-center justify-between mb-4">
                                         <div>
-                                            <label className="block text-brand-dark font-black text-xl">Template Gallery</label>
+                                            <label className="block text-gray-900 dark:text-neutral-100 font-bold text-lg">Template Gallery</label>
                                             <p className="text-sm text-gray-500 dark:text-neutral-500 mt-1">
                                                 Choose a comprehensive design package.
                                             </p>
@@ -430,7 +430,7 @@ export default function TemplateClient() {
                             </div>
 
                         <div className="pt-4 border-t border-gray-100 dark:border-neutral-800/50">
-                            <SubmitButton isLoading={saving} label="Save Changes" className="w-full bg-brand-dark text-white py-4 rounded-xl font-black uppercase tracking-widest hover:bg-brand-dark/90 transition-all shadow-lg active:scale-[0.98]" />
+                            <SubmitButton isLoading={saving} label="Save Changes" className="w-full bg-brand-dark text-white py-4 rounded-xl font-bold hover:bg-brand-dark/90 transition-all shadow-lg active:scale-[0.98]" />
                         </div>
                     </form>
                 </div>
@@ -438,7 +438,7 @@ export default function TemplateClient() {
                 {/* Right Column: Live Site Preview */}
                 <div className="sticky top-24 hidden lg:block">
                     <div className="flex items-center justify-between mb-4">
-                        <label className="text-xs font-black text-gray-400 dark:text-neutral-600 uppercase tracking-widest">Live Site Preview</label>
+                        <label className="text-xs font-semibold text-gray-400 dark:text-neutral-600 uppercase tracking-widest">Live Site Preview</label>
                         <div className="flex gap-2">
                             <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
                             <div className="w-2.5 h-2.5 rounded-full bg-yellow-400" />

@@ -145,8 +145,8 @@ export default function VehiclesPage() {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Vehicles</h1>
-                    <p className="text-sm text-gray-500 mt-0.5">Vehicle profiles linked to service records.</p>
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">Vehicles</h1>
+                    <p className="text-sm text-gray-500 dark:text-neutral-500 mt-0.5">Vehicle profiles linked to service records.</p>
                 </div>
                 <button
                     onClick={openCreate}
@@ -159,28 +159,28 @@ export default function VehiclesPage() {
 
             {/* Search */}
             <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-neutral-500" />
                 <input
                     type="text"
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                     placeholder="Search by plate or make/model…"
-                    className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 focus:border-gray-400 focus:ring-0 text-sm"
+                    className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 text-sm"
                 />
             </div>
 
             {/* List */}
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+            <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden">
                 {loading ? (
-                    <div className="p-8 text-center text-sm text-gray-400">Loading…</div>
+                    <div className="p-8 text-center text-sm text-gray-400 dark:text-neutral-500">Loading…</div>
                 ) : filtered.length === 0 ? (
                     <div className="p-12 text-center">
-                        <Car className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-                        <p className="text-sm font-medium text-gray-500">
+                        <Car className="w-10 h-10 text-gray-300 dark:text-neutral-600 mx-auto mb-3" />
+                        <p className="text-sm font-medium text-gray-500 dark:text-neutral-400">
                             {search ? 'No vehicles match your search' : 'No vehicles yet'}
                         </p>
                         {!search && (
-                            <button onClick={openCreate} className="mt-4 text-sm text-brand-dark font-medium hover:underline">
+                            <button onClick={openCreate} className="mt-4 text-sm text-brand-dark dark:text-brand-green font-medium hover:underline">
                                 + Add first vehicle
                             </button>
                         )}
@@ -190,28 +190,28 @@ export default function VehiclesPage() {
                         {/* Desktop table */}
                         <div className="hidden md:block">
                             <table className="w-full text-sm">
-                                <thead className="bg-gray-50 border-b border-gray-100">
+                                <thead className="bg-gray-50 dark:bg-neutral-800 border-b border-gray-100 dark:border-neutral-700">
                                     <tr>
-                                        <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Plate</th>
-                                        <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Make / Model</th>
-                                        <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Type</th>
-                                        <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Color</th>
-                                        <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Owner</th>
+                                        <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-neutral-500 uppercase tracking-wide">Plate</th>
+                                        <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-neutral-500 uppercase tracking-wide">Make / Model</th>
+                                        <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-neutral-500 uppercase tracking-wide">Type</th>
+                                        <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-neutral-500 uppercase tracking-wide">Color</th>
+                                        <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-neutral-500 uppercase tracking-wide">Owner</th>
                                         <th className="px-4 py-3" />
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-50">
+                                <tbody className="divide-y divide-gray-50 dark:divide-neutral-800">
                                     {filtered.map(v => (
-                                        <tr key={v.id} className="hover:bg-gray-50 transition-colors">
-                                            <td className="px-4 py-3 font-mono font-semibold text-gray-900">{v.plateNumber}</td>
-                                            <td className="px-4 py-3 text-gray-700">{v.make ? `${v.make} ${v.model || ''}`.trim() : '—'}</td>
-                                            <td className="px-4 py-3 text-gray-500 text-xs">{v.type || '—'}</td>
-                                            <td className="px-4 py-3 text-gray-500">{v.color || '—'}</td>
-                                            <td className="px-4 py-3 text-gray-500 text-xs">{v.memberName || '—'}</td>
+                                        <tr key={v.id} className="hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors">
+                                            <td className="px-4 py-3 font-mono font-semibold text-gray-900 dark:text-neutral-100">{v.plateNumber}</td>
+                                            <td className="px-4 py-3 text-gray-700 dark:text-neutral-300">{v.make ? `${v.make} ${v.model || ''}`.trim() : '—'}</td>
+                                            <td className="px-4 py-3 text-gray-500 dark:text-neutral-500 text-xs">{v.type || '—'}</td>
+                                            <td className="px-4 py-3 text-gray-500 dark:text-neutral-500">{v.color || '—'}</td>
+                                            <td className="px-4 py-3 text-gray-500 dark:text-neutral-500 text-xs">{v.memberName || '—'}</td>
                                             <td className="px-4 py-3">
                                                 <button
                                                     onClick={() => openEdit(v)}
-                                                    className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
+                                                    className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-700 text-gray-500 dark:text-neutral-400"
                                                 >
                                                     <Edit2 className="w-3.5 h-3.5" />
                                                 </button>
@@ -222,15 +222,15 @@ export default function VehiclesPage() {
                             </table>
                         </div>
                         {/* Mobile cards */}
-                        <div className="md:hidden divide-y divide-gray-50">
+                        <div className="md:hidden divide-y divide-gray-50 dark:divide-neutral-800">
                             {filtered.map(v => (
                                 <div key={v.id} className="p-4 flex items-center justify-between">
                                     <div>
-                                        <p className="font-mono font-bold text-gray-900">{v.plateNumber}</p>
-                                        <p className="text-sm text-gray-500">{v.make ? `${v.make} ${v.model || ''}`.trim() : 'No make/model'}</p>
-                                        {v.color && <p className="text-xs text-gray-400">{v.color}</p>}
+                                        <p className="font-mono font-bold text-gray-900 dark:text-neutral-100">{v.plateNumber}</p>
+                                        <p className="text-sm text-gray-500 dark:text-neutral-400">{v.make ? `${v.make} ${v.model || ''}`.trim() : 'No make/model'}</p>
+                                        {v.color && <p className="text-xs text-gray-400 dark:text-neutral-500">{v.color}</p>}
                                     </div>
-                                    <button onClick={() => openEdit(v)} className="p-2 rounded-lg hover:bg-gray-100 text-gray-500">
+                                    <button onClick={() => openEdit(v)} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-700 text-gray-500 dark:text-neutral-400">
                                         <Edit2 className="w-4 h-4" />
                                     </button>
                                 </div>
@@ -243,15 +243,15 @@ export default function VehiclesPage() {
             {/* Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-2xl w-full max-w-md shadow-xl">
-                        <div className="p-6 border-b border-gray-100">
-                            <h2 className="text-lg font-semibold text-gray-900">
+                    <div className="bg-white dark:bg-neutral-900 rounded-2xl w-full max-w-md shadow-xl">
+                        <div className="p-6 border-b border-gray-100 dark:border-neutral-800">
+                            <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100">
                                 {editingVehicle ? 'Edit Vehicle' : 'Add Vehicle'}
                             </h2>
                         </div>
                         <form onSubmit={handleSave} className="p-6 space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Plate Number *</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Plate Number *</label>
                                 <input
                                     type="text"
                                     value={form.plateNumber || ''}
@@ -262,10 +262,10 @@ export default function VehiclesPage() {
                                     onBlur={() => handlePlateCheck(form.plateNumber || '')}
                                     placeholder="e.g. B1234XYZ"
                                     required
-                                    className="w-full font-mono rounded-xl border border-gray-200 focus:border-gray-400 focus:ring-0 px-3 py-2 text-sm"
+                                    className="w-full font-mono rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
                                 />
                                 {plateWarning && (
-                                    <div className="mt-1.5 flex items-start gap-1.5 text-xs text-amber-600">
+                                    <div className="mt-1.5 flex items-start gap-1.5 text-xs text-amber-600 dark:text-amber-400">
                                         <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
                                         {plateWarning}
                                     </div>
@@ -273,43 +273,43 @@ export default function VehiclesPage() {
                             </div>
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Make</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Make</label>
                                     <input
                                         type="text"
                                         value={form.make || ''}
                                         onChange={e => setForm(f => ({ ...f, make: e.target.value }))}
                                         placeholder="Toyota"
-                                        className="w-full rounded-xl border border-gray-200 focus:border-gray-400 focus:ring-0 px-3 py-2 text-sm"
+                                        className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Model</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Model</label>
                                     <input
                                         type="text"
                                         value={form.model || ''}
                                         onChange={e => setForm(f => ({ ...f, model: e.target.value }))}
                                         placeholder="Fortuner"
-                                        className="w-full rounded-xl border border-gray-200 focus:border-gray-400 focus:ring-0 px-3 py-2 text-sm"
+                                        className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
                                     />
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Color</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Color</label>
                                     <input
                                         type="text"
                                         value={form.color || ''}
                                         onChange={e => setForm(f => ({ ...f, color: e.target.value }))}
                                         placeholder="Silver"
-                                        className="w-full rounded-xl border border-gray-200 focus:border-gray-400 focus:ring-0 px-3 py-2 text-sm"
+                                        className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Type</label>
                                     <select
                                         value={form.type || 'OTHER'}
                                         onChange={e => setForm(f => ({ ...f, type: e.target.value as VehicleType }))}
-                                        className="w-full rounded-xl border border-gray-200 focus:border-gray-400 focus:ring-0 px-3 py-2 text-sm"
+                                        className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
                                     >
                                         {VEHICLE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                                     </select>
@@ -319,7 +319,7 @@ export default function VehiclesPage() {
                                 <button
                                     type="button"
                                     onClick={() => setIsModalOpen(false)}
-                                    className="px-4 py-2 rounded-xl text-sm font-medium border border-gray-200 text-gray-700 hover:bg-gray-50"
+                                    className="px-4 py-2 rounded-xl text-sm font-medium border border-gray-200 dark:border-neutral-700 text-gray-700 dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-neutral-800"
                                 >
                                     Cancel
                                 </button>

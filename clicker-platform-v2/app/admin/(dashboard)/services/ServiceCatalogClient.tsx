@@ -394,7 +394,7 @@ export default function ServiceCatalogClient({ initialItems = [] }: Props) {
         <div>
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
                 <div>
-                    <h1 className="text-3xl font-black text-brand-dark mb-1 uppercase">Services</h1>
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100 mb-1">Services</h1>
                     <p className="text-gray-600 dark:text-neutral-400 font-medium">Shared service catalog — used by Reservation and Service Records</p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -482,7 +482,7 @@ export default function ServiceCatalogClient({ initialItems = [] }: Props) {
                                             {item.category}
                                         </span>
                                     </td>
-                                    <td className="py-4 px-6 font-black text-brand-dark">
+                                    <td className="py-4 px-6 font-bold text-gray-900 dark:text-neutral-100">
                                         {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(item.price)}
                                     </td>
                                     <td className="py-4 px-6">

@@ -202,7 +202,7 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
     return (
         <div className="max-w-4xl">
             <div className="flex items-center justify-between mb-8">
-                <h1 className="text-3xl font-black text-brand-dark uppercase">Manage Products</h1>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">Manage Products</h1>
                 <div className="flex gap-2">
                     <button
                         onClick={handleCreate}

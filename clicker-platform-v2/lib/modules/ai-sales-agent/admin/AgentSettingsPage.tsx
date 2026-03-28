@@ -149,7 +149,7 @@ export default function AgentSettingsPage() {
             {activeTab === 'general' && (
                 <div className="space-y-6">
                     {/* Status Card */}
-                    <div className="bg-white dark:bg-neutral-900 rounded-2xl border-[3px] border-brand-dark p-6">
+                    <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 p-6">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <Power className="h-5 w-5 text-brand-dark" />
@@ -175,7 +175,7 @@ export default function AgentSettingsPage() {
 
                     <div className="grid gap-6 md:grid-cols-2">
                         {/* Identity Card */}
-                        <div className="bg-white dark:bg-neutral-900 rounded-2xl border-[3px] border-brand-dark p-6 space-y-4">
+                        <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 p-6 space-y-4">
                             <div className="flex items-center gap-2 mb-4">
                                 <Bot className="h-5 w-5 text-purple-600" />
                                 <h3 className="font-bold text-lg">Identity & Persona</h3>
@@ -221,7 +221,7 @@ export default function AgentSettingsPage() {
                         </div>
 
                         {/* Behavior Card */}
-                        <div className="bg-white dark:bg-neutral-900 rounded-2xl border-[3px] border-brand-dark p-6 space-y-4">
+                        <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 p-6 space-y-4">
                             <div className="flex items-center gap-2 mb-4">
                                 <MessageSquare className="h-5 w-5 text-blue-600" />
                                 <h3 className="font-bold text-lg">Interaction Settings</h3>
@@ -281,7 +281,7 @@ export default function AgentSettingsPage() {
                     </div>
 
                     {/* System Prompt */}
-                    <div className="bg-white dark:bg-neutral-900 rounded-2xl border-[3px] border-brand-dark p-6">
+                    <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 p-6">
                         <div className="flex items-center gap-2 mb-4">
                             <Sparkles className="h-5 w-5 text-amber-500" />
                             <h3 className="font-bold text-lg">System Prompt</h3>
@@ -303,7 +303,7 @@ export default function AgentSettingsPage() {
             )}
 
             {activeTab === 'knowledge' && (
-                <div className="bg-white dark:bg-neutral-900 rounded-2xl border-[3px] border-brand-dark p-6">
+                <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 p-6">
                     <div className="flex items-center gap-2 mb-4">
                         <Brain className="h-5 w-5 text-purple-600" />
                         <h3 className="font-bold text-lg">Knowledge Base</h3>

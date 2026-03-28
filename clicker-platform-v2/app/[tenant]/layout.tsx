@@ -1,6 +1,7 @@
 import React from 'react';
-import { ChatWidget } from '@/lib/modules/ai-sales-agent/components/ChatWidget';
 import { headers } from 'next/headers';
+import { fetchLightweightPublicData } from '@/lib/fetchData';
+import { ChatWidgetLoader } from '@/lib/modules/ai-sales-agent/components/ChatWidgetLoader';
 
 export default async function TenantLayout({
     children,
@@ -12,11 +13,12 @@ export default async function TenantLayout({
     // const { tenant } = await params;
     const headersList = await headers();
     const siteId = headersList.get('x-site-id');
+    const publicData = siteId ? await fetchLightweightPublicData(siteId) : null;
 
     return (
         <>
             {children}
-            {siteId && <ChatWidget siteId={siteId} />}
+            {siteId && <ChatWidgetLoader siteId={siteId} agentName={publicData?.profile?.name} />}
         </>
     );
 }

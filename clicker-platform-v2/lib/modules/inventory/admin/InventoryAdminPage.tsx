@@ -219,7 +219,7 @@ export default function InventoryPage() {
 
 
             {/* Inventory List Container */}
-            <div className="bg-white dark:bg-neutral-900 rounded-3xl border-[3px] border-brand-dark shadow-sm overflow-hidden flex flex-col min-h-[600px]">
+            <div className="bg-white dark:bg-neutral-900 rounded-3xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden flex flex-col min-h-[600px]">
                 {/* Search Header */}
                 <div className="p-4 border-b border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900">
                     <div className="relative max-w-md">

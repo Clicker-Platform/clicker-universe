@@ -71,7 +71,7 @@ export default function POSSettingsPage() {
 
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                 {/* Operation Mode */}
-                <div className="bg-white dark:bg-neutral-900 rounded-3xl border-[3px] border-brand-dark p-6 shadow-sm">
+                <div className="bg-white dark:bg-neutral-900 rounded-3xl border border-gray-200 dark:border-neutral-800 p-6 shadow-sm">
                     <div className="flex items-center gap-3 mb-6">
                         <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 border border-blue-200">
                             <LayoutTemplate size={20} />
@@ -119,7 +119,7 @@ export default function POSSettingsPage() {
                 </div>
 
                 {/* Table Management */}
-                <div className="bg-white dark:bg-neutral-900 rounded-3xl border-[3px] border-brand-dark p-6 shadow-sm">
+                <div className="bg-white dark:bg-neutral-900 rounded-3xl border border-gray-200 dark:border-neutral-800 p-6 shadow-sm">
                     <div className="flex items-center gap-3 mb-6">
                         <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 border border-purple-200">
                             <Hash size={20} />
@@ -145,7 +145,7 @@ export default function POSSettingsPage() {
                 </div>
 
                 {/* Payment Methods */}
-                <div className="col-span-1 xl:col-span-2 bg-white dark:bg-neutral-900 rounded-3xl border-[3px] border-brand-dark p-6 shadow-sm">
+                <div className="col-span-1 xl:col-span-2 bg-white dark:bg-neutral-900 rounded-3xl border border-gray-200 dark:border-neutral-800 p-6 shadow-sm">
                     <div className="flex items-center gap-3 mb-6">
                         <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-950/30 flex items-center justify-center text-green-600 dark:text-green-400 border border-green-200 dark:border-green-900/50">
                             <CreditCard size={20} />
@@ -208,7 +208,7 @@ export default function POSSettingsPage() {
                 </div>
 
                 {/* Tax & Service Charge */}
-                <div className="col-span-1 xl:col-span-2 bg-white dark:bg-neutral-900 rounded-3xl border-[3px] border-brand-dark p-6 shadow-sm">
+                <div className="col-span-1 xl:col-span-2 bg-white dark:bg-neutral-900 rounded-3xl border border-gray-200 dark:border-neutral-800 p-6 shadow-sm">
                     <div className="flex items-center gap-3 mb-6">
                         <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 border border-orange-200">
                             <span className="font-bold text-lg">%</span>

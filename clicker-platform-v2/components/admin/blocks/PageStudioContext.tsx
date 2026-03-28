@@ -99,6 +99,8 @@ interface PageStudioContextType {
     setHomepage: () => Promise<void>;
     unsetHomepage: () => Promise<void>;
     updateFooterText: (val: string) => Promise<void>;
+    refreshGlobalSettings: () => Promise<void>;
+    updateGlobalSettings: (partial: Record<string, any>) => void;
 
     // Trash
     trashedPages: TrashedPageListItem[];
@@ -730,6 +732,20 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
         }
     }, [siteId]);
 
+    const refreshGlobalSettings = useCallback(async () => {
+        if (!siteId) return;
+        try {
+            const settings = await fetchLightweightPublicData(siteId);
+            setGlobalSettings(settings);
+        } catch (err) {
+            console.error('Error refreshing global settings:', err);
+        }
+    }, [siteId]);
+
+    const updateGlobalSettings = useCallback((partial: Record<string, any>) => {
+        setGlobalSettings((prev: any) => prev ? { ...prev, ...partial } : partial);
+    }, []);
+
     const updateFooterText = useCallback(async (val: string) => {
         if (!siteId) return;
         try {
@@ -776,6 +792,8 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
             setHomepage,
             unsetHomepage,
             updateFooterText,
+            refreshGlobalSettings,
+            updateGlobalSettings,
             trashedPages,
             trashedPagesLoading,
             trashPage,
