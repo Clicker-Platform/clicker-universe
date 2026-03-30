@@ -80,7 +80,7 @@ export function FormBuilderClient({ initialForm }: FormBuilderClientProps) {
                         <ArrowLeft size={24} />
                     </button>
                     <div>
-                        <h1 className="text-3xl font-black text-brand-dark uppercase tracking-tight">
+                        <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">
                             {initialForm ? 'Edit Form' : 'Create Form'}
                         </h1>
                     </div>
@@ -100,7 +100,7 @@ export function FormBuilderClient({ initialForm }: FormBuilderClientProps) {
                 <div className="lg:col-span-2 space-y-8">
                     {/* General Settings */}
                     <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm">
-                        <h2 className="text-xl font-black text-brand-dark mb-4 flex items-center gap-2">
+                        <h2 className="text-lg font-semibold text-gray-800 dark:text-neutral-200 mb-4 flex items-center gap-2">
                             <Settings size={20} /> General Settings
                         </h2>
                         <div className="space-y-4">
@@ -149,7 +149,7 @@ export function FormBuilderClient({ initialForm }: FormBuilderClientProps) {
                     {/* Fields Editor */}
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
-                            <h2 className="text-xl font-black text-brand-dark">Form Fields</h2>
+                            <h2 className="text-lg font-semibold text-gray-800 dark:text-neutral-200">Form Fields</h2>
                             <button
                                 onClick={addField}
                                 className="inline-flex items-center gap-2 bg-gray-100 dark:bg-neutral-800 text-brand-dark px-4 py-2 rounded-xl font-bold hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors"
@@ -239,7 +239,7 @@ export function FormBuilderClient({ initialForm }: FormBuilderClientProps) {
                 {/* Right Column: Preview */}
                 <div className="lg:col-span-1">
                     <div className="sticky top-8">
-                        <h2 className="text-sm font-black text-gray-400 dark:text-neutral-600 uppercase tracking-widest mb-4 text-center">Live Preview</h2>
+                        <h2 className="text-xs font-semibold text-gray-400 dark:text-neutral-600 uppercase tracking-widest mb-4 text-center">Live Preview</h2>
                         <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm min-h-[400px] flex flex-col relative overflow-hidden">
                             {/* Decorative Header */}
                             <div className="absolute top-0 inset-x-0 h-2 bg-brand-green"></div>

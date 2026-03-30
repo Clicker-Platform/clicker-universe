@@ -239,7 +239,7 @@ export default function TeamPage() {
 
             <div className="flex justify-between items-center mb-8">
                 <div>
-                    <h1 className="text-3xl font-black text-brand-dark">Team Management</h1>
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">Team Management</h1>
                     <p className="text-gray-500 dark:text-neutral-500">Manage access to your store dashboard.</p>
                 </div>
                 <button
@@ -324,7 +324,7 @@ export default function TeamPage() {
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
                     <div className="bg-white dark:bg-neutral-900 rounded-2xl w-full max-w-3xl p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
                         <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-2xl font-black text-brand-dark">
+                            <h2 className="text-xl font-bold text-gray-900 dark:text-neutral-100">
                                 {editingMember ? 'Edit Member' : 'Add New Member'}
                             </h2>
                             <button onClick={() => setIsMemberModalOpen(false)} className="text-gray-400 dark:text-neutral-600 hover:text-gray-600 dark:hover:text-neutral-400">

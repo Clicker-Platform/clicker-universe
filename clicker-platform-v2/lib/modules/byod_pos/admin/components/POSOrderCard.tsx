@@ -87,7 +87,7 @@ export function POSOrderCard({ order, onUpdateStatus, onCancel, onProcessPayment
     const cardContent = (
         <div className={`overflow-hidden ${minimal
             ? 'bg-transparent border-0 rounded-none shadow-none'
-            : `bg-white dark:bg-neutral-900 rounded-3xl shadow-sm border-[3px] ${order.status === 'pending' ? 'border-brand-dark ring-0' : 'border-brand-dark'}`
+            : `bg-white dark:bg-neutral-900 rounded-3xl shadow-sm border ${order.status === 'pending' ? 'border-gray-200 dark:border-neutral-800 ring-0' : 'border-gray-200 dark:border-neutral-800'}`
             }`}>
             {/* Header */}
             <div

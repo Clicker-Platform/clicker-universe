@@ -1,10 +1,13 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Shield, CheckCircle, XCircle, Clock, QrCode } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 import type { SerializedWarrantyCard } from '../types';
 
 interface Props {
     card: SerializedWarrantyCard;
+    warrantyUrl: string;
 }
 
 function StatusBanner({ status }: { status: string }) {
@@ -64,7 +67,10 @@ function DaysRemaining({ expiryDate }: { expiryDate: string }) {
     return <span className="text-green-600">{diffDays} days remaining</span>;
 }
 
-export default function WarrantyCardView({ card }: Props) {
+export default function WarrantyCardView({ card, warrantyUrl }: Props) {
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => { setMounted(true); }, []);
+
     return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
             <div className="w-full max-w-md">
@@ -167,11 +173,18 @@ export default function WarrantyCardView({ card }: Props) {
                             </div>
                         </div>
 
-                        {/* QR Placeholder */}
-                        {/* TODO: Replace with actual QR code component (react-qr-code or qrcode.react) */}
+                        {/* QR Code — client-only to avoid hydration mismatch */}
                         <div className="flex flex-col items-center gap-2 py-2">
-                            <div className="w-28 h-28 bg-gray-100 rounded-xl flex items-center justify-center border border-gray-200">
-                                <QrCode className="w-16 h-16 text-gray-400" />
+                            <div className="bg-white rounded-xl p-3 border border-gray-200 w-[136px] h-[136px] flex items-center justify-center">
+                                {mounted ? (
+                                    <QRCodeSVG
+                                        value={warrantyUrl}
+                                        size={112}
+                                        level="M"
+                                    />
+                                ) : (
+                                    <QrCode className="w-16 h-16 text-gray-300" />
+                                )}
                             </div>
                             <p className="text-xs text-gray-400">Scan to verify warranty</p>
                         </div>

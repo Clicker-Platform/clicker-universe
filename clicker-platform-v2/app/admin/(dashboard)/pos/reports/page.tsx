@@ -228,8 +228,8 @@ export default function POSReportsPage() {
             {/* Page Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 md:mb-8 print:hidden">
                 <div>
-                    <h1 className="text-2xl md:text-3xl font-black text-brand-dark dark:text-brand-dark uppercase flex items-center gap-3">
-                        <BarChart3 size={32} className="hidden md:block" /> POS Reports
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100 flex items-center gap-3">
+                        <BarChart3 size={28} className="hidden md:block" /> POS Reports
                     </h1>
                     <p className="text-gray-600 dark:text-neutral-400 font-medium text-sm md:text-base">View your sales performance and analytics</p>
                 </div>

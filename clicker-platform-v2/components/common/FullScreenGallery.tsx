@@ -122,10 +122,14 @@ export const FullScreenGallery = ({ isOpen, images, initialIndex = 0, onClose }:
                                 : 'opacity-50 hover:opacity-80'
                                 }`}
                         >
-                            <img
+                            <Image
                                 src={img}
                                 alt={`Thumbnail ${idx + 1}`}
-                                className="w-full h-full object-cover"
+                                fill
+                                sizes="80px"
+                                quality={40}
+                                className="object-cover"
+                                loading="lazy"
                             />
                         </button>
                     ))}

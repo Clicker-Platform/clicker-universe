@@ -192,7 +192,7 @@ export default function StaffClient({ initialStaff }: StaffClientProps) {
 
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
                 <div>
-                    <h1 className="text-3xl font-black text-brand-dark mb-2 uppercase">{settings.staffLabel || 'Staff'} / Resources</h1>
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100 mb-2">{settings.staffLabel || 'Staff'} / Resources</h1>
                     <p className="text-gray-600 dark:text-neutral-400 font-medium">Manage available staff, rooms, or equipment.</p>
                 </div>
                 <button

@@ -1,4 +1,4 @@
-import { fetchPublicData, fetchPageBySlug } from "@/lib/fetchData";
+import { fetchPublicData, fetchPageBySlug, hydratePageBlocks } from "@/lib/fetchData";
 import { headers } from "next/headers";
 import { findModuleForRoute } from '@/lib/modules/registry';
 import { ModuleLoader } from '@/components/modules/ModuleLoader';
@@ -56,6 +56,9 @@ export default async function TenantPage({ params, searchParams }: TenantPagePro
     const blocksToRender = (homePage && homePage.blocks && homePage.blocks.length > 0)
         ? homePage.blocks
         : generateSystemBlocks(homeBlockOrder || [], hiddenBlockIds || []);
+
+    // Hydrate block-specific data (reservation services, etc.) in parallel
+    const hydratedData = await hydratePageBlocks(siteId, blocksToRender);
 
     const {
         profile,
@@ -140,6 +143,9 @@ export default async function TenantPage({ params, searchParams }: TenantPagePro
                                 linkSettings={publicData.linkSettings}
                                 productSettings={productSettings}
                                 profile={profile}
+                                reservationServices={hydratedData.reservationServices}
+                                reservationStaff={hydratedData.reservationStaff}
+                                reservationSettings={hydratedData.reservationSettings}
                             />
                         </div>
                     ))}

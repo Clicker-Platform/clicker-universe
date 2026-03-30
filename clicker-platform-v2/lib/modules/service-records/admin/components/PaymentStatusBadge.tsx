@@ -3,9 +3,9 @@
 import type { PaymentStatus } from '../../types';
 
 const PAYMENT_CONFIG: Record<PaymentStatus, { label: string; className: string }> = {
-    UNPAID:  { label: 'Unpaid',   className: 'bg-red-100 text-red-600' },
-    PARTIAL: { label: 'Partial',  className: 'bg-yellow-100 text-yellow-700' },
-    PAID:    { label: 'Paid',     className: 'bg-green-100 text-green-700' },
+    UNPAID:  { label: 'Unpaid',   className: 'bg-red-100 text-red-600 dark:bg-red-950/40 dark:text-red-400' },
+    PARTIAL: { label: 'Partial',  className: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-950/40 dark:text-yellow-400' },
+    PAID:    { label: 'Paid',     className: 'bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-400' },
 };
 
 interface Props {
@@ -14,7 +14,7 @@ interface Props {
 }
 
 export function PaymentStatusBadge({ status, size = 'md' }: Props) {
-    const cfg = PAYMENT_CONFIG[status] ?? { label: status, className: 'bg-gray-100 text-gray-600' };
+    const cfg = PAYMENT_CONFIG[status] ?? { label: status, className: 'bg-gray-100 text-gray-600 dark:bg-neutral-800 dark:text-neutral-400' };
     const sizeClass = size === 'sm' ? 'text-xs px-2 py-0.5' : 'text-xs px-2.5 py-1';
     return (
         <span className={`inline-flex items-center rounded-full font-medium ${sizeClass} ${cfg.className}`}>

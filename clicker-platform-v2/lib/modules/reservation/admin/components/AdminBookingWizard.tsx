@@ -267,7 +267,7 @@ export default function AdminBookingWizard({
                 <div className="w-16 h-16 bg-green-100 dark:bg-green-950/30 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Check size={32} strokeWidth={3} />
                 </div>
-                <h2 className="text-2xl font-black text-brand-dark mb-2">Booking Confirmed!</h2>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-neutral-100 mb-2">Booking Confirmed!</h2>
                 <div className="bg-white dark:bg-neutral-900 p-4 rounded-xl border border-dashed border-green-200 inline-block text-left text-sm text-gray-500 dark:text-neutral-500 mb-6">
                     <p>Reference: <span className="font-mono text-brand-dark">{bookingRef}</span></p>
                     <p>Date: <span className="font-bold text-brand-dark">{date.toLocaleDateString()} at {selectedTime}</span></p>
@@ -299,7 +299,7 @@ export default function AdminBookingWizard({
                     </span>
                     <div className="w-16"></div>
                 </div>
-                <h2 className="text-xl font-black text-center text-brand-dark">
+                <h2 className="text-lg font-bold text-center text-gray-900 dark:text-neutral-100">
                     {step === 1 && "Select Service"}
                     {step === 2 && "Select Staff"}
                     {step === 3 && "Select Time"}
@@ -387,7 +387,7 @@ export default function AdminBookingWizard({
                             </button>
                             <div className="text-center">
                                 <p className="text-xs font-bold text-gray-400 dark:text-neutral-500 uppercase">{date.toLocaleDateString(undefined, { weekday: 'long' })}</p>
-                                <p className="font-black text-brand-dark">{date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</p>
+                                <p className="font-semibold text-gray-900 dark:text-neutral-100">{date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</p>
                             </div>
                             <button onClick={() => handleDateChange(1)} className="p-2 hover:bg-white dark:hover:bg-neutral-700 rounded-lg transition-colors">
                                 <ChevronRight size={20} />

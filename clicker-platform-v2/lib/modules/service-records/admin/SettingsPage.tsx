@@ -77,8 +77,8 @@ export default function SettingsPage() {
         return (
             <div className="p-6">
                 <div className="animate-pulse space-y-4">
-                    <div className="h-8 bg-gray-200 rounded w-48" />
-                    <div className="h-40 bg-gray-200 rounded-2xl" />
+                    <div className="h-8 bg-gray-200 dark:bg-neutral-700 rounded w-48" />
+                    <div className="h-40 bg-gray-200 dark:bg-neutral-700 rounded-2xl" />
                 </div>
             </div>
         );
@@ -95,16 +95,16 @@ export default function SettingsPage() {
             )}
 
             <div>
-                <h1 className="text-2xl font-bold text-gray-900">Service Records Settings</h1>
-                <p className="text-sm text-gray-500 mt-1">Configure module-wide settings for this outlet.</p>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">Service Records Settings</h1>
+                <p className="text-sm text-gray-500 dark:text-neutral-500 mt-1">Configure module-wide settings for this outlet.</p>
             </div>
 
             {/* Warranty Card Settings */}
-            <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-5">
-                <h2 className="text-base font-semibold text-gray-800">Warranty Card</h2>
+            <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm space-y-5">
+                <h2 className="text-base font-semibold text-gray-800 dark:text-neutral-200">Warranty Card</h2>
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">
                         Warranty Code Prefix
                     </label>
                     <div className="flex items-center gap-3">
@@ -115,26 +115,26 @@ export default function SettingsPage() {
                             disabled={!isOwner}
                             maxLength={5}
                             placeholder="SVC"
-                            className="w-32 rounded-xl border border-gray-200 focus:border-gray-400 focus:ring-0 px-3 py-2 text-sm disabled:bg-gray-50 disabled:text-gray-400"
+                            className="w-32 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm disabled:bg-gray-50 dark:disabled:bg-neutral-800 disabled:text-gray-400 dark:disabled:text-neutral-500"
                         />
-                        <div className="text-sm text-gray-500">
-                            Preview: <span className="font-mono font-semibold text-gray-800">{previewCode}</span>
+                        <div className="text-sm text-gray-500 dark:text-neutral-500">
+                            Preview: <span className="font-mono font-semibold text-gray-800 dark:text-neutral-200">{previewCode}</span>
                         </div>
                     </div>
-                    <p className="text-xs text-gray-400 mt-1">1–5 uppercase alphanumeric characters. Used in all warranty codes for this outlet.</p>
+                    <p className="text-xs text-gray-400 dark:text-neutral-500 mt-1">1–5 uppercase alphanumeric characters. Used in all warranty codes for this outlet.</p>
                 </div>
 
-                <div className="flex items-center justify-between py-3 border-t border-gray-100">
+                <div className="flex items-center justify-between py-3 border-t border-gray-100 dark:border-neutral-800">
                     <div>
-                        <p className="text-sm font-medium text-gray-700">Enable Warranty Cards</p>
-                        <p className="text-xs text-gray-400">When disabled, warranty card UI is hidden for all service types.</p>
+                        <p className="text-sm font-medium text-gray-700 dark:text-neutral-300">Enable Warranty Cards</p>
+                        <p className="text-xs text-gray-400 dark:text-neutral-500">When disabled, warranty card UI is hidden for all service types.</p>
                     </div>
                     <button
                         type="button"
                         onClick={() => isOwner && setWarrantyCardsEnabled(v => !v)}
                         disabled={!isOwner}
                         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none disabled:opacity-50 ${
-                            warrantyCardsEnabled ? 'bg-green-500' : 'bg-gray-200'
+                            warrantyCardsEnabled ? 'bg-green-500' : 'bg-gray-200 dark:bg-neutral-700'
                         }`}
                     >
                         <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
@@ -145,11 +145,11 @@ export default function SettingsPage() {
             </div>
 
             {/* Reminder Engine */}
-            <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+            <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm">
                 <div className="flex items-center justify-between">
                     <div>
-                        <p className="text-sm font-semibold text-gray-800">Reminder Engine</p>
-                        <p className="text-xs text-gray-400 mt-0.5">
+                        <p className="text-sm font-semibold text-gray-800 dark:text-neutral-200">Reminder Engine</p>
+                        <p className="text-xs text-gray-400 dark:text-neutral-500 mt-0.5">
                             Enable to write reminder queue entries on record completion. Requires Cloud Functions to be deployed for actual dispatch.
                         </p>
                     </div>
@@ -158,7 +158,7 @@ export default function SettingsPage() {
                         onClick={() => isOwner && setReminderEngineEnabled(v => !v)}
                         disabled={!isOwner}
                         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none disabled:opacity-50 ${
-                            reminderEngineEnabled ? 'bg-green-500' : 'bg-gray-200'
+                            reminderEngineEnabled ? 'bg-green-500' : 'bg-gray-200 dark:bg-neutral-700'
                         }`}
                     >
                         <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
@@ -169,8 +169,8 @@ export default function SettingsPage() {
             </div>
 
             {/* Module Info */}
-            <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                <p className="text-xs text-gray-500">
+            <div className="bg-gray-50 dark:bg-neutral-800 p-4 rounded-xl border border-gray-100 dark:border-neutral-700">
+                <p className="text-xs text-gray-500 dark:text-neutral-500">
                     <span className="font-medium">Module:</span> service_records v1.0.0
                     {' · '}
                     <span className="font-medium">Outlet ID:</span> {siteId}
@@ -189,7 +189,7 @@ export default function SettingsPage() {
                 </div>
             )}
             {!isOwner && (
-                <p className="text-xs text-gray-400">Only owners can modify settings.</p>
+                <p className="text-xs text-gray-400 dark:text-neutral-500">Only owners can modify settings.</p>
             )}
         </div>
     );

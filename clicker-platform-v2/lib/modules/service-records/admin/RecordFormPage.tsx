@@ -112,6 +112,14 @@ function RecordFormContent() {
                 if (record) {
                     setPlateInput(record.vehiclePlate);
                     setVehicleLookupDone(true);
+                    // Hydrate vehicle so vehicleId is available on save
+                    const existingVehicle = await findVehicleByPlate(siteId, record.vehiclePlate);
+                    if (existingVehicle) {
+                        setFoundVehicle(existingVehicle);
+                    } else {
+                        // Vehicle may have been deleted — use a stub so vehicleId is preserved
+                        setFoundVehicle({ id: record.vehicleId, plateNumber: record.vehiclePlate } as Vehicle);
+                    }
                     if (record.memberId) {
                         setSelectedMemberId(record.memberId);
                         setSelectedMemberName(record.memberName || '');
@@ -272,9 +280,9 @@ function RecordFormContent() {
         return (
             <div className="p-6">
                 <div className="animate-pulse space-y-4 max-w-2xl">
-                    <div className="h-8 bg-gray-200 rounded w-48" />
-                    <div className="h-48 bg-gray-200 rounded-2xl" />
-                    <div className="h-48 bg-gray-200 rounded-2xl" />
+                    <div className="h-8 bg-gray-200 dark:bg-neutral-700 rounded w-48" />
+                    <div className="h-48 bg-gray-200 dark:bg-neutral-700 rounded-2xl" />
+                    <div className="h-48 bg-gray-200 dark:bg-neutral-700 rounded-2xl" />
                 </div>
             </div>
         );
@@ -294,21 +302,21 @@ function RecordFormContent() {
             <div className="flex items-center gap-3">
                 <button
                     onClick={() => router.back()}
-                    className="p-2 rounded-xl hover:bg-gray-100 text-gray-500"
+                    className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-neutral-800 text-gray-500 dark:text-neutral-400"
                 >
                     <ChevronLeft className="w-5 h-5" />
                 </button>
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">
                         {isEditMode ? 'Edit Record' : 'New Service Record'}
                     </h1>
-                    <p className="text-sm text-gray-500 mt-0.5">Fill in vehicle, customer, and service details.</p>
+                    <p className="text-sm text-gray-500 dark:text-neutral-500 mt-0.5">Fill in vehicle, customer, and service details.</p>
                 </div>
             </div>
 
             {/* Section 1: Vehicle */}
-            <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
-                <h2 className="text-base font-semibold text-gray-800">Vehicle</h2>
+            <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm space-y-4">
+                <h2 className="text-base font-semibold text-gray-800 dark:text-neutral-200">Vehicle</h2>
                 <div className="flex gap-2">
                     <input
                         type="text"
@@ -320,12 +328,12 @@ function RecordFormContent() {
                             setShowNewVehicleFields(false);
                         }}
                         placeholder="Enter plate number"
-                        className="flex-1 font-mono rounded-xl border border-gray-200 focus:border-gray-400 focus:ring-0 px-3 py-2 text-sm"
+                        className="flex-1 font-mono rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
                     />
                     <button
                         type="button"
                         onClick={handlePlateSearch}
-                        className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium hover:bg-gray-50"
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 text-sm font-medium hover:bg-gray-50 dark:hover:bg-neutral-800 dark:text-neutral-200"
                     >
                         <Search className="w-4 h-4" />
                         Look up
@@ -333,9 +341,9 @@ function RecordFormContent() {
                 </div>
 
                 {vehicleLookupDone && foundVehicle && (
-                    <div className="bg-green-50 border border-green-100 rounded-xl p-3 text-sm">
-                        <p className="font-semibold text-green-700">Vehicle found</p>
-                        <p className="text-green-600">
+                    <div className="bg-green-50 dark:bg-green-950/30 border border-green-100 dark:border-green-900/50 rounded-xl p-3 text-sm">
+                        <p className="font-semibold text-green-700 dark:text-green-400">Vehicle found</p>
+                        <p className="text-green-600 dark:text-green-500">
                             {foundVehicle.make ? `${foundVehicle.make} ${foundVehicle.model || ''}`.trim() : 'No make/model'}
                             {foundVehicle.color && ` · ${foundVehicle.color}`}
                             {foundVehicle.type && ` · ${foundVehicle.type}`}
@@ -344,12 +352,12 @@ function RecordFormContent() {
                 )}
 
                 {vehicleLookupDone && !foundVehicle && showNewVehicleFields && (
-                    <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 space-y-3">
-                        <p className="text-sm font-medium text-blue-700">
+                    <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50 rounded-xl p-4 space-y-3">
+                        <p className="text-sm font-medium text-blue-700 dark:text-blue-400">
                             No vehicle found for {plateInput}. Enter details to create a new vehicle profile.
                         </p>
                         {plateWarning && (
-                            <div className="flex items-start gap-1.5 text-xs text-amber-600">
+                            <div className="flex items-start gap-1.5 text-xs text-amber-600 dark:text-amber-400">
                                 <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
                                 {plateWarning}
                             </div>
@@ -360,26 +368,26 @@ function RecordFormContent() {
                                 value={vehicleForm.make}
                                 onChange={e => setVehicleForm(f => ({ ...f, make: e.target.value }))}
                                 placeholder="Make (Toyota)"
-                                className="rounded-xl border border-gray-200 focus:border-gray-400 focus:ring-0 px-3 py-2 text-sm"
+                                className="rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
                             />
                             <input
                                 type="text"
                                 value={vehicleForm.model}
                                 onChange={e => setVehicleForm(f => ({ ...f, model: e.target.value }))}
                                 placeholder="Model (Fortuner)"
-                                className="rounded-xl border border-gray-200 focus:border-gray-400 focus:ring-0 px-3 py-2 text-sm"
+                                className="rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
                             />
                             <input
                                 type="text"
                                 value={vehicleForm.color}
                                 onChange={e => setVehicleForm(f => ({ ...f, color: e.target.value }))}
                                 placeholder="Color"
-                                className="rounded-xl border border-gray-200 focus:border-gray-400 focus:ring-0 px-3 py-2 text-sm"
+                                className="rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
                             />
                             <select
                                 value={vehicleForm.type}
                                 onChange={e => setVehicleForm(f => ({ ...f, type: e.target.value }))}
-                                className="rounded-xl border border-gray-200 focus:border-gray-400 focus:ring-0 px-3 py-2 text-sm"
+                                className="rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
                             >
                                 {['SEDAN','SUV','MPV','HATCHBACK','PICKUP','MOTORCYCLE','OTHER'].map(t => (
                                     <option key={t} value={t}>{t}</option>
@@ -391,50 +399,50 @@ function RecordFormContent() {
             </div>
 
             {/* Section 2: Customer */}
-            <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
-                <h2 className="text-base font-semibold text-gray-800">Customer</h2>
+            <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm space-y-4">
+                <h2 className="text-base font-semibold text-gray-800 dark:text-neutral-200">Customer</h2>
                 {membershipEnabled ? (
                     <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">Search Member</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300">Search Member</label>
                         <div className="relative">
                             <input
                                 type="text"
                                 value={memberSearch}
                                 onChange={e => handleMemberSearch(e.target.value)}
                                 placeholder="Type name or phone (min 3 chars)…"
-                                className="w-full rounded-xl border border-gray-200 focus:border-gray-400 focus:ring-0 px-3 py-2 text-sm"
+                                className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
                             />
                             {memberResults.length > 0 && (
-                                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-10 max-h-48 overflow-y-auto">
+                                <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-xl shadow-lg z-10 max-h-48 overflow-y-auto">
                                     {memberResults.map(m => (
                                         <button
                                             key={m.memberId}
                                             type="button"
                                             onClick={() => selectMember(m)}
-                                            className="w-full px-4 py-2.5 text-left hover:bg-gray-50 text-sm"
+                                            className="w-full px-4 py-2.5 text-left hover:bg-gray-50 dark:hover:bg-neutral-700 text-sm"
                                         >
-                                            <p className="font-medium text-gray-900">{m.fullName}</p>
-                                            <p className="text-xs text-gray-500">{m.phone}</p>
+                                            <p className="font-medium text-gray-900 dark:text-neutral-100">{m.fullName}</p>
+                                            <p className="text-xs text-gray-500 dark:text-neutral-500">{m.phone}</p>
                                         </button>
                                     ))}
                                 </div>
                             )}
                         </div>
                         {selectedMemberId && (
-                            <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 text-sm">
-                                <p className="font-semibold text-blue-700">{selectedMemberName}</p>
-                                <p className="text-blue-500 text-xs">{selectedMemberPhone} · Member ID: {selectedMemberId.slice(0, 8)}…</p>
+                            <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50 rounded-xl p-3 text-sm">
+                                <p className="font-semibold text-blue-700 dark:text-blue-400">{selectedMemberName}</p>
+                                <p className="text-blue-500 dark:text-blue-400/70 text-xs">{selectedMemberPhone} · Member ID: {selectedMemberId.slice(0, 8)}…</p>
                                 <button
                                     type="button"
                                     onClick={() => { setSelectedMemberId(null); setSelectedMemberName(''); setSelectedMemberPhone(''); setMemberSearch(''); }}
-                                    className="text-xs text-blue-600 hover:underline mt-1"
+                                    className="text-xs text-blue-600 dark:text-blue-400 hover:underline mt-1"
                                 >
                                     Clear member
                                 </button>
                             </div>
                         )}
                         {!selectedMemberId && (
-                            <p className="text-xs text-gray-400">No member selected — record will be treated as walk-in.</p>
+                            <p className="text-xs text-gray-400 dark:text-neutral-500">No member selected — record will be treated as walk-in.</p>
                         )}
                     </div>
                 ) : null}
@@ -443,38 +451,38 @@ function RecordFormContent() {
                 {!selectedMemberId && (
                     <div className="space-y-3">
                         {membershipEnabled && (
-                            <p className="text-xs text-gray-500 font-medium">Walk-in customer info (optional):</p>
+                            <p className="text-xs text-gray-500 dark:text-neutral-500 font-medium">Walk-in customer info (optional):</p>
                         )}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div>
-                                <label className="block text-xs font-medium text-gray-600 mb-1">Name</label>
+                                <label className="block text-xs font-medium text-gray-600 dark:text-neutral-400 mb-1">Name</label>
                                 <input
                                     type="text"
                                     value={customerName}
                                     onChange={e => setCustomerName(e.target.value)}
                                     placeholder="Customer name"
-                                    className="w-full rounded-xl border border-gray-200 focus:border-gray-400 focus:ring-0 px-3 py-2 text-sm"
+                                    className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-gray-600 mb-1">Phone</label>
+                                <label className="block text-xs font-medium text-gray-600 dark:text-neutral-400 mb-1">Phone</label>
                                 <input
                                     type="tel"
                                     value={customerPhone}
                                     onChange={e => setCustomerPhone(e.target.value)}
                                     placeholder="08xx-xxxx-xxxx"
-                                    className="w-full rounded-xl border border-gray-200 focus:border-gray-400 focus:ring-0 px-3 py-2 text-sm"
+                                    className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
                                 />
                             </div>
                         </div>
                         <div>
-                            <label className="block text-xs font-medium text-gray-600 mb-1">Email</label>
+                            <label className="block text-xs font-medium text-gray-600 dark:text-neutral-400 mb-1">Email</label>
                             <input
                                 type="email"
                                 value={customerEmail}
                                 onChange={e => setCustomerEmail(e.target.value)}
                                 placeholder="customer@email.com"
-                                className="w-full rounded-xl border border-gray-200 focus:border-gray-400 focus:ring-0 px-3 py-2 text-sm"
+                                className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
                             />
                         </div>
                     </div>
@@ -482,14 +490,14 @@ function RecordFormContent() {
             </div>
 
             {/* Section 3: Service */}
-            <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
-                <h2 className="text-base font-semibold text-gray-800">Service Details</h2>
+            <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm space-y-4">
+                <h2 className="text-base font-semibold text-gray-800 dark:text-neutral-200">Service Details</h2>
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Service Type *</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Service Type *</label>
                     <select
                         value={selectedServiceType?.id || ''}
                         onChange={e => handleServiceTypeSelect(e.target.value)}
-                        className="w-full rounded-xl border border-gray-200 focus:border-gray-400 focus:ring-0 px-3 py-2 text-sm"
+                        className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
                     >
                         <option value="">Select service type…</option>
                         {serviceTypes.map(t => (
@@ -497,7 +505,7 @@ function RecordFormContent() {
                         ))}
                     </select>
                     {selectedServiceType?.hasWarranty && (
-                        <p className="text-xs text-green-600 mt-1">
+                        <p className="text-xs text-green-600 dark:text-green-400 mt-1">
                             ✓ This service type issues a warranty card on completion.
                         </p>
                     )}
@@ -505,20 +513,20 @@ function RecordFormContent() {
 
                 {selectedServiceType?.hasWarranty && (
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Warranty Duration (months)</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Warranty Duration (months)</label>
                         <input
                             type="number"
                             min={1}
                             max={120}
                             value={warrantyMonths}
                             onChange={e => setWarrantyMonths(parseInt(e.target.value) || 12)}
-                            className="w-32 rounded-xl border border-gray-200 focus:border-gray-400 focus:ring-0 px-3 py-2 text-sm"
+                            className="w-32 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
                         />
                     </div>
                 )}
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Product Used</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Product Used</label>
                     {inventoryEnabled && inventoryItems.length > 0 ? (
                         <div className="space-y-1.5">
                             <select
@@ -529,7 +537,7 @@ function RecordFormContent() {
                                     const item = inventoryItems.find(i => i.id === id);
                                     setProductUsed(item ? item.name : '');
                                 }}
-                                className="w-full rounded-xl border border-gray-200 focus:border-gray-400 focus:ring-0 px-3 py-2 text-sm"
+                                className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
                             >
                                 <option value="">— Select from inventory —</option>
                                 {inventoryItems.map(item => (
@@ -539,7 +547,7 @@ function RecordFormContent() {
                                 ))}
                             </select>
                             {inventoryItemId && (
-                                <p className="text-xs text-green-700">
+                                <p className="text-xs text-green-700 dark:text-green-400">
                                     1 unit will be deducted from inventory on approval.
                                 </p>
                             )}
@@ -549,7 +557,7 @@ function RecordFormContent() {
                                     value={productUsed}
                                     onChange={e => setProductUsed(e.target.value)}
                                     placeholder="Or type a free-text product name…"
-                                    className="w-full rounded-xl border border-gray-200 focus:border-gray-400 focus:ring-0 px-3 py-2 text-sm"
+                                    className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
                                 />
                             )}
                         </div>
@@ -559,40 +567,40 @@ function RecordFormContent() {
                             value={productUsed}
                             onChange={e => setProductUsed(e.target.value)}
                             placeholder="e.g. Ceramic Pro Gold 9H"
-                            className="w-full rounded-xl border border-gray-200 focus:border-gray-400 focus:ring-0 px-3 py-2 text-sm"
+                            className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
                         />
                     )}
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Notes</label>
                     <textarea
                         value={notes}
                         onChange={e => setNotes(e.target.value)}
                         rows={3}
                         placeholder="Internal notes…"
-                        className="w-full rounded-xl border border-gray-200 focus:border-gray-400 focus:ring-0 px-3 py-2 text-sm resize-none"
+                        className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm resize-none"
                     />
                 </div>
             </div>
 
             {/* Section 4: Payment */}
-            <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
-                <h2 className="text-base font-semibold text-gray-800">Payment</h2>
+            <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm space-y-4">
+                <h2 className="text-base font-semibold text-gray-800 dark:text-neutral-200">Payment</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Total Amount (Rp) *</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Total Amount (Rp) *</label>
                         <input
                             type="number"
                             min={0}
                             value={totalAmount || ''}
                             onChange={e => setTotalAmount(parseFloat(e.target.value) || 0)}
                             placeholder="0"
-                            className="w-full rounded-xl border border-gray-200 focus:border-gray-400 focus:ring-0 px-3 py-2 text-sm"
+                            className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Amount Paid (Rp)</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Amount Paid (Rp)</label>
                         <input
                             type="number"
                             min={0}
@@ -600,25 +608,25 @@ function RecordFormContent() {
                             value={amountPaid || ''}
                             onChange={e => setAmountPaid(parseFloat(e.target.value) || 0)}
                             placeholder="0"
-                            className="w-full rounded-xl border border-gray-200 focus:border-gray-400 focus:ring-0 px-3 py-2 text-sm"
+                            className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
                         />
                     </div>
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Payment Method</label>
                     <select
                         value={paymentMethod}
                         onChange={e => setPaymentMethod(e.target.value as PaymentMethod | '')}
-                        className="w-full sm:w-64 rounded-xl border border-gray-200 focus:border-gray-400 focus:ring-0 px-3 py-2 text-sm"
+                        className="w-full sm:w-64 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
                     >
                         <option value="">Not specified</option>
                         {PAYMENT_METHODS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
                     </select>
                 </div>
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-gray-500 dark:text-neutral-500">
                     Payment status: <span className={`font-medium ${
-                        paymentStatus === 'PAID' ? 'text-green-600' :
-                        paymentStatus === 'PARTIAL' ? 'text-yellow-600' : 'text-red-500'
+                        paymentStatus === 'PAID' ? 'text-green-600 dark:text-green-400' :
+                        paymentStatus === 'PARTIAL' ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-500 dark:text-red-400'
                     }`}>{paymentStatus}</span>
                 </div>
             </div>
@@ -628,7 +636,7 @@ function RecordFormContent() {
                 <button
                     type="button"
                     onClick={() => router.back()}
-                    className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    className="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-neutral-700 text-sm font-medium text-gray-700 dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-neutral-800"
                 >
                     Cancel
                 </button>
@@ -636,7 +644,7 @@ function RecordFormContent() {
                     type="button"
                     onClick={() => handleSave(false)}
                     disabled={submitting}
-                    className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                    className="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-neutral-700 text-sm font-medium text-gray-700 dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-neutral-800 disabled:opacity-50"
                 >
                     {submitting ? 'Saving…' : 'Save as Draft'}
                 </button>
@@ -655,7 +663,7 @@ function RecordFormContent() {
 
 export default function RecordFormPage() {
     return (
-        <Suspense fallback={<div className="p-6 text-sm text-gray-400">Loading form…</div>}>
+        <Suspense fallback={<div className="p-6 text-sm text-gray-400 dark:text-neutral-500">Loading form…</div>}>
             <RecordFormContent />
         </Suspense>
     );

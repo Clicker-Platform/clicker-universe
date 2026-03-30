@@ -66,7 +66,7 @@ export default function ReservationWidget({
     }
 
     return (
-        <div className="py-8">
+        <div>
             <BookingForm
                 siteId={siteId!}
                 initialServices={data.services}

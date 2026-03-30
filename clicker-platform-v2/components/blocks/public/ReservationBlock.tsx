@@ -54,7 +54,7 @@ export const ReservationBlock = ({ data, siteId, initialServices, initialStaff, 
     // Embed Mode
     return (
         <div className={`
-            container mx-auto px-4 py-8
+            container mx-auto px-4
             ${isGlass
                 ? 'bg-black/20 backdrop-blur-md border border-white/10 shadow-xl'
                 : isClean

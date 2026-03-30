@@ -186,7 +186,7 @@ export default function ReservationDashboard() {
             {/* Top Bar Actions */}
             <div className="flex items-center justify-between mb-8">
                 <div>
-                    <h1 className="text-3xl font-black text-brand-dark mb-2 uppercase">Reservation</h1>
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100 mb-2">Reservation</h1>
                     <p className="text-gray-600 dark:text-neutral-400 font-medium">Manage bookings and services</p>
                 </div>
                 <div>
@@ -210,7 +210,7 @@ export default function ReservationDashboard() {
             />
 
             {/* Inbox Unified Container */}
-            <div className="bg-white dark:bg-neutral-900 rounded-3xl border-[3px] border-brand-dark shadow-sm overflow-hidden grid grid-cols-1 lg:grid-cols-3 divide-y lg:divide-y-0 lg:divide-x divide-gray-100 dark:divide-neutral-800 h-[700px]">
+            <div className="bg-white dark:bg-neutral-900 rounded-3xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden grid grid-cols-1 lg:grid-cols-3 divide-y lg:divide-y-0 lg:divide-x divide-gray-100 dark:divide-neutral-800 h-[700px]">
                 <BookingList
                     bookings={bookings}
                     selectedId={selectedBooking?.id || null}

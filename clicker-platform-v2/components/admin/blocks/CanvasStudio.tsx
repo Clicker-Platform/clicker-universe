@@ -14,6 +14,7 @@ import { ResponsiveNavBar } from '@/components/layout/ResponsiveNavBar';
 import { Footer } from '@/components/Footer';
 import { BottomNavBar } from '@/components/layout/BottomNavBar';
 import { usePageStudio } from './PageStudioContext';
+import { DeviceViewProvider } from '@/components/DeviceViewContext';
 
 // Lazy-load sidebar panels — only needed when their respective panels are open
 const BlockFormRenderer = dynamic(() => import('./BlockFormRenderer').then(m => m.BlockFormRenderer));
@@ -243,6 +244,7 @@ export function CanvasStudio({
                             Start adding blocks from the left panel to build your page.
                         </div>
                     ) : (
+                        <DeviceViewProvider deviceView={deviceView}>
                         <TemplateProvider
                             templateId={templateId}
                             themeOverrides={{
@@ -269,7 +271,7 @@ export function CanvasStudio({
                                         <ResponsiveNavBar
                                             profile={globalSettings.profile}
                                             siteId={siteId!}
-                                            forceMobile={true}
+                                            forceMobile={deviceView !== 'desktop'}
                                             isSubPage={isSubPage}
                                             pageTitle={pageTitle}
                                         />
@@ -289,10 +291,10 @@ export function CanvasStudio({
                                             </div>
                                         )}
 
-                                        <div className="px-4 py-8">
+                                        <div className="px-4 pb-8">
                                             {/* Template Header (Profile) */}
                                             {HeaderComponent && globalSettings?.profile && (
-                                                <div className="relative z-10 mb-8">
+                                                <div className="relative z-10">
                                                     <div className="pointer-events-none">
                                                         <HeaderComponent
                                                             profile={globalSettings.profile}
@@ -385,6 +387,7 @@ export function CanvasStudio({
                                 </div>
                             </div>
                         </TemplateProvider>
+                        </DeviceViewProvider>
                     )}
                 </div>
             </div>

@@ -185,7 +185,7 @@ export default function TransactionsClient({ initialOrders = [] }: { initialOrde
                 </div>
             </div>
 
-            <div className="bg-white dark:bg-neutral-900 rounded-3xl border-[3px] border-brand-dark shadow-sm overflow-hidden animate-in fade-in duration-300">
+            <div className="bg-white dark:bg-neutral-900 rounded-3xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden animate-in fade-in duration-300">
                 <div className="divide-y divide-gray-100 dark:divide-neutral-800">
                     {/* Skeleton Loading State */}
                     {isLoading && orders.length === 0 && (

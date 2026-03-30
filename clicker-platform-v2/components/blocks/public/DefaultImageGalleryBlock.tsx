@@ -13,9 +13,11 @@ interface ImageGalleryBlockProps {
 }
 
 import { useTemplate } from '@/components/TemplateProvider';
+import { useDeviceView, dv } from '@/components/DeviceViewContext';
 
 export const DefaultImageGalleryBlock = ({ data }: ImageGalleryBlockProps) => {
     const { theme } = useTemplate();
+    const d = useDeviceView();
     const isClean = theme.cardStyle === 'clean';
     const isGlass = theme.cardStyle === 'glass';
     const [isOpen, setIsOpen] = useState(false);
@@ -53,7 +55,7 @@ export const DefaultImageGalleryBlock = ({ data }: ImageGalleryBlockProps) => {
                         : 'rounded-2xl border-[3px] border-theme-border shadow-sticker hover:shadow-none hover:translate-y-[2px] hover:translate-x-[2px]'
                     }
                     /* Adaptive Aspect Ratio */
-                    aspect-[4/5] md:aspect-[21/9]
+                    ${dv(d, 'aspect-[4/5]', 'md:aspect-[21/9]')}
                 `}
                 style={{ borderRadius: 'var(--theme-radius)' }}
             >
@@ -65,6 +67,8 @@ export const DefaultImageGalleryBlock = ({ data }: ImageGalleryBlockProps) => {
                                 src={coverImage}
                                 alt="Background"
                                 fill
+                                sizes="10vw"
+                                quality={10}
                                 className="object-cover blur-xl scale-110 opacity-50"
                             />
                             <div className="absolute inset-0 bg-white/20 backdrop-blur-sm" />
@@ -77,7 +81,7 @@ export const DefaultImageGalleryBlock = ({ data }: ImageGalleryBlockProps) => {
                                     src={coverImage}
                                     alt="Gallery Cover"
                                     fill
-                                    className="object-cover md:object-contain object-center transition-transform duration-500 group-hover:scale-105"
+                                    className={`${dv(d, 'object-cover', 'md:object-contain')} object-center transition-transform duration-500 group-hover:scale-105`}
                                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
                                 />
                             </div>

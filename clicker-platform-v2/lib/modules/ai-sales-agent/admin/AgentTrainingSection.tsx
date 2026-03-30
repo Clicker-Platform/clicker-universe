@@ -90,7 +90,7 @@ export function AgentTrainingSection({ siteId }: AgentTrainingSectionProps) {
 
     return (
         <div className="space-y-6">
-            <div className="bg-white dark:bg-neutral-900 rounded-2xl border-[3px] border-brand-dark p-6">
+            <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 p-6">
                 <div className="flex items-center justify-between mb-4">
                     <div>
                         <h3 className="flex items-center gap-2 text-lg font-bold">

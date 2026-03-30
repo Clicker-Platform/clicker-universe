@@ -163,7 +163,6 @@ export function AdminSidebar() {
             { icon: Box, label: 'Canvas Studio', href: `${baseUrl}/admin/canvas`, permission: 'biolink' },
             { icon: Palette, label: 'Template', href: `${baseUrl}/admin/template`, permission: 'biolink' },
             { icon: Layers, label: 'Services', href: `${baseUrl}/admin/services`, permission: null },
-            { icon: Users, label: 'Team', href: `${baseUrl}/admin/settings/team`, permission: 'manage_team' },
         ];
 
         const hasFullAccess = isOwner || userPermissions.includes('*');
@@ -216,18 +215,11 @@ export function AdminSidebar() {
                 title: 'Site & Content',
                 match: (item: NavItem) => ['Canvas Studio', 'Services'].includes(item.label)
             },
-            {
-                title: 'Organization',
-                match: (item: NavItem) => ['Users', 'Team'].includes(item.label)
-            }
         ];
 
         const groups: SidebarGroup[] = groupsDef.map(g => ({
             title: g.title,
-            items: coreItems.filter(item => g.match(item)).map(item => {
-                if (item.label === 'Team') return { ...item, label: 'Users', icon: Users };
-                return item;
-            })
+            items: coreItems.filter(item => g.match(item))
         }));
 
         groups.push(...moduleGroups);
