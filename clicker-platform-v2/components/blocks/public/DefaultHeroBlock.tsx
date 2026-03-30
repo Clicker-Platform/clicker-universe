@@ -106,7 +106,7 @@ export const DefaultHeroBlock = ({ data, theme }: { data: any, theme?: any }) =>
             >
                 <div className={`flex-1 ${dv(d, 'p-8', 'md:p-12')} flex flex-col justify-center ${textAlignClass}`}>
                     {Tagline}
-                    <h1 className={`${titleSizeClass} mb-4 ${isClean ? 'font-bold text-gray-900 tracking-tight' : isGlass ? 'font-extrabold text-theme-foreground' : 'font-black text-theme-foreground'}`}
+                    <h1 className={`${titleSizeClass} mb-4 ${isClean ? 'font-bold text-gray-900 tracking-tight' : isGlass ? 'font-bold text-theme-foreground' : 'font-extrabold text-theme-foreground'}`}
                         style={data?.titleColor ? { color: data.titleColor } : undefined}>
                         {data?.title}
                     </h1>
@@ -211,7 +211,7 @@ export const DefaultHeroBlock = ({ data, theme }: { data: any, theme?: any }) =>
                 {Tagline}
                 <h1 className={`
                     ${titleSizeClass} mb-4
-                    ${isClean ? 'font-bold text-gray-900 tracking-tight' : isGlass ? 'font-extrabold text-theme-foreground' : 'font-black text-theme-foreground transform -rotate-1'}
+                    ${isClean ? 'font-bold text-gray-900 tracking-tight' : isGlass ? 'font-bold text-theme-foreground' : 'font-extrabold text-theme-foreground transform -rotate-1'}
                 `}
                     style={data?.titleColor ? { color: data.titleColor } : undefined}>
                     {data?.title}

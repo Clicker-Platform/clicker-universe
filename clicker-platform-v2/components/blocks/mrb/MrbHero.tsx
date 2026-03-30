@@ -96,7 +96,7 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, previewMode }) 
             {/* Tagline Bubble */}
             {tagline && (
                 <div className={`absolute top-8 z-10 ${dv(d, 'px-6', 'md:px-12')} w-full flex ${justifyClass}`}>
-                    <span className="inline-flex items-center rounded-full px-4 py-1.5 text-[10px] font-black uppercase border"
+                    <span className="inline-flex items-center rounded-full px-4 py-1.5 text-[10px] font-bold uppercase border"
                         style={{
                             backgroundColor: `${theme.colors.primary}15`,
                             color: data?.taglineColor || theme.colors.primary,
@@ -111,12 +111,12 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, previewMode }) 
             {/* Text Content */}
             <div className={`flex flex-col gap-4 max-w-2xl relative z-10 w-full ${textAlignClass} ${flexAlignClass}`}>
                 {titleText ? (
-                    <h1 className={`${titleSizeClass} font-black leading-[0.95] tracking-tighter text-white m-0`}
+                    <h1 className={`${titleSizeClass} font-extrabold leading-[0.95] tracking-tighter text-white m-0`}
                         style={data?.titleColor ? { color: data.titleColor } : undefined}>
                         {titleText}
                     </h1>
                 ) : (
-                    <h1 className={`${titleSizeClass} font-black leading-[0.95] tracking-tighter text-white m-0`}
+                    <h1 className={`${titleSizeClass} font-extrabold leading-[0.95] tracking-tighter text-white m-0`}
                         style={data?.titleColor ? { color: data.titleColor } : undefined}>
                         {firstName}{restName && <><br /><span style={{ color: data?.titleColor || theme.colors.primary }}>{restName}</span></>}
                     </h1>
@@ -134,14 +134,14 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, previewMode }) 
                 <div className={`flex flex-wrap gap-4 relative z-10 w-full ${justifyClass}`}>
                     {primaryBtn?.label && (
                         <a href={primaryBtn.url || '#'}
-                            className="inline-flex items-center px-6 py-3 rounded-xl text-sm font-black uppercase tracking-wide transition-all active:scale-[0.98] shadow-lg"
+                            className="inline-flex items-center px-6 py-3 rounded-xl text-sm font-bold uppercase tracking-wide transition-all active:scale-[0.98] shadow-lg"
                             style={{ backgroundColor: theme.colors.primary, color: theme.colors.background }}>
                             {primaryBtn.label}
                         </a>
                     )}
                     {secondaryBtn?.label && (
                         <a href={secondaryBtn.url || '#'}
-                            className="inline-flex items-center px-6 py-3 rounded-xl text-sm font-black uppercase tracking-wide border-2 transition-all active:scale-[0.98]"
+                            className="inline-flex items-center px-6 py-3 rounded-xl text-sm font-bold uppercase tracking-wide border-2 transition-all active:scale-[0.98]"
                             style={{ borderColor: `${theme.colors.primary}66`, color: theme.colors.foreground }}>
                             {secondaryBtn.label}
                         </a>

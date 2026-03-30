@@ -35,6 +35,7 @@ const SR_VehiclesPage     = dynamic(() => import('@/lib/modules/service-records/
 const SR_ServiceTypesPage = dynamic(() => import('@/lib/modules/service-records/admin/ServiceTypesPage'));
 const SR_RemindersPage    = dynamic(() => import('@/lib/modules/service-records/admin/RemindersPage'));
 const SR_SettingsPage     = dynamic(() => import('@/lib/modules/service-records/admin/SettingsPage'));
+const SR_ReportsPage      = dynamic(() => import('@/lib/modules/service-records/admin/ReportsPage'));
 // Service Records — Member Dashboard Widgets
 const SR_MemberWarrantyWidget = dynamic(() => import('@/lib/modules/service-records/public/MemberWarrantyWidget'));
 const SR_MemberServiceHistoryWidget = dynamic(() => import('@/lib/modules/service-records/public/MemberServiceHistoryWidget'));
@@ -95,6 +96,7 @@ export const MODULE_COMPONENTS: Record<string, any> = {
     'service_records:ServiceTypesPage': SR_ServiceTypesPage,
     'service_records:RemindersPage':    SR_RemindersPage,
     'service_records:SettingsPage':     SR_SettingsPage,
+    'service_records:ReportsPage':      SR_ReportsPage,
     'service_records:MemberWarrantyWidget': SR_MemberWarrantyWidget,
     'service_records:MemberServiceHistoryWidget': SR_MemberServiceHistoryWidget,
 

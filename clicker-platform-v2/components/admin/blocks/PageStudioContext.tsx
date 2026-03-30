@@ -1,10 +1,10 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo, ReactNode } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, doc, getDoc, updateDoc, deleteDoc, setDoc, getDocs, serverTimestamp, query, where, writeBatch } from 'firebase/firestore';
 import { Page, PageBlock } from '@/data/mockData';
-import { fetchLightweightPublicData } from '@/lib/fetchData';
+import { fetchLightweightPublicData, hydratePageBlocks } from '@/lib/fetchData';
 import { useSite } from '@/lib/site-context';
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -55,6 +55,19 @@ const emptyFormData: PageFormData = {
     overridePixels: false,
 };
 
+// ── Page Cache ──────────────────────────────────────────────────────────
+
+interface CachedPage {
+    formData: PageFormData;
+    savedSnapshot: string;
+    hydratedData: Record<string, any>;
+    blockTypesKey: string;
+    cachedAt: number;
+    updatedAt?: any;
+}
+
+const MAX_CACHED_PAGES = 10;
+
 interface PageStudioContextType {
     // Page list
     pages: PageListItem[];
@@ -67,6 +80,9 @@ interface PageStudioContextType {
 
     // Dirty tracking
     isDirty: boolean;
+
+    // Hydrated data (links, products, etc.) — lifted from CanvasStudio for caching
+    hydratedData: Record<string, any>;
 
     // Global settings
     globalSettings: any;
@@ -157,6 +173,19 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
     // Unsaved changes dialog
     const [pendingSwitch, setPendingSwitch] = useState<string | null>(null);
 
+    // Hydrated data (lifted from CanvasStudio for caching)
+    const [hydratedData, setHydratedData] = useState<Record<string, any>>({});
+
+    // ── Page Cache ──────────────────────────────────────────────────────────
+
+    const pageCacheRef = useRef<Map<string, CachedPage>>(new Map());
+
+    // Mirror refs for async callbacks (avoid stale closures in backgroundRefresh)
+    const activePageIdRef = useRef<string | null>(activePageId);
+    activePageIdRef.current = activePageId;
+    const formDataRef = useRef<PageFormData>(formData);
+    formDataRef.current = formData;
+
     // ── Dirty tracking ─────────────────────────────────────────────────────
 
     const getSnapshot = useCallback((data: PageFormData) => {
@@ -226,6 +255,73 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
     const setOverrideSeo = useCallback((v: boolean) => updateField('overrideSeo', v), [updateField]);
     const setOverridePixels = useCallback((v: boolean) => updateField('overridePixels', v), [updateField]);
 
+    // ── Cache helpers ─────────────────────────────────────────────────────
+
+    const cacheCurrentPage = useCallback((
+        pageId: string,
+        data: PageFormData,
+        snapshot: string,
+        hydrated: Record<string, any>,
+        updatedAt?: any,
+    ) => {
+        const cache = pageCacheRef.current;
+        cache.set(pageId, {
+            formData: { ...data, blocks: [...data.blocks] },
+            savedSnapshot: snapshot,
+            hydratedData: { ...hydrated },
+            blockTypesKey: data.blocks.map(b => b.type).sort().join(','),
+            cachedAt: Date.now(),
+            updatedAt,
+        });
+        // LRU eviction
+        if (cache.size > MAX_CACHED_PAGES) {
+            let oldestKey: string | null = null;
+            let oldestTime = Infinity;
+            for (const [key, entry] of cache) {
+                if (entry.cachedAt < oldestTime) {
+                    oldestTime = entry.cachedAt;
+                    oldestKey = key;
+                }
+            }
+            if (oldestKey) cache.delete(oldestKey);
+        }
+    }, []);
+
+    const evictFromCache = useCallback((pageId: string) => {
+        pageCacheRef.current.delete(pageId);
+    }, []);
+
+    // ── Block hydration (lifted from CanvasStudio) ──────────────────────
+
+    const blockTypesKey = useMemo(
+        () => formData.blocks.map(b => b.type).sort().join(','),
+        [formData.blocks]
+    );
+
+    useEffect(() => {
+        if (!formData.blocks.length || !siteId) return;
+
+        let isMounted = true;
+
+        hydratePageBlocks(siteId, formData.blocks).then(data => {
+            if (isMounted) {
+                setHydratedData(data);
+                // Update cache entry with hydrated data
+                const pageId = activePageIdRef.current;
+                if (pageId) {
+                    const cached = pageCacheRef.current.get(pageId);
+                    if (cached) {
+                        cached.hydratedData = { ...data };
+                        cached.blockTypesKey = formData.blocks.map(b => b.type).sort().join(',');
+                    }
+                }
+            }
+        });
+
+        return () => { isMounted = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [blockTypesKey, siteId]);
+
     // ── Load page list + global settings on mount ──────────────────────────
 
     useEffect(() => {
@@ -256,8 +352,10 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
                 if (paramId && paramId !== 'create' && fetchedPages.some(p => p.id === paramId)) {
                     await loadPage(paramId, settings);
                 } else if (fetchedPages.length > 0) {
-                    // Auto-select first page
-                    await loadPage(fetchedPages[0].id, settings);
+                    // Auto-select homepage first, fallback to first page
+                    const homeSlug = settings?.homepageSlug || 'home';
+                    const homePage = fetchedPages.find(p => p.slug === homeSlug);
+                    await loadPage((homePage || fetchedPages[0]).id, settings);
                 }
                 // If no pages, stay in create mode (activePageId = null)
             } catch (err) {
@@ -273,12 +371,110 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [siteId]);
 
+    // ── Build formData from Firestore doc ──────────────────────────────────
+
+    const buildFormData = useCallback(async (data: Page, settingsOverride?: any): Promise<PageFormData> => {
+        let pageBlocks = data.blocks && Array.isArray(data.blocks) && data.blocks.length > 0
+            ? data.blocks
+            : [];
+
+        // Legacy migration for homepage
+        if (pageBlocks.length === 0) {
+            const settings = settingsOverride || globalSettings;
+            if (data.slug === (settings?.homepageSlug || 'home')) {
+                const { generateSystemBlocks } = await import('@/lib/systemBlocks');
+                pageBlocks = generateSystemBlocks(settings?.homeBlockOrder || [], settings?.hiddenBlockIds || []);
+            } else if (data.blocks && Array.isArray(data.blocks)) {
+                pageBlocks = data.blocks;
+            }
+        }
+
+        return {
+            title: data.title || '',
+            slug: data.slug || '',
+            content: data.content || '',
+            blocks: pageBlocks,
+            seoTitle: data.seo?.title || '',
+            seoDescription: data.seo?.description || '',
+            seoImage: data.seo?.image || '',
+            seoNoIndex: data.seo?.noIndex || false,
+            pixelFb: data.pixels?.facebookPixelId || '',
+            pixelGa: data.pixels?.googleAnalyticsId || '',
+            pixelTiktok: data.pixels?.tiktokPixelId || '',
+            overrideSeo: !!(data.seo?.title || data.seo?.description || data.seo?.image),
+            overridePixels: !!(data.pixels?.facebookPixelId || data.pixels?.googleAnalyticsId || data.pixels?.tiktokPixelId),
+        };
+    }, [globalSettings]);
+
+    // ── Restore page state (shared by cache hit and Firestore load) ─────
+
+    const restorePageState = useCallback((pageId: string, newFormData: PageFormData, snapshot: string) => {
+        setFormData(newFormData);
+        setActivePageId(pageId);
+        setSlugManuallyEdited(true);
+        savedSnapshotRef.current = snapshot;
+
+        // Update URL without full navigation
+        const url = new URL(window.location.href);
+        url.searchParams.set('pageId', pageId);
+        window.history.replaceState({}, '', url.toString());
+    }, []);
+
+    // ── Background refresh (silent Firestore check after cache hit) ─────
+
+    const backgroundRefresh = useCallback(async (pageId: string) => {
+        if (!siteId) return;
+        try {
+            const docSnap = await getDoc(doc(db, 'sites', siteId, 'pages', pageId));
+            if (!docSnap.exists()) return;
+
+            const data = docSnap.data() as Page;
+            const cached = pageCacheRef.current.get(pageId);
+            if (!cached) return;
+
+            const remoteUpdatedAt = data.updatedAt?.toMillis?.() ?? 0;
+            const cachedUpdatedAt = cached.updatedAt?.toMillis?.() ?? 0;
+
+            if (remoteUpdatedAt > cachedUpdatedAt) {
+                // Firestore has newer data
+                const freshFormData = await buildFormData(data);
+                const freshSnapshot = getSnapshot(freshFormData);
+
+                // Update cache
+                cacheCurrentPage(pageId, freshFormData, freshSnapshot, cached.hydratedData, data.updatedAt);
+
+                // If still the active page and user hasn't edited, silently update
+                if (activePageIdRef.current === pageId) {
+                    const currentSnapshot = getSnapshot(formDataRef.current);
+                    if (currentSnapshot === cached.savedSnapshot) {
+                        restorePageState(pageId, freshFormData, freshSnapshot);
+                    }
+                }
+            }
+        } catch {
+            // Silent failure — background refresh is best-effort
+        }
+    }, [siteId, buildFormData, getSnapshot, cacheCurrentPage, restorePageState]);
+
     // ── Load a single page ─────────────────────────────────────────────────
 
     const loadPage = useCallback(async (pageId: string, settingsOverride?: any) => {
         if (!siteId) return;
-        setPageLoading(true);
         setError(null);
+
+        // ── CACHE HIT: instant restore ──
+        const cached = pageCacheRef.current.get(pageId);
+        if (cached) {
+            restorePageState(pageId, { ...cached.formData, blocks: [...cached.formData.blocks] }, cached.savedSnapshot);
+            setHydratedData(cached.hydratedData);
+            cached.cachedAt = Date.now();
+            // Background refresh — don't await
+            backgroundRefresh(pageId);
+            return;
+        }
+
+        // ── CACHE MISS: fetch from Firestore ──
+        setPageLoading(true);
 
         try {
             const docSnap = await getDoc(doc(db, 'sites', siteId, 'pages', pageId));
@@ -289,53 +485,20 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
             }
 
             const data = docSnap.data() as Page;
-            let pageBlocks = data.blocks && Array.isArray(data.blocks) && data.blocks.length > 0
-                ? data.blocks
-                : [];
+            const newFormData = await buildFormData(data, settingsOverride);
+            const snapshot = getSnapshot(newFormData);
 
-            // Legacy migration for homepage
-            if (pageBlocks.length === 0) {
-                const settings = settingsOverride || globalSettings;
-                if (data.slug === (settings?.homepageSlug || 'home')) {
-                    const { generateSystemBlocks } = await import('@/lib/systemBlocks');
-                    pageBlocks = generateSystemBlocks(settings?.homeBlockOrder || [], settings?.hiddenBlockIds || []);
-                } else if (data.blocks && Array.isArray(data.blocks)) {
-                    pageBlocks = data.blocks;
-                }
-            }
+            restorePageState(pageId, newFormData, snapshot);
 
-            const newFormData: PageFormData = {
-                title: data.title || '',
-                slug: data.slug || '',
-                content: data.content || '',
-                blocks: pageBlocks,
-                seoTitle: data.seo?.title || '',
-                seoDescription: data.seo?.description || '',
-                seoImage: data.seo?.image || '',
-                seoNoIndex: data.seo?.noIndex || false,
-                pixelFb: data.pixels?.facebookPixelId || '',
-                pixelGa: data.pixels?.googleAnalyticsId || '',
-                pixelTiktok: data.pixels?.tiktokPixelId || '',
-                overrideSeo: !!(data.seo?.title || data.seo?.description || data.seo?.image),
-                overridePixels: !!(data.pixels?.facebookPixelId || data.pixels?.googleAnalyticsId || data.pixels?.tiktokPixelId),
-            };
-
-            setFormData(newFormData);
-            setActivePageId(pageId);
-            setSlugManuallyEdited(true); // Existing pages have final slugs
-            savedSnapshotRef.current = getSnapshot(newFormData);
-
-            // Update URL without full navigation
-            const url = new URL(window.location.href);
-            url.searchParams.set('pageId', pageId);
-            window.history.replaceState({}, '', url.toString());
+            // Cache the freshly loaded page (hydratedData will be added by hydration effect)
+            cacheCurrentPage(pageId, newFormData, snapshot, {}, data.updatedAt);
         } catch (err) {
             console.error('Error loading page:', err);
             setError('Failed to load page');
         } finally {
             setPageLoading(false);
         }
-    }, [siteId, globalSettings, getSnapshot]);
+    }, [siteId, buildFormData, getSnapshot, cacheCurrentPage, restorePageState, backgroundRefresh]);
 
     // ── Switch page (with dirty check) ─────────────────────────────────────
 
@@ -450,12 +613,15 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
                 updatedAt: serverTimestamp(),
             };
 
+            let savedPageId = activePageId;
+
             if (activePageId === null) {
                 // Create new page
                 const docRef = await addDoc(collection(db, 'sites', siteId, 'pages'), {
                     ...pageData,
                     createdAt: serverTimestamp(),
                 });
+                savedPageId = docRef.id;
                 setActivePageId(docRef.id);
 
                 // Update page list
@@ -474,15 +640,21 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
                 ));
             }
 
-            // Update saved snapshot
-            savedSnapshotRef.current = getSnapshot(formData);
+            // Update saved snapshot + cache
+            const snapshot = getSnapshot(formData);
+            savedSnapshotRef.current = snapshot;
+
+            if (savedPageId) {
+                const existingHydrated = pageCacheRef.current.get(savedPageId)?.hydratedData || {};
+                cacheCurrentPage(savedPageId, formData, snapshot, existingHydrated);
+            }
         } catch (err) {
             console.error('Error saving page:', err);
             setError('Failed to save page. Please try again.');
         } finally {
             setSaving(false);
         }
-    }, [siteId, activePageId, formData, getSnapshot]);
+    }, [siteId, activePageId, formData, getSnapshot, cacheCurrentPage]);
 
     const savePage = useCallback(async () => {
         await savePageInternal();
@@ -544,6 +716,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
 
         try {
             await _movePageToTrash(activePageId);
+            evictFromCache(activePageId);
 
             // Add to local trashed list
             const trashed: TrashedPageListItem = {
@@ -567,7 +740,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
             console.error('Error trashing page:', err);
             setError('Failed to move page to trash');
         }
-    }, [siteId, activePageId, formData, pages, loadPage, getSnapshot, _movePageToTrash]);
+    }, [siteId, activePageId, formData, pages, loadPage, getSnapshot, _movePageToTrash, evictFromCache]);
 
     // ── Trash a page by ID (for non-active pages) ─────────────────────────
 
@@ -585,6 +758,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
             if (!pageToTrash) return;
 
             await _movePageToTrash(pageId);
+            evictFromCache(pageId);
 
             const trashed: TrashedPageListItem = {
                 id: pageId,
@@ -597,7 +771,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
             console.error('Error trashing page:', err);
             setError('Failed to move page to trash');
         }
-    }, [siteId, activePageId, pages, trashPage, _movePageToTrash]);
+    }, [siteId, activePageId, pages, trashPage, _movePageToTrash, evictFromCache]);
 
     // ── Keep deletePage as soft-delete alias for backwards compat ─────────
 
@@ -768,6 +942,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
             formData,
             pageLoading,
             isDirty,
+            hydratedData,
             globalSettings,
             saving,
             error,

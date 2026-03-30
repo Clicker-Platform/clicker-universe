@@ -1,0 +1,11 @@
+{
+  "name": "clicker-universe-dev",
+  "private": true,
+  "scripts": {
+    "dev": "npm run dev --prefix clicker-platform-v2"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.0.0",
+    "tailwindcss": "^4.0.0"
+  }
+}

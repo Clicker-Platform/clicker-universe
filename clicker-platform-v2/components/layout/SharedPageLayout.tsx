@@ -117,8 +117,8 @@ export function SharedPageLayout({
                     style={{ backgroundColor: pageBackgroundColor }}
                     suppressHydrationWarning // Prevent mismatches on dynamic styles
                 >
-                    {/* Background */}
-                    <div className="fixed inset-0 z-0 pointer-events-none">
+                    {/* Background — use absolute instead of fixed to avoid iPadOS WebKit layout quirks */}
+                    <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
                         <Background />
                     </div>
 

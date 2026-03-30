@@ -32,34 +32,33 @@ export const ProductsBlockClient = ({ data, products, phoneNumber, whatsappSetti
             )}
             <div className="grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-4">
                 {products.map(product => {
-                    // Dynamic card styles
+                    // Dynamic card styles — fully theme-aware
                     const cardStyle = isGlass ? {
                         borderRadius: 'var(--theme-radius)',
-                        background: 'rgba(26, 26, 26, 0.6)',
+                        background: `${theme.colors.surface || theme.colors.background}99`,
                         backdropFilter: 'blur(12px)',
-                        border: '1px solid rgba(255,255,255,0.1)',
+                        borderColor: theme.colors.border || theme.colors.foreground,
                         boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
                     } : isBold ? {
                         borderRadius: 'var(--theme-radius)',
                         borderColor: theme.colors.foreground,
                         boxShadow: `4px 4px 0px 0px ${theme.colors.border}`,
-                        backgroundColor: '#FFFFFF'
+                        backgroundColor: theme.colors.surface || theme.colors.background
                     } : {
                         borderRadius: 'var(--theme-radius)',
-                        borderColor: 'rgba(0,0,0,0.1)',
+                        borderColor: theme.colors.border || theme.colors.foreground,
                         boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)',
-                        backgroundColor: '#FFFFFF'
+                        backgroundColor: theme.colors.surface || theme.colors.background
                     };
 
                     // Scale down radius for image since it's inside
-                    const imageStyle = isGlass ? {
+                    const imageStyle = {
                         borderRadius: 'calc(var(--theme-radius) * 0.75)',
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        background: 'rgba(255,255,255,0.05)'
-                    } : {
-                        borderRadius: `calc(var(--theme-radius) * 0.75)`,
-                        borderColor: isBold ? theme.colors.foreground : 'rgba(0,0,0,0.1)',
-                        borderWidth: isBold ? '3px' : '1px'
+                        borderColor: isBold ? theme.colors.foreground : (theme.colors.border || theme.colors.foreground),
+                        borderWidth: isBold ? '3px' : '1px',
+                        backgroundColor: isGlass
+                            ? `${theme.colors.surface || theme.colors.background}10`
+                            : (theme.colors.muted || theme.colors.border || '#f3f4f6')
                     };
 
                     const showPrice = (product as any).showPrice !== false;
@@ -76,7 +75,7 @@ export const ProductsBlockClient = ({ data, products, phoneNumber, whatsappSetti
                             style={cardStyle}
                         >
                             <div
-                                className={`w-full aspect-[4/3] flex-shrink-0 overflow-hidden relative ${isGlass ? '' : 'bg-gray-100'}`}
+                                className="w-full aspect-[4/3] flex-shrink-0 overflow-hidden relative"
                                 style={imageStyle}
                             >
                                 {(product.imageUrl || (product as any).image) && (
@@ -93,7 +92,7 @@ export const ProductsBlockClient = ({ data, products, phoneNumber, whatsappSetti
                                 {showLabel && product.category && (
                                     <span
                                         className={`text-[10px] font-bold uppercase tracking-wider opacity-50 mb-1`}
-                                        style={{ fontFamily: theme.fonts.body, color: isGlass ? '#fff' : theme.colors.foreground }}
+                                        style={{ fontFamily: theme.fonts.body, color: theme.colors.foreground }}
                                     >
                                         {product.category}
                                     </span>

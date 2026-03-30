@@ -314,6 +314,10 @@ service cloud.firestore {
         allow read: if isValidUser(siteId) && isModuleEnabled(siteId, 'service_records');
         allow write: if isOwner(siteId) && isModuleEnabled(siteId, 'service_records');
       }
+      match /modules/service_records/carCatalog/{entryId} {
+        allow read: if isValidUser(siteId) && isModuleEnabled(siteId, 'service_records');
+        allow write: if isValidUser(siteId) && isModuleEnabled(siteId, 'service_records');
+      }
 
       // 6. AI SALES AGENT (Strictly Nested)
       match /modules/ai_sales {

@@ -125,10 +125,15 @@ export function PagesPanel() {
                     ) : pages.length === 0 ? (
                         <div className="px-3 py-4 text-xs text-neutral-600">No pages yet</div>
                     ) : (
-                        pages.map(page => {
+                        [...pages].sort((a, b) => {
+                            const aHome = a.slug === homepageSlug ? 0 : 1;
+                            const bHome = b.slug === homepageSlug ? 0 : 1;
+                            return aHome - bHome;
+                        }).map((page, idx, sorted) => {
                             const isActive = page.id === activePageId;
                             const isHome = page.slug === homepageSlug;
                             const isTrashing = isTrashingId === page.id;
+                            const showDivider = isHome && idx < sorted.length - 1;
                             return (
                                 <div
                                     key={page.id}
@@ -162,6 +167,7 @@ export function PagesPanel() {
                                     >
                                         <Trash2 size={12} />
                                     </button>
+                                    {showDivider && <div className="mx-3 mt-1 border-b border-neutral-800" />}
                                 </div>
                             );
                         })

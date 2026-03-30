@@ -12,8 +12,12 @@ import {
     findVehicleByPlate,
     createVehicle,
     getServiceTypes,
+    getCarCatalog,
+    addCarCatalogEntry,
+    ensureCarCatalogEntry,
+    getVehicles,
 } from '../api';
-import type { ServiceRecord, Vehicle, ServiceType, PaymentMethod, PaymentStatus } from '../types';
+import type { ServiceRecord, Vehicle, ServiceType, CarCatalogEntry, PaymentMethod, PaymentStatus } from '../types';
 
 const PAYMENT_METHODS: { value: PaymentMethod; label: string }[] = [
     { value: 'CASH',     label: 'Cash' },
@@ -30,6 +34,9 @@ function RecordFormContent() {
     const { user } = useUser();
 
     // Vehicle section
+    const [allVehicles, setAllVehicles] = useState<Vehicle[]>([]);
+    const [carCatalog, setCarCatalog] = useState<CarCatalogEntry[]>([]);
+    const [showAddCar, setShowAddCar] = useState(false);
     const [plateInput, setPlateInput] = useState('');
     const [vehicleLookupDone, setVehicleLookupDone] = useState(false);
     const [foundVehicle, setFoundVehicle] = useState<Vehicle | null>(null);
@@ -84,10 +91,14 @@ function RecordFormContent() {
     async function initPage() {
         setLoading(true);
         try {
-            const [types] = await Promise.all([
+            const [types, catalog, vehicles] = await Promise.all([
                 getServiceTypes(siteId, true),
+                getCarCatalog(siteId),
+                getVehicles(siteId),
             ]);
             setServiceTypes(types);
+            setCarCatalog(catalog);
+            setAllVehicles(vehicles);
 
             // Check optional modules
             try {
@@ -222,6 +233,15 @@ function RecordFormContent() {
                     memberId: selectedMemberId || undefined,
                     memberName: selectedMemberName || undefined,
                 });
+
+                // Auto-add to car catalog if make/model provided
+                if (vehicleForm.make && vehicleForm.model) {
+                    ensureCarCatalogEntry(siteId, {
+                        make: vehicleForm.make,
+                        model: vehicleForm.model,
+                        type: vehicleForm.type as any,
+                    }).catch(console.error); // non-blocking
+                }
             }
 
             if (!vehicleId) {
@@ -258,7 +278,7 @@ function RecordFormContent() {
             if (isEditMode && recordId) {
                 await updateServiceRecord(siteId, recordId, {
                     ...recordData,
-                    status: saveAsInProgress ? 'IN_PROGRESS' : undefined,
+                    ...(saveAsInProgress ? { status: 'IN_PROGRESS' } : {}),
                 } as any);
             } else {
                 newId = await createServiceRecord(siteId, recordData as any);
@@ -317,28 +337,75 @@ function RecordFormContent() {
             {/* Section 1: Vehicle */}
             <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm space-y-4">
                 <h2 className="text-base font-semibold text-gray-800 dark:text-neutral-200">Vehicle</h2>
-                <div className="flex gap-2">
-                    <input
-                        type="text"
-                        value={plateInput}
-                        onChange={e => {
-                            setPlateInput(e.target.value.toUpperCase().replace(/\s/g, ''));
-                            setVehicleLookupDone(false);
-                            setFoundVehicle(null);
-                            setShowNewVehicleFields(false);
-                        }}
-                        placeholder="Enter plate number"
-                        className="flex-1 font-mono rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
-                    />
-                    <button
-                        type="button"
-                        onClick={handlePlateSearch}
-                        className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 text-sm font-medium hover:bg-gray-50 dark:hover:bg-neutral-800 dark:text-neutral-200"
-                    >
-                        <Search className="w-4 h-4" />
-                        Look up
-                    </button>
-                </div>
+
+                {/* Select existing vehicle */}
+                {allVehicles.length > 0 && (
+                    <div>
+                        <label className="block text-xs font-medium text-gray-600 dark:text-neutral-400 mb-1">Select existing vehicle</label>
+                        <select
+                            value={foundVehicle?.id || ''}
+                            onChange={e => {
+                                const v = allVehicles.find(v => v.id === e.target.value);
+                                if (v) {
+                                    setFoundVehicle(v);
+                                    setPlateInput(v.plateNumber);
+                                    setVehicleLookupDone(true);
+                                    setShowNewVehicleFields(false);
+                                    if (v.memberId) {
+                                        setSelectedMemberId(v.memberId);
+                                        setSelectedMemberName(v.memberName || '');
+                                    }
+                                } else {
+                                    setFoundVehicle(null);
+                                    setVehicleLookupDone(false);
+                                }
+                            }}
+                            className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
+                        >
+                            <option value="">— Select vehicle —</option>
+                            {allVehicles.map(v => (
+                                <option key={v.id} value={v.id}>
+                                    {v.plateNumber} — {v.make || '?'} {v.model || ''}{v.color ? ` · ${v.color}` : ''}{v.memberName ? ` · ${v.memberName}` : ''}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                )}
+
+                {/* Or enter new plate */}
+                {!foundVehicle && (
+                    <>
+                        {allVehicles.length > 0 && (
+                            <div className="flex items-center gap-3 text-xs text-gray-400 dark:text-neutral-500">
+                                <div className="flex-1 border-t border-gray-200 dark:border-neutral-700" />
+                                or enter new plate number
+                                <div className="flex-1 border-t border-gray-200 dark:border-neutral-700" />
+                            </div>
+                        )}
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                value={plateInput}
+                                onChange={e => {
+                                    setPlateInput(e.target.value.toUpperCase().replace(/\s/g, ''));
+                                    setVehicleLookupDone(false);
+                                    setFoundVehicle(null);
+                                    setShowNewVehicleFields(false);
+                                }}
+                                placeholder="Enter plate number"
+                                className="flex-1 font-mono rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
+                            />
+                            <button
+                                type="button"
+                                onClick={handlePlateSearch}
+                                className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 text-sm font-medium hover:bg-gray-50 dark:hover:bg-neutral-800 dark:text-neutral-200"
+                            >
+                                <Search className="w-4 h-4" />
+                                Look up
+                            </button>
+                        </div>
+                    </>
+                )}
 
                 {vehicleLookupDone && foundVehicle && (
                     <div className="bg-green-50 dark:bg-green-950/30 border border-green-100 dark:border-green-900/50 rounded-xl p-3 text-sm">
@@ -362,37 +429,94 @@ function RecordFormContent() {
                                 {plateWarning}
                             </div>
                         )}
-                        <div className="grid grid-cols-2 gap-3">
-                            <input
-                                type="text"
-                                value={vehicleForm.make}
-                                onChange={e => setVehicleForm(f => ({ ...f, make: e.target.value }))}
-                                placeholder="Make (Toyota)"
-                                className="rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
-                            />
-                            <input
-                                type="text"
-                                value={vehicleForm.model}
-                                onChange={e => setVehicleForm(f => ({ ...f, model: e.target.value }))}
-                                placeholder="Model (Fortuner)"
-                                className="rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
-                            />
+
+                        {/* Car type — select from catalog or add new */}
+                        <div>
+                            <label className="block text-xs font-medium text-gray-600 dark:text-neutral-400 mb-1">Car Type</label>
+                            {carCatalog.length > 0 && !showAddCar ? (
+                                <div className="space-y-2">
+                                    <select
+                                        value={vehicleForm.make && vehicleForm.model
+                                            ? carCatalog.find(c => c.make === vehicleForm.make && c.model === vehicleForm.model)?.id || ''
+                                            : ''}
+                                        onChange={e => {
+                                            const car = carCatalog.find(c => c.id === e.target.value);
+                                            if (car) {
+                                                setVehicleForm(f => ({
+                                                    ...f,
+                                                    make: car.make,
+                                                    model: car.model,
+                                                    type: car.type,
+                                                }));
+                                            }
+                                        }}
+                                        className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
+                                    >
+                                        <option value="">— Select car type —</option>
+                                        {carCatalog.map(car => (
+                                            <option key={car.id} value={car.id}>
+                                                {car.make} {car.model} ({car.type})
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowAddCar(true)}
+                                        className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium"
+                                    >
+                                        + Add new car type
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="space-y-3">
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <input
+                                            type="text"
+                                            value={vehicleForm.make}
+                                            onChange={e => setVehicleForm(f => ({ ...f, make: e.target.value }))}
+                                            placeholder="Make (Toyota)"
+                                            className="rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
+                                        />
+                                        <input
+                                            type="text"
+                                            value={vehicleForm.model}
+                                            onChange={e => setVehicleForm(f => ({ ...f, model: e.target.value }))}
+                                            placeholder="Model (Fortuner)"
+                                            className="rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
+                                        />
+                                    </div>
+                                    <select
+                                        value={vehicleForm.type}
+                                        onChange={e => setVehicleForm(f => ({ ...f, type: e.target.value }))}
+                                        className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
+                                    >
+                                        {['SEDAN','SUV','MPV','HATCHBACK','PICKUP','MOTORCYCLE','OTHER'].map(t => (
+                                            <option key={t} value={t}>{t}</option>
+                                        ))}
+                                    </select>
+                                    {carCatalog.length > 0 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowAddCar(false)}
+                                            className="text-xs text-gray-500 dark:text-neutral-500 hover:underline"
+                                        >
+                                            ← Back to catalog
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Color — always separate since it's per-vehicle */}
+                        <div>
+                            <label className="block text-xs font-medium text-gray-600 dark:text-neutral-400 mb-1">Color</label>
                             <input
                                 type="text"
                                 value={vehicleForm.color}
                                 onChange={e => setVehicleForm(f => ({ ...f, color: e.target.value }))}
-                                placeholder="Color"
-                                className="rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
+                                placeholder="e.g. Black, White, Silver"
+                                className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
                             />
-                            <select
-                                value={vehicleForm.type}
-                                onChange={e => setVehicleForm(f => ({ ...f, type: e.target.value }))}
-                                className="rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
-                            >
-                                {['SEDAN','SUV','MPV','HATCHBACK','PICKUP','MOTORCYCLE','OTHER'].map(t => (
-                                    <option key={t} value={t}>{t}</option>
-                                ))}
-                            </select>
                         </div>
                     </div>
                 )}

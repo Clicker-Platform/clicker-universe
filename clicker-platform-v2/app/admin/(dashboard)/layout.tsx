@@ -5,6 +5,7 @@ import { AdminSidebar } from './AdminSidebar';
 import AdminGuard from '@/components/admin/AdminGuard';
 import { UserProvider } from '@/lib/user-context';
 import { AdminThemeProvider, useAdminTheme } from '@/lib/use-admin-theme';
+import { InboxPanelProvider } from '@/lib/inbox-panel-context';
 
 function AdminContentWrapper({ children }: { children: React.ReactNode }) {
     const { isDark } = useAdminTheme();
@@ -24,9 +25,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <AdminGuard>
             <UserProvider>
                 <AdminThemeProvider>
-                    <AdminContentWrapper>
-                        {children}
-                    </AdminContentWrapper>
+                    <InboxPanelProvider>
+                        <AdminContentWrapper>
+                            {children}
+                        </AdminContentWrapper>
+                    </InboxPanelProvider>
                 </AdminThemeProvider>
             </UserProvider>
         </AdminGuard>

@@ -1,14 +1,18 @@
-import { Service } from '../../types';
+import { Service, PricingDisplay } from '../../types';
 import { Search, Clock } from 'lucide-react';
 import { useState } from 'react';
+
+const formatPrice = (amount: number) =>
+    new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(amount);
 
 interface ServiceStepProps {
     services: Service[];
     onSelect: (service: Service) => void;
     isGlass?: boolean;
+    pricingDisplay?: PricingDisplay;
 }
 
-export default function ServiceStep({ services, onSelect, isGlass = false }: ServiceStepProps) {
+export default function ServiceStep({ services, onSelect, isGlass = false, pricingDisplay = 'fixed' }: ServiceStepProps) {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
@@ -109,12 +113,22 @@ export default function ServiceStep({ services, onSelect, isGlass = false }: Ser
                                 }`}>
                                     {service.name}
                                 </h3>
-                                <span className={`font-bold ${isGlass ? 'text-white' : 'text-gray-900'}`}>
-                                    {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(service.price)}
-                                </span>
+                                {pricingDisplay !== 'hidden' && (
+                                    <span className={`font-bold text-right ${isGlass ? 'text-white' : 'text-gray-900'}`}>
+                                        {pricingDisplay === 'starting_from' && (
+                                            <span className={`block text-[10px] font-medium ${isGlass ? 'text-white/50' : 'text-gray-400'}`}>Mulai dari</span>
+                                        )}
+                                        {pricingDisplay === 'range' && service.maxPrice
+                                            ? `${formatPrice(service.price)} – ${formatPrice(service.maxPrice)}`
+                                            : formatPrice(service.price)
+                                        }
+                                    </span>
+                                )}
                             </div>
                             <div className={`flex items-center gap-2 text-xs ${isGlass ? 'text-white/50' : 'text-gray-500'}`}>
-                                <Clock size={12} /> {service.durationMinutes} mins
+                                {service.bookingType !== 'request' && service.durationMinutes && (
+                                    <><Clock size={12} /> {service.durationMinutes} mins</>
+                                )}
                                 {service.category && (
                                     <span className={`px-1.5 py-0.5 rounded ${isGlass ? 'bg-white/10 text-white/60' : 'bg-gray-100 text-gray-600'}`}>
                                         {service.category}

@@ -22,6 +22,7 @@ import {
     Bell,
     Users,
     Plus,
+    BarChart3,
 } from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { collection, query, where, onSnapshot, Unsubscribe } from 'firebase/firestore';
@@ -123,6 +124,7 @@ export const MODULE_ICONS: Record<string, any> = {
     'bell': Bell,
     'users': Users,
     'plus': Plus,
+    'bar-chart-3': BarChart3,
 };
 
 /**

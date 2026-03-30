@@ -41,6 +41,7 @@ export const STATIC_MODULE_DEFINITIONS: Record<string, Partial<ModuleDefinition>
     'service_records': {
         adminRoutes: [
             { label: 'Service Records', path: '/admin/service-records/records',       icon: 'clipboard-list', componentKey: 'service_records:RecordsListPage' },
+            { label: 'Reports',         path: '/admin/service-records/reports',        icon: 'bar-chart-3',    componentKey: 'service_records:ReportsPage',      permission: 'view_reports' },
             { label: 'New Record',      path: '/admin/service-records/new',           icon: 'plus',           componentKey: 'service_records:RecordFormPage',   hidden: true },
             { label: 'Record Detail',   path: '/admin/service-records/detail',        icon: 'file-text',      componentKey: 'service_records:RecordDetailPage', hidden: true },
             { label: 'Vehicles',        path: '/admin/service-records/vehicles',      icon: 'car',            componentKey: 'service_records:VehiclesPage' },

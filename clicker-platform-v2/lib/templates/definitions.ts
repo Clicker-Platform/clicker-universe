@@ -210,7 +210,7 @@ export const templateDefinitions: Record<string, Omit<TemplateDefinition, 'compo
             taglineStyle: 'contrast',
 
             layout: {
-                containerWidth: 'tablet',
+                containerWidth: 'boxed',
                 navMode: 'adaptive',
                 showBottomNav: true,
                 grid: { mobile: 1, tablet: 1, desktop: 1, gap: 'gap-6' }
