@@ -141,17 +141,17 @@ export default function ReservationDashboard() {
         }
     };
 
-    const handleStatusUpdate = async (id: string, newStatus: Booking['status']) => {
+    const handleStatusUpdate = async (id: string, newStatus: Booking['status'], cancellationReason?: string) => {
         const previousBookings = [...bookings];
 
-        setBookings(prev => prev.map(b => b.id === id ? { ...b, status: newStatus } : b));
+        setBookings(prev => prev.map(b => b.id === id ? { ...b, status: newStatus, ...(cancellationReason ? { cancellationReason } : {}) } : b));
 
         if (selectedBooking && selectedBooking.id === id) {
-            setSelectedBooking(prev => prev ? { ...prev, status: newStatus } : null);
+            setSelectedBooking(prev => prev ? { ...prev, status: newStatus, ...(cancellationReason ? { cancellationReason } : {}) } : null);
         }
 
         try {
-            await updateBookingStatus(siteId, id, newStatus);
+            await updateBookingStatus(siteId, id, newStatus, cancellationReason);
             toast.success(`Booking ${newStatus}`);
             refreshCounts(); // Update counts
         } catch (error) {

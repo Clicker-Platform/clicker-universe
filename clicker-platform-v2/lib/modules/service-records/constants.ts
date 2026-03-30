@@ -7,6 +7,7 @@ export const SR_SERVICE_TYPES  = `${SR_BASE}/serviceTypes`;
 export const SR_WARRANTY_CARDS = `${SR_BASE}/warrantyCards`;
 export const SR_REMINDER_QUEUE = `${SR_BASE}/reminderQueue`;
 export const SR_CONFIG         = `${SR_BASE}/serviceConfig`;
+export const SR_CAR_CATALOG    = `${SR_BASE}/carCatalog`;
 
 // v1.0: outletId always equals siteId (single-outlet).
 // When multi-outlet support is added, replace this with actual outlet resolution.

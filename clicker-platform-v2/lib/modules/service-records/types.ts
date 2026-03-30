@@ -44,6 +44,14 @@ export interface ServiceRecord {
 
 export type VehicleType = 'SEDAN' | 'SUV' | 'MPV' | 'HATCHBACK' | 'PICKUP' | 'MOTORCYCLE' | 'OTHER';
 
+export interface CarCatalogEntry {
+    id: string;
+    make: string;               // e.g. "Toyota"
+    model: string;              // e.g. "Fortuner"
+    type: VehicleType;          // e.g. "SUV"
+    createdAt: Timestamp;
+}
+
 export interface Vehicle {
     id: string;
     plateNumber: string;        // normalized: uppercase, no spaces — dedup key

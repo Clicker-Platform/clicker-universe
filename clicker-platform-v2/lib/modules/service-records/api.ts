@@ -25,6 +25,7 @@ import {
     SR_WARRANTY_CARDS,
     SR_REMINDER_QUEUE,
     SR_CONFIG,
+    SR_CAR_CATALOG,
     OUTLET_ID_V1,
     WARRANTY_CHARSET,
     WARRANTY_SUFFIX_LEN,
@@ -436,7 +437,75 @@ export async function approveRecord(
     }
 }
 
-// ─── Vehicles ─────────────────────────────────────────────────────────────────
+// ─── Manual Warranty Card Generation ──────────────────────────────────────────
+// Used when a COMPLETED record has hasWarranty=true but no warrantyCardId,
+// e.g. when the feature was toggled off at approval time.
+
+export async function generateWarrantyCardForRecord(
+    siteId: string,
+    recordId: string,
+    businessName?: string,
+    businessLogo?: string,
+): Promise<string> {
+    const record2 = await getServiceRecord(siteId, recordId);
+    if (!record2) throw new Error('Service record not found');
+    if (record2.status !== 'COMPLETED') throw new Error('Only COMPLETED records can have a warranty card generated');
+    if (!record2.hasWarranty) throw new Error('This record does not have warranty enabled');
+    if (record2.warrantyCardId) throw new Error('A warranty card already exists for this record');
+
+    const config = await getServiceConfig(siteId);
+
+    // Generate unique warranty code
+    let warrantyCode: string | null = null;
+    for (let attempt = 0; attempt < WARRANTY_MAX_RETRIES; attempt++) {
+        const candidate = generateWarrantyCode(config.warrantyPrefix);
+        const existing = await getDocs(
+            query(collection(db, 'sites', siteId, SR_WARRANTY_CARDS), where('warrantyCode', '==', candidate), limit(1))
+        );
+        if (existing.empty) {
+            warrantyCode = candidate;
+            break;
+        }
+    }
+    if (!warrantyCode) throw new Error('Could not generate unique warranty code after retries');
+
+    const now = Timestamp.now();
+    const warrantyMonths = record2.warrantyMonths || 12;
+    const expiryDate = new Timestamp(
+        Math.floor(now.toMillis() / 1000) + warrantyMonths * 30 * 24 * 60 * 60,
+        0
+    );
+
+    const warrantyRef = doc(collection(db, 'sites', siteId, SR_WARRANTY_CARDS));
+    const warrantyCardId = warrantyRef.id;
+
+    const cardData: Record<string, unknown> = {
+        warrantyCode,
+        serviceRecordId: recordId,
+        outletId: OUTLET_ID_V1(siteId),
+        vehiclePlate: record2.vehiclePlate,
+        serviceTypeName: record2.serviceTypeName,
+        serviceDate: record2.approvedAt || now,
+        warrantyMonths,
+        expiryDate,
+        status: 'ACTIVE',
+        businessName: businessName || siteId,
+        createdAt: now,
+    };
+    if (record2.memberName) cardData.ownerName = record2.memberName;
+    if (record2.memberPhone) cardData.ownerPhone = record2.memberPhone;
+    if (record2.productUsed) cardData.productUsed = record2.productUsed;
+    if (businessLogo) cardData.businessLogo = businessLogo;
+
+    const batch = writeBatch(db);
+    batch.set(warrantyRef, cardData);
+    batch.update(doc(db, 'sites', siteId, SR_RECORDS, recordId), { warrantyCardId });
+    await batch.commit();
+
+    return warrantyCardId;
+}
+
+
 
 export async function getVehicles(siteId: string): Promise<Vehicle[]> {
     const outletId = OUTLET_ID_V1(siteId);
@@ -633,4 +702,42 @@ export async function getReminderQueue(
     }
     const snap = await getDocs(q);
     return snap.docs.map(d => ({ id: d.id, ...d.data() } as ReminderQueueEntry));
+}
+
+// ─── Car Catalog ─────────────────────────────────────────────────────────────
+
+import type { CarCatalogEntry, VehicleType } from './types';
+
+export async function getCarCatalog(siteId: string): Promise<CarCatalogEntry[]> {
+    const q = query(
+        collection(db, 'sites', siteId, SR_CAR_CATALOG),
+        orderBy('make', 'asc')
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map(d => ({ id: d.id, ...d.data() } as CarCatalogEntry));
+}
+
+export async function addCarCatalogEntry(
+    siteId: string,
+    data: { make: string; model: string; type: VehicleType }
+): Promise<string> {
+    const ref = await addDoc(
+        collection(db, 'sites', siteId, SR_CAR_CATALOG),
+        { ...data, createdAt: serverTimestamp() }
+    );
+    return ref.id;
+}
+
+/** Ensure a make/model/type combo exists in the catalog. Returns the entry id. */
+export async function ensureCarCatalogEntry(
+    siteId: string,
+    data: { make: string; model: string; type: VehicleType }
+): Promise<string> {
+    const existing = await getCarCatalog(siteId);
+    const match = existing.find(
+        e => e.make.toLowerCase() === data.make.toLowerCase()
+          && e.model.toLowerCase() === data.model.toLowerCase()
+    );
+    if (match) return match.id;
+    return addCarCatalogEntry(siteId, data);
 }

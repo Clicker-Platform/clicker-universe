@@ -14,6 +14,7 @@ import {
     cancelRecord,
     voidWarrantyCard,
     updateServiceRecord,
+    generateWarrantyCardForRecord,
 } from '../api';
 import { RecordStatusBadge } from './components/RecordStatusBadge';
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
@@ -56,6 +57,9 @@ function RecordDetailContent() {
     // Void warranty dialog
     const [showVoidDialog, setShowVoidDialog] = useState(false);
     const [voidConfirmText, setVoidConfirmText] = useState('');
+
+    // Track when approve was just triggered so warranty spinner can time out
+    const [justApproved, setJustApproved] = useState(false);
 
     // Inline payment editing
     const [editPayment, setEditPayment] = useState(false);
@@ -118,11 +122,15 @@ function RecordDetailContent() {
         if (!record || !isOwner) return;
         setActionLoading(true);
         setShowApproveDialog(false);
+        setJustApproved(true);
+        // Clear justApproved after 15s in case warrantyCardId never arrives
+        setTimeout(() => setJustApproved(false), 15_000);
         try {
             await approveRecord(siteId, record.id, user?.email || 'owner');
             showToast('success', 'Record approved and completed');
         } catch (err: any) {
             showToast('error', err.message || 'Approval failed');
+            setJustApproved(false);
         } finally {
             setActionLoading(false);
         }
@@ -154,6 +162,22 @@ function RecordDetailContent() {
         } finally {
             setActionLoading(false);
             setShowVoidDialog(false);
+        }
+    }
+
+    async function handleGenerateWarranty() {
+        if (!record || !isOwner) return;
+        setActionLoading(true);
+        setJustApproved(true);
+        setTimeout(() => setJustApproved(false), 15_000);
+        try {
+            await generateWarrantyCardForRecord(siteId, record.id);
+            showToast('success', 'Warranty card generated successfully');
+        } catch (err: any) {
+            showToast('error', err.message || 'Failed to generate warranty card');
+            setJustApproved(false);
+        } finally {
+            setActionLoading(false);
         }
     }
 
@@ -477,10 +501,28 @@ function RecordDetailContent() {
                 <div className="bg-white dark:bg-neutral-900 p-5 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm">
                     <p className="text-xs font-medium text-gray-500 dark:text-neutral-500 mb-3">WARRANTY CARD</p>
                     {record.status === 'COMPLETED' && !record.warrantyCardId && (
-                        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-neutral-400">
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                            Generating warranty card…
-                        </div>
+                        justApproved ? (
+                            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-neutral-400">
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                Generating warranty card…
+                            </div>
+                        ) : (
+                            <div className="space-y-2">
+                                <p className="text-sm text-gray-400 dark:text-neutral-500 italic">
+                                    Warranty card was not generated — the feature may have been disabled at approval time.
+                                </p>
+                                {isOwner && (
+                                    <button
+                                        onClick={handleGenerateWarranty}
+                                        disabled={actionLoading}
+                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-600 text-white text-sm font-medium hover:bg-green-700 disabled:opacity-50"
+                                    >
+                                        {actionLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Shield className="w-3.5 h-3.5" />}
+                                        Generate Warranty Card
+                                    </button>
+                                )}
+                            </div>
+                        )
                     )}
                     {record.warrantyCardId && warrantyCard && (
                         <div className="space-y-3">

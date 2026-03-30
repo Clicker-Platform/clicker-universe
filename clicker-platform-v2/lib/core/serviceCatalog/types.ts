@@ -38,6 +38,7 @@ export interface ServiceCatalogItem {
     reservationConfig?: {
         bookingType: 'time_slot' | 'request';
         // durationMinutes is top-level (only used when bookingType === 'time_slot').
+        maxPrice?: number;  // upper bound for 'range' pricing display; only used by reservation module
     };
     serviceRecordsConfig?: {
         hasWarranty: boolean;

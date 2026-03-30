@@ -15,7 +15,7 @@ const getDate = (date: any): Date => {
 interface BookingDetailPanelProps {
     booking: Booking | null;
     onClose: () => void;
-    onStatusUpdate: (id: string, status: Booking['status']) => Promise<void>;
+    onStatusUpdate: (id: string, status: Booking['status'], cancellationReason?: string) => Promise<void>;
     onUpdateDetails: (id: string, data: Partial<Booking>) => Promise<void>;
     settings?: Pick<ReservationSettings, 'allowStaffSelection' | 'staffLabel'>;
 }
@@ -42,6 +42,11 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
     const [creatingSR, setCreatingSR] = useState(false);
     const [vehicleLookup, setVehicleLookup] = useState<{ status: 'idle' | 'loading' | 'found' | 'not_found'; vehicle?: Vehicle }>({ status: 'idle' });
     const plateDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    // Cancel Dialog State
+    const [showCancelDialog, setShowCancelDialog] = useState(false);
+    const [cancelReason, setCancelReason] = useState('');
+    const [cancelAction, setCancelAction] = useState<'cancelled'>('cancelled');
 
     // Debounced plate lookup
     useEffect(() => {
@@ -240,9 +245,26 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
     };
 
     const handleStatusAction = async (status: Booking['status']) => {
+        if (status === 'cancelled') {
+            setCancelReason('');
+            setCancelAction('cancelled');
+            setShowCancelDialog(true);
+            return;
+        }
         setUpdating(true);
         try {
             await onStatusUpdate(booking.id, status);
+        } finally {
+            setUpdating(false);
+        }
+    };
+
+    const confirmCancel = async () => {
+        if (!cancelReason.trim()) return;
+        setUpdating(true);
+        try {
+            await onStatusUpdate(booking.id, cancelAction, cancelReason.trim());
+            setShowCancelDialog(false);
         } finally {
             setUpdating(false);
         }
@@ -440,6 +462,16 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
                     </div>
                 )}
 
+                {/* Cancellation Reason (shown for cancelled bookings) */}
+                {booking.status === 'cancelled' && booking.cancellationReason && (
+                    <div className="mb-8">
+                        <label className="text-xs font-bold text-red-400 dark:text-red-500 uppercase tracking-wider block mb-3">Cancellation Reason</label>
+                        <div className="p-4 bg-red-50 dark:bg-red-950/20 rounded-xl border border-red-100 dark:border-red-900/30 text-red-700 dark:text-red-400 text-sm">
+                            {booking.cancellationReason}
+                        </div>
+                    </div>
+                )}
+
                 {/* Status Action Buttons */}
                 {!isEditing && (
                     <div className="border-t border-gray-100 dark:border-neutral-800 pt-6 mt-auto">
@@ -447,25 +479,16 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
                             {booking.status === 'pending' && (
                                 <>
                                     {booking.serviceRecordId ? (
-                                        <>
-                                            <div className="flex-1 flex items-center gap-2 px-4 py-3 rounded-xl bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 text-sm font-medium">
-                                                <ClipboardList size={16} />
-                                                Linked Service Record
-                                                <a
-                                                    href={`/admin/service-records/detail?id=${booking.serviceRecordId}`}
-                                                    className="ml-auto flex items-center gap-1 font-bold hover:underline"
-                                                >
-                                                    View Record <ExternalLink size={14} />
-                                                </a>
-                                            </div>
-                                            <ActionButton
-                                                onClick={() => handleStatusAction('completed')}
-                                                disabled={updating}
-                                                label="Mark Completed"
-                                                icon={<CheckCircle size={18} />}
-                                                variant="success"
-                                            />
-                                        </>
+                                        <div className="flex-1 flex items-center gap-2 px-4 py-3 rounded-xl bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 text-sm font-medium">
+                                            <ClipboardList size={16} />
+                                            Linked Service Record
+                                            <a
+                                                href={`/admin/service-records/detail?id=${booking.serviceRecordId}`}
+                                                className="ml-auto flex items-center gap-1 font-bold hover:underline"
+                                            >
+                                                View Record <ExternalLink size={14} />
+                                            </a>
+                                        </div>
                                     ) : (
                                         <ActionButton
                                             onClick={() => handleStatusAction('confirmed')}
@@ -486,7 +509,23 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
                             )}
                             {booking.status === 'confirmed' && (
                                 <>
-                                    {srEnabled && !booking.serviceRecordId && (
+                                    {booking.serviceRecordId ? (
+                                        <div className="w-full flex flex-col gap-3">
+                                            <div className="flex-1 flex items-center gap-2 px-4 py-3 rounded-xl bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 text-sm font-medium">
+                                                <ClipboardList size={16} />
+                                                Service in Progress
+                                                <a
+                                                    href={`/admin/service-records/detail?id=${booking.serviceRecordId}`}
+                                                    className="ml-auto flex items-center gap-1 font-bold hover:underline"
+                                                >
+                                                    View Record <ExternalLink size={14} />
+                                                </a>
+                                            </div>
+                                            <p className="text-xs text-gray-400 dark:text-neutral-500">
+                                                This booking will be automatically marked as completed when the Service Record is approved.
+                                            </p>
+                                        </div>
+                                    ) : srEnabled ? (
                                         <ActionButton
                                             onClick={() => setShowPlateModal(true)}
                                             disabled={updating}
@@ -494,18 +533,6 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
                                             icon={<ClipboardList size={18} />}
                                             variant="success"
                                         />
-                                    )}
-                                    {booking.serviceRecordId ? (
-                                        <div className="flex-1 flex items-center gap-2 px-4 py-3 rounded-xl bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 text-sm font-medium">
-                                            <ClipboardList size={16} />
-                                            Service in Progress
-                                            <a
-                                                href={`/admin/service-records/detail?id=${booking.serviceRecordId}`}
-                                                className="ml-auto flex items-center gap-1 font-bold hover:underline"
-                                            >
-                                                View Record <ExternalLink size={14} />
-                                            </a>
-                                        </div>
                                     ) : (
                                         <ActionButton
                                             onClick={() => handleStatusAction('completed')}
@@ -625,6 +652,34 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
                         />
                     </div>
                 )}
+            </ConfirmationDialog>
+
+            {/* Cancel Confirmation Dialog */}
+            <ConfirmationDialog
+                isOpen={showCancelDialog}
+                title={booking.status === 'pending' ? 'Reject Booking' : 'Cancel Booking'}
+                message={`Are you sure you want to ${booking.status === 'pending' ? 'reject' : 'cancel'} this booking for ${booking.customerName}? Please provide a reason.`}
+                confirmLabel={booking.status === 'pending' ? 'Reject Booking' : 'Cancel Booking'}
+                onConfirm={confirmCancel}
+                onCancel={() => setShowCancelDialog(false)}
+                isLoading={updating}
+                isDestructive
+            >
+                <div className="space-y-2">
+                    <label className="text-xs font-bold text-gray-500 dark:text-neutral-500 uppercase">Reason</label>
+                    <textarea
+                        autoFocus
+                        required
+                        rows={3}
+                        placeholder="e.g. Customer requested cancellation, schedule conflict..."
+                        className="w-full px-3 py-2 border border-gray-200 dark:border-neutral-700 rounded-lg text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-all dark:bg-neutral-800 dark:text-neutral-200"
+                        value={cancelReason}
+                        onChange={(e) => setCancelReason(e.target.value)}
+                    />
+                    {!cancelReason.trim() && (
+                        <p className="text-xs text-red-500">A reason is required to proceed.</p>
+                    )}
+                </div>
             </ConfirmationDialog>
         </div>
     );

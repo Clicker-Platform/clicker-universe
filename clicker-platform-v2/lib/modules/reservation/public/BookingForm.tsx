@@ -14,7 +14,7 @@ import DetailsStep from './steps/DetailsStep';
 interface BookingFormProps {
     initialServices: Service[];
     initialStaff: Staff[];
-    initialSettings: { allowStaffSelection: boolean; membershipEnabled?: boolean; staffLabel?: string };
+    initialSettings: { allowStaffSelection: boolean; membershipEnabled?: boolean; staffLabel?: string; pricingDisplay?: string; bookingTitle?: string };
     siteId: string;
 }
 
@@ -189,7 +189,7 @@ export default function BookingForm({
     }
 
     return (
-        <div className={`overflow-hidden max-w-md mx-auto transition-all duration-200 rounded-2xl ${
+        <div className={`overflow-hidden w-full transition-all duration-200 rounded-2xl ${
             isGlass
                 ? 'bg-black/20 backdrop-blur-md border border-white/10 shadow-xl'
                 : 'bg-white border border-gray-200 shadow-sm'
@@ -220,7 +220,7 @@ export default function BookingForm({
                     <div className="w-6"></div> {/* Spacer */}
                 </div>
                 <h2 className="text-2xl font-black text-white">
-                    {step === 1 && "Select Service"}
+                    {step === 1 && (settings.bookingTitle || "Select Service")}
                     {step === 2 && `Select ${settings.staffLabel || 'Staff'}`}
                     {step === 3 && "Select Time"}
                     {step === 4 && "Your Details"}
@@ -234,6 +234,7 @@ export default function BookingForm({
                         services={services}
                         onSelect={handleServiceSelect}
                         isGlass={isGlass}
+                        pricingDisplay={(settings.pricingDisplay as any) || 'fixed'}
                     />
                 )}
 

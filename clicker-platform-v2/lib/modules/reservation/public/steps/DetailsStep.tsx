@@ -205,6 +205,7 @@ export default function DetailsStep({
                             value={customerInfo.preferredDate}
                             onChange={e => setCustomerInfo({ ...customerInfo, preferredDate: e.target.value })}
                             className={inputClass}
+                            style={isGlass ? { colorScheme: 'dark' } : undefined}
                         />
                         <p className={`text-xs mt-1 ${isGlass ? 'text-white/30' : 'text-gray-400'}`}>We will confirm the final schedule with you.</p>
                     </div>

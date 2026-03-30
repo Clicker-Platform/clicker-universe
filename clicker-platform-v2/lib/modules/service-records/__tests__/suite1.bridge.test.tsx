@@ -36,6 +36,7 @@ const mockBooking = {
   id: 'bk_001',
   serviceId: 'svc_001',
   serviceName: 'Nano Coating',
+  customerId: 'cust_001',
   customerName: 'Budi Santoso',
   customerEmail: 'budi@test.com',
   customerPhone: '+628123456789',
@@ -43,6 +44,7 @@ const mockBooking = {
   totalPrice: 500000,
   startAt: { toDate: () => new Date() } as any,
   endAt: { toDate: () => new Date() } as any,
+  createdAt: { toDate: () => new Date() } as any,
   staffName: 'John',
   notes: ''
 };

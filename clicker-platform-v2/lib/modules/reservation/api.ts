@@ -52,6 +52,7 @@ function catalogToService(item: ServiceCatalogItem): Service {
         durationMinutes: item.durationMinutes,
         bookingType: item.reservationConfig?.bookingType ?? 'time_slot',
         price: item.price,
+        maxPrice: item.reservationConfig?.maxPrice,
         isActive: item.isActive,
         imageUrl: item.imageUrl,
         category: item.category,
@@ -85,7 +86,10 @@ export async function createService(
         isActive: service.isActive ?? true,
         category: (service.category as any) || 'OTHER',
         imageUrl: service.imageUrl,
-        reservationConfig: {},   // marks as bookable
+        reservationConfig: {
+            bookingType: service.bookingType || 'time_slot',
+            ...(service.maxPrice != null ? { maxPrice: service.maxPrice } : {}),
+        },   // marks as bookable
     });
 }
 
@@ -102,6 +106,7 @@ export async function updateService(
     if (updates.isActive !== undefined) patch.isActive = updates.isActive;
     if (updates.category !== undefined) patch.category = updates.category;
     if (updates.imageUrl !== undefined) patch.imageUrl = updates.imageUrl;
+    if (updates.maxPrice !== undefined) patch['reservationConfig.maxPrice'] = updates.maxPrice;
     await updateServiceCatalogItem(siteId, id, patch);
 }
 
@@ -198,7 +203,7 @@ export async function markBookingAsRead(siteId: string, id: string): Promise<voi
     await updateDoc(docRef, { isRead: true });
 }
 
-export async function updateBookingStatus(siteId: string, bookingId: string, status: Booking['status']) {
+export async function updateBookingStatus(siteId: string, bookingId: string, status: Booking['status'], cancellationReason?: string) {
     const docRef = doc(db, 'sites', siteId, BOOKINGS_COLLECTION, bookingId);
 
     // Fetch booking first to handle integrations
@@ -206,7 +211,11 @@ export async function updateBookingStatus(siteId: string, bookingId: string, sta
     if (!bookingSnap.exists()) return;
     const booking = bookingSnap.data() as Booking;
 
-    await updateDoc(docRef, { status });
+    const updateData: Record<string, any> = { status };
+    if (status === 'cancelled' && cancellationReason) {
+        updateData.cancellationReason = cancellationReason;
+    }
+    await updateDoc(docRef, updateData);
 
     // Integration: Award Points on Completion
     if (status === 'completed' && booking.status !== 'completed') {
@@ -310,7 +319,7 @@ export async function getReservationSettings(siteId: string): Promise<Reservatio
         isModuleEnabled('membership').catch(() => false)
     ]);
 
-    const defaults: ReservationSettings = { allowStaffSelection: false, staffLabel: 'Staff' };
+    const defaults: ReservationSettings = { allowStaffSelection: false, staffLabel: 'Staff', pricingDisplay: 'fixed' };
     const settings: ReservationSettings = docSnap.exists()
         ? { ...defaults, ...(docSnap.data() as ReservationSettings) }
         : defaults;

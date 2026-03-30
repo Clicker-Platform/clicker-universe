@@ -15,6 +15,8 @@ import {
 } from '@/lib/core/serviceCatalog/api';
 import type { ServiceCatalogItem, ServiceCategoryConfig } from '@/lib/core/serviceCatalog/types';
 import { DEFAULT_SERVICE_CATEGORIES } from '@/lib/core/serviceCatalog/types';
+import { getReservationSettings } from '@/lib/modules/reservation/api';
+import type { PricingDisplay } from '@/lib/modules/reservation/types';
 
 // ─── Color presets for category manager ────────────────────────────────────────
 const COLOR_PRESETS: { label: string; value: string }[] = [
@@ -38,6 +40,7 @@ interface FormData {
     name: string;
     description: string;
     price: number;
+    maxPrice: number | '';
     durationMinutes: number;
     bookingType: 'time_slot' | 'request';
     category: string;
@@ -53,6 +56,7 @@ const DEFAULT_FORM: FormData = {
     name: '',
     description: '',
     price: 0,
+    maxPrice: '',
     durationMinutes: 60,
     bookingType: 'time_slot',
     category: 'OTHER',
@@ -70,6 +74,7 @@ function itemToForm(item: ServiceCatalogItem): FormData {
         name: item.name,
         description: item.description ?? '',
         price: item.price,
+        maxPrice: item.reservationConfig?.maxPrice ?? '',
         durationMinutes: item.durationMinutes ?? 60,
         bookingType: item.reservationConfig?.bookingType ?? 'time_slot',
         category: item.category,
@@ -292,11 +297,13 @@ export default function ServiceCatalogClient({ initialItems = [] }: Props) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [itemToDelete, setItemToDelete] = useState<string | null>(null);
+    const [pricingDisplay, setPricingDisplay] = useState<PricingDisplay>('fixed');
 
-    // Load categories on mount
+    // Load categories and reservation settings on mount
     useEffect(() => {
         if (!siteId) return;
         getServiceCategories(siteId).then(setCategories).catch(console.error);
+        getReservationSettings(siteId).then(s => setPricingDisplay(s.pricingDisplay || 'fixed')).catch(console.error);
     }, [siteId]);
 
     const refresh = async () => {
@@ -330,7 +337,10 @@ export default function ServiceCatalogClient({ initialItems = [] }: Props) {
                 durationMinutes: isTimeSlot ? form.durationMinutes : undefined,
                 category: form.category,
                 isActive: form.isActive,
-                reservationConfig: form.bookable ? { bookingType: form.bookingType } : undefined,
+                reservationConfig: form.bookable ? {
+                    bookingType: form.bookingType,
+                    ...(form.maxPrice !== '' ? { maxPrice: Number(form.maxPrice) } : {}),
+                } : undefined,
                 serviceRecordsConfig: form.hasServiceRecord ? {
                     hasWarranty: form.hasWarranty,
                     defaultWarrantyMonths: form.hasWarranty ? form.defaultWarrantyMonths : undefined,
@@ -582,7 +592,11 @@ export default function ServiceCatalogClient({ initialItems = [] }: Props) {
                             {/* Price + Category */}
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">Price (IDR) <span className="text-red-500">*</span></label>
+                                    <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">
+                                        {form.bookable && pricingDisplay === 'range' ? 'Min Price (IDR)' :
+                                         form.bookable && pricingDisplay === 'starting_from' ? 'Starting Price (IDR)' :
+                                         'Price (IDR)'} <span className="text-red-500">*</span>
+                                    </label>
                                     <input
                                         required
                                         type="number"
@@ -591,6 +605,9 @@ export default function ServiceCatalogClient({ initialItems = [] }: Props) {
                                         onChange={e => set({ price: Number(e.target.value) })}
                                         className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
                                     />
+                                    {form.bookable && pricingDisplay === 'starting_from' && (
+                                        <p className="text-xs text-indigo-600 dark:text-indigo-500 mt-1">Shown as "Mulai dari" on the booking page.</p>
+                                    )}
                                 </div>
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">Category</label>
@@ -653,6 +670,21 @@ export default function ServiceCatalogClient({ initialItems = [] }: Props) {
                                                 ))}
                                             </div>
                                         </div>
+                                        {/* Max Price — only for range pricing */}
+                                        {pricingDisplay === 'range' && (
+                                            <div>
+                                                <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">Max Price (IDR)</label>
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    placeholder={`e.g. ${form.price * 3 || 500000}`}
+                                                    value={form.maxPrice}
+                                                    onChange={e => set({ maxPrice: e.target.value === '' ? '' : Number(e.target.value) })}
+                                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
+                                                />
+                                                <p className="text-xs text-indigo-600 dark:text-indigo-500 mt-1">Upper bound shown on booking page, e.g. Rp {form.price.toLocaleString('id-ID')} – Rp {(Number(form.maxPrice) || form.price * 3 || 500000).toLocaleString('id-ID')}</p>
+                                            </div>
+                                        )}
                                         {/* Duration — only for time_slot */}
                                         {form.bookingType === 'time_slot' && (
                                             <div>

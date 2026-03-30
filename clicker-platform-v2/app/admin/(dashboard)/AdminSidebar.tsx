@@ -14,7 +14,8 @@ import { ModuleDefinition } from '@/lib/modules/types';
 import { useSite } from '@/lib/site-context';
 import { useUser } from '@/lib/user-context';
 import { useAdminTheme } from '@/lib/use-admin-theme';
-import { InboxSlideOver } from '@/components/admin/InboxSlideOver';
+import { InboxPanel } from '@/components/admin/inbox/InboxPanel';
+import { useInboxPanel } from '@/lib/inbox-panel-context';
 
 interface NavItem {
     icon: any;
@@ -36,11 +37,11 @@ export function AdminSidebar() {
     const [hoveredItem, setHoveredItem] = useState<{ label: string, top: number } | null>(null);
     const [logoHovered, setLogoHovered] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
-    const [inboxOpen, setInboxOpen] = useState(false);
     const settingsRef = useRef<HTMLDivElement>(null);
     const pathname = usePathname();
     const router = useRouter();
     const { siteId, tenantSlug, isSubdomain } = useSite();
+    const { open: openInboxPanel } = useInboxPanel();
 
     const handleLogout = async () => {
         try {
@@ -159,7 +160,6 @@ export function AdminSidebar() {
 
         const allCoreItems = [
             { icon: LayoutDashboard, label: 'Overview', href: `${baseUrl}/admin`, permission: null },
-            { icon: Inbox, label: 'Inbox', href: `${baseUrl}/admin/inbox`, permission: 'biolink' },
             { icon: Box, label: 'Canvas Studio', href: `${baseUrl}/admin/canvas`, permission: 'biolink' },
             { icon: Palette, label: 'Template', href: `${baseUrl}/admin/template`, permission: 'biolink' },
             { icon: Layers, label: 'Services', href: `${baseUrl}/admin/services`, permission: null },
@@ -203,10 +203,6 @@ export function AdminSidebar() {
         }).filter(Boolean) as SidebarGroup[];
 
         const groupsDef = [
-            {
-                title: 'Customer Engagement',
-                match: (item: NavItem) => ['Inbox'].includes(item.label)
-            },
             {
                 title: 'Workspace',
                 match: (item: NavItem) => ['Overview', 'Template'].includes(item.label)
@@ -355,15 +351,6 @@ export function AdminSidebar() {
                                                 <item.icon size={20} className={`shrink-0 ${isActive ? 'stroke-[2.5px]' : ''}`} />
                                                 {(!isCollapsed || sidebarOpen) && <span className="truncate">{item.label}</span>}
                                             </div>
-                                            {(!isCollapsed || sidebarOpen) && item.label === 'Inbox' && unreadCount > 0 && (
-                                                <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full ${isActive ? 'bg-brand-green text-brand-dark' : 'bg-red-500 text-white'}`}>
-                                                    {unreadCount}
-                                                </span>
-                                            )}
-                                            {(isCollapsed && !sidebarOpen) && item.label === 'Inbox' && unreadCount > 0 && (
-                                                <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-neutral-900"></span>
-                                            )}
-                                            
                                             {(!isCollapsed || sidebarOpen) && item.label === 'Bookings' && newBookingCount > 0 && (
                                                 <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full ${isActive ? 'bg-brand-green text-brand-dark' : 'bg-brand-blue text-white'}`}>
                                                     {newBookingCount}
@@ -461,7 +448,7 @@ export function AdminSidebar() {
 
                         {/* Inbox shortcut button */}
                         <button
-                            onClick={() => setInboxOpen(true)}
+                            onClick={() => openInboxPanel()}
                             title="Inbox"
                             className={`relative flex items-center justify-center px-3 py-2 rounded-xl font-bold text-gray-500 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800 hover:text-brand-dark dark:hover:text-neutral-200 transition-colors shrink-0 ${(isCollapsed && !sidebarOpen) ? 'w-full' : ''}`}
                         >
@@ -474,15 +461,8 @@ export function AdminSidebar() {
                 </div>
             </aside>
 
-            {/* Inbox slide-over */}
-            {inboxOpen && (
-                <InboxSlideOver
-                    onClose={() => setInboxOpen(false)}
-                    siteId={siteId}
-                    baseUrl={(tenantSlug && !isSubdomain) ? `/${tenantSlug}` : ''}
-                    sidebarCollapsed={isCollapsed}
-                />
-            )}
+            {/* Inbox panel (controlled via InboxPanelContext) */}
+            <InboxPanel sidebarCollapsed={isCollapsed} />
         </>
     );
 }

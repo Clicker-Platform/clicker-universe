@@ -9,6 +9,7 @@ export interface Service {
     durationMinutes?: number;                   // undefined for request-type bookings
     bookingType?: 'time_slot' | 'request';      // promoted from reservationConfig; defaults to 'time_slot'
     price: number;
+    maxPrice?: number;                          // upper bound for 'range' pricing display
     isActive: boolean;
     imageUrl?: string;
     category?: string;      // mapped from ServiceCatalogItem.category
@@ -35,12 +36,17 @@ export interface Booking {
     preferredDate?: string;     // ISO date YYYY-MM-DD; set for request-type bookings by the customer
     createdAt: Timestamp;
     serviceRecordId?: string;   // linked Service Record (set when "Start Service Record" is clicked)
+    cancellationReason?: string; // reason provided by admin when cancelling/rejecting
 }
+
+export type PricingDisplay = 'fixed' | 'starting_from' | 'range' | 'hidden';
 
 export interface ReservationSettings {
     allowStaffSelection: boolean;
     staffLabel?: string;        // label for staff/resource (default: 'Staff'; e.g. 'Technician', 'Therapist')
+    pricingDisplay?: PricingDisplay; // how prices appear on the public booking form (default: 'fixed')
     membershipEnabled?: boolean; // derived from module registry, not stored
+    bookingTitle?: string;      // custom heading for step 1 (default: 'Select Service'; e.g. 'Book a Service')
 }
 
 export interface TimeSlot {

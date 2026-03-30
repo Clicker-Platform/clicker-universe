@@ -2,12 +2,11 @@
 
 import { useEditor } from './EditorContext';
 import { BlockManager } from './BlockManager';
-import { Settings, Layers, Box, FileText, BarChart2, CheckSquare, Square, X, Plus, Link2, FileInput, ShoppingBag, Globe } from 'lucide-react';
+import { Settings, Layers, Box, FileText, BarChart2, CheckSquare, Square, X, Plus, Link2, FileInput, ShoppingBag, Globe, Loader2 } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
 import { TemplateProvider } from '@/components/TemplateProvider';
 import { BlockRenderer } from '@/components/blocks/BlockRenderer';
-import { useEffect, useState, startTransition } from 'react';
-import { hydratePageBlocks } from '@/lib/fetchData';
+import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { getTemplate } from '@/lib/templates/registry';
 import { ResponsiveNavBar } from '@/components/layout/ResponsiveNavBar';
@@ -54,6 +53,8 @@ export function CanvasStudio({
         setOverrideSeo,
         setOverridePixels,
         updateFooterText,
+        pageLoading,
+        hydratedData,
     } = usePageStudio();
     const [activePanel, setActivePanel] = useState<'page' | 'seo' | null>(null);
     const [host] = useState(() => typeof window !== 'undefined' ? window.location.host : '');
@@ -103,7 +104,6 @@ export function CanvasStudio({
         }
     };
     const radiusValue = getRadiusValue(borderRadius);
-    const [hydratedData, setHydratedData] = useState<any>({});
 
     // Get the full template definition (includes components)
     const template = getTemplate(templateId);
@@ -116,21 +116,6 @@ export function CanvasStudio({
 
     const isHomepage = pageSlug === (globalSettings?.homepageSlug || 'home');
     const isSubPage = !isHomepage;
-
-    // Auto-hydrate system blocks when needed
-    useEffect(() => {
-        if (!blocks.length || !siteId) return;
-
-        let isMounted = true;
-
-        hydratePageBlocks(siteId, blocks).then(data => {
-            if (isMounted) {
-                startTransition(() => setHydratedData(data));
-            }
-        });
-
-        return () => { isMounted = false; };
-    }, [blocks, siteId]);
 
     return (
         <div className="flex flex-1 overflow-hidden bg-neutral-950">
@@ -236,6 +221,15 @@ export function CanvasStudio({
 
             {/* Center - Live Canvas */}
             <div className="flex-1 flex justify-center bg-neutral-950 relative overflow-y-auto">
+                {/* Page switch overlay */}
+                {pageLoading && (
+                    <div className="absolute inset-0 z-30 bg-neutral-950/60 backdrop-blur-[2px] flex items-center justify-center transition-opacity duration-200">
+                        <div className="flex items-center gap-2 text-neutral-400 text-sm">
+                            <Loader2 size={16} className="animate-spin" />
+                            Loading page...
+                        </div>
+                    </div>
+                )}
                 {/* The actual canvas container */}
                 <div className={`w-full ${deviceView === 'tablet' ? 'max-w-lg' : deviceView === 'mobile' ? 'max-w-md' : ''} shadow-2xl ring-1 ring-white/10 overflow-hidden transition-all duration-300 my-8 self-start`}>
                     {/* WYSIWYG Renderer */}
