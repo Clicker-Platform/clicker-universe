@@ -1,11 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     serverExternalPackages: ['firebase-admin', 'sharp'],
-    experimental: {
-        turbo: { // or turbopack, depending on exact Next.js 14/15 version syntax, adding turbo logic to point to root 
-            root: '..'
-        }
-    },
     images: {
         formats: ['image/avif', 'image/webp'],
         minimumCacheTTL: 2592000,

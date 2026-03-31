@@ -38,6 +38,8 @@
   ],
   "exclude": [
     "node_modules",
-    "legacy"
+    "legacy",
+    "vitest.config.ts",
+    "vitest.setup.ts"
   ]
 }

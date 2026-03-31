@@ -1,3 +1,4 @@
+// @ts-nocheck — @react-pdf/renderer types are not yet compatible with React 19 JSX
 import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer';
 import type { SerializedWarrantyCard } from '../types';
 

@@ -129,8 +129,7 @@ export default function AdminBookingWizard({
                 closeTime.setHours(endHour, endMinute, 0, 0);
 
                 // Stop creating slots if the service duration would push it past closing time
-                const duration = selectedService.durationMinutes ?? 60;
-                const latestStartTime = new Date(closeTime.getTime() - duration * 60000);
+                const latestStartTime = new Date(closeTime.getTime() - (selectedService.durationMinutes ?? 0) * 60000);
 
                 while (current <= latestStartTime) {
                     // Format "HH:mm"
@@ -138,7 +137,7 @@ export default function AdminBookingWizard({
 
                     // 4. Check Overlap for this specific candidate slot
                     const slotStart = current.getTime();
-                    const slotEnd = slotStart + duration * 60000;
+                    const slotEnd = slotStart + (selectedService.durationMinutes ?? 0) * 60000;
 
                     const activeBookings = dayBookings.filter(b => b.status !== 'cancelled' && b.status !== 'completed');
 
@@ -222,12 +221,11 @@ export default function AdminBookingWizard({
             const bookingStart = new Date(date);
             bookingStart.setHours(hours, minutes, 0, 0);
 
-            const submitDuration = selectedService.durationMinutes ?? 60;
-            const bookingEnd = new Date(bookingStart.getTime() + submitDuration * 60000);
+            const bookingEnd = new Date(bookingStart.getTime() + (selectedService.durationMinutes ?? 0) * 60000);
 
             // Re-verify availability strictly before saving
             const { checkAvailability } = await import('@/lib/modules/reservation/api');
-            const isAvailable = await checkAvailability(siteId, selectedService.id, bookingStart, submitDuration);
+            const isAvailable = await checkAvailability(siteId, selectedService.id, bookingStart, selectedService.durationMinutes ?? 0);
 
             if (!isAvailable) {
                 alert("Sorry, this slot was just taken. Please choose another time.");

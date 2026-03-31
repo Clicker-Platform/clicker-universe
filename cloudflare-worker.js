@@ -1,20 +1,20 @@
 /**
  * Cloudflare Worker - Multi-Tenant Subdomain Masking
- * Version: v10 - Fixed redirect Location header masking + /admin root route
- * 
+ * Version: v14 - Prevent HTML caching to avoid stale chunk reference 404s
+ *
  * DEPLOYMENT:
  * 1. Go to Cloudflare Dashboard → Workers & Pages
  * 2. Create/Edit your worker
  * 3. Paste this code
  * 4. Deploy
- * 
+ *
  * DNS SETUP:
  * - Add CNAME record: * → <worker-name>.<account>.workers.dev (Proxied)
- * - Add CNAME record: @ → <worker-name>.<account>.workers.ddomain ev (Proxied)
+ * - Add CNAME record: @ → <worker-name>.<account>.workers.dev (Proxied)
  */
 
 const HOSTS = {
-    marketing: 'clicker-universe.web.app',           // Landing/Marketing page
+    website: 'clicker-universe.web.app',             // Marketing/Landing website (clicker-website repo)
     authGateway: 'clicker-auth-gateway.web.app',     // Auth Gateway
     clickerPlatform: 'clickerapps.web.app',          // Main multi-tenant app
     backyard: 'clicker-backyard-app.web.app',        // Backyard Admin
@@ -67,9 +67,16 @@ export default {
         // hi-clicker.clicker.id/admin → clickerapps.web.app/hi-clicker/admin
 
         if (subdomain && subdomain !== 'www' && !RESERVED_SUBDOMAINS.includes(subdomain)) {
-            // IMPORTANT: Don't prefix static assets and API routes with tenant slug
-            // These paths should pass through as-is to Firebase
-            const staticPaths = ['/_next/', '/favicon', '/robots', '/sitemap', '/manifest', '/__nextjs', '/seed/', '/api/', '/member/'];
+            // IMPORTANT: Don't prefix static assets and special routes with tenant slug.
+            // These paths should pass through as-is to Firebase.
+            // SYNC: Keep this list in sync with middleware.ts `specialRoutes` and rootReservedPaths below.
+            const staticPaths = [
+                '/_next/', '/favicon', '/robots', '/sitemap', '/manifest', '/__nextjs', '/seed/',
+                '/api/',
+                '/member/',
+                '/catalog',   // Public catalog page — not tenant-specific
+                '/warranty',  // Public warranty card page — not tenant-specific
+            ];
             const isStaticPath = staticPaths.some(prefix => pathname.startsWith(prefix));
 
 
@@ -88,17 +95,35 @@ export default {
         // ROOT DOMAIN PATHS (clicker.id/*)
         // ============================================
 
-        // Platform static assets (/_next/, /__nextjs, /api/, etc.)
-        // When clicker.id/admin loads, it requests clicker.id/_next/static/chunks/...
-        // These MUST route to platform, not marketing
-        const platformStaticPaths = ['/_next/', '/__nextjs', '/api/'];
-        if (platformStaticPaths.some(prefix => pathname.startsWith(prefix))) {
-            return proxyRequest(request, HOSTS.clickerPlatform, pathname);
-        }
+        // Known non-tenant first-path-segments on the root domain.
+        // Everything NOT in this list is treated as a tenant slug → 301 redirect to subdomain.
+        // SYNC: When adding a new top-level route to the app, add it here too.
+        const rootReservedPaths = [
+            '/_next/', '/__nextjs',
+            '/api/',
+            '/admin',
+            '/login',
+            '/auth',
+            '/catalog',
+            '/warranty',
+            '/member/',
+            '/seed/',
+            '/favicon', '/robots', '/sitemap', '/manifest',
+        ];
 
-        // /admin/* → Clicker Platform (admin dashboard)
-        if (pathname.startsWith('/admin')) {
-            return proxyRequest(request, HOSTS.clickerPlatform, pathname);
+        const firstSegment = pathname.split('/').filter(Boolean)[0];
+        const isRootReservedPath = rootReservedPaths.some(prefix => pathname.startsWith(prefix));
+
+        // TENANT SLUG DETECTION:
+        // If path has a first segment that is not a known reserved path,
+        // treat it as a tenant slug and 301-redirect to the canonical subdomain URL.
+        // e.g. clicker.id/mrb → mrb.clicker.id
+        //      clicker.id/quattro/about → quattro.clicker.id/about
+        if (!isRootReservedPath && firstSegment) {
+            const remainingSegments = pathname.split('/').filter(Boolean).slice(1);
+            const restOfPath = remainingSegments.length > 0 ? '/' + remainingSegments.join('/') : '';
+            const redirectUrl = `https://${firstSegment}.clicker.id${restOfPath}${url.search}`;
+            return Response.redirect(redirectUrl, 301);
         }
 
         // /login → Redirect to auth.clicker.id (NOT proxy)
@@ -116,8 +141,16 @@ export default {
             return proxyRequest(request, HOSTS.authGateway, newPath);
         }
 
-        // Default: Root domain → Marketing Site
-        return proxyRequest(request, HOSTS.marketing, pathname);
+        // Default: All other root domain paths (/, /admin, /catalog, /warranty, /api, etc.)
+        // NOTE: /_next/ and /__nextjs must go to HOSTS.website — their chunks belong to the website build.
+        //       Routing /_next/ to platform was causing 404s because the chunk hashes don't match.
+        const platformOnlyPaths = ['/api/', '/admin', '/catalog', '/warranty', '/member/'];
+        if (platformOnlyPaths.some(prefix => pathname.startsWith(prefix))) {
+            return proxyRequest(request, HOSTS.clickerPlatform, pathname);
+        }
+
+        // Root /, /_next/, /__nextjs, and all other unmatched paths → Marketing website
+        return proxyRequest(request, HOSTS.website, pathname);
     }
 };
 
@@ -155,7 +188,15 @@ async function proxyRequest(request, targetHost, targetPath, tenantSlug = null) 
         }
 
         // Use direct fetch with constructed options
-        const response = await fetch(targetUrl, fetchOptions);
+        // cf.cacheEverything: false ensures Cloudflare doesn't cache HTML pages.
+        // Static assets (_next/static/) are still cached by Cloudflare's default rules.
+        const response = await fetch(targetUrl, {
+            ...fetchOptions,
+            cf: {
+                // Don't cache HTML — prevents stale chunk-hash references after redeploy
+                cacheEverything: false,
+            },
+        });
 
         // Create new response with modified headers
         const newResponse = new Response(response.body, {
@@ -164,6 +205,12 @@ async function proxyRequest(request, targetHost, targetPath, tenantSlug = null) 
             headers: response.headers,
         });
 
+        // Force no-cache on HTML responses so browsers always get fresh chunk references
+        const contentType = response.headers.get('content-type') || '';
+        if (contentType.includes('text/html')) {
+            newResponse.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+        }
+
         // CRITICAL: Rewrite Location header for redirects to use masked domains
         // Without this, middleware 302 redirects expose raw .web.app URLs to the browser
         if (response.status >= 300 && response.status < 400) {
@@ -171,15 +218,37 @@ async function proxyRequest(request, targetHost, targetPath, tenantSlug = null) 
             if (location) {
                 let maskedLocation = location
                     .replace('https://clicker-auth-gateway.web.app', 'https://auth.clicker.id')
-                    .replace('https://clickerapps.web.app', 'https://clicker.id')
                     .replace('https://clicker-backyard-app.web.app', 'https://backyard.clicker.id')
-                    .replace('https://clicker-universe.web.app', 'https://clicker.id');
+                    .replace('https://clicker-universe.web.app', 'https://clicker.id'); // legacy stub
+
+                // Tenant-aware rewriting for platform redirects.
+                // e.g. clickerapps.web.app/quattro/admin → quattro.clicker.id/admin (not clicker.id/quattro/admin)
+                if (maskedLocation.includes('https://clickerapps.web.app')) {
+                    const platformPath = maskedLocation.replace('https://clickerapps.web.app', '');
+                    if (tenantSlug) {
+                        const pathSegments = platformPath.split('?')[0].split('/').filter(Boolean);
+                        const queryString = platformPath.includes('?') ? '?' + platformPath.split('?')[1] : '';
+                        if (pathSegments[0] === tenantSlug) {
+                            // Strip the tenant prefix — subdomain already implies the tenant
+                            // e.g. /quattro/admin → quattro.clicker.id/admin
+                            const remainingPath = '/' + pathSegments.slice(1).join('/');
+                            maskedLocation = `https://${tenantSlug}.clicker.id${remainingPath === '/' ? '' : remainingPath}${queryString}`;
+                        } else {
+                            // No tenant prefix in path — keep path on tenant subdomain
+                            maskedLocation = `https://${tenantSlug}.clicker.id${platformPath}`;
+                        }
+                    } else {
+                        // No tenant context — use root domain
+                        maskedLocation = `https://clicker.id${platformPath}`;
+                    }
+                }
+
                 newResponse.headers.set('Location', maskedLocation);
             }
         }
 
         // Add debug headers
-        newResponse.headers.set('X-Served-By', 'clicker-gateway-v10');
+        newResponse.headers.set('X-Served-By', 'clicker-gateway-v13');
         newResponse.headers.set('X-Routed-To', targetHost);
         newResponse.headers.set('X-Target-Path', targetPath);
         if (tenantSlug) {

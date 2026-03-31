@@ -15,6 +15,9 @@
         ],
         "auth": [
           "clicker-auth-gateway"
+        ],
+        "website": [
+          "clicker-universe"
         ]
       }
     },

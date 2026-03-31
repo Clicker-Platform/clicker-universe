@@ -45,7 +45,15 @@ export function AdminSidebar() {
 
     const handleLogout = async () => {
         try {
-            document.cookie = '__session=; path=/; max-age=0';
+            // Clear __session at current origin
+            const isSecure = window.location.protocol === 'https:';
+            const secureFlag = isSecure ? '; Secure' : '';
+            document.cookie = `__session=; path=/; max-age=0; SameSite=Lax${secureFlag}`;
+            // Clear __session at domain level so all tenant subdomains are invalidated
+            const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN;
+            if (baseDomain && isSecure) {
+                document.cookie = `__session=; path=/; max-age=0; Domain=.${baseDomain}; SameSite=Lax; Secure`;
+            }
             await signOut(auth);
             const gatewayUrl = process.env.NEXT_PUBLIC_AUTH_GATEWAY_URL;
             if (gatewayUrl) {
