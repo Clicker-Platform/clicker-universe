@@ -36,8 +36,12 @@ function AuthCallbackHandler() {
 
     useEffect(() => {
         const handleCallback = async () => {
-            // Get token from URL params
-            const token = searchParams.get('token');
+            // Read token from URL fragment (#token=...) — preferred, never sent to server.
+            // Fallback to query param (?token=...) for backward compatibility.
+            const fragmentToken = typeof window !== 'undefined'
+                ? new URLSearchParams(window.location.hash.slice(1)).get('token')
+                : null;
+            const token = fragmentToken || searchParams.get('token');
 
             // If we have already processed a token, stop.
             if (processedRef.current) return;
@@ -62,6 +66,7 @@ function AuthCallbackHandler() {
 
             // 1. Mark as processed immediately to lock other executions
             processedRef.current = true;
+            setStatus('Memverifikasi token...');
 
             const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN;
             const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
@@ -112,10 +117,16 @@ function AuthCallbackHandler() {
             }
 
             try {
-                setStatus('Authenticating...');
+                setStatus('Menghubungkan akun...');
 
                 // 3. Sign in with the custom token (now at the correct origin!)
-                const userCredential = await signInWithCustomToken(auth, token);
+                // Wrap with 10s timeout to prevent infinite hanging if Firebase Auth is slow
+                const userCredential = await Promise.race([
+                    signInWithCustomToken(auth, token),
+                    new Promise<never>((_, reject) =>
+                        setTimeout(() => reject(new Error('Koneksi timeout (10s). Silakan coba login kembali.')), 10000)
+                    )
+                ]);
                 const user = userCredential.user;
 
                 console.log('[Auth Callback] Signed in user:', user.uid, user.email);

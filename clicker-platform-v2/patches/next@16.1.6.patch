@@ -1,0 +1,15 @@
+diff --git a/dist/server/lib/router-utils/filesystem.js b/dist/server/lib/router-utils/filesystem.js
+index c643b25cdcf18afdc755f9fb993cdb242dd436a2..092172a4b736a8715cd2eeebff006b46876e6e03 100644
+--- a/dist/server/lib/router-utils/filesystem.js
++++ b/dist/server/lib/router-utils/filesystem.js	
+@@ -291,8 +291,8 @@ async function setupFsCheck(opts) {
+             }
+         };
+     }
+-    const headers = customRoutes.headers.map((item)=>buildCustomRoute('header', item, opts.config.basePath, opts.config.experimental.caseSensitiveRoutes));
+-    const redirects = customRoutes.redirects.map((item)=>buildCustomRoute('redirect', item, opts.config.basePath, opts.config.experimental.caseSensitiveRoutes));
++    const headers = (customRoutes.headers || []).map((item)=>buildCustomRoute('header', item, opts.config.basePath, opts.config.experimental.caseSensitiveRoutes));
++    const redirects = (customRoutes.redirects || []).map((item)=>buildCustomRoute('redirect', item, opts.config.basePath, opts.config.experimental.caseSensitiveRoutes));
+     const rewrites = {
+         beforeFiles: customRoutes.rewrites.beforeFiles.map((item)=>buildCustomRoute('before_files_rewrite', item)),
+         afterFiles: customRoutes.rewrites.afterFiles.map((item)=>buildCustomRoute('rewrite', item, opts.config.basePath, opts.config.experimental.caseSensitiveRoutes)),

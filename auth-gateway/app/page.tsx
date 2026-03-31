@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, Suspense, useRef } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { httpsCallable } from 'firebase/functions';
 import { auth, functions } from '@/lib/firebase';
@@ -16,17 +16,57 @@ function AdminLoginForm() {
   const [isChecking, setIsChecking] = useState(true); // New loading state
   const [status, setStatus] = useState(''); // Status message during auto-handoff
 
+  // Guard: prevent double performHandoff from onAuthStateChanged + handleLogin racing
+  const handoffInProgress = useRef(false);
+
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const redirectTo = searchParams.get('redirect');
 
-  // Shared Handoff Logic
+  // Shared Handoff Logic — guarded against double-invocation
   const performHandoff = async () => {
+    // Prevent race condition: onAuthStateChanged + handleLogin both calling performHandoff
+    if (handoffInProgress.current) {
+      console.log('[Auth Gateway] performHandoff already in progress, skipping duplicate call.');
+      return;
+    }
+
+    // Loop detection: if performHandoff is called too many times in one session,
+    // it indicates a redirect loop (gateway → callback → middleware → gateway).
+    // Break the cycle, sign out, and show a clear error.
+    const LOOP_KEY = 'handoff_loop_count';
+    const loopCount = parseInt(sessionStorage.getItem(LOOP_KEY) || '0');
+    if (loopCount >= 3) {
+      console.error('[Auth Gateway] Loop detected after', loopCount, 'attempts. Breaking cycle.');
+      sessionStorage.removeItem(LOOP_KEY);
+      try {
+        await auth.signOut();
+      } catch { /* ignore */ }
+      const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN;
+      document.cookie = `__session=; path=/; max-age=0; SameSite=Lax; Secure`;
+      if (baseDomain) {
+        document.cookie = `__session=; path=/; max-age=0; Domain=.${baseDomain}; SameSite=Lax; Secure`;
+      }
+      setError('⚠️ Login loop terdeteksi. Session telah di-reset. Silakan login ulang dari awal.');
+      setIsChecking(false);
+      return;
+    }
+    sessionStorage.setItem(LOOP_KEY, String(loopCount + 1));
+
+    handoffInProgress.current = true;
+
     try {
       setStatus('Generating secure access token...');
-      const generateHandoffToken = httpsCallable(functions, 'generateHandoffToken');
-      const result = await generateHandoffToken();
+      const generateHandoffTokenFn = httpsCallable(functions, 'generateHandoffToken');
+
+      // Wrap with 15s timeout — Cloud Function cold starts can cause indefinite hang
+      const result = await Promise.race([
+        generateHandoffTokenFn(),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Token generation timeout (15s). Cek koneksi internet dan coba lagi.')), 15000)
+        )
+      ]);
 
       // @ts-ignore
       if (!result.data || !result.data.token) {
@@ -71,9 +111,22 @@ function AdminLoginForm() {
           // Fallback for local development to main platform port
           platformUrl = 'http://localhost:3000';
         } else {
-          // 3. Last resort fallback
-          // Prefer generic masked domain over Firebase URL
-          platformUrl = `https://${baseDomain}`;
+          // No redirect param and no tenant cookie — auto-detect from Firebase Auth claims
+          const currentUser = auth.currentUser;
+          if (currentUser) {
+            const idTokenResult = await currentUser.getIdTokenResult();
+            const claimedSiteId = idTokenResult.claims?.siteId as string | undefined;
+            if (claimedSiteId) {
+              const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'clicker.id';
+              platformUrl = `https://${claimedSiteId}.${baseDomain}`;
+              // Remember for next time
+              document.cookie = `__tenant=${claimedSiteId}; path=/; max-age=${60 * 60 * 24 * 30}; SameSite=Lax`;
+            } else {
+              throw new Error('Akun ini belum memiliki situs yang terhubung. Hubungi administrator untuk mengatur akses.');
+            }
+          } else {
+            throw new Error('Sesi login tidak ditemukan. Silakan login ulang.');
+          }
         }
       }
 
@@ -81,16 +134,23 @@ function AdminLoginForm() {
       const nextPath = (redirectTo && redirectTo !== '/')
         ? (redirectTo.startsWith('http') ? new URL(redirectTo).pathname : redirectTo)
         : '/admin';
-      const finalUrl = `${platformUrl}/admin/auth/callback?token=${handoffToken}&next=${encodeURIComponent(nextPath)}`;
+      // Token in fragment (#) — never sent to server, not in logs, not in referrer headers
+      const finalUrl = `${platformUrl}/admin/auth/callback?next=${encodeURIComponent(nextPath)}#token=${encodeURIComponent(handoffToken)}`;
 
+
+      // Handoff successful — clear loop counter before redirecting
+      sessionStorage.removeItem('handoff_loop_count');
 
       // console.log(`🚀 Handing off to: ${finalUrl}`); // SECURE: Don't log token
       window.location.href = finalUrl;
 
     } catch (err: any) {
       console.error('Handoff Error:', err);
+      sessionStorage.removeItem('handoff_loop_count');
       setError(`Auto-login failed: ${err.message}. Please login manually.`);
       setIsChecking(false); // Show form on error
+    } finally {
+      handoffInProgress.current = false;
     }
   };
 
@@ -99,9 +159,15 @@ function AdminLoginForm() {
     // Check if redirected back due to an error (e.g., no site membership)
     const errorParam = searchParams.get('error');
     if (errorParam) {
-      // User was redirected back with an error — clear stale auth session first
+      // Clean the error param from URL first (sync)
+      if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('error');
+        window.history.replaceState(null, '', url.toString());
+      }
+      // User was redirected back with an error — clear stale auth session, then show error
       auth.signOut().then(() => {
-        // Clear any stale cookies
+        // Clear any stale cookies AFTER signOut completes (prevents auto-handoff re-trigger)
         document.cookie = '__session=; path=/; max-age=0; SameSite=Lax; Secure';
         document.cookie = '__session=; path=/; max-age=0; Domain=.clicker.id; SameSite=Lax; Secure';
 
@@ -115,12 +181,6 @@ function AdminLoginForm() {
         setError('⚠️ Akun tidak memiliki akses. Silakan login dengan akun lain.');
         setIsChecking(false);
       });
-      // Clean the error param from URL
-      if (typeof window !== 'undefined') {
-        const url = new URL(window.location.href);
-        url.searchParams.delete('error');
-        window.history.replaceState(null, '', url.toString());
-      }
       return () => { }; // No-op cleanup
     }
 
