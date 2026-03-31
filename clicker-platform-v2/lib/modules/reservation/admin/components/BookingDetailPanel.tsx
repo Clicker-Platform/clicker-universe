@@ -317,7 +317,7 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
                     <div>
                         <label className="text-xs font-bold text-gray-400 dark:text-neutral-500 uppercase tracking-wider block mb-3">Customer Info</label>
                         <div className="flex items-start gap-4">
-                            <div className="w-12 h-12 rounded-full bg-brand-dark text-white flex items-center justify-center font-bold text-xl flex-shrink-0 shadow-lg shadow-brand-dark/20">
+                            <div className="w-12 h-12 rounded-full bg-studio-blue text-white flex items-center justify-center font-bold text-xl flex-shrink-0 shadow-lg shadow-brand-dark/20">
                                 {booking.customerName.charAt(0)}
                             </div>
                             <div>
@@ -432,7 +432,7 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
                             <button
                                 onClick={handleSave}
                                 disabled={updating}
-                                className="px-6 py-2 bg-brand-dark text-white font-bold rounded-xl hover:bg-brand-dark/90 transition-all shadow-lg shadow-brand-dark/20"
+                                className="px-6 py-2 bg-studio-blue text-white font-bold rounded-xl hover:bg-studio-blue/85 transition-all shadow-lg shadow-brand-dark/20"
                             >
                                 {updating ? 'Saving...' : 'Save Changes'}
                             </button>
@@ -614,7 +614,7 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
                             <button
                                 onClick={handleStartServiceRecord}
                                 disabled={creatingSR || !plateInput.trim()}
-                                className="flex-1 py-2.5 rounded-xl font-bold bg-brand-dark text-white hover:bg-brand-dark/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                                className="flex-1 py-2.5 rounded-xl font-bold bg-studio-blue text-white hover:bg-studio-blue/85 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                             >
                                 <ClipboardList size={16} />
                                 {creatingSR ? 'Creating…' : 'Create Record'}

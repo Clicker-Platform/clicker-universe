@@ -104,7 +104,7 @@ export default function ClaimAdminPage() {
                     <button
                         className={`w-full py-2.5 rounded-lg font-bold text-white transition-all transform active:scale-95 ${!user || status === 'claiming' || status === 'success'
                                 ? 'bg-gray-300 cursor-not-allowed'
-                                : 'bg-brand-dark hover:bg-gray-800 shadow-md'
+                                : 'bg-studio-blue hover:bg-studio-blue/85 shadow-md'
                             }`}
                         onClick={handleClaim}
                         disabled={!user || status === 'claiming' || status === 'success'}

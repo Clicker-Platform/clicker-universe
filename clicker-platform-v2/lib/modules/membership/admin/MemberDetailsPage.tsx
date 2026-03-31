@@ -335,7 +335,7 @@ export default function MemberDetailsPage() {
                                 <button
                                     type="submit"
                                     disabled={isSavingProfile}
-                                    className="flex-1 py-2.5 bg-brand-dark text-white font-bold rounded-xl hover:bg-brand-dark/90 transition shadow-lg shadow-brand-dark/20 disabled:opacity-70"
+                                    className="flex-1 py-2.5 bg-studio-blue text-white font-bold rounded-xl hover:bg-studio-blue/85 transition shadow-lg shadow-brand-dark/20 disabled:opacity-70"
                                 >
                                     {isSavingProfile ? 'Saving...' : 'Save Changes'}
                                 </button>

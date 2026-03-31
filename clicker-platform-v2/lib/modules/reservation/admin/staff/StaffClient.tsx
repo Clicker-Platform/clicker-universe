@@ -197,7 +197,7 @@ export default function StaffClient({ initialStaff }: StaffClientProps) {
                 </div>
                 <button
                     onClick={() => handleOpenModal()}
-                    className="bg-brand-dark text-white px-6 py-2.5 rounded-xl font-bold hover:bg-brand-dark/90 flex items-center gap-2 shadow-lg hover:shadow-xl transition-all cursor-pointer active:scale-95"
+                    className="bg-studio-blue text-white px-6 py-2.5 rounded-xl font-bold hover:bg-studio-blue/85 flex items-center gap-2 shadow-lg hover:shadow-xl transition-all cursor-pointer active:scale-95"
                 >
                     <Plus size={20} /> Add Resource
                 </button>
@@ -376,7 +376,7 @@ export default function StaffClient({ initialStaff }: StaffClientProps) {
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-brand-dark hover:bg-brand-dark/90 transition-colors flex items-center justify-center gap-2"
+                                    className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-studio-blue hover:bg-studio-blue/85 transition-colors flex items-center justify-center gap-2"
                                 >
                                     <Save size={18} />
                                     {isSubmitting ? 'Saving...' : 'Save Resource'}

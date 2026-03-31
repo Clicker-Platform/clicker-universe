@@ -206,7 +206,7 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
                 <div className="flex gap-2">
                     <button
                         onClick={handleCreate}
-                        className="bg-brand-dark text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 hover:bg-gray-800 transition shadow-lg shadow-brand-dark/20 active:scale-95"
+                        className="bg-studio-blue text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 hover:bg-studio-blue/85 transition shadow-lg active:scale-95"
                     >
                         <Plus size={20} /> Add Product
                     </button>
@@ -388,7 +388,7 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
                         <button
                             onClick={saveSettings}
                             disabled={isSavingSettings}
-                            className="bg-brand-dark text-white px-8 py-3 rounded-xl font-bold hover:bg-black transition-colors disabled:opacity-50 shadow-lg shadow-brand-dark/20"
+                            className="bg-studio-blue text-white px-8 py-3 rounded-xl font-bold hover:bg-studio-blue/85 transition-colors disabled:opacity-50 shadow-lg"
                         >
                             {isSavingSettings ? 'Saving Changes...' : 'Save All Settings'}
                         </button>

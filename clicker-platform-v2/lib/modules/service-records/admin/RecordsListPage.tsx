@@ -94,7 +94,7 @@ export default function RecordsListPage() {
                 </div>
                 <button
                     onClick={() => router.push('/admin/service-records/new')}
-                    className="flex items-center gap-2 bg-brand-dark text-white px-4 py-2.5 rounded-xl text-sm font-medium"
+                    className="flex items-center gap-2 bg-studio-blue text-white px-4 py-2.5 rounded-xl text-sm font-medium"
                 >
                     <Plus className="w-4 h-4" />
                     New Record
@@ -191,7 +191,9 @@ export default function RecordsListPage() {
                                                 <PaymentStatusBadge status={record.paymentStatus} size="sm" />
                                             </td>
                                             <td className="px-4 py-3 text-gray-700 dark:text-neutral-300 font-medium">
-                                                {record.totalAmount ? `Rp ${record.totalAmount.toLocaleString()}` : '—'}
+                                                {record.paymentStatus === 'PAID'
+                                                    ? (record.amountPaid ? `Rp ${record.amountPaid.toLocaleString()}` : '—')
+                                                    : (record.totalAmount ? `Rp ${record.totalAmount.toLocaleString()}` : '—')}
                                             </td>
                                             <td className="px-4 py-3 text-gray-400 dark:text-neutral-500 text-xs">{formatDate(record.updatedAt)}</td>
                                         </tr>
@@ -223,9 +225,9 @@ export default function RecordsListPage() {
                                             <PaymentStatusBadge status={record.paymentStatus} size="sm" />
                                         </div>
                                     </div>
-                                    {record.totalAmount > 0 && (
+                                    {(record.paymentStatus === 'PAID' ? record.amountPaid : record.totalAmount) > 0 && (
                                         <p className="text-sm font-semibold text-gray-800 dark:text-neutral-200 mt-1">
-                                            Rp {record.totalAmount.toLocaleString()}
+                                            Rp {(record.paymentStatus === 'PAID' ? record.amountPaid : record.totalAmount).toLocaleString()}
                                         </p>
                                     )}
                                 </div>

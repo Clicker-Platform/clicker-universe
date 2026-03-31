@@ -68,7 +68,7 @@ export function BillCard({ group, onProcessPayment, disabled }: BillCardProps) {
                 <div className="flex-1">
                     <div className="flex justify-between items-start mb-2">
                         <div className="flex items-center gap-3">
-                            <div className={`p-2 rounded-full ${group.type === 'table' ? 'bg-brand-dark text-white' :
+                            <div className={`p-2 rounded-full ${group.type === 'table' ? 'bg-studio-blue text-white' :
                                 group.type === 'member' ? 'bg-brand-green/10 text-brand-dark' : 'bg-gray-100 dark:bg-neutral-800 text-gray-500 dark:text-neutral-500'
                                 }`}>
                                 {getIcon(group.type)}
@@ -171,7 +171,7 @@ export function BillCard({ group, onProcessPayment, disabled }: BillCardProps) {
                     disabled={disabled}
                     className={`w-full py-4 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 cursor-pointer ${disabled ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''} ${group.aggregatedStatus === 'pending_confirmation'
                         ? 'bg-amber-400 text-amber-900 shadow-amber-200 hover:bg-amber-300 animate-pulse'
-                        : 'bg-brand-dark text-white shadow-gray-200 hover:bg-gray-800'
+                        : 'bg-studio-blue text-white shadow-gray-200 hover:bg-studio-blue/85'
                         }`}
                 >
                     <CreditCard size={18} />

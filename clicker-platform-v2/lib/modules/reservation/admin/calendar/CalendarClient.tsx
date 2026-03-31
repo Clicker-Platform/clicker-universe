@@ -28,7 +28,7 @@ export default function CalendarClient() {
                 </p>
                 <Link
                     href="/admin/business/profile"
-                    className="inline-flex items-center gap-2 bg-brand-dark text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-brand-dark/90 transition-colors"
+                    className="inline-flex items-center gap-2 bg-studio-blue text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-studio-blue/85 transition-colors"
                 >
                     Go to Business Profile
                     <ExternalLink size={15} />

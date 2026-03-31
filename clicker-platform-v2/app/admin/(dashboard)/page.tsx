@@ -118,7 +118,7 @@ export default function AdminDashboard() {
                     <button
                         onClick={() => fetchDashboardData(true)}
                         disabled={refreshing}
-                        className="bg-brand-dark text-white p-2 rounded-lg hover:bg-brand-dark/90 transition-all active:scale-95 disabled:opacity-70 disabled:active:scale-100"
+                        className="bg-studio-blue text-white p-2 rounded-lg hover:bg-studio-blue/85 transition-all active:scale-95 disabled:opacity-70 disabled:active:scale-100"
                         title="Refresh Data"
                     >
                         <Loader2 size={18} className={refreshing ? 'animate-spin' : ''} />

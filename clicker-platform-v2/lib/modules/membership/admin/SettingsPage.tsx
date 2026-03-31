@@ -204,7 +204,7 @@ export default function MembershipSettingsPage() {
                     <button
                         onClick={handleSave}
                         disabled={saving || !canEdit}
-                        className="flex items-center gap-2 bg-brand-dark text-white font-bold py-3 px-8 rounded-xl hover:bg-brand-dark/90 transition-all shadow-lg shadow-brand-dark/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+                        className="flex items-center gap-2 bg-studio-blue text-white font-bold py-3 px-8 rounded-xl hover:bg-studio-blue/85 transition-all shadow-lg shadow-brand-dark/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
                     >
                         {saving ? (
                             <>Processing...</>

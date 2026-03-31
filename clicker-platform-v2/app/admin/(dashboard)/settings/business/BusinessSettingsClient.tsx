@@ -202,7 +202,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                 <button
                     onClick={() => setActiveTab('contact')}
                     className={`px-6 py-2.5 rounded-full font-bold whitespace-nowrap transition-all flex items-center gap-2 ${activeTab === 'contact'
-                        ? 'bg-brand-dark text-brand-green shadow-md'
+                        ? 'bg-studio-blue text-white shadow-md'
                         : 'bg-white dark:bg-neutral-900 text-gray-500 dark:text-neutral-500 border border-gray-200 dark:border-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-800'
                         }`}
                 >
@@ -212,7 +212,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                 <button
                     onClick={() => setActiveTab('hours')}
                     className={`px-6 py-2.5 rounded-full font-bold whitespace-nowrap transition-all flex items-center gap-2 ${activeTab === 'hours'
-                        ? 'bg-brand-dark text-brand-green shadow-md'
+                        ? 'bg-studio-blue text-white shadow-md'
                         : 'bg-white dark:bg-neutral-900 text-gray-500 dark:text-neutral-500 border border-gray-200 dark:border-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-800'
                         }`}
                 >
@@ -222,7 +222,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                 <button
                     onClick={() => setActiveTab('branches')}
                     className={`px-6 py-2.5 rounded-full font-bold whitespace-nowrap transition-all flex items-center gap-2 ${activeTab === 'branches'
-                        ? 'bg-brand-dark text-brand-green shadow-md'
+                        ? 'bg-studio-blue text-white shadow-md'
                         : 'bg-white dark:bg-neutral-900 text-gray-500 dark:text-neutral-500 border border-gray-200 dark:border-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-800'
                         }`}
                 >
@@ -316,7 +316,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                                 isLoading={isSubmitting}
                                 label="Save Contact Info"
                                 loadingLabel="Saving..."
-                                className="bg-brand-dark text-white px-8 py-3 rounded-xl font-bold hover:bg-brand-green hover:text-brand-dark transition-all shadow-lg"
+                                className="bg-studio-blue text-white px-8 py-3 rounded-xl font-bold hover:bg-studio-blue/85 transition-all shadow-lg"
                             />
                         </div>
                     </form>
@@ -366,7 +366,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                                 isLoading={isSubmitting}
                                 label="Save Hours"
                                 loadingLabel="Saving..."
-                                className="bg-brand-dark text-white px-8 py-3 rounded-xl font-bold hover:bg-brand-green hover:text-brand-dark transition-all shadow-lg"
+                                className="bg-studio-blue text-white px-8 py-3 rounded-xl font-bold hover:bg-studio-blue/85 transition-all shadow-lg"
                             />
                         </div>
                     </form>
@@ -396,7 +396,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                                     <h3 className="font-bold text-xl text-brand-dark dark:text-neutral-100">Branch List</h3>
                                     <button
                                         onClick={openNewBranchModal}
-                                        className="flex items-center gap-2 bg-brand-dark text-white px-4 py-2 rounded-lg font-bold hover:bg-brand-green hover:text-brand-dark transition-colors"
+                                        className="flex items-center gap-2 bg-studio-blue text-white px-4 py-2 rounded-lg font-bold hover:bg-studio-blue/85 transition-colors"
                                     >
                                         <Plus size={18} /> Add Branch
                                     </button>
@@ -530,7 +530,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                                     isLoading={isSubmitting}
                                     label="Save Branch"
                                     loadingLabel="Saving..."
-                                    className="flex-1 bg-brand-dark text-white px-4 py-3 rounded-xl font-bold hover:bg-brand-green hover:text-brand-dark transition-all"
+                                    className="flex-1 bg-studio-blue text-white px-4 py-3 rounded-xl font-bold hover:bg-studio-blue/85 transition-all"
                                 />
                             </div>
                         </form>

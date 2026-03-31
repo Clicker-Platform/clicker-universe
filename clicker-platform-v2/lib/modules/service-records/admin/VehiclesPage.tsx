@@ -150,7 +150,7 @@ export default function VehiclesPage() {
                 </div>
                 <button
                     onClick={openCreate}
-                    className="flex items-center gap-2 bg-brand-dark text-white px-4 py-2.5 rounded-xl text-sm font-medium"
+                    className="flex items-center gap-2 bg-studio-blue text-white px-4 py-2.5 rounded-xl text-sm font-medium"
                 >
                     <Plus className="w-4 h-4" />
                     Add Vehicle
@@ -326,7 +326,7 @@ export default function VehiclesPage() {
                                 <button
                                     type="submit"
                                     disabled={submitting}
-                                    className="bg-brand-dark text-white px-5 py-2 rounded-xl text-sm font-medium disabled:opacity-50"
+                                    className="bg-studio-blue text-white px-5 py-2 rounded-xl text-sm font-medium disabled:opacity-50"
                                 >
                                     {submitting ? 'Saving…' : editingVehicle ? 'Update' : 'Add Vehicle'}
                                 </button>

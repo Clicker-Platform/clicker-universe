@@ -188,7 +188,7 @@ export default function ReservationSettingsPage() {
                 <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="bg-brand-dark text-white px-5 py-2.5 rounded-xl text-sm font-medium disabled:opacity-50"
+                    className="bg-studio-blue text-white px-5 py-2.5 rounded-xl text-sm font-medium disabled:opacity-50"
                 >
                     {saving ? 'Saving…' : 'Save Settings'}
                 </button>

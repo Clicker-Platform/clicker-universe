@@ -14,6 +14,7 @@ import { Footer } from '@/components/Footer';
 import { BottomNavBar } from '@/components/layout/BottomNavBar';
 import { usePageStudio } from './PageStudioContext';
 import { DeviceViewProvider } from '@/components/DeviceViewContext';
+import { NavigationProvider } from '@/components/layout/NavigationProvider';
 
 // Lazy-load sidebar panels — only needed when their respective panels are open
 const BlockFormRenderer = dynamic(() => import('./BlockFormRenderer').then(m => m.BlockFormRenderer));
@@ -248,6 +249,7 @@ export function CanvasStudio({
                                 } : {})
                             }}
                         >
+                        <NavigationProvider siteId={siteId!}>
                             {/* Full template rendering pipeline - matches live site */}
                             <div className="flex flex-col h-full bg-white relative">
                                 {/* Top Navbar Slot */}
@@ -380,6 +382,7 @@ export function CanvasStudio({
                                     </div>
                                 </div>
                             </div>
+                        </NavigationProvider>
                         </TemplateProvider>
                         </DeviceViewProvider>
                     )}

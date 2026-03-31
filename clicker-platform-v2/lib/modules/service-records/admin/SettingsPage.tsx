@@ -182,7 +182,7 @@ export default function SettingsPage() {
                     <button
                         onClick={handleSave}
                         disabled={saving}
-                        className="bg-brand-dark text-white px-6 py-3 rounded-xl text-sm font-medium disabled:opacity-50"
+                        className="bg-studio-blue text-white px-6 py-3 rounded-xl text-sm font-medium disabled:opacity-50"
                     >
                         {saving ? 'Saving…' : 'Save Settings'}
                     </button>

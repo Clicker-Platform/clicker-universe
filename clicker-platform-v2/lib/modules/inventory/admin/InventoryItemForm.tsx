@@ -131,7 +131,7 @@ export function InventoryItemForm({ isOpen, onClose, onSubmit, initialData, posI
                         disabled={isSubmitting}
                         className={`w-full text-white py-3 rounded-xl font-bold mt-2 transition-all transform active:scale-[0.98] ${isSubmitting
                                 ? 'bg-gray-400 dark:bg-neutral-600 cursor-not-allowed'
-                                : 'bg-brand-dark hover:bg-gray-800 shadow-md hover:shadow-lg'
+                                : 'bg-studio-blue hover:bg-studio-blue/85 shadow-md hover:shadow-lg'
                             }`}
                     >
                         {isSubmitting ? 'Saving...' : (initialData ? 'Save Changes' : 'Create Item')}

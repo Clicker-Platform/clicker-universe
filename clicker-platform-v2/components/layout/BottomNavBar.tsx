@@ -1,15 +1,17 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useTemplate } from '@/components/TemplateProvider';
 import Link from 'next/link';
 import { db } from '@/lib/firebase';
-import { doc, onSnapshot, getDoc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { FormModal } from '@/components/FormModal';
 import { ICON_MAP } from '@/data/icons';
 import { Home, PlusCircle } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
 import { useDeviceView, dv } from '@/components/DeviceViewContext';
+import { useNavigation } from '@/components/layout/NavigationProvider';
+import { BottomNavSkeleton } from '@/components/layout/NavSkeleton';
 
 interface BottomNavBarProps {
     previewMode?: boolean;
@@ -20,99 +22,68 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({ previewMode = false 
     const deviceView = useDeviceView();
     const { siteId } = useSite();
     const { layout } = theme;
-    const [navItems, setNavItems] = React.useState<any[]>([]);
-    const [fab, setFab] = React.useState<any>(null);
-    const [selectedForm, setSelectedForm] = React.useState<any>(null);
-    const [isFormOpen, setIsFormOpen] = React.useState(false);
 
-    // Decoupled Open Chat Helper
-    const openChat = () => {
-        if (typeof window !== 'undefined') {
-            window.dispatchEvent(new CustomEvent('ai-sales-agent:open'));
-        }
-    };
+    const { bottomNav, fab, loading, formCache } = useNavigation();
 
-    // Icon mapping helper
-    const getIcon = (name: string) => {
-        return ICON_MAP[name] || Home;
-    };
+    const [selectedForm, setSelectedForm] = useState<any>(null);
+    const [isFormOpen, setIsFormOpen] = useState(false);
 
-    const handleItemClick = async (e: React.MouseEvent, item: any) => {
-        if (item.type === 'form' && item.formId) {
-            e.preventDefault();
-            try {
-                const snap = await getDoc(doc(db, 'sites', siteId, 'forms', item.formId));
-                if (snap.exists() && snap.data().isPublished !== false) {
-                    setSelectedForm({ id: snap.id, ...snap.data() });
-                    setIsFormOpen(true);
-                }
-            } catch (error) {
-                console.error("Error loading form:", error);
-            }
-        } else if (item.type === 'chat' || item.type === 'action-chat' || item.value === 'action:chat') {
-            e.preventDefault();
-            openChat();
-        }
-    };
+    const getIcon = (name: string) => ICON_MAP[name as keyof typeof ICON_MAP] || Home;
 
-    React.useEffect(() => {
-        if (!siteId) return;
-
-        const unsub = onSnapshot(
-            doc(db, 'sites', siteId, 'content', 'siteSettings'),
-            (snap) => {
-                if (snap.exists()) {
-                    const data = snap.data();
-                    if (data.navigation?.bottomNav?.length > 0) {
-                        setNavItems(data.navigation.bottomNav);
-                    } else {
-                        // Default Fallback
-                        setNavItems([
-                            { id: 'home', label: 'Home', value: '/', icon: 'Home' },
-                            { id: 'search', label: 'Search', value: '/search', icon: 'Search' },
-                            { id: 'saved', label: 'Saved', value: '/saved', icon: 'Heart' },
-                            { id: 'profile', label: 'Profile', value: '/profile', icon: 'User' }
-                        ]);
-                    }
-                    // FAB Config
-                    setFab(data.navigation?.fab || null);
-                }
-            },
-            (error) => {
-                console.error("BottomNavBar: Firestore listener error:", error);
-            }
-        );
-        return () => unsub();
-    }, []);
-
-    // Render ONLY if explicitly enabled by the template
-    if (!layout?.showBottomNav) {
-        return null;
-    }
-
-    // Helper to resolve Href
     const getHref = (val: string) => {
         if (val === 'action:home' || val === 'action:homepage') return '/';
         if (val?.startsWith('action:')) return '#';
         return val || '#';
     };
 
-    const midPoint = Math.ceil(navItems.length / 2);
-    const leftItems = navItems.slice(0, midPoint);
-    const rightItems = navItems.slice(midPoint);
+    const openChat = () => {
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('ai-sales-agent:open'));
+        }
+    };
 
-    // FAB Icon
+    const handleItemClick = useCallback(async (e: React.MouseEvent, item: any) => {
+        if (item.type === 'chat' || item.type === 'action-chat' || item.value === 'action:chat') {
+            e.preventDefault();
+            openChat();
+            return;
+        }
+        if (item.type === 'form' && item.formId) {
+            e.preventDefault();
+            const cached = formCache[item.formId];
+            if (cached) {
+                setSelectedForm(cached);
+                setIsFormOpen(true);
+            } else if (siteId) {
+                // Fallback: on-demand fetch for cache misses
+                try {
+                    const snap = await getDoc(doc(db, 'sites', siteId, 'forms', item.formId));
+                    if (snap.exists() && snap.data().isPublished !== false) {
+                        setSelectedForm({ id: snap.id, ...snap.data() });
+                        setIsFormOpen(true);
+                    }
+                } catch (err) {
+                    console.error('BottomNavBar: form fetch error', err);
+                }
+            }
+        }
+    }, [formCache, siteId]);
+
+    const midPoint = useMemo(() => Math.ceil(bottomNav.length / 2), [bottomNav]);
+    const leftItems = useMemo(() => bottomNav.slice(0, midPoint), [bottomNav, midPoint]);
+    const rightItems = useMemo(() => bottomNav.slice(midPoint), [bottomNav, midPoint]);
+
+    // Render ONLY if explicitly enabled by the template — after all hooks
+    if (!layout?.showBottomNav) return null;
+    if (loading) return <BottomNavSkeleton />;
+
     const FabIcon = fab?.icon ? getIcon(fab.icon) : PlusCircle;
 
-    // Theme-derived styles
-    const barBg = theme.colors.background + 'f0'; // ~94% opacity
+    const barBg = theme.colors.background + 'f0';
     const borderColor = theme.colors.border;
     const inactiveColor = theme.colors.foreground + '60';
-    const activeColor = theme.colors.primary;
     const fabBg = theme.colors.accent || theme.colors.primary;
 
-    // Positioning: fixed on live site, relative in canvas preview
-    // In canvas preview with desktop device, hide it entirely
     const positionClass = previewMode
         ? (deviceView === 'desktop' ? 'hidden' : 'relative w-full')
         : `${dv(deviceView, '', 'md:hidden')} fixed bottom-0 left-0 right-0 z-50`;
@@ -120,19 +91,11 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({ previewMode = false 
     return (
         <>
             <nav
-                className={`
-                    ${positionClass}
-                    h-16 backdrop-blur-md border-t
-                    flex items-center justify-around px-2
-                    safe-area-bottom
-                `}
-                style={{
-                    backgroundColor: barBg,
-                    borderColor: borderColor,
-                }}
+                className={`${positionClass} h-16 backdrop-blur-md border-t flex items-center justify-around px-2 safe-area-bottom`}
+                style={{ backgroundColor: barBg, borderColor }}
             >
                 {leftItems.map((item) => {
-                    const IconComponent = getIcon(item.icon);
+                    const IconComponent = getIcon(item.icon || '');
                     return (
                         <Link
                             key={item.id}
@@ -147,22 +110,13 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({ previewMode = false 
                     );
                 })}
 
-                {/* Central FAB - Only render if configured */}
-                {fab && fab.enabled && (
+                {fab?.enabled && (
                     <div className="relative -top-5">
                         <Link
                             href={getHref(fab.value)}
                             onClick={(e) => handleItemClick(e, fab)}
-                            className="
-                                w-14 h-14 rounded-full
-                                flex items-center justify-center
-                                text-white shadow-lg
-                                transform active:scale-95 transition-all
-                            "
-                            style={{
-                                backgroundColor: fabBg,
-                                boxShadow: `0 0 20px ${fabBg}60`,
-                            }}
+                            className="w-14 h-14 rounded-full flex items-center justify-center text-white shadow-lg transform active:scale-95 transition-all"
+                            style={{ backgroundColor: fabBg, boxShadow: `0 0 20px ${fabBg}60` }}
                         >
                             <FabIcon size={24} />
                         </Link>
@@ -170,7 +124,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({ previewMode = false 
                 )}
 
                 {rightItems.map((item) => {
-                    const IconComponent = getIcon(item.icon);
+                    const IconComponent = getIcon(item.icon || '');
                     return (
                         <Link
                             key={item.id}

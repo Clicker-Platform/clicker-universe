@@ -405,7 +405,7 @@ export default function LinksManager({ initialLinks }: LinksClientProps) {
                             <button
                                 onClick={saveSettings}
                                 disabled={isSavingSettings}
-                                className="bg-brand-dark text-white px-6 py-2 rounded-lg font-bold hover:bg-black transition-colors disabled:opacity-50"
+                                className="bg-studio-blue text-white px-6 py-2 rounded-lg font-bold hover:bg-studio-blue/85 transition-colors disabled:opacity-50"
                             >
                                 {isSavingSettings ? 'Saving...' : 'Save Settings'}
                             </button>
@@ -574,7 +574,7 @@ export default function LinksManager({ initialLinks }: LinksClientProps) {
                             isLoading={isSubmitting}
                             loadingLabel={editingId ? 'Updating...' : 'Adding...'}
                             label={editingId ? 'Update Link' : 'Add Link'}
-                            className={`flex-1 md:flex-none text-white px-6 py-2 rounded-lg font-bold transition-colors ${editingId ? 'bg-blue-600 hover:bg-blue-700' : 'bg-brand-dark hover:bg-brand-green hover:text-brand-dark'}`}
+                            className={`flex-1 md:flex-none text-white px-6 py-2 rounded-lg font-bold transition-colors bg-studio-blue hover:bg-studio-blue/85`}
                         />
                         {editingId && (
                             <button type="button" onClick={handleCancel} className="bg-gray-200 dark:bg-neutral-700 text-gray-700 dark:text-neutral-300 px-6 py-2 rounded-lg font-bold hover:bg-gray-300 dark:hover:bg-neutral-600 transition-colors flex items-center gap-2">

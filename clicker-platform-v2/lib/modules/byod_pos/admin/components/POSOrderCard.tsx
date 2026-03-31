@@ -219,7 +219,7 @@ export function POSOrderCard({ order, onUpdateStatus, onCancel, onProcessPayment
                     {order.paymentStatus === 'pending_confirmation' && (
                         <button
                             onClick={() => onProcessPayment?.(order)}
-                            className="col-span-2 bg-brand-dark text-white py-3 rounded-lg font-bold text-sm hover:bg-gray-800 flex items-center justify-center gap-2 transition-colors active:scale-95 shadow-lg shadow-gray-200"
+                            className="col-span-2 bg-studio-blue text-white py-3 rounded-lg font-bold text-sm hover:bg-studio-blue/85 flex items-center justify-center gap-2 transition-colors active:scale-95 shadow-lg shadow-gray-200"
                         >
                             <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
                             Process Payment

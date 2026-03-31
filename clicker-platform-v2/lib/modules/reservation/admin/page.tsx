@@ -192,7 +192,7 @@ export default function ReservationDashboard() {
                 <div>
                     <button
                         onClick={() => setShowCreate(true)}
-                        className="px-6 py-2 bg-brand-dark text-white rounded-lg font-bold hover:bg-brand-dark/90 flex items-center gap-2 shadow-lg shadow-brand-dark/20"
+                        className="px-6 py-2 bg-studio-blue text-white rounded-lg font-bold hover:bg-studio-blue/85 flex items-center gap-2 shadow-lg shadow-brand-dark/20"
                     >
                         + New Booking
                     </button>

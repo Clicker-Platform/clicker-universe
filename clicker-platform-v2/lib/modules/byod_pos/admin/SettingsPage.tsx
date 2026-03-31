@@ -62,7 +62,7 @@ export default function POSSettingsPage() {
                 <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="flex items-center gap-2 bg-brand-dark text-white px-6 py-3 rounded-xl font-bold hover:bg-gray-800 disabled:bg-gray-400 transition-all active:scale-95"
+                    className="flex items-center gap-2 bg-studio-blue text-white px-6 py-3 rounded-xl font-bold hover:bg-studio-blue/85 disabled:bg-gray-400 transition-all active:scale-95"
                 >
                     {saving ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
                     Save Changes

@@ -144,7 +144,7 @@ export function SettingsDialog({ isOpen, onClose, stages: initialStages }: Setti
                                 <div className="space-y-4">
                                     <div className="flex items-center justify-between">
                                         <h3 className="text-sm font-bold text-gray-700 dark:text-neutral-300">Manage Stages</h3>
-                                        <button onClick={() => { const newStage: PipelineStage = { id: `stage-${Date.now()}`, name: 'New Stage', order: (config.stages.length) + 1, type: 'active', color: '#000000' }; setConfig({ ...config, stages: [...config.stages, newStage] }); }} className="flex items-center gap-2 text-xs font-bold bg-brand-dark dark:bg-neutral-800 text-white px-3 py-1.5 rounded-lg hover:bg-black/80 dark:hover:bg-neutral-700 transition-colors">
+                                        <button onClick={() => { const newStage: PipelineStage = { id: `stage-${Date.now()}`, name: 'New Stage', order: (config.stages.length) + 1, type: 'active', color: '#000000' }; setConfig({ ...config, stages: [...config.stages, newStage] }); }} className="flex items-center gap-2 text-xs font-bold bg-studio-blue text-white px-3 py-1.5 rounded-lg hover:bg-studio-blue/85 transition-colors">
                                             <Plus className="w-3.5 h-3.5" /> Add Stage
                                         </button>
                                     </div>
@@ -166,7 +166,7 @@ export function SettingsDialog({ isOpen, onClose, stages: initialStages }: Setti
                                         ))}
                                     </div>
                                     <div className="mt-8 flex justify-end">
-                                        <button onClick={async () => { if (!config || !siteId) return; setIsSaving(true); try { await savePipelineConfig(siteId, config); toast.success("Pipeline stages updated"); } catch (err) { toast.error("Failed to save changes"); } finally { setIsSaving(false); } }} disabled={isSaving} className="bg-brand-dark dark:bg-neutral-800 text-white font-bold py-3 px-8 rounded-xl shadow-lg hover:bg-gray-800 dark:hover:bg-neutral-700 transition-all flex items-center gap-2">
+                                        <button onClick={async () => { if (!config || !siteId) return; setIsSaving(true); try { await savePipelineConfig(siteId, config); toast.success("Pipeline stages updated"); } catch (err) { toast.error("Failed to save changes"); } finally { setIsSaving(false); } }} disabled={isSaving} className="bg-studio-blue text-white font-bold py-3 px-8 rounded-xl shadow-lg hover:bg-studio-blue/85 transition-all flex items-center gap-2">
                                             {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save Changes
                                         </button>
                                     </div>
@@ -177,7 +177,7 @@ export function SettingsDialog({ isOpen, onClose, stages: initialStages }: Setti
                                 <div className="space-y-4">
                                     <div className="flex items-center justify-between">
                                         <h3 className="text-sm font-bold text-gray-700 dark:text-neutral-300">Active Integrations</h3>
-                                        <button onClick={() => { setIsAddingIntegration(true); setEditingIndex(null); setNewIntegration({ fieldMapping: { name: '', contact: '' } }); }} className="flex items-center gap-2 text-xs font-bold bg-brand-dark dark:bg-neutral-800 text-white px-3 py-1.5 rounded-lg hover:bg-black/80 dark:hover:bg-neutral-700 transition-colors">
+                                        <button onClick={() => { setIsAddingIntegration(true); setEditingIndex(null); setNewIntegration({ fieldMapping: { name: '', contact: '' } }); }} className="flex items-center gap-2 text-xs font-bold bg-studio-blue text-white px-3 py-1.5 rounded-lg hover:bg-studio-blue/85 transition-colors">
                                             <Plus className="w-3.5 h-3.5" /> Add New
                                         </button>
                                     </div>
@@ -262,7 +262,7 @@ export function SettingsDialog({ isOpen, onClose, stages: initialStages }: Setti
                                             )}
                                             <p className="text-[10px] text-gray-400 dark:text-neutral-600 mt-2">Select the form fields that map to the lead's Name and Contact info.</p>
                                         </div>
-                                        <button onClick={handleSaveIntegration} disabled={isSaving} className="w-full mt-4 py-3 bg-brand-dark dark:bg-neutral-800 text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-black dark:hover:bg-neutral-700 transition-colors disabled:opacity-50">
+                                        <button onClick={handleSaveIntegration} disabled={isSaving} className="w-full mt-4 py-3 bg-studio-blue text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-studio-blue/85 transition-colors disabled:opacity-50">
                                             {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
                                             {editingIndex !== null ? 'Update Integration' : 'Save Integration'}
                                         </button>

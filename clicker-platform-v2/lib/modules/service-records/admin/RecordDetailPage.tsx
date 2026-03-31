@@ -490,7 +490,7 @@ function RecordDetailContent() {
                         </select>
                         <div className="flex justify-end gap-2">
                             <button onClick={() => setEditPayment(false)} className="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-neutral-700 text-sm text-gray-600 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800">Cancel</button>
-                            <button onClick={handleSavePayment} disabled={actionLoading} className="px-3 py-1.5 rounded-lg bg-brand-dark text-white text-sm disabled:opacity-50">Save</button>
+                            <button onClick={handleSavePayment} disabled={actionLoading} className="px-3 py-1.5 rounded-lg bg-studio-blue text-white text-sm disabled:opacity-50">Save</button>
                         </div>
                     </div>
                 )}

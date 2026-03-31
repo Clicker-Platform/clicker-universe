@@ -81,7 +81,7 @@ export function StudioTopBar() {
                         onClick={handleHomepageToggle}
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
                             isHomepage
-                                ? 'bg-blue-500/15 text-blue-400 border border-blue-500/30 hover:bg-blue-500/25'
+                                ? 'bg-studio-blue-muted/15 text-studio-blue-muted border border-studio-blue-muted/30 hover:bg-studio-blue-muted/25'
                                 : 'bg-neutral-800 text-neutral-400 border border-neutral-700 hover:text-neutral-200 hover:bg-neutral-700'
                         }`}
                     >
@@ -94,7 +94,7 @@ export function StudioTopBar() {
                     type="button"
                     onClick={() => savePage()}
                     disabled={saving}
-                    className="relative flex items-center gap-2 bg-blue-600 text-white px-4 py-1.5 rounded-lg font-bold text-sm hover:bg-blue-700 transition-colors disabled:opacity-50"
+                    className="relative flex items-center gap-2 bg-studio-blue text-white px-4 py-1.5 rounded-lg font-bold text-sm hover:bg-studio-blue/85 transition-colors disabled:opacity-50"
                 >
                     {saving ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
                     Save
