@@ -6,6 +6,8 @@
   --color-brand-green: #B6FF2E;
   --color-brand-dark: #0E3B2E;
   --color-brand-white: #FFFFFF;
+  --color-studio-blue: #2563EB;
+  --color-studio-blue-muted: #3B82F6;
 
   /* Semantic Theme Colors */
   --color-theme-primary: var(--theme-primary);

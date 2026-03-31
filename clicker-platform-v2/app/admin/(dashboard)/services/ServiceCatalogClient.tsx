@@ -267,7 +267,7 @@ function CategoryManagerModal({
                     <button
                         onClick={handleSave}
                         disabled={saving}
-                        className="flex-1 py-2.5 rounded-xl font-bold text-white bg-brand-dark hover:bg-brand-dark/90 transition-colors disabled:opacity-50"
+                        className="flex-1 py-2.5 rounded-xl font-bold text-white bg-studio-blue hover:bg-studio-blue/85 transition-colors disabled:opacity-50"
                     >
                         {saving ? 'Saving…' : 'Save Categories'}
                     </button>
@@ -419,7 +419,7 @@ export default function ServiceCatalogClient({ initialItems = [] }: Props) {
                     {isOwner && (
                         <button
                             onClick={openCreate}
-                            className="bg-brand-dark text-white px-6 py-2.5 rounded-xl font-bold hover:bg-brand-dark/90 flex items-center gap-2 shadow-lg hover:shadow-xl transition-all cursor-pointer active:scale-95"
+                            className="bg-studio-blue text-white px-6 py-2.5 rounded-xl font-bold hover:bg-studio-blue/85 flex items-center gap-2 shadow-lg hover:shadow-xl transition-all cursor-pointer active:scale-95"
                         >
                             <Plus size={20} /> Add Service
                         </button>
@@ -449,7 +449,7 @@ export default function ServiceCatalogClient({ initialItems = [] }: Props) {
                             key={cat}
                             onClick={() => setFilterCat(cat)}
                             className={`px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap transition-all ${filterCat === cat
-                                ? 'bg-brand-dark text-white shadow-md shadow-brand-dark/20'
+                                ? 'bg-studio-blue text-white shadow-md shadow-brand-dark/20'
                                 : 'bg-gray-100 dark:bg-neutral-800 text-gray-500 dark:text-neutral-500 hover:bg-gray-200 dark:hover:bg-neutral-700'
                             }`}
                         >
@@ -770,7 +770,7 @@ export default function ServiceCatalogClient({ initialItems = [] }: Props) {
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-brand-dark hover:bg-brand-dark/90 transition-colors cursor-pointer active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
+                                    className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-studio-blue hover:bg-studio-blue/85 transition-colors cursor-pointer active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
                                 >
                                     {isSubmitting ? 'Saving...' : editing ? 'Save Changes' : 'Add Service'}
                                 </button>

@@ -88,7 +88,7 @@ export function FormBuilderClient({ initialForm }: FormBuilderClientProps) {
                 <button
                     onClick={handleSave}
                     disabled={loading}
-                    className="inline-flex items-center gap-2 bg-brand-dark text-brand-green px-6 py-3 rounded-xl font-bold hover:bg-gray-800 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="inline-flex items-center gap-2 bg-studio-blue text-white px-6 py-3 rounded-xl font-bold hover:bg-studio-blue/85 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     <Save size={20} />
                     {loading ? 'Saving...' : 'Save Form'}
@@ -284,7 +284,7 @@ export function FormBuilderClient({ initialForm }: FormBuilderClientProps) {
                             </div>
 
                             <div className="mt-8">
-                                <button className="w-full bg-brand-dark text-white font-bold py-3 rounded-xl shadow-lg opacity-90 cursor-default">
+                                <button className="w-full bg-studio-blue text-white font-bold py-3 rounded-xl shadow-lg opacity-90 cursor-default">
                                     {form.buttonText || 'Submit'}
                                 </button>
                             </div>

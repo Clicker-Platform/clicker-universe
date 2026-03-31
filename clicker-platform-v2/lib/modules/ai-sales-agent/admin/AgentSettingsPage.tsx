@@ -119,7 +119,7 @@ export default function AgentSettingsPage() {
                 <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="flex items-center gap-2 px-6 py-2.5 bg-brand-dark text-white rounded-xl font-bold hover:opacity-90 transition disabled:opacity-50"
+                    className="flex items-center gap-2 px-6 py-2.5 bg-studio-blue text-white rounded-xl font-bold hover:opacity-90 transition disabled:opacity-50"
                 >
                     {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                     Save Changes
@@ -130,7 +130,7 @@ export default function AgentSettingsPage() {
             <div className="flex gap-2 border-b border-gray-200 dark:border-neutral-800 pb-2">
                 <button
                     onClick={() => setActiveTab('general')}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition ${activeTab === 'general' ? 'bg-brand-dark text-white' : 'text-gray-600 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-700'
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition ${activeTab === 'general' ? 'bg-studio-blue text-white' : 'text-gray-600 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-700'
                         }`}
                 >
                     <Settings2 className="h-4 w-4" />
@@ -138,7 +138,7 @@ export default function AgentSettingsPage() {
                 </button>
                 <button
                     onClick={() => setActiveTab('knowledge')}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition ${activeTab === 'knowledge' ? 'bg-brand-dark text-white' : 'text-gray-600 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-700'
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition ${activeTab === 'knowledge' ? 'bg-studio-blue text-white' : 'text-gray-600 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-700'
                         }`}
                 >
                     <Brain className="h-4 w-4" />

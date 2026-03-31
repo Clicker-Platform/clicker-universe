@@ -3,6 +3,7 @@
 import React from 'react';
 import { ResponsiveNavBar } from '@/components/layout/ResponsiveNavBar';
 import { BottomNavBar } from '@/components/layout/BottomNavBar';
+import { NavigationProvider } from '@/components/layout/NavigationProvider';
 import { MODULE_COMPONENTS } from '@/lib/modules/components';
 
 // import { ResponsiveContainer } from '@/components/layout/ResponsiveContainer'; // Inlined to fix hydration issues
@@ -95,13 +96,14 @@ export function SharedPageLayout({
                 ...pageOverrides?.customConfig
             }}
         >
+            <NavigationProvider siteId={siteId}>
             <div className="contents">
                 {/* Navigation */}
                 {profile && (
-                    <ResponsiveNavBar 
-                        profile={profile} 
-                        siteId={siteId} 
-                        forceMobile={forceMobile} 
+                    <ResponsiveNavBar
+                        profile={profile}
+                        siteId={siteId}
+                        forceMobile={forceMobile}
                         isSubPage={isSubPage}
                         pageTitle={pageTitle}
                     />
@@ -155,6 +157,7 @@ export function SharedPageLayout({
                     </div>
                 </main>
             </div>
+            </NavigationProvider>
         </TemplateProvider>
     );
 }

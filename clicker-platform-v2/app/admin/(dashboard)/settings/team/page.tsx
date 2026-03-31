@@ -244,7 +244,7 @@ export default function TeamPage() {
                 </div>
                 <button
                     onClick={openAddModal}
-                    className="flex items-center gap-2 bg-brand-dark text-brand-green px-6 py-3 rounded-xl font-bold hover:bg-black transition-colors"
+                    className="flex items-center gap-2 bg-studio-blue text-white px-6 py-3 rounded-xl font-bold hover:bg-studio-blue/85 transition-colors"
                 >
                     <Plus size={20} />
                     Add Member
@@ -381,7 +381,7 @@ export default function TeamPage() {
                             <button
                                 type="submit"
                                 disabled={isSaving}
-                                className="w-full bg-brand-dark text-brand-green py-3 rounded-xl font-bold hover:bg-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-4"
+                                className="w-full bg-studio-blue text-white py-3 rounded-xl font-bold hover:bg-studio-blue/85 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-4"
                             >
                                 {isSaving ? 'Saving...' : (editingMember ? 'Update Member' : 'Add Member')}
                             </button>

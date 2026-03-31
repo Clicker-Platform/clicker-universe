@@ -293,7 +293,7 @@ export default function TemplateClient() {
                                                         </div>
 
                                                         {isSelected && (
-                                                            <div className="bg-brand-dark text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider">
+                                                            <div className="bg-studio-blue text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider">
                                                                 Active
                                                             </div>
                                                         )}
@@ -430,7 +430,7 @@ export default function TemplateClient() {
                             </div>
 
                         <div className="pt-4 border-t border-gray-100 dark:border-neutral-800/50">
-                            <SubmitButton isLoading={saving} label="Save Changes" className="w-full bg-brand-dark text-white py-4 rounded-xl font-bold hover:bg-brand-dark/90 transition-all shadow-lg active:scale-[0.98]" />
+                            <SubmitButton isLoading={saving} label="Save Changes" className="w-full bg-studio-blue text-white py-4 rounded-xl font-bold hover:bg-studio-blue/85 transition-all shadow-lg active:scale-[0.98]" />
                         </div>
                     </form>
                 </div>

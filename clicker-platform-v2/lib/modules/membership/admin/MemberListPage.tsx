@@ -137,7 +137,7 @@ export default function MemberListPage() {
                     <button
                         onClick={() => checkAccess('edit') && setIsModalOpen(true)}
                         disabled={!canEdit}
-                        className="bg-brand-dark text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 hover:bg-gray-800 transition shadow-lg shadow-brand-dark/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+                        className="bg-studio-blue text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 hover:bg-studio-blue/85 transition shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
                     >
                         <Plus size={20} /> Add Member
                     </button>
@@ -338,7 +338,7 @@ export default function MemberListPage() {
                             <button
                                 type="submit"
                                 disabled={submitting}
-                                className="w-full py-3 bg-brand-dark text-white font-bold rounded-xl hover:bg-brand-dark/90 mt-2"
+                                className="w-full py-3 bg-studio-blue text-white font-bold rounded-xl hover:bg-studio-blue/85 mt-2"
                             >
                                 {submitting ? 'Registering...' : 'Register Member'}
                             </button>

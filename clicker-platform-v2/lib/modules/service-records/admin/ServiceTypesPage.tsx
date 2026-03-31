@@ -81,7 +81,7 @@ export default function ServiceTypesPage() {
                 </div>
                 <Link
                     href="/admin/services"
-                    className="flex items-center gap-2 bg-brand-dark text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-brand-dark/90 transition-all"
+                    className="flex items-center gap-2 bg-studio-blue text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-studio-blue/85 transition-all"
                 >
                     <ExternalLink className="w-4 h-4" />
                     Manage in Services Catalog

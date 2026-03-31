@@ -235,7 +235,7 @@ export function ProductFormModal({ isOpen, onClose, onSubmit, initialData, isSub
                         isLoading={isSubmitting}
                         loadingLabel={initialData ? 'Updating...' : 'Adding...'}
                         label={initialData ? 'Update Product' : 'Add Product'}
-                        className={`text-white px-8 py-2 rounded-xl font-bold transition-all shadow-md transform active:scale-95 ${initialData ? 'bg-blue-600 hover:bg-blue-700' : 'bg-brand-dark hover:bg-brand-green hover:text-brand-dark'
+                        className={`text-white px-8 py-2 rounded-xl font-bold transition-all shadow-md transform active:scale-95 ${initialData ? 'bg-studio-blue hover:bg-studio-blue/85' : 'bg-studio-blue hover:bg-studio-blue/85'
                             }`}
                         form="product-form" // Link to form via ID
                     />

@@ -296,7 +296,7 @@ export function POSMenuItemDialog({ isOpen, onClose, onSave, initialData, isLoad
                         isLoading={isLoading}
                         loadingLabel={isEditMode ? 'Updating...' : 'Creating...'}
                         label={isEditMode ? 'Save Changes' : 'Create Item'}
-                        className="bg-brand-dark text-white hover:bg-brand-green hover:text-brand-dark px-8 py-2.5 rounded-xl font-bold transition-all shadow-sticker hover:shadow-none hover:translate-y-[1px]"
+                        className="bg-studio-blue text-white hover:bg-studio-blue/85 px-8 py-2.5 rounded-xl font-bold transition-all shadow-sticker hover:shadow-none hover:translate-y-[1px]"
                     />
                 </div>
             </div>

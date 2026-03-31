@@ -47,7 +47,7 @@ export default function ServicesClient({ initialServices = [] }: ServicesClientP
                 </div>
                 <Link
                     href="/admin/services"
-                    className="bg-brand-dark text-white px-6 py-2.5 rounded-xl font-bold hover:bg-brand-dark/90 flex items-center gap-2 shadow-lg hover:shadow-xl transition-all active:scale-95"
+                    className="bg-studio-blue text-white px-6 py-2.5 rounded-xl font-bold hover:bg-studio-blue/85 flex items-center gap-2 shadow-lg hover:shadow-xl transition-all active:scale-95"
                 >
                     <ExternalLink size={18} /> Manage in Services Catalog
                 </Link>
@@ -105,7 +105,7 @@ export default function ServicesClient({ initialServices = [] }: ServicesClientP
                                 key={cat}
                                 onClick={() => setSelectedCategory(cat)}
                                 className={`px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap transition-all ${selectedCategory === cat
-                                    ? 'bg-brand-dark text-white shadow-md shadow-brand-dark/20'
+                                    ? 'bg-studio-blue text-white shadow-md shadow-brand-dark/20'
                                     : 'bg-gray-100 dark:bg-neutral-800 text-gray-500 dark:text-neutral-500 hover:bg-gray-200 dark:hover:bg-neutral-700'
                                 }`}
                             >
@@ -125,7 +125,7 @@ export default function ServicesClient({ initialServices = [] }: ServicesClientP
                             </p>
                             <Link
                                 href="/admin/services"
-                                className="inline-flex items-center gap-2 bg-brand-dark text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-brand-dark/90 transition-all"
+                                className="inline-flex items-center gap-2 bg-studio-blue text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-studio-blue/85 transition-all"
                             >
                                 <ExternalLink size={16} /> Go to Services Catalog
                             </Link>

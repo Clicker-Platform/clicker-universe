@@ -12,8 +12,6 @@ import { QuickActions } from "@/components/QuickActions";
 import { BranchesList } from "@/components/BranchesList";
 import { BusinessProfile, LinkItem, Product, SocialLinkItem, BusinessHours, BusinessContact, Branch } from "@/data/mockData";
 import { ResponsiveContainer } from '@/components/layout/ResponsiveContainer';
-import { ResponsiveNavBar } from '@/components/layout/ResponsiveNavBar';
-import { BottomNavBar } from '@/components/layout/BottomNavBar';
 import { DaySchedule } from "@/lib/core/types";
 import { TemplateId } from '@/lib/templates/types';
 import { getTemplate } from '@/lib/templates/registry'; // Use registry which includes components

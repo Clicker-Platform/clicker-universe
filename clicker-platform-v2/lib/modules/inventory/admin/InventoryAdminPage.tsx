@@ -211,7 +211,7 @@ export default function InventoryPage() {
             {!isViewOnly && (
                 <button
                     onClick={openAddModal}
-                    className="bg-brand-dark text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 hover:bg-gray-800 transition shadow-lg shadow-brand-dark/20 active:scale-95"
+                    className="bg-studio-blue text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 hover:bg-studio-blue/85 transition shadow-lg shadow-brand-dark/20 active:scale-95"
                 >
                     <Plus size={20} /> Add Item
                 </button>
@@ -402,7 +402,7 @@ export default function InventoryPage() {
                             </p>
                             <button
                                 onClick={openAddModal}
-                                className="bg-brand-dark text-white px-6 py-3 rounded-xl font-bold hover:bg-gray-800 transition shadow-lg shadow-brand-dark/20"
+                                className="bg-studio-blue text-white px-6 py-3 rounded-xl font-bold hover:bg-studio-blue/85 transition shadow-lg shadow-brand-dark/20"
                             >
                                 Create First Item
                             </button>

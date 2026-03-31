@@ -276,7 +276,7 @@ export default function AdminBookingWizard({
                 </div>
                 <button
                     onClick={onSuccess}
-                    className="block w-full py-3 bg-brand-dark text-white font-bold rounded-xl"
+                    className="block w-full py-3 bg-studio-blue text-white font-bold rounded-xl"
                 >
                     Close
                 </button>
@@ -412,7 +412,7 @@ export default function AdminBookingWizard({
                                         key={time}
                                         onClick={() => handleTimeSelect(time)}
                                         className={`py-3 rounded-xl text-sm font-bold border transition-all ${selectedTime === time
-                                            ? 'bg-brand-dark text-white border-brand-dark scale-105 shadow-lg'
+                                            ? 'bg-studio-blue text-white border-brand-dark scale-105 shadow-lg'
                                             : 'bg-white dark:bg-neutral-800 text-gray-600 dark:text-neutral-400 border-gray-200 dark:border-neutral-700 hover:border-brand-dark hover:text-brand-dark'
                                             }`}
                                     >
@@ -425,7 +425,7 @@ export default function AdminBookingWizard({
                             <button
                                 disabled={!selectedTime}
                                 onClick={() => setStep(4)}
-                                className="w-full py-3 bg-brand-dark text-white font-bold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-brand-dark/90 transition-colors"
+                                className="w-full py-3 bg-studio-blue text-white font-bold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-studio-blue/85 transition-colors"
                             >
                                 Continue
                             </button>
@@ -551,7 +551,7 @@ export default function AdminBookingWizard({
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full py-3 bg-brand-dark text-white font-bold rounded-xl mt-4 hover:bg-brand-dark/90 transition-colors flex items-center justify-center gap-2"
+                            className="w-full py-3 bg-studio-blue text-white font-bold rounded-xl mt-4 hover:bg-studio-blue/85 transition-colors flex items-center justify-center gap-2"
                         >
                             {loading && <Loader2 size={18} className="animate-spin" />}
                             {loading ? 'Confirming...' : 'Confirm Booking'}

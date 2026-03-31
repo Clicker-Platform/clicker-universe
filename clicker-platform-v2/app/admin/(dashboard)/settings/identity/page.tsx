@@ -124,7 +124,7 @@ export default function IdentitySettingsPage() {
                     isLoading={saving}
                     loadingLabel="Saving..."
                     label="Save Identity"
-                    className="flex items-center gap-2 bg-brand-dark text-white px-6 py-3 rounded-xl font-bold hover:bg-brand-green hover:text-brand-dark transition-colors"
+                    className="flex items-center gap-2 bg-studio-blue text-white px-6 py-3 rounded-xl font-bold hover:bg-studio-blue/85 transition-colors"
                 >
                     <Save size={20} /> Save Identity
                 </SubmitButton>

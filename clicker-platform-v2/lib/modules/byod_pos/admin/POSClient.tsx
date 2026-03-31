@@ -232,7 +232,7 @@ export default function POSClient({ initialOrders = [] }: { initialOrders?: POSO
                             ${activeTab === 'active' ? 'bg-white dark:bg-neutral-900 text-brand-dark shadow-sm' : 'text-gray-500 dark:text-neutral-500 hover:text-gray-700 dark:hover:text-neutral-300'}
                         `}
                         >
-                            Active <span className="bg-brand-dark text-white px-1.5 py-0.5 rounded text-[10px]">{kdsOrders.length}</span>
+                            Active <span className="bg-studio-blue text-white px-1.5 py-0.5 rounded text-[10px]">{kdsOrders.length}</span>
                         </button>
                         <button
                             onClick={() => setActiveTab('completed')}

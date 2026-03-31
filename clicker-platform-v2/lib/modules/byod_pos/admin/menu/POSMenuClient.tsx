@@ -227,7 +227,7 @@ export default function POSMenuClient({ initialItems = [] }: POSMenuClientProps)
                                 className={`
                                     px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition-colors border
                                     ${selectedCategory === cat
-                                        ? 'bg-brand-dark text-white border-brand-dark'
+                                        ? 'bg-studio-blue text-white border-brand-dark'
                                         : 'bg-gray-50 dark:bg-neutral-800/50 text-gray-600 dark:text-neutral-400 border-gray-200 dark:border-neutral-800 hover:border-gray-300 dark:hover:border-neutral-700 hover:bg-gray-100 dark:hover:bg-neutral-700'}
                                 `}
                             >
@@ -256,7 +256,7 @@ export default function POSMenuClient({ initialItems = [] }: POSMenuClientProps)
                         </div>
                         <button
                             onClick={openAddDialog}
-                            className="bg-brand-dark text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 hover:bg-brand-green hover:text-brand-dark transition-all shadow-sticker hover:shadow-none hover:translate-y-[1px] text-sm"
+                            className="bg-studio-blue text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 hover:bg-studio-blue/85 transition-all shadow-sticker hover:shadow-none hover:translate-y-[1px] text-sm"
                         >
                             <Plus size={18} /> <span className="hidden sm:inline">Add Item</span>
                         </button>

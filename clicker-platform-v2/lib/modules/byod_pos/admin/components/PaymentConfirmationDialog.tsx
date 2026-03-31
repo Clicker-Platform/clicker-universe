@@ -41,21 +41,21 @@ export function PaymentConfirmationDialog({ isOpen, onClose, onConfirm, order }:
                     <div className="grid grid-cols-3 gap-3">
                         <button
                             onClick={() => setMethod('cash')}
-                            className={`p-3 rounded-xl border-2 flex flex-col items-center gap-2 transition-all ${method === 'cash' ? 'border-brand-dark bg-brand-dark text-white shadow-lg scale-105' : 'border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-gray-400 dark:text-neutral-600 hover:border-gray-200 dark:hover:border-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-800'}`}
+                            className={`p-3 rounded-xl border-2 flex flex-col items-center gap-2 transition-all ${method === 'cash' ? 'border-brand-dark bg-studio-blue text-white shadow-lg scale-105' : 'border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-gray-400 dark:text-neutral-600 hover:border-gray-200 dark:hover:border-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-800'}`}
                         >
                             <Banknote size={20} />
                             <span className="text-[10px] font-bold uppercase">Cash</span>
                         </button>
                         <button
                             onClick={() => setMethod('card')}
-                            className={`p-3 rounded-xl border-2 flex flex-col items-center gap-2 transition-all ${method === 'card' ? 'border-brand-dark bg-brand-dark text-white shadow-lg scale-105' : 'border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-gray-400 dark:text-neutral-600 hover:border-gray-200 dark:hover:border-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-800'}`}
+                            className={`p-3 rounded-xl border-2 flex flex-col items-center gap-2 transition-all ${method === 'card' ? 'border-brand-dark bg-studio-blue text-white shadow-lg scale-105' : 'border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-gray-400 dark:text-neutral-600 hover:border-gray-200 dark:hover:border-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-800'}`}
                         >
                             <CreditCard size={20} />
                             <span className="text-[10px] font-bold uppercase">Card</span>
                         </button>
                         <button
                             onClick={() => setMethod('qris')}
-                            className={`p-3 rounded-xl border-2 flex flex-col items-center gap-2 transition-all ${method === 'qris' ? 'border-brand-dark bg-brand-dark text-white shadow-lg scale-105' : 'border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-gray-400 dark:text-neutral-600 hover:border-gray-200 dark:hover:border-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-800'}`}
+                            className={`p-3 rounded-xl border-2 flex flex-col items-center gap-2 transition-all ${method === 'qris' ? 'border-brand-dark bg-studio-blue text-white shadow-lg scale-105' : 'border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-gray-400 dark:text-neutral-600 hover:border-gray-200 dark:hover:border-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-800'}`}
                         >
                             <Scan size={20} />
                             <span className="text-[10px] font-bold uppercase">QRIS</span>

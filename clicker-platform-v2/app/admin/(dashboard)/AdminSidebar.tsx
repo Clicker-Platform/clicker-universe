@@ -343,8 +343,8 @@ export function AdminSidebar() {
                                             }}
                                             onMouseLeave={() => setHoveredItem(null)}
                                             className={`flex items-center gap-3 px-3 py-2 rounded-xl font-bold transition-colors text-sm group relative ${isActive
-                                                ? 'bg-brand-dark text-brand-green shadow-sm'
-                                                : 'text-gray-500 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800 hover:text-brand-dark dark:hover:text-neutral-200'
+                                                ? 'bg-studio-blue text-white shadow-sm'
+                                                : 'text-gray-500 dark:text-neutral-400 hover:bg-studio-blue-muted/15 hover:text-studio-blue dark:hover:bg-studio-blue-muted/15 dark:hover:text-studio-blue-muted'
                                                 } ${(!isCollapsed || sidebarOpen) ? 'justify-between' : ''}`}
                                         >
                                             <div className="flex items-center gap-3">
@@ -403,7 +403,7 @@ export function AdminSidebar() {
                                                 key={href}
                                                 href={fullHref}
                                                 onClick={() => { setSettingsOpen(false); setSidebarOpen(false); }}
-                                                className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-bold transition-colors ${isActive ? 'bg-brand-dark text-brand-green' : 'text-gray-600 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-700 hover:text-brand-dark dark:hover:text-neutral-100'}`}
+                                                className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-bold transition-colors ${isActive ? 'bg-studio-blue text-white' : 'text-gray-600 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-700 hover:text-brand-dark dark:hover:text-neutral-100'}`}
                                             >
                                                 <Icon size={15} className="shrink-0" />
                                                 {label}
