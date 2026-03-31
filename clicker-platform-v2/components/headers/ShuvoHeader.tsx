@@ -35,7 +35,7 @@ export const ShuvoHeader: React.FC<HeaderProps> = ({ profile, contact, showAddre
                                 alt={profile.name}
                                 fill
                                 priority
-                                sizes="(max-width: 768px) 100vw, 128px"
+                                sizes="96px"
                                 className="object-cover"
                             />
                         ) : (

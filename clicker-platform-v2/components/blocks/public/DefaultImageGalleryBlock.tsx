@@ -4,6 +4,12 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { Image as ImageIcon } from 'lucide-react';
 import { FullScreenGallery } from '@/components/common/FullScreenGallery';
+import { useTemplate } from '@/components/TemplateProvider';
+import { useDeviceView, dv } from '@/components/DeviceViewContext';
+
+// Lightweight inline SVG base64 used as blur placeholder (1x1 gray pixel)
+const BLUR_PLACEHOLDER =
+    'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxIiBoZWlnaHQ9IjEiPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNlNWU3ZWIiLz48L3N2Zz4=';
 
 interface ImageGalleryBlockProps {
     data: {
@@ -11,9 +17,6 @@ interface ImageGalleryBlockProps {
         coverImage?: string;
     };
 }
-
-import { useTemplate } from '@/components/TemplateProvider';
-import { useDeviceView, dv } from '@/components/DeviceViewContext';
 
 export const DefaultImageGalleryBlock = ({ data }: ImageGalleryBlockProps) => {
     const { theme } = useTemplate();
@@ -27,16 +30,10 @@ export const DefaultImageGalleryBlock = ({ data }: ImageGalleryBlockProps) => {
     const validCover = (data.coverImage && data.coverImage.trim() !== '') ? data.coverImage : null;
     const coverImage = validCover || (images.length > 0 ? images[0] : null);
 
-    // Don't render if no images
-    if (!cardsExist(images) && !coverImage) return null;
-
-    function cardsExist(images: string[]) {
-        return images && images.length > 0;
-    }
+    if (!images.length && !coverImage) return null;
 
     const openGallery = () => {
-        // Ensure starting index matches cover or 0
-        const startIdx = images.indexOf(coverImage as string);
+        const startIdx = coverImage ? images.indexOf(coverImage) : 0;
         setInitialIndex(startIdx !== -1 ? startIdx : 0);
         setIsOpen(true);
     };
@@ -54,33 +51,47 @@ export const DefaultImageGalleryBlock = ({ data }: ImageGalleryBlockProps) => {
                         ? 'rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md hover:border-white/20 hover:bg-white/10'
                         : 'rounded-2xl border-[3px] border-theme-border shadow-sticker hover:shadow-none hover:translate-y-[2px] hover:translate-x-[2px]'
                     }
-                    /* Adaptive Aspect Ratio */
                     ${dv(d, 'aspect-[4/5]', 'md:aspect-[21/9]')}
                 `}
                 style={{ borderRadius: 'var(--theme-radius)' }}
             >
                 {coverImage ? (
                     <>
-                        {/* Background Layer (Blurred) - Visible on Desktop if image is portrait-ish, or just fills */}
-                        <div className="absolute inset-0 z-0">
+                        {/*
+                         * Background blur layer — same URL as cover.
+                         * Use fill + object-cover so it always fills the container.
+                         * sizes="100vw" matches the actual rendered width (w-full).
+                         * No priority — it's decorative and loads after the main image.
+                         */}
+                        <div className="absolute inset-0 z-0 overflow-hidden">
                             <Image
                                 src={coverImage}
-                                alt="Background"
+                                alt=""
+                                aria-hidden="true"
                                 fill
-                                sizes="10vw"
+                                sizes="100vw"
                                 quality={10}
                                 className="object-cover blur-xl scale-110 opacity-50"
+                                placeholder="blur"
+                                blurDataURL={BLUR_PLACEHOLDER}
                             />
                             <div className="absolute inset-0 bg-white/20 backdrop-blur-sm" />
                         </div>
 
-                        {/* Main Image - Contain Mode to prevent cropping, centered */}
+                        {/*
+                         * Main cover image — this is the LCP element.
+                         * priority=true injects a <link rel="preload"> and disables lazy loading.
+                         * sizes matches real layout: full-width on mobile, up to 1200px on desktop.
+                         */}
                         <div className="absolute inset-0 z-10 flex items-center justify-center p-2">
                             <div className="relative w-full h-full shadow-lg rounded-lg overflow-hidden">
                                 <Image
                                     src={coverImage}
                                     alt="Gallery Cover"
                                     fill
+                                    priority
+                                    placeholder="blur"
+                                    blurDataURL={BLUR_PLACEHOLDER}
                                     className={`${dv(d, 'object-cover', 'md:object-contain')} object-center transition-transform duration-500 group-hover:scale-105`}
                                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
                                 />
@@ -100,7 +111,6 @@ export const DefaultImageGalleryBlock = ({ data }: ImageGalleryBlockProps) => {
                 </div>
             </div>
 
-            {/* Reusable Full Screen Gallery */}
             <FullScreenGallery
                 isOpen={isOpen}
                 images={images}

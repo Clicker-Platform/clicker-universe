@@ -32,7 +32,7 @@ export const ModernProfileHeader: React.FC<HeaderProps> = ({ profile, contact, s
                             alt={profile.name}
                             fill
                             priority
-                            sizes="(max-width: 768px) 100vw, 128px"
+                            sizes="128px"
                             className="object-cover"
                         />
                     ) : (

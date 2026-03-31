@@ -2,8 +2,11 @@ import React from 'react';
 import dynamic from 'next/dynamic';
 import { PageBlock } from '@/data/mockData';
 
-// Dynamically import default blocks to reduce initial bundle size
-const HeroBlock = dynamic(() => import('./public/DefaultHeroBlock').then(mod => mod.DefaultHeroBlock));
+// Static imports for LCP-critical above-the-fold blocks
+import { DefaultHeroBlock as HeroBlock } from './public/DefaultHeroBlock';
+import { DefaultImageGalleryBlock as ImageGalleryBlock } from './public/DefaultImageGalleryBlock';
+
+// Dynamically import remaining blocks to reduce initial bundle size
 const TextBlock = dynamic(() => import('./public/DefaultTextBlock').then(mod => mod.DefaultTextBlock));
 const ImageBlock = dynamic(() => import('./public/DefaultImageBlock').then(mod => mod.DefaultImageBlock));
 const ButtonBlock = dynamic(() => import('./public/DefaultButtonBlock').then(mod => mod.DefaultButtonBlock));
@@ -11,7 +14,6 @@ const ProductsBlock = dynamic(() => import('./public/DefaultProductsBlock').then
 const FAQBlock = dynamic(() => import('./public/DefaultFAQBlock').then(mod => mod.DefaultFAQBlock));
 const LinkBlock = dynamic(() => import('./public/DefaultLinkBlock').then(mod => mod.DefaultLinkBlock));
 const MapBlock = dynamic(() => import('./public/DefaultMapBlock').then(mod => mod.DefaultMapBlock));
-const ImageGalleryBlock = dynamic(() => import('./public/DefaultImageGalleryBlock').then(mod => mod.DefaultImageGalleryBlock));
 const ReservationBlock = dynamic(() => import('./public/ReservationBlock').then(mod => mod.ReservationBlock));
 
 // System blocks (from PublicPageRenderer)

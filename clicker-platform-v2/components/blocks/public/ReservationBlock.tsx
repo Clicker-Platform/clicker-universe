@@ -2,19 +2,57 @@
 
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { Calendar, Loader2 } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 import { useTemplate } from '@/components/TemplateProvider';
-import ReservationWidgetDirect from '@/lib/modules/reservation/public/ReservationWidget';
 
-const ReservationWidgetLazy = dynamic(
+// Animated skeleton bar — uses CSS vars from TemplateProvider so it works across all themes.
+// Renders inside the dynamic() loading prop which shows while JS chunk downloads.
+function SkeletonBar({ className = '', style }: { className?: string; style?: React.CSSProperties }) {
+    return (
+        <div
+            className={`animate-pulse rounded-lg ${className}`}
+            style={{
+                background: 'color-mix(in srgb, var(--theme-foreground, #9ca3af) 12%, transparent)',
+                ...style,
+            }}
+        />
+    );
+}
+
+function ReservationSkeleton() {
+    return (
+        <div className="space-y-3 py-2">
+            {/* Search bar skeleton */}
+            <SkeletonBar style={{ height: 44 }} className="rounded-xl" />
+            {/* Service card skeletons — 3 cards matches typical service count */}
+            {[1, 2, 3].map(i => (
+                <div
+                    key={i}
+                    className="p-4 rounded-xl border"
+                    style={{
+                        borderColor: 'color-mix(in srgb, var(--theme-foreground, #e5e7eb) 10%, transparent)',
+                        background: 'color-mix(in srgb, var(--theme-foreground, #f9fafb) 5%, transparent)',
+                    }}
+                >
+                    <div className="flex justify-between items-start mb-2">
+                        <SkeletonBar style={{ width: `${50 + i * 15}%`, height: 18 }} />
+                        <SkeletonBar style={{ width: 72, height: 18 }} />
+                    </div>
+                    <SkeletonBar style={{ width: 80, height: 14 }} />
+                </div>
+            ))}
+        </div>
+    );
+}
+
+// ssr: false is required — TimeStep and DetailsStep call new Date() at render time,
+// which causes server/client hydration mismatches. The skeleton shows immediately
+// in the server HTML and animates while the JS chunk loads, giving perceived speed.
+const ReservationWidget = dynamic(
     () => import('@/lib/modules/reservation/public/ReservationWidget'),
     {
-        loading: () => (
-            <div className="flex items-center justify-center py-16">
-                <Loader2 size={28} className="animate-spin text-[var(--theme-primary,#666)]" />
-            </div>
-        ),
-        ssr: false
+        loading: () => <ReservationSkeleton />,
+        ssr: false,
     }
 );
 
@@ -23,11 +61,10 @@ export const ReservationBlock = ({ data, siteId, initialServices, initialStaff, 
     const isClean = theme.cardStyle === 'clean';
     const isGlass = theme.cardStyle === 'glass';
 
-    // Button Mode
+    // Button Mode — returns before the widget JS chunk is ever referenced.
     if (data.mode === 'button') {
         const buttonText = data.buttonText || "Book Now";
 
-        // Dynamic Button Style based on Theme
         const buttonStyle = isGlass
             ? 'bg-[var(--theme-primary)] text-black rounded-xl hover:opacity-90 shadow-lg'
             : isClean
@@ -69,10 +106,12 @@ export const ReservationBlock = ({ data, siteId, initialServices, initialStaff, 
                     {data.title}
                 </h2>
             )}
-            {Array.isArray(initialServices)
-                ? <ReservationWidgetDirect siteId={siteId} initialServices={initialServices} initialStaff={initialStaff} initialSettings={initialSettings} />
-                : <ReservationWidgetLazy siteId={siteId} />
-            }
+            <ReservationWidget
+                siteId={siteId}
+                initialServices={initialServices}
+                initialStaff={initialStaff}
+                initialSettings={initialSettings}
+            />
         </div>
     );
 };

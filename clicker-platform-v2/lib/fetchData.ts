@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { db } from "@/lib/firebase";
 import { doc, getDoc, collection, getDocs, query, where, orderBy } from "firebase/firestore";
 import { BusinessProfile, LinkItem, Product, SocialLink, SiteSettings, SocialLinkItem, initialBusinessHours, BusinessHours, Page, PageBlock, BusinessContact, Branch, initialBusinessContact, LinkSettings, ProductSettings } from "@/data/mockData";
@@ -13,7 +14,7 @@ function logDebug(msg: string) {
     }
 }
 
-export async function fetchPublicData(siteId: string, options: { includeProducts?: boolean } = { includeProducts: true }) {
+export const fetchPublicData = cache(async function fetchPublicData(siteId: string, options: { includeProducts?: boolean } = { includeProducts: true }) {
     if (!siteId || siteId === 'default' || siteId === 'pending') {
         logDebug(`Skipping fetchPublicData for invalid siteId: ${siteId}`);
         return {
@@ -192,16 +193,16 @@ export async function fetchPublicData(siteId: string, options: { includeProducts
         homepageSlug: settings?.homepageSlug,
         businessSchedule: businessHours.schedule
     };
-}
+});
 
-export async function fetchSiteSettings(siteId: string) {
+export const fetchSiteSettings = cache(async function fetchSiteSettings(siteId: string) {
     if (!siteId || siteId === 'default' || siteId === 'pending') return null;
     const snap = await getDoc(doc(db, "sites", siteId, "content", "siteSettings"));
     if (snap.exists()) {
         return snap.data() as SiteSettings;
     }
     return null;
-}
+});
 
 export async function fetchPageBySlug(siteId: string, slug: string) {
     try {
@@ -248,7 +249,7 @@ export async function fetchProductSettings(siteId: string) {
     }
     return { galleryTitle: "More Treats", showSectionTitle: true, itemsToShow: 6 } as ProductSettings;
 }
-export async function fetchLightweightPublicData(siteId: string) {
+export const fetchLightweightPublicData = cache(async function fetchLightweightPublicData(siteId: string) {
     // Fetch only essential data for content pages (Profile, Settings, Contact)
     const [
         profileSnap,
@@ -315,7 +316,7 @@ export async function fetchLightweightPublicData(siteId: string) {
         homepageSlug: settings?.homepageSlug,
         businessSchedule: businessHours.schedule
     };
-}
+});
 
 import { getServices, getReservationSettings } from '@/lib/modules/reservation/api';
 import { getStaffMembers } from '@/lib/modules/reservation/staff';
@@ -419,11 +420,24 @@ export async function hydratePageBlocks(siteId: string, blocks: PageBlock[]) {
                 getReservationSettings(siteId)
             ])
                 .then(([services, staff, settings]) => {
-                    data.reservationServices = JSON.parse(JSON.stringify(
+                    // Strip Firestore Timestamps (toJSON converts them to { seconds, nanoseconds })
+                    // without the cost of a full JSON.parse(JSON.stringify()) round-trip.
+                    const stripTimestamps = (obj: any): any => {
+                        if (obj === null || obj === undefined) return obj;
+                        if (typeof obj?.toJSON === 'function') return obj.toJSON();
+                        if (Array.isArray(obj)) return obj.map(stripTimestamps);
+                        if (typeof obj === 'object') {
+                            const out: Record<string, any> = {};
+                            for (const k in obj) out[k] = stripTimestamps(obj[k]);
+                            return out;
+                        }
+                        return obj;
+                    };
+                    data.reservationServices = stripTimestamps(
                         services.filter((s: any) => s.isActive !== false)
-                    ));
-                    data.reservationStaff = JSON.parse(JSON.stringify(staff));
-                    data.reservationSettings = JSON.parse(JSON.stringify(settings));
+                    );
+                    data.reservationStaff = stripTimestamps(staff);
+                    data.reservationSettings = stripTimestamps(settings);
                 })
                 .catch(e => {
                     console.error("Error fetching reservation data", e);
