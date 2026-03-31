@@ -3,6 +3,11 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { createPortal } from 'react-dom';
+
+// 1x1 gray SVG — instant visual while real image loads
+const BLUR_PLACEHOLDER =
+    'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxIiBoZWlnaHQ9IjEiPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMxYTFhMWEiLz48L3N2Zz4=';
 
 interface FullScreenGalleryProps {
     isOpen: boolean;
@@ -10,10 +15,6 @@ interface FullScreenGalleryProps {
     initialIndex?: number;
     onClose: () => void;
 }
-
-import { createPortal } from 'react-dom';
-
-// ... (keep props interface)
 
 export const FullScreenGallery = ({ isOpen, images, initialIndex = 0, onClose }: FullScreenGalleryProps) => {
     const [currentIndex, setCurrentIndex] = useState(initialIndex);
@@ -24,7 +25,6 @@ export const FullScreenGallery = ({ isOpen, images, initialIndex = 0, onClose }:
         return () => setMounted(false);
     }, []);
 
-    // Sync state if initialIndex changes when opening
     useEffect(() => {
         if (isOpen) {
             setCurrentIndex(initialIndex);
@@ -45,21 +45,21 @@ export const FullScreenGallery = ({ isOpen, images, initialIndex = 0, onClose }:
         setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
     };
 
-    // ... (keep navigation logic: nextImage, prevImage, keyboard handlers)
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (!isOpen) return;
-
             if (e.key === 'Escape') onClose();
             if (e.key === 'ArrowRight') nextImage();
             if (e.key === 'ArrowLeft') prevImage();
         };
-
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [isOpen, onClose]); // Added onClose to deps
+    }, [isOpen, onClose]);
 
     if (!mounted || !isOpen) return null;
+
+    const prevIndex = (currentIndex - 1 + images.length) % images.length;
+    const nextIndex = (currentIndex + 1) % images.length;
 
     return createPortal(
         <div className="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center touch-none">
@@ -78,19 +78,54 @@ export const FullScreenGallery = ({ isOpen, images, initialIndex = 0, onClose }:
 
             {/* Main Image Container */}
             <div className="w-full h-full flex items-center justify-center p-4 md:p-10 relative">
-                {/* Image */}
                 <div className="relative w-full h-full flex items-center justify-center">
+                    {/*
+                     * No key prop — we update src instead of remounting.
+                     * This keeps the Image component alive so the browser can
+                     * reuse its decode context and cache between navigations.
+                     * animate-in is applied via a wrapper div instead.
+                     */}
                     <Image
-                        key={currentIndex}
                         src={images[currentIndex]}
                         alt={`Gallery image ${currentIndex + 1}`}
-                        className="object-contain select-none animate-in fade-in zoom-in-95 duration-200"
+                        className="object-contain select-none"
                         fill
                         sizes="100vw"
+                        quality={85}
+                        placeholder="blur"
+                        blurDataURL={BLUR_PLACEHOLDER}
                         draggable={false}
                         priority
                     />
                 </div>
+
+                {/* Preload adjacent images so next/prev are instant */}
+                {images.length > 1 && (
+                    <>
+                        <Image
+                            src={images[nextIndex]}
+                            alt=""
+                            aria-hidden="true"
+                            fill
+                            sizes="1px"
+                            quality={75}
+                            className="opacity-0 pointer-events-none"
+                            priority
+                        />
+                        {prevIndex !== nextIndex && (
+                            <Image
+                                src={images[prevIndex]}
+                                alt=""
+                                aria-hidden="true"
+                                fill
+                                sizes="1px"
+                                quality={75}
+                                className="opacity-0 pointer-events-none"
+                                priority
+                            />
+                        )}
+                    </>
+                )}
 
                 {/* Navigation Arrows */}
                 <button
@@ -120,7 +155,7 @@ export const FullScreenGallery = ({ isOpen, images, initialIndex = 0, onClose }:
                             className={`relative flex-shrink-0 w-20 h-14 rounded-lg overflow-hidden transition-all snap-center ${idx === currentIndex
                                 ? 'ring-2 ring-white opacity-100 scale-105'
                                 : 'opacity-50 hover:opacity-80'
-                                }`}
+                            }`}
                         >
                             <Image
                                 src={img}
@@ -130,6 +165,8 @@ export const FullScreenGallery = ({ isOpen, images, initialIndex = 0, onClose }:
                                 quality={40}
                                 className="object-cover"
                                 loading="lazy"
+                                placeholder="blur"
+                                blurDataURL={BLUR_PLACEHOLDER}
                             />
                         </button>
                     ))}

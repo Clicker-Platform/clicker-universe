@@ -20,20 +20,21 @@ export default function ReservationWidget({
 }) {
     const { siteId: contextSiteId } = useSite();
     const siteId = propSiteId || contextSiteId;
-    const [loading, setLoading] = useState(!Array.isArray(initialServices));
+    const hasInitialData = Array.isArray(initialServices);
+    const [loading, setLoading] = useState(!hasInitialData);
     const [data, setData] = useState<{
         services: Service[];
         staff: Staff[];
         settings: any;
     } | null>(
-        Array.isArray(initialServices)
+        hasInitialData
             ? { services: initialServices as Service[], staff: (initialStaff || []) as Staff[], settings: initialSettings || {} }
             : null
     );
 
     useEffect(() => {
         async function load() {
-            if (Array.isArray(initialServices)) return;
+            if (hasInitialData) return;
 
             if (!siteId) {
                 console.error("ReservationWidget: siteId is missing");
@@ -58,7 +59,7 @@ export default function ReservationWidget({
     }, [siteId]);
 
     if (loading) {
-        return <div className="py-12 text-center text-gray-400">Loading reservation system...</div>;
+        return <div className="py-12 text-center text-[var(--theme-foreground,#6b7280)] opacity-60">Loading reservation system...</div>;
     }
 
     if (!data) {

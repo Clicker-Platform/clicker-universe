@@ -19,7 +19,7 @@ export const ClassicHeader: React.FC<HeaderProps> = ({ profile, contact, showAdd
                         alt={profile.name}
                         fill
                         priority
-                        sizes="(max-width: 768px) 100vw, 128px"
+                        sizes="128px"
                         className="object-cover"
                     />
                 </div>

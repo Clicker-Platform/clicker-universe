@@ -1,0 +1,239 @@
+import React from 'react';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
+import { DefaultImageGalleryBlock } from '../DefaultImageGalleryBlock';
+
+// ─── Module mocks ─────────────────────────────────────────────────────────────
+
+vi.mock('@/components/TemplateProvider', () => ({
+    useTemplate: () => ({ theme: { cardStyle: 'bold' } }),
+}));
+
+vi.mock('@/components/DeviceViewContext', () => ({
+    useDeviceView: () => 'desktop',
+    dv: (_view: string, mobile: string, desktop: string) => `${mobile} ${desktop}`,
+}));
+
+vi.mock('next/image', () => ({
+    default: ({ src, alt, priority, fill, sizes, quality, className, placeholder, blurDataURL, ...rest }: any) => (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+            src={src}
+            alt={alt}
+            data-priority={priority ? 'true' : undefined}
+            data-fill={fill ? 'true' : undefined}
+            data-sizes={sizes}
+            data-quality={quality}
+            data-placeholder={placeholder}
+            data-blur={blurDataURL ? 'true' : undefined}
+            className={className}
+            {...rest}
+        />
+    ),
+}));
+
+vi.mock('@/components/common/FullScreenGallery', () => ({
+    FullScreenGallery: ({ isOpen, images, initialIndex, onClose }: any) =>
+        isOpen ? (
+            <div data-testid="fullscreen-gallery" data-index={initialIndex}>
+                <span data-testid="gallery-count">{images.length}</span>
+                <button data-testid="gallery-close" onClick={onClose}>
+                    Close
+                </button>
+            </div>
+        ) : null,
+}));
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+const IMG_A = 'https://storage.googleapis.com/site/a.jpg';
+const IMG_B = 'https://storage.googleapis.com/site/b.jpg';
+const IMG_C = 'https://storage.googleapis.com/site/c.jpg';
+
+function renderGallery(data: { images?: string[]; coverImage?: string }) {
+    return render(<DefaultImageGalleryBlock data={data} />);
+}
+
+// ─── Suite ────────────────────────────────────────────────────────────────────
+
+describe('Suite 1 — DefaultImageGalleryBlock', () => {
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+    });
+
+    // ── Rendering ─────────────────────────────────────────────────────────────
+
+    it('Scenario 1.1 — renders nothing when no images and no coverImage', () => {
+        const { container } = renderGallery({ images: [] });
+        expect(container.firstChild).toBeNull();
+    });
+
+    it('Scenario 1.2 — renders nothing when images array contains only empty strings', () => {
+        const { container } = renderGallery({ images: ['', '  ', ''] });
+        expect(container.firstChild).toBeNull();
+    });
+
+    it('Scenario 1.3 — renders the cover image when images are provided', () => {
+        renderGallery({ images: [IMG_A, IMG_B] });
+        const coverImg = screen.getAllByRole('img').find(
+            img => img.getAttribute('alt') === 'Gallery Cover'
+        );
+        expect(coverImg).toBeTruthy();
+        expect(coverImg!.getAttribute('src')).toBe(IMG_A);
+    });
+
+    it('Scenario 1.4 — uses explicit coverImage instead of first image', () => {
+        renderGallery({ images: [IMG_A, IMG_B, IMG_C], coverImage: IMG_B });
+        const coverImg = screen.getAllByRole('img').find(
+            img => img.getAttribute('alt') === 'Gallery Cover'
+        );
+        expect(coverImg!.getAttribute('src')).toBe(IMG_B);
+    });
+
+    it('Scenario 1.5 — shows photo count badge with correct number', () => {
+        renderGallery({ images: [IMG_A, IMG_B, IMG_C] });
+        expect(screen.getByText('3 Photos')).toBeInTheDocument();
+    });
+
+    it('Scenario 1.6 — renders with only coverImage and no images array', () => {
+        renderGallery({ coverImage: IMG_A });
+        // Badge still shows 0 photos (no images[] provided) but component renders
+        expect(screen.getByText('0 Photos')).toBeInTheDocument();
+        const coverImg = screen.getAllByRole('img').find(
+            img => img.getAttribute('alt') === 'Gallery Cover'
+        );
+        expect(coverImg).toBeTruthy();
+    });
+
+    // ── Priority / Performance attributes ─────────────────────────────────────
+
+    it('Scenario 1.7 — main cover image has priority=true (LCP)', () => {
+        renderGallery({ images: [IMG_A, IMG_B] });
+        const coverImg = screen.getAllByRole('img').find(
+            img => img.getAttribute('alt') === 'Gallery Cover'
+        );
+        expect(coverImg!.getAttribute('data-priority')).toBe('true');
+    });
+
+    it('Scenario 1.8 — background blur image does NOT have priority (decorative)', () => {
+        renderGallery({ images: [IMG_A] });
+        // aria-hidden images are excluded from the accessible tree;
+        // query via the DOM directly instead of ARIA role lookup.
+        const bgImg = document.querySelector('img[aria-hidden="true"]');
+        expect(bgImg).toBeTruthy();
+        expect(bgImg!.getAttribute('data-priority')).toBeNull();
+    });
+
+    it('Scenario 1.9 — background blur image has aria-hidden for accessibility', () => {
+        renderGallery({ images: [IMG_A] });
+        const bgImg = document.querySelector('img[aria-hidden="true"]');
+        expect(bgImg).toBeTruthy();
+    });
+
+    it('Scenario 1.10 — cover image has correct sizes for responsive layout', () => {
+        renderGallery({ images: [IMG_A] });
+        const coverImg = screen.getAllByRole('img').find(
+            img => img.getAttribute('alt') === 'Gallery Cover'
+        );
+        expect(coverImg!.getAttribute('data-sizes')).toBe(
+            '(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px'
+        );
+    });
+
+    it('Scenario 1.11 — background image has sizes="100vw" (not 10vw)', () => {
+        renderGallery({ images: [IMG_A] });
+        const bgImg = document.querySelector('img[aria-hidden="true"]');
+        expect(bgImg!.getAttribute('data-sizes')).toBe('100vw');
+    });
+
+    it('Scenario 1.12 — background image has quality=10 (blur decoration)', () => {
+        renderGallery({ images: [IMG_A] });
+        const bgImg = document.querySelector('img[aria-hidden="true"]');
+        expect(bgImg!.getAttribute('data-quality')).toBe('10');
+    });
+
+    it('Scenario 1.13 — both images have blur placeholder configured', () => {
+        renderGallery({ images: [IMG_A] });
+        const imgsWithBlur = document
+            .querySelectorAll('img[data-blur="true"]');
+        expect(imgsWithBlur.length).toBeGreaterThanOrEqual(2);
+    });
+
+    // ── Gallery open / close ───────────────────────────────────────────────────
+
+    it('Scenario 1.14 — FullScreenGallery is closed initially', () => {
+        renderGallery({ images: [IMG_A, IMG_B] });
+        expect(screen.queryByTestId('fullscreen-gallery')).toBeNull();
+    });
+
+    it('Scenario 1.15 — clicking the cover opens the gallery', () => {
+        renderGallery({ images: [IMG_A, IMG_B] });
+        const trigger = document.querySelector('[class*="cursor-pointer"]') as HTMLElement;
+        fireEvent.click(trigger);
+        expect(screen.getByTestId('fullscreen-gallery')).toBeInTheDocument();
+    });
+
+    it('Scenario 1.16 — gallery receives correct image count', () => {
+        renderGallery({ images: [IMG_A, IMG_B, IMG_C] });
+        const trigger = document.querySelector('[class*="cursor-pointer"]') as HTMLElement;
+        fireEvent.click(trigger);
+        expect(screen.getByTestId('gallery-count').textContent).toBe('3');
+    });
+
+    it('Scenario 1.17 — gallery opens at correct index when coverImage matches an image', () => {
+        renderGallery({ images: [IMG_A, IMG_B, IMG_C], coverImage: IMG_B });
+        const trigger = document.querySelector('[class*="cursor-pointer"]') as HTMLElement;
+        fireEvent.click(trigger);
+        expect(screen.getByTestId('fullscreen-gallery').getAttribute('data-index')).toBe('1');
+    });
+
+    it('Scenario 1.18 — gallery opens at index 0 when coverImage is not in images array', () => {
+        // coverImage is separate from images[] — indexOf returns -1 → fallback 0
+        renderGallery({ images: [IMG_A, IMG_B], coverImage: IMG_C });
+        const trigger = document.querySelector('[class*="cursor-pointer"]') as HTMLElement;
+        fireEvent.click(trigger);
+        expect(screen.getByTestId('fullscreen-gallery').getAttribute('data-index')).toBe('0');
+    });
+
+    it('Scenario 1.19 — clicking Close in gallery hides it', async () => {
+        renderGallery({ images: [IMG_A, IMG_B] });
+        const trigger = document.querySelector('[class*="cursor-pointer"]') as HTMLElement;
+        fireEvent.click(trigger);
+        fireEvent.click(screen.getByTestId('gallery-close'));
+        await waitFor(() =>
+            expect(screen.queryByTestId('fullscreen-gallery')).toBeNull()
+        );
+    });
+
+    // ── Edge cases ────────────────────────────────────────────────────────────
+
+    it('Scenario 1.20 — filters out blank strings from images array', () => {
+        renderGallery({ images: [IMG_A, '', '  ', IMG_B] });
+        // Only 2 valid images → badge shows 2
+        expect(screen.getByText('2 Photos')).toBeInTheDocument();
+    });
+
+    it('Scenario 1.21 — empty coverImage string falls back to first valid image', () => {
+        renderGallery({ images: [IMG_A], coverImage: '' });
+        const coverImg = screen.getAllByRole('img').find(
+            img => img.getAttribute('alt') === 'Gallery Cover'
+        );
+        expect(coverImg!.getAttribute('src')).toBe(IMG_A);
+    });
+
+    it('Scenario 1.22 — whitespace-only coverImage treated as absent', () => {
+        renderGallery({ images: [IMG_A], coverImage: '   ' });
+        const coverImg = screen.getAllByRole('img').find(
+            img => img.getAttribute('alt') === 'Gallery Cover'
+        );
+        expect(coverImg!.getAttribute('src')).toBe(IMG_A);
+    });
+
+    it('Scenario 1.23 — single image renders without error', () => {
+        const { container } = renderGallery({ images: [IMG_A] });
+        expect(container.firstChild).not.toBeNull();
+        expect(screen.getByText('1 Photos')).toBeInTheDocument();
+    });
+
+});
