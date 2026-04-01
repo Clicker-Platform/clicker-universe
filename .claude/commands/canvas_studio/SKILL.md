@@ -29,14 +29,16 @@ app/admin/(dashboard)/pages/page.tsx
             ├── StudioTopBar          ← top bar: device toggle, save, homepage
             └── CanvasStudio          ← main 3-panel layout
                 ├── Left Sidebar
-                │   ├── Icon strip (P/A/Z keyboard shortcuts)
-                │   └── Switchable Panels
+                │   ├── Icon strip (w-12)
+                │   │   ├── P/A/Z shortcuts → Switchable Panels
+                │   │   └── L/F/B/I shortcuts → Slide-over (Links/Forms/Products/Site Info)
+                │   └── Switchable Panels (w-56)
                 │       ├── PagesPanel          ← list + switch pages
                 │       ├── AddBlocksPanel      ← add new blocks
                 │       └── BlockManager        ← navigator + DnD reorder
                 ├── Center Canvas       ← live template preview (WYSIWYG)
                 │   └── BlockRenderer   ← renders each block (shared with public)
-                └── Right Sidebar
+                └── Right Sidebar (320px)
                     ├── Page settings (title, slug)
                     ├── SEO & Analytics panel
                     └── BlockFormRenderer ← type-specific property forms
@@ -76,25 +78,32 @@ interface PageBlock {
 
 ## Core Block Types
 
-Defined in `components/admin/blocks/blockDefinitions.ts`:
+Defined in `components/admin/blocks/blockDefinitions.ts` (`BLOCK_OPTIONS`):
 
 | Type | Label | Default data |
 |---|---|---|
-| `hero` | Hero Section | `{ title, subtitle }` |
-| `text` | Text Content | `{ content: '<p>...</p>' }` |
-| `image` | Image | `{ alt, caption }` |
-| `button` | Button | `{ label, url, style: 'primary' }` |
-| `products` | Product List | `{ title }` |
-| `faq` | FAQ List | `{ title, items: [{question, answer}] }` |
-| `link` | Link Card | `{ title, url }` |
-| `map` | Map | `{ address }` |
-| `image_gallery` | Image Gallery | `{ title, images: [] }` |
-| `quick_actions` | Quick Links | `{}` (system data) |
-| `hours` | Operating Hours | `{}` (system data) |
-| `featured_product` | Featured Product | `{}` (system data) |
-| `branches` | Branches | `{}` (system data) |
+| `hero` | Hero Section | `{ title, subtitle, layoutVariant }` |
+| `text` | Text Content | `{ content: '<p>...</p>', layoutVariant }` |
+| `image` | Image | `{ alt, caption, layoutVariant }` |
+| `button` | Button | `{ label, url, style: 'primary', layoutVariant }` |
+| `products` | Product List | `{ title, layoutVariant }` |
+| `faq` | FAQ List | `{ title, items: [{question, answer}], layoutVariant }` |
+| `link` | Link Card | `{ title, url, layoutVariant }` |
+| `map` | Map | `{ address, layoutVariant }` |
+| `image_gallery` | Image Gallery | `{ title, images: [], layoutVariant }` |
 
-**System blocks** (`quick_actions`, `hours`, `featured_product`, `branches`) auto-hydrate data from global site settings — they have no editable fields in the canvas, only in dedicated settings pages.
+**System blocks** — handled in `getDefaultData()` but **not in `BLOCK_OPTIONS`** (cannot be added from the Add Blocks panel; they are placed programmatically or by templates only):
+
+| Type | Label | Notes |
+|---|---|---|
+| `quick_actions` | Quick Links | auto-hydrates from site settings |
+| `hours` | Operating Hours | auto-hydrates from site settings |
+| `featured_product` | Featured Product | auto-hydrates from site settings |
+| `branches` | Branches | auto-hydrates from site settings |
+
+System blocks pull live data via `hydratePageBlocks(siteId, blocks)`. Their `data` field in Firestore is typically empty `{}`.
+
+**Module-contributed blocks** — registered via `lib/modules/definitions.ts` and surfaced by `AddBlocksPanel` only when the module is enabled (e.g., `reservation` from the Reservation module). See [Action: `add-module-block`](#action-add-module-block).
 
 ---
 
@@ -105,7 +114,7 @@ To add a new block type (e.g., `testimonials`):
 ### Step 1 — Register in `blockDefinitions.ts`
 
 ```typescript
-// components/admin/blocks/blockDefinitions.ts
+// components/admin/blocks/blockDefinitions.ts — BLOCK_OPTIONS array
 { type: 'testimonials', label: 'Testimonials', icon: Star },
 ```
 
@@ -114,6 +123,8 @@ Add default data in `getDefaultData()`:
 case 'testimonials':
   return { ...baseData, title: 'What people say', items: [] };
 ```
+
+`baseData` already includes `layoutVariant` resolved from `template.config.defaultBlockLayouts[type]`.
 
 ### Step 2 — Add the type to `BlockType`
 
@@ -202,27 +213,22 @@ case 'testimonials': return 'Testimonials';
 
 Blocks can have multiple layouts (e.g., Hero: `centered` vs `split`). Layout variants are selected in the right sidebar via `LayoutVariantPicker` (`components/admin/blocks/forms/LayoutVariantPicker.tsx`).
 
-`BlockFormRenderer` renders `LayoutVariantPicker` above the block's form when `LAYOUT_VARIANTS[block.type]` is defined. To add variants to a block type:
+`BlockFormRenderer` renders `LayoutVariantPicker` above the block's form for supported block types. Layout variants are driven by `template.config.defaultBlockLayouts` — there is no static `LAYOUT_VARIANTS` constant in `blockDefinitions.ts`. `getDefaultData()` reads `template.config.defaultBlockLayouts[type]` and sets the `layoutVariant` property in `baseData` automatically.
 
-1. Add to `LAYOUT_VARIANTS` in `blockDefinitions.ts`:
-   ```typescript
-   testimonials: [
-     { id: 'grid', label: 'Grid', icon: LayoutGrid },
-     { id: 'carousel', label: 'Carousel', icon: Rows },
-   ]
-   ```
+To add variants to a block type:
+
+1. Define variant options in `LayoutVariantPicker.tsx` for your block type
 2. In the block's public component, check `data.layoutVariant`
 3. To set a default variant per-template, add to `lib/templates/definitions.ts`:
    ```typescript
-   defaultBlockLayouts: { hero: 'split', ... }
+   defaultBlockLayouts: { hero: 'split', testimonials: 'grid', ... }
    ```
-4. `getDefaultData()` reads `template.config.defaultBlockLayouts` and sets `layoutVariant` automatically
 
 ---
 
 ## Action: `add-module-block`
 
-Module blocks are contributed by modules (e.g., `pos_menu`, `booking_widget`). They appear in the Add Blocks panel only when the module is enabled.
+Module blocks are contributed by modules (e.g., `reservation`, `pos_menu`). They appear in the Add Blocks panel only when the module is enabled.
 
 1. In the module's definition (`lib/modules/definitions.ts`), add a `blocks` entry:
    ```typescript
@@ -231,6 +237,10 @@ Module blocks are contributed by modules (e.g., `pos_menu`, `booking_widget`). T
 2. The `AddBlocksPanel` reads `subscribeToEnabledModules()` and automatically includes these
 3. Create the form + public component using the same patterns as core blocks
 4. Register in `BlockRenderer.tsx` (or use `ModuleBlockLoader` which checks the module registry)
+5. Add `BlockFormRenderer` case so the block is editable in the canvas
+6. Add a label in `BlockOutlineItem.tsx → getBlockLabel()` — the default fallback renders `'Module ({type})'`
+
+> **Note:** The `reservation` block type exists in `BlockType` and is rendered by `BlockRenderer.tsx`, but currently has no form in `BlockFormRenderer` and no label in `getBlockLabel()`. It is treated as a read-only module block. If you need to make it editable, follow steps 3–6 above.
 
 ---
 
@@ -239,13 +249,39 @@ Module blocks are contributed by modules (e.g., `pos_menu`, `booking_widget`). T
 ### `usePageStudio()` — global page state
 ```typescript
 const {
+  // Page list
   pages, activePageId,
+  pagesLoading, pageLoading,
+  error,
+
+  // Form state
   formData,              // { title, slug, blocks, seoTitle, ..., pixelFb, ... }
   isDirty, saving,
-  setTitle, setSlug, setBlocks,
+  hydratedData,          // hydrated block data (system blocks)
+  globalSettings,        // site-wide settings
+
+  // Field setters
+  setTitle, setSlug, setBlocks, setContent,
+  setSeoTitle, setSeoDescription, setSeoImage, setSeoNoIndex,
+  setPixelFb, setPixelGa, setPixelTiktok,
+  setOverrideSeo, setOverridePixels,
+  showSeoSettings, setShowSeoSettings,
+
+  // Page actions
   switchPage, savePage, deletePage,
   setHomepage, unsetHomepage,
-  // Unsaved changes dialog:
+
+  // Global settings
+  updateFooterText,
+  refreshGlobalSettings, updateGlobalSettings,
+
+  // Trash
+  trashedPages, trashedPagesLoading,
+  trashPage, trashPageById,
+  loadTrashedPages, restorePage, restoreAllPages,
+  permanentlyDeletePage, permanentlyDeleteAllPages,
+
+  // Unsaved changes dialog
   pendingSwitch, confirmDiscard, confirmSaveAndSwitch, cancelSwitch,
 } = usePageStudio();
 ```
@@ -315,13 +351,15 @@ Unsaved changes guard:
 
 **Block `data` is mutable but `id` and `type` are not.** Only call `updateBlockData(id, newData)` — never replace the whole block object (this would lose selection state).
 
-**System blocks render live data, not form data.** `quick_actions`, `hours`, `featured_product`, `branches` pull from `hydratePageBlocks(siteId, blocks)` which fetches site-wide settings. Their `data` field in Firestore is typically empty `{}`.
+**System blocks render live data, not form data.** `quick_actions`, `hours`, `featured_product`, `branches` pull from `hydratePageBlocks(siteId, blocks)` which fetches site-wide settings. Their `data` field in Firestore is typically empty `{}`. These types are NOT in `BLOCK_OPTIONS` — they cannot be added via the Add Blocks panel.
 
 **Slug must be unique per site.** `savePage()` checks for duplicate slugs. The homepage slug is stored separately in `siteSettings.homepageSlug` (default: `'home'`).
 
 **Module blocks need the module enabled.** If a page has a module block but the module is disabled, `ModuleBlockLoader` silently renders nothing on the public site.
 
 **Legacy pages have a `content` (HTML) field but no `blocks`.** `PageStudioContext` handles this with a migration prompt in `PageStudioInner`. Don't write new code that reads `page.content`.
+
+**There is no static `LAYOUT_VARIANTS` constant.** The spec previously described this as an export from `blockDefinitions.ts`, but it does not exist. Variant defaults come from `template.config.defaultBlockLayouts` and are applied inside `getDefaultData()`.
 
 ---
 
@@ -334,11 +372,11 @@ Page entry:
   app/admin/(dashboard)/pages/page.tsx          ← entry, PageStudioProvider wrapper
 
 Contexts:
-  components/admin/blocks/PageStudioContext.tsx  ← page list, save, dirty tracking
+  components/admin/blocks/PageStudioContext.tsx  ← page list, save, dirty tracking, trash, SEO/pixel setters
   components/admin/blocks/EditorContext.tsx      ← blocks, selection, device view
 
 Main editor:
-  components/admin/blocks/CanvasStudio.tsx       ← 3-panel layout
+  components/admin/blocks/CanvasStudio.tsx       ← 3-panel layout + L/F/B/I slide-over
   components/admin/blocks/StudioTopBar.tsx       ← top bar
   components/admin/blocks/BlockManager.tsx       ← navigator + DnD
   components/admin/blocks/BlockOutlineItem.tsx   ← single navigator item
@@ -347,14 +385,18 @@ Main editor:
 
 Block form system:
   components/admin/blocks/BlockFormRenderer.tsx          ← dispatches to type-specific forms
-  components/admin/blocks/blockDefinitions.ts            ← BLOCK_OPTIONS, getDefaultData(), LAYOUT_VARIANTS
+  components/admin/blocks/blockDefinitions.ts            ← BLOCK_OPTIONS, getDefaultData()
   components/admin/blocks/forms/LayoutVariantPicker.tsx  ← layout switcher rendered above block forms
-  components/admin/blocks/forms/HeroForm.tsx             ← example form
+  components/admin/blocks/forms/HeroForm.tsx
   components/admin/blocks/forms/TextForm.tsx
   components/admin/blocks/forms/ImageForm.tsx
   components/admin/blocks/forms/FaqForm.tsx
   components/admin/blocks/forms/ProductsForm.tsx
-  ... (one file per core block type)
+  components/admin/blocks/forms/LinkBlockForm.tsx
+  components/admin/blocks/forms/MapForm.tsx
+  components/admin/blocks/forms/ImageGalleryBlockForm.tsx
+  components/admin/blocks/forms/QuickActionsBlockForm.tsx
+  components/admin/blocks/forms/SystemBlockForm.tsx      ← used for hours, featured_product, branches
 
 Block rendering (shared admin + public):
   components/blocks/BlockRenderer.tsx            ← routes to Default* or custom components

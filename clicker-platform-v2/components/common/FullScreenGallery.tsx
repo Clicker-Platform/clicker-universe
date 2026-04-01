@@ -19,6 +19,7 @@ interface FullScreenGalleryProps {
 export const FullScreenGallery = ({ isOpen, images, initialIndex = 0, onClose }: FullScreenGalleryProps) => {
     const [currentIndex, setCurrentIndex] = useState(initialIndex);
     const [mounted, setMounted] = useState(false);
+    const [mainLoaded, setMainLoaded] = useState(false);
 
     useEffect(() => {
         setMounted(true);
@@ -28,6 +29,7 @@ export const FullScreenGallery = ({ isOpen, images, initialIndex = 0, onClose }:
     useEffect(() => {
         if (isOpen) {
             setCurrentIndex(initialIndex);
+            setMainLoaded(false);
             document.body.style.overflow = 'hidden';
         } else {
             document.body.style.overflow = 'unset';
@@ -37,11 +39,13 @@ export const FullScreenGallery = ({ isOpen, images, initialIndex = 0, onClose }:
 
     const nextImage = (e?: React.MouseEvent) => {
         e?.stopPropagation();
+        setMainLoaded(false);
         setCurrentIndex((prev) => (prev + 1) % images.length);
     };
 
     const prevImage = (e?: React.MouseEvent) => {
         e?.stopPropagation();
+        setMainLoaded(false);
         setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
     };
 
@@ -79,16 +83,16 @@ export const FullScreenGallery = ({ isOpen, images, initialIndex = 0, onClose }:
             {/* Main Image Container */}
             <div className="w-full h-full flex items-center justify-center p-4 md:p-10 relative">
                 <div className="relative w-full h-full flex items-center justify-center">
-                    {/*
-                     * No key prop — we update src instead of remounting.
-                     * This keeps the Image component alive so the browser can
-                     * reuse its decode context and cache between navigations.
-                     * animate-in is applied via a wrapper div instead.
-                     */}
+                    {/* Shimmer shown while main image loads */}
+                    {!mainLoaded && (
+                        <div className="absolute inset-0 z-10 bg-gradient-to-r from-white/5 via-white/10 to-white/5"
+                            style={{ animation: 'shimmer 1.4s infinite linear', backgroundSize: '200% 100%' }}
+                        />
+                    )}
                     <Image
                         src={images[currentIndex]}
                         alt={`Gallery image ${currentIndex + 1}`}
-                        className="object-contain select-none"
+                        className={`object-contain select-none transition-opacity duration-300 ${mainLoaded ? 'opacity-100' : 'opacity-0'}`}
                         fill
                         sizes="100vw"
                         quality={85}
@@ -96,6 +100,7 @@ export const FullScreenGallery = ({ isOpen, images, initialIndex = 0, onClose }:
                         blurDataURL={BLUR_PLACEHOLDER}
                         draggable={false}
                         priority
+                        onLoad={() => setMainLoaded(true)}
                     />
                 </div>
 
@@ -151,8 +156,8 @@ export const FullScreenGallery = ({ isOpen, images, initialIndex = 0, onClose }:
                     {images.map((img, idx) => (
                         <button
                             key={idx}
-                            onClick={(e) => { e.stopPropagation(); setCurrentIndex(idx); }}
-                            className={`relative flex-shrink-0 w-20 h-14 rounded-lg overflow-hidden transition-all snap-center ${idx === currentIndex
+                            onClick={(e) => { e.stopPropagation(); setCurrentIndex(idx); setMainLoaded(false); }}
+                            className={`relative flex-shrink-0 w-20 h-14 rounded-lg overflow-hidden transition-all snap-center bg-white/10 ${idx === currentIndex
                                 ? 'ring-2 ring-white opacity-100 scale-105'
                                 : 'opacity-50 hover:opacity-80'
                             }`}
