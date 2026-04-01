@@ -233,24 +233,23 @@ export function CanvasStudio({
                 )}
                 {/* The actual canvas container */}
                 <div className={`w-full ${deviceView === 'tablet' ? 'max-w-lg' : deviceView === 'mobile' ? 'max-w-md' : ''} shadow-2xl ring-1 ring-white/10 overflow-hidden transition-all duration-300 my-8 self-start`}>
-                    {/* WYSIWYG Renderer */}
-                    {blocks.length === 0 ? (
-                        <div className="h-96 flex items-center justify-center text-neutral-500 p-12 text-center text-sm font-medium bg-neutral-900">
-                            Start adding blocks from the left panel to build your page.
-                        </div>
-                    ) : (
-                        <DeviceViewProvider deviceView={deviceView}>
-                        <TemplateProvider
-                            templateId={templateId}
-                            themeOverrides={{
-                                borderRadius: radiusValue,
-                                ...(themeColor && template.config.allowThemeColorOverride !== false ? {
-                                    colors: { background: themeColor, primary: themeColor }
-                                } : {})
-                            }}
-                        >
-                        <NavigationProvider siteId={siteId!}>
-                            {/* Full template rendering pipeline - matches live site */}
+                    {/* WYSIWYG Renderer — providers are always mounted to prevent context loss during block reorder */}
+                    <DeviceViewProvider deviceView={deviceView}>
+                    <TemplateProvider
+                        templateId={templateId}
+                        themeOverrides={{
+                            borderRadius: radiusValue,
+                            ...(themeColor && template.config.allowThemeColorOverride !== false ? {
+                                colors: { background: themeColor, primary: themeColor }
+                            } : {})
+                        }}
+                    >
+                    <NavigationProvider siteId={siteId!}>
+                        {blocks.length === 0 ? (
+                            <div className="h-96 flex items-center justify-center text-neutral-500 p-12 text-center text-sm font-medium bg-neutral-900">
+                                Start adding blocks from the left panel to build your page.
+                            </div>
+                        ) : (
                             <div className="flex flex-col h-full bg-white relative">
                                 {/* Top Navbar Slot */}
                                 <div
@@ -382,10 +381,10 @@ export function CanvasStudio({
                                     </div>
                                 </div>
                             </div>
-                        </NavigationProvider>
-                        </TemplateProvider>
-                        </DeviceViewProvider>
-                    )}
+                        )}
+                    </NavigationProvider>
+                    </TemplateProvider>
+                    </DeviceViewProvider>
                 </div>
             </div>
 

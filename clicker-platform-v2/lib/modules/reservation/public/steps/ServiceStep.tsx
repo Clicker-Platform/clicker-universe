@@ -75,7 +75,7 @@ export default function ServiceStep({ services, onSelect, isGlass = false, prici
             </div>
 
             {/* List */}
-            <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-3 -mr-3 pb-8">
+            <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-3 -mr-3 pb-4">
                 {filteredServices.length === 0 ? (
                     <div className={`text-center py-12 rounded-2xl border border-dashed ${
                         isGlass ? 'bg-white/5 border-white/10 text-white/40' : 'bg-gray-50 border-gray-200 text-gray-400'
@@ -107,7 +107,7 @@ export default function ServiceStep({ services, onSelect, isGlass = false, prici
                                     : 'bg-white border-gray-200 hover:border-gray-900 hover:shadow-md'
                             }`}
                         >
-                            <div className="flex justify-between items-start mb-1">
+                            <div className="flex justify-between items-start gap-4 mb-1">
                                 <h3 className={`font-bold transition-colors ${
                                     isGlass ? 'text-white group-hover:text-[var(--theme-primary)]' : 'text-gray-900 group-hover:text-blue-600'
                                 }`}>
