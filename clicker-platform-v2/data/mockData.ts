@@ -27,7 +27,7 @@ export interface LinkItem {
     openInNewTab?: boolean;
 }
 
-export type BlockType = 'hero' | 'text' | 'image' | 'button' | 'products' | 'faq' | 'link' | 'map' | 'image_gallery' | 'reservation_cta' | 'reservation' | string;
+export type BlockType = 'hero' | 'text' | 'image' | 'button' | 'products' | 'faq' | 'link' | 'map' | 'image_gallery' | 'reservation_cta' | 'reservation' | 'social_embed' | string;
 
 export interface PageBlock {
     id: string;

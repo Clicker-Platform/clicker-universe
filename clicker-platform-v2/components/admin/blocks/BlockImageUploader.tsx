@@ -12,9 +12,8 @@ interface BlockImageUploaderProps {
     onRemove: () => void;
 }
 
-import { convertToWebP, validateImageFile } from '@/lib/imageUtils';
-import { storage } from '@/lib/firebase';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { validateImageFile } from '@/lib/imageUtils';
+import { uploadToStorage } from '@/lib/upload';
 import { useSite } from '@/lib/site-context';
 
 export const BlockImageUploader = ({ label = "Upload Image", currentUrl, onUpload, onRemove }: BlockImageUploaderProps) => {
@@ -34,22 +33,8 @@ export const BlockImageUploader = ({ label = "Upload Image", currentUrl, onUploa
 
         setUploading(true);
         try {
-            // Client-side WebP Conversion
-            const webpBlob = await convertToWebP(file);
-            const webpFile = new File([webpBlob], file.name.replace(/\.[^/.]+$/, "") + ".webp", { type: 'image/webp' });
-
-            // Upload directly via Client SDK
-            // Site-scoped path: sites/{siteId}/uploads/{timestamp}_{filename}
-            const storagePath = siteId
-                ? `sites/${siteId}/uploads/${Date.now()}_${file.name}`
-                : `uploads/${Date.now()}_${file.name}`;
-            const storageRef = ref(storage, storagePath);
-            const snapshot = await uploadBytes(storageRef, webpFile, {
-                contentType: 'image/webp'
-            });
-            const downloadURL = await getDownloadURL(snapshot.ref);
-
-            onUpload(downloadURL);
+            const url = await uploadToStorage({ file, folder: 'uploads', siteId });
+            onUpload(url);
         } catch (error) {
             console.error(error);
             alert("Failed to upload image");
@@ -117,7 +102,7 @@ export const BlockImageUploader = ({ label = "Upload Image", currentUrl, onUploa
                     </button>
                     <p className="text-[10px] text-neutral-500 mt-3 font-medium flex items-center gap-1.5">
                         <span className="w-1 h-1 rounded-full bg-neutral-700" />
-                        Max 5MB. Formats: PNG, JPG, WebP.
+                        Max 5MB. Converted to WebP/AVIF on upload.
                     </p>
                 </div>
             </div>
