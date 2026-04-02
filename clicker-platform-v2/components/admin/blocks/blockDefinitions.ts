@@ -1,5 +1,5 @@
 import { BlockType } from '@/data/mockData';
-import { Type, Image as ImageIcon, Layout, Box, HelpCircle, AlignCenter, Link, Map, List, Clock, Star, MapPin } from 'lucide-react';
+import { Type, Image as ImageIcon, Layout, Box, HelpCircle, AlignCenter, Link, Map, List, Clock, Star, MapPin, Play } from 'lucide-react';
 import { getTemplate } from '@/lib/templates/registry';
 
 export const BLOCK_OPTIONS: { type: BlockType; label: string; icon: React.ElementType }[] = [
@@ -12,6 +12,7 @@ export const BLOCK_OPTIONS: { type: BlockType; label: string; icon: React.Elemen
     { type: 'link', label: 'Link Card', icon: Link },
     { type: 'map', label: 'Map', icon: Map },
     { type: 'image_gallery', label: 'Image Gallery', icon: ImageIcon },
+    { type: 'social_embed', label: 'Social Embeds', icon: Play },
     { type: 'quick_actions', label: 'Quick Actions', icon: List },
     { type: 'hours', label: 'Operating Hours', icon: Clock },
     { type: 'featured_product', label: 'Featured Product', icon: Star },
@@ -46,6 +47,8 @@ export function getDefaultData(type: BlockType, templateId = 'classic'): any {
             return { ...baseData, address: 'Your address here' };
         case 'image_gallery':
             return { ...baseData, title: 'Gallery', images: [] };
+        case 'social_embed':
+            return { ...baseData, title: '', limit: 6, items: [] };
         case 'quick_actions':
         case 'hours':
         case 'branches':

@@ -75,7 +75,14 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({ previewMode = false 
 
     // Render ONLY if explicitly enabled by the template — after all hooks
     if (!layout?.showBottomNav) return null;
+    
     if (loading) return <BottomNavSkeleton />;
+
+    const hasBottomNavItems = bottomNav && bottomNav.length > 0;
+    const hasFabEnabled = fab?.enabled === true;
+    
+    // By logic, no menu = no bottom navigation
+    if (!hasBottomNavItems && !hasFabEnabled) return null;
 
     const FabIcon = fab?.icon ? getIcon(fab.icon) : PlusCircle;
 

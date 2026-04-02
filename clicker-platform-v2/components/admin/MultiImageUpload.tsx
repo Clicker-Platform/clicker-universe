@@ -2,8 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { Upload, X, Loader2, Image as ImageIcon, Plus } from 'lucide-react';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { storage } from '@/lib/firebase';
+import { uploadToStorage } from '@/lib/upload';
 import { useSite } from '@/lib/site-context';
 import Image from 'next/image';
 
@@ -52,16 +51,7 @@ export function MultiImageUpload({ images, onImagesChange, maxImages = 10 }: Mul
                 }
 
                 try {
-                    // Upload directly to Firebase Storage (Client SDK)
-                    // Site-scoped path: sites/{siteId}/products/{timestamp}_{filename}
-                    const storagePath = siteId
-                        ? `sites/${siteId}/products/${Date.now()}_${file.name}`
-                        : `products/${Date.now()}_${file.name}`;
-                    const storageRef = ref(storage, storagePath);
-
-                    const snapshot = await uploadBytes(storageRef, file);
-                    const url = await getDownloadURL(snapshot.ref);
-
+                    const url = await uploadToStorage({ file, folder: 'products', siteId });
                     newImageUrls.push(url);
                 } catch (err: any) {
                     console.error("Upload error details:", err);

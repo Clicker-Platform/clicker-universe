@@ -15,6 +15,7 @@ const SPAN_DEFAULTS: Record<string, string> = {
     'youtube': 'md:col-span-2',
 
     // Wide blocks (2 cols)
+    'social_embed': 'md:col-span-2',
     'featured_product': 'md:col-span-2',
     'newsletter': 'md:col-span-2',
     'products': 'md:col-span-2',

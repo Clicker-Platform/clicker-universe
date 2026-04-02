@@ -30,6 +30,7 @@ const MapForm = dynamic(() => import('./forms/MapForm').then(mod => mod.MapForm)
 const ImageGalleryBlockForm = dynamic(() => import('./forms/ImageGalleryBlockForm').then(mod => mod.ImageGalleryBlockForm), { loading: () => <FormSkeleton /> });
 const SystemBlockForm = dynamic(() => import('./forms/SystemBlockForm').then(mod => mod.SystemBlockForm), { loading: () => <FormSkeleton /> });
 const QuickActionsBlockForm = dynamic(() => import('./forms/QuickActionsBlockForm').then(mod => mod.QuickActionsBlockForm), { loading: () => <FormSkeleton /> });
+const SocialEmbedForm = dynamic(() => import('./forms/SocialEmbedForm').then(mod => mod.SocialEmbedForm), { loading: () => <FormSkeleton /> });
 
 interface BlockFormRendererProps {
     block: PageBlock;
@@ -46,7 +47,8 @@ export const BlockFormRenderer = memo(({ block, onChange, templateId = 'classic'
         const coreLabels: Record<string, string> = {
             'hero': 'Hero', 'text': 'Text', 'image': 'Image', 'button': 'Button',
             'products': 'Products', 'faq': 'FAQ', 'link': 'Link', 'map': 'Map', 'image_gallery': 'Gallery',
-            'quick_actions': 'Quick Actions', 'hours': 'Operating Hours', 'featured_product': 'Featured Product', 'branches': 'Branches'
+            'quick_actions': 'Quick Actions', 'hours': 'Operating Hours', 'featured_product': 'Featured Product', 'branches': 'Branches',
+            'social_embed': 'Social Embeds'
         };
 
         if (coreLabels[block.type]) {
@@ -120,7 +122,8 @@ export const BlockFormRenderer = memo(({ block, onChange, templateId = 'classic'
         case 'link': return renderWithLayoutPicker(<LinkBlockForm data={block.data} onChange={handleDataChange} />);
         case 'map': return renderWithLayoutPicker(<MapForm data={block.data} onChange={handleDataChange} />);
         case 'image_gallery': return renderWithLayoutPicker(<ImageGalleryBlockForm data={block.data} onChange={handleDataChange} />);
-        
+        case 'social_embed': return <SocialEmbedForm data={block.data} onChange={handleDataChange} />;
+
         case 'quick_actions':
             return <QuickActionsBlockForm data={block.data} onChange={handleDataChange} />;
 
