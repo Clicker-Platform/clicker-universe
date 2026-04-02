@@ -15,6 +15,7 @@ const FAQBlock = dynamic(() => import('./public/DefaultFAQBlock').then(mod => mo
 const LinkBlock = dynamic(() => import('./public/DefaultLinkBlock').then(mod => mod.DefaultLinkBlock));
 const MapBlock = dynamic(() => import('./public/DefaultMapBlock').then(mod => mod.DefaultMapBlock));
 const ReservationBlock = dynamic(() => import('./public/ReservationBlock').then(mod => mod.ReservationBlock));
+const SocialEmbedBlock = dynamic(() => import('./public/DefaultSocialEmbedBlock').then(mod => mod.DefaultSocialEmbedBlock));
 
 // System blocks (from PublicPageRenderer)
 const QuickActions = dynamic(() => import('@/components/QuickActions').then(mod => mod.QuickActions));
@@ -167,6 +168,9 @@ export const BlockRenderer = ({
 
             case 'reservation':
                 return <ReservationBlock data={block.data} siteId={siteId} initialServices={reservationServices} initialStaff={reservationStaff} initialSettings={reservationSettings} />;
+
+            case 'social_embed':
+                return <SocialEmbedBlock data={block.data} previewMode={previewMode} />;
 
             default:
                 return <ModuleBlockLoader type={block.type} data={block.data} siteId={siteId} />;

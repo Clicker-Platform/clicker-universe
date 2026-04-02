@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import { initializeFirestore, memoryLocalCache } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
 
@@ -23,7 +23,7 @@ console.log('[Firebase] Initialized with config:', {
     projectId: firebaseConfig.projectId,
     authDomain: firebaseConfig.authDomain
 });
-const db = getFirestore(app);
+const db = initializeFirestore(app, { localCache: memoryLocalCache() });
 const auth = getAuth(app);
 const storage = getStorage(app);
 

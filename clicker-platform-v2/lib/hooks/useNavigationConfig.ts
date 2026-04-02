@@ -57,7 +57,11 @@ export function useNavigationConfig(siteId: string): NavigationConfig {
                 }
                 setLoading(false);
             },
-            (err) => {
+            (err: any) => {
+                if (err?.code === 'unavailable') {
+                    setLoading(false);
+                    return;
+                }
                 console.error('useNavigationConfig: Firestore error', err);
                 setError(err as Error);
                 setLoading(false);
