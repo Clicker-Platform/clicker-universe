@@ -197,11 +197,16 @@ export const fetchPublicData = cache(async function fetchPublicData(siteId: stri
 
 export const fetchSiteSettings = cache(async function fetchSiteSettings(siteId: string) {
     if (!siteId || siteId === 'default' || siteId === 'pending') return null;
-    const snap = await getDoc(doc(db, "sites", siteId, "content", "siteSettings"));
-    if (snap.exists()) {
-        return snap.data() as SiteSettings;
+    try {
+        const snap = await getDoc(doc(db, "sites", siteId, "content", "siteSettings"));
+        if (snap.exists()) {
+            return snap.data() as SiteSettings;
+        }
+        return null;
+    } catch (e) {
+        logDebug(`fetchSiteSettings: Error ${e}`);
+        return null;
     }
-    return null;
 });
 
 export async function fetchPageBySlug(siteId: string, slug: string) {
@@ -225,40 +230,52 @@ export async function fetchPageBySlug(siteId: string, slug: string) {
 }
 
 export async function fetchPages(siteId: string) {
-    const querySnapshot = await getDocs(collection(db, "sites", siteId, "pages"));
-    return querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-    } as Page));
-
-
+    try {
+        const querySnapshot = await getDocs(collection(db, "sites", siteId, "pages"));
+        return querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        } as Page));
+    } catch (e) {
+        logDebug(`fetchPages: Error ${e}`);
+        return [];
+    }
 }
 
 export async function fetchLinkSettings(siteId: string) {
-    const snap = await getDoc(doc(db, "sites", siteId, "content", "linkSettings"));
-    if (snap.exists()) {
-        return snap.data() as LinkSettings;
+    try {
+        const snap = await getDoc(doc(db, "sites", siteId, "content", "linkSettings"));
+        if (snap.exists()) {
+            return snap.data() as LinkSettings;
+        }
+    } catch (e) {
+        logDebug(`fetchLinkSettings: Error ${e}`);
     }
     return { sectionTitle: "Quick Actions", showOnHome: true } as LinkSettings;
 }
 
 export async function fetchProductSettings(siteId: string) {
-    const snap = await getDoc(doc(db, "sites", siteId, "content", "productSettings"));
-    if (snap.exists()) {
-        return snap.data() as ProductSettings;
+    try {
+        const snap = await getDoc(doc(db, "sites", siteId, "content", "productSettings"));
+        if (snap.exists()) {
+            return snap.data() as ProductSettings;
+        }
+    } catch (e) {
+        logDebug(`fetchProductSettings: Error ${e}`);
     }
     return { galleryTitle: "More Treats", showSectionTitle: true, itemsToShow: 6 } as ProductSettings;
 }
 export const fetchLightweightPublicData = cache(async function fetchLightweightPublicData(siteId: string) {
     // Fetch only essential data for content pages (Profile, Settings, Contact)
+    const nullSnap = { exists: () => false, data: () => null } as any;
     const [
         profileSnap,
         settings,
         businessSnap
     ] = await Promise.all([
-        getDoc(doc(db, "sites", siteId, "content", "profile")),
+        getDoc(doc(db, "sites", siteId, "content", "profile")).catch(e => { logDebug(`fetchLightweightPublicData profile: Error ${e}`); return nullSnap; }),
         fetchSiteSettings(siteId),
-        getDoc(doc(db, "sites", siteId, "content", "business"))
+        getDoc(doc(db, "sites", siteId, "content", "business")).catch(e => { logDebug(`fetchLightweightPublicData business: Error ${e}`); return nullSnap; }),
     ]);
 
     // Process Profile

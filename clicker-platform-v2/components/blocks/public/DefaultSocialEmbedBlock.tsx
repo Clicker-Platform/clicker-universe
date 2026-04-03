@@ -107,20 +107,19 @@ export function DefaultSocialEmbedBlock({ data, previewMode }: DefaultSocialEmbe
         ? 'rounded-2xl overflow-hidden'
         : 'rounded-2xl shadow-sticker overflow-hidden';
 
-    const cardClass = `${baseCardClass} w-full max-w-[340px]`;
+    const cardClass = `${baseCardClass} w-[80%] max-w-[280px] sm:w-[320px] shrink-0`;
 
     return (
-        <div className="w-full space-y-4">
+        <div className="w-full min-w-0 space-y-4">
             {data.title && (
-                <h2 className="text-slate-400 text-xs font-bold uppercase tracking-[0.2em] mb-6 px-1">
+                <h2 className="text-slate-400 text-xs font-bold uppercase tracking-[0.2em] mb-4 px-1">
                     {data.title}
                 </h2>
             )}
 
-            {/* Responsive grid: fits as many 300px columns as possible, otherwise stacks on mobile */}
-            <div className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] items-start gap-4 w-full">
+            <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 pt-2 -webkit-overflow-scrolling-touch [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
                 {validItems.map((item, idx) => (
-                    <div key={idx} className={`${cardClass} justify-self-center`}>
+                    <div key={idx} className={`${cardClass} snap-start`}>
                         <EmbedTile item={item} previewMode={previewMode} />
                     </div>
                 ))}

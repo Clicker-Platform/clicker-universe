@@ -144,8 +144,7 @@ export default async function TenantCatchAllPage({ params, searchParams }: Props
     };
 
     const overrideTemplate = typeof t === 'string' ? t : undefined;
-    const pageTemplate = page.templateConfig?.activeTemplateId;
-    const safeTemplateId = overrideTemplate || pageTemplate || templateId || 'classic';
+    const safeTemplateId = overrideTemplate || templateId || 'classic';
     const template = getTemplate(safeTemplateId);
 
     const heroFirst = (page.blocks?.[0]?.type === 'hero');
