@@ -113,7 +113,7 @@ export function SharedPageLayout({
 
                 <main
                     className={`
-                        min-h-screen py-12 relative overflow-hidden transition-colors duration-300
+                        min-h-screen py-12 relative transition-colors duration-300 overflow-x-clip
                         ${template.config.layout?.navMode === 'adaptive' ? 'pt-16' : ''}
                     `}
                     style={{ backgroundColor: pageBackgroundColor }}

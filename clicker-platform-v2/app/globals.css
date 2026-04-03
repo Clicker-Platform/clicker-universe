@@ -38,6 +38,11 @@
   --theme-border: var(--color-brand-dark);
 }
 
+html, body {
+  overflow-x: clip;
+  max-width: 100%;
+}
+
 body {
   background-color: var(--theme-background);
   font-family: var(--font-jakarta), sans-serif;

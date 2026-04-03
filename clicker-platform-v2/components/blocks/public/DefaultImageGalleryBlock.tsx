@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { Image as ImageIcon } from 'lucide-react';
 import { FullScreenGallery } from '@/components/common/FullScreenGallery';
@@ -35,6 +35,15 @@ function GalleryTile({
     cardClass: string;
 }) {
     const [loaded, setLoaded] = useState(false);
+    const imgRef = useRef<HTMLImageElement>(null);
+
+    // Ensure state updates if image is already cached by the browser
+    // when navigating via browser back button
+    useEffect(() => {
+        if (imgRef.current?.complete) {
+            setLoaded(true);
+        }
+    }, [src]);
 
     return (
         <div
@@ -49,6 +58,7 @@ function GalleryTile({
                 />
             )}
             <Image
+                ref={imgRef}
                 src={src}
                 alt={alt}
                 fill
