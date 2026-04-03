@@ -36,7 +36,7 @@ interface MrbHeroProps {
     };
 }
 
-export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, previewMode }) => {
+export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data }) => {
     const { theme } = useTemplate();
     const d = useDeviceView();
 
@@ -68,10 +68,14 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, previewMode }) 
 
     return (
         <div
-            className={`relative flex h-[560px] flex-col gap-6 justify-end ${dv(d, 'px-6', 'md:px-12')} pb-16 overflow-hidden w-full ${flexAlignClass}${isFullbleed && !previewMode ? ` rounded-none ${dv(d, '-mx-4', 'md:-mx-6')}` : isFullbleed ? ' rounded-none' : ''}`}
-            style={isFullbleed && !previewMode
-                ? { width: '100vw', marginLeft: 'calc(-50vw + 50%)', border: 'none', borderRadius: '0' }
-                : isFullbleed ? { border: 'none', borderRadius: '0' } : { borderRadius }}
+            className={`relative flex h-[560px] flex-col gap-6 justify-end ${dv(d, 'px-6', 'md:px-12')} pb-16 overflow-hidden ${flexAlignClass} ${
+                isFullbleed
+                    ? 'rounded-none w-screen'
+                    : 'w-full'
+            }`}
+            style={isFullbleed
+                ? { border: 'none', borderRadius: '0', position: 'relative', left: '50%', transform: 'translateX(-50%)' }
+                : { borderRadius }}
         >
             {/* Background image */}
             <div className="absolute inset-0 z-0">
