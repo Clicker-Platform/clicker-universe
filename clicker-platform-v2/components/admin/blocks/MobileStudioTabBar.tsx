@@ -29,7 +29,7 @@ export function MobileStudioTabBar({
     onSave,
 }: MobileStudioTabBarProps) {
     return (
-        <div className="fixed bottom-0 left-0 right-0 flex items-stretch bg-neutral-900 border-t border-neutral-800 z-20"
+        <div className="fixed bottom-0 left-0 right-0 flex items-stretch bg-white dark:bg-neutral-900 border-t border-gray-200 dark:border-neutral-800 z-20"
             style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
         >
             {tabs.map(({ id, icon: Icon, label }) => {
@@ -42,7 +42,7 @@ export function MobileStudioTabBar({
                         className={`flex-1 flex flex-col items-center justify-center gap-1 py-2.5 transition-colors relative ${
                             isActive
                                 ? 'text-blue-400 bg-blue-500/10'
-                                : 'text-neutral-500 hover:text-neutral-300'
+                                : 'text-neutral-400 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
                         }`}
                     >
                         <div className="relative">
@@ -57,7 +57,7 @@ export function MobileStudioTabBar({
             })}
 
             {/* Divider */}
-            <div className="w-px bg-neutral-800 self-stretch my-2" />
+            <div className="w-px bg-gray-200 dark:bg-neutral-800 self-stretch my-2" />
 
             {/* Save button */}
             <button
@@ -66,7 +66,7 @@ export function MobileStudioTabBar({
                 className={`flex-1 flex flex-col items-center justify-center gap-1 py-2.5 transition-colors relative ${
                     isDirty && !saving
                         ? 'text-orange-400'
-                        : 'text-neutral-500'
+                        : 'text-neutral-400 dark:text-neutral-500'
                 } disabled:opacity-50`}
             >
                 <div className="relative">

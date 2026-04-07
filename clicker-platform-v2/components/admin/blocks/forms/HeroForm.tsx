@@ -75,14 +75,14 @@ function FocalPointPicker({ imageUrl, value, onChange }: {
 
     return (
         <div>
-            <label className="block text-xs font-medium text-neutral-500 mb-2">
-                Focal Point <span className="normal-case font-normal text-neutral-600 ml-1">drag to set focus area</span>
+            <label className="block text-xs font-medium text-neutral-400 dark:text-neutral-500 mb-2">
+                Focal Point <span className="normal-case font-normal text-neutral-400 dark:text-neutral-600 ml-1">drag to set focus area</span>
             </label>
             <div
                 ref={containerRef}
                 onMouseDown={handlePointerDown}
                 onTouchStart={handlePointerDown}
-                className="relative w-full rounded-xl overflow-hidden cursor-crosshair select-none border border-neutral-700"
+                className="relative w-full rounded-xl overflow-hidden cursor-crosshair select-none border border-gray-300 dark:border-neutral-700"
                 style={{ height: 140, backgroundImage: `url(${imageUrl})`, backgroundSize: 'cover', backgroundPosition: `${focal[0]}% ${focal[1]}%` }}
             >
                 {/* Focal point dot */}
@@ -100,7 +100,7 @@ function FocalPointPicker({ imageUrl, value, onChange }: {
                 <div className="absolute top-0 bottom-0 pointer-events-none" style={{ left: `${focal[0]}%`, width: 1, backgroundColor: 'rgba(255,255,255,0.35)' }} />
                 <div className="absolute left-0 right-0 pointer-events-none" style={{ top: `${focal[1]}%`, height: 1, backgroundColor: 'rgba(255,255,255,0.35)' }} />
             </div>
-            <p className="text-[10px] text-neutral-600 mt-1 font-mono">
+            <p className="text-[10px] text-neutral-400 dark:text-neutral-600 mt-1 font-mono">
                 x: {focal[0]}% &nbsp; y: {focal[1]}%
             </p>
         </div>
@@ -114,9 +114,9 @@ const TITLE_SIZES = [
     { value: 'xl', label: 'XL' },
 ];
 
-const inputClass = "w-full px-4 py-2.5 bg-neutral-800 border border-neutral-700 rounded-xl text-sm text-neutral-200 placeholder-neutral-600 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-medium";
-const labelClass = "block text-xs font-medium text-neutral-500 mb-1";
-const sectionClass = "p-3 bg-neutral-900/50 rounded-xl border border-neutral-800 space-y-3";
+const inputClass = "w-full px-4 py-2.5 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-600 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-medium";
+const labelClass = "block text-xs font-medium text-neutral-400 dark:text-neutral-500 mb-1";
+const sectionClass = "p-3 bg-gray-100/50 dark:bg-neutral-900/50 rounded-xl border border-gray-200 dark:border-neutral-800 space-y-3";
 
 const ColorInput = ({ label, value, onChange, onClear }: {
     label: string;
@@ -144,17 +144,17 @@ const ColorInput = ({ label, value, onChange, onClear }: {
 
     return (
         <div className="flex items-center gap-2 mt-1.5">
-            <label className="w-8 h-8 rounded-lg border border-neutral-600 cursor-pointer overflow-hidden flex-shrink-0 relative"
+            <label className="w-8 h-8 rounded-lg border border-gray-400 dark:border-neutral-600 cursor-pointer overflow-hidden flex-shrink-0 relative"
                 style={{ backgroundColor: value || '#525252' }}>
                 <input type="color" value={value || '#525252'} onChange={handleNativePicker}
                     className="opacity-0 absolute inset-0 w-full h-full cursor-pointer" />
             </label>
             <input type="text" value={textVal} onChange={(e) => handleText(e.target.value)}
                 placeholder="e.g. #ffffff"
-                className="flex-1 px-3 py-1.5 bg-neutral-800 border border-neutral-700 rounded-lg text-xs text-neutral-200 placeholder-neutral-600 outline-none focus:border-blue-500 font-mono" />
+                className="flex-1 px-3 py-1.5 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-lg text-xs text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-600 outline-none focus:border-blue-500 font-mono" />
             {value && (
                 <button type="button" onClick={onClear}
-                    className="text-neutral-500 hover:text-red-400 transition-colors text-xs px-1 font-bold">
+                    className="text-neutral-400 dark:text-neutral-500 hover:text-red-400 transition-colors text-xs px-1 font-bold">
                     ×
                 </button>
             )}
@@ -194,13 +194,13 @@ export const HeroForm = ({ data, onChange }: HeroFormProps) => {
                 <label className={labelClass}>Title</label>
                 <input type="text" value={safeData.title || ''} onChange={(e) => handleChange('title', e.target.value)}
                     className={inputClass} placeholder="Welcome to our page" />
-                <div className="flex gap-1 p-1 mt-2 bg-neutral-900 rounded-xl border border-neutral-800">
+                <div className="flex gap-1 p-1 mt-2 bg-gray-50 dark:bg-neutral-900 rounded-xl border border-gray-200 dark:border-neutral-800">
                     {TITLE_SIZES.map(({ value, label }) => (
                         <button key={value} type="button" onClick={() => handleChange('titleSize', value)}
                             className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all ${
                                 (safeData.titleSize || 'md') === value
                                     ? 'bg-blue-600 text-white shadow'
-                                    : 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800'
+                                    : 'text-neutral-400 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800'
                             }`}>
                             {label}
                         </button>
@@ -228,13 +228,13 @@ export const HeroForm = ({ data, onChange }: HeroFormProps) => {
             {/* Text Alignment */}
             <div>
                 <label className={`${labelClass} mb-1.5`}>Text Alignment</label>
-                <div className="flex gap-1 p-1 bg-neutral-900 rounded-xl border border-neutral-800">
+                <div className="flex gap-1 p-1 bg-gray-50 dark:bg-neutral-900 rounded-xl border border-gray-200 dark:border-neutral-800">
                     {ALIGN_OPTIONS.map(({ value, icon: Icon, label }) => (
                         <button key={value} type="button" title={label} onClick={() => handleChange('textAlign', value)}
                             className={`flex-1 flex items-center justify-center py-2 rounded-lg transition-all text-sm font-medium ${
                                 currentAlign === value
                                     ? 'bg-blue-600 text-white shadow'
-                                    : 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800'
+                                    : 'text-neutral-400 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800'
                             }`}>
                             <Icon size={15} />
                         </button>
@@ -253,7 +253,7 @@ export const HeroForm = ({ data, onChange }: HeroFormProps) => {
                             <div className="flex items-center justify-between mb-1">
                                 <span className="text-xs font-bold text-blue-400 uppercase tracking-wider">Primary</span>
                                 <button type="button" onClick={() => handleChange('primaryBtn', null)}
-                                    className="text-neutral-500 hover:text-red-400 transition-colors">
+                                    className="text-neutral-400 dark:text-neutral-500 hover:text-red-400 transition-colors">
                                     <Trash2 size={13} />
                                 </button>
                             </div>
@@ -266,7 +266,7 @@ export const HeroForm = ({ data, onChange }: HeroFormProps) => {
                         </div>
                     ) : (
                         <button type="button" onClick={() => handleChange('primaryBtn', { label: 'Get Started', url: '' })}
-                            className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-dashed border-neutral-700 text-xs font-bold text-neutral-500 hover:text-blue-400 hover:border-blue-500/50 transition-all">
+                            className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-dashed border-gray-300 dark:border-neutral-700 text-xs font-bold text-neutral-400 dark:text-neutral-500 hover:text-blue-400 hover:border-blue-500/50 transition-all">
                             <Plus size={13} /> Add Primary Button
                         </button>
                     )}
@@ -276,9 +276,9 @@ export const HeroForm = ({ data, onChange }: HeroFormProps) => {
                         secondaryBtn ? (
                             <div className={sectionClass}>
                                 <div className="flex items-center justify-between mb-1">
-                                    <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Secondary</span>
+                                    <span className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Secondary</span>
                                     <button type="button" onClick={() => handleChange('secondaryBtn', null)}
-                                        className="text-neutral-500 hover:text-red-400 transition-colors">
+                                        className="text-neutral-400 dark:text-neutral-500 hover:text-red-400 transition-colors">
                                         <Trash2 size={13} />
                                     </button>
                                 </div>
@@ -291,7 +291,7 @@ export const HeroForm = ({ data, onChange }: HeroFormProps) => {
                             </div>
                         ) : (
                             <button type="button" onClick={() => handleChange('secondaryBtn', { label: 'Learn More', url: '' })}
-                                className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-dashed border-neutral-700 text-xs font-bold text-neutral-500 hover:text-neutral-300 hover:border-neutral-600 transition-all">
+                                className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-dashed border-gray-300 dark:border-neutral-700 text-xs font-bold text-neutral-400 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 hover:border-gray-400 dark:hover:border-neutral-600 transition-all">
                                 <Plus size={13} /> Add Secondary Button
                             </button>
                         )
@@ -315,13 +315,13 @@ export const HeroForm = ({ data, onChange }: HeroFormProps) => {
                         onChange={(v) => handleChange('imagePosition', v)}
                     />
 
-                    <div className="flex items-center justify-between p-3 bg-neutral-900/50 rounded-xl border border-neutral-800">
+                    <div className="flex items-center justify-between p-3 bg-gray-100/50 dark:bg-neutral-900/50 rounded-xl border border-gray-200 dark:border-neutral-800">
                         <div>
-                            <p className="text-sm font-semibold text-neutral-200">Full-width image</p>
-                            <p className="text-xs text-neutral-500 mt-0.5">Remove rounded corners — image bleeds to edges</p>
+                            <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-200">Full-width image</p>
+                            <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5">Remove rounded corners — image bleeds to edges</p>
                         </div>
                         <button type="button" onClick={() => handleChange('imageFullWidth', !safeData.imageFullWidth)}
-                            className={`relative w-10 h-6 rounded-full transition-colors flex-shrink-0 ${safeData.imageFullWidth ? 'bg-blue-600' : 'bg-neutral-700'}`}>
+                            className={`relative w-10 h-6 rounded-full transition-colors flex-shrink-0 ${safeData.imageFullWidth ? 'bg-blue-600' : 'bg-gray-300 dark:bg-neutral-700'}`}>
                             <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${safeData.imageFullWidth ? 'translate-x-4' : 'translate-x-0'}`} />
                         </button>
                     </div>

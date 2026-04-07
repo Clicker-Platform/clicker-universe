@@ -34,15 +34,15 @@ export function StudioTopBar() {
     };
 
     return (
-        <div className="flex items-center justify-between px-4 h-12 bg-neutral-900 border-b border-neutral-800 flex-shrink-0">
+        <div className="flex items-center justify-between px-4 h-12 bg-gray-50 dark:bg-neutral-900 border-b border-gray-200 dark:border-neutral-800 flex-shrink-0">
             {/* Left — Current page name */}
             <div className="flex-1 flex items-center gap-2 min-w-0">
-                <FileText size={13} className="text-neutral-500 flex-shrink-0" />
-                <span className="text-sm font-medium text-neutral-300 truncate">
+                <FileText size={13} className="text-neutral-400 dark:text-neutral-500 flex-shrink-0" />
+                <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300 truncate">
                     {formData.title || 'Untitled'}
                 </span>
                 {formData.slug && (
-                    <span className="text-xs text-neutral-600 truncate hidden sm:block">
+                    <span className="text-xs text-neutral-400 dark:text-neutral-600 truncate hidden sm:block">
                         /{formData.slug}
                     </span>
                 )}
@@ -50,7 +50,7 @@ export function StudioTopBar() {
 
             {/* Center — Device toggle (hidden on mobile — no space) */}
             {!isMobile && (
-                <div className="flex items-center gap-1 bg-neutral-800 rounded-lg p-1">
+                <div className="flex items-center gap-1 bg-gray-100 dark:bg-neutral-800 rounded-lg p-1">
                     {([
                         { view: 'desktop', icon: Monitor, label: 'Desktop' },
                         { view: 'tablet', icon: Tablet, label: 'Tablet' },
@@ -67,8 +67,8 @@ export function StudioTopBar() {
                             onMouseLeave={() => setTooltip(null)}
                             className={`p-1.5 rounded-md transition-colors ${
                                 deviceView === view
-                                    ? 'bg-neutral-700 text-white'
-                                    : 'text-neutral-400 hover:text-neutral-200'
+                                    ? 'bg-gray-200 dark:bg-neutral-700 text-neutral-900 dark:text-white'
+                                    : 'text-neutral-400 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200'
                             }`}
                         >
                             <Icon size={16} />
@@ -88,7 +88,7 @@ export function StudioTopBar() {
                             className={`p-2 rounded-lg transition-colors ${
                                 isHomepage
                                     ? 'bg-studio-blue-muted/15 text-studio-blue-muted border border-studio-blue-muted/30'
-                                    : 'bg-neutral-800 text-neutral-400 border border-neutral-700 hover:text-neutral-200'
+                                    : 'bg-gray-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 border border-gray-300 dark:border-neutral-700 hover:text-neutral-700 dark:hover:text-neutral-200'
                             }`}
                             title={isHomepage ? 'Unset as Homepage' : 'Set as Homepage'}
                         >
@@ -101,7 +101,7 @@ export function StudioTopBar() {
                             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
                                 isHomepage
                                     ? 'bg-studio-blue-muted/15 text-studio-blue-muted border border-studio-blue-muted/30 hover:bg-studio-blue-muted/25'
-                                    : 'bg-neutral-800 text-neutral-400 border border-neutral-700 hover:text-neutral-200 hover:bg-neutral-700'
+                                    : 'bg-gray-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 border border-gray-300 dark:border-neutral-700 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-gray-200 dark:hover:bg-neutral-700'
                             }`}
                         >
                             <Home size={14} />

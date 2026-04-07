@@ -15,9 +15,9 @@ import {
 
 // ── Shared styles ─────────────────────────────────────────────────────────
 
-const inputClass = "w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-sm text-neutral-200 placeholder-neutral-600 focus:border-blue-500/50 focus:outline-none transition-colors";
-const labelClass = "block text-xs font-medium text-neutral-500 mb-1";
-const sectionClass = "px-4 py-3 border-b border-neutral-800/60 space-y-3";
+const inputClass = "w-full px-3 py-2 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-lg text-sm text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-600 focus:border-blue-500/50 focus:outline-none transition-colors";
+const labelClass = "block text-xs font-medium text-neutral-400 dark:text-neutral-500 mb-1";
+const sectionClass = "px-4 py-3 border-b border-gray-200 dark:border-neutral-800/60 space-y-3";
 
 // ── Social platform config ────────────────────────────────────────────────
 
@@ -50,20 +50,20 @@ function handleToUrl(platform: string, handle: string): string {
 
 function GoogleSearchPreview({ title, description, faviconUrl }: { title: string; description: string; faviconUrl?: string }) {
     return (
-        <div className="rounded-lg bg-neutral-800/50 border border-neutral-700/50 p-3">
+        <div className="rounded-lg bg-gray-100 dark:bg-neutral-800/50 border border-gray-200 dark:border-neutral-700/50 p-3">
             <div className="flex items-center gap-1.5 mb-1">
-                <div className="w-4 h-4 rounded-full bg-neutral-700 overflow-hidden flex items-center justify-center flex-shrink-0">
+                <div className="w-4 h-4 rounded-full bg-gray-200 dark:bg-neutral-700 overflow-hidden flex items-center justify-center flex-shrink-0">
                     {faviconUrl
                         ? <img src={faviconUrl} className="w-full h-full object-cover" alt="" />
-                        : <Globe size={9} className="text-neutral-500" />
+                        : <Globe size={9} className="text-neutral-400 dark:text-neutral-500" />
                     }
                 </div>
                 <span className="text-[10px] text-neutral-500">example.com</span>
             </div>
-            <div className="text-[#8ab4f8] text-sm font-medium leading-tight truncate mb-0.5">
+            <div className="text-blue-600 dark:text-[#8ab4f8] text-sm font-medium leading-tight truncate mb-0.5">
                 {title || 'Page Title'}
             </div>
-            <div className="text-[11px] text-neutral-400 line-clamp-2 leading-snug">
+            <div className="text-[11px] text-neutral-500 dark:text-neutral-400 line-clamp-2 leading-snug">
                 {description || 'Your meta description will appear here. Keep it under 160 characters.'}
             </div>
         </div>
@@ -72,22 +72,22 @@ function GoogleSearchPreview({ title, description, faviconUrl }: { title: string
 
 function SocialSharePreview({ title, description, ogImageUrl }: { title: string; description: string; ogImageUrl?: string }) {
     return (
-        <div className="rounded-lg overflow-hidden bg-neutral-800/50 border border-neutral-700/50">
-            <div className="aspect-[1.91/1] bg-neutral-700/50 flex items-center justify-center">
+        <div className="rounded-lg overflow-hidden bg-gray-100 dark:bg-neutral-800/50 border border-gray-200 dark:border-neutral-700/50">
+            <div className="aspect-[1.91/1] bg-gray-200 dark:bg-neutral-700/50 flex items-center justify-center">
                 {ogImageUrl
                     ? <img src={ogImageUrl} className="w-full h-full object-cover" alt="" />
-                    : <div className="flex flex-col items-center text-neutral-600 gap-1">
+                    : <div className="flex flex-col items-center text-neutral-400 dark:text-neutral-600 gap-1">
                         <ImageIcon size={28} />
                         <span className="text-[10px]">No Image Set</span>
                     </div>
                 }
             </div>
-            <div className="p-2.5 bg-neutral-800/80">
-                <div className="text-[9px] uppercase text-neutral-500 mb-0.5">EXAMPLE.COM</div>
-                <div className="text-xs font-semibold text-neutral-200 leading-tight truncate mb-0.5">
+            <div className="p-2.5 bg-gray-100 dark:bg-neutral-800/80">
+                <div className="text-[9px] uppercase text-neutral-400 dark:text-neutral-500 mb-0.5">EXAMPLE.COM</div>
+                <div className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 leading-tight truncate mb-0.5">
                     {title || 'Page Title'}
                 </div>
-                <div className="text-[10px] text-neutral-500 line-clamp-1">
+                <div className="text-[10px] text-neutral-400 dark:text-neutral-500 line-clamp-1">
                     {description || 'Page description...'}
                 </div>
             </div>
@@ -178,7 +178,7 @@ export function SiteInfoPanel() {
 
             {/* ── Site Identity ─────────────────────────────────────────── */}
             <div className={sectionClass}>
-                <div className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wider">Site Identity</div>
+                <div className="text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">Site Identity</div>
 
                 <div>
                     <label className={labelClass}>Site Title</label>
@@ -203,8 +203,8 @@ export function SiteInfoPanel() {
                 {/* Google Search Preview */}
                 <div>
                     <div className="flex items-center gap-1.5 mb-1.5">
-                        <Search size={11} className="text-neutral-600" />
-                        <span className="text-[10px] text-neutral-600">Google Search Preview</span>
+                        <Search size={11} className="text-neutral-400 dark:text-neutral-600" />
+                        <span className="text-[10px] text-neutral-400 dark:text-neutral-600">Google Search Preview</span>
                     </div>
                     <GoogleSearchPreview
                         title={settings.title || ''}
@@ -221,13 +221,13 @@ export function SiteInfoPanel() {
                         className={inputClass}
                         placeholder="home"
                     />
-                    <p className="text-[10px] text-neutral-600 mt-1">Defaults to &apos;home&apos; if empty</p>
+                    <p className="text-[10px] text-neutral-400 dark:text-neutral-600 mt-1">Defaults to &apos;home&apos; if empty</p>
                 </div>
             </div>
 
             {/* ── Images ────────────────────────────────────────────────── */}
             <div className={sectionClass}>
-                <div className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wider">Images</div>
+                <div className="text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">Images</div>
 
                 <div>
                     <label className={labelClass}>Favicon</label>
@@ -252,8 +252,8 @@ export function SiteInfoPanel() {
                 {/* Social Share Preview */}
                 <div>
                     <div className="flex items-center gap-1.5 mb-1.5">
-                        <ImageIcon size={11} className="text-neutral-600" />
-                        <span className="text-[10px] text-neutral-600">Social Share Preview</span>
+                        <ImageIcon size={11} className="text-neutral-400 dark:text-neutral-600" />
+                        <span className="text-[10px] text-neutral-400 dark:text-neutral-600">Social Share Preview</span>
                     </div>
                     <SocialSharePreview
                         title={settings.title || ''}
@@ -264,14 +264,14 @@ export function SiteInfoPanel() {
             </div>
 
             {/* ── Tracking Pixels (collapsible) ─────────────────────────── */}
-            <div className="border-b border-neutral-800/60">
+            <div className="border-b border-gray-200 dark:border-neutral-800/60">
                 <button
                     type="button"
                     onClick={() => setPixelsOpen(o => !o)}
                     className="w-full flex items-center justify-between px-4 py-3 text-left"
                 >
-                    <span className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wider">Tracking Pixels</span>
-                    {pixelsOpen ? <ChevronDown size={13} className="text-neutral-600" /> : <ChevronRight size={13} className="text-neutral-600" />}
+                    <span className="text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">Tracking Pixels</span>
+                    {pixelsOpen ? <ChevronDown size={13} className="text-neutral-400 dark:text-neutral-600" /> : <ChevronRight size={13} className="text-neutral-400 dark:text-neutral-600" />}
                 </button>
 
                 {pixelsOpen && (
@@ -309,7 +309,7 @@ export function SiteInfoPanel() {
 
             {/* ── Social Media Links ────────────────────────────────────── */}
             <div className={sectionClass}>
-                <div className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wider">Social Media</div>
+                <div className="text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">Social Media</div>
 
                 {/* Platform picker */}
                 <div className="flex flex-wrap gap-1.5">
@@ -321,7 +321,7 @@ export function SiteInfoPanel() {
                             className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                                 selectedPlatform === p.name
                                     ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                                    : 'bg-neutral-800 text-neutral-400 border border-neutral-700 hover:border-neutral-600'
+                                    : 'bg-gray-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 border border-gray-300 dark:border-neutral-700 hover:border-gray-400 dark:hover:border-neutral-600'
                             }`}
                         >
                             <p.icon size={13} />
@@ -333,7 +333,7 @@ export function SiteInfoPanel() {
                 {/* Handle / URL input */}
                 <div className="flex gap-2">
                     {!isCustom && (
-                        <div className="flex items-center px-2 bg-neutral-800 border border-neutral-700 rounded-lg border-r-0 rounded-r-none text-xs text-neutral-500 whitespace-nowrap">
+                        <div className="flex items-center px-2 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-lg border-r-0 rounded-r-none text-xs text-neutral-400 dark:text-neutral-500 whitespace-nowrap">
                             {currentPlatform.atHandle ? '@' : currentPlatform.prefix.replace('https://', '').split('/').filter(Boolean).join('/') + '/'}
                         </div>
                     )}
@@ -362,19 +362,19 @@ export function SiteInfoPanel() {
                             const Icon = platform.icon;
                             const displayHandle = urlToHandle(link.platform, link.url);
                             return (
-                                <div key={i} className="flex items-center gap-2 px-2.5 py-2 bg-neutral-800/60 rounded-lg border border-neutral-700/50">
-                                    <div className="w-6 h-6 rounded-md bg-neutral-700 flex items-center justify-center flex-shrink-0">
-                                        <Icon size={13} className="text-neutral-300" />
+                                <div key={i} className="flex items-center gap-2 px-2.5 py-2 bg-gray-100 dark:bg-neutral-800/60 rounded-lg border border-gray-200 dark:border-neutral-700/50">
+                                    <div className="w-6 h-6 rounded-md bg-gray-200 dark:bg-neutral-700 flex items-center justify-center flex-shrink-0">
+                                        <Icon size={13} className="text-neutral-700 dark:text-neutral-300" />
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <div className="text-xs font-medium text-neutral-300 truncate">
+                                        <div className="text-xs font-medium text-neutral-700 dark:text-neutral-300 truncate">
                                             {link.platform === 'Custom' ? displayHandle : (platform.atHandle ? `@${displayHandle}` : displayHandle)}
                                         </div>
                                     </div>
                                     <button
                                         type="button"
                                         onClick={() => removeSocialLink(i)}
-                                        className="p-1 text-neutral-600 hover:text-red-400 rounded transition-colors flex-shrink-0"
+                                        className="p-1 text-neutral-400 dark:text-neutral-600 hover:text-red-400 rounded transition-colors flex-shrink-0"
                                     >
                                         <Trash2 size={13} />
                                     </button>
@@ -383,12 +383,12 @@ export function SiteInfoPanel() {
                         })}
                     </div>
                 ) : (
-                    <p className="text-[11px] text-neutral-600 text-center py-2">No social links added yet</p>
+                    <p className="text-[11px] text-neutral-400 dark:text-neutral-600 text-center py-2">No social links added yet</p>
                 )}
             </div>
 
             {/* ── Save button ───────────────────────────────────────────── */}
-            <div className="px-4 py-3 sticky bottom-0 bg-neutral-900 border-t border-neutral-800">
+            <div className="px-4 py-3 sticky bottom-0 bg-white dark:bg-neutral-900 border-t border-gray-200 dark:border-neutral-800">
                 <SubmitButton
                     isLoading={saving}
                     loadingLabel="Saving..."

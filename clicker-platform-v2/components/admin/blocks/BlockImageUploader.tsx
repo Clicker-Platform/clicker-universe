@@ -46,11 +46,11 @@ export const BlockImageUploader = ({ label = "Upload Image", currentUrl, onUploa
 
     return (
         <div className="space-y-4">
-            {label && <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider">{label}</label>}
+            {label && <label className="block text-xs font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">{label}</label>}
 
-            <div className="flex items-start gap-4 p-4 bg-neutral-900/50 rounded-2xl border border-neutral-800 shadow-sm">
+            <div className="flex items-start gap-4 p-4 bg-gray-50 dark:bg-neutral-900/50 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm">
                 {/* Preview / Placeholder */}
-                <div className="w-20 h-20 bg-neutral-800 rounded-xl border border-neutral-700 overflow-hidden flex-shrink-0 relative group shadow-inner">
+                <div className="w-20 h-20 bg-gray-100 dark:bg-neutral-800 rounded-xl border border-gray-300 dark:border-neutral-700 overflow-hidden flex-shrink-0 relative group shadow-inner">
                     {currentUrl ? (
                         <>
                             <Image
@@ -69,7 +69,7 @@ export const BlockImageUploader = ({ label = "Upload Image", currentUrl, onUploa
                             </button>
                         </>
                     ) : (
-                        <div className="w-full h-full flex items-center justify-center text-neutral-700 bg-neutral-800/50">
+                        <div className="w-full h-full flex items-center justify-center text-neutral-400 dark:text-neutral-700 bg-gray-100/50 dark:bg-neutral-800/50">
                             <ImageIcon size={24} />
                         </div>
                     )}
@@ -88,7 +88,7 @@ export const BlockImageUploader = ({ label = "Upload Image", currentUrl, onUploa
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
                         disabled={uploading}
-                        className="flex items-center gap-2 px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-xl text-sm font-bold text-neutral-200 hover:bg-neutral-700 hover:border-neutral-600 focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 transition-all active:scale-[0.98] shadow-sm"
+                        className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-xl text-sm font-bold text-neutral-900 dark:text-neutral-200 hover:bg-gray-200 dark:hover:bg-neutral-700 hover:border-gray-400 dark:hover:border-neutral-600 focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 transition-all active:scale-[0.98] shadow-sm"
                     >
                         {uploading ? (
                             <>
@@ -100,8 +100,8 @@ export const BlockImageUploader = ({ label = "Upload Image", currentUrl, onUploa
                             </>
                         )}
                     </button>
-                    <p className="text-[10px] text-neutral-500 mt-3 font-medium flex items-center gap-1.5">
-                        <span className="w-1 h-1 rounded-full bg-neutral-700" />
+                    <p className="text-[10px] text-neutral-400 dark:text-neutral-500 mt-3 font-medium flex items-center gap-1.5">
+                        <span className="w-1 h-1 rounded-full bg-gray-300 dark:bg-neutral-700" />
                         Max 5MB. Converted to WebP/AVIF on upload.
                     </p>
                 </div>

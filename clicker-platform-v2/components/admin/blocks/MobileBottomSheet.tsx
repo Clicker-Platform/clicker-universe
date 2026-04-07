@@ -75,7 +75,7 @@ export function MobileBottomSheet({
             {/* Sheet */}
             <div
                 ref={sheetRef}
-                className="fixed bottom-0 left-0 right-0 z-50 bg-neutral-900 rounded-t-2xl flex flex-col transition-transform duration-200"
+                className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-neutral-900 rounded-t-2xl flex flex-col transition-transform duration-200"
                 style={{ height, maxHeight: '85vh' }}
             >
                 {/* Drag handle */}
@@ -85,16 +85,16 @@ export function MobileBottomSheet({
                     onTouchMove={handleTouchMove}
                     onTouchEnd={handleTouchEnd}
                 >
-                    <div className="w-10 h-1 bg-neutral-700 rounded-full mx-auto" />
+                    <div className="w-10 h-1 bg-gray-300 dark:bg-neutral-700 rounded-full mx-auto" />
                 </div>
 
                 {/* Header */}
-                <div className="flex items-center gap-2 px-4 h-11 border-b border-neutral-800 flex-shrink-0">
-                    {Icon && <Icon size={15} className="text-neutral-400" />}
-                    <span className="flex-1 font-bold text-sm text-neutral-200">{title}</span>
+                <div className="flex items-center gap-2 px-4 h-11 border-b border-gray-200 dark:border-neutral-800 flex-shrink-0">
+                    {Icon && <Icon size={15} className="text-neutral-500 dark:text-neutral-400" />}
+                    <span className="flex-1 font-bold text-sm text-neutral-900 dark:text-neutral-200">{title}</span>
                     <button
                         onClick={onClose}
-                        className="p-1.5 rounded-md text-neutral-500 hover:text-neutral-200 hover:bg-neutral-800 transition-colors"
+                        className="p-1.5 rounded-md text-neutral-400 dark:text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
                     >
                         <X size={16} />
                     </button>

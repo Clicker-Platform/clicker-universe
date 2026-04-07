@@ -106,11 +106,11 @@ export function PagesPanel() {
 
     return (
         <div className="flex flex-col h-full">
-            <div className="px-3 h-10 border-b border-neutral-800 flex items-center gap-2 flex-shrink-0">
-                <span className="flex-1 font-bold text-sm text-neutral-200">Pages</span>
+            <div className="px-3 h-10 border-b border-gray-200 dark:border-neutral-800 flex items-center gap-2 flex-shrink-0">
+                <span className="flex-1 font-bold text-sm text-neutral-900 dark:text-neutral-200">Pages</span>
                 <button
                     onClick={() => switchPage('create')}
-                    className="p-1.5 rounded-md text-neutral-500 hover:text-neutral-200 hover:bg-neutral-800 transition-colors"
+                    className="p-1.5 rounded-md text-neutral-400 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
                     title="New page"
                 >
                     <Plus size={14} />
@@ -121,9 +121,9 @@ export function PagesPanel() {
                 {/* Active pages list */}
                 <div className="flex-1">
                     {pagesLoading ? (
-                        <div className="px-3 py-4 text-xs text-neutral-600">Loading...</div>
+                        <div className="px-3 py-4 text-xs text-neutral-400 dark:text-neutral-600">Loading...</div>
                     ) : pages.length === 0 ? (
-                        <div className="px-3 py-4 text-xs text-neutral-600">No pages yet</div>
+                        <div className="px-3 py-4 text-xs text-neutral-400 dark:text-neutral-600">No pages yet</div>
                     ) : (
                         [...pages].sort((a, b) => {
                             const aHome = a.slug === homepageSlug ? 0 : 1;
@@ -145,7 +145,7 @@ export function PagesPanel() {
                                         className={`w-full flex items-center gap-2 px-3 py-2 pr-8 text-left transition-colors ${
                                             isActive
                                                 ? 'bg-blue-500/10 text-blue-400'
-                                                : 'text-neutral-400 hover:bg-neutral-800 hover:text-neutral-200'
+                                                : 'text-neutral-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-neutral-200'
                                         } ${isTrashing ? 'opacity-50' : ''}`}
                                     >
                                         <FileText size={13} className="flex-shrink-0" />
@@ -153,21 +153,21 @@ export function PagesPanel() {
                                             <div className="text-xs font-medium truncate">
                                                 {page.title || 'Untitled'}
                                             </div>
-                                            <div className="text-xs text-neutral-600 truncate">
+                                            <div className="text-xs text-neutral-400 dark:text-neutral-600 truncate">
                                                 /{page.slug}
                                             </div>
                                         </div>
-                                        {isHome && <Home size={11} className="flex-shrink-0 text-neutral-500" />}
+                                        {isHome && <Home size={11} className="flex-shrink-0 text-neutral-400 dark:text-neutral-500" />}
                                     </button>
                                     <button
                                         onClick={(e) => handleTrashClick(e, page.id)}
                                         disabled={isTrashing}
-                                        className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 rounded text-neutral-600 hover:text-red-400 hover:bg-neutral-700 transition-all disabled:opacity-30"
+                                        className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 rounded text-neutral-400 dark:text-neutral-600 hover:text-red-400 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-all disabled:opacity-30"
                                         title="Move to Trash"
                                     >
                                         <Trash2 size={12} />
                                     </button>
-                                    {showDivider && <div className="mx-3 mt-1 border-b border-neutral-800" />}
+                                    {showDivider && <div className="mx-3 mt-1 border-b border-gray-200 dark:border-neutral-800" />}
                                 </div>
                             );
                         })
@@ -182,16 +182,16 @@ export function PagesPanel() {
                 )}
 
                 {/* Trash section */}
-                <div className="border-t border-neutral-800 mt-auto">
+                <div className="border-t border-gray-200 dark:border-neutral-800 mt-auto">
                     <button
                         onClick={handleToggleTrash}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-xs text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800 transition-colors"
+                        className="w-full flex items-center gap-2 px-3 py-2 text-xs text-neutral-400 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
                     >
                         {trashOpen ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
                         <Trash2 size={12} />
                         <span className="flex-1 text-left font-medium">Trash</span>
                         {trashedPages.length > 0 && (
-                            <span className="bg-neutral-700 text-neutral-400 text-[10px] px-1.5 py-0.5 rounded-full">
+                            <span className="bg-gray-200 dark:bg-neutral-700 text-neutral-500 dark:text-neutral-400 text-[10px] px-1.5 py-0.5 rounded-full">
                                 {trashedPages.length}
                             </span>
                         )}
@@ -200,9 +200,9 @@ export function PagesPanel() {
                     {trashOpen && (
                         <div className="pb-2">
                             {trashedPagesLoading ? (
-                                <div className="px-3 py-2 text-xs text-neutral-600">Loading...</div>
+                                <div className="px-3 py-2 text-xs text-neutral-400 dark:text-neutral-600">Loading...</div>
                             ) : trashedPages.length === 0 ? (
-                                <div className="px-3 py-2 text-xs text-neutral-600">Trash is empty</div>
+                                <div className="px-3 py-2 text-xs text-neutral-400 dark:text-neutral-600">Trash is empty</div>
                             ) : (
                                 <>
                                     {/* Bulk actions */}
@@ -210,7 +210,7 @@ export function PagesPanel() {
                                         <button
                                             onClick={handleRestoreAll}
                                             disabled={isRestoringAll}
-                                            className="flex-1 flex items-center justify-center gap-1 px-2 py-1 rounded text-[10px] font-medium text-neutral-400 hover:text-neutral-200 bg-neutral-800 hover:bg-neutral-700 transition-colors disabled:opacity-50"
+                                            className="flex-1 flex items-center justify-center gap-1 px-2 py-1 rounded text-[10px] font-medium text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 bg-gray-100 dark:bg-neutral-800 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors disabled:opacity-50"
                                         >
                                             <RotateCcw size={10} />
                                             {isRestoringAll ? 'Restoring...' : 'Restore All'}
@@ -218,7 +218,7 @@ export function PagesPanel() {
                                         <button
                                             onClick={() => setPendingEmptyTrash(true)}
                                             disabled={isEmptyingTrash}
-                                            className="flex-1 flex items-center justify-center gap-1 px-2 py-1 rounded text-[10px] font-medium text-red-500/70 hover:text-red-400 bg-neutral-800 hover:bg-neutral-700 transition-colors disabled:opacity-50"
+                                            className="flex-1 flex items-center justify-center gap-1 px-2 py-1 rounded text-[10px] font-medium text-red-500/70 hover:text-red-400 bg-gray-100 dark:bg-neutral-800 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors disabled:opacity-50"
                                         >
                                             <Trash2 size={10} />
                                             {isEmptyingTrash ? 'Emptying...' : 'Empty Trash'}
@@ -229,8 +229,8 @@ export function PagesPanel() {
                                     {trashedPages.map(page => (
                                         <div key={page.id} className="group/trash px-3 py-1.5 flex items-center gap-2">
                                             <div className="flex-1 min-w-0">
-                                                <div className="text-xs text-neutral-500 truncate font-medium">{page.title || 'Untitled'}</div>
-                                                <div className="text-[10px] text-neutral-700 truncate">
+                                                <div className="text-xs text-neutral-400 dark:text-neutral-500 truncate font-medium">{page.title || 'Untitled'}</div>
+                                                <div className="text-[10px] text-neutral-500 dark:text-neutral-700 truncate">
                                                     /{page.slug} · {formatDeletedAt(page.deletedAt)}
                                                 </div>
                                             </div>
@@ -238,7 +238,7 @@ export function PagesPanel() {
                                                 <button
                                                     onClick={() => handleRestore(page.id)}
                                                     disabled={isRestoringId === page.id}
-                                                    className="p-1 rounded text-neutral-500 hover:text-green-400 hover:bg-neutral-700 transition-colors disabled:opacity-50"
+                                                    className="p-1 rounded text-neutral-400 dark:text-neutral-500 hover:text-green-400 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors disabled:opacity-50"
                                                     title="Restore"
                                                 >
                                                     <RotateCcw size={11} />
@@ -246,7 +246,7 @@ export function PagesPanel() {
                                                 <button
                                                     onClick={() => setPendingPermDeleteId(page.id)}
                                                     disabled={isDeletingPermId === page.id}
-                                                    className="p-1 rounded text-neutral-500 hover:text-red-400 hover:bg-neutral-700 transition-colors disabled:opacity-50"
+                                                    className="p-1 rounded text-neutral-400 dark:text-neutral-500 hover:text-red-400 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors disabled:opacity-50"
                                                     title="Delete permanently"
                                                 >
                                                     <Trash2 size={11} />
@@ -350,18 +350,18 @@ export function AddBlocksPanel({ templateId = 'classic', onAfterAdd }: AddBlocks
 
     return (
         <div className="flex flex-col h-full">
-            <div className="px-3 h-10 border-b border-neutral-800 flex items-center flex-shrink-0">
-                <span className="flex-1 font-bold text-sm text-neutral-200">Add Block</span>
+            <div className="px-3 h-10 border-b border-gray-200 dark:border-neutral-800 flex items-center flex-shrink-0">
+                <span className="flex-1 font-bold text-sm text-neutral-900 dark:text-neutral-200">Add Block</span>
                 <div className="flex items-center gap-0.5">
                     <button
                         onClick={() => setViewMode('list')}
-                        className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? 'text-white bg-neutral-700' : 'text-neutral-500 hover:text-neutral-200 hover:bg-neutral-800'}`}
+                        className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? 'text-neutral-900 dark:text-white bg-gray-200 dark:bg-neutral-700' : 'text-neutral-400 dark:text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800'}`}
                     >
                         <LayoutList size={14} />
                     </button>
                     <button
                         onClick={() => setViewMode('grid')}
-                        className={`p-1.5 rounded-md transition-colors ${viewMode === 'grid' ? 'text-white bg-neutral-700' : 'text-neutral-500 hover:text-neutral-200 hover:bg-neutral-800'}`}
+                        className={`p-1.5 rounded-md transition-colors ${viewMode === 'grid' ? 'text-neutral-900 dark:text-white bg-gray-200 dark:bg-neutral-700' : 'text-neutral-400 dark:text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800'}`}
                     >
                         <LayoutGrid size={14} />
                     </button>
@@ -375,9 +375,9 @@ export function AddBlocksPanel({ templateId = 'classic', onAfterAdd }: AddBlocks
                             <button
                                 key={opt.type}
                                 onClick={() => handleAdd(opt.type)}
-                                className="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-neutral-800 transition-colors text-neutral-400 hover:text-neutral-200"
+                                className="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200"
                             >
-                                <div className="p-1.5 bg-neutral-800 rounded text-neutral-400 flex-shrink-0">
+                                <div className="p-1.5 bg-gray-100 dark:bg-neutral-800 rounded text-neutral-500 dark:text-neutral-400 flex-shrink-0">
                                     <opt.icon size={14} />
                                 </div>
                                 <span className="text-xs font-medium">{opt.label}</span>
@@ -390,9 +390,9 @@ export function AddBlocksPanel({ templateId = 'classic', onAfterAdd }: AddBlocks
                             <button
                                 key={opt.type}
                                 onClick={() => handleAdd(opt.type)}
-                                className="flex flex-col items-center gap-1.5 text-neutral-400 hover:text-neutral-200 transition-colors group"
+                                className="flex flex-col items-center gap-1.5 text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200 transition-colors group"
                             >
-                                <div className="w-full aspect-square flex items-center justify-center bg-neutral-800 rounded-md group-hover:bg-neutral-700 transition-colors">
+                                <div className="w-full aspect-square flex items-center justify-center bg-gray-100 dark:bg-neutral-800 rounded-md group-hover:bg-gray-200 dark:group-hover:bg-neutral-700 transition-colors">
                                     <opt.icon size={20} />
                                 </div>
                                 <span className="text-[10px] font-medium text-center leading-tight">{opt.label}</span>
