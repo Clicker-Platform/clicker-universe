@@ -41,7 +41,6 @@ export default function Home() {
             toast.success('Welcome Back, Commander', { description: 'Access granted to God Mode.' });
         } catch (error: any) {
             setLoginError('Invalid credentials. Access denied.');
-            toast.error('Login Failed', { description: error.message });
         } finally {
             setActionLoading(false);
         }

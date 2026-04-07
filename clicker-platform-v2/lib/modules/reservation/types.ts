@@ -36,7 +36,10 @@ export interface Booking {
     preferredDate?: string;     // ISO date YYYY-MM-DD; set for request-type bookings by the customer
     createdAt: Timestamp;
     serviceRecordId?: string;   // linked Service Record (set when "Start Service Record" is clicked)
+    bookingId?: string;
     cancellationReason?: string; // reason provided by admin when cancelling/rejecting
+    assetId?: string;           // captures the customer-provided asset (e.g. license plate, room ID)
+    assetModel?: string;        // captures the asset model or type (e.g. Toyota Fortuner)
 }
 
 export type PricingDisplay = 'fixed' | 'starting_from' | 'range' | 'hidden';
@@ -47,6 +50,13 @@ export interface ReservationSettings {
     pricingDisplay?: PricingDisplay; // how prices appear on the public booking form (default: 'fixed')
     membershipEnabled?: boolean; // derived from module registry, not stored
     bookingTitle?: string;      // custom heading for step 1 (default: 'Select Service'; e.g. 'Book a Service')
+    formConfig?: {
+        requireAsset: boolean;          // if true, show asset input on booking form (e.g. license plate)
+        assetLabel: string;             // e.g. 'License Plate' or 'Room ID'
+        assetPlaceholder: string;       // e.g. 'B 1234 CD'
+        requireAssetModel: boolean;     // if true, show asset model input (e.g. car make/model)
+        assetModelLabel: string;        // e.g. 'Vehicle Make & Model'
+    };
 }
 
 export interface TimeSlot {

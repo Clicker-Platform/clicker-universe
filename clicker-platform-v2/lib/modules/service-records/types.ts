@@ -1,5 +1,13 @@
 import { Timestamp } from 'firebase/firestore';
 
+// ─── Consumed Item (multi-product deduction) ─────────────────────────────────
+
+export interface ConsumedItem {
+    inventoryItemId: string;
+    name: string;       // denormalized for display — avoids extra reads
+    quantity: number;   // units consumed
+}
+
 // ─── Service Record ───────────────────────────────────────────────────────────
 
 export type RecordStatus = 'DRAFT' | 'IN_PROGRESS' | 'PENDING_APPROVAL' | 'COMPLETED' | 'CANCELLED';
@@ -19,7 +27,7 @@ export interface ServiceRecord {
     serviceTypeName: string;    // denormalized
     hasWarranty: boolean;       // snapshotted from serviceType at creation
     warrantyMonths: number;     // editable until COMPLETED
-    productUsed?: string;       // e.g. "Ceramic Pro Gold 9H"
+    productUsed?: string;       // e.g. "Ceramic Pro Gold 9H" — free-text escape hatch, DO NOT REMOVE
     status: RecordStatus;
     paymentStatus: PaymentStatus;
     paymentMethod?: PaymentMethod;
@@ -29,7 +37,8 @@ export interface ServiceRecord {
     cancelReason?: string;      // required when CANCELLED
     warrantyCardId?: string;    // set on COMPLETED (if hasWarranty)
     loyaltyPointsAwarded?: number; // set after addPoints() succeeds
-    inventoryItemId?: string;   // linked inventory item — triggers stock deduction on approval
+    inventoryItemId?: string;   // @deprecated — superseded by consumedItems; kept for legacy reads
+    consumedItems?: ConsumedItem[]; // array of products & quantities consumed in this service
     inventoryDeducted?: boolean;// set to true after successful stock deduction
     bookingId?: string;         // source reservation booking ID (if created from a booking)
     bookingSource?: 'reservation';
@@ -55,10 +64,8 @@ export interface CarCatalogEntry {
 export interface Vehicle {
     id: string;
     plateNumber: string;        // normalized: uppercase, no spaces — dedup key
-    make?: string;              // e.g. "Toyota"
-    model?: string;             // e.g. "Fortuner"
+    carCatalogId?: string;      // FK → CarCatalogEntry (optional for backward compat)
     color?: string;
-    type?: VehicleType;
     memberId?: string;          // linked member (optional)
     memberName?: string;        // denormalized
     outletId: string;

@@ -1,3 +1,5 @@
+'use client';
+
 import Image from 'next/image';
 import { useTemplate } from '@/components/TemplateProvider';
 import { useDeviceView, dv, type DeviceView } from '@/components/DeviceViewContext';

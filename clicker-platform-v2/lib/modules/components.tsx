@@ -31,7 +31,8 @@ const InventoryAdminPage = dynamic(() => import('@/lib/modules/inventory/admin/I
 const SR_RecordsListPage  = dynamic(() => import('@/lib/modules/service-records/admin/RecordsListPage'));
 const SR_RecordFormPage   = dynamic(() => import('@/lib/modules/service-records/admin/RecordFormPage'));
 const SR_RecordDetailPage = dynamic(() => import('@/lib/modules/service-records/admin/RecordDetailPage'));
-const SR_VehiclesPage     = dynamic(() => import('@/lib/modules/service-records/admin/VehiclesPage'));
+const SR_VehiclesPage      = dynamic(() => import('@/lib/modules/service-records/admin/VehiclesPage'));
+const SR_VehicleDetailPage = dynamic(() => import('@/lib/modules/service-records/admin/VehicleDetailPage'));
 const SR_ServiceTypesPage = dynamic(() => import('@/lib/modules/service-records/admin/ServiceTypesPage'));
 const SR_RemindersPage    = dynamic(() => import('@/lib/modules/service-records/admin/RemindersPage'));
 const SR_SettingsPage     = dynamic(() => import('@/lib/modules/service-records/admin/SettingsPage'));
@@ -92,7 +93,8 @@ export const MODULE_COMPONENTS: Record<string, any> = {
     'service_records:RecordsListPage':  SR_RecordsListPage,
     'service_records:RecordFormPage':   SR_RecordFormPage,
     'service_records:RecordDetailPage': SR_RecordDetailPage,
-    'service_records:VehiclesPage':     SR_VehiclesPage,
+    'service_records:VehiclesPage':      SR_VehiclesPage,
+    'service_records:VehicleDetailPage': SR_VehicleDetailPage,
     'service_records:ServiceTypesPage': SR_ServiceTypesPage,
     'service_records:RemindersPage':    SR_RemindersPage,
     'service_records:SettingsPage':     SR_SettingsPage,

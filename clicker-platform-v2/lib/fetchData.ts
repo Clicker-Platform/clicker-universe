@@ -8,6 +8,21 @@ import { ICON_MAP } from "@/data/icons";
 // Helper to map icon names string back to Lucide components
 const IconMap = ICON_MAP;
 
+/** Recursively converts Firestore Timestamp objects (and anything with toJSON/toMillis) to plain values so they can be passed to Client Components. */
+function stripFirestoreTypes(obj: any): any {
+    if (obj === null || obj === undefined) return obj;
+    if (typeof obj?.toMillis === 'function') return obj.toMillis();
+    if (typeof obj?.toJSON === 'function') return obj.toJSON();
+    if (Array.isArray(obj)) return obj.map(stripFirestoreTypes);
+    if (obj instanceof Date) return obj.toISOString();
+    if (typeof obj === 'object') {
+        const out: Record<string, any> = {};
+        for (const k in obj) out[k] = stripFirestoreTypes(obj[k]);
+        return out;
+    }
+    return obj;
+}
+
 function logDebug(msg: string) {
     if (process.env.NODE_ENV === 'development') {
         console.log(`[DEBUG] ${msg}`);
@@ -66,13 +81,9 @@ export const fetchPublicData = cache(async function fetchPublicData(siteId: stri
     const profile = profileSnap.exists() ? profileSnap.data() as BusinessProfile : null;
 
     // Process Links
-    const links = (linksSnap.docs || []).map((doc: any) => {
-        const data = doc.data();
-        return {
-            ...data,
-            id: doc.id,
-        } as LinkItem;
-    });
+    const links = (linksSnap.docs || []).map((doc: any) =>
+        stripFirestoreTypes({ ...doc.data(), id: doc.id }) as LinkItem
+    );
     // Sort links by order
     links.sort((a: LinkItem, b: LinkItem) => (a.order || 0) - (b.order || 0));
 
@@ -144,7 +155,7 @@ export const fetchPublicData = cache(async function fetchPublicData(siteId: stri
 
     if (businessResult.success && businessResult.snap && businessResult.snap.exists()) {
         const businessSnap = businessResult.snap;
-        businessHours = businessSnap.data() as BusinessHours;
+        businessHours = stripFirestoreTypes(businessSnap.data()) as BusinessHours;
         const data = businessSnap.data();
         contact = {
             whatsapp: data.whatsapp || "",
@@ -159,10 +170,9 @@ export const fetchPublicData = cache(async function fetchPublicData(siteId: stri
     // Process Branches
     let branches: Branch[] = [];
     if (branchesResult.success && branchesResult.snap) {
-        branches = branchesResult.snap.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        } as Branch));
+        branches = branchesResult.snap.docs.map(doc =>
+            stripFirestoreTypes({ id: doc.id, ...doc.data() }) as Branch
+        );
     } else if (!branchesResult.success) {
         console.error("Error fetching branches:", branchesResult.error);
     }
@@ -367,7 +377,9 @@ export async function hydratePageBlocks(siteId: string, blocks: PageBlock[]) {
         promises.push(
             getDocs(collection(db, "sites", siteId, "links"))
                 .then(snap => {
-                    const links = snap.docs.map(doc => ({ ...doc.data(), id: doc.id } as LinkItem));
+                    const links = snap.docs.map(doc =>
+                        stripFirestoreTypes({ ...doc.data(), id: doc.id }) as LinkItem
+                    );
                     links.sort((a, b) => (a.order || 0) - (b.order || 0));
                     data.links = links;
                 })
