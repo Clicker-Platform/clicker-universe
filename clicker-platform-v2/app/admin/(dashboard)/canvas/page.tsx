@@ -36,8 +36,10 @@ function PageStudioInner() {
         );
     }
 
+    // h-[calc(100dvh-57px)] accounts for the md:hidden mobile admin header on small screens.
+    // On md+ the header is gone so we use h-screen.
     return (
-        <div className="-m-4 md:-m-8">
+        <div className="-m-4 md:-m-8 flex flex-col overflow-hidden h-[calc(100dvh-57px)] md:h-screen">
             {error && (
                 <div className="mx-4 md:mx-8 mt-4 md:mt-8 mb-0 p-4 bg-red-50 text-red-700 rounded-xl flex items-center gap-2 border border-red-200">
                     <AlertCircle size={20} />
@@ -57,7 +59,7 @@ function PageStudioInner() {
             )}
 
             <EditorProvider blocks={formData.blocks} onChange={setBlocks}>
-                <div className="flex flex-col h-screen">
+                <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
                     <StudioTopBar />
                     <div className="flex-1 min-h-0 flex">
                         <CanvasStudio

@@ -1,7 +1,7 @@
 # Clicker Platform — Global Architecture Reference
 
 > **Purpose:** Single source of truth for the Clicker Platform architecture. Read this before adding any feature, module, or template.
-> **Last updated:** 2026-03-23
+> **Last updated:** 2026-04-08
 
 ---
 
@@ -125,7 +125,8 @@ This is the **most important architectural rule**.
 │  MODULES  (opt-in per tenant)                           │
 │  lib/modules/{module_id}/                               │
 │    byod_pos/ | membership/ | inventory/                 │
-│    reservation/ | ai_sales/ | sales-pipeline/           │
+│    reservation/ | ai_sales/ | service_records/          │
+│    sales_pipeline/                                      │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -175,6 +176,8 @@ lib/modules/{module_id}/
 | `inventory` | Inventory | Items |
 | `reservation` | Reservations | Bookings, Services, Staff (hidden), Settings |
 | `ai_sales` | AI Sales Agent | Overview, Settings |
+| `service_records` | Service Records | Records, Reports, New Record, Record Detail (hidden), Vehicles, Vehicle Detail (hidden), Service Types, Reminders, Settings |
+| `sales_pipeline` | Sales Pipeline | Pipeline Board, Settings |
 
 ### How Module Routes Are Served
 
@@ -288,6 +291,7 @@ Custom header: `components/headers/MrbHeader.tsx`
 | `hours` | Operating hours display |
 | `featured_product` | Featured product card |
 | `branches` | Branch locations list |
+| `social_embed` | Social media embed (Instagram, TikTok, etc.) |
 
 ### Canvas Studio Files
 
@@ -439,6 +443,7 @@ Pattern: `sites/{siteId}/modules/{module_id}/{collection}`
 | membership | `sites/{siteId}/modules/membership/members/{memberId}` |
 | inventory | `sites/{siteId}/modules/inventory/items/{itemId}` |
 | reservation | `sites/{siteId}/modules/reservation/bookings/{bookingId}` |
+| sales_pipeline | `sites/{siteId}/leads/{leadId}` (board), `sites/{siteId}/modules/sales_pipeline/settings/config` (pipeline config) |
 
 > **Rule:** Always define paths as constants in `lib/modules/{module_id}/constants.ts`. Never hardcode path strings in components or api files.
 
@@ -463,7 +468,8 @@ app/api/
 ├── auth/check-access/          ← Auth verification
 ├── forms/create|delete|submit|update/  ← Form CRUD
 ├── submissions/update/         ← Submission status
-└── upload/avatar|image/        ← File uploads
+├── upload/avatar|image/        ← File uploads
+└── warranty/[warrantyCode]/pdf/ ← Service record warranty PDF generation
 ```
 
 ### Server Component vs Client Component Rules

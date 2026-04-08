@@ -56,20 +56,20 @@ export const BlockOutlineItem = memo(({ block, isSelected, onClick, onDelete }: 
             className={`flex items-center gap-1.5 px-2 py-1.5 cursor-pointer transition-colors group ${
                 isSelected
                 ? 'bg-blue-500/10 text-blue-400'
-                : 'text-neutral-400 hover:bg-neutral-800 hover:text-neutral-200'
+                : 'text-neutral-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-neutral-200'
             }`}
             onClick={onClick}
         >
             <div
                 {...attributes}
                 {...listeners}
-                className="p-0.5 rounded cursor-grab active:cursor-grabbing text-neutral-600 hover:text-neutral-400 transition-colors flex-shrink-0"
+                className="p-0.5 rounded cursor-grab active:cursor-grabbing text-neutral-400 dark:text-neutral-600 hover:text-neutral-500 dark:hover:text-neutral-400 transition-colors flex-shrink-0"
                 onClick={(e) => e.stopPropagation()}
             >
                 <GripVertical size={13} />
             </div>
 
-            <Box size={13} className={`flex-shrink-0 ${isSelected ? 'text-blue-400' : 'text-neutral-500'}`} />
+            <Box size={13} className={`flex-shrink-0 ${isSelected ? 'text-blue-400' : 'text-neutral-400 dark:text-neutral-500'}`} />
 
             <span className="flex-1 text-xs font-medium truncate">{getBlockLabel(block.type)}</span>
 
@@ -79,7 +79,7 @@ export const BlockOutlineItem = memo(({ block, isSelected, onClick, onDelete }: 
                     e.stopPropagation();
                     onDelete(block.id);
                 }}
-                className="p-1 text-neutral-600 hover:text-red-400 rounded opacity-0 group-hover:opacity-100 transition-all focus:opacity-100 flex-shrink-0"
+                className="p-1 text-neutral-400 dark:text-neutral-600 hover:text-red-400 rounded opacity-0 group-hover:opacity-100 transition-all focus:opacity-100 flex-shrink-0"
                 title="Delete block"
             >
                 <Trash2 size={12} />

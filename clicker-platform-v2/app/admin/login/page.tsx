@@ -41,8 +41,7 @@ function AdminLoginForm() {
             }
 
         } catch (err: any) {
-            console.error(err);
-            setError(`Login Error: ${err.code || err.message || 'Unknown error'}`);
+            setError('Invalid email or password.');
         }
     };
 

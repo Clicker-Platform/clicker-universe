@@ -11,7 +11,7 @@ function AdminContentWrapper({ children }: { children: React.ReactNode }) {
     const { isDark } = useAdminTheme();
 
     return (
-        <div className={`min-h-screen flex flex-col md:flex-row transition-colors ${isDark ? 'dark bg-neutral-950' : 'bg-gray-100'}`}>
+        <div className={`admin-layout min-h-screen flex flex-col md:flex-row transition-colors ${isDark ? 'dark bg-neutral-950' : 'bg-gray-100'}`}>
             <AdminSidebar />
             <main className="flex-1 p-4 md:p-8 min-w-0 overflow-x-hidden text-neutral-900 dark:text-neutral-100">
                 {children}

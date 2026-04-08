@@ -47,25 +47,25 @@ export const LinkBlockForm = ({ data, onChange }: LinkBlockFormProps) => {
     };
 
     if (loading) {
-        return <div className="flex justify-center p-8 bg-neutral-900/30 rounded-2xl border border-neutral-800/50"><Loader2 className="animate-spin text-blue-500" /></div>;
+        return <div className="flex justify-center p-8 bg-gray-100/30 dark:bg-neutral-900/30 rounded-2xl border border-gray-200/50 dark:border-neutral-800/50"><Loader2 className="animate-spin text-blue-500" /></div>;
     }
 
     return (
         <div className="space-y-4">
             <div>
-                <label className="block text-xs font-medium text-neutral-500 mb-2">Select Link Card</label>
-                <p className="text-xs text-neutral-500 mb-4 leading-relaxed">
+                <label className="block text-xs font-medium text-neutral-400 dark:text-neutral-500 mb-2">Select Link Card</label>
+                <p className="text-xs text-neutral-400 dark:text-neutral-500 mb-4 leading-relaxed">
                     Choose an existing link from your Links page to display here.
                 </p>
 
                 <select
                     value={safeData.linkId || ''}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-sm font-bold text-neutral-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none appearance-none cursor-pointer"
+                    className="w-full px-4 py-3 bg-gray-50 dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl text-sm font-bold text-neutral-900 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none appearance-none cursor-pointer"
                 >
-                    <option value="" className="bg-neutral-900 text-neutral-400">-- Select a Link --</option>
+                    <option value="" className="bg-gray-50 dark:bg-neutral-900 text-neutral-400">-- Select a Link --</option>
                     {links.map(link => (
-                        <option key={link.id} value={link.id} className="bg-neutral-900 text-neutral-200">
+                        <option key={link.id} value={link.id} className="bg-gray-50 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-200">
                             {link.title} {link.subtitle ? `(${link.subtitle})` : ''}
                         </option>
                     ))}

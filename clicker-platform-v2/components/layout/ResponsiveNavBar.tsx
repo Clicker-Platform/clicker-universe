@@ -99,7 +99,7 @@ export const ResponsiveNavBar: React.FC<ResponsiveNavBarProps> = ({
     return (
         <>
             <nav
-                className={`${(forceMobile || isPreview) ? 'relative' : 'fixed top-0 left-0 right-0'} z-50 h-16 border-b px-4 flex items-center justify-between transition-all duration-300`}
+                className={`${(forceMobile || isPreview) ? 'relative z-10' : 'fixed top-0 left-0 right-0 z-50'} h-16 border-b px-4 flex items-center justify-between transition-all duration-300`}
                 style={{ backgroundColor: navBg, borderColor: navBorder }}
             >
                 {/* Left: Logo/Back Arrow + Brand Name */}
@@ -201,7 +201,7 @@ export const ResponsiveNavBar: React.FC<ResponsiveNavBarProps> = ({
             {/* Mobile/Tablet Menu Overlay */}
             {isMenuOpen && (
                 <div
-                    className={`${(forceMobile || isPreview) ? 'absolute' : 'fixed'} inset-0 z-[45] backdrop-blur-3xl ${forceMobile ? 'flex' : 'lg:hidden flex'} flex-col pt-32 px-10 pb-16 transition-all duration-300 animate-in fade-in slide-in-from-top-4`}
+                    className={`${(forceMobile || isPreview) ? 'absolute z-[9]' : 'fixed z-[45]'} inset-0 backdrop-blur-3xl ${forceMobile ? 'flex' : 'lg:hidden flex'} flex-col pt-32 px-10 pb-16 transition-all duration-300 animate-in fade-in slide-in-from-top-4`}
                     style={{ backgroundColor: `${theme.colors.background}f5` }}
                 >
                     <div className="flex flex-col gap-10 items-center text-center">

@@ -13,11 +13,10 @@ import {
     createVehicle,
     getServiceTypes,
     getCarCatalog,
-    addCarCatalogEntry,
-    ensureCarCatalogEntry,
     getVehicles,
 } from '../api';
-import type { ServiceRecord, Vehicle, ServiceType, CarCatalogEntry, PaymentMethod, PaymentStatus } from '../types';
+import type { ServiceRecord, Vehicle, ServiceType, CarCatalogEntry, PaymentMethod, PaymentStatus, ConsumedItem } from '../types';
+import { Trash2, Plus } from 'lucide-react';
 
 const PAYMENT_METHODS: { value: PaymentMethod; label: string }[] = [
     { value: 'CASH',     label: 'Cash' },
@@ -36,13 +35,12 @@ function RecordFormContent() {
     // Vehicle section
     const [allVehicles, setAllVehicles] = useState<Vehicle[]>([]);
     const [carCatalog, setCarCatalog] = useState<CarCatalogEntry[]>([]);
-    const [showAddCar, setShowAddCar] = useState(false);
-    const [plateInput, setPlateInput] = useState('');
+const [plateInput, setPlateInput] = useState('');
     const [vehicleLookupDone, setVehicleLookupDone] = useState(false);
     const [foundVehicle, setFoundVehicle] = useState<Vehicle | null>(null);
     const [plateWarning, setPlateWarning] = useState<string | null>(null);
     const [showNewVehicleFields, setShowNewVehicleFields] = useState(false);
-    const [vehicleForm, setVehicleForm] = useState({ make: '', model: '', color: '', type: 'OTHER' });
+    const [vehicleForm, setVehicleForm] = useState({ color: '', carCatalogId: '' });
 
     // Member / customer section
     const [memberSearch, setMemberSearch] = useState('');
@@ -58,8 +56,8 @@ function RecordFormContent() {
     // Service type
     const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
     const [selectedServiceType, setSelectedServiceType] = useState<ServiceType | null>(null);
-    const [productUsed, setProductUsed] = useState('');
-    const [inventoryItemId, setInventoryItemId] = useState<string | null>(null);
+    const [productUsed, setProductUsed] = useState('');          // free-text escape hatch (no inventory link)
+    const [consumedItems, setConsumedItems] = useState<(ConsumedItem & { _tempId: string })[]>([]);
     const [warrantyMonths, setWarrantyMonths] = useState(12);
     const [notes, setNotes] = useState('');
 
@@ -143,7 +141,15 @@ function RecordFormContent() {
                     const sType = types.find(t => t.id === record.serviceTypeId) || null;
                     setSelectedServiceType(sType);
                     setProductUsed(record.productUsed || '');
-                    setInventoryItemId(record.inventoryItemId || null);
+                    // Hydrate consumedItems — fall back to legacy inventoryItemId for old records
+                    if (record.consumedItems && record.consumedItems.length > 0) {
+                        setConsumedItems(record.consumedItems.map(ci => ({ ...ci, _tempId: Math.random().toString(36).slice(2) })));
+                    } else if (record.inventoryItemId) {
+                        const matchedItem = inventoryItems.find(i => i.id === record.inventoryItemId);
+                        if (matchedItem) {
+                            setConsumedItems([{ inventoryItemId: record.inventoryItemId, name: matchedItem.name, quantity: 1, _tempId: 'legacy' }]);
+                        }
+                    }
                     setWarrantyMonths(record.warrantyMonths || 12);
                     setNotes(record.notes || '');
                     setTotalAmount(record.totalAmount || 0);
@@ -226,22 +232,11 @@ function RecordFormContent() {
             if (!vehicleId && showNewVehicleFields) {
                 vehicleId = await createVehicle(siteId, {
                     plateNumber: plate,
-                    make: vehicleForm.make || undefined,
-                    model: vehicleForm.model || undefined,
+                    carCatalogId: vehicleForm.carCatalogId || undefined,
                     color: vehicleForm.color || undefined,
-                    type: vehicleForm.type as any,
                     memberId: selectedMemberId || undefined,
                     memberName: selectedMemberName || undefined,
                 });
-
-                // Auto-add to car catalog if make/model provided
-                if (vehicleForm.make && vehicleForm.model) {
-                    ensureCarCatalogEntry(siteId, {
-                        make: vehicleForm.make,
-                        model: vehicleForm.model,
-                        type: vehicleForm.type as any,
-                    }).catch(console.error); // non-blocking
-                }
             }
 
             if (!vehicleId) {
@@ -265,7 +260,11 @@ function RecordFormContent() {
                 hasWarranty: selectedServiceType.hasWarranty,
                 warrantyMonths: selectedServiceType.hasWarranty ? warrantyMonths : 0,
                 productUsed: productUsed || null,
-                inventoryItemId: inventoryItemId || null,
+                consumedItems: consumedItems.length > 0
+                    ? consumedItems.map(({ _tempId, ...ci }) => ci)
+                    : null,
+                // legacy field cleared when consumedItems is set
+                inventoryItemId: consumedItems.length > 0 ? null : null,
                 notes: notes || null,
                 totalAmount,
                 amountPaid,
@@ -365,7 +364,7 @@ function RecordFormContent() {
                             <option value="">— Select vehicle —</option>
                             {allVehicles.map(v => (
                                 <option key={v.id} value={v.id}>
-                                    {v.plateNumber} — {v.make || '?'} {v.model || ''}{v.color ? ` · ${v.color}` : ''}{v.memberName ? ` · ${v.memberName}` : ''}
+                                    {v.plateNumber}{v.color ? ` · ${v.color}` : ''}{v.memberName ? ` · ${v.memberName}` : ''}
                                 </option>
                             ))}
                         </select>
@@ -411,9 +410,7 @@ function RecordFormContent() {
                     <div className="bg-green-50 dark:bg-green-950/30 border border-green-100 dark:border-green-900/50 rounded-xl p-3 text-sm">
                         <p className="font-semibold text-green-700 dark:text-green-400">Vehicle found</p>
                         <p className="text-green-600 dark:text-green-500">
-                            {foundVehicle.make ? `${foundVehicle.make} ${foundVehicle.model || ''}`.trim() : 'No make/model'}
-                            {foundVehicle.color && ` · ${foundVehicle.color}`}
-                            {foundVehicle.type && ` · ${foundVehicle.type}`}
+                            {foundVehicle.plateNumber}{foundVehicle.color && ` · ${foundVehicle.color}`}
                         </p>
                     </div>
                 )}
@@ -430,81 +427,21 @@ function RecordFormContent() {
                             </div>
                         )}
 
-                        {/* Car type — select from catalog or add new */}
+                        {/* Car type — select from catalog */}
                         <div>
                             <label className="block text-xs font-medium text-gray-600 dark:text-neutral-400 mb-1">Car Type</label>
-                            {carCatalog.length > 0 && !showAddCar ? (
-                                <div className="space-y-2">
-                                    <select
-                                        value={vehicleForm.make && vehicleForm.model
-                                            ? carCatalog.find(c => c.make === vehicleForm.make && c.model === vehicleForm.model)?.id || ''
-                                            : ''}
-                                        onChange={e => {
-                                            const car = carCatalog.find(c => c.id === e.target.value);
-                                            if (car) {
-                                                setVehicleForm(f => ({
-                                                    ...f,
-                                                    make: car.make,
-                                                    model: car.model,
-                                                    type: car.type,
-                                                }));
-                                            }
-                                        }}
-                                        className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
-                                    >
-                                        <option value="">— Select car type —</option>
-                                        {carCatalog.map(car => (
-                                            <option key={car.id} value={car.id}>
-                                                {car.make} {car.model} ({car.type})
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowAddCar(true)}
-                                        className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium"
-                                    >
-                                        + Add new car type
-                                    </button>
-                                </div>
-                            ) : (
-                                <div className="space-y-3">
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <input
-                                            type="text"
-                                            value={vehicleForm.make}
-                                            onChange={e => setVehicleForm(f => ({ ...f, make: e.target.value }))}
-                                            placeholder="Make (Toyota)"
-                                            className="rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
-                                        />
-                                        <input
-                                            type="text"
-                                            value={vehicleForm.model}
-                                            onChange={e => setVehicleForm(f => ({ ...f, model: e.target.value }))}
-                                            placeholder="Model (Fortuner)"
-                                            className="rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
-                                        />
-                                    </div>
-                                    <select
-                                        value={vehicleForm.type}
-                                        onChange={e => setVehicleForm(f => ({ ...f, type: e.target.value }))}
-                                        className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
-                                    >
-                                        {['SEDAN','SUV','MPV','HATCHBACK','PICKUP','MOTORCYCLE','OTHER'].map(t => (
-                                            <option key={t} value={t}>{t}</option>
-                                        ))}
-                                    </select>
-                                    {carCatalog.length > 0 && (
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowAddCar(false)}
-                                            className="text-xs text-gray-500 dark:text-neutral-500 hover:underline"
-                                        >
-                                            ← Back to catalog
-                                        </button>
-                                    )}
-                                </div>
-                            )}
+                            <select
+                                value={vehicleForm.carCatalogId}
+                                onChange={e => setVehicleForm(f => ({ ...f, carCatalogId: e.target.value }))}
+                                className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
+                            >
+                                <option value="">— Select car type —</option>
+                                {carCatalog.map(car => (
+                                    <option key={car.id} value={car.id}>
+                                        {car.make} {car.model} ({car.type})
+                                    </option>
+                                ))}
+                            </select>
                         </div>
 
                         {/* Color — always separate since it's per-vehicle */}
@@ -649,51 +586,90 @@ function RecordFormContent() {
                     </div>
                 )}
 
+                {/* Products / Inventory consumed */}
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Product Used</label>
-                    {inventoryEnabled && inventoryItems.length > 0 ? (
-                        <div className="space-y-1.5">
-                            <select
-                                value={inventoryItemId || ''}
-                                onChange={e => {
-                                    const id = e.target.value;
-                                    setInventoryItemId(id || null);
-                                    const item = inventoryItems.find(i => i.id === id);
-                                    setProductUsed(item ? item.name : '');
-                                }}
-                                className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
+                    <div className="flex items-center justify-between mb-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300">Products Used</label>
+                        {inventoryEnabled && inventoryItems.length > 0 && (
+                            <button
+                                type="button"
+                                onClick={() => setConsumedItems(prev => [
+                                    ...prev,
+                                    { inventoryItemId: '', name: '', quantity: 1, _tempId: Math.random().toString(36).slice(2) }
+                                ])}
+                                className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium"
                             >
-                                <option value="">— Select from inventory —</option>
-                                {inventoryItems.map(item => (
-                                    <option key={item.id} value={item.id}>
-                                        {item.name} (Stock: {item.currentStock} {item.unit})
-                                    </option>
-                                ))}
-                            </select>
-                            {inventoryItemId && (
+                                <Plus className="w-3.5 h-3.5" /> Add item
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Consumed items rows */}
+                    {inventoryEnabled && inventoryItems.length > 0 && (
+                        <div className="space-y-2">
+                            {consumedItems.map((ci) => (
+                                <div key={ci._tempId} className="flex items-center gap-2">
+                                    <select
+                                        value={ci.inventoryItemId}
+                                        onChange={e => {
+                                            const id = e.target.value;
+                                            const found = inventoryItems.find(i => i.id === id);
+                                            setConsumedItems(prev => prev.map(item =>
+                                                item._tempId === ci._tempId
+                                                    ? { ...item, inventoryItemId: id, name: found?.name || '' }
+                                                    : item
+                                            ));
+                                        }}
+                                        className="flex-1 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
+                                    >
+                                        <option value="">— Select item —</option>
+                                        {inventoryItems.map(item => (
+                                            <option key={item.id} value={item.id}>
+                                                {item.name} (Stock: {item.currentStock} {item.unit})
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <input
+                                        type="number"
+                                        min={1}
+                                        value={ci.quantity}
+                                        onChange={e => setConsumedItems(prev => prev.map(item =>
+                                            item._tempId === ci._tempId
+                                                ? { ...item, quantity: Math.max(1, parseInt(e.target.value) || 1) }
+                                                : item
+                                        ))}
+                                        className="w-20 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm text-center"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setConsumedItems(prev => prev.filter(item => item._tempId !== ci._tempId))}
+                                        className="p-2 text-gray-400 dark:text-neutral-500 hover:text-red-500 dark:hover:text-red-400 rounded-xl hover:bg-red-50 dark:hover:bg-red-950/30"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            ))}
+                            {consumedItems.length > 0 && (
                                 <p className="text-xs text-green-700 dark:text-green-400">
-                                    1 unit will be deducted from inventory on approval.
+                                    {consumedItems.length} item{consumedItems.length > 1 ? 's' : ''} will be deducted from inventory on approval.
                                 </p>
                             )}
-                            {!inventoryItemId && (
-                                <input
-                                    type="text"
-                                    value={productUsed}
-                                    onChange={e => setProductUsed(e.target.value)}
-                                    placeholder="Or type a free-text product name…"
-                                    className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
-                                />
+                            {consumedItems.length === 0 && (
+                                <p className="text-xs text-gray-400 dark:text-neutral-500">No inventory items linked — click "Add item" to link stock.</p>
                             )}
                         </div>
-                    ) : (
+                    )}
+
+                    {/* Free-text fallback — always visible, label adjusts */}
+                    <div className={inventoryEnabled && inventoryItems.length > 0 ? 'mt-3' : ''}>
                         <input
                             type="text"
                             value={productUsed}
                             onChange={e => setProductUsed(e.target.value)}
-                            placeholder="e.g. Ceramic Pro Gold 9H"
+                            placeholder={inventoryEnabled ? 'Additional note (e.g. "Ceramic Pro Gold 9H")…' : 'e.g. Ceramic Pro Gold 9H'}
                             className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
                         />
-                    )}
+                    </div>
                 </div>
 
                 <div>
@@ -778,7 +754,7 @@ function RecordFormContent() {
                     disabled={submitting}
                     className="bg-studio-blue text-white px-6 py-2.5 rounded-xl text-sm font-medium disabled:opacity-50"
                 >
-                    {submitting ? 'Saving…' : 'Save & Start Job'}
+                    {submitting ? 'Saving…' : 'Save & Start Work'}
                 </button>
             </div>
         </div>

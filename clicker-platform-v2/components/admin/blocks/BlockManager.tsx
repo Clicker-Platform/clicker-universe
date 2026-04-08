@@ -68,18 +68,18 @@ export const BlockManager = ({ blocks, onChange, templateId, onAddClick }: Block
                 className={`flex items-center gap-1.5 px-2 py-1.5 cursor-pointer transition-colors ${
                     selectedBlockId === 'chrome:header'
                     ? 'bg-blue-500/10 text-blue-400'
-                    : 'text-neutral-400 hover:bg-neutral-800 hover:text-neutral-200'
+                    : 'text-neutral-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-neutral-200'
                 }`}
                 onClick={() => setSelectedBlockId?.('chrome:header')}
             >
-                <Lock size={13} className="flex-shrink-0 text-neutral-600" />
+                <Lock size={13} className="flex-shrink-0 text-neutral-400 dark:text-neutral-600" />
                 <span className="flex-1 text-xs font-medium truncate">Header Navigation</span>
             </div>
 
-            <div className="border-l-2 border-dashed border-neutral-800 ml-3.5 my-0.5">
+            <div className="border-l-2 border-dashed border-gray-200 dark:border-neutral-800 ml-3.5 my-0.5">
                 {blocks.length === 0 ? (
                     <div className="text-center py-6 px-3">
-                        <p className="text-neutral-600 mb-2 text-xs">No blocks yet</p>
+                        <p className="text-neutral-400 dark:text-neutral-600 mb-2 text-xs">No blocks yet</p>
                         {onAddClick && (
                             <button
                                 type="button"
@@ -121,11 +121,11 @@ export const BlockManager = ({ blocks, onChange, templateId, onAddClick }: Block
                 className={`flex items-center gap-1.5 px-2 py-1.5 cursor-pointer transition-colors ${
                     selectedBlockId === 'chrome:footer'
                     ? 'bg-blue-500/10 text-blue-400'
-                    : 'text-neutral-400 hover:bg-neutral-800 hover:text-neutral-200'
+                    : 'text-neutral-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-neutral-200'
                 }`}
                 onClick={() => setSelectedBlockId?.('chrome:footer')}
             >
-                <Lock size={13} className="flex-shrink-0 text-neutral-600" />
+                <Lock size={13} className="flex-shrink-0 text-neutral-400 dark:text-neutral-600" />
                 <span className="flex-1 text-xs font-medium truncate">Site Footer</span>
             </div>
 
@@ -134,11 +134,11 @@ export const BlockManager = ({ blocks, onChange, templateId, onAddClick }: Block
                 className={`flex items-center gap-1.5 px-2 py-1.5 cursor-pointer transition-colors ${
                     selectedBlockId === 'chrome:bottomnav'
                     ? 'bg-blue-500/10 text-blue-400'
-                    : 'text-neutral-400 hover:bg-neutral-800 hover:text-neutral-200'
+                    : 'text-neutral-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-neutral-200'
                 }`}
                 onClick={() => setSelectedBlockId?.('chrome:bottomnav')}
             >
-                <Lock size={13} className="flex-shrink-0 text-neutral-600" />
+                <Lock size={13} className="flex-shrink-0 text-neutral-400 dark:text-neutral-600" />
                 <span className="flex-1 text-xs font-medium truncate">Bottom Navigation</span>
             </div>
 

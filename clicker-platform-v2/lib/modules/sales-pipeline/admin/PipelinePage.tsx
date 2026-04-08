@@ -1,13 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { PipelineBoard } from './PipelineBoard';
+import { PipelineBoard } from './components/PipelineBoard';
 import { getPipelineConfig, subscribeToLeads } from '@/lib/modules/sales-pipeline/api';
 import { PipelineStage, Lead } from '@/lib/modules/sales-pipeline/types';
 import { useSite } from '@/lib/site-context';
 import { Loader2 } from 'lucide-react';
 
-export default function SalesPipelinePage() {
+export default function PipelinePage() {
     const [stages, setStages] = useState<PipelineStage[]>([]);
     const [leads, setLeads] = useState<Lead[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -19,13 +19,11 @@ export default function SalesPipelinePage() {
         let unsubscribe: () => void;
 
         const init = async () => {
-            // 1. Fetch Config
             const config = await getPipelineConfig(siteId);
             if (config.stages) {
                 setStages(config.stages.sort((a, b) => a.order - b.order));
             }
 
-            // 2. Subscribe to Leads
             unsubscribe = subscribeToLeads(siteId, (updatedLeads) => {
                 setLeads(updatedLeads);
                 setIsLoading(false);

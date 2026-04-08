@@ -1,4 +1,6 @@
-import { useSite } from '@/lib/site-context'; // New import
+'use client';
+
+import { useSite } from '@/lib/site-context';
 
 import { useState, useMemo } from 'react';
 import {
@@ -20,8 +22,8 @@ import { NewLeadDialog } from './NewLeadDialog';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { SettingsDialog } from './SettingsDialog';
 import { Settings } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface PipelineBoardProps {
     stages: PipelineStage[];
@@ -30,21 +32,20 @@ interface PipelineBoardProps {
 
 export function PipelineBoard({ stages, leads }: PipelineBoardProps) {
     const { siteId } = useSite();
+    const router = useRouter();
     const [activeDragLead, setActiveDragLead] = useState<Lead | null>(null);
     const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
     const [isNewLeadOpen, setIsNewLeadOpen] = useState(false);
-    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-    // Optimized sensors for both mouse and touch
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: {
-                distance: 5, // Prevent accidental drags on click
+                distance: 5,
             },
         }),
         useSensor(TouchSensor, {
             activationConstraint: {
-                delay: 250, // Long press to drag on mobile
+                delay: 250,
                 tolerance: 5,
             },
         })
@@ -75,7 +76,6 @@ export function PipelineBoard({ stages, leads }: PipelineBoardProps) {
         const currentStageId = active.data.current?.lead?.stageId;
 
         if (leadId && newStageId && newStageId !== currentStageId) {
-            // Retry logic
             const MAX_RETRIES = 3;
             let attempt = 0;
             let success = false;
@@ -91,9 +91,7 @@ export function PipelineBoard({ stages, leads }: PipelineBoardProps) {
                     console.error(`Failed to move lead (Attempt ${attempt}/${MAX_RETRIES})`, error);
                     if (attempt === MAX_RETRIES) {
                         toast.error("Failed to move lead. Please check your connection.");
-                        // Ideally we would revert the UI here if we had optimistic state
                     } else {
-                        // Exponential backoff
                         await new Promise(resolve => setTimeout(resolve, 500 * Math.pow(2, attempt - 1)));
                     }
                 }
@@ -113,7 +111,7 @@ export function PipelineBoard({ stages, leads }: PipelineBoardProps) {
                 </div>
                 <div className="flex items-center gap-2">
                     <button
-                        onClick={() => setIsSettingsOpen(true)}
+                        onClick={() => router.push('/admin/sales-pipeline/settings')}
                         className="p-2 text-gray-400 dark:text-neutral-600 hover:text-brand-dark hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-lg transition-colors"
                         title="Pipeline Settings"
                     >
@@ -174,12 +172,6 @@ export function PipelineBoard({ stages, leads }: PipelineBoardProps) {
                 defaultStageId={stages[0]?.id || 'lead'}
                 isOpen={isNewLeadOpen}
                 onClose={() => setIsNewLeadOpen(false)}
-            />
-
-            <SettingsDialog
-                isOpen={isSettingsOpen}
-                onClose={() => setIsSettingsOpen(false)}
-                stages={stages}
             />
         </div>
     );

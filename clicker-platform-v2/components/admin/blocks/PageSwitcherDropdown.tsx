@@ -41,16 +41,16 @@ export function PageSwitcherDropdown() {
                 <button
                     type="button"
                     onClick={() => setIsOpen(!isOpen)}
-                    className="flex-1 flex items-center gap-2 px-3 py-1.5 bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-200 hover:bg-neutral-700 transition-colors text-sm font-medium min-w-0"
+                    className="flex-1 flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-lg text-neutral-900 dark:text-neutral-200 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors text-sm font-medium min-w-0"
                 >
-                    <FileText size={14} className="text-neutral-400 flex-shrink-0" />
+                    <FileText size={14} className="text-neutral-500 dark:text-neutral-400 flex-shrink-0" />
                     <span className="truncate">{displaySlug}</span>
-                    <ChevronDown size={14} className="text-neutral-400 flex-shrink-0 ml-auto" />
+                    <ChevronDown size={14} className="text-neutral-500 dark:text-neutral-400 flex-shrink-0 ml-auto" />
                 </button>
                 <button
                     type="button"
                     onClick={handleCreate}
-                    className="px-2 py-1.5 bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-400 hover:bg-neutral-700 hover:text-neutral-200 transition-colors flex-shrink-0"
+                    className="px-2 py-1.5 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-lg text-neutral-500 dark:text-neutral-400 hover:bg-gray-200 dark:hover:bg-neutral-700 hover:text-neutral-900 dark:hover:text-neutral-200 transition-colors flex-shrink-0"
                     title="New Page"
                 >
                     <Plus size={14} />
@@ -58,9 +58,9 @@ export function PageSwitcherDropdown() {
             </div>
 
             {isOpen && (
-                <div className="absolute left-0 right-0 top-full mt-1 bg-neutral-800 border border-neutral-700 rounded-lg shadow-2xl z-30 max-h-64 overflow-y-auto custom-scrollbar">
+                <div className="absolute left-0 right-0 top-full mt-1 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-lg shadow-2xl z-30 max-h-64 overflow-y-auto custom-scrollbar">
                     {pages.length === 0 ? (
-                        <div className="p-3 text-center text-neutral-500 text-xs">
+                        <div className="p-3 text-center text-neutral-400 dark:text-neutral-500 text-xs">
                             No pages yet
                         </div>
                     ) : (
@@ -73,13 +73,13 @@ export function PageSwitcherDropdown() {
                                     className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-left transition-colors text-sm ${
                                         page.id === activePageId
                                             ? 'bg-blue-500/15 text-blue-400'
-                                            : 'text-neutral-300 hover:bg-neutral-700'
+                                            : 'text-neutral-700 dark:text-neutral-300 hover:bg-gray-200 dark:hover:bg-neutral-700'
                                     }`}
                                 >
                                     <span className="truncate flex-1 font-medium">{page.title || 'Untitled'}</span>
-                                    <span className="text-xs text-neutral-500 flex-shrink-0">/{page.slug}</span>
+                                    <span className="text-xs text-neutral-400 dark:text-neutral-500 flex-shrink-0">/{page.slug}</span>
                                     {page.slug === homepageSlug && (
-                                        <Home size={12} className="text-neutral-400 flex-shrink-0" />
+                                        <Home size={12} className="text-neutral-500 dark:text-neutral-400 flex-shrink-0" />
                                     )}
                                 </button>
                             ))}
