@@ -47,6 +47,14 @@ export const STATIC_MODULE_DEFINITIONS: Record<string, Partial<ModuleDefinition>
             { path: '/admin/ai-sales/settings', label: 'Settings', icon: 'settings', componentKey: 'ai_sales:AdminSettings' }
         ]
     },
+    'sales_pipeline': {
+        displayName: 'Sales Pipeline',
+        description: 'CRM Kanban board for tracking leads through custom pipeline stages.',
+        adminRoutes: [
+            { path: '/admin/sales-pipeline/board', label: 'Pipeline Board', icon: 'trophy', componentKey: 'sales_pipeline:PipelinePage' },
+            { path: '/admin/sales-pipeline/settings', label: 'Settings', icon: 'settings', componentKey: 'sales_pipeline:SettingsPage' }
+        ]
+    },
     'service_records': {
         displayName: 'Service Records',
         description: 'Vehicle service records, warranty cards, and reminder engine.',

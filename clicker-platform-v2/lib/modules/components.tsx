@@ -41,6 +41,10 @@ const SR_ReportsPage      = dynamic(() => import('@/lib/modules/service-records/
 const SR_MemberWarrantyWidget = dynamic(() => import('@/lib/modules/service-records/public/MemberWarrantyWidget'));
 const SR_MemberServiceHistoryWidget = dynamic(() => import('@/lib/modules/service-records/public/MemberServiceHistoryWidget'));
 
+// Admin Pages (Sales Pipeline)
+const SalesPipelinePage = dynamic(() => import('@/lib/modules/sales-pipeline/admin/PipelinePage'));
+const SalesPipelineSettingsPage = dynamic(() => import('@/lib/modules/sales-pipeline/admin/SettingsPage'));
+
 // Admin Pages (Membership)
 const MemberListPage = dynamic(() => import('@/lib/modules/membership/admin/MemberListPage'));
 const MemberDetailsPage = dynamic(() => import('@/lib/modules/membership/admin/MemberDetailsPage'));
@@ -101,6 +105,10 @@ export const MODULE_COMPONENTS: Record<string, any> = {
     'service_records:ReportsPage':      SR_ReportsPage,
     'service_records:MemberWarrantyWidget': SR_MemberWarrantyWidget,
     'service_records:MemberServiceHistoryWidget': SR_MemberServiceHistoryWidget,
+
+    // Sales Pipeline Module
+    'sales_pipeline:PipelinePage': SalesPipelinePage,
+    'sales_pipeline:SettingsPage': SalesPipelineSettingsPage,
 
     // AI Sales Agent Module
     'ai_sales:ChatWidget': dynamic(() => import('@/lib/modules/ai-sales-agent/components/ChatWidget')

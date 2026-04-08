@@ -38,6 +38,12 @@ export const STATIC_MODULE_DEFINITIONS: Record<string, Partial<ModuleDefinition>
             { label: 'Settings', path: '/admin/ai-sales/settings', icon: 'settings', componentKey: 'ai_sales:AdminSettings' }
         ]
     },
+    'sales_pipeline': {
+        adminRoutes: [
+            { label: 'Pipeline Board', path: '/admin/sales-pipeline/board', icon: 'trophy', componentKey: 'sales_pipeline:PipelinePage' },
+            { label: 'Settings', path: '/admin/sales-pipeline/settings', icon: 'settings', permission: 'settings', componentKey: 'sales_pipeline:SettingsPage' }
+        ]
+    },
     'service_records': {
         adminRoutes: [
             { label: 'Service Records', path: '/admin/service-records/records',       icon: 'clipboard-list', componentKey: 'service_records:RecordsListPage' },
