@@ -1,14 +1,15 @@
 import { adminDb } from '@/lib/firebase-admin';
 import { FormIntegration, PipelineConfig } from './types';
-import { MODULE_ID } from './constants';
+import { MODULE_ID, COLLECTION_LEADS } from './constants';
 
-export async function handleNewSubmission(formId: string, submissionData: any) {
+export async function handleNewSubmission(siteId: string, formId: string, submissionData: any) {
     console.log(`[SalesPipeline] Checking integrations for form ${formId}`);
 
     try {
-        // 1. Fetch Pipeline Configuration
-        // Note: In a high-traffic production app, this should be cached.
+        // 1. Fetch Pipeline Configuration (per-tenant path)
         const configDoc = await adminDb
+            .collection('sites')
+            .doc(siteId)
             .collection('modules')
             .doc(MODULE_ID)
             .collection('settings')
@@ -64,9 +65,9 @@ export async function handleNewSubmission(formId: string, submissionData: any) {
 
         const notes = notesParts.join('\n');
 
-        // 5. Create Lead in Firestore (using Admin SDK)
+        // 5. Create Lead in Firestore (using Admin SDK, per-tenant path)
         const now = Date.now();
-        await adminDb.collection('leads').add({
+        await adminDb.collection('sites').doc(siteId).collection(COLLECTION_LEADS).add({
             name,
             contact,
             source,

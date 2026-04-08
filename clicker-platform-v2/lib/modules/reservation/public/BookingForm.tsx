@@ -14,7 +14,20 @@ import DetailsStep from './steps/DetailsStep';
 interface BookingFormProps {
     initialServices: Service[];
     initialStaff: Staff[];
-    initialSettings: { allowStaffSelection: boolean; membershipEnabled?: boolean; staffLabel?: string; pricingDisplay?: string; bookingTitle?: string };
+    initialSettings: {
+        allowStaffSelection: boolean;
+        membershipEnabled?: boolean;
+        staffLabel?: string;
+        pricingDisplay?: string;
+        bookingTitle?: string;
+        formConfig?: {
+            requireAsset: boolean;
+            assetLabel: string;
+            assetPlaceholder: string;
+            requireAssetModel: boolean;
+            assetModelLabel: string;
+        };
+    };
     siteId: string;
 }
 
@@ -138,7 +151,9 @@ export default function BookingForm({
                 notes: customerInfo.notes,
                 preferredDate: customerInfo.preferredDate || undefined,
                 staffId: selectedStaff?.id,
-                staffName: selectedStaff?.name
+                staffName: selectedStaff?.name,
+                assetId: customerInfo.assetId || undefined,
+                assetModel: customerInfo.assetModel || undefined,
             } as any);
 
             setBookingRef(id);
@@ -268,6 +283,7 @@ export default function BookingForm({
                         date={date || new Date()}
                         time={selectedTime || ''}
                         membershipEnabled={settings.membershipEnabled || false}
+                        formConfig={settings.formConfig}
                         onSubmit={handleSubmit}
                         onShowDialog={handleShowDialog}
                         isGlass={isGlass}

@@ -41,8 +41,8 @@ export function SystemBlockForm({ data, onChange, blockType }: SystemBlockFormPr
 
             <div className="space-y-4">
                 <div>
-                    <label className="flex items-center gap-2 text-xs font-medium text-neutral-500 mb-2">
-                        <Type size={14} className="text-neutral-500" />
+                    <label className="flex items-center gap-2 text-xs font-medium text-neutral-400 dark:text-neutral-500 mb-2">
+                        <Type size={14} className="text-neutral-400 dark:text-neutral-500" />
                         Section Title Override
                     </label>
                     <input
@@ -50,20 +50,20 @@ export function SystemBlockForm({ data, onChange, blockType }: SystemBlockFormPr
                         value={data.title || ''}
                         onChange={(e) => handleChange('title', e.target.value)}
                         placeholder="Leave blank for default"
-                        className="w-full px-4 py-2 bg-neutral-900 border border-neutral-800 rounded-xl text-sm font-bold text-neutral-200 placeholder-neutral-600 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none"
+                        className="w-full px-4 py-2 bg-gray-50 dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl text-sm font-bold text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-600 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none"
                     />
-                    <p className="text-xs text-neutral-500 mt-2 font-medium leading-relaxed">
+                    <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-2 font-medium leading-relaxed">
                         Optional: Provide a custom title to display above this section. Leave empty to use the default or hide the title.
                     </p>
                 </div>
             </div>
 
             {settingsLink && (
-                 <div className="pt-6 border-t border-neutral-800">
-                     <h5 className="font-bold text-neutral-200 text-xs uppercase tracking-wider mb-4">Manage Content</h5>
+                 <div className="pt-6 border-t border-gray-200 dark:border-neutral-800">
+                     <h5 className="font-bold text-neutral-900 dark:text-neutral-200 text-xs uppercase tracking-wider mb-4">Manage Content</h5>
                      <Link
                          href={settingsLink.url}
-                         className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-neutral-800 border border-neutral-700 text-neutral-200 rounded-xl font-bold hover:bg-neutral-700 transition-all active:scale-[0.98]"
+                         className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 text-neutral-900 dark:text-neutral-200 rounded-xl font-bold hover:bg-gray-200 dark:hover:bg-neutral-700 transition-all active:scale-[0.98]"
                      >
                          Edit {settingsLink.label}
                          <ExternalLink size={16} />

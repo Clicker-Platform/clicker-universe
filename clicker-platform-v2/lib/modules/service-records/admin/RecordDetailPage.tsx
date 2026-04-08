@@ -103,10 +103,6 @@ function RecordDetailContent() {
 
     async function handleSubmitForApproval() {
         if (!record) return;
-        if (record.paymentStatus !== 'PAID') {
-            showToast('error', 'Payment must be PAID before submitting for approval');
-            return;
-        }
         setActionLoading(true);
         try {
             await submitForApproval(siteId, record.id);
@@ -298,23 +294,17 @@ function RecordDetailContent() {
                                 disabled={actionLoading}
                                 className="px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-medium disabled:opacity-50"
                             >
-                                {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Start Job (→ In Progress)'}
+                                {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Start Work'}
                             </button>
                         )}
                         {record.status === 'IN_PROGRESS' && (
                             <button
                                 onClick={handleSubmitForApproval}
-                                disabled={actionLoading || record.paymentStatus !== 'PAID'}
-                                title={record.paymentStatus !== 'PAID' ? 'Payment must be PAID first' : ''}
+                                disabled={actionLoading}
                                 className="px-4 py-2 rounded-xl bg-amber-500 text-white text-sm font-medium disabled:opacity-50"
                             >
                                 {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Submit for Approval'}
                             </button>
-                        )}
-                        {record.status === 'IN_PROGRESS' && record.paymentStatus !== 'PAID' && (
-                            <p className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1 self-center">
-                                <AlertTriangle className="w-3.5 h-3.5" /> Mark payment as PAID to submit
-                            </p>
                         )}
                         {record.status === 'PENDING_APPROVAL' && isOwner && (
                             <>

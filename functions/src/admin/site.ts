@@ -17,10 +17,10 @@ export const STARTER_TEMPLATE = {
         }
     },
     settings: {
-        themeColor: "#000000",
-        accentColor: "#3b82f6",
+        themeColor: "#ec5b13",
+        accentColor: "#ec5b13",
         fontFamily: "Inter",
-        layoutStyle: "clean",
+        layoutStyle: "mrb",
     },
     profile: {
         tagline: "Your Quality Brand",
@@ -49,6 +49,18 @@ export const STARTER_TEMPLATE = {
                         imageUrl: "/clicker_brand_logo.png"
                     },
                     order: 0
+                },
+                {
+                    id: "quick-actions-1",
+                    type: "quick_actions",
+                    data: {},
+                    order: 1
+                },
+                {
+                    id: "hours-1",
+                    type: "hours",
+                    data: {},
+                    order: 2
                 }
             ]
         }

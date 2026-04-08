@@ -9,6 +9,13 @@ interface DetailsStepProps {
     date: Date;
     time: string;
     membershipEnabled: boolean;
+    formConfig?: {
+        requireAsset: boolean;
+        assetLabel: string;
+        assetPlaceholder: string;
+        requireAssetModel: boolean;
+        assetModelLabel: string;
+    };
     onSubmit: (customerInfo: any) => Promise<void>;
     onShowDialog: (title: string, message: string, variant: 'info' | 'error' | 'success') => void;
     isGlass?: boolean;
@@ -20,6 +27,7 @@ export default function DetailsStep({
     date,
     time,
     membershipEnabled,
+    formConfig,
     onSubmit,
     onShowDialog,
     isGlass = false,
@@ -33,7 +41,9 @@ export default function DetailsStep({
         phone: '',
         notes: '',
         preferredDate: '',
-        id: 'guest'
+        id: 'guest',
+        assetId: '',
+        assetModel: '',
     });
     const [memberSearchPhone, setMemberSearchPhone] = useState('');
 
@@ -221,6 +231,35 @@ export default function DetailsStep({
                         placeholder="Any special requests?"
                     />
                 </div>
+
+                {/* Asset fields — shown when formConfig.requireAsset is true */}
+                {formConfig?.requireAsset && (
+                    <div>
+                        <label className={labelClass}>{formConfig.assetLabel}</label>
+                        <input
+                            required
+                            type="text"
+                            value={customerInfo.assetId}
+                            onChange={e => setCustomerInfo({ ...customerInfo, assetId: e.target.value })}
+                            className={inputClass}
+                            placeholder={formConfig.assetPlaceholder}
+                        />
+                    </div>
+                )}
+
+                {formConfig?.requireAsset && formConfig?.requireAssetModel && (
+                    <div>
+                        <label className={labelClass}>{formConfig.assetModelLabel}</label>
+                        <input
+                            required
+                            type="text"
+                            value={customerInfo.assetModel}
+                            onChange={e => setCustomerInfo({ ...customerInfo, assetModel: e.target.value })}
+                            className={inputClass}
+                            placeholder={formConfig.assetModelLabel}
+                        />
+                    </div>
+                )}
 
                 <button
                     type="submit"

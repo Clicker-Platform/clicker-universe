@@ -50,6 +50,17 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+/* Admin: override brand-green body background so it never bleeds through admin UI gaps */
+.admin-layout body,
+body:has(.admin-layout) {
+  background-color: #f3f4f6; /* gray-100, matches light admin bg */
+}
+
+.dark.admin-layout body,
+body:has(.dark.admin-layout) {
+  background-color: #0a0a0a; /* neutral-950, matches dark admin bg */
+}
+
 /* Admin dark mode: override brand-green body color and text-brand-dark with neutral for legibility */
 .dark body {
   color: #e5e5e5;

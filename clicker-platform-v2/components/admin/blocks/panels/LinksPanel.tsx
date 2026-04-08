@@ -36,8 +36,8 @@ interface AdminLinkItem extends Omit<LinkItem, 'icon'> {
 
 // ── Shared styles ────────────────────────────────────────────────────────
 
-const inputClass = "w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-sm text-neutral-200 placeholder-neutral-600 focus:border-blue-500/50 focus:outline-none transition-colors";
-const labelClass = "block text-xs font-medium text-neutral-500 mb-1";
+const inputClass = "w-full px-3 py-2 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-lg text-sm text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-600 focus:border-blue-500/50 focus:outline-none transition-colors";
+const labelClass = "block text-xs font-medium text-neutral-400 dark:text-neutral-500 mb-1";
 
 // ── Sortable Link Item ───────────────────────────────────────────────────
 
@@ -49,17 +49,17 @@ function SortableLinkItem({ link, onEdit, onDelete }: { link: AdminLinkItem; onE
     const IconComponent = link.iconName && ICON_MAP[link.iconName] ? ICON_MAP[link.iconName] : LinkIcon;
 
     return (
-        <div ref={setNodeRef} style={style} className="flex items-center gap-2 px-3 py-2 hover:bg-neutral-800/50 rounded-lg group transition-colors">
-            <div {...attributes} {...listeners} className="p-1 text-neutral-600 cursor-grab active:cursor-grabbing hover:text-neutral-400 flex-shrink-0">
+        <div ref={setNodeRef} style={style} className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 dark:hover:bg-neutral-800/50 rounded-lg group transition-colors">
+            <div {...attributes} {...listeners} className="p-1 text-neutral-400 dark:text-neutral-600 cursor-grab active:cursor-grabbing hover:text-neutral-700 dark:hover:text-neutral-400 flex-shrink-0">
                 <GripVertical size={14} />
             </div>
 
-            <div className="w-7 h-7 bg-neutral-800 rounded-md flex items-center justify-center text-neutral-400 flex-shrink-0">
+            <div className="w-7 h-7 bg-gray-100 dark:bg-neutral-800 rounded-md flex items-center justify-center text-neutral-500 dark:text-neutral-400 flex-shrink-0">
                 <IconComponent size={14} />
             </div>
 
             <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium text-neutral-200 truncate">{link.title}</div>
+                <div className="text-sm font-medium text-neutral-900 dark:text-neutral-200 truncate">{link.title}</div>
                 <div className="flex items-center gap-1.5 mt-0.5">
                     {link.type === 'form' && (
                         <span className="px-1 py-0.5 rounded text-[9px] font-bold bg-purple-500/20 text-purple-400 uppercase">Form</span>
@@ -68,21 +68,21 @@ function SortableLinkItem({ link, onEdit, onDelete }: { link: AdminLinkItem; onE
                         <span className="px-1 py-0.5 rounded text-[9px] font-bold bg-blue-500/20 text-blue-400 uppercase">Page</span>
                     )}
                     {link.hideOnHome && (
-                        <span className="px-1 py-0.5 rounded text-[9px] font-bold bg-neutral-700 text-neutral-500 uppercase flex items-center gap-0.5">
+                        <span className="px-1 py-0.5 rounded text-[9px] font-bold bg-gray-200 dark:bg-neutral-700 text-neutral-500 uppercase flex items-center gap-0.5">
                             <EyeOff size={8} /> Hidden
                         </span>
                     )}
                     {link.type === 'url' && link.url && (
-                        <span className="text-[10px] text-neutral-600 truncate max-w-[180px]">{link.url}</span>
+                        <span className="text-[10px] text-neutral-400 dark:text-neutral-600 truncate max-w-[180px]">{link.url}</span>
                     )}
                 </div>
             </div>
 
             <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-                <button onClick={() => onEdit(link)} className="p-1.5 text-neutral-500 hover:text-blue-400 hover:bg-neutral-700 rounded-md transition-colors">
+                <button onClick={() => onEdit(link)} className="p-1.5 text-neutral-400 dark:text-neutral-500 hover:text-blue-400 hover:bg-gray-200 dark:hover:bg-neutral-700 rounded-md transition-colors">
                     <Pencil size={13} />
                 </button>
-                <button onClick={() => onDelete(link.id)} className="p-1.5 text-neutral-500 hover:text-red-400 hover:bg-neutral-700 rounded-md transition-colors">
+                <button onClick={() => onDelete(link.id)} className="p-1.5 text-neutral-400 dark:text-neutral-500 hover:text-red-400 hover:bg-gray-200 dark:hover:bg-neutral-700 rounded-md transition-colors">
                     <Trash2 size={13} />
                 </button>
             </div>
@@ -286,13 +286,13 @@ export function LinksPanel() {
     return (
         <div className="flex flex-col h-full">
             {/* Toolbar */}
-            <div className="px-3 py-2 border-b border-neutral-800 flex items-center gap-2 flex-shrink-0">
+            <div className="px-3 py-2 border-b border-gray-200 dark:border-neutral-800 flex items-center gap-2 flex-shrink-0">
                 <button
                     onClick={() => { setShowForm(!showForm); if (showForm) resetForm(); }}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
                         showForm
                             ? 'bg-blue-500/15 text-blue-400 border border-blue-500/30'
-                            : 'bg-neutral-800 text-neutral-300 border border-neutral-700 hover:bg-neutral-700'
+                            : 'bg-gray-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-gray-300 dark:border-neutral-700 hover:bg-gray-200 dark:hover:bg-neutral-700'
                     }`}
                 >
                     <Plus size={13} /> {editingId ? 'Editing' : 'Add Link'}
@@ -302,20 +302,20 @@ export function LinksPanel() {
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
                         showSettings
                             ? 'bg-blue-500/15 text-blue-400 border border-blue-500/30'
-                            : 'bg-neutral-800 text-neutral-300 border border-neutral-700 hover:bg-neutral-700'
+                            : 'bg-gray-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-gray-300 dark:border-neutral-700 hover:bg-gray-200 dark:hover:bg-neutral-700'
                     }`}
                 >
                     <Settings size={13} /> Settings
                 </button>
                 <div className="flex-1" />
-                <span className="text-[10px] text-neutral-600 font-medium">{links.length} links</span>
+                <span className="text-[10px] text-neutral-400 dark:text-neutral-600 font-medium">{links.length} links</span>
             </div>
 
             {/* Scrollable content */}
             <div className="flex-1 overflow-y-auto custom-scrollbar">
                 {/* Settings panel */}
                 {showSettings && (
-                    <div className="p-3 border-b border-neutral-800 space-y-3 bg-neutral-900/50">
+                    <div className="p-3 border-b border-gray-200 dark:border-neutral-800 space-y-3 bg-gray-50 dark:bg-neutral-900/50">
                         <div>
                             <label className={labelClass}>Section Title</label>
                             <input
@@ -331,9 +331,9 @@ export function LinksPanel() {
                                 type="checkbox"
                                 checked={settings.showOnHome}
                                 onChange={e => setSettings({ ...settings, showOnHome: e.target.checked })}
-                                className="rounded border-neutral-600 bg-neutral-800 text-blue-500 focus:ring-blue-500/30"
+                                className="rounded border-gray-300 dark:border-neutral-600 bg-gray-100 dark:bg-neutral-800 text-blue-500 focus:ring-blue-500/30"
                             />
-                            <span className="text-xs text-neutral-300">Show section on Home Page</span>
+                            <span className="text-xs text-neutral-700 dark:text-neutral-300">Show section on Home Page</span>
                         </label>
                         <div className="flex justify-end">
                             <button
@@ -349,7 +349,7 @@ export function LinksPanel() {
 
                 {/* Add/Edit form */}
                 {showForm && (
-                    <div ref={formRef} className="p-3 border-b border-neutral-800 bg-neutral-900/50">
+                    <div ref={formRef} className="p-3 border-b border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-900/50">
                         <form onSubmit={handleSaveLink} className="space-y-3">
                             {/* Link type tabs */}
                             <div className="flex gap-1">
@@ -364,8 +364,8 @@ export function LinksPanel() {
                                         onClick={() => setNewLink(prev => ({ ...prev, type }))}
                                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold transition-colors ${
                                             newLink.type === type
-                                                ? 'bg-neutral-700 text-white'
-                                                : 'text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800'
+                                                ? 'bg-gray-200 dark:bg-neutral-700 text-neutral-900 dark:text-white'
+                                                : 'text-neutral-400 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800'
                                         }`}
                                     >
                                         <TypeIcon size={12} /> {label}
@@ -450,16 +450,16 @@ export function LinksPanel() {
                                 <button
                                     type="button"
                                     onClick={() => setShowIconSelector(true)}
-                                    className="w-full flex items-center gap-2.5 px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg hover:border-neutral-600 transition-colors text-left"
+                                    className="w-full flex items-center gap-2.5 px-3 py-2 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-lg hover:border-gray-400 dark:hover:border-neutral-600 transition-colors text-left"
                                 >
-                                    <div className="w-6 h-6 bg-neutral-700 rounded-md flex items-center justify-center text-neutral-300">
+                                    <div className="w-6 h-6 bg-gray-200 dark:bg-neutral-700 rounded-md flex items-center justify-center text-neutral-600 dark:text-neutral-300">
                                         {newLink.iconName && ICON_MAP[newLink.iconName] ? (
                                             (() => { const Icon = ICON_MAP[newLink.iconName!]; return <Icon size={14} />; })()
                                         ) : (
                                             <Search size={14} />
                                         )}
                                     </div>
-                                    <span className="flex-1 text-xs font-medium text-neutral-300">{newLink.iconName || 'Select Icon'}</span>
+                                    <span className="flex-1 text-xs font-medium text-neutral-700 dark:text-neutral-300">{newLink.iconName || 'Select Icon'}</span>
                                     <span className="text-[10px] text-blue-400 font-bold">Change</span>
                                 </button>
                             </div>
@@ -479,18 +479,18 @@ export function LinksPanel() {
                                         type="checkbox"
                                         checked={newLink.hideOnHome || false}
                                         onChange={e => setNewLink({ ...newLink, hideOnHome: e.target.checked })}
-                                        className="rounded border-neutral-600 bg-neutral-800 text-blue-500 focus:ring-blue-500/30"
+                                        className="rounded border-gray-300 dark:border-neutral-600 bg-gray-100 dark:bg-neutral-800 text-blue-500 focus:ring-blue-500/30"
                                     />
-                                    <span className="text-xs text-neutral-300">Hide on Home Page</span>
+                                    <span className="text-xs text-neutral-700 dark:text-neutral-300">Hide on Home Page</span>
                                 </label>
                                 <label className="flex items-center gap-2.5 cursor-pointer">
                                     <input
                                         type="checkbox"
                                         checked={newLink.openInNewTab || false}
                                         onChange={e => setNewLink({ ...newLink, openInNewTab: e.target.checked })}
-                                        className="rounded border-neutral-600 bg-neutral-800 text-blue-500 focus:ring-blue-500/30"
+                                        className="rounded border-gray-300 dark:border-neutral-600 bg-gray-100 dark:bg-neutral-800 text-blue-500 focus:ring-blue-500/30"
                                     />
-                                    <span className="text-xs text-neutral-300">Open in New Tab</span>
+                                    <span className="text-xs text-neutral-700 dark:text-neutral-300">Open in New Tab</span>
                                 </label>
                             </div>
 
@@ -511,7 +511,7 @@ export function LinksPanel() {
                                 <button
                                     type="button"
                                     onClick={resetForm}
-                                    className="px-4 py-2 text-xs font-bold text-neutral-400 bg-neutral-800 rounded-lg hover:bg-neutral-700 transition-colors"
+                                    className="px-4 py-2 text-xs font-bold text-neutral-500 dark:text-neutral-400 bg-gray-100 dark:bg-neutral-800 rounded-lg hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors"
                                 >
                                     Cancel
                                 </button>

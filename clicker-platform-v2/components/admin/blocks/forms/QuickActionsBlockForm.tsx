@@ -15,8 +15,8 @@ interface QuickActionsBlockFormProps {
     onChange: (data: any) => void;
 }
 
-const inputClass = "w-full px-4 py-2 bg-neutral-900 border border-neutral-800 rounded-xl text-sm font-bold text-neutral-200 placeholder-neutral-600 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none";
-const labelClass = "flex items-center gap-2 text-xs font-medium text-neutral-500 mb-2";
+const inputClass = "w-full px-4 py-2 bg-gray-50 dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl text-sm font-bold text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-600 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none";
+const labelClass = "flex items-center gap-2 text-xs font-medium text-neutral-400 dark:text-neutral-500 mb-2";
 
 export function QuickActionsBlockForm({ data, onChange }: QuickActionsBlockFormProps) {
     const safeData = data || {};
@@ -77,7 +77,7 @@ export function QuickActionsBlockForm({ data, onChange }: QuickActionsBlockFormP
                     placeholder="Leave blank for default"
                     className={inputClass}
                 />
-                <p className="text-xs text-neutral-500 mt-2 leading-relaxed">
+                <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-2 leading-relaxed">
                     Optional. Leave empty to use the default title or hide it.
                 </p>
             </div>
@@ -94,7 +94,7 @@ export function QuickActionsBlockForm({ data, onChange }: QuickActionsBlockFormP
                         className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm font-bold transition-all ${
                             layout === 'list'
                                 ? 'bg-blue-500/10 border-blue-500/40 text-blue-400'
-                                : 'bg-neutral-900 border-neutral-800 text-neutral-500 hover:border-neutral-700'
+                                : 'bg-gray-50 dark:bg-neutral-900 border-gray-200 dark:border-neutral-800 text-neutral-400 dark:text-neutral-500 hover:border-gray-300 dark:hover:border-neutral-700'
                         }`}
                     >
                         <List size={15} />
@@ -105,7 +105,7 @@ export function QuickActionsBlockForm({ data, onChange }: QuickActionsBlockFormP
                         className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm font-bold transition-all ${
                             layout === 'grid'
                                 ? 'bg-blue-500/10 border-blue-500/40 text-blue-400'
-                                : 'bg-neutral-900 border-neutral-800 text-neutral-500 hover:border-neutral-700'
+                                : 'bg-gray-50 dark:bg-neutral-900 border-gray-200 dark:border-neutral-800 text-neutral-400 dark:text-neutral-500 hover:border-gray-300 dark:hover:border-neutral-700'
                         }`}
                     >
                         <LayoutGrid size={15} />
@@ -120,12 +120,12 @@ export function QuickActionsBlockForm({ data, onChange }: QuickActionsBlockFormP
                     <Eye size={14} />
                     Link Visibility
                 </label>
-                <p className="text-xs text-neutral-500 mb-3 leading-relaxed">
+                <p className="text-xs text-neutral-400 dark:text-neutral-500 mb-3 leading-relaxed">
                     Toggle which links appear in this block.
                 </p>
 
                 {loading ? (
-                    <div className="flex justify-center p-6 bg-neutral-900/30 rounded-xl border border-neutral-800/50">
+                    <div className="flex justify-center p-6 bg-gray-100/30 dark:bg-neutral-900/30 rounded-xl border border-gray-200/50 dark:border-neutral-800/50">
                         <Loader2 className="animate-spin text-blue-500" size={20} />
                     </div>
                 ) : links.length === 0 ? (
@@ -145,17 +145,17 @@ export function QuickActionsBlockForm({ data, onChange }: QuickActionsBlockFormP
                                     onClick={() => toggleLink(link.id)}
                                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-all text-left ${
                                         isHidden
-                                            ? 'bg-neutral-900/30 border-neutral-800/50 opacity-50'
-                                            : 'bg-neutral-900 border-neutral-800 hover:border-neutral-700'
+                                            ? 'bg-gray-100/30 dark:bg-neutral-900/30 border-gray-200/50 dark:border-neutral-800/50 opacity-50'
+                                            : 'bg-gray-50 dark:bg-neutral-900 border-gray-200 dark:border-neutral-800 hover:border-gray-300 dark:hover:border-neutral-700'
                                     }`}
                                 >
-                                    <Icon size={16} className={isHidden ? 'text-neutral-600' : 'text-neutral-400'} />
-                                    <span className={`flex-1 text-sm font-bold truncate ${isHidden ? 'text-neutral-600' : 'text-neutral-200'}`}>
+                                    <Icon size={16} className={isHidden ? 'text-neutral-400 dark:text-neutral-600' : 'text-neutral-500 dark:text-neutral-400'} />
+                                    <span className={`flex-1 text-sm font-bold truncate ${isHidden ? 'text-neutral-400 dark:text-neutral-600' : 'text-neutral-900 dark:text-neutral-200'}`}>
                                         {link.title}
                                     </span>
                                     {isHidden
-                                        ? <EyeOff size={15} className="text-neutral-600 shrink-0" />
-                                        : <Eye size={15} className="text-neutral-400 shrink-0" />
+                                        ? <EyeOff size={15} className="text-neutral-400 dark:text-neutral-600 shrink-0" />
+                                        : <Eye size={15} className="text-neutral-500 dark:text-neutral-400 shrink-0" />
                                     }
                                 </button>
                             );
@@ -165,11 +165,11 @@ export function QuickActionsBlockForm({ data, onChange }: QuickActionsBlockFormP
             </div>
 
             {/* Manage Content link */}
-            <div className="pt-4 border-t border-neutral-800">
-                <h5 className="font-bold text-neutral-200 text-xs uppercase tracking-wider mb-4">Manage Content</h5>
+            <div className="pt-4 border-t border-gray-200 dark:border-neutral-800">
+                <h5 className="font-bold text-neutral-900 dark:text-neutral-200 text-xs uppercase tracking-wider mb-4">Manage Content</h5>
                 <Link
                     href="/admin/links"
-                    className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-neutral-800 border border-neutral-700 text-neutral-200 rounded-xl font-bold hover:bg-neutral-700 transition-all active:scale-[0.98]"
+                    className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 text-neutral-900 dark:text-neutral-200 rounded-xl font-bold hover:bg-gray-200 dark:hover:bg-neutral-700 transition-all active:scale-[0.98]"
                 >
                     Edit Links
                     <ExternalLink size={16} />

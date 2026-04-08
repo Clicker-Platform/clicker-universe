@@ -39,12 +39,12 @@ export const LinkSelector = ({ editor, isOpen, onClose }: LinkSelectorProps) => 
     if (!isOpen) return null;
 
     return (
-        <div className="absolute top-12 left-0 z-50 bg-neutral-900 rounded-xl shadow-2xl border border-neutral-800 p-2 flex items-center gap-2 min-w-[320px] animate-in fade-in slide-in-from-top-2 duration-300 backdrop-blur-xl">
-            <Link2 size={16} className="text-neutral-500 ml-1" />
+        <div className="absolute top-12 left-0 z-50 bg-white dark:bg-neutral-900 rounded-xl shadow-2xl border border-gray-200 dark:border-neutral-800 p-2 flex items-center gap-2 min-w-[320px] animate-in fade-in slide-in-from-top-2 duration-300 backdrop-blur-xl">
+            <Link2 size={16} className="text-neutral-400 dark:text-neutral-500 ml-1" />
             <input
                 ref={inputRef}
                 type="text"
-                className="flex-1 bg-transparent border-none outline-none text-sm text-neutral-200 placeholder:text-neutral-600 px-1"
+                className="flex-1 bg-transparent border-none outline-none text-sm text-neutral-900 dark:text-neutral-200 placeholder:text-neutral-400 dark:placeholder:text-neutral-600 px-1"
                 placeholder="Paste URL..."
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
@@ -63,11 +63,11 @@ export const LinkSelector = ({ editor, isOpen, onClose }: LinkSelectorProps) => 
                     <Trash2 size={14} />
                 </button>
             )}
-            <div className="w-px h-6 bg-neutral-800 mx-1" />
+            <div className="w-px h-6 bg-gray-200 dark:bg-neutral-800 mx-1" />
             <button
                 type="button"
                 onClick={onClose}
-                className="p-1.5 text-neutral-500 hover:text-neutral-200 hover:bg-neutral-800 rounded-lg transition-all"
+                className="p-1.5 text-neutral-400 dark:text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-lg transition-all"
             >
                 <X size={16} />
             </button>

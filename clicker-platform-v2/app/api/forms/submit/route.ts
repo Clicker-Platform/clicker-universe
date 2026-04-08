@@ -45,7 +45,7 @@ export async function POST(request: Request) {
         // Sales Pipeline Integration (modular — fails silently if not configured)
         try {
             const { handleNewSubmission } = await import('@/lib/modules/sales-pipeline/server-integration');
-            await handleNewSubmission(formId, data);
+            await handleNewSubmission(siteId, formId, data);
         } catch {
             // Module not installed or not configured — ignore
         }

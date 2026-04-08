@@ -104,6 +104,20 @@ const DEFAULT_SERVICE_CONFIG: Omit<ServiceConfig, 'outletId'> = {
 
 // ─── Service Records ──────────────────────────────────────────────────────────
 
+export async function getServiceRecordsByVehiclePlate(
+    siteId: string,
+    plate: string
+): Promise<ServiceRecord[]> {
+    const normalized = normalizePlate(plate);
+    const q = query(
+        collection(db, 'sites', siteId, SR_RECORDS),
+        where('vehiclePlate', '==', normalized),
+        orderBy('createdAt', 'desc')
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map(d => ({ id: d.id, ...d.data() } as ServiceRecord));
+}
+
 export async function getServiceRecords(
     siteId: string,
     filters?: ServiceRecordFilters,
@@ -191,6 +205,28 @@ export async function updateServiceRecord(
         ...updates,
         updatedAt: serverTimestamp(),
     });
+
+    // Award loyalty points when payment transitions to PAID for the first time
+    const becomingPaid = updates.paymentStatus === 'PAID' && existing.paymentStatus !== 'PAID';
+    if (becomingPaid && existing.memberId && !existing.loyaltyPointsAwarded) {
+        const amountPaid = updates.amountPaid ?? existing.amountPaid ?? 0;
+        try {
+            const { isModuleEnabled } = await import('@/lib/modules/registry');
+            if (await isModuleEnabled('membership')) {
+                const { awardPointsWithSpend, getMembershipSettings } = await import('@/lib/modules/membership/api');
+                const settings = await getMembershipSettings(siteId);
+                if (settings.enableLoyalty && settings.earningRatio > 0) {
+                    const points = Math.floor(amountPaid * settings.earningRatio);
+                    if (points > 0) {
+                        await awardPointsWithSpend(siteId, existing.memberId, points, amountPaid, 'SERVICE_RECORDS', id, existing.serviceTypeName);
+                        await updateDoc(doc(db, 'sites', siteId, SR_RECORDS, id), { loyaltyPointsAwarded: points });
+                    }
+                }
+            }
+        } catch (err) {
+            console.error('[ServiceRecords] Loyalty points award failed:', err);
+        }
+    }
 }
 
 export async function submitForApproval(siteId: string, id: string): Promise<void> {
@@ -198,9 +234,6 @@ export async function submitForApproval(siteId: string, id: string): Promise<voi
     if (!record) throw new Error('Service record not found');
     if (record.status !== 'IN_PROGRESS') {
         throw new Error('Only IN_PROGRESS records can be submitted for approval');
-    }
-    if (record.paymentStatus !== 'PAID') {
-        throw new Error('Payment must be PAID before submitting for approval');
     }
     await updateDoc(doc(db, 'sites', siteId, SR_RECORDS, id), {
         status: 'PENDING_APPROVAL',
@@ -380,48 +413,39 @@ export async function approveRecord(
 
     await batch.commit();
 
-    // Step 5 — Award loyalty points (non-blocking; failure does NOT roll back COMPLETED status)
+
+    // Step 6 — Deduct inventory stock (non-blocking)
     try {
         const { isModuleEnabled } = await import('@/lib/modules/registry');
-        const membershipEnabled = await isModuleEnabled('membership');
-        if (membershipEnabled && record2.memberId) {
-            const { awardPointsWithSpend, getMembershipSettings } = await import('@/lib/modules/membership/api');
-            const settings = await getMembershipSettings(siteId);
-            if (settings.enableLoyalty && settings.earningRatio > 0) {
-                const points = Math.floor((record2.totalAmount || 0) * settings.earningRatio);
-                if (points > 0) {
-                    await awardPointsWithSpend(
+        const inventoryOn = await isModuleEnabled('inventory');
+
+        if (inventoryOn) {
+            const { updateStock } = await import('@/lib/modules/inventory/api');
+
+            // Path A: new multi-item consumedItems array
+            if (record2.consumedItems && record2.consumedItems.length > 0 && !record2.inventoryDeducted) {
+                for (const item of record2.consumedItems) {
+                    await updateStock(
                         siteId,
-                        record2.memberId,
-                        points,
-                        record2.totalAmount,
-                        'SERVICE_RECORDS',
+                        item.inventoryItemId,
+                        -Math.abs(item.quantity),
+                        'sale',
                         recordId,
-                        record2.serviceTypeName
+                        `Consumed for ${record2.serviceTypeName}`
                     );
-                    // Update record with points awarded
-                    await updateDoc(recordRef, { loyaltyPointsAwarded: points });
                 }
+                await updateDoc(recordRef, { inventoryDeducted: true });
+                console.log(`[ServiceRecords] Deducted ${record2.consumedItems.length} item(s) via consumedItems`);
+
+            // Path B: legacy single inventoryItemId (deprecated — kept for old records)
+            } else if (record2.inventoryItemId && !record2.inventoryDeducted) {
+                await updateStock(siteId, record2.inventoryItemId, -1, 'sale', recordId, record2.serviceTypeName);
+                await updateDoc(recordRef, { inventoryDeducted: true });
+                console.log(`[ServiceRecords] Deducted 1 unit via legacy inventoryItemId ${record2.inventoryItemId}`);
             }
         }
     } catch (err) {
-        console.error('[ServiceRecords] Loyalty points award failed (not rolling back COMPLETED):', err);
-    }
-
-    // Step 6 — Deduct inventory stock (non-blocking)
-    if (record2.inventoryItemId && !record2.inventoryDeducted) {
-        try {
-            const { isModuleEnabled } = await import('@/lib/modules/registry');
-            const inventoryOn = await isModuleEnabled('inventory');
-            if (inventoryOn) {
-                const { updateStock } = await import('@/lib/modules/inventory/api');
-                await updateStock(siteId, record2.inventoryItemId, -1, 'sale', recordId, record2.serviceTypeName);
-                await updateDoc(recordRef, { inventoryDeducted: true });
-                console.log(`[ServiceRecords] Deducted 1 unit of inventory item ${record2.inventoryItemId}`);
-            }
-        } catch (err) {
-            console.error('[ServiceRecords] Inventory deduction failed (not rolling back COMPLETED):', err);
-        }
+        console.error('[ServiceRecords] Inventory deduction failed (not rolling back COMPLETED):', err);
     }
 
     // Step 7 — Auto-complete linked reservation booking (non-blocking)
@@ -548,10 +572,8 @@ export async function createVehicle(
         updatedAt: serverTimestamp(),
     };
     // Only include optional fields if they are defined — Firestore rejects undefined values
-    if (data.make !== undefined) payload.make = data.make;
-    if (data.model !== undefined) payload.model = data.model;
+    if (data.carCatalogId !== undefined) payload.carCatalogId = data.carCatalogId;
     if (data.color !== undefined) payload.color = data.color;
-    if (data.type !== undefined) payload.type = data.type;
     if (data.memberId !== undefined) payload.memberId = data.memberId;
     if (data.memberName !== undefined) payload.memberName = data.memberName;
     const ref = await addDoc(collection(db, 'sites', siteId, SR_VEHICLES), payload);

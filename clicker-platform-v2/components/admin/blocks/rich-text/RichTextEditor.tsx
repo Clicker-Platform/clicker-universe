@@ -44,7 +44,7 @@ export const RichTextEditor = ({ value, onChange, placeholder = 'Write something
             attributes: {
                 // Tailwind Typography Configuration
                 // usage of CSS variables for theme compatibility
-                class: 'prose prose-invert max-w-none focus:outline-none min-h-[150px] px-4 py-4 prose-headings:font-heading prose-headings:text-neutral-100 prose-p:text-neutral-200 prose-p:font-body prose-strong:text-neutral-100 prose-ul:text-neutral-300 prose-ol:text-neutral-300 prose-quote:text-neutral-300 prose-quote:border-l-blue-500 prose-a:text-blue-400'
+                class: 'prose dark:prose-invert max-w-none focus:outline-none min-h-[150px] px-4 py-4 prose-headings:font-heading dark:prose-headings:text-neutral-100 prose-p:text-neutral-700 dark:prose-p:text-neutral-200 prose-p:font-body prose-strong:text-neutral-900 dark:prose-strong:text-neutral-100 prose-ul:text-neutral-700 dark:prose-ul:text-neutral-300 prose-ol:text-neutral-700 dark:prose-ol:text-neutral-300 prose-quote:text-neutral-600 dark:prose-quote:text-neutral-300 prose-quote:border-l-blue-500 prose-a:text-blue-400'
             }
         },
         immediatelyRender: false, // Fix for SSR hydration mismatch
@@ -67,7 +67,7 @@ export const RichTextEditor = ({ value, onChange, placeholder = 'Write something
 
     return (
         <div
-            className="bg-neutral-900 rounded-2xl border border-neutral-800 overflow-hidden focus-within:border-blue-500/50 transition-all shadow-lg"
+            className="bg-gray-50 dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 overflow-hidden focus-within:border-blue-500/50 transition-all shadow-lg"
             style={{
                 // Fallback variables for Admin Context where TemplateProvider is missing
                 ['--theme-foreground' as any]: '#e5e5e5', // neutral-200

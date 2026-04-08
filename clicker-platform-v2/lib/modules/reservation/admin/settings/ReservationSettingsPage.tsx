@@ -4,19 +4,39 @@ import { useState, useEffect } from 'react';
 import { Settings } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
 import { getReservationSettings, updateReservationSettings } from '@/lib/modules/reservation/api';
+import { isModuleEnabled } from '@/lib/modules/registry';
 import type { ReservationSettings, PricingDisplay } from '@/lib/modules/reservation/types';
 
 export default function ReservationSettingsPage() {
     const { siteId } = useSite();
-    const [settings, setSettings] = useState<ReservationSettings>({ allowStaffSelection: false, staffLabel: 'Staff', pricingDisplay: 'fixed', bookingTitle: '' });
+    const [settings, setSettings] = useState<ReservationSettings>({
+        allowStaffSelection: false,
+        staffLabel: 'Staff',
+        pricingDisplay: 'fixed',
+        bookingTitle: '',
+        formConfig: {
+            requireAsset: false,
+            assetLabel: 'License Plate',
+            assetPlaceholder: 'e.g. B 1234 CD',
+            requireAssetModel: false,
+            assetModelLabel: 'Vehicle Make & Model',
+        },
+    });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [serviceRecordsEnabled, setServiceRecordsEnabled] = useState(false);
     const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
     useEffect(() => {
         if (!siteId) return;
-        getReservationSettings(siteId)
-            .then(s => setSettings(s))
+        Promise.all([
+            getReservationSettings(siteId),
+            isModuleEnabled('service_records'),
+        ])
+            .then(([s, srEnabled]) => {
+                setSettings(s);
+                setServiceRecordsEnabled(srEnabled);
+            })
             .catch(console.error)
             .finally(() => setLoading(false));
     }, [siteId]);
@@ -35,6 +55,7 @@ export default function ReservationSettingsPage() {
                 staffLabel: settings.staffLabel || 'Staff',
                 pricingDisplay: settings.pricingDisplay || 'fixed',
                 bookingTitle: settings.bookingTitle || '',
+                formConfig: settings.formConfig,
             });
             showToast('success', 'Settings saved');
         } catch (err) {
@@ -182,6 +203,96 @@ export default function ReservationSettingsPage() {
                         ))}
                     </div>
                 </div>
+
+                {/* Booking Form Fields — only shown when service_records module is enabled */}
+                {serviceRecordsEnabled && <div className="p-5 space-y-4">
+                    <div>
+                        <p className="text-sm font-medium text-gray-800 dark:text-neutral-200">Booking Form Fields</p>
+                        <p className="text-xs text-gray-500 dark:text-neutral-500 mt-0.5">
+                            Collect additional information from customers during booking (e.g. license plate for auto services).
+                        </p>
+                    </div>
+
+                    {/* Require Asset Toggle */}
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-sm text-gray-700 dark:text-neutral-300">
+                                {settings.formConfig?.assetLabel || 'Asset'} field
+                            </p>
+                            <p className="text-xs text-gray-400 dark:text-neutral-500 mt-0.5">Ask customers for a specific identifier (e.g. license plate).</p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setSettings(s => ({ ...s, formConfig: { ...s.formConfig!, requireAsset: !s.formConfig?.requireAsset } }))}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors flex-shrink-0 ${
+                                settings.formConfig?.requireAsset ? 'bg-green-500' : 'bg-gray-200 dark:bg-neutral-700'
+                            }`}
+                        >
+                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                                settings.formConfig?.requireAsset ? 'translate-x-6' : 'translate-x-1'
+                            }`} />
+                        </button>
+                    </div>
+
+                    {/* Asset Label & Placeholder — shown when requireAsset is on */}
+                    {settings.formConfig?.requireAsset && (
+                        <div className="space-y-3 pl-1 border-l-2 border-gray-100 dark:border-neutral-800 ml-1">
+                            <div>
+                                <label className="text-xs font-medium text-gray-600 dark:text-neutral-400 block mb-1">Field label</label>
+                                <input
+                                    type="text"
+                                    value={settings.formConfig?.assetLabel ?? ''}
+                                    onChange={e => setSettings(s => ({ ...s, formConfig: { ...s.formConfig!, assetLabel: e.target.value } }))}
+                                    placeholder="License Plate"
+                                    className="w-full max-w-xs rounded-xl border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm text-gray-900 dark:text-neutral-200 placeholder-gray-400 dark:placeholder-neutral-600"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-xs font-medium text-gray-600 dark:text-neutral-400 block mb-1">Placeholder text</label>
+                                <input
+                                    type="text"
+                                    value={settings.formConfig?.assetPlaceholder ?? ''}
+                                    onChange={e => setSettings(s => ({ ...s, formConfig: { ...s.formConfig!, assetPlaceholder: e.target.value } }))}
+                                    placeholder="e.g. B 1234 CD"
+                                    className="w-full max-w-xs rounded-xl border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm text-gray-900 dark:text-neutral-200 placeholder-gray-400 dark:placeholder-neutral-600"
+                                />
+                            </div>
+
+                            {/* Require Asset Model Toggle */}
+                            <div className="flex items-center justify-between pt-1">
+                                <div>
+                                    <p className="text-sm text-gray-700 dark:text-neutral-300">Also ask for asset model?</p>
+                                    <p className="text-xs text-gray-400 dark:text-neutral-500 mt-0.5">E.g. ask for vehicle make &amp; model alongside the plate.</p>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setSettings(s => ({ ...s, formConfig: { ...s.formConfig!, requireAssetModel: !s.formConfig?.requireAssetModel } }))}
+                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors flex-shrink-0 ${
+                                        settings.formConfig?.requireAssetModel ? 'bg-green-500' : 'bg-gray-200 dark:bg-neutral-700'
+                                    }`}
+                                >
+                                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                                        settings.formConfig?.requireAssetModel ? 'translate-x-6' : 'translate-x-1'
+                                    }`} />
+                                </button>
+                            </div>
+
+                            {/* Asset Model Label — shown when requireAssetModel is on */}
+                            {settings.formConfig?.requireAssetModel && (
+                                <div>
+                                    <label className="text-xs font-medium text-gray-600 dark:text-neutral-400 block mb-1">Model field label</label>
+                                    <input
+                                        type="text"
+                                        value={settings.formConfig?.assetModelLabel ?? ''}
+                                        onChange={e => setSettings(s => ({ ...s, formConfig: { ...s.formConfig!, assetModelLabel: e.target.value } }))}
+                                        placeholder="Vehicle Make & Model"
+                                        className="w-full max-w-xs rounded-xl border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm text-gray-900 dark:text-neutral-200 placeholder-gray-400 dark:placeholder-neutral-600"
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>}
             </div>
 
             <div className="flex justify-end">

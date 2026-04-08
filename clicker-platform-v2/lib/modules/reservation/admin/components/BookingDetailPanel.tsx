@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Booking, ReservationSettings } from '@/lib/modules/reservation/types';
 import { User, Calendar, Clock, X, CheckCircle, ClipboardList, ExternalLink, Car, Loader2 } from 'lucide-react';
-import type { Vehicle } from '@/lib/modules/service-records/types';
+import type { Vehicle, CarCatalogEntry } from '@/lib/modules/service-records/types';
 import { StatusBadge, getStatusLabel } from './StatusBadge';
 import { useSite } from '@/lib/site-context'; // New import
 
@@ -41,6 +41,9 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
     const [plateInput, setPlateInput] = useState('');
     const [creatingSR, setCreatingSR] = useState(false);
     const [vehicleLookup, setVehicleLookup] = useState<{ status: 'idle' | 'loading' | 'found' | 'not_found'; vehicle?: Vehicle }>({ status: 'idle' });
+    const [carCatalog, setCarCatalog] = useState<CarCatalogEntry[]>([]);
+    const [selectedCatalogId, setSelectedCatalogId] = useState('');
+    const [newVehicleColor, setNewVehicleColor] = useState('');
     const plateDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // Cancel Dialog State
@@ -71,24 +74,46 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
 
     const handleStartServiceRecord = async () => {
         if (!booking || !siteId) return;
+        // If new vehicle, require a catalog selection
+        if (vehicleLookup.status === 'not_found' && !selectedCatalogId) {
+            alert('Please select the car type before creating the record.');
+            return;
+        }
         setCreatingSR(true);
         try {
-            const { createServiceRecord } = await import('@/lib/modules/service-records/api');
+            const { createServiceRecord, createVehicle } = await import('@/lib/modules/service-records/api');
             const { updateBookingDetails } = await import('@/lib/modules/reservation/api');
             const { getServiceCatalogItem } = await import('@/lib/core/serviceCatalog/api');
 
-            const foundVehicle = vehicleLookup.status === 'found' ? vehicleLookup.vehicle : undefined;
             const normalizedPlate = plateInput.toUpperCase().replace(/\s/g, '');
+            let vehicleId: string;
+            let memberId: string | undefined;
+            let memberName: string | undefined;
+
+            if (vehicleLookup.status === 'found' && vehicleLookup.vehicle) {
+                vehicleId = vehicleLookup.vehicle.id;
+                memberId = vehicleLookup.vehicle.memberId;
+                memberName = vehicleLookup.vehicle.memberName;
+            } else {
+                // Register the new vehicle with the selected catalog entry
+                vehicleId = await createVehicle(siteId, {
+                    plateNumber: normalizedPlate,
+                    carCatalogId: selectedCatalogId || undefined,
+                    color: newVehicleColor || undefined,
+                    memberName: booking.customerName || undefined,
+                });
+                memberName = booking.customerName;
+            }
 
             // Load the catalog item so we can snapshot warranty config at SR creation time
             const catalogItem = await getServiceCatalogItem(siteId, booking.serviceId);
             const srConfig = catalogItem?.serviceRecordsConfig;
 
             const srId = await createServiceRecord(siteId, {
-                vehicleId: foundVehicle?.id ?? normalizedPlate,
+                vehicleId,
                 vehiclePlate: normalizedPlate,
-                ...(foundVehicle?.memberId ? { memberId: foundVehicle.memberId } : {}),
-                memberName: foundVehicle?.memberName || booking.customerName,
+                ...(memberId ? { memberId } : {}),
+                memberName: memberName || booking.customerName,
                 memberPhone: booking.customerPhone || '',
                 ...(booking.customerEmail ? { memberEmail: booking.customerEmail } : {}),
                 serviceTypeId: booking.serviceId,
@@ -107,7 +132,6 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
             await updateBookingDetails(siteId, booking.id, { serviceRecordId: srId });
 
             setShowPlateModal(false);
-            // Navigate to the service record detail page
             window.location.href = `/admin/service-records/detail?id=${srId}`;
         } catch (e) {
             console.error('Failed to create service record', e);
@@ -452,6 +476,23 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
                                     </div>
                                 </div>
                             )}
+
+                            {/* Vehicle / Asset Info — only shown when the booking has assetId */}
+                            {(booking as any).assetId && (
+                                <div>
+                                    <label className="text-xs font-bold text-gray-400 dark:text-neutral-500 uppercase tracking-wider block mb-3">Vehicle Info</label>
+                                    <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-neutral-800/50 rounded-xl border border-gray-100 dark:border-neutral-800">
+                                        <Car size={18} className="text-brand-dark/60 flex-shrink-0" />
+                                        <div>
+                                            <p className="font-bold text-gray-900 dark:text-neutral-100 font-mono tracking-wider">{(booking as any).assetId}</p>
+                                            {(booking as any).assetModel && (
+                                                <p className="text-sm text-gray-500 dark:text-neutral-500">{(booking as any).assetModel}</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
                             <div>
                                 <label className="text-xs font-bold text-gray-400 dark:text-neutral-500 uppercase tracking-wider block mb-3">Additional Notes</label>
                                 <div className="p-4 bg-yellow-50 rounded-xl border border-yellow-100 text-yellow-800 text-sm">
@@ -527,7 +568,19 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
                                         </div>
                                     ) : srEnabled ? (
                                         <ActionButton
-                                            onClick={() => setShowPlateModal(true)}
+                                            onClick={async () => {
+                                                if ((booking as any).assetId) {
+                                                    setPlateInput((booking as any).assetId);
+                                                }
+                                                setSelectedCatalogId('');
+                                                setNewVehicleColor('');
+                                                try {
+                                                    const { getCarCatalog } = await import('@/lib/modules/service-records/api');
+                                                    const catalog = await getCarCatalog(siteId);
+                                                    setCarCatalog(catalog);
+                                                } catch { /* non-blocking */ }
+                                                setShowPlateModal(true);
+                                            }}
                                             disabled={updating}
                                             label="Start Service Record"
                                             icon={<ClipboardList size={18} />}
@@ -561,7 +614,7 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
                     <div className="bg-white dark:bg-neutral-900 rounded-2xl w-full max-w-sm shadow-2xl p-6 animate-in fade-in zoom-in-95 duration-200">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-lg font-bold text-brand-dark">Start Service Record</h3>
-                            <button onClick={() => { setShowPlateModal(false); setPlateInput(''); setVehicleLookup({ status: 'idle' }); }} className="p-2 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-full">
+                            <button onClick={() => { setShowPlateModal(false); setPlateInput(''); setVehicleLookup({ status: 'idle' }); setSelectedCatalogId(''); setNewVehicleColor(''); }} className="p-2 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-full">
                                 <X size={18} />
                             </button>
                         </div>
@@ -588,25 +641,45 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
                                 <div className="mt-2 flex items-center gap-2 px-3 py-2 rounded-xl bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 text-xs text-green-800 dark:text-green-300">
                                     <Car size={13} className="flex-shrink-0" />
                                     <span className="font-semibold">Vehicle found</span>
-                                    {(vehicleLookup.vehicle.make || vehicleLookup.vehicle.model) && (
-                                        <span className="text-green-600 dark:text-green-400">
-                                            · {[vehicleLookup.vehicle.make, vehicleLookup.vehicle.model].filter(Boolean).join(' ')}
-                                        </span>
-                                    )}
                                     {vehicleLookup.vehicle.memberName && (
                                         <span className="text-green-600 dark:text-green-400 ml-auto">· {vehicleLookup.vehicle.memberName}</span>
                                     )}
                                 </div>
                             )}
                             {vehicleLookup.status === 'not_found' && plateInput.trim().length >= 4 && (
-                                <div className="mt-2 flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gray-50 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 text-xs text-gray-500">
-                                    <Car size={13} className="flex-shrink-0" /> New vehicle — will be registered on save
+                                <div className="mt-3 space-y-3 p-3 rounded-xl bg-gray-50 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700">
+                                    <p className="text-xs font-medium text-gray-600 dark:text-neutral-400">New vehicle — select car type to register</p>
+                                    <div>
+                                        <label className="text-xs text-gray-500 dark:text-neutral-500 block mb-1">Car Type <span className="text-red-500">*</span></label>
+                                        <select
+                                            value={selectedCatalogId}
+                                            onChange={e => setSelectedCatalogId(e.target.value)}
+                                            className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 dark:text-neutral-200 focus:outline-none focus:border-brand-dark px-3 py-2 text-sm"
+                                        >
+                                            <option value="">— Select car type —</option>
+                                            {carCatalog.map(car => (
+                                                <option key={car.id} value={car.id}>
+                                                    {car.make} {car.model} ({car.type})
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs text-gray-500 dark:text-neutral-500 block mb-1">Color (optional)</label>
+                                        <input
+                                            type="text"
+                                            value={newVehicleColor}
+                                            onChange={e => setNewVehicleColor(e.target.value)}
+                                            placeholder="e.g. Black, White"
+                                            className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 dark:text-neutral-200 focus:outline-none focus:border-brand-dark px-3 py-2 text-sm"
+                                        />
+                                    </div>
                                 </div>
                             )}
                         </div>
                         <div className="flex gap-3">
                             <button
-                                onClick={() => { setShowPlateModal(false); setPlateInput(''); setVehicleLookup({ status: 'idle' }); }}
+                                onClick={() => { setShowPlateModal(false); setPlateInput(''); setVehicleLookup({ status: 'idle' }); setSelectedCatalogId(''); setNewVehicleColor(''); }}
                                 className="flex-1 py-2.5 rounded-xl font-bold bg-gray-100 dark:bg-neutral-800 text-gray-600 dark:text-neutral-400 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors"
                             >
                                 Cancel

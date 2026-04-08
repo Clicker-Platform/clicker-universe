@@ -11,7 +11,7 @@ import {
     getItemsSales,
     ReportSummary
 } from '@/lib/modules/byod_pos/api-reports';
-import { formatCurrency, calculateItemsSales, ItemSalesSummary } from '@/lib/modules/pos-reporting/calculator';
+import { formatCurrency, calculateItemsSales, ItemSalesSummary } from '@/lib/modules/byod_pos/reporting-utils';
 import { POSOrder, POSSettings } from '@/lib/modules/byod_pos/types';
 import { downloadAsCSV } from '@/lib/utils/export';
 import { getPOSSettings } from '@/lib/modules/byod_pos/api';

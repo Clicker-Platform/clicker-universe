@@ -220,14 +220,10 @@ function AdminLoginForm() {
       await performHandoff();
 
     } catch (err: any) {
-      console.error('Login Error:', err);
-      // Error handling logic...
-      let errorMessage = 'Unknown error occurred';
-      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
-        errorMessage = 'Invalid email or password';
-      } else if (err.code === 'auth/too-many-requests') {
-        errorMessage = 'Too many failed login attempts. Please try again later.';
-      } else if (err.message) {
+      let errorMessage = 'Invalid email or password.';
+      if (err.code === 'auth/too-many-requests') {
+        errorMessage = 'Too many failed attempts. Please try again later.';
+      } else if (err.code && err.code !== 'auth/invalid-credential' && err.code !== 'auth/user-not-found' && err.code !== 'auth/wrong-password') {
         errorMessage = err.message;
       }
       setError(`⚠️ Login Failed: ${errorMessage}`);

@@ -18,26 +18,26 @@ export const MapForm = ({ data, onChange }: MapFormProps) => {
     return (
         <div className="space-y-4">
             <div>
-                <label className="block text-xs font-medium text-neutral-500 mb-2">Address</label>
+                <label className="block text-xs font-medium text-neutral-400 dark:text-neutral-500 mb-2">Address</label>
                 <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-neutral-500">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-neutral-400 dark:text-neutral-500">
                         <MapPin size={18} />
                     </div>
                     <input
                         type="text"
                         value={safeData.address || ''}
                         onChange={handleChange}
-                        className="w-full pl-11 pr-4 py-2 bg-neutral-900 border border-neutral-800 rounded-xl text-sm font-bold text-neutral-200 placeholder-neutral-600 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none"
+                        className="w-full pl-11 pr-4 py-2 bg-gray-50 dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl text-sm font-bold text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-600 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none"
                         placeholder="e.g. 1600 Amphitheatre Parkway, Mountain View, CA"
                     />
                 </div>
-                <p className="text-xs text-neutral-500 mt-2 font-medium">
+                <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-2 font-medium">
                     Enter the full address to display on the map.
                 </p>
             </div>
 
             {safeData.address && (
-                <div className="rounded-2xl overflow-hidden border border-neutral-700 h-[220px] bg-neutral-900 mt-4 shadow-inner ring-1 ring-white/5">
+                <div className="rounded-2xl overflow-hidden border border-gray-300 dark:border-neutral-700 h-[220px] bg-gray-50 dark:bg-neutral-900 mt-4 shadow-inner ring-1 ring-black/5 dark:ring-white/5">
                     <iframe
                         width="100%"
                         height="100%"

@@ -9,8 +9,8 @@ import { useSite } from '@/lib/site-context';
 
 // ── Shared styles ────────────────────────────────────────────────────────
 
-const inputClass = "w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-sm text-neutral-200 placeholder-neutral-600 focus:border-blue-500/50 focus:outline-none transition-colors";
-const labelClass = "block text-xs font-medium text-neutral-500 mb-1";
+const inputClass = "w-full px-3 py-2 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-lg text-sm text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-600 focus:border-blue-500/50 focus:outline-none transition-colors";
+const labelClass = "block text-xs font-medium text-neutral-400 dark:text-neutral-500 mb-1";
 
 // ── Form List Item ───────────────────────────────────────────────────────
 
@@ -34,22 +34,22 @@ function FormListItem({ form, siteId, onEdit, onDelete }: { form: Form; siteId: 
     };
 
     return (
-        <div className="flex items-center gap-2 px-3 py-2 hover:bg-neutral-800/50 rounded-lg group transition-colors">
-            <div className="w-7 h-7 bg-neutral-800 rounded-md flex items-center justify-center text-neutral-400 flex-shrink-0">
+        <div className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 dark:hover:bg-neutral-800/50 rounded-lg group transition-colors">
+            <div className="w-7 h-7 bg-gray-100 dark:bg-neutral-800 rounded-md flex items-center justify-center text-neutral-500 dark:text-neutral-400 flex-shrink-0">
                 <FileText size={14} />
             </div>
 
             <div className="flex-1 min-w-0 cursor-pointer" onClick={() => onEdit(form)}>
-                <div className="text-sm font-medium text-neutral-200 truncate">{form.title || 'Untitled'}</div>
+                <div className="text-sm font-medium text-neutral-900 dark:text-neutral-200 truncate">{form.title || 'Untitled'}</div>
                 <div className="flex items-center gap-1.5 mt-0.5">
                     <span className={`px-1 py-0.5 rounded text-[9px] font-bold uppercase ${
                         form.isPublished
                             ? 'bg-green-500/20 text-green-400'
-                            : 'bg-neutral-700 text-neutral-500'
+                            : 'bg-gray-200 dark:bg-neutral-700 text-neutral-500'
                     }`}>
                         {form.isPublished ? 'Published' : 'Draft'}
                     </span>
-                    <span className="text-[10px] text-neutral-600">{form.fields?.length || 0} fields</span>
+                    <span className="text-[10px] text-neutral-400 dark:text-neutral-600">{form.fields?.length || 0} fields</span>
                 </div>
             </div>
 
@@ -71,10 +71,10 @@ function FormListItem({ form, siteId, onEdit, onDelete }: { form: Form; siteId: 
                 </div>
             ) : (
                 <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-                    <button onClick={() => onEdit(form)} className="p-1.5 text-neutral-500 hover:text-blue-400 hover:bg-neutral-700 rounded-md transition-colors">
+                    <button onClick={() => onEdit(form)} className="p-1.5 text-neutral-400 dark:text-neutral-500 hover:text-blue-400 hover:bg-gray-200 dark:hover:bg-neutral-700 rounded-md transition-colors">
                         <FileText size={13} />
                     </button>
-                    <button onClick={() => setConfirmDelete(true)} className="p-1.5 text-neutral-500 hover:text-red-400 hover:bg-neutral-700 rounded-md transition-colors">
+                    <button onClick={() => setConfirmDelete(true)} className="p-1.5 text-neutral-400 dark:text-neutral-500 hover:text-red-400 hover:bg-gray-200 dark:hover:bg-neutral-700 rounded-md transition-colors">
                         <Trash2 size={13} />
                     </button>
                 </div>
@@ -98,23 +98,23 @@ function FieldCard({ field, index, onChange, onRemove }: {
     const [collapsed, setCollapsed] = useState(false);
 
     return (
-        <div className="bg-neutral-800/50 rounded-lg border border-neutral-700/50 overflow-hidden">
+        <div className="bg-gray-100 dark:bg-neutral-800/50 rounded-lg border border-gray-200 dark:border-neutral-700/50 overflow-hidden">
             {/* Field header */}
             <div className="flex items-center gap-2 px-3 py-2">
-                <GripVertical size={14} className="text-neutral-600 flex-shrink-0" />
+                <GripVertical size={14} className="text-neutral-400 dark:text-neutral-600 flex-shrink-0" />
                 <button
                     type="button"
                     onClick={() => setCollapsed(!collapsed)}
                     className="flex-1 flex items-center gap-2 text-left min-w-0"
                 >
-                    <span className="text-xs font-bold text-neutral-400 uppercase">Field {index + 1}</span>
-                    <span className="text-xs text-neutral-500 truncate">{field.label}</span>
-                    <ChevronDown size={12} className={`text-neutral-600 transition-transform ml-auto flex-shrink-0 ${collapsed ? '-rotate-90' : ''}`} />
+                    <span className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase">Field {index + 1}</span>
+                    <span className="text-xs text-neutral-400 dark:text-neutral-500 truncate">{field.label}</span>
+                    <ChevronDown size={12} className={`text-neutral-400 dark:text-neutral-600 transition-transform ml-auto flex-shrink-0 ${collapsed ? '-rotate-90' : ''}`} />
                 </button>
                 <button
                     type="button"
                     onClick={onRemove}
-                    className="p-1 text-neutral-600 hover:text-red-400 transition-colors flex-shrink-0"
+                    className="p-1 text-neutral-400 dark:text-neutral-600 hover:text-red-400 transition-colors flex-shrink-0"
                 >
                     <Trash2 size={13} />
                 </button>
@@ -179,9 +179,9 @@ function FieldCard({ field, index, onChange, onRemove }: {
                             type="checkbox"
                             checked={field.required}
                             onChange={e => onChange({ required: e.target.checked })}
-                            className="rounded border-neutral-600 bg-neutral-800 text-blue-500 focus:ring-blue-500/30"
+                            className="rounded border-gray-300 dark:border-neutral-600 bg-gray-100 dark:bg-neutral-800 text-blue-500 focus:ring-blue-500/30"
                         />
-                        <span className="text-xs text-neutral-300">Required field</span>
+                        <span className="text-xs text-neutral-700 dark:text-neutral-300">Required field</span>
                     </label>
                 </div>
             )}
@@ -327,10 +327,10 @@ export function FormsPanel() {
         return (
             <div className="flex flex-col h-full">
                 {/* Toolbar */}
-                <div className="px-3 py-2 border-b border-neutral-800 flex items-center gap-2 flex-shrink-0">
+                <div className="px-3 py-2 border-b border-gray-200 dark:border-neutral-800 flex items-center gap-2 flex-shrink-0">
                     <button
                         onClick={() => { setView('list'); setEditingForm({}); setEditingId(null); }}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-neutral-800 text-neutral-300 border border-neutral-700 hover:bg-neutral-700 transition-colors"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-gray-300 dark:border-neutral-700 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors"
                     >
                         <ArrowLeft size={13} /> Back
                     </button>
@@ -350,7 +350,7 @@ export function FormsPanel() {
                     <div className="p-3 space-y-4">
                         {/* General Settings */}
                         <div className="space-y-3">
-                            <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-wider">General</h3>
+                            <h3 className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">General</h3>
                             <div>
                                 <label className={labelClass}>Form Title</label>
                                 <input
@@ -393,22 +393,22 @@ export function FormsPanel() {
                         </div>
 
                         {/* Divider */}
-                        <div className="border-t border-neutral-800" />
+                        <div className="border-t border-gray-200 dark:border-neutral-800" />
 
                         {/* Fields */}
                         <div className="space-y-3">
                             <div className="flex items-center justify-between">
-                                <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Fields</h3>
+                                <h3 className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Fields</h3>
                                 <button
                                     onClick={addField}
-                                    className="flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold text-neutral-300 bg-neutral-800 border border-neutral-700 rounded-md hover:bg-neutral-700 transition-colors"
+                                    className="flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold text-neutral-700 dark:text-neutral-300 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-md hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors"
                                 >
                                     <Plus size={11} /> Add Field
                                 </button>
                             </div>
 
                             {(editingForm.fields?.length || 0) === 0 ? (
-                                <div className="text-center py-8 text-neutral-600 text-xs">
+                                <div className="text-center py-8 text-neutral-400 dark:text-neutral-600 text-xs">
                                     No fields yet. Click "Add Field" to start building your form.
                                 </div>
                             ) : (
@@ -444,7 +444,7 @@ export function FormsPanel() {
                     <Plus size={13} /> Create Form
                 </button>
                 <div className="flex-1" />
-                <span className="text-[10px] text-neutral-600 font-medium">{forms.length} forms</span>
+                <span className="text-[10px] text-neutral-400 dark:text-neutral-600 font-medium">{forms.length} forms</span>
             </div>
 
             {/* Scrollable content */}
