@@ -184,7 +184,7 @@ export default function VehiclesPage() {
         : vehicles;
 
     return (
-        <div className="p-6 space-y-5">
+        <div className="space-y-5">
             {toast && (
                 <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl text-sm font-medium shadow-lg ${
                     toast.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
