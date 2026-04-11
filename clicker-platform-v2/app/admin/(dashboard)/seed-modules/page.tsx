@@ -115,17 +115,23 @@ export default function SeedModulesPage() {
             await setDoc(doc(db, 'modules', 'membership'), membershipModule);
 
             const salesPipelineModule: ModuleDefinition = {
-                id: 'sales-pipeline',
+                id: 'sales_pipeline',
                 displayName: 'Sales Pipeline',
-                description: 'Lead tracking and deal management',
+                description: 'CRM Kanban board for tracking leads through custom pipeline stages.',
                 icon: 'trophy',
                 version: '1.0.0',
                 enabled: true,
                 adminRoutes: [
-                    { path: '/admin/sales-pipeline', label: 'Pipeline', icon: 'trophy' }
+                    { path: '/admin/sales-pipeline/board', label: 'Pipeline Board', icon: 'trophy', componentKey: 'sales_pipeline:PipelinePage' },
+                    { path: '/admin/sales-pipeline/settings', label: 'Settings', icon: 'settings', componentKey: 'sales_pipeline:SettingsPage', permission: 'settings' }
+                ],
+                publicRoutes: [],
+                collections: [
+                    'modules/sales_pipeline/leads',
+                    'modules/sales_pipeline/pipeline_config'
                 ]
             };
-            await setDoc(doc(db, 'modules', 'sales-pipeline'), salesPipelineModule);
+            await setDoc(doc(db, 'modules', 'sales_pipeline'), salesPipelineModule);
             setStatus('Success: Modules seeded!');
         } catch (e: any) {
             console.error(e);

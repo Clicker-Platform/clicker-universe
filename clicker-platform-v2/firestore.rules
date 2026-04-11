@@ -196,11 +196,11 @@ service cloud.firestore {
 
       // LEADS (Sales Pipeline)
       match /leads/{leadId} {
-        allow read, write: if isValidUser(siteId) && isModuleEnabled(siteId, 'sales-pipeline') && hasRole(siteId, ['owner', 'staff']);
+        allow read, write: if isValidUser(siteId) && isModuleEnabled(siteId, 'sales_pipeline') && hasRole(siteId, ['owner', 'staff']);
       }
-      
-      // Sales Pipeline Config (Deep Match)
-      match /modules/sales_pipeline/{document=**} {
+
+      // Sales Pipeline Config (Deep Match) — API uses 'sales-pipeline' (dash) as MODULE_ID
+      match /modules/sales-pipeline/{document=**} {
          allow read: if isValidUser(siteId);
          allow write: if isValidUser(siteId) && hasRole(siteId, ['owner']);
       }
