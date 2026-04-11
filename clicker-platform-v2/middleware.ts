@@ -70,7 +70,8 @@ export async function middleware(request: NextRequest) {
     }
 
     // Check if subdomain
-    const isSubdomain = currentHost.endsWith(`.${baseDomain}`) && currentHost !== `www.${baseDomain}`;
+    // On Firebase default domains (.web.app), subdomains are not supported — always path-based.
+    const isSubdomain = !isFirebaseDefaultDomain && currentHost.endsWith(`.${baseDomain}`) && currentHost !== `www.${baseDomain}`;
 
     if (isSubdomain) {
         const subdomain = currentHost.replace(`.${baseDomain}`, '');

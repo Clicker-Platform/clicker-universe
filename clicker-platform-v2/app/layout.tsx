@@ -66,8 +66,9 @@ export default async function RootLayout({
     if (!isSubdomain) {
       const host = headersList.get('x-clicker-original-host') || headersList.get('x-forwarded-host') || headersList.get('host') || '';
       const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'clicker.id';
-      // Check if it's a subdomain of baseDomain (but not www or root)
-      if (host.endsWith(`.${baseDomain}`) && host !== baseDomain && host !== `www.${baseDomain}`) {
+      const isFirebaseDefaultDomain = baseDomain.includes('.web.app');
+      // On Firebase default domains, subdomains are not supported — always path-based
+      if (!isFirebaseDefaultDomain && host.endsWith(`.${baseDomain}`) && host !== baseDomain && host !== `www.${baseDomain}`) {
         isSubdomain = true;
       }
     }
