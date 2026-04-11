@@ -123,7 +123,7 @@ export default function MemberDetailsPage() {
     const parsedAmount = parseInt(pointsAmount) || 0;
 
     return (
-        <div className="p-6 max-w-5xl mx-auto">
+        <div className="max-w-5xl">
             <Link href={`${tenantSlug ? `/${tenantSlug}` : ''}/admin/membership/list`} className="inline-flex items-center text-gray-500 dark:text-neutral-500 hover:text-gray-800 dark:hover:text-neutral-200 mb-6 gap-2">
                 <ArrowLeft size={18} /> Back to List
             </Link>

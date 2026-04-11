@@ -459,6 +459,28 @@ export async function approveRecord(
             console.error('[ServiceRecords] Auto-complete booking failed (not rolling back COMPLETED):', err);
         }
     }
+
+    // Step 8 — Award loyalty points (non-blocking — failure must NOT roll back COMPLETED)
+    if (record2.memberId && !record2.loyaltyPointsAwarded) {
+        try {
+            const { isModuleEnabled } = await import('@/lib/modules/registry');
+            if (await isModuleEnabled('membership')) {
+                const { awardPointsWithSpend, getMembershipSettings } = await import('@/lib/modules/membership/api');
+                const settings = await getMembershipSettings(siteId);
+                if (settings.enableLoyalty && settings.earningRatio > 0) {
+                    const amountPaid = record2.amountPaid ?? record2.totalAmount ?? 0;
+                    const points = Math.floor(amountPaid * settings.earningRatio);
+                    if (points > 0) {
+                        await awardPointsWithSpend(siteId, record2.memberId, points, amountPaid, 'SERVICE_RECORDS', recordId, record2.serviceTypeName);
+                        await updateDoc(doc(db, 'sites', siteId, SR_RECORDS, recordId), { loyaltyPointsAwarded: points });
+                        console.log(`[ServiceRecords] Awarded ${points} loyalty points to member ${record2.memberId}`);
+                    }
+                }
+            }
+        } catch (err) {
+            console.error('[ServiceRecords] Loyalty points award failed (not rolling back COMPLETED):', err);
+        }
+    }
 }
 
 // ─── Manual Warranty Card Generation ──────────────────────────────────────────

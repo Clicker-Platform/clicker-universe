@@ -126,7 +126,7 @@ export default function MemberListPage() {
     const filteredMembers = members;
 
     return (
-        <div className="p-6">
+        <div>
             <div className="flex justify-between items-center mb-6">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-800 dark:text-neutral-200">Members</h1>

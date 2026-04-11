@@ -75,17 +75,15 @@ export default function SettingsPage() {
 
     if (loading) {
         return (
-            <div className="p-6">
-                <div className="animate-pulse space-y-4">
-                    <div className="h-8 bg-gray-200 dark:bg-neutral-700 rounded w-48" />
-                    <div className="h-40 bg-gray-200 dark:bg-neutral-700 rounded-2xl" />
-                </div>
+            <div className="animate-pulse space-y-4">
+                <div className="h-8 bg-gray-200 dark:bg-neutral-700 rounded w-48" />
+                <div className="h-40 bg-gray-200 dark:bg-neutral-700 rounded-2xl" />
             </div>
         );
     }
 
     return (
-        <div className="p-6 max-w-2xl space-y-6">
+        <div className="max-w-2xl space-y-6">
             {toast && (
                 <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl text-sm font-medium shadow-lg ${
                     toast.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'

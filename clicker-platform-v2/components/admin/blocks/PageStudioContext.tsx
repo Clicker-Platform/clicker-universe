@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo, ReactNode } from 'react';
+import { toast } from 'sonner';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, doc, getDoc, updateDoc, deleteDoc, setDoc, getDocs, serverTimestamp, query, where, writeBatch } from 'firebase/firestore';
 import { Page, PageBlock } from '@/data/mockData';
@@ -89,7 +90,6 @@ interface PageStudioContextType {
 
     // Saving state
     saving: boolean;
-    error: string | null;
 
     // Field setters
     setTitle: (v: string) => void;
@@ -164,7 +164,6 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
 
     // Saving
     const [saving, setSaving] = useState(false);
-    const [error, setError] = useState<string | null>(null);
 
     // Trash
     const [trashedPages, setTrashedPages] = useState<TrashedPageListItem[]>([]);
@@ -460,8 +459,6 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
 
     const loadPage = useCallback(async (pageId: string, settingsOverride?: any) => {
         if (!siteId) return;
-        setError(null);
-
         // ── CACHE HIT: instant restore ──
         const cached = pageCacheRef.current.get(pageId);
         if (cached) {
@@ -479,7 +476,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
         try {
             const docSnap = await getDoc(doc(db, 'sites', siteId, 'pages', pageId));
             if (!docSnap.exists()) {
-                setError('Page not found');
+                toast.error('Page not found');
                 setPageLoading(false);
                 return;
             }
@@ -494,7 +491,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
             cacheCurrentPage(pageId, newFormData, snapshot, {}, data.updatedAt);
         } catch (err) {
             console.error('Error loading page:', err);
-            setError('Failed to load page');
+            toast.error('Failed to load page');
         } finally {
             setPageLoading(false);
         }
@@ -509,7 +506,6 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
             setActivePageId(null);
             setSlugManuallyEdited(false);
             savedSnapshotRef.current = getSnapshot(newData);
-            setError(null);
 
             const url = new URL(window.location.href);
             url.searchParams.delete('pageId');
@@ -564,20 +560,19 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
         if (!siteId) return;
 
         setSaving(true);
-        setError(null);
 
         const trimmedTitle = formData.title.trim();
         const trimmedSlug = formData.slug.trim().toLowerCase();
 
         if (!trimmedTitle || !trimmedSlug) {
-            setError('Title and Slug are required');
+            toast.error('Title and Slug are required');
             setSaving(false);
             return;
         }
 
         const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
         if (!slugRegex.test(trimmedSlug)) {
-            setError('Invalid slug format. Use only lowercase letters, numbers, and hyphens (e.g., my-page-title). No spaces allowed.');
+            toast.error('Invalid slug format. Use only lowercase letters, numbers, and hyphens (e.g., my-page-title). No spaces allowed.');
             setSaving(false);
             return;
         }
@@ -589,7 +584,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
             const duplicateExists = querySnapshot.docs.some(d => d.id !== activePageId);
 
             if (duplicateExists) {
-                setError('This slug is already taken by another page. Please choose a different one.');
+                toast.error('This slug is already taken by another page. Please choose a different one.');
                 setSaving(false);
                 return;
             }
@@ -650,7 +645,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
             }
         } catch (err) {
             console.error('Error saving page:', err);
-            setError('Failed to save page. Please try again.');
+            toast.error('Failed to save page. Please try again.');
         } finally {
             setSaving(false);
         }
@@ -738,7 +733,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
             }
         } catch (err) {
             console.error('Error trashing page:', err);
-            setError('Failed to move page to trash');
+            toast.error('Failed to move page to trash');
         }
     }, [siteId, activePageId, formData, pages, loadPage, getSnapshot, _movePageToTrash, evictFromCache]);
 
@@ -769,7 +764,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
             setPages(prev => prev.filter(p => p.id !== pageId));
         } catch (err) {
             console.error('Error trashing page:', err);
-            setError('Failed to move page to trash');
+            toast.error('Failed to move page to trash');
         }
     }, [siteId, activePageId, pages, trashPage, _movePageToTrash, evictFromCache]);
 
@@ -829,7 +824,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
             return slug;
         } catch (err) {
             console.error('Error restoring page:', err);
-            setError('Failed to restore page');
+            toast.error('Failed to restore page');
             return '';
         }
     }, [siteId]);
@@ -853,7 +848,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
             setTrashedPages(prev => prev.filter(p => p.id !== pageId));
         } catch (err) {
             console.error('Error permanently deleting page:', err);
-            setError('Failed to permanently delete page');
+            toast.error('Failed to permanently delete page');
         }
     }, [siteId]);
 
@@ -870,7 +865,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
             setTrashedPages([]);
         } catch (err) {
             console.error('Error emptying trash:', err);
-            setError('Failed to empty trash');
+            toast.error('Failed to empty trash');
         }
     }, [siteId, trashedPages]);
 
@@ -887,7 +882,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
             setGlobalSettings((prev: any) => prev ? { ...prev, homepageSlug: formData.slug } : { homepageSlug: formData.slug });
         } catch (err) {
             console.error('Error setting homepage:', err);
-            setError('Failed to set homepage. Please try again.');
+            toast.error('Failed to set homepage. Please try again.');
         }
     }, [siteId, formData.slug, activePageId]);
 
@@ -902,7 +897,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
             setGlobalSettings((prev: any) => prev ? { ...prev, homepageSlug: 'home' } : { homepageSlug: 'home' });
         } catch (err) {
             console.error('Error unsetting homepage:', err);
-            setError('Failed to unset homepage. Please try again.');
+            toast.error('Failed to unset homepage. Please try again.');
         }
     }, [siteId]);
 
@@ -945,7 +940,6 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
             hydratedData,
             globalSettings,
             saving,
-            error,
             setTitle,
             setSlug,
             setBlocks,

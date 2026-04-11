@@ -93,7 +93,7 @@ export default function AgentSettingsPage() {
 
     if (loading) {
         return (
-            <div className="p-8 flex flex-col items-center justify-center">
+            <div className="flex flex-col items-center justify-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-orange mb-4"></div>
                 <p className="text-gray-500 dark:text-neutral-500">Loading agent settings... ({siteId})</p>
             </div>
@@ -109,7 +109,7 @@ export default function AgentSettingsPage() {
     }
 
     return (
-        <div className="space-y-6 max-w-4xl mx-auto pb-20">
+        <div className="space-y-6 max-w-4xl pb-20">
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>

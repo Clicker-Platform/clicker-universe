@@ -1,6 +1,6 @@
 'use client';
 
-import { Loader2, AlertCircle } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { PageStudioProvider, usePageStudio } from '@/components/admin/blocks/PageStudioContext';
 import { EditorProvider } from '@/components/admin/blocks/EditorContext';
 import { CanvasStudio } from '@/components/admin/blocks/CanvasStudio';
@@ -15,7 +15,6 @@ function PageStudioInner() {
         setBlocks,
         globalSettings,
         pagesLoading,
-        error,
         activePageId,
         pendingSwitch,
         confirmDiscard,
@@ -40,13 +39,6 @@ function PageStudioInner() {
     // On md+ the header is gone so we use h-screen.
     return (
         <div className="-m-4 md:-m-8 flex flex-col overflow-hidden h-[calc(100dvh-57px)] md:h-screen">
-            {error && (
-                <div className="mx-4 md:mx-8 mt-4 md:mt-8 mb-0 p-4 bg-red-50 text-red-700 rounded-xl flex items-center gap-2 border border-red-200">
-                    <AlertCircle size={20} />
-                    {error}
-                </div>
-            )}
-
             {/* Legacy HTML warning */}
             {activePageId && formData.content && formData.blocks.length === 0 && (
                 <div className="mx-4 md:mx-8 mt-4 md:mt-8 bg-amber-50 p-4 rounded-xl border border-amber-200">
