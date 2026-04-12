@@ -63,16 +63,16 @@ npx -y firebase-tools@latest use staging >/dev/null
 case "$TARGET" in
 
   all)
-    echo "→ Deploying: firestore indexes + rules + functions + hosting (all)"
+    echo "→ Deploying: firestore indexes + rules + functions + hosting (core, auth, backyard)"
     npx -y firebase-tools@latest deploy \
-      --only firestore:indexes,firestore:rules,functions,hosting \
+      --only firestore:indexes,firestore:rules,functions,hosting:core,hosting:auth,hosting:backyard \
       --force
     ;;
 
   hosting)
-    echo "→ Deploying: hosting (all targets: core, auth, backyard)"
+    echo "→ Deploying: hosting (core, auth, backyard)"
     npx -y firebase-tools@latest deploy \
-      --only hosting \
+      --only hosting:core,hosting:auth,hosting:backyard \
       --force
     ;;
 
