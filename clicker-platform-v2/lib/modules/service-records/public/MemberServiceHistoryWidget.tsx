@@ -14,11 +14,9 @@ interface Props {
 }
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-    DRAFT:            { label: 'Draft',           color: 'bg-gray-100 text-gray-500' },
-    IN_PROGRESS:      { label: 'In Progress',     color: 'bg-blue-100 text-blue-700' },
-    PENDING_APPROVAL: { label: 'Pending Approval',color: 'bg-yellow-100 text-yellow-700' },
-    COMPLETED:        { label: 'Completed',        color: 'bg-green-100 text-green-700' },
-    CANCELLED:        { label: 'Cancelled',        color: 'bg-red-100 text-red-500' },
+    ACTIVE:    { label: 'Active',    color: 'bg-blue-100 text-blue-700' },
+    COMPLETED: { label: 'Completed', color: 'bg-green-100 text-green-700' },
+    CANCELLED: { label: 'Cancelled', color: 'bg-red-100 text-red-500' },
 };
 
 export default function MemberServiceHistoryWidget({ siteId, memberPhone, memberId }: Props) {

@@ -16,6 +16,8 @@ import { useUser } from '@/lib/user-context';
 import { useAdminTheme } from '@/lib/use-admin-theme';
 import { InboxPanel } from '@/components/admin/inbox/InboxPanel';
 import { useInboxPanel } from '@/lib/inbox-panel-context';
+import { useIsMobile } from '@/hooks/useIsMobile';
+import { MobileModuleTabBar } from '@/components/admin/MobileModuleTabBar';
 
 interface NavItem {
     icon: any;
@@ -79,6 +81,7 @@ export function AdminSidebar() {
         localStorage.setItem('sidebar_collapsed', JSON.stringify(newValue));
     };
 
+    const isMobile = useIsMobile();
     const { permissions: userPermissions, isOwner, hasAccess } = useUser();
     const { isDark, toggle: toggleDark } = useAdminTheme();
     const [siteEnabledModules, setSiteEnabledModules] = useState<Record<string, boolean>>({});
@@ -245,8 +248,26 @@ export function AdminSidebar() {
         }, null as NavItem | null);
     }, [pathname, groupedNavItems]);
 
+    // The module group the user is currently navigating within (for mobile tab bar)
+    const activeModuleGroup = useMemo(() => {
+        if (!isMobile) return null;
+        // Core groups ("Workspace", "Site & Content") don't get a tab bar
+        const coreGroupTitles = ['Workspace', 'Site & Content'];
+        return groupedNavItems.find(
+            g => !coreGroupTitles.includes(g.title) && g.items.some(i => i.href === activeRoute?.href)
+        ) ?? null;
+    }, [isMobile, groupedNavItems, activeRoute]);
+
     return (
         <>
+            {/* Mobile module tab bar — shown when inside a module on mobile */}
+            {isMobile && activeModuleGroup && (
+                <MobileModuleTabBar
+                    items={activeModuleGroup.items}
+                    activeHref={activeRoute?.href ?? null}
+                />
+            )}
+
             {/* Mobile Header */}
             <div className="md:hidden bg-white dark:bg-neutral-900 border-b border-gray-200 dark:border-neutral-800 p-4 flex items-center justify-between sticky top-0 z-30">
                 <div className="flex items-center gap-3">

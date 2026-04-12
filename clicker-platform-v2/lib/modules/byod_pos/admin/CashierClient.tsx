@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
-import { POSOrder } from '@/lib/modules/byod_pos/types';
+import { POSOrder, POSSettings } from '@/lib/modules/byod_pos/types';
 import { subscribeToRecentOrders, confirmPayment } from '@/lib/modules/byod_pos/api';
-import { ShoppingBag, CreditCard } from 'lucide-react';
+import { ShoppingBag } from 'lucide-react';
 import { toast } from 'sonner';
 import { BillCard } from './components/BillCard';
 import { PaymentConfirmationDialog } from './components/PaymentConfirmationDialog';
@@ -44,7 +44,7 @@ export default function CashierClient({ initialOrders = [] }: { initialOrders?: 
     });
 
     const { printReceipt } = useReceiptPrinter();
-    const [settings, setSettings] = useState<any>(null);
+    const [settings, setSettings] = useState<POSSettings | null>(null);
 
     useEffect(() => {
         if (!siteId) return;
@@ -52,6 +52,7 @@ export default function CashierClient({ initialOrders = [] }: { initialOrders?: 
     }, [siteId]);
 
     const confirmPaymentProcess = async (method: POSOrder['paymentMethod']) => {
+        if (isViewOnly) { toast.error('You do not have permission to confirm payments.'); return; }
         if (paymentConfig.orders.length === 0) return;
 
         try {
@@ -75,7 +76,7 @@ export default function CashierClient({ initialOrders = [] }: { initialOrders?: 
     const handlePostPaymentPrint = () => {
         if (postPaymentConfig.orders.length === 0) return;
         const finalOrder = createAggregatedOrder(postPaymentConfig.orders);
-        printReceipt(finalOrder, settings);
+        printReceipt(finalOrder, settings ?? undefined);
         setPostPaymentConfig({ isOpen: false, orders: [] });
     };
 
@@ -138,13 +139,10 @@ export default function CashierClient({ initialOrders = [] }: { initialOrders?: 
     }, [orders]);
 
     return (
-        <div className="max-w-7xl mx-auto">
+        <div>
             <div className="flex items-center gap-4 mb-8">
                 <div>
-                    <h1 className="text-3xl font-black text-brand-dark mb-2 uppercase tracking-tight flex items-center gap-3">
-                        <CreditCard size={32} />
-                        Cashier Station
-                    </h1>
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100 mb-1">Cashier station</h1>
                     <p className="text-gray-600 dark:text-neutral-400 font-medium">Bill management & payment processing</p>
                 </div>
             </div>

@@ -2,31 +2,20 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ChevronLeft, ExternalLink, AlertTriangle, CheckCircle, Loader2, Shield } from 'lucide-react';
+import { ChevronLeft, ExternalLink, CheckCircle, Loader2, Shield } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
 import { useUser } from '@/lib/user-context';
 import {
     subscribeToServiceRecord,
     getWarrantyCard,
-    approveRecord,
-    submitForApproval,
-    moveToInProgress,
     cancelRecord,
     voidWarrantyCard,
-    updateServiceRecord,
     generateWarrantyCardForRecord,
 } from '../api';
 import { RecordStatusBadge } from './components/RecordStatusBadge';
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
-import { PaymentStatusBadge } from './components/PaymentStatusBadge';
-import type { ServiceRecord, WarrantyCard, PaymentMethod, PaymentStatus } from '../types';
-
-const PAYMENT_METHODS: { value: PaymentMethod; label: string }[] = [
-    { value: 'CASH',     label: 'Cash' },
-    { value: 'TRANSFER', label: 'Bank Transfer' },
-    { value: 'CARD',     label: 'Debit/Credit Card' },
-    { value: 'QRIS',     label: 'QRIS' },
-];
+import BillModal from './components/BillModal';
+import type { ServiceRecord, WarrantyCard } from '../types';
 
 function formatDate(ts: any): string {
     if (!ts) return '—';
@@ -47,25 +36,12 @@ function RecordDetailContent() {
     const [actionLoading, setActionLoading] = useState(false);
     const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
-    // Cancel dialog
+    const [showBillModal, setShowBillModal] = useState(false);
     const [showCancelDialog, setShowCancelDialog] = useState(false);
     const [cancelReason, setCancelReason] = useState('');
-
-    // Approve dialog
-    const [showApproveDialog, setShowApproveDialog] = useState(false);
-
-    // Void warranty dialog
     const [showVoidDialog, setShowVoidDialog] = useState(false);
     const [voidConfirmText, setVoidConfirmText] = useState('');
-
-    // Track when approve was just triggered so warranty spinner can time out
-    const [justApproved, setJustApproved] = useState(false);
-
-    // Inline payment editing
-    const [editPayment, setEditPayment] = useState(false);
-    const [payTotalAmount, setPayTotalAmount] = useState(0);
-    const [payAmountPaid, setPayAmountPaid] = useState(0);
-    const [payMethod, setPayMethod] = useState<PaymentMethod | ''>('');
+    const [justCompleted, setJustCompleted] = useState(false);
 
     useEffect(() => {
         if (!siteId || !recordId) return;
@@ -88,52 +64,8 @@ function RecordDetailContent() {
         setTimeout(() => setToast(null), 4000);
     }
 
-    async function handleMoveToInProgress() {
-        if (!record) return;
-        setActionLoading(true);
-        try {
-            await moveToInProgress(siteId, record.id);
-            showToast('success', 'Moved to In Progress');
-        } catch (err: any) {
-            showToast('error', err.message || 'Action failed');
-        } finally {
-            setActionLoading(false);
-        }
-    }
-
-    async function handleSubmitForApproval() {
-        if (!record) return;
-        setActionLoading(true);
-        try {
-            await submitForApproval(siteId, record.id);
-            showToast('success', 'Submitted for approval');
-        } catch (err: any) {
-            showToast('error', err.message || 'Action failed');
-        } finally {
-            setActionLoading(false);
-        }
-    }
-
-    async function handleApprove() {
-        if (!record || !isOwner) return;
-        setActionLoading(true);
-        setShowApproveDialog(false);
-        setJustApproved(true);
-        // Clear justApproved after 15s in case warrantyCardId never arrives
-        setTimeout(() => setJustApproved(false), 15_000);
-        try {
-            await approveRecord(siteId, record.id, user?.email || 'owner');
-            showToast('success', 'Record approved and completed');
-        } catch (err: any) {
-            showToast('error', err.message || 'Approval failed');
-            setJustApproved(false);
-        } finally {
-            setActionLoading(false);
-        }
-    }
-
     async function handleCancel() {
-        if (!record || !isOwner || !cancelReason.trim()) return;
+        if (!record || !cancelReason.trim()) return;
         setActionLoading(true);
         setShowCancelDialog(false);
         try {
@@ -162,50 +94,19 @@ function RecordDetailContent() {
     }
 
     async function handleGenerateWarranty() {
-        if (!record || !isOwner) return;
+        if (!record) return;
         setActionLoading(true);
-        setJustApproved(true);
-        setTimeout(() => setJustApproved(false), 15_000);
+        setJustCompleted(true);
+        setTimeout(() => setJustCompleted(false), 15_000);
         try {
             await generateWarrantyCardForRecord(siteId, record.id);
-            showToast('success', 'Warranty card generated successfully');
+            showToast('success', 'Warranty card generated');
         } catch (err: any) {
             showToast('error', err.message || 'Failed to generate warranty card');
-            setJustApproved(false);
+            setJustCompleted(false);
         } finally {
             setActionLoading(false);
         }
-    }
-
-    async function handleSavePayment() {
-        if (!record) return;
-        setActionLoading(true);
-        try {
-            const payStatus: PaymentStatus =
-                payAmountPaid <= 0 ? 'UNPAID'
-                : payAmountPaid >= payTotalAmount ? 'PAID'
-                : 'PARTIAL';
-            await updateServiceRecord(siteId, record.id, {
-                totalAmount: payTotalAmount,
-                amountPaid: payAmountPaid,
-                paymentStatus: payStatus,
-                paymentMethod: payMethod || undefined,
-            });
-            setEditPayment(false);
-            showToast('success', 'Payment updated');
-        } catch (err: any) {
-            showToast('error', err.message || 'Failed to update payment');
-        } finally {
-            setActionLoading(false);
-        }
-    }
-
-    function openPaymentEdit() {
-        if (!record) return;
-        setPayTotalAmount(record.totalAmount || 0);
-        setPayAmountPaid(record.amountPaid || 0);
-        setPayMethod(record.paymentMethod || '');
-        setEditPayment(true);
     }
 
     if (loading) {
@@ -229,9 +130,6 @@ function RecordDetailContent() {
         );
     }
 
-    const isTerminal = record.status === 'COMPLETED' || record.status === 'CANCELLED';
-    const canEdit = !isTerminal;
-
     return (
         <div className="max-w-3xl space-y-5">
             {toast && (
@@ -253,87 +151,39 @@ function RecordDetailContent() {
                         <RecordStatusBadge status={record.status} />
                     </div>
                     <p className="text-xs text-gray-400 dark:text-neutral-500 mt-0.5">
-                        Created {formatDate(record.createdAt)} · Last updated {formatDate(record.updatedAt)}
+                        Created {formatDate(record.createdAt)} · {record.createdBy}
                     </p>
                 </div>
-                {canEdit && (
-                    <button
-                        onClick={() => router.push(`/admin/service-records/new?id=${record.id}`)}
-                        className="px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 text-sm font-medium text-gray-700 dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-neutral-800"
-                    >
-                        Edit
-                    </button>
-                )}
             </div>
 
-            {/* Pending approval highlight */}
-            {record.status === 'PENDING_APPROVAL' && (
-                <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-xl p-4 flex items-start gap-3">
-                    <AlertTriangle className="w-5 h-5 text-amber-500 dark:text-amber-400 flex-shrink-0 mt-0.5" />
-                    <div>
-                        <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">Awaiting Manager Approval</p>
-                        <p className="text-xs text-amber-600 dark:text-amber-400/80 mt-0.5">
-                            {record.hasWarranty
-                                ? 'Approving will complete this record and generate a warranty card for the customer.'
-                                : 'Approving will mark this record as completed.'}
-                        </p>
-                    </div>
-                </div>
-            )}
-
-            {/* Status Actions */}
-            {!isTerminal && (
-                <div className="bg-white dark:bg-neutral-900 p-4 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm">
-                    <p className="text-xs font-medium text-gray-500 dark:text-neutral-500 mb-3">ACTIONS</p>
-                    <div className="flex flex-wrap gap-2">
-                        {record.status === 'DRAFT' && (
+            {/* Primary Action: Ready for Delivery */}
+            {record.status === 'ACTIVE' && (
+                <div className="bg-white dark:bg-neutral-900 p-5 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm">
+                    <div className="flex items-center justify-between flex-wrap gap-3">
+                        <div>
+                            <p className="text-sm font-semibold text-gray-800 dark:text-neutral-200">Car ready for delivery?</p>
+                            <p className="text-xs text-gray-500 dark:text-neutral-400 mt-0.5">
+                                Finalize bill, collect payment, and complete the service.
+                            </p>
+                        </div>
+                        <div className="flex items-center gap-2">
                             <button
-                                onClick={handleMoveToInProgress}
+                                onClick={() => setShowBillModal(true)}
                                 disabled={actionLoading}
-                                className="px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-medium disabled:opacity-50"
+                                className="px-5 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white text-sm font-semibold disabled:opacity-50"
                             >
-                                {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Start Work'}
+                                Ready for Delivery
                             </button>
-                        )}
-                        {record.status === 'IN_PROGRESS' && (
-                            <button
-                                onClick={handleSubmitForApproval}
-                                disabled={actionLoading}
-                                className="px-4 py-2 rounded-xl bg-amber-500 text-white text-sm font-medium disabled:opacity-50"
-                            >
-                                {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Submit for Approval'}
-                            </button>
-                        )}
-                        {record.status === 'PENDING_APPROVAL' && isOwner && (
-                            <>
+                            {isOwner && (
                                 <button
-                                    onClick={() => setShowApproveDialog(true)}
+                                    onClick={() => { setCancelReason(''); setShowCancelDialog(true); }}
                                     disabled={actionLoading}
-                                    className="px-4 py-2 rounded-xl bg-green-600 text-white text-sm font-medium disabled:opacity-50"
+                                    className="px-4 py-2.5 rounded-xl border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-50 dark:hover:bg-red-950/30 disabled:opacity-50"
                                 >
-                                    {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Approve & Complete'}
+                                    Cancel
                                 </button>
-                                <button
-                                    onClick={handleMoveToInProgress}
-                                    disabled={actionLoading}
-                                    className="px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 text-sm font-medium text-gray-700 dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-neutral-800 disabled:opacity-50"
-                                >
-                                    Reject & Send Back
-                                </button>
-                            </>
-                        )}
-                        {record.status === 'PENDING_APPROVAL' && !isOwner && (
-                            <p className="text-xs text-gray-400 dark:text-neutral-500 italic">Waiting for manager/owner approval…</p>
-                        )}
-                        {isOwner && (
-                            <button
-                                onClick={() => { setCancelReason(''); setShowCancelDialog(true); }}
-                                disabled={actionLoading}
-                                className="px-4 py-2 rounded-xl border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-50 dark:hover:bg-red-950/30 disabled:opacity-50"
-                            >
-                                Cancel Record
-                            </button>
-                        )}
+                            )}
+                        </div>
                     </div>
                 </div>
             )}
@@ -343,9 +193,7 @@ function RecordDetailContent() {
                 <div className="bg-white dark:bg-neutral-900 p-5 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm">
                     <p className="text-xs font-medium text-gray-500 dark:text-neutral-500 mb-3">VEHICLE</p>
                     <p className="text-xl font-mono font-bold text-gray-900 dark:text-neutral-100">{record.vehiclePlate}</p>
-                    <p className="text-sm text-gray-600 dark:text-neutral-400 mt-1">
-                        {record.memberName || '—'}
-                    </p>
+                    <p className="text-sm text-gray-600 dark:text-neutral-400 mt-1">{record.memberName || '—'}</p>
                 </div>
                 <div className="bg-white dark:bg-neutral-900 p-5 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm">
                     <p className="text-xs font-medium text-gray-500 dark:text-neutral-500 mb-3">CUSTOMER</p>
@@ -366,7 +214,7 @@ function RecordDetailContent() {
                 </div>
             </div>
 
-            {/* Booking Source Card */}
+            {/* Booking source */}
             {record.bookingId && record.bookingSource === 'reservation' && (
                 <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/50 rounded-2xl p-4 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
@@ -407,6 +255,18 @@ function RecordDetailContent() {
                             <p className="font-medium text-gray-900 dark:text-neutral-100 mt-0.5">{record.productUsed}</p>
                         </div>
                     )}
+                    {record.consumedItems && record.consumedItems.length > 0 && (
+                        <div className="col-span-2">
+                            <p className="text-xs text-gray-400 dark:text-neutral-500 mb-1">Consumed Items</p>
+                            <ul className="space-y-0.5">
+                                {record.consumedItems.map((ci, i) => (
+                                    <li key={i} className="text-sm text-gray-700 dark:text-neutral-300">
+                                        {ci.name} × {ci.quantity}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
                     {record.notes && (
                         <div className="col-span-2">
                             <p className="text-xs text-gray-400 dark:text-neutral-500">Notes</p>
@@ -416,37 +276,26 @@ function RecordDetailContent() {
                 </div>
             </div>
 
-            {/* Payment */}
-            <div className="bg-white dark:bg-neutral-900 p-5 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm">
-                <div className="flex items-center justify-between mb-3">
-                    <p className="text-xs font-medium text-gray-500 dark:text-neutral-500">PAYMENT</p>
-                    {canEdit && !editPayment && (
-                        <button onClick={openPaymentEdit} className="text-xs text-brand-dark dark:text-brand-green hover:underline">Edit</button>
-                    )}
-                </div>
-                {!editPayment ? (
+            {/* Payment — read-only, shown only after completion */}
+            {record.status === 'COMPLETED' && (
+                <div className="bg-white dark:bg-neutral-900 p-5 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm">
+                    <p className="text-xs font-medium text-gray-500 dark:text-neutral-500 mb-3">PAYMENT</p>
                     <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
                             <p className="text-xs text-gray-400 dark:text-neutral-500">Total</p>
                             <p className="font-semibold text-gray-900 dark:text-neutral-100 mt-0.5">
-                                Rp {(record.totalAmount || 0).toLocaleString()}
+                                Rp {(record.totalAmount || 0).toLocaleString('id-ID')}
                             </p>
                         </div>
                         <div>
                             <p className="text-xs text-gray-400 dark:text-neutral-500">Paid</p>
                             <p className="font-semibold text-gray-900 dark:text-neutral-100 mt-0.5">
-                                Rp {(record.amountPaid || 0).toLocaleString()}
+                                Rp {(record.amountPaid || 0).toLocaleString('id-ID')}
                             </p>
                         </div>
                         <div>
                             <p className="text-xs text-gray-400 dark:text-neutral-500">Method</p>
                             <p className="text-gray-700 dark:text-neutral-300 mt-0.5">{record.paymentMethod || '—'}</p>
-                        </div>
-                        <div>
-                            <p className="text-xs text-gray-400 dark:text-neutral-500">Status</p>
-                            <div className="mt-0.5">
-                                <PaymentStatusBadge status={record.paymentStatus} />
-                            </div>
                         </div>
                         {record.loyaltyPointsAwarded != null && (
                             <div>
@@ -455,41 +304,22 @@ function RecordDetailContent() {
                             </div>
                         )}
                     </div>
-                ) : (
-                    <div className="space-y-3">
-                        <div className="grid grid-cols-2 gap-3">
-                            <div>
-                                <label className="block text-xs font-medium text-gray-600 dark:text-neutral-400 mb-1">Total (Rp)</label>
-                                <input type="number" min={0} value={payTotalAmount || ''}
-                                    onChange={e => setPayTotalAmount(parseFloat(e.target.value) || 0)}
-                                    className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm" />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-medium text-gray-600 dark:text-neutral-400 mb-1">Paid (Rp)</label>
-                                <input type="number" min={0} value={payAmountPaid || ''}
-                                    onChange={e => setPayAmountPaid(parseFloat(e.target.value) || 0)}
-                                    className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm" />
-                            </div>
-                        </div>
-                        <select value={payMethod} onChange={e => setPayMethod(e.target.value as PaymentMethod | '')}
-                            className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm">
-                            <option value="">No method</option>
-                            {PAYMENT_METHODS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
-                        </select>
-                        <div className="flex justify-end gap-2">
-                            <button onClick={() => setEditPayment(false)} className="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-neutral-700 text-sm text-gray-600 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800">Cancel</button>
-                            <button onClick={handleSavePayment} disabled={actionLoading} className="px-3 py-1.5 rounded-lg bg-studio-blue text-white text-sm disabled:opacity-50">Save</button>
-                        </div>
-                    </div>
-                )}
-            </div>
+                </div>
+            )}
 
-            {/* Warranty Card Section */}
+            {/* Warranty Card */}
             {record.hasWarranty && (
                 <div className="bg-white dark:bg-neutral-900 p-5 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm">
                     <p className="text-xs font-medium text-gray-500 dark:text-neutral-500 mb-3">WARRANTY CARD</p>
+
+                    {record.status !== 'COMPLETED' && !record.warrantyCardId && (
+                        <p className="text-sm text-gray-400 dark:text-neutral-500 italic">
+                            Warranty card will be generated when service is completed.
+                        </p>
+                    )}
+
                     {record.status === 'COMPLETED' && !record.warrantyCardId && (
-                        justApproved ? (
+                        justCompleted ? (
                             <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-neutral-400">
                                 <Loader2 className="w-4 h-4 animate-spin" />
                                 Generating warranty card…
@@ -497,7 +327,7 @@ function RecordDetailContent() {
                         ) : (
                             <div className="space-y-2">
                                 <p className="text-sm text-gray-400 dark:text-neutral-500 italic">
-                                    Warranty card was not generated — the feature may have been disabled at approval time.
+                                    Warranty card was not generated automatically.
                                 </p>
                                 {isOwner && (
                                     <button
@@ -512,6 +342,7 @@ function RecordDetailContent() {
                             </div>
                         )
                     )}
+
                     {record.warrantyCardId && warrantyCard && (
                         <div className="space-y-3">
                             <div className="flex items-center gap-2">
@@ -523,8 +354,8 @@ function RecordDetailContent() {
                                     </p>
                                 </div>
                                 <span className={`ml-auto inline-block text-xs px-2 py-0.5 rounded-full font-medium ${
-                                    warrantyCard.status === 'ACTIVE' ? 'bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400' :
-                                    warrantyCard.status === 'EXPIRED' ? 'bg-gray-100 dark:bg-neutral-800 text-gray-500 dark:text-neutral-400' :
+                                    warrantyCard.status === 'ACTIVE'   ? 'bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400' :
+                                    warrantyCard.status === 'EXPIRED'  ? 'bg-gray-100 dark:bg-neutral-800 text-gray-500 dark:text-neutral-400' :
                                     'bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400'
                                 }`}>
                                     {warrantyCard.status}
@@ -553,17 +384,6 @@ function RecordDetailContent() {
                             </div>
                         </div>
                     )}
-                    {!record.warrantyCardId && record.status !== 'COMPLETED' && (
-                        <p className="text-sm text-gray-400 dark:text-neutral-500 italic">Warranty card will be generated when record is approved.</p>
-                    )}
-                </div>
-            )}
-
-            {/* Cancel info */}
-            {record.status === 'CANCELLED' && record.cancelReason && (
-                <div className="bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-900/50 rounded-xl p-4 text-sm text-red-700 dark:text-red-400">
-                    <p className="font-medium">Cancellation reason:</p>
-                    <p className="mt-0.5">{record.cancelReason}</p>
                 </div>
             )}
 
@@ -571,43 +391,43 @@ function RecordDetailContent() {
             {record.status === 'COMPLETED' && record.approvedBy && (
                 <div className="bg-green-50 dark:bg-green-950/30 border border-green-100 dark:border-green-900/50 rounded-xl p-4 text-sm text-green-700 dark:text-green-400">
                     <p className="font-medium flex items-center gap-1.5">
-                        <CheckCircle className="w-4 h-4" /> Completed
+                        <CheckCircle className="w-4 h-4" /> Service Completed
                     </p>
                     <p className="text-xs text-green-600 dark:text-green-500 mt-0.5">
-                        Approved by {record.approvedBy} on {formatDate(record.approvedAt)}
+                        Completed by {record.approvedBy} on {formatDate(record.approvedAt)}
                     </p>
                 </div>
             )}
 
-            {/* Approve Confirmation Dialog */}
-            {showApproveDialog && (
-                <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-neutral-900 rounded-2xl w-full max-w-sm shadow-xl p-6 space-y-4">
-                        <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100">Approve & Complete?</h2>
-                        <p className="text-sm text-gray-600 dark:text-neutral-400">
-                            This will mark the record as COMPLETED.
-                            {record.hasWarranty && ' A warranty card will be generated and sent to the customer.'}
-                        </p>
-                        <p className="text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 p-3 rounded-xl">
-                            This action is irreversible. COMPLETED records cannot be edited.
-                        </p>
-                        <div className="flex justify-end gap-3">
-                            <button onClick={() => setShowApproveDialog(false)} className="px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 text-sm font-medium text-gray-700 dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-neutral-800">
-                                Cancel
-                            </button>
-                            <button onClick={handleApprove} disabled={actionLoading} className="px-4 py-2 rounded-xl bg-green-600 text-white text-sm font-medium disabled:opacity-50">
-                                {actionLoading ? 'Processing…' : 'Approve & Complete'}
-                            </button>
-                        </div>
-                    </div>
+            {/* Cancellation info */}
+            {record.status === 'CANCELLED' && record.cancelReason && (
+                <div className="bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-900/50 rounded-xl p-4 text-sm text-red-700 dark:text-red-400">
+                    <p className="font-medium">Cancellation reason:</p>
+                    <p className="mt-0.5">{record.cancelReason}</p>
                 </div>
+            )}
+
+            {/* Bill Modal */}
+            {showBillModal && record && (
+                <BillModal
+                    siteId={siteId}
+                    record={record}
+                    approvedByEmail={user?.email || user?.uid || 'staff'}
+                    onCompleted={() => {
+                        setShowBillModal(false);
+                        setJustCompleted(true);
+                        setTimeout(() => setJustCompleted(false), 15_000);
+                        showToast('success', 'Service completed — receipt and warranty generated.');
+                    }}
+                    onCancel={() => setShowBillModal(false)}
+                />
             )}
 
             {/* Void Warranty Dialog */}
             <ConfirmationDialog
                 isOpen={showVoidDialog}
                 title="Void Warranty Card?"
-                message="This will permanently void the warranty card. The customer will no longer be able to claim warranty for this service. This action cannot be undone."
+                message="This will permanently void the warranty card. The customer will no longer be able to claim warranty. This cannot be undone."
                 confirmLabel="Void Warranty"
                 cancelLabel="Cancel"
                 isDestructive
@@ -634,19 +454,19 @@ function RecordDetailContent() {
                         <button
                             onClick={() => { setShowVoidDialog(false); setVoidConfirmText(''); }}
                             disabled={actionLoading}
-                            className="flex-1 px-4 py-2.5 rounded-lg font-bold text-gray-500 dark:text-neutral-400 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex-1 px-4 py-2.5 rounded-lg font-bold text-gray-500 dark:text-neutral-400 hover:bg-gray-200 dark:hover:bg-neutral-700 disabled:opacity-50"
                         >
                             Cancel
                         </button>
                         <button
                             onClick={handleVoidWarranty}
                             disabled={voidConfirmText !== 'VOID' || actionLoading}
-                            className="flex-1 px-4 py-2.5 rounded-lg font-bold shadow-sm transition-all bg-red-500 text-white hover:bg-red-600 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex-1 px-4 py-2.5 rounded-lg font-bold bg-red-500 text-white hover:bg-red-600 disabled:opacity-50"
                         >
                             {actionLoading ? (
                                 <span className="flex items-center justify-center gap-2">
                                     <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                    Voiding...
+                                    Voiding…
                                 </span>
                             ) : 'Void Warranty'}
                         </button>
@@ -660,7 +480,7 @@ function RecordDetailContent() {
                     <div className="bg-white dark:bg-neutral-900 rounded-2xl w-full max-w-sm shadow-xl p-6 space-y-4">
                         <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100">Cancel Record?</h2>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Reason for cancellation *</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Reason *</label>
                             <textarea
                                 value={cancelReason}
                                 onChange={e => setCancelReason(e.target.value)}

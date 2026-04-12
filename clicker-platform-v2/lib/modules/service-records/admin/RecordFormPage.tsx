@@ -6,155 +6,93 @@ import { Search, AlertTriangle, ChevronLeft } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
 import { useUser } from '@/lib/user-context';
 import {
-    getServiceRecord,
     createServiceRecord,
-    updateServiceRecord,
     findVehicleByPlate,
     createVehicle,
     getServiceTypes,
     getCarCatalog,
-    getVehicles,
 } from '../api';
-import type { ServiceRecord, Vehicle, ServiceType, CarCatalogEntry, PaymentMethod, PaymentStatus, ConsumedItem } from '../types';
-import { Trash2, Plus } from 'lucide-react';
-
-const PAYMENT_METHODS: { value: PaymentMethod; label: string }[] = [
-    { value: 'CASH',     label: 'Cash' },
-    { value: 'TRANSFER', label: 'Bank Transfer' },
-    { value: 'CARD',     label: 'Debit/Credit Card' },
-    { value: 'QRIS',     label: 'QRIS' },
-];
+import type { Vehicle, ServiceType, CarCatalogEntry } from '../types';
 
 function RecordFormContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const recordId = searchParams.get('id');
     const { siteId } = useSite();
     const { user } = useUser();
 
-    // Vehicle section
-    const [allVehicles, setAllVehicles] = useState<Vehicle[]>([]);
+    // Prefill from booking or query params
+    const prefillPlate      = searchParams.get('plate') || '';
+    const prefillMemberId   = searchParams.get('memberId') || '';
+    const prefillMemberName = searchParams.get('memberName') || '';
+    const prefillMemberPhone = searchParams.get('memberPhone') || '';
+    const prefillServiceTypeId = searchParams.get('serviceTypeId') || '';
+    const bookingId         = searchParams.get('bookingId') || undefined;
+    const bookingSource     = searchParams.get('bookingSource') as 'reservation' | undefined;
+
+    // ── Vehicle ────────────────────────────────────────────────────────────────
     const [carCatalog, setCarCatalog] = useState<CarCatalogEntry[]>([]);
-const [plateInput, setPlateInput] = useState('');
+    const [plateInput, setPlateInput] = useState(prefillPlate);
     const [vehicleLookupDone, setVehicleLookupDone] = useState(false);
     const [foundVehicle, setFoundVehicle] = useState<Vehicle | null>(null);
     const [plateWarning, setPlateWarning] = useState<string | null>(null);
     const [showNewVehicleFields, setShowNewVehicleFields] = useState(false);
     const [vehicleForm, setVehicleForm] = useState({ color: '', carCatalogId: '' });
 
-    // Member / customer section
-    const [memberSearch, setMemberSearch] = useState('');
-    const [memberResults, setMemberResults] = useState<{ memberId: string; fullName: string; phone: string }[]>([]);
+    // ── Customer ───────────────────────────────────────────────────────────────
     const [membershipEnabled, setMembershipEnabled] = useState(false);
-    const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
-    const [selectedMemberName, setSelectedMemberName] = useState('');
-    const [selectedMemberPhone, setSelectedMemberPhone] = useState('');
+    const [memberSearch, setMemberSearch] = useState(prefillMemberName);
+    const [memberResults, setMemberResults] = useState<{ memberId: string; fullName: string; phone: string }[]>([]);
+    const [selectedMemberId, setSelectedMemberId] = useState<string | null>(prefillMemberId || null);
+    const [selectedMemberName, setSelectedMemberName] = useState(prefillMemberName);
+    const [selectedMemberPhone, setSelectedMemberPhone] = useState(prefillMemberPhone);
     const [customerName, setCustomerName] = useState('');
     const [customerPhone, setCustomerPhone] = useState('');
     const [customerEmail, setCustomerEmail] = useState('');
 
-    // Service type
+    // ── Service Type ───────────────────────────────────────────────────────────
     const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
     const [selectedServiceType, setSelectedServiceType] = useState<ServiceType | null>(null);
-    const [productUsed, setProductUsed] = useState('');          // free-text escape hatch (no inventory link)
-    const [consumedItems, setConsumedItems] = useState<(ConsumedItem & { _tempId: string })[]>([]);
-    const [warrantyMonths, setWarrantyMonths] = useState(12);
-    const [notes, setNotes] = useState('');
 
-    // Inventory picker state
-    const [inventoryEnabled, setInventoryEnabled] = useState(false);
-    const [inventoryItems, setInventoryItems] = useState<{ id: string; name: string; currentStock: number; unit: string }[]>([]);
-
-    // Payment
-    const [totalAmount, setTotalAmount] = useState(0);
-    const [amountPaid, setAmountPaid] = useState(0);
-    const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | ''>('');
-
-    const [loading, setLoading] = useState(false);
+    // ── UI state ───────────────────────────────────────────────────────────────
+    const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-    const isEditMode = !!recordId;
-
-    // Derived
-    const paymentStatus: PaymentStatus =
-        amountPaid <= 0 ? 'UNPAID'
-        : amountPaid >= totalAmount ? 'PAID'
-        : 'PARTIAL';
 
     useEffect(() => {
         if (!siteId) return;
         initPage();
-    }, [siteId, recordId]);
+    }, [siteId]);
 
     async function initPage() {
         setLoading(true);
         try {
-            const [types, catalog, vehicles] = await Promise.all([
+            const [types, catalog] = await Promise.all([
                 getServiceTypes(siteId, true),
                 getCarCatalog(siteId),
-                getVehicles(siteId),
             ]);
             setServiceTypes(types);
             setCarCatalog(catalog);
-            setAllVehicles(vehicles);
 
-            // Check optional modules
+            // Check membership module
             try {
                 const { isModuleEnabled } = await import('@/lib/modules/registry');
-                const [membershipOn, inventoryOn] = await Promise.all([
-                    isModuleEnabled('membership'),
-                    isModuleEnabled('inventory'),
-                ]);
-                setMembershipEnabled(membershipOn);
-                setInventoryEnabled(inventoryOn);
-
-                if (inventoryOn) {
-                    const { getInventory } = await import('@/lib/modules/inventory/api');
-                    const items = await getInventory(siteId);
-                    setInventoryItems(items.map(i => ({ id: i.id, name: i.name, currentStock: i.currentStock, unit: i.unit })));
-                }
+                setMembershipEnabled(await isModuleEnabled('membership'));
             } catch { /* ignore */ }
 
-            // Load existing record for edit mode
-            if (recordId) {
-                const record = await getServiceRecord(siteId, recordId);
-                if (record) {
-                    setPlateInput(record.vehiclePlate);
-                    setVehicleLookupDone(true);
-                    // Hydrate vehicle so vehicleId is available on save
-                    const existingVehicle = await findVehicleByPlate(siteId, record.vehiclePlate);
-                    if (existingVehicle) {
-                        setFoundVehicle(existingVehicle);
-                    } else {
-                        // Vehicle may have been deleted — use a stub so vehicleId is preserved
-                        setFoundVehicle({ id: record.vehicleId, plateNumber: record.vehiclePlate } as Vehicle);
-                    }
-                    if (record.memberId) {
-                        setSelectedMemberId(record.memberId);
-                        setSelectedMemberName(record.memberName || '');
-                        setSelectedMemberPhone(record.memberPhone || '');
-                    } else {
-                        setCustomerName(record.memberName || '');
-                        setCustomerPhone(record.memberPhone || '');
-                        setCustomerEmail(record.memberEmail || '');
-                    }
-                    const sType = types.find(t => t.id === record.serviceTypeId) || null;
-                    setSelectedServiceType(sType);
-                    setProductUsed(record.productUsed || '');
-                    // Hydrate consumedItems — fall back to legacy inventoryItemId for old records
-                    if (record.consumedItems && record.consumedItems.length > 0) {
-                        setConsumedItems(record.consumedItems.map(ci => ({ ...ci, _tempId: Math.random().toString(36).slice(2) })));
-                    } else if (record.inventoryItemId) {
-                        const matchedItem = inventoryItems.find(i => i.id === record.inventoryItemId);
-                        if (matchedItem) {
-                            setConsumedItems([{ inventoryItemId: record.inventoryItemId, name: matchedItem.name, quantity: 1, _tempId: 'legacy' }]);
-                        }
-                    }
-                    setWarrantyMonths(record.warrantyMonths || 12);
-                    setNotes(record.notes || '');
-                    setTotalAmount(record.totalAmount || 0);
-                    setAmountPaid(record.amountPaid || 0);
-                    setPaymentMethod(record.paymentMethod || '');
+            // Prefill service type from booking/query param
+            if (prefillServiceTypeId) {
+                const match = types.find(t => t.id === prefillServiceTypeId);
+                if (match) setSelectedServiceType(match);
+            }
+
+            // Auto-lookup prefilled plate
+            if (prefillPlate) {
+                const vehicle = await findVehicleByPlate(siteId, prefillPlate);
+                setVehicleLookupDone(true);
+                if (vehicle) {
+                    setFoundVehicle(vehicle);
+                } else {
+                    setShowNewVehicleFields(true);
                 }
             }
         } catch (err) {
@@ -178,13 +116,12 @@ const [plateInput, setPlateInput] = useState('');
         if (vehicle) {
             setFoundVehicle(vehicle);
             setShowNewVehicleFields(false);
+            if (vehicle.memberId && selectedMemberId && vehicle.memberId !== selectedMemberId) {
+                setPlateWarning(
+                    `This plate is registered under ${vehicle.memberName || 'another member'}. Proceeding will link this record to that member.`
+                );
+            }
             if (vehicle.memberId) {
-                // Warn if the plate is linked to a different member than the one currently selected
-                if (selectedMemberId && vehicle.memberId !== selectedMemberId) {
-                    setPlateWarning(
-                        `This plate is registered under ${vehicle.memberName || 'another member'}. Proceeding will link this record to the plate's existing member.`
-                    );
-                }
                 setSelectedMemberId(vehicle.memberId);
                 setSelectedMemberName(vehicle.memberName || '');
             }
@@ -218,23 +155,16 @@ const [plateInput, setPlateInput] = useState('');
         setMemberResults([]);
     }
 
-    function handleServiceTypeSelect(typeId: string) {
-        const type = serviceTypes.find(t => t.id === typeId) || null;
-        setSelectedServiceType(type);
-        if (type?.defaultWarrantyMonths) setWarrantyMonths(type.defaultWarrantyMonths);
-        if (type?.defaultPrice && !isEditMode) setTotalAmount(type.defaultPrice);
-    }
-
-    async function handleSave(saveAsInProgress = false) {
+    async function handleSave() {
         const plate = plateInput.toUpperCase().replace(/\s/g, '');
         if (!plate) { showToast('error', 'Plate number is required'); return; }
+        if (!vehicleLookupDone) { showToast('error', 'Please look up the plate number first'); return; }
         if (!selectedServiceType) { showToast('error', 'Please select a service type'); return; }
 
         setSubmitting(true);
         try {
             let vehicleId = foundVehicle?.id;
 
-            // Create vehicle if new
             if (!vehicleId && showNewVehicleFields) {
                 vehicleId = await createVehicle(siteId, {
                     plateNumber: plate,
@@ -251,10 +181,10 @@ const [plateInput, setPlateInput] = useState('');
                 return;
             }
 
-            const ownerName = selectedMemberId ? selectedMemberName : customerName;
+            const ownerName  = selectedMemberId ? selectedMemberName : customerName;
             const ownerPhone = selectedMemberId ? selectedMemberPhone : customerPhone;
 
-            const recordData = {
+            const newId = await createServiceRecord(siteId, {
                 vehicleId,
                 vehiclePlate: plate,
                 memberId: selectedMemberId || null,
@@ -264,33 +194,13 @@ const [plateInput, setPlateInput] = useState('');
                 serviceTypeId: selectedServiceType.id,
                 serviceTypeName: selectedServiceType.name,
                 hasWarranty: selectedServiceType.hasWarranty,
-                warrantyMonths: selectedServiceType.hasWarranty ? warrantyMonths : 0,
-                productUsed: productUsed || null,
-                consumedItems: consumedItems.length > 0
-                    ? consumedItems.map(({ _tempId, ...ci }) => ci)
-                    : null,
-                // legacy field cleared when consumedItems is set
-                inventoryItemId: consumedItems.length > 0 ? null : null,
-                notes: notes || null,
-                totalAmount,
-                amountPaid,
-                paymentStatus,
-                paymentMethod: paymentMethod || null,
+                warrantyMonths: selectedServiceType.defaultWarrantyMonths || 12,
+                totalAmount: 0,
+                amountPaid: 0,
+                paymentStatus: 'UNPAID',
                 createdBy: user?.email || user?.uid || 'unknown',
-            };
-
-            let newId = recordId;
-            if (isEditMode && recordId) {
-                await updateServiceRecord(siteId, recordId, {
-                    ...recordData,
-                    ...(saveAsInProgress ? { status: 'IN_PROGRESS' } : {}),
-                } as any);
-            } else {
-                newId = await createServiceRecord(siteId, recordData as any);
-                if (saveAsInProgress && newId) {
-                    await updateServiceRecord(siteId, newId, { status: 'IN_PROGRESS' });
-                }
-            }
+                ...(bookingId ? { bookingId, bookingSource: bookingSource || 'reservation' } : {}),
+            } as any);
 
             router.push(`/admin/service-records/detail?id=${newId}`);
         } catch (err: any) {
@@ -307,12 +217,13 @@ const [plateInput, setPlateInput] = useState('');
                 <div className="h-8 bg-gray-200 dark:bg-neutral-700 rounded w-48" />
                 <div className="h-48 bg-gray-200 dark:bg-neutral-700 rounded-2xl" />
                 <div className="h-48 bg-gray-200 dark:bg-neutral-700 rounded-2xl" />
+                <div className="h-32 bg-gray-200 dark:bg-neutral-700 rounded-2xl" />
             </div>
         );
     }
 
     return (
-        <div className="max-w-3xl space-y-5">
+        <div className="max-w-2xl space-y-5">
             {toast && (
                 <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl text-sm font-medium shadow-lg ${
                     toast.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
@@ -330,151 +241,29 @@ const [plateInput, setPlateInput] = useState('');
                     <ChevronLeft className="w-5 h-5" />
                 </button>
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">
-                        {isEditMode ? 'Edit Record' : 'New Service Record'}
-                    </h1>
-                    <p className="text-sm text-gray-500 dark:text-neutral-500 mt-0.5">Fill in vehicle, customer, and service details.</p>
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">New Service Record</h1>
+                    <p className="text-sm text-gray-500 dark:text-neutral-500 mt-0.5">
+                        {bookingId ? `From booking — fill in vehicle and confirm service.` : `Car in workshop — log it now.`}
+                    </p>
                 </div>
             </div>
 
-            {/* Section 1: Vehicle */}
-            <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm space-y-4">
-                <h2 className="text-base font-semibold text-gray-800 dark:text-neutral-200">Vehicle</h2>
-
-                {/* Select existing vehicle */}
-                {allVehicles.length > 0 && (
-                    <div>
-                        <label className="block text-xs font-medium text-gray-600 dark:text-neutral-400 mb-1">Select existing vehicle</label>
-                        <select
-                            value={foundVehicle?.id || ''}
-                            onChange={e => {
-                                const v = allVehicles.find(v => v.id === e.target.value);
-                                if (v) {
-                                    setFoundVehicle(v);
-                                    setPlateInput(v.plateNumber);
-                                    setVehicleLookupDone(true);
-                                    setShowNewVehicleFields(false);
-                                    if (v.memberId) {
-                                        setSelectedMemberId(v.memberId);
-                                        setSelectedMemberName(v.memberName || '');
-                                    }
-                                } else {
-                                    setFoundVehicle(null);
-                                    setVehicleLookupDone(false);
-                                }
-                            }}
-                            className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
-                        >
-                            <option value="">— Select vehicle —</option>
-                            {allVehicles.map(v => (
-                                <option key={v.id} value={v.id}>
-                                    {v.plateNumber}{v.color ? ` · ${v.color}` : ''}{v.memberName ? ` · ${v.memberName}` : ''}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                )}
-
-                {/* Or enter new plate */}
-                {!foundVehicle && (
-                    <>
-                        {allVehicles.length > 0 && (
-                            <div className="flex items-center gap-3 text-xs text-gray-400 dark:text-neutral-500">
-                                <div className="flex-1 border-t border-gray-200 dark:border-neutral-700" />
-                                or enter new plate number
-                                <div className="flex-1 border-t border-gray-200 dark:border-neutral-700" />
-                            </div>
-                        )}
-                        <div className="flex gap-2">
-                            <input
-                                type="text"
-                                value={plateInput}
-                                onChange={e => {
-                                    setPlateInput(e.target.value.toUpperCase().replace(/\s/g, ''));
-                                    setVehicleLookupDone(false);
-                                    setFoundVehicle(null);
-                                    setShowNewVehicleFields(false);
-                                }}
-                                placeholder="Enter plate number"
-                                className="flex-1 font-mono rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
-                            />
-                            <button
-                                type="button"
-                                onClick={handlePlateSearch}
-                                className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 text-sm font-medium hover:bg-gray-50 dark:hover:bg-neutral-800 dark:text-neutral-200"
-                            >
-                                <Search className="w-4 h-4" />
-                                Look up
-                            </button>
-                        </div>
-                    </>
-                )}
-
-                {vehicleLookupDone && foundVehicle && (
-                    <div className="bg-green-50 dark:bg-green-950/30 border border-green-100 dark:border-green-900/50 rounded-xl p-3 text-sm">
-                        <p className="font-semibold text-green-700 dark:text-green-400">Vehicle found</p>
-                        <p className="text-green-600 dark:text-green-500">
-                            {foundVehicle.plateNumber}{foundVehicle.color && ` · ${foundVehicle.color}`}
-                        </p>
-                    </div>
-                )}
-
-                {vehicleLookupDone && !foundVehicle && showNewVehicleFields && (
-                    <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50 rounded-xl p-4 space-y-3">
-                        <p className="text-sm font-medium text-blue-700 dark:text-blue-400">
-                            No vehicle found for {plateInput}. Enter details to create a new vehicle profile.
-                        </p>
-                        {plateWarning && (
-                            <div className="flex items-start gap-1.5 text-xs text-amber-600 dark:text-amber-400">
-                                <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
-                                {plateWarning}
-                            </div>
-                        )}
-
-                        {/* Car type — select from catalog */}
-                        <div>
-                            <label className="block text-xs font-medium text-gray-600 dark:text-neutral-400 mb-1">Car Type</label>
-                            <select
-                                value={vehicleForm.carCatalogId}
-                                onChange={e => setVehicleForm(f => ({ ...f, carCatalogId: e.target.value }))}
-                                className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
-                            >
-                                <option value="">— Select car type —</option>
-                                {carCatalog.map(car => (
-                                    <option key={car.id} value={car.id}>
-                                        {car.make} {car.model} ({car.type})
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
-                        {/* Color — always separate since it's per-vehicle */}
-                        <div>
-                            <label className="block text-xs font-medium text-gray-600 dark:text-neutral-400 mb-1">Color</label>
-                            <input
-                                type="text"
-                                value={vehicleForm.color}
-                                onChange={e => setVehicleForm(f => ({ ...f, color: e.target.value }))}
-                                placeholder="e.g. Black, White, Silver"
-                                className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
-                            />
-                        </div>
-                    </div>
-                )}
-            </div>
-
-            {/* Section 2: Customer */}
+            {/* Section 1: Customer */}
             <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm space-y-4">
                 <h2 className="text-base font-semibold text-gray-800 dark:text-neutral-200">Customer</h2>
-                {membershipEnabled ? (
+
+                {/* Member search (if membership module enabled) */}
+                {membershipEnabled && (
                     <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300">Search Member</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300">
+                            Search member
+                        </label>
                         <div className="relative">
                             <input
                                 type="text"
                                 value={memberSearch}
                                 onChange={e => handleMemberSearch(e.target.value)}
-                                placeholder="Type name or phone (min 3 chars)…"
+                                placeholder="Type name or phone…"
                                 className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
                             />
                             {memberResults.length > 0 && (
@@ -496,7 +285,7 @@ const [plateInput, setPlateInput] = useState('');
                         {selectedMemberId && (
                             <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50 rounded-xl p-3 text-sm">
                                 <p className="font-semibold text-blue-700 dark:text-blue-400">{selectedMemberName}</p>
-                                <p className="text-blue-500 dark:text-blue-400/70 text-xs">{selectedMemberPhone} · Member ID: {selectedMemberId.slice(0, 8)}…</p>
+                                <p className="text-blue-500 dark:text-blue-400/70 text-xs">{selectedMemberPhone}</p>
                                 <button
                                     type="button"
                                     onClick={() => { setSelectedMemberId(null); setSelectedMemberName(''); setSelectedMemberPhone(''); setMemberSearch(''); }}
@@ -506,17 +295,16 @@ const [plateInput, setPlateInput] = useState('');
                                 </button>
                             </div>
                         )}
-                        {!selectedMemberId && (
-                            <p className="text-xs text-gray-400 dark:text-neutral-500">No member selected — record will be treated as walk-in.</p>
-                        )}
                     </div>
-                ) : null}
+                )}
 
-                {/* Walk-in fields — always shown if no member selected */}
+                {/* Walk-in fields */}
                 {!selectedMemberId && (
                     <div className="space-y-3">
                         {membershipEnabled && (
-                            <p className="text-xs text-gray-500 dark:text-neutral-500 font-medium">Walk-in customer info (optional):</p>
+                            <p className="text-xs text-gray-500 dark:text-neutral-500">
+                                Or enter walk-in details:
+                            </p>
                         )}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div>
@@ -546,7 +334,7 @@ const [plateInput, setPlateInput] = useState('');
                                 type="email"
                                 value={customerEmail}
                                 onChange={e => setCustomerEmail(e.target.value)}
-                                placeholder="customer@email.com"
+                                placeholder="customer@email.com (optional)"
                                 className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
                             />
                         </div>
@@ -554,14 +342,101 @@ const [plateInput, setPlateInput] = useState('');
                 )}
             </div>
 
-            {/* Section 3: Service */}
+            {/* Section 2: Vehicle */}
             <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm space-y-4">
-                <h2 className="text-base font-semibold text-gray-800 dark:text-neutral-200">Service Details</h2>
+                <h2 className="text-base font-semibold text-gray-800 dark:text-neutral-200">Vehicle</h2>
+
+                <div className="flex gap-2">
+                    <input
+                        type="text"
+                        value={plateInput}
+                        onChange={e => {
+                            setPlateInput(e.target.value.toUpperCase().replace(/\s/g, ''));
+                            setVehicleLookupDone(false);
+                            setFoundVehicle(null);
+                            setShowNewVehicleFields(false);
+                            setPlateWarning(null);
+                        }}
+                        placeholder="Plate number e.g. B2022XYZ"
+                        className="flex-1 font-mono rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
+                    />
+                    <button
+                        type="button"
+                        onClick={handlePlateSearch}
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 text-sm font-medium hover:bg-gray-50 dark:hover:bg-neutral-800 dark:text-neutral-200"
+                    >
+                        <Search className="w-4 h-4" />
+                        Look up
+                    </button>
+                </div>
+
+                {plateWarning && (
+                    <div className="flex items-start gap-1.5 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-900/50 rounded-xl p-3">
+                        <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                        {plateWarning}
+                    </div>
+                )}
+
+                {vehicleLookupDone && foundVehicle && (
+                    <div className="bg-green-50 dark:bg-green-950/30 border border-green-100 dark:border-green-900/50 rounded-xl p-3 text-sm">
+                        <p className="font-semibold text-green-700 dark:text-green-400">Vehicle found</p>
+                        <p className="text-green-600 dark:text-green-500">
+                            {foundVehicle.plateNumber}{foundVehicle.color && ` · ${foundVehicle.color}`}
+                        </p>
+                    </div>
+                )}
+
+                {vehicleLookupDone && showNewVehicleFields && (
+                    <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50 rounded-xl p-4 space-y-3">
+                        <p className="text-sm font-medium text-blue-700 dark:text-blue-400">
+                            New vehicle — enter details to register.
+                        </p>
+                        <div>
+                            <label className="block text-xs font-medium text-gray-600 dark:text-neutral-400 mb-1">
+                                Car Type <span className="text-gray-400">(optional)</span>
+                            </label>
+                            <select
+                                value={vehicleForm.carCatalogId}
+                                onChange={e => setVehicleForm(f => ({ ...f, carCatalogId: e.target.value }))}
+                                className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
+                            >
+                                <option value="">— Select car type —</option>
+                                {carCatalog.map(car => (
+                                    <option key={car.id} value={car.id}>
+                                        {car.make} {car.model} ({car.type})
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-medium text-gray-600 dark:text-neutral-400 mb-1">
+                                Color <span className="text-gray-400">(optional)</span>
+                            </label>
+                            <input
+                                type="text"
+                                value={vehicleForm.color}
+                                onChange={e => setVehicleForm(f => ({ ...f, color: e.target.value }))}
+                                placeholder="e.g. Black, White, Silver"
+                                className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
+                            />
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* Section 3: Service Type */}
+            <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm space-y-4">
+                <h2 className="text-base font-semibold text-gray-800 dark:text-neutral-200">Service</h2>
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Service Type *</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">
+                        Service Type <span className="text-red-500">*</span>
+                    </label>
                     <select
                         value={selectedServiceType?.id || ''}
-                        onChange={e => handleServiceTypeSelect(e.target.value)}
+                        onChange={e => {
+                            const type = serviceTypes.find(t => t.id === e.target.value) || null;
+                            setSelectedServiceType(type);
+                        }}
                         className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
                     >
                         <option value="">Select service type…</option>
@@ -571,167 +446,9 @@ const [plateInput, setPlateInput] = useState('');
                     </select>
                     {selectedServiceType?.hasWarranty && (
                         <p className="text-xs text-green-600 dark:text-green-400 mt-1">
-                            ✓ This service type issues a warranty card on completion.
+                            ✓ Warranty card will be issued on completion.
                         </p>
                     )}
-                </div>
-
-                {selectedServiceType?.hasWarranty && (
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Warranty Duration (months)</label>
-                        <input
-                            type="number"
-                            min={1}
-                            max={120}
-                            value={warrantyMonths}
-                            onChange={e => setWarrantyMonths(parseInt(e.target.value) || 12)}
-                            className="w-32 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
-                        />
-                    </div>
-                )}
-
-                {/* Products / Inventory consumed */}
-                <div>
-                    <div className="flex items-center justify-between mb-2">
-                        <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300">Products Used</label>
-                        {inventoryEnabled && inventoryItems.length > 0 && (
-                            <button
-                                type="button"
-                                onClick={() => setConsumedItems(prev => [
-                                    ...prev,
-                                    { inventoryItemId: '', name: '', quantity: 1, _tempId: Math.random().toString(36).slice(2) }
-                                ])}
-                                className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium"
-                            >
-                                <Plus className="w-3.5 h-3.5" /> Add item
-                            </button>
-                        )}
-                    </div>
-
-                    {/* Consumed items rows */}
-                    {inventoryEnabled && inventoryItems.length > 0 && (
-                        <div className="space-y-2">
-                            {consumedItems.map((ci) => (
-                                <div key={ci._tempId} className="flex items-center gap-2">
-                                    <select
-                                        value={ci.inventoryItemId}
-                                        onChange={e => {
-                                            const id = e.target.value;
-                                            const found = inventoryItems.find(i => i.id === id);
-                                            setConsumedItems(prev => prev.map(item =>
-                                                item._tempId === ci._tempId
-                                                    ? { ...item, inventoryItemId: id, name: found?.name || '' }
-                                                    : item
-                                            ));
-                                        }}
-                                        className="flex-1 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
-                                    >
-                                        <option value="">— Select item —</option>
-                                        {inventoryItems.map(item => (
-                                            <option key={item.id} value={item.id}>
-                                                {item.name} (Stock: {item.currentStock} {item.unit})
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <input
-                                        type="number"
-                                        min={1}
-                                        value={ci.quantity}
-                                        onChange={e => setConsumedItems(prev => prev.map(item =>
-                                            item._tempId === ci._tempId
-                                                ? { ...item, quantity: Math.max(1, parseInt(e.target.value) || 1) }
-                                                : item
-                                        ))}
-                                        className="w-20 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm text-center"
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => setConsumedItems(prev => prev.filter(item => item._tempId !== ci._tempId))}
-                                        className="p-2 text-gray-400 dark:text-neutral-500 hover:text-red-500 dark:hover:text-red-400 rounded-xl hover:bg-red-50 dark:hover:bg-red-950/30"
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                    </button>
-                                </div>
-                            ))}
-                            {consumedItems.length > 0 && (
-                                <p className="text-xs text-green-700 dark:text-green-400">
-                                    {consumedItems.length} item{consumedItems.length > 1 ? 's' : ''} will be deducted from inventory on approval.
-                                </p>
-                            )}
-                            {consumedItems.length === 0 && (
-                                <p className="text-xs text-gray-400 dark:text-neutral-500">No inventory items linked — click "Add item" to link stock.</p>
-                            )}
-                        </div>
-                    )}
-
-                    {/* Free-text fallback — always visible, label adjusts */}
-                    <div className={inventoryEnabled && inventoryItems.length > 0 ? 'mt-3' : ''}>
-                        <input
-                            type="text"
-                            value={productUsed}
-                            onChange={e => setProductUsed(e.target.value)}
-                            placeholder={inventoryEnabled ? 'Additional note (e.g. "Ceramic Pro Gold 9H")…' : 'e.g. Ceramic Pro Gold 9H'}
-                            className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
-                        />
-                    </div>
-                </div>
-
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Notes</label>
-                    <textarea
-                        value={notes}
-                        onChange={e => setNotes(e.target.value)}
-                        rows={3}
-                        placeholder="Internal notes…"
-                        className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm resize-none"
-                    />
-                </div>
-            </div>
-
-            {/* Section 4: Payment */}
-            <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm space-y-4">
-                <h2 className="text-base font-semibold text-gray-800 dark:text-neutral-200">Payment</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Total Amount (Rp) *</label>
-                        <input
-                            type="number"
-                            min={0}
-                            value={totalAmount || ''}
-                            onChange={e => setTotalAmount(parseFloat(e.target.value) || 0)}
-                            placeholder="0"
-                            className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Amount Paid (Rp)</label>
-                        <input
-                            type="number"
-                            min={0}
-                            max={totalAmount || undefined}
-                            value={amountPaid || ''}
-                            onChange={e => setAmountPaid(parseFloat(e.target.value) || 0)}
-                            placeholder="0"
-                            className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
-                        />
-                    </div>
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Payment Method</label>
-                    <select
-                        value={paymentMethod}
-                        onChange={e => setPaymentMethod(e.target.value as PaymentMethod | '')}
-                        className="w-full sm:w-64 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
-                    >
-                        <option value="">Not specified</option>
-                        {PAYMENT_METHODS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
-                    </select>
-                </div>
-                <div className="text-sm text-gray-500 dark:text-neutral-500">
-                    Payment status: <span className={`font-medium ${
-                        paymentStatus === 'PAID' ? 'text-green-600 dark:text-green-400' :
-                        paymentStatus === 'PARTIAL' ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-500 dark:text-red-400'
-                    }`}>{paymentStatus}</span>
                 </div>
             </div>
 
@@ -746,19 +463,11 @@ const [plateInput, setPlateInput] = useState('');
                 </button>
                 <button
                     type="button"
-                    onClick={() => handleSave(false)}
+                    onClick={handleSave}
                     disabled={submitting}
-                    className="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-neutral-700 text-sm font-medium text-gray-700 dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-neutral-800 disabled:opacity-50"
+                    className="bg-studio-blue text-white px-6 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-50"
                 >
-                    {submitting ? 'Saving…' : 'Save as Draft'}
-                </button>
-                <button
-                    type="button"
-                    onClick={() => handleSave(true)}
-                    disabled={submitting}
-                    className="bg-studio-blue text-white px-6 py-2.5 rounded-xl text-sm font-medium disabled:opacity-50"
-                >
-                    {submitting ? 'Saving…' : 'Save & Start Work'}
+                    {submitting ? 'Creating…' : 'Create Service Record'}
                 </button>
             </div>
         </div>
@@ -767,7 +476,7 @@ const [plateInput, setPlateInput] = useState('');
 
 export default function RecordFormPage() {
     return (
-        <Suspense fallback={<div className="p-6 text-sm text-gray-400 dark:text-neutral-500">Loading form…</div>}>
+        <Suspense fallback={<div className="p-6 text-sm text-gray-400 dark:text-neutral-500">Loading…</div>}>
             <RecordFormContent />
         </Suspense>
     );

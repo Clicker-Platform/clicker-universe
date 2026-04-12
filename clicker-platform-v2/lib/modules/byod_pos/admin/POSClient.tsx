@@ -14,10 +14,13 @@ import { Clock } from 'lucide-react';
 import { createAggregatedOrder } from '../utils';
 import { useReceiptPrinter } from '@/lib/modules/byod_pos/hooks/useReceiptPrinter';
 import { getPOSSettings } from '@/lib/modules/byod_pos/api';
+import { POSSettings } from '@/lib/modules/byod_pos/types';
 import { useSite } from '@/lib/site-context';
+import { usePermission } from '@/components/admin/PermissionGuard';
 
 export default function POSClient({ initialOrders = [] }: { initialOrders?: POSOrder[] }) {
     const { siteId } = useSite();
+    const { isViewOnly } = usePermission();
     const [orders, setOrders] = useState<POSOrder[]>(initialOrders);
     const [, setLoading] = useState(initialOrders.length === 0);
 
@@ -91,7 +94,7 @@ export default function POSClient({ initialOrders = [] }: { initialOrders?: POSO
     };
 
     const { printReceipt } = useReceiptPrinter();
-    const [settings, setSettings] = useState<any>(null);
+    const [settings, setSettings] = useState<POSSettings | null>(null);
 
     useEffect(() => {
         if (!siteId) return;
@@ -104,6 +107,7 @@ export default function POSClient({ initialOrders = [] }: { initialOrders?: POSO
     });
 
     const confirmPaymentProcess = async (method: POSOrder['paymentMethod']) => {
+        if (isViewOnly) { toast.error('You do not have permission to confirm payments.'); return; }
         if (paymentConfig.orders.length === 0) return;
 
         try {
@@ -134,7 +138,7 @@ export default function POSClient({ initialOrders = [] }: { initialOrders?: POSO
     const handlePostPaymentPrint = () => {
         if (postPaymentConfig.orders.length === 0) return;
         const finalOrder = createAggregatedOrder(postPaymentConfig.orders);
-        printReceipt(finalOrder, settings);
+        printReceipt(finalOrder, settings ?? undefined);
         setPostPaymentConfig({ isOpen: false, orders: [] });
     };
 
@@ -210,65 +214,50 @@ export default function POSClient({ initialOrders = [] }: { initialOrders?: POSO
     const [activeTab, setActiveTab] = useState<'active' | 'completed'>('active');
 
     return (
-        <div className="max-w-7xl mx-auto">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div>
+            <div className="flex items-center gap-4 mb-6">
                 <div>
-                    <h1 className="text-3xl font-black text-brand-dark mb-2 uppercase tracking-tight flex items-center gap-3">
-                        <ShoppingBag size={32} />
-                        {activeTab === 'completed' ? 'Order History' : (viewMode === 'kitchen' ? 'Kitchen Display' : 'Cashier Station')}
-                    </h1>
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100 mb-1">Order management</h1>
                     <p className="text-gray-600 dark:text-neutral-400 font-medium">
-                        {activeTab === 'completed' ? 'Past transactions & cancelled orders' : (viewMode === 'kitchen' ? 'Order fulfillment & production' : 'Bill management & payments')}
+                        Manage active orders, kitchen queue, and transaction history
                     </p>
                 </div>
+            </div>
 
-                <div className="flex items-center gap-4 self-start md:self-auto">
-                    {/* Tabs */}
-                    <div className="flex p-1 bg-gray-100 dark:bg-neutral-800 rounded-lg border border-gray-200 dark:border-neutral-800">
+            <div className="flex items-center gap-4 mb-6">
+                {/* Tabs */}
+                <div className="flex p-1 bg-gray-100 dark:bg-neutral-800 rounded-lg border border-gray-200 dark:border-neutral-800">
+                    <button
+                        onClick={() => setActiveTab('active')}
+                        className={`px-4 py-2 rounded-md font-bold text-sm transition-all duration-200 flex items-center gap-2 ${activeTab === 'active' ? 'bg-white dark:bg-neutral-900 text-brand-dark shadow-sm' : 'text-gray-500 dark:text-neutral-500 hover:text-gray-700 dark:hover:text-neutral-300'}`}
+                    >
+                        Active <span className="bg-studio-blue text-white px-1.5 py-0.5 rounded text-[10px]">{kdsOrders.length}</span>
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('completed')}
+                        className={`px-4 py-2 rounded-md font-bold text-sm transition-all duration-200 flex items-center gap-2 ${activeTab === 'completed' ? 'bg-white dark:bg-neutral-900 text-brand-dark shadow-sm' : 'text-gray-500 dark:text-neutral-500 hover:text-gray-700 dark:hover:text-neutral-300'}`}
+                    >
+                        History
+                    </button>
+                </div>
+
+                {/* View Toggle (only when Active tab) */}
+                {activeTab === 'active' && (
+                    <div className="flex p-1 bg-gray-100 dark:bg-neutral-800 rounded-xl">
                         <button
-                            onClick={() => setActiveTab('active')}
-                            className={`
-                            px-4 py-2 rounded-md font-bold text-sm transition-all duration-200 flex items-center gap-2
-                            ${activeTab === 'active' ? 'bg-white dark:bg-neutral-900 text-brand-dark shadow-sm' : 'text-gray-500 dark:text-neutral-500 hover:text-gray-700 dark:hover:text-neutral-300'}
-                        `}
+                            onClick={() => setViewMode('kitchen')}
+                            className={`px-4 py-2 rounded-lg font-bold text-xs transition-all duration-200 flex items-center gap-2 ${viewMode === 'kitchen' ? 'bg-white dark:bg-neutral-900 text-brand-dark shadow-sm' : 'text-gray-500 dark:text-neutral-500 hover:text-gray-700 dark:hover:text-neutral-300'}`}
                         >
-                            Active <span className="bg-studio-blue text-white px-1.5 py-0.5 rounded text-[10px]">{kdsOrders.length}</span>
+                            <Grid size={16} /> KDS
                         </button>
                         <button
-                            onClick={() => setActiveTab('completed')}
-                            className={`
-                            px-4 py-2 rounded-md font-bold text-sm transition-all duration-200 flex items-center gap-2
-                            ${activeTab === 'completed' ? 'bg-white dark:bg-neutral-900 text-brand-dark shadow-sm' : 'text-gray-500 dark:text-neutral-500 hover:text-gray-700 dark:hover:text-neutral-300'}
-                        `}
+                            onClick={() => setViewMode('cashier')}
+                            className={`px-4 py-2 rounded-lg font-bold text-xs transition-all duration-200 flex items-center gap-2 ${viewMode === 'cashier' ? 'bg-white dark:bg-neutral-900 text-brand-dark shadow-sm' : 'text-gray-500 dark:text-neutral-500 hover:text-gray-700 dark:hover:text-neutral-300'}`}
                         >
-                            History
+                            <List size={16} /> Cashier
                         </button>
                     </div>
-
-                    {/* View Toggle (Only show if Active Tab) */}
-                    {activeTab === 'active' && (
-                        <div className="flex p-1 bg-gray-100 dark:bg-neutral-800 rounded-xl">
-                            <button
-                                onClick={() => setViewMode('kitchen')}
-                                className={`
-                                    px-4 py-2 rounded-lg font-bold text-xs transition-all duration-200 flex items-center gap-2
-                                    ${viewMode === 'kitchen' ? 'bg-white dark:bg-neutral-900 text-brand-dark shadow-sm' : 'text-gray-500 dark:text-neutral-500 hover:text-gray-700 dark:hover:text-neutral-300'}
-                                `}
-                            >
-                                <Grid size={16} /> KDS
-                            </button>
-                            <button
-                                onClick={() => setViewMode('cashier')}
-                                className={`
-                                    px-4 py-2 rounded-lg font-bold text-xs transition-all duration-200 flex items-center gap-2
-                                    ${viewMode === 'cashier' ? 'bg-white dark:bg-neutral-900 text-brand-dark shadow-sm' : 'text-gray-500 dark:text-neutral-500 hover:text-gray-700 dark:hover:text-neutral-300'}
-                                `}
-                            >
-                                <List size={16} /> Cashier
-                            </button>
-                        </div>
-                    )}
-                </div>
+                )}
             </div>
 
             {activeTab === 'active' && viewMode === 'kitchen' && (

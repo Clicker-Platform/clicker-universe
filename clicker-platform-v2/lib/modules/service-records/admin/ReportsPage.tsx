@@ -17,14 +17,12 @@ import type { ServiceRecord, RecordStatus } from '../types';
 // ─── Status Config ────────────────────────────────────────────────────────────
 
 const STATUS_CONFIG: Record<RecordStatus, { label: string; color: string; bg: string }> = {
-    DRAFT:            { label: 'Draft',            color: 'text-gray-500 dark:text-neutral-400',   bg: 'bg-gray-100 dark:bg-neutral-800' },
-    IN_PROGRESS:      { label: 'In Progress',      color: 'text-blue-600 dark:text-blue-400',      bg: 'bg-blue-50 dark:bg-blue-950/30' },
-    PENDING_APPROVAL: { label: 'Pending Approval', color: 'text-amber-600 dark:text-amber-400',    bg: 'bg-amber-50 dark:bg-amber-950/30' },
-    COMPLETED:        { label: 'Completed',        color: 'text-green-600 dark:text-green-400',    bg: 'bg-green-50 dark:bg-green-950/30' },
-    CANCELLED:        { label: 'Cancelled',        color: 'text-red-500 dark:text-red-400',        bg: 'bg-red-50 dark:bg-red-950/30' },
+    ACTIVE:    { label: 'Active',    color: 'text-blue-600 dark:text-blue-400',  bg: 'bg-blue-50 dark:bg-blue-950/30' },
+    COMPLETED: { label: 'Completed', color: 'text-green-600 dark:text-green-400', bg: 'bg-green-50 dark:bg-green-950/30' },
+    CANCELLED: { label: 'Cancelled', color: 'text-red-500 dark:text-red-400',     bg: 'bg-red-50 dark:bg-red-950/30' },
 };
 
-const STATUS_ORDER: RecordStatus[] = ['COMPLETED', 'IN_PROGRESS', 'PENDING_APPROVAL', 'DRAFT', 'CANCELLED'];
+const STATUS_ORDER: RecordStatus[] = ['COMPLETED', 'ACTIVE', 'CANCELLED'];
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -317,8 +315,7 @@ export default function ReportsPage() {
                                                     <div
                                                         className={`h-2 rounded-full transition-all duration-500 ${
                                                             status === 'COMPLETED' ? 'bg-green-500' :
-                                                            status === 'IN_PROGRESS' ? 'bg-blue-500' :
-                                                            status === 'PENDING_APPROVAL' ? 'bg-amber-400' :
+                                                            status === 'ACTIVE' ? 'bg-blue-500' :
                                                             status === 'CANCELLED' ? 'bg-red-400' :
                                                             'bg-gray-300 dark:bg-neutral-600'
                                                         }`}

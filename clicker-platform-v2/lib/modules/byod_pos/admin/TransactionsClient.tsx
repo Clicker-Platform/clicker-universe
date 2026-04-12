@@ -3,18 +3,16 @@
 import { useEffect, useState, useMemo } from 'react';
 import { POSOrder } from '@/lib/modules/byod_pos/types';
 import { getHistoryOrders, getPaginatedOrders } from '@/lib/modules/byod_pos/api';
-import { Clock, History, Loader2, ChevronDown } from 'lucide-react';
+import { Clock, Loader2, ChevronDown } from 'lucide-react';
 import { HistoryBillRow } from './components/HistoryBillRow';
 import { HistoryBillRowSkeleton } from './components/HistoryBillRowSkeleton';
 import { toast } from 'sonner';
 
 import { HistorySidebar } from './components/HistorySidebar';
-import { useSite } from '@/lib/site-context'; // New import
-import { usePermission } from '@/components/admin/PermissionGuard'; // Import
+import { useSite } from '@/lib/site-context';
 
 export default function TransactionsClient({ initialOrders = [] }: { initialOrders?: POSOrder[] }) {
     const { siteId } = useSite();
-    const { isViewOnly } = usePermission();
     const [orders, setOrders] = useState<POSOrder[]>(initialOrders);
     const [lastDoc, setLastDoc] = useState<any>(null); // Keep track of last doc for cursor
     const [isLoading, setIsLoading] = useState(false);
@@ -174,13 +172,10 @@ export default function TransactionsClient({ initialOrders = [] }: { initialOrde
     }, [orders]);
 
     return (
-        <div className="max-w-7xl mx-auto">
+        <div>
             <div className="flex items-center gap-4 mb-8">
                 <div>
-                    <h1 className="text-3xl font-black text-brand-dark mb-2 uppercase tracking-tight flex items-center gap-3">
-                        <History size={32} />
-                        Transactions History
-                    </h1>
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100 mb-1">Transaction history</h1>
                     <p className="text-gray-600 dark:text-neutral-400 font-medium">Consolidated view of past bills and cancellations</p>
                 </div>
             </div>

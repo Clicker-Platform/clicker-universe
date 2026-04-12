@@ -2,7 +2,7 @@
 
 import { useEditor } from './EditorContext';
 import { BlockManager } from './BlockManager';
-import { Settings, Layers, Box, FileText, BarChart2, CheckSquare, Square, X, Plus, Link2, FileInput, ShoppingBag, Globe, Loader2, Palette } from 'lucide-react';
+import { Settings, Layers, Box, FileText, BarChart2, CheckSquare, Square, X, Plus, Link2, FileInput, ShoppingBag, Globe, Loader2, Palette, MoreHorizontal as MoreHorizontalIcon } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
 import { TemplateProvider } from '@/components/TemplateProvider';
 import { BlockRenderer } from '@/components/blocks/BlockRenderer';
@@ -82,7 +82,7 @@ export function CanvasStudio({
         setSlideOverPanel(null);
     };
 
-    const toggleSlideOverPanel = (panel: 'links' | 'forms' | 'products' | 'siteinfo') => {
+    const toggleSlideOverPanel = (panel: 'links' | 'forms' | 'products' | 'siteinfo' | 'branding') => {
         setSlideOverPanel(prev => prev === panel ? null : panel);
         setLeftPanel(null);
     };
@@ -502,6 +502,7 @@ export function CanvasStudio({
             mobileSheet === 'pages' ? 'Pages' :
             mobileSheet === 'navigator' ? 'Navigator' :
             mobileSheet === 'add' ? 'Add Block' :
+            mobileSheet === 'more' ? 'More' :
             mobileSheet === 'props' ? (
                 activePanel === 'page' ? 'Title & Slug' :
                 activePanel === 'seo' ? 'SEO & Analytics' :
@@ -512,6 +513,7 @@ export function CanvasStudio({
             mobileSheet === 'pages' ? FileText :
             mobileSheet === 'navigator' ? Layers :
             mobileSheet === 'add' ? Plus :
+            mobileSheet === 'more' ? MoreHorizontalIcon :
             Settings;
 
         return (
@@ -542,6 +544,34 @@ export function CanvasStudio({
                             templateId={templateId}
                             onAfterAdd={() => setMobileSheet('navigator')}
                         />
+                    )}
+                    {mobileSheet === 'more' && (
+                        <div className="p-4 space-y-2">
+                            {([
+                                { id: 'links' as const, icon: Link2, label: 'Links', description: 'Manage link cards and URLs' },
+                                { id: 'forms' as const, icon: FileInput, label: 'Forms', description: 'Manage contact forms' },
+                                { id: 'products' as const, icon: ShoppingBag, label: 'Products', description: 'Manage product listings' },
+                                { id: 'siteinfo' as const, icon: Globe, label: 'Site Info', description: 'Business info & contact details' },
+                                { id: 'branding' as const, icon: Palette, label: 'Branding', description: 'Logos, colors & typography' },
+                            ]).map(({ id, icon: Icon, label, description }) => (
+                                <button
+                                    key={id}
+                                    onClick={() => {
+                                        setMobileSheet(null);
+                                        toggleSlideOverPanel(id);
+                                    }}
+                                    className="w-full flex items-center gap-3 px-4 py-3 bg-neutral-800/60 hover:bg-neutral-800 rounded-xl transition-colors text-left"
+                                >
+                                    <div className="w-9 h-9 flex items-center justify-center rounded-lg bg-neutral-700/60 text-neutral-300 flex-shrink-0">
+                                        <Icon size={18} />
+                                    </div>
+                                    <div>
+                                        <div className="text-sm font-semibold text-neutral-200">{label}</div>
+                                        <div className="text-xs text-neutral-500">{description}</div>
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
                     )}
                     {mobileSheet === 'props' && (
                         <div className="flex flex-col h-full">

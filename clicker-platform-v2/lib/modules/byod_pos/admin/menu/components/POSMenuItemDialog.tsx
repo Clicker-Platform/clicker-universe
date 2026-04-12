@@ -5,6 +5,10 @@ import { MultiImageUpload } from '@/components/admin/MultiImageUpload';
 import { SubmitButton } from '@/components/admin/SubmitButton';
 import { X, Pencil, Plus } from 'lucide-react';
 import { ProductVariant } from '@/lib/modules/byod_pos/types';
+import { POSCategory } from '@/lib/modules/byod_pos/api';
+import { POSCategoryPicker } from './POSCategoryManagerModal';
+import { useIsMobile } from '@/hooks/useIsMobile';
+import { MobileBottomSheet } from '@/components/admin/blocks/MobileBottomSheet';
 
 interface POSItemData {
     name: string;
@@ -24,9 +28,12 @@ interface POSMenuItemDialogProps {
     isLoading?: boolean;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     inventoryItems?: any[];
+    categories?: POSCategory[];
+    onRequestManageCategories?: () => void;
 }
 
-export function POSMenuItemDialog({ isOpen, onClose, onSave, initialData, isLoading = false, inventoryItems = [] }: POSMenuItemDialogProps) {
+export function POSMenuItemDialog({ isOpen, onClose, onSave, initialData, isLoading = false, inventoryItems = [], categories = [], onRequestManageCategories }: POSMenuItemDialogProps) {
+    const isMobile = useIsMobile();
     const isEditMode = !!initialData;
     const [formData, setFormData] = useState<POSItemData>({
         name: '',
@@ -64,27 +71,10 @@ export function POSMenuItemDialog({ isOpen, onClose, onSave, initialData, isLoad
         await onSave(formData);
     };
 
-    if (!isOpen) return null;
-
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-neutral-900 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl animate-in zoom-in-95 duration-200 border border-gray-100 dark:border-neutral-800">
-                {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-800/50 flex-shrink-0">
-                    <div className="flex items-center gap-3 text-brand-dark">
-                        <div className="p-2 bg-white dark:bg-neutral-900 rounded-lg shadow-sm text-brand-dark">
-                            {isEditMode ? <Pencil size={20} /> : <Plus size={20} />}
-                        </div>
-                        <h2 className="text-xl font-bold">{isEditMode ? 'Edit Item' : 'Add New Item'}</h2>
-                    </div>
-                    <button onClick={onClose} className="p-2 hover:bg-gray-200 dark:hover:bg-neutral-700 rounded-full transition-colors">
-                        <X size={20} className="text-gray-500 dark:text-neutral-500" />
-                    </button>
-                </div>
-
-                {/* Scrollable Content */}
-                <div className="p-6 overflow-y-auto flex-1">
-                    <form id="pos-item-form" onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    const formBody = (
+        <>
+        <div className="p-6 overflow-y-auto flex-1">
+            <form id="pos-item-form" onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="md:col-span-2 space-y-4">
                             <div>
                                 <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">Item Name</label>
@@ -101,25 +91,24 @@ export function POSMenuItemDialog({ isOpen, onClose, onSave, initialData, isLoad
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">Price</label>
                                     <div className="relative">
-                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-neutral-600 font-bold text-sm">$</span>
+                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-neutral-600 font-bold text-sm">Rp</span>
                                         <input
                                             type="number"
-                                            step="0.01"
+                                            step="1"
                                             min="0"
-                                            placeholder="0.00"
-                                            className="w-full pl-7 pr-4 py-2.5 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:outline-none focus:ring-2 focus:ring-brand-dark/20 focus:border-brand-dark transition-all"
+                                            placeholder="0"
+                                            className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:outline-none focus:ring-2 focus:ring-brand-dark/20 focus:border-brand-dark transition-all"
                                             value={formData.price}
                                             onChange={e => {
                                                 const val = e.target.value;
-                                                // Allow empty string or numbers/decimals
-                                                if (val === '' || /^\d*\.?\d*$/.test(val)) {
+                                                if (val === '' || /^\d*$/.test(val)) {
                                                     setFormData({ ...formData, price: val });
                                                 }
                                             }}
                                             onBlur={e => {
-                                                const num = parseFloat(e.target.value);
+                                                const num = parseInt(e.target.value);
                                                 if (!isNaN(num)) {
-                                                    setFormData({ ...formData, price: num.toFixed(2) });
+                                                    setFormData({ ...formData, price: String(num) });
                                                 }
                                             }}
                                             required
@@ -128,12 +117,11 @@ export function POSMenuItemDialog({ isOpen, onClose, onSave, initialData, isLoad
                                 </div>
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">Category</label>
-                                    <input
-                                        placeholder="e.g. Mains"
-                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:outline-none focus:ring-2 focus:ring-brand-dark/20 focus:border-brand-dark transition-all"
+                                    <POSCategoryPicker
                                         value={formData.category}
-                                        onChange={e => setFormData({ ...formData, category: e.target.value })}
-                                        required
+                                        onChange={v => setFormData({ ...formData, category: v })}
+                                        categories={categories}
+                                        onRequestManage={onRequestManageCategories ?? (() => {})}
                                     />
                                 </div>
                             </div>
@@ -148,19 +136,16 @@ export function POSMenuItemDialog({ isOpen, onClose, onSave, initialData, isLoad
                                 />
                             </div>
 
-                            <div className="flex items-center gap-3 bg-gray-50 dark:bg-neutral-800/50 p-4 rounded-xl border border-gray-200 dark:border-neutral-700">
-                                <div
-                                    onClick={() => setFormData(prev => ({ ...prev, isActive: !prev.isActive }))}
-                                    className={`
-                                        relative w-12 h-7 rounded-full transition-colors cursor-pointer flex items-center
-                                        ${formData.isActive ? 'bg-brand-green' : 'bg-gray-300'}
-                                    `}
-                                >
-                                    <div className={`w-5 h-5 bg-white rounded-full shadow-sm transform transition-transform ml-1 ${formData.isActive ? 'translate-x-5' : ''}`} />
-                                </div>
-                                <div className="flex flex-col">
-                                    <span className="text-sm font-bold text-gray-700 dark:text-neutral-300">Visible on POS</span>
-                                    <span className="text-xs text-gray-500 dark:text-neutral-500">Enable or disable this item in the catalog</span>
+                            <div className="border border-gray-200 dark:border-neutral-700 rounded-xl p-4">
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="checkbox"
+                                        id="isActive"
+                                        checked={formData.isActive}
+                                        onChange={e => setFormData(prev => ({ ...prev, isActive: e.target.checked }))}
+                                        className="w-4 h-4 rounded border-gray-300 dark:border-neutral-700 text-brand-dark focus:ring-brand-dark"
+                                    />
+                                    <label htmlFor="isActive" className="text-sm font-bold text-gray-700 dark:text-neutral-300">Visible on POS</label>
                                 </div>
                             </div>
                         </div>
@@ -296,9 +281,43 @@ export function POSMenuItemDialog({ isOpen, onClose, onSave, initialData, isLoad
                         isLoading={isLoading}
                         loadingLabel={isEditMode ? 'Updating...' : 'Creating...'}
                         label={isEditMode ? 'Save Changes' : 'Create Item'}
-                        className="bg-studio-blue text-white hover:bg-studio-blue/85 px-8 py-2.5 rounded-xl font-bold transition-all shadow-sticker hover:shadow-none hover:translate-y-[1px]"
+                        className="bg-studio-blue text-white hover:bg-studio-blue/85 px-8 py-2.5 rounded-xl font-bold transition-all shadow-lg hover:shadow-xl cursor-pointer active:scale-95"
                     />
                 </div>
+        </>
+    );
+
+    if (isMobile) {
+        return (
+            <MobileBottomSheet
+                isOpen={isOpen}
+                onClose={onClose}
+                title={isEditMode ? 'Edit Item' : 'Add New Item'}
+                height="90vh"
+            >
+                {formBody}
+            </MobileBottomSheet>
+        );
+    }
+
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white dark:bg-neutral-900 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl animate-in zoom-in-95 duration-200 border border-gray-100 dark:border-neutral-800">
+                {/* Header */}
+                <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-800/50 flex-shrink-0">
+                    <div className="flex items-center gap-3 text-brand-dark">
+                        <div className="p-2 bg-white dark:bg-neutral-900 rounded-lg shadow-sm text-brand-dark">
+                            {isEditMode ? <Pencil size={20} /> : <Plus size={20} />}
+                        </div>
+                        <h2 className="text-xl font-bold">{isEditMode ? 'Edit Item' : 'Add New Item'}</h2>
+                    </div>
+                    <button onClick={onClose} className="p-2 hover:bg-gray-200 dark:hover:bg-neutral-700 rounded-full transition-colors">
+                        <X size={20} className="text-gray-500 dark:text-neutral-500" />
+                    </button>
+                </div>
+                {formBody}
             </div>
         </div>
     );

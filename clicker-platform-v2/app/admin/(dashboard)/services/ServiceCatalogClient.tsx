@@ -5,6 +5,8 @@ import { Plus, Edit2, Trash2, Search, X, Clock, ShieldCheck, Settings2, Check, C
 import { useSite } from '@/lib/site-context';
 import { useUser } from '@/lib/user-context';
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
+import { useIsMobile } from '@/hooks/useIsMobile';
+import { MobileBottomSheet } from '@/components/admin/blocks/MobileBottomSheet';
 import {
     getServiceCatalog,
     createServiceCatalogItem,
@@ -167,6 +169,7 @@ function CategoryManagerModal({
     onSave: (cats: ServiceCategoryConfig[]) => Promise<void>;
     onClose: () => void;
 }) {
+    const isMobile = useIsMobile();
     const [cats, setCats] = useState<ServiceCategoryConfig[]>(categories);
     const [newLabel, setNewLabel] = useState('');
     const [newColor, setNewColor] = useState(COLOR_PRESETS[0].value);
@@ -195,85 +198,337 @@ function CategoryManagerModal({
         }
     };
 
+    const content = (
+        <div className="flex flex-col flex-1 overflow-hidden">
+            <div className="p-5 space-y-4 overflow-y-auto flex-1">
+                {/* Existing categories */}
+                <div className="space-y-2">
+                    {cats.map(cat => (
+                        <div key={cat.id} className="flex items-center justify-between gap-3 px-3 py-2.5 bg-gray-50 dark:bg-neutral-800 rounded-xl">
+                            <span className={`px-2.5 py-0.5 rounded-md text-xs font-bold uppercase tracking-wide ${cat.color}`}>
+                                {cat.label}
+                            </span>
+                            <button
+                                onClick={() => removeCategory(cat.id)}
+                                className="p-1 hover:bg-red-50 dark:hover:bg-red-950/30 text-gray-400 hover:text-red-500 rounded-lg transition-colors"
+                            >
+                                <X size={14} />
+                            </button>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Add new */}
+                <div className="border-t border-gray-100 dark:border-neutral-800 pt-4 space-y-3">
+                    <p className="text-xs font-bold text-gray-500 dark:text-neutral-500 uppercase tracking-wide">Add category</p>
+                    <input
+                        type="text"
+                        placeholder="e.g. TINTING"
+                        value={newLabel}
+                        onChange={e => setNewLabel(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addCategory())}
+                        className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200 text-sm"
+                    />
+                    <div className="flex flex-wrap gap-2">
+                        {COLOR_PRESETS.map(preset => (
+                            <button
+                                key={preset.value}
+                                type="button"
+                                onClick={() => setNewColor(preset.value)}
+                                className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${preset.value} ${newColor === preset.value ? 'ring-2 ring-offset-1 ring-brand-dark' : ''}`}
+                            >
+                                {preset.label}
+                            </button>
+                        ))}
+                    </div>
+                    <button
+                        type="button"
+                        onClick={addCategory}
+                        disabled={!newLabel.trim()}
+                        className="w-full py-2 rounded-xl border-2 border-dashed border-gray-300 dark:border-neutral-700 text-sm font-bold text-gray-500 dark:text-neutral-500 hover:border-brand-dark hover:text-brand-dark transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                        + Add Category
+                    </button>
+                </div>
+            </div>
+
+            <div className="p-5 border-t border-gray-100 dark:border-neutral-800 flex gap-3 flex-shrink-0">
+                <button
+                    onClick={onClose}
+                    className="flex-1 py-2.5 rounded-xl font-bold text-gray-600 dark:text-neutral-400 bg-gray-100 dark:bg-neutral-800 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors"
+                >
+                    Cancel
+                </button>
+                <button
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="flex-1 py-2.5 rounded-xl font-bold text-white bg-studio-blue hover:bg-studio-blue/85 transition-colors disabled:opacity-50"
+                >
+                    {saving ? 'Saving…' : 'Save Categories'}
+                </button>
+            </div>
+        </div>
+    );
+
+    if (isMobile) {
+        return (
+            <MobileBottomSheet
+                isOpen={true}
+                onClose={onClose}
+                title="Manage Categories"
+                height="80vh"
+            >
+                {content}
+            </MobileBottomSheet>
+        );
+    }
+
     return (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-            <div className="bg-white dark:bg-neutral-900 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-neutral-800">
+            <div className="bg-white dark:bg-neutral-900 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[80vh]">
+                <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-neutral-800 flex-shrink-0">
                     <h2 className="text-lg font-bold text-brand-dark">Manage Categories</h2>
                     <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-full transition-colors">
                         <X size={18} />
                     </button>
                 </div>
-
-                <div className="p-5 space-y-4 max-h-[60vh] overflow-y-auto">
-                    {/* Existing categories */}
-                    <div className="space-y-2">
-                        {cats.map(cat => (
-                            <div key={cat.id} className="flex items-center justify-between gap-3 px-3 py-2.5 bg-gray-50 dark:bg-neutral-800 rounded-xl">
-                                <span className={`px-2.5 py-0.5 rounded-md text-xs font-bold uppercase tracking-wide ${cat.color}`}>
-                                    {cat.label}
-                                </span>
-                                <button
-                                    onClick={() => removeCategory(cat.id)}
-                                    className="p-1 hover:bg-red-50 dark:hover:bg-red-950/30 text-gray-400 hover:text-red-500 rounded-lg transition-colors"
-                                >
-                                    <X size={14} />
-                                </button>
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* Add new */}
-                    <div className="border-t border-gray-100 dark:border-neutral-800 pt-4 space-y-3">
-                        <p className="text-xs font-bold text-gray-500 dark:text-neutral-500 uppercase tracking-wide">Add category</p>
-                        <input
-                            type="text"
-                            placeholder="e.g. TINTING"
-                            value={newLabel}
-                            onChange={e => setNewLabel(e.target.value)}
-                            onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addCategory())}
-                            className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200 text-sm"
-                        />
-                        <div className="flex flex-wrap gap-2">
-                            {COLOR_PRESETS.map(preset => (
-                                <button
-                                    key={preset.value}
-                                    type="button"
-                                    onClick={() => setNewColor(preset.value)}
-                                    className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${preset.value} ${newColor === preset.value ? 'ring-2 ring-offset-1 ring-brand-dark' : ''}`}
-                                >
-                                    {preset.label}
-                                </button>
-                            ))}
-                        </div>
-                        <button
-                            type="button"
-                            onClick={addCategory}
-                            disabled={!newLabel.trim()}
-                            className="w-full py-2 rounded-xl border-2 border-dashed border-gray-300 dark:border-neutral-700 text-sm font-bold text-gray-500 dark:text-neutral-500 hover:border-brand-dark hover:text-brand-dark transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                        >
-                            + Add Category
-                        </button>
-                    </div>
-                </div>
-
-                <div className="p-5 border-t border-gray-100 dark:border-neutral-800 flex gap-3">
-                    <button
-                        onClick={onClose}
-                        className="flex-1 py-2.5 rounded-xl font-bold text-gray-600 dark:text-neutral-400 bg-gray-100 dark:bg-neutral-800 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        onClick={handleSave}
-                        disabled={saving}
-                        className="flex-1 py-2.5 rounded-xl font-bold text-white bg-studio-blue hover:bg-studio-blue/85 transition-colors disabled:opacity-50"
-                    >
-                        {saving ? 'Saving…' : 'Save Categories'}
-                    </button>
-                </div>
+                {content}
             </div>
         </div>
+    );
+}
+
+// ─── Shared service form (used by both desktop modal and mobile sheet) ───────────
+
+interface ServiceFormProps {
+    form: FormData;
+    set: (field: Partial<FormData>) => void;
+    categories: ServiceCategoryConfig[];
+    pricingDisplay: PricingDisplay;
+    isSubmitting: boolean;
+    editing: ServiceCatalogItem | null;
+    onCancel: () => void;
+    onSubmit: (e: React.FormEvent) => void;
+    onRequestManageCategories: () => void;
+    padding?: string;
+}
+
+function ServiceForm({ form, set, categories, pricingDisplay, isSubmitting, editing, onCancel, onSubmit, onRequestManageCategories, padding = 'p-6' }: ServiceFormProps) {
+    return (
+        <form onSubmit={onSubmit} className="flex flex-col flex-1 overflow-hidden">
+            {/* Scrollable fields */}
+            <div className={`${padding} space-y-5 overflow-y-auto flex-1`}>
+            {/* Name */}
+            <div>
+                <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">Service Name <span className="text-red-500">*</span></label>
+                <input
+                    required
+                    type="text"
+                    value={form.name}
+                    onChange={e => set({ name: e.target.value })}
+                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
+                />
+            </div>
+
+            {/* Description */}
+            <div>
+                <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">Description</label>
+                <textarea
+                    value={form.description}
+                    onChange={e => set({ description: e.target.value })}
+                    rows={2}
+                    placeholder="Displayed on the public booking form"
+                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
+                />
+            </div>
+
+            {/* Price + Category */}
+            <div className="grid grid-cols-2 gap-4">
+                <div>
+                    <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">
+                        {form.bookable && pricingDisplay === 'range' ? 'Min Price (IDR)' :
+                         form.bookable && pricingDisplay === 'starting_from' ? 'Starting Price (IDR)' :
+                         'Price (IDR)'} <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                        required
+                        type="number"
+                        min="0"
+                        value={form.price}
+                        onChange={e => set({ price: Number(e.target.value) })}
+                        className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
+                    />
+                    {form.bookable && pricingDisplay === 'starting_from' && (
+                        <p className="text-xs text-indigo-600 dark:text-indigo-500 mt-1">Shown as "Mulai dari" on the booking page.</p>
+                    )}
+                </div>
+                <div>
+                    <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">Category</label>
+                    <CategoryPicker
+                        value={form.category}
+                        onChange={v => set({ category: v })}
+                        categories={categories}
+                        onRequestManage={onRequestManageCategories}
+                    />
+                </div>
+            </div>
+
+            {/* Active */}
+            <div className="flex items-center gap-2">
+                <input
+                    type="checkbox"
+                    id="isActive"
+                    checked={form.isActive}
+                    onChange={e => set({ isActive: e.target.checked })}
+                    className="w-4 h-4 rounded border-gray-300 dark:border-neutral-700 text-brand-dark focus:ring-brand-dark"
+                />
+                <label htmlFor="isActive" className="text-sm font-medium text-gray-700 dark:text-neutral-300">Active</label>
+            </div>
+
+            {/* Reservation config */}
+            <div className="border border-indigo-200 dark:border-indigo-900 rounded-xl p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                    <input
+                        type="checkbox"
+                        id="bookable"
+                        checked={form.bookable}
+                        onChange={e => set({ bookable: e.target.checked })}
+                        className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                    />
+                    <label htmlFor="bookable" className="text-sm font-bold text-indigo-700 dark:text-indigo-400">Bookable via Reservation</label>
+                </div>
+                {form.bookable && (
+                    <div className="space-y-3 pt-1">
+                        <div>
+                            <p className="text-xs font-bold text-gray-500 dark:text-neutral-500 uppercase tracking-wide mb-2">Booking Type</p>
+                            <div className="grid grid-cols-2 gap-2">
+                                {(['time_slot', 'request'] as const).map(bt => (
+                                    <button
+                                        key={bt}
+                                        type="button"
+                                        onClick={() => set({ bookingType: bt })}
+                                        className={`flex flex-col items-start px-3 py-2.5 rounded-xl border text-left transition-all ${form.bookingType === bt
+                                            ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-950/30'
+                                            : 'border-gray-200 dark:border-neutral-700 hover:border-indigo-300'
+                                        }`}
+                                    >
+                                        <span className={`text-sm font-bold ${form.bookingType === bt ? 'text-indigo-700 dark:text-indigo-400' : 'text-gray-700 dark:text-neutral-300'}`}>
+                                            {bt === 'time_slot' ? 'Time Slot' : 'On Request'}
+                                        </span>
+                                        <span className="text-xs text-gray-400 dark:text-neutral-500 mt-0.5">
+                                            {bt === 'time_slot' ? 'Customer picks a time' : 'You confirm timing'}
+                                        </span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                        {pricingDisplay === 'range' && (
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">Max Price (IDR)</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    placeholder={`e.g. ${form.price * 3 || 500000}`}
+                                    value={form.maxPrice}
+                                    onChange={e => set({ maxPrice: e.target.value === '' ? '' : Number(e.target.value) })}
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
+                                />
+                                <p className="text-xs text-indigo-600 dark:text-indigo-500 mt-1">Upper bound shown on booking page, e.g. Rp {form.price.toLocaleString('id-ID')} – Rp {(Number(form.maxPrice) || form.price * 3 || 500000).toLocaleString('id-ID')}</p>
+                            </div>
+                        )}
+                        {form.bookingType === 'time_slot' && (
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">Duration (min) <span className="text-red-500">*</span></label>
+                                <input
+                                    required
+                                    type="number"
+                                    min="5"
+                                    step="5"
+                                    value={form.durationMinutes}
+                                    onChange={e => set({ durationMinutes: Number(e.target.value) })}
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
+                                />
+                                <p className="text-xs text-indigo-600 dark:text-indigo-500 mt-1.5">Controls booking slot length in the public booking form.</p>
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
+
+            {/* Service Records config */}
+            <div className="border border-green-200 dark:border-green-900 rounded-xl p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                    <input
+                        type="checkbox"
+                        id="hasServiceRecord"
+                        checked={form.hasServiceRecord}
+                        onChange={e => set({ hasServiceRecord: e.target.checked })}
+                        className="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                    />
+                    <label htmlFor="hasServiceRecord" className="text-sm font-bold text-green-700 dark:text-green-400">Used in Service Records</label>
+                </div>
+                {form.hasServiceRecord && (
+                    <div className="space-y-3 pt-1">
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="checkbox"
+                                id="hasWarranty"
+                                checked={form.hasWarranty}
+                                onChange={e => set({ hasWarranty: e.target.checked })}
+                                className="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                            />
+                            <label htmlFor="hasWarranty" className="text-sm font-medium text-gray-700 dark:text-neutral-300 flex items-center gap-1.5">
+                                <ShieldCheck size={14} className="text-green-600" /> Issues warranty card on completion
+                            </label>
+                        </div>
+                        {form.hasWarranty && (
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">Default Warranty (months)</label>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    value={form.defaultWarrantyMonths}
+                                    onChange={e => set({ defaultWarrantyMonths: Number(e.target.value) })}
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
+                                />
+                            </div>
+                        )}
+                        <div>
+                            <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">Walk-in Price Override (optional)</label>
+                            <input
+                                type="number"
+                                min="0"
+                                placeholder={`Default: ${form.price}`}
+                                value={form.defaultPrice}
+                                onChange={e => set({ defaultPrice: e.target.value === '' ? '' : Number(e.target.value) })}
+                                className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
+                            />
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            </div>{/* end scrollable fields */}
+
+            {/* Sticky footer CTA */}
+            <div className="flex gap-3 p-4 border-t border-gray-100 dark:border-neutral-800 flex-shrink-0">
+                <button
+                    type="button"
+                    disabled={isSubmitting}
+                    onClick={onCancel}
+                    className="flex-1 py-3 px-4 rounded-xl font-bold text-gray-600 dark:text-neutral-400 bg-gray-100 dark:bg-neutral-800 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer active:scale-95 disabled:opacity-50"
+                >
+                    Cancel
+                </button>
+                <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-studio-blue hover:bg-studio-blue/85 transition-colors cursor-pointer active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                    {isSubmitting ? 'Saving...' : editing ? 'Save Changes' : 'Add Service'}
+                </button>
+            </div>
+        </form>
     );
 }
 
@@ -286,6 +541,7 @@ interface Props {
 export default function ServiceCatalogClient({ initialItems = [] }: Props) {
     const { siteId } = useSite();
     const { isOwner } = useUser();
+    const isMobile = useIsMobile();
     const [items, setItems] = useState<ServiceCatalogItem[]>(initialItems);
     const [categories, setCategories] = useState<ServiceCategoryConfig[]>(DEFAULT_SERVICE_CATEGORIES);
     const [search, setSearch] = useState('');
@@ -396,9 +652,11 @@ export default function ServiceCatalogClient({ initialItems = [] }: Props) {
 
     const set = (field: Partial<FormData>) => setForm(prev => ({ ...prev, ...field }));
 
-    // Build filter pills: ALL + categories that are actually used
+    // Build filter pills: ALL (only when items exist) + categories that are actually used
     const usedLabels = Array.from(new Set(items.map(i => i.category)));
-    const filterPills = ['ALL', ...categories.map(c => c.label).filter(l => usedLabels.includes(l))];
+    const filterPills = items.length > 0
+        ? ['ALL', ...categories.map(c => c.label).filter(l => usedLabels.includes(l))]
+        : [];
 
     return (
         <div>
@@ -551,11 +809,27 @@ export default function ServiceCatalogClient({ initialItems = [] }: Props) {
                 )}
             </div>
 
-            {/* Service Add/Edit Modal */}
-            {isModalOpen && (
+            {/* Service Add/Edit — bottom sheet on mobile, centered modal on desktop */}
+            {isMobile ? (
+                <MobileBottomSheet
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    title={editing ? 'Edit Service' : 'New Service'}
+                    height="90vh"
+                >
+                    <ServiceForm
+                        form={form} set={set} categories={categories} pricingDisplay={pricingDisplay}
+                        isSubmitting={isSubmitting} editing={editing}
+                        onCancel={() => setIsModalOpen(false)}
+                        onSubmit={handleSave}
+                        onRequestManageCategories={() => { setIsModalOpen(false); setIsCategoryManagerOpen(true); }}
+                        padding="p-4"
+                    />
+                </MobileBottomSheet>
+            ) : isModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-neutral-900 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
-                        <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-neutral-800 sticky top-0 bg-white dark:bg-neutral-900 z-10">
+                    <div className="bg-white dark:bg-neutral-900 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col">
+                        <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-neutral-800 flex-shrink-0">
                             <h2 className="text-xl font-bold text-brand-dark">
                                 {editing ? 'Edit Service' : 'New Service'}
                             </h2>
@@ -563,219 +837,14 @@ export default function ServiceCatalogClient({ initialItems = [] }: Props) {
                                 <X size={20} />
                             </button>
                         </div>
-
-                        <form onSubmit={handleSave} className="p-6 space-y-5">
-                            {/* Name */}
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">Service Name <span className="text-red-500">*</span></label>
-                                <input
-                                    required
-                                    type="text"
-                                    value={form.name}
-                                    onChange={e => set({ name: e.target.value })}
-                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
-                                />
-                            </div>
-
-                            {/* Description */}
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">Description</label>
-                                <textarea
-                                    value={form.description}
-                                    onChange={e => set({ description: e.target.value })}
-                                    rows={2}
-                                    placeholder="Displayed on the public booking form"
-                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
-                                />
-                            </div>
-
-                            {/* Price + Category */}
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">
-                                        {form.bookable && pricingDisplay === 'range' ? 'Min Price (IDR)' :
-                                         form.bookable && pricingDisplay === 'starting_from' ? 'Starting Price (IDR)' :
-                                         'Price (IDR)'} <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        required
-                                        type="number"
-                                        min="0"
-                                        value={form.price}
-                                        onChange={e => set({ price: Number(e.target.value) })}
-                                        className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
-                                    />
-                                    {form.bookable && pricingDisplay === 'starting_from' && (
-                                        <p className="text-xs text-indigo-600 dark:text-indigo-500 mt-1">Shown as "Mulai dari" on the booking page.</p>
-                                    )}
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">Category</label>
-                                    <CategoryPicker
-                                        value={form.category}
-                                        onChange={v => set({ category: v })}
-                                        categories={categories}
-                                        onRequestManage={() => { setIsModalOpen(false); setIsCategoryManagerOpen(true); }}
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Active */}
-                            <div className="flex items-center gap-2">
-                                <input
-                                    type="checkbox"
-                                    id="isActive"
-                                    checked={form.isActive}
-                                    onChange={e => set({ isActive: e.target.checked })}
-                                    className="w-4 h-4 rounded border-gray-300 dark:border-neutral-700 text-brand-dark focus:ring-brand-dark"
-                                />
-                                <label htmlFor="isActive" className="text-sm font-medium text-gray-700 dark:text-neutral-300">Active</label>
-                            </div>
-
-                            {/* Reservation config */}
-                            <div className="border border-indigo-200 dark:border-indigo-900 rounded-xl p-4 space-y-3">
-                                <div className="flex items-center gap-2">
-                                    <input
-                                        type="checkbox"
-                                        id="bookable"
-                                        checked={form.bookable}
-                                        onChange={e => set({ bookable: e.target.checked })}
-                                        className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                                    />
-                                    <label htmlFor="bookable" className="text-sm font-bold text-indigo-700 dark:text-indigo-400">Bookable via Reservation</label>
-                                </div>
-                                {form.bookable && (
-                                    <div className="space-y-3 pt-1">
-                                        {/* Booking type */}
-                                        <div>
-                                            <p className="text-xs font-bold text-gray-500 dark:text-neutral-500 uppercase tracking-wide mb-2">Booking Type</p>
-                                            <div className="grid grid-cols-2 gap-2">
-                                                {(['time_slot', 'request'] as const).map(bt => (
-                                                    <button
-                                                        key={bt}
-                                                        type="button"
-                                                        onClick={() => set({ bookingType: bt })}
-                                                        className={`flex flex-col items-start px-3 py-2.5 rounded-xl border text-left transition-all ${form.bookingType === bt
-                                                            ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-950/30'
-                                                            : 'border-gray-200 dark:border-neutral-700 hover:border-indigo-300'
-                                                        }`}
-                                                    >
-                                                        <span className={`text-sm font-bold ${form.bookingType === bt ? 'text-indigo-700 dark:text-indigo-400' : 'text-gray-700 dark:text-neutral-300'}`}>
-                                                            {bt === 'time_slot' ? 'Time Slot' : 'On Request'}
-                                                        </span>
-                                                        <span className="text-xs text-gray-400 dark:text-neutral-500 mt-0.5">
-                                                            {bt === 'time_slot' ? 'Customer picks a time' : 'You confirm timing'}
-                                                        </span>
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </div>
-                                        {/* Max Price — only for range pricing */}
-                                        {pricingDisplay === 'range' && (
-                                            <div>
-                                                <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">Max Price (IDR)</label>
-                                                <input
-                                                    type="number"
-                                                    min="0"
-                                                    placeholder={`e.g. ${form.price * 3 || 500000}`}
-                                                    value={form.maxPrice}
-                                                    onChange={e => set({ maxPrice: e.target.value === '' ? '' : Number(e.target.value) })}
-                                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
-                                                />
-                                                <p className="text-xs text-indigo-600 dark:text-indigo-500 mt-1">Upper bound shown on booking page, e.g. Rp {form.price.toLocaleString('id-ID')} – Rp {(Number(form.maxPrice) || form.price * 3 || 500000).toLocaleString('id-ID')}</p>
-                                            </div>
-                                        )}
-                                        {/* Duration — only for time_slot */}
-                                        {form.bookingType === 'time_slot' && (
-                                            <div>
-                                                <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">Duration (min) <span className="text-red-500">*</span></label>
-                                                <input
-                                                    required
-                                                    type="number"
-                                                    min="5"
-                                                    step="5"
-                                                    value={form.durationMinutes}
-                                                    onChange={e => set({ durationMinutes: Number(e.target.value) })}
-                                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
-                                                />
-                                                <p className="text-xs text-indigo-600 dark:text-indigo-500 mt-1.5">Controls booking slot length in the public booking form.</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Service Records config */}
-                            <div className="border border-green-200 dark:border-green-900 rounded-xl p-4 space-y-3">
-                                <div className="flex items-center gap-2">
-                                    <input
-                                        type="checkbox"
-                                        id="hasServiceRecord"
-                                        checked={form.hasServiceRecord}
-                                        onChange={e => set({ hasServiceRecord: e.target.checked })}
-                                        className="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
-                                    />
-                                    <label htmlFor="hasServiceRecord" className="text-sm font-bold text-green-700 dark:text-green-400">Used in Service Records</label>
-                                </div>
-                                {form.hasServiceRecord && (
-                                    <div className="space-y-3 pt-1">
-                                        <div className="flex items-center gap-2">
-                                            <input
-                                                type="checkbox"
-                                                id="hasWarranty"
-                                                checked={form.hasWarranty}
-                                                onChange={e => set({ hasWarranty: e.target.checked })}
-                                                className="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
-                                            />
-                                            <label htmlFor="hasWarranty" className="text-sm font-medium text-gray-700 dark:text-neutral-300 flex items-center gap-1.5">
-                                                <ShieldCheck size={14} className="text-green-600" /> Issues warranty card on completion
-                                            </label>
-                                        </div>
-                                        {form.hasWarranty && (
-                                            <div>
-                                                <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">Default Warranty (months)</label>
-                                                <input
-                                                    type="number"
-                                                    min="1"
-                                                    value={form.defaultWarrantyMonths}
-                                                    onChange={e => set({ defaultWarrantyMonths: Number(e.target.value) })}
-                                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
-                                                />
-                                            </div>
-                                        )}
-                                        <div>
-                                            <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">Walk-in Price Override (optional)</label>
-                                            <input
-                                                type="number"
-                                                min="0"
-                                                placeholder={`Default: ${form.price}`}
-                                                value={form.defaultPrice}
-                                                onChange={e => set({ defaultPrice: e.target.value === '' ? '' : Number(e.target.value) })}
-                                                className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
-                                            />
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="pt-2 flex gap-3">
-                                <button
-                                    type="button"
-                                    disabled={isSubmitting}
-                                    onClick={() => setIsModalOpen(false)}
-                                    className="flex-1 py-3 px-4 rounded-xl font-bold text-gray-600 dark:text-neutral-400 bg-gray-100 dark:bg-neutral-800 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer active:scale-95 disabled:opacity-50"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={isSubmitting}
-                                    className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-studio-blue hover:bg-studio-blue/85 transition-colors cursor-pointer active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
-                                >
-                                    {isSubmitting ? 'Saving...' : editing ? 'Save Changes' : 'Add Service'}
-                                </button>
-                            </div>
-                        </form>
+                        <ServiceForm
+                            form={form} set={set} categories={categories} pricingDisplay={pricingDisplay}
+                            isSubmitting={isSubmitting} editing={editing}
+                            onCancel={() => setIsModalOpen(false)}
+                            onSubmit={handleSave}
+                            onRequestManageCategories={() => { setIsModalOpen(false); setIsCategoryManagerOpen(true); }}
+                            padding="p-6"
+                        />
                     </div>
                 </div>
             )}

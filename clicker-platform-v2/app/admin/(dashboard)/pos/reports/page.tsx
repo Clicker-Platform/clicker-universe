@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Download, Calendar, Printer, ChevronLeft, ChevronRight, BarChart3 } from 'lucide-react';
+import { Download, Calendar, Printer, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
     getDailyReport,
     getWeeklyReport,
@@ -224,13 +224,11 @@ export default function POSReportsPage() {
     }
 
     return (
-        <div className="max-w-7xl">
+        <div>
             {/* Page Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 md:mb-8 print:hidden">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100 flex items-center gap-3">
-                        <BarChart3 size={28} className="hidden md:block" /> POS Reports
-                    </h1>
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100 mb-1">POS reports</h1>
                     <p className="text-gray-600 dark:text-neutral-400 font-medium text-sm md:text-base">View your sales performance and analytics</p>
                 </div>
             </div>

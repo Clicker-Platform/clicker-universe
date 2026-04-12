@@ -98,9 +98,7 @@ export async function getServiceRecordsByDateRange(
 
 export function computeReportSummary(records: ServiceRecord[]): ReportSummary {
     const statusBreakdown: Record<RecordStatus, number> = {
-        DRAFT: 0,
-        IN_PROGRESS: 0,
-        PENDING_APPROVAL: 0,
+        ACTIVE: 0,
         COMPLETED: 0,
         CANCELLED: 0,
     };

@@ -3,11 +3,9 @@
 import type { RecordStatus } from '../../types';
 
 const STATUS_CONFIG: Record<RecordStatus, { label: string; className: string }> = {
-    DRAFT:              { label: 'Draft',            className: 'bg-gray-100 text-gray-600 dark:bg-neutral-800 dark:text-neutral-400' },
-    IN_PROGRESS:        { label: 'In Progress',      className: 'bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400' },
-    PENDING_APPROVAL:   { label: 'Pending Approval', className: 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400' },
-    COMPLETED:          { label: 'Completed',        className: 'bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-400' },
-    CANCELLED:          { label: 'Cancelled',        className: 'bg-red-100 text-red-600 dark:bg-red-950/40 dark:text-red-400' },
+    ACTIVE:    { label: 'Active',    className: 'bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400' },
+    COMPLETED: { label: 'Completed', className: 'bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-400' },
+    CANCELLED: { label: 'Cancelled', className: 'bg-red-100 text-red-600 dark:bg-red-950/40 dark:text-red-400' },
 };
 
 interface Props {

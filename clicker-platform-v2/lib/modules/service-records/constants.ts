@@ -21,14 +21,12 @@ export const WARRANTY_SUFFIX_LEN  = 4;
 export const WARRANTY_MAX_RETRIES = 3;
 
 // Record status state machine
-// DRAFT → IN_PROGRESS → PENDING_APPROVAL → COMPLETED (terminal, immutable)
-// Any non-COMPLETED → CANCELLED (manager/owner only)
+// ACTIVE → COMPLETED (terminal, immutable) via Bill & Approve
+// ACTIVE → CANCELLED
 export const VALID_STATUS_TRANSITIONS: Record<string, string[]> = {
-    DRAFT:              ['IN_PROGRESS', 'CANCELLED'],
-    IN_PROGRESS:        ['PENDING_APPROVAL', 'CANCELLED'],
-    PENDING_APPROVAL:   ['COMPLETED', 'IN_PROGRESS', 'CANCELLED'],
-    COMPLETED:          [],
-    CANCELLED:          [],
+    ACTIVE:    ['COMPLETED', 'CANCELLED'],
+    COMPLETED: [],
+    CANCELLED: [],
 };
 
 // Required Firestore composite indexes (document here for ops reference):

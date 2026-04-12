@@ -30,7 +30,7 @@ import {
     WARRANTY_CHARSET,
     WARRANTY_SUFFIX_LEN,
     WARRANTY_MAX_RETRIES,
-    VALID_STATUS_TRANSITIONS,
+
 } from './constants';
 import {
     getServiceCatalog,
@@ -182,7 +182,7 @@ export async function createServiceRecord(
     const ref = await addDoc(collection(db, 'sites', siteId, SR_RECORDS), {
         ...data,
         outletId,
-        status: 'DRAFT',
+        status: 'ACTIVE',
         paymentStatus: data.paymentStatus || 'UNPAID',
         amountPaid: data.amountPaid || 0,
         createdAt: serverTimestamp(),
@@ -229,29 +229,6 @@ export async function updateServiceRecord(
     }
 }
 
-export async function submitForApproval(siteId: string, id: string): Promise<void> {
-    const record = await getServiceRecord(siteId, id);
-    if (!record) throw new Error('Service record not found');
-    if (record.status !== 'IN_PROGRESS') {
-        throw new Error('Only IN_PROGRESS records can be submitted for approval');
-    }
-    await updateDoc(doc(db, 'sites', siteId, SR_RECORDS, id), {
-        status: 'PENDING_APPROVAL',
-        updatedAt: serverTimestamp(),
-    });
-}
-
-export async function moveToInProgress(siteId: string, id: string): Promise<void> {
-    const record = await getServiceRecord(siteId, id);
-    if (!record) throw new Error('Service record not found');
-    if (!VALID_STATUS_TRANSITIONS[record.status]?.includes('IN_PROGRESS')) {
-        throw new Error(`Cannot move from ${record.status} to IN_PROGRESS`);
-    }
-    await updateDoc(doc(db, 'sites', siteId, SR_RECORDS, id), {
-        status: 'IN_PROGRESS',
-        updatedAt: serverTimestamp(),
-    });
-}
 
 export async function cancelRecord(siteId: string, id: string, cancelReason: string): Promise<void> {
     if (!cancelReason?.trim()) throw new Error('Cancel reason is required');
@@ -268,12 +245,12 @@ export async function cancelRecord(siteId: string, id: string, cancelReason: str
 }
 
 /**
- * Approves a PENDING_APPROVAL record and atomically:
- * 1. Updates record to COMPLETED
+ * Completes an ACTIVE record atomically via the Bill & Approve flow:
+ * 1. Updates record to COMPLETED with final payment details
  * 2. Creates warrantyCard (if hasWarranty = true)
  * 3. Updates record with warrantyCardId
  * 4. Writes reminder queue entries (R0–R3) based on serviceConfig
- * 5. After batch: awards membership points (failure does NOT roll back)
+ * 5. After batch: deducts inventory, completes booking, awards membership points
  *
  * NOTE: In production, this is handled by the onServiceRecordCompleted Cloud Function.
  * This client-side implementation is the v1.0 fallback until Cloud Functions are deployed.
@@ -287,11 +264,11 @@ export async function approveRecord(
 ): Promise<void> {
     const record2 = await getServiceRecord(siteId, recordId);
     if (!record2) throw new Error('Service record not found');
-    if (record2.status !== 'PENDING_APPROVAL') {
-        throw new Error('Only PENDING_APPROVAL records can be approved');
+    if (record2.status !== 'ACTIVE') {
+        throw new Error('Only ACTIVE records can be completed');
     }
     if (record2.paymentStatus !== 'PAID') {
-        throw new Error('Payment must be PAID before approval');
+        throw new Error('Payment must be PAID before completing the record');
     }
 
     const config = await getServiceConfig(siteId);

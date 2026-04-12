@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { POSOrder } from '@/lib/modules/byod_pos/types';
 import { subscribeToRecentOrders, updateOrderStatus, cancelOrder } from '@/lib/modules/byod_pos/api';
-import { ShoppingBag, Grid } from 'lucide-react';
+import { ShoppingBag } from 'lucide-react';
 import { toast } from 'sonner';
 import { POSOrderCard } from './components/POSOrderCard';
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
@@ -66,13 +66,10 @@ export default function KDSClient({ initialOrders = [] }: { initialOrders?: POSO
         [orders]);
 
     return (
-        <div className="max-w-7xl mx-auto">
+        <div>
             <div className="flex items-center gap-4 mb-8">
                 <div>
-                    <h1 className="text-3xl font-black text-brand-dark mb-2 uppercase tracking-tight flex items-center gap-3">
-                        <Grid size={32} />
-                        Kitchen Display
-                    </h1>
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100 mb-1">Kitchen display</h1>
                     <p className="text-gray-600 dark:text-neutral-400 font-medium">Order fulfillment & production queue</p>
                 </div>
                 <div className="ml-auto flex items-center gap-2">

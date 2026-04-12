@@ -100,8 +100,8 @@ export function MobileBottomSheet({
                     </button>
                 </div>
 
-                {/* Scrollable content */}
-                <div className="flex-1 overflow-y-auto custom-scrollbar">
+                {/* Content — flex-col so children can manage their own scroll */}
+                <div className="flex-1 flex flex-col min-h-0">
                     {children}
                 </div>
             </div>

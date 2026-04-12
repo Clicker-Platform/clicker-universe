@@ -1,17 +1,16 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { ensureCategoryExists, getMenuItems } from '../../api';
+import { ensureCategoryExists, getMenuItems, getPOSCategories, savePOSCategories, POSCategory } from '../../api';
 import { db } from '@/lib/firebase';
 import { isModuleEnabled } from '@/lib/modules/registry';
 import { collection, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
-import { Trash2, Plus, Pencil, LayoutGrid, List, Eye, EyeOff, Store, X } from 'lucide-react';
+import { Trash2, Plus, Pencil, LayoutGrid, List, Eye, EyeOff, Store } from 'lucide-react';
 import { toast } from 'sonner';
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
-import { MultiImageUpload } from '@/components/admin/MultiImageUpload';
-import { SubmitButton } from '@/components/admin/SubmitButton';
 import { POSMenuItemDialog } from './components/POSMenuItemDialog';
-import { useSite } from '@/lib/site-context'; // New import
+import { POSCategoryManagerModal } from './components/POSCategoryManagerModal';
+import { useSite } from '@/lib/site-context';
 
 interface POSItem {
     id: string;
@@ -34,6 +33,10 @@ export default function POSMenuClient({ initialItems = [] }: POSMenuClientProps)
     const [inventoryItems, setInventoryItems] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(initialItems.length === 0);
 
+    // Category state
+    const [menuCategories, setMenuCategories] = useState<POSCategory[]>([]);
+    const [categoryManagerOpen, setCategoryManagerOpen] = useState(false);
+
     useEffect(() => {
         // Fetch inventory for linking (Strict Modularity Check)
         if (siteId) {
@@ -45,6 +48,9 @@ export default function POSMenuClient({ initialItems = [] }: POSMenuClientProps)
                     });
                 }
             });
+
+            // Fetch menu categories
+            getPOSCategories(siteId).then(cats => setMenuCategories(cats));
         }
 
         // Fetch items if not provided
@@ -55,6 +61,13 @@ export default function POSMenuClient({ initialItems = [] }: POSMenuClientProps)
             });
         }
     }, [initialItems.length, siteId]);
+
+    const handleSaveCategories = async (cats: POSCategory[]) => {
+        if (!siteId) return;
+        await savePOSCategories(siteId, cats);
+        setMenuCategories(cats);
+        toast.success('Categories saved');
+    };
 
     // UI State
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
@@ -202,15 +215,18 @@ export default function POSMenuClient({ initialItems = [] }: POSMenuClientProps)
     };
 
     return (
-        <div className="max-w-7xl mx-auto">
+        <div>
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                 <div>
-                    <h1 className="text-3xl font-black text-brand-dark uppercase flex items-center gap-3">
-                        <Store size={32} /> Catalog Manager
-                    </h1>
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100 mb-1">Menu manager</h1>
                     <p className="text-gray-600 dark:text-neutral-400 font-medium">Manage your product catalog</p>
                 </div>
-
+                <button
+                    onClick={openAddDialog}
+                    className="flex items-center gap-2 bg-studio-blue text-white px-6 py-3 rounded-xl font-bold hover:bg-studio-blue/85 transition-all active:scale-95"
+                >
+                    <Plus size={20} /> Add Item
+                </button>
             </div>
 
 
@@ -220,7 +236,7 @@ export default function POSMenuClient({ initialItems = [] }: POSMenuClientProps)
                 <div className="p-4 border-b border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 flex flex-col xl:flex-row gap-4 justify-between items-start xl:items-center">
                     {/* Category Filter */}
                     <div className="flex gap-2 overflow-x-auto max-w-full pb-2 xl:pb-0 no-scrollbar items-center">
-                        {categories.map(cat => (
+                        {items.length > 0 && categories.map(cat => (
                             <button
                                 key={cat}
                                 onClick={() => setSelectedCategory(cat)}
@@ -237,8 +253,8 @@ export default function POSMenuClient({ initialItems = [] }: POSMenuClientProps)
                     </div>
 
                     {/* Actions */}
-                    <div className="flex gap-3 shrink-0 w-full xl:w-auto">
-                        <div className="flex bg-gray-50 dark:bg-neutral-800/50 p-1 rounded-lg border border-gray-200 dark:border-neutral-800 ml-auto xl:ml-0">
+                    <div className="flex gap-3 shrink-0 w-full xl:w-auto justify-end">
+                        <div className="flex bg-gray-50 dark:bg-neutral-800/50 p-1 rounded-lg border border-gray-200 dark:border-neutral-800">
                             <button
                                 onClick={() => setViewMode('grid')}
                                 className={`p-2 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-neutral-900 text-brand-dark shadow-sm ring-1 ring-gray-200 dark:ring-neutral-700' : 'text-gray-400 dark:text-neutral-600 hover:text-gray-600 dark:hover:text-neutral-400'}`}
@@ -254,12 +270,6 @@ export default function POSMenuClient({ initialItems = [] }: POSMenuClientProps)
                                 <List size={18} />
                             </button>
                         </div>
-                        <button
-                            onClick={openAddDialog}
-                            className="bg-studio-blue text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 hover:bg-studio-blue/85 transition-all shadow-sticker hover:shadow-none hover:translate-y-[1px] text-sm"
-                        >
-                            <Plus size={18} /> <span className="hidden sm:inline">Add Item</span>
-                        </button>
                     </div>
                 </div>
 
@@ -378,6 +388,8 @@ export default function POSMenuClient({ initialItems = [] }: POSMenuClientProps)
                 onSave={handleSaveItem}
                 isLoading={isSubmitting}
                 inventoryItems={inventoryItems}
+                categories={menuCategories}
+                onRequestManageCategories={() => setCategoryManagerOpen(true)}
                 initialData={editingId ? {
                     name: formData.name,
                     price: formData.price,
@@ -388,6 +400,14 @@ export default function POSMenuClient({ initialItems = [] }: POSMenuClientProps)
                     variants: (items.find(i => i.id === editingId) as any)?.variants || []
                 } : undefined}
             />
+
+            {categoryManagerOpen && (
+                <POSCategoryManagerModal
+                    categories={menuCategories}
+                    onSave={handleSaveCategories}
+                    onClose={() => setCategoryManagerOpen(false)}
+                />
+            )}
 
             <ConfirmationDialog
                 isOpen={deleteDialogOpen}

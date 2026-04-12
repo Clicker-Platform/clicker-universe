@@ -10,15 +10,13 @@ import { PaymentStatusBadge } from './components/PaymentStatusBadge';
 import type { ServiceRecord, RecordStatus } from '../types';
 import type { QueryDocumentSnapshot } from 'firebase/firestore';
 
-type TabStatus = 'ALL' | 'PENDING_APPROVAL' | 'IN_PROGRESS' | 'DRAFT' | 'COMPLETED' | 'CANCELLED';
+type TabStatus = 'ALL' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
 
-const TABS: { key: TabStatus; label: string; highlight?: boolean }[] = [
-    { key: 'ALL',              label: 'All' },
-    { key: 'PENDING_APPROVAL', label: 'Pending Approval', highlight: true },
-    { key: 'IN_PROGRESS',      label: 'In Progress' },
-    { key: 'DRAFT',            label: 'Draft' },
-    { key: 'COMPLETED',        label: 'Completed' },
-    { key: 'CANCELLED',        label: 'Cancelled' },
+const TABS: { key: TabStatus; label: string }[] = [
+    { key: 'ALL',       label: 'All' },
+    { key: 'ACTIVE',    label: 'Active' },
+    { key: 'COMPLETED', label: 'Completed' },
+    { key: 'CANCELLED', label: 'Cancelled' },
 ];
 
 function formatDate(ts: any): string {
@@ -173,7 +171,7 @@ export default function RecordsListPage() {
                                             key={record.id}
                                             onClick={() => router.push(`/admin/service-records/detail?id=${record.id}`)}
                                             className={`cursor-pointer hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors ${
-                                                record.status === 'PENDING_APPROVAL' ? 'bg-amber-50/40 dark:bg-amber-950/20' : ''
+                                                ''
                                             }`}
                                         >
                                             <td className="px-4 py-3 font-mono font-semibold text-gray-900 dark:text-neutral-100">{record.vehiclePlate}</td>
@@ -209,7 +207,7 @@ export default function RecordsListPage() {
                                     key={record.id}
                                     onClick={() => router.push(`/admin/service-records/detail?id=${record.id}`)}
                                     className={`p-4 cursor-pointer active:bg-gray-50 dark:active:bg-neutral-800 ${
-                                        record.status === 'PENDING_APPROVAL' ? 'bg-amber-50/40 dark:bg-amber-950/20' : ''
+                                        ''
                                     }`}
                                 >
                                     <div className="flex items-start justify-between gap-2">

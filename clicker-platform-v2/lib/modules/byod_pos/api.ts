@@ -215,6 +215,35 @@ export async function ensureCategoryExists(siteId: string, category: string) {
     }, { merge: true });
 }
 
+export interface POSCategory {
+    id: string;
+    label: string;
+    color: string;
+}
+
+export async function getPOSCategories(siteId: string): Promise<POSCategory[]> {
+    const settingsRef = doc(db, 'sites', siteId, SETTINGS_DOC);
+    const snap = await getDoc(settingsRef);
+    if (!snap.exists()) return [];
+    const data = snap.data();
+    // Support both legacy string[] and new POSCategory[]
+    const raw = data?.menuCategories ?? [];
+    if (raw.length === 0) return [];
+    if (typeof raw[0] === 'string') {
+        return raw.map((label: string) => ({
+            id: label.toLowerCase().replace(/[^a-z0-9]/g, '_'),
+            label,
+            color: 'bg-gray-100 text-gray-600'
+        }));
+    }
+    return raw as POSCategory[];
+}
+
+export async function savePOSCategories(siteId: string, categories: POSCategory[]): Promise<void> {
+    const settingsRef = doc(db, 'sites', siteId, SETTINGS_DOC);
+    await setDoc(settingsRef, { menuCategories: categories }, { merge: true });
+}
+
 export async function getProducts(siteId: string): Promise<any[]> {
     const q = query(collection(db, 'sites', siteId, 'modules/byod_pos/products'));
     const snapshot = await getDocs(q);

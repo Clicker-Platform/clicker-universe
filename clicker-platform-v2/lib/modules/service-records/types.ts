@@ -10,7 +10,7 @@ export interface ConsumedItem {
 
 // ─── Service Record ───────────────────────────────────────────────────────────
 
-export type RecordStatus = 'DRAFT' | 'IN_PROGRESS' | 'PENDING_APPROVAL' | 'COMPLETED' | 'CANCELLED';
+export type RecordStatus = 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
 export type PaymentStatus = 'UNPAID' | 'PARTIAL' | 'PAID';
 export type PaymentMethod = 'CASH' | 'TRANSFER' | 'CARD' | 'QRIS';
 

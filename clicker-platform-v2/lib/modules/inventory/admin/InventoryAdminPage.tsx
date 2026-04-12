@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Search, Box, AlertTriangle, Pencil, Trash2, PackageOpen, History } from 'lucide-react';
+import { Plus, Search, AlertTriangle, Pencil, Trash2, PackageOpen, History } from 'lucide-react';
 import { getInventory, createInventoryItem, updateStock } from '@/lib/modules/inventory/api';
 import { InventoryItem, TransactionReason } from '@/lib/modules/inventory/types';
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
@@ -198,24 +198,22 @@ export default function InventoryPage() {
     };
 
     return (
-        <div className="max-w-7xl space-y-8 animate-in fade-in duration-500">
+        <div className="max-w-7xl animate-in fade-in duration-500">
             {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
                 <div>
-                    <h1 className="text-3xl font-black text-brand-dark mb-2 uppercase tracking-tight flex items-center gap-3">
-                        <Box size={32} className="text-brand-dark" /> Inventory
-                    </h1>
-                    <p className="text-gray-500 dark:text-neutral-500 font-medium">Manage products, stock levels and usage</p>
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100 mb-1">Inventory</h1>
+                    <p className="text-gray-600 dark:text-neutral-400 font-medium">Manage products, stock levels and usage</p>
                 </div>
+                {!isViewOnly && (
+                    <button
+                        onClick={openAddModal}
+                        className="bg-studio-blue text-white px-6 py-2.5 rounded-xl font-bold hover:bg-studio-blue/85 flex items-center gap-2 shadow-lg hover:shadow-xl transition-all cursor-pointer active:scale-95"
+                    >
+                        <Plus size={20} /> Add Item
+                    </button>
+                )}
             </div>
-            {!isViewOnly && (
-                <button
-                    onClick={openAddModal}
-                    className="bg-studio-blue text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 hover:bg-studio-blue/85 transition shadow-lg shadow-brand-dark/20 active:scale-95"
-                >
-                    <Plus size={20} /> Add Item
-                </button>
-            )}
 
 
             {/* Inventory List Container */}

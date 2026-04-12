@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { getPOSSettings, updatePOSSettings } from '../api';
 import { POSSettings } from '../types';
 import { toast } from 'sonner';
-import { Save, Loader2, Settings2, CreditCard, LayoutTemplate, Hash } from 'lucide-react';
+import { Save, Loader2, CreditCard, LayoutTemplate, Hash } from 'lucide-react';
 
 import { useSite } from '@/lib/site-context';
 
@@ -51,12 +51,10 @@ export default function POSSettingsPage() {
     if (!settings) return <div>Error loading settings</div>;
 
     return (
-        <div className="max-w-4xl mx-auto space-y-8">
+        <div className="space-y-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-black text-brand-dark mb-2 uppercase tracking-tight flex items-center gap-3">
-                        <Settings2 size={32} /> POS SETTINGS
-                    </h1>
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100 mb-1">POS settings</h1>
                     <p className="text-gray-600 dark:text-neutral-400 font-medium">Configure POS system</p>
                 </div>
                 <button

@@ -1,8 +1,8 @@
 'use client';
 
-import { Layers, Plus, Settings, Save, Loader2, FileText } from 'lucide-react';
+import { Layers, Plus, Settings, Save, Loader2, FileText, MoreHorizontal } from 'lucide-react';
 
-export type MobileActiveSheet = 'navigator' | 'add' | 'props' | 'pages' | null;
+export type MobileActiveSheet = 'navigator' | 'add' | 'props' | 'pages' | 'more' | null;
 
 interface MobileStudioTabBarProps {
     activeSheet: MobileActiveSheet;
@@ -18,6 +18,7 @@ const tabs = [
     { id: 'navigator' as const, icon: Layers, label: 'Layers' },
     { id: 'add' as const, icon: Plus, label: 'Add' },
     { id: 'props' as const, icon: Settings, label: 'Properties' },
+    { id: 'more' as const, icon: MoreHorizontal, label: 'More' },
 ] as const;
 
 export function MobileStudioTabBar({
