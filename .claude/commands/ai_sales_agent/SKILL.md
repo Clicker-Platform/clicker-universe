@@ -57,6 +57,25 @@ The ultimate goal of the AI Sales Agent is to capture leads (`SalesLead` objects
 
 ---
 
+## 4. Module Registration
+
+**Admin Routes (definitions.ts):**
+| componentKey | path | permission |
+|---|---|---|
+| `ai_sales:Dashboard` | `/admin/ai-sales` | — |
+| `ai_sales:AdminSettings` | `/admin/ai-sales/settings` | — |
+
+**Admin Files:**
+- `lib/modules/ai-sales-agent/admin/AgentDashboard.tsx` → `ai_sales:Dashboard`
+- `lib/modules/ai-sales-agent/admin/AgentSettingsPage.tsx` → `ai_sales:AdminSettings`
+
+**Public Block:**
+- `lib/modules/ai-sales-agent/components/ChatWidget.tsx` → `ai_sales:ChatWidget` (registered in `client-registry.tsx`)
+
+**MODULE_COMPONENTS keys:** `ai_sales:Dashboard`, `ai_sales:AdminSettings`, `ai_sales:ChatWidget`
+
+---
+
 ## Common Gotchas
 
 - **Never Expose API Keys:** The Gemini API Key MUST be stored in a `.env` file (`GEMINI_API_KEY`) and only accessed on the server. Never import `@google/genai` in a Client Component.

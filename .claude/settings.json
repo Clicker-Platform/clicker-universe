@@ -2,10 +2,13 @@
   "permissions": {
     "allow": [
       "Bash(npx vitest:*)",
-      "Bash(find /Users/andre/Repository/clicker-universe/dev/clicker-platform-v2/app/[tenant] -name \"*.tsx\" -type f)",
-      "Bash(grep -rn \"fetchSiteSettings\\\\|fetchPublicData\\\\|fetchLightweightPublicData\" /Users/andre/Repository/clicker-universe/dev/clicker-platform-v2/app/[tenant]/ --include=\"*.tsx\")",
-      "Bash(grep -n \"100vw.*128\\\\|100vw.*avatar\\\\|avatarUrl\\\\|w-32 h-32\\\\|w-24 h-24\\\\|w-20 h-20\" /Users/andre/Repository/clicker-universe/dev/clicker-platform-v2/components/headers/*.tsx)",
-      "Read(//dev/**)"
+      "Bash(pnpm test:*)",
+      "Bash(find /Users/mac/Documents/AI Project/clicker-platform/main/clicker-platform-v2/app/[tenant] -name \"*.tsx\" -type f)",
+      "Bash(find /Users/mac/Documents/AI Project/clicker-platform/dev/clicker-platform-v2/app/[tenant] -name \"*.tsx\" -type f)",
+      "Bash(grep -rn \"fetchSiteSettings\\|fetchPublicData\\|fetchLightweightPublicData\" /Users/mac/Documents/AI Project/clicker-platform/main/clicker-platform-v2/app/[tenant]/ --include=\"*.tsx\")",
+      "Bash(grep -rn \"fetchSiteSettings\\|fetchPublicData\\|fetchLightweightPublicData\" /Users/mac/Documents/AI Project/clicker-platform/dev/clicker-platform-v2/app/[tenant]/ --include=\"*.tsx\")",
+      "Read(/Users/mac/Documents/AI Project/clicker-platform/dev/**)",
+      "Read(/Users/mac/Documents/AI Project/clicker-platform/main/**)"
     ]
   }
 }

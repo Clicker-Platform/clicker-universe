@@ -20,17 +20,23 @@ vi.mock('@/lib/modules/membership/api', () => ({
 }));
 
 vi.mock('@/lib/modules/service-records/api', () => ({
-  createServiceRecord: vi.fn()
+  createServiceRecord: vi.fn(),
+  findVehicleByPlate: vi.fn(),
 }));
 
 vi.mock('@/lib/modules/reservation/api', () => ({
   updateBookingDetails: vi.fn()
 }));
 
+vi.mock('@/lib/core/serviceCatalog/api', () => ({
+  getServiceCatalogItem: vi.fn(),
+}));
+
 // Import the mocked modules to assert on them later
 import { isModuleEnabled } from '@/lib/modules/registry';
 import { createServiceRecord } from '@/lib/modules/service-records/api';
 import { updateBookingDetails } from '@/lib/modules/reservation/api';
+import { getServiceCatalogItem } from '@/lib/core/serviceCatalog/api';
 
 const mockBooking = {
   id: 'bk_001',
@@ -55,6 +61,15 @@ describe('Suite 1 — Reservation Booking → Service Record Bridge', () => {
     // Default: both modules enabled
     (isModuleEnabled as Mock).mockImplementation((mod: string) => Promise.resolve(['service_records', 'membership'].includes(mod)));
     (createServiceRecord as Mock).mockResolvedValue('sr_new_123');
+    (getServiceCatalogItem as Mock).mockResolvedValue({
+      id: 'svc_001',
+      name: 'Nano Coating',
+      serviceRecordsConfig: {
+        hasWarranty: true,
+        defaultWarrantyMonths: 12,
+        defaultPrice: 500000,
+      },
+    });
     
     // Mock window.location
     delete (window as any).location;
@@ -108,14 +123,13 @@ describe('Suite 1 — Reservation Booking → Service Record Bridge', () => {
         memberPhone: '+628123456789',
         serviceTypeId: 'svc_001',
         serviceTypeName: 'Nano Coating',
-        totalAmount: 500000,
         bookingId: 'bk_001',
         bookingSource: 'reservation'
       }));
     });
     
     expect(updateBookingDetails).toHaveBeenCalledWith('site_123', 'bk_001', { serviceRecordId: 'sr_new_123' });
-    expect(window.location.href).toBe('/admin/service-records/sr_new_123');
+    expect(window.location.href).toBe('/admin/service-records/detail?id=sr_new_123');
   });
 
   it('Scenario 1.2 — service_records module disabled', async () => {
@@ -139,7 +153,7 @@ describe('Suite 1 — Reservation Booking → Service Record Bridge', () => {
       expect(screen.getByText('Service in Progress')).toBeInTheDocument();
       
       const viewLink = screen.getByText('View Record');
-      expect(viewLink.closest('a')).toHaveAttribute('href', '/admin/service-records/sr_abc123');
+      expect(viewLink.closest('a')).toHaveAttribute('href', '/admin/service-records/detail?id=sr_abc123');
     });
   });
 

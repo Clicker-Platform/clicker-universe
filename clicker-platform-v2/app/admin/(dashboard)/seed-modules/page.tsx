@@ -128,7 +128,7 @@ export default function SeedModulesPage() {
                 publicRoutes: [],
                 collections: [
                     'modules/sales_pipeline/leads',
-                    'modules/sales_pipeline/pipeline_config'
+                    'modules/sales_pipeline/settings'
                 ]
             };
             await setDoc(doc(db, 'modules', 'sales_pipeline'), salesPipelineModule);

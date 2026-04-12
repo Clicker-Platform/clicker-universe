@@ -20,6 +20,8 @@ vi.mock('next/navigation', () => ({
 
 // Mock Firebase
 vi.mock('firebase/firestore', () => ({
+  initializeFirestore: vi.fn(),
+  memoryLocalCache: vi.fn(),
   getFirestore: vi.fn(),
   collection: vi.fn(),
   doc: vi.fn(),

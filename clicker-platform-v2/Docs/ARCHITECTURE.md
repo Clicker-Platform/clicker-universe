@@ -46,10 +46,10 @@ The Clicker Platform is a **multi-tenant SaaS platform** where each tenant (busi
 ## 2. Repository Structure (Monorepo)
 
 ```
-clicker-universe/dev/
+clicker-universe/main/
 ├── clicker-platform-v2/    ← Main platform (this document applies here)
 ├── auth-gateway/           ← Centralized login service (auth.clicker.id)
-├── backyard/               ← Super-admin dashboard (internal Clicker tool)
+├── backyard/               ← Super-admin dashboard (internal Clicker tool, port 3011)
 ├── functions/              ← Firebase Cloud Functions
 └── scripts/                ← Deployment & utility scripts
 ```
@@ -150,7 +150,7 @@ This is the **most important architectural rule**.
 | `lib/modules/registry.ts` | Runtime Firestore-based routing & widget lookup |
 | `scripts/seed-modules.ts` | Firestore seed (run once per environment) |
 
-> **Backyard parity:** Also update `dev/backyard/lib/modules/definitions.ts` when adding a new module.
+> **3-Way Parity Rule:** When adding or changing module routes, update all three files together: `lib/modules/definitions.ts` (platform), `backyard/lib/modules/definitions.ts` (Backyard admin tool), AND `scripts/seed-modules.ts` (Firestore seed). All three must be identical in paths and componentKeys at all times.
 
 ### Module Structure (per module)
 
@@ -607,7 +607,7 @@ if (inventoryEnabled) {
 - [ ] Add to `lib/modules/definitions.ts` (adminRoutes)
 - [ ] Add components to `lib/modules/components.tsx` (dynamic imports)
 - [ ] Add to `scripts/seed-modules.ts`
-- [ ] Add to `dev/backyard/lib/modules/definitions.ts`
+- [ ] Add to `backyard/lib/modules/definitions.ts` (parity with platform — same paths, same componentKeys, add `displayName` + `description`)
 - [ ] Define DB paths in `constants.ts`
 - [ ] Guard all writes with `canEdit()` check
 - [ ] Use `useSite()` for siteId, never hardcode

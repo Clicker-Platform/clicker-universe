@@ -5,7 +5,7 @@ import { httpsCallable } from 'firebase/functions';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { functions, db, auth } from '@/lib/firebase';
 import { toast } from 'sonner';
-import { Store, Power, PowerOff, Loader2, RefreshCw, Database, ExternalLink, Grid, Users, UserPlus, UserX, Trash2, Link, Pencil } from 'lucide-react';
+import { Store, Power, PowerOff, Loader2, RefreshCw, Database, ExternalLink, Grid, Users, UserPlus, UserX, Trash2, Pencil } from 'lucide-react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
 import Sidebar from '../../components/Sidebar';
@@ -40,18 +40,32 @@ export default function TenantsPage() {
     const [actionLoading, setActionLoading] = useState(false);
 
     // 1. Fetch Tenants (Classic Request-Response)
-    const fetchTenants = async () => {
+    const fetchTenants = async (): Promise<any[]> => {
         setLoading(true);
         try {
             const getTenantsFn = httpsCallable(functions, 'getTenants');
             const result: any = await getTenantsFn();
-            setTenants(result.data.list);
+            const seen = new Set();
+            const unique = result.data.list.filter((t: any) => seen.has(t.id) ? false : seen.add(t.id));
+            // Merge: prefer incoming data but keep any locally-updated modules if incoming is missing keys
+            setTenants((prev: any[]) => {
+                if (prev.length === 0) return unique;
+                return unique.map((incoming: any) => {
+                    const existing = prev.find((p: any) => p.id === incoming.id);
+                    if (!existing) return incoming;
+                    // Count keys — more keys = more complete data
+                    const incomingKeys = Object.keys(incoming.modules || {}).length;
+                    const existingKeys = Object.keys(existing.modules || {}).length;
+                    return incomingKeys >= existingKeys ? incoming : { ...incoming, modules: existing.modules };
+                });
+            });
+            return unique;
         } catch (error: any) {
             console.error("Fetch Tenants Error:", error);
-            // Ignore trivial permission errors during initial load if auth isn't checking
             if (error.code !== 'permission-denied') {
                 toast.error("Failed to fetch tenants", { description: error.message });
             }
+            return [];
         } finally {
             setLoading(false);
         }
@@ -149,8 +163,13 @@ export default function TenantsPage() {
 
     const openModuleDialog = (tenant: any) => {
         setSelectedTenant(tenant);
-        const currentModules = tenant.modules || { pos: false, inventory: false, booking: false, membership: false };
-        setManagingModules({ ...currentModules });
+        const defaultModules: Record<string, boolean> = {};
+        SYSTEM_MODULES.forEach((mod: any) => { defaultModules[mod.id] = false; });
+        const currentModules = { ...defaultModules, ...(tenant.modules || {}) };
+        console.log('[openModuleDialog] tenant.id:', tenant.id);
+        console.log('[openModuleDialog] tenant.modules:', JSON.stringify(tenant.modules));
+        console.log('[openModuleDialog] merged:', JSON.stringify(currentModules));
+        setManagingModules(currentModules);
         setModuleDialogOpen(true);
     };
 
@@ -160,9 +179,12 @@ export default function TenantsPage() {
         try {
             const updateModulesFn = httpsCallable(functions, 'updateTenantModules');
             await updateModulesFn({ siteId: selectedTenant.id, modules: managingModules });
+            // Update local tenant state immediately so re-opening dialog shows correct state
+            setTenants((prev: any[]) => prev.map(t =>
+                t.id === selectedTenant.id ? { ...t, modules: managingModules } : t
+            ));
             toast.success('Modules updated successfully');
             setModuleDialogOpen(false);
-            fetchTenants();
         } catch (error: any) {
             toast.error('Failed to update modules', { description: error.message });
         } finally {
@@ -191,7 +213,9 @@ export default function TenantsPage() {
         try {
             const hardDeleteFn = httpsCallable(functions, 'hardDeleteTenant');
             await hardDeleteFn({ siteId: selectedTenant.id });
-            toast.success('Tenant Obliterated', { description: `${selectedTenant.name} and all its data have been permanently deleted.` });
+            toast.success('Tenant Obliterated', {
+                description: `${selectedTenant.name} and all its data have been permanently deleted.`
+            });
             setDeleteDialogOpen(false);
             setSelectedTenant(null);
             fetchTenants();
@@ -594,7 +618,7 @@ export default function TenantsPage() {
                                                             </button>
                                                             <button
                                                                 onClick={() => openDeleteDialog(tenant)}
-                                                                className="p-2 rounded-lg border border-red-300 text-red-700 hover:bg-red-50 transition-all"
+                                                                className="p-2 rounded-lg border border-red-300 text-red-600 hover:bg-red-50 transition-all"
                                                                 title="Hard Delete Tenant"
                                                             >
                                                                 <Trash2 className="w-4 h-4" />
@@ -641,19 +665,22 @@ export default function TenantsPage() {
                                 </button>
                             </div>
 
-                            <div className="p-6 space-y-4">
+                            <div className="p-6 space-y-4 overflow-y-auto flex-1">
                                 <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 text-sm text-blue-800">
                                     Configuring modules for <strong>{selectedTenant.name}</strong>.
                                 </div>
 
                                 <div className="grid grid-cols-1 gap-3">
                                     {SYSTEM_MODULES.map((mod: any) => (
-                                        <label key={mod.id} className={`flex items-center justify-between p-3 rounded-xl border-2 cursor-pointer transition-all ${managingModules[mod.id]
-                                            ? 'border-blue-500 bg-blue-50/30'
-                                            : 'border-gray-100 hover:border-gray-200'
-                                            }`}>
+                                        <div
+                                            key={mod.id}
+                                            onClick={() => setManagingModules((prev: any) => ({ ...prev, [mod.id]: !prev[mod.id] }))}
+                                            className={`flex items-center justify-between p-3 rounded-xl border-2 cursor-pointer transition-all ${managingModules?.[mod.id]
+                                                ? 'border-blue-500 bg-blue-50/30'
+                                                : 'border-gray-100 hover:border-gray-200'
+                                                }`}>
                                             <div className="flex items-center gap-3">
-                                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${managingModules[mod.id] ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-400'
+                                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${managingModules?.[mod.id] ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-400'
                                                     }`}>
                                                     <span className="capitalize font-bold text-xs">{mod.id.slice(0, 2)}</span>
                                                 </div>
@@ -663,18 +690,11 @@ export default function TenantsPage() {
                                                 </div>
                                             </div>
 
-                                            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${managingModules[mod.id] ? 'bg-blue-500 border-blue-500' : 'border-gray-300 bg-white'
+                                            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${managingModules?.[mod.id] ? 'bg-blue-500 border-blue-500' : 'border-gray-300 bg-white'
                                                 }`}>
-                                                {managingModules[mod.id] && <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
+                                                {managingModules?.[mod.id] && <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
                                             </div>
-
-                                            <input
-                                                type="checkbox"
-                                                className="hidden"
-                                                checked={managingModules[mod.id] || false}
-                                                onChange={(e) => setManagingModules({ ...managingModules, [mod.id]: e.target.checked })}
-                                            />
-                                        </label>
+                                        </div>
                                     ))}
                                 </div>
                             </div>
@@ -693,6 +713,120 @@ export default function TenantsPage() {
                                 >
                                     {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save Changes'}
                                 </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* UPDATE URL DIALOG */}
+                {updateUrlDialogOpen && selectedTenant && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                        <div className="bg-white rounded-3xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+                            <div className="p-5 border-b border-gray-100 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-9 h-9 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
+                                        <Pencil className="w-4 h-4" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-brand-dark">Update URL</h3>
+                                        <p className="text-xs text-gray-400">{selectedTenant.name}</p>
+                                    </div>
+                                </div>
+                                <button onClick={() => setUpdateUrlDialogOpen(false)} className="text-gray-400 hover:text-gray-600">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                </button>
+                            </div>
+                            <form onSubmit={handleUpdateUrl} className="p-6 space-y-5">
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">New Slug / URL</label>
+                                    <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
+                                        <span className="text-gray-400 text-sm font-medium shrink-0">clickerapps.web.app/</span>
+                                        <input
+                                            type="text"
+                                            required
+                                            value={newSlug}
+                                            onChange={e => setNewSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))}
+                                            className="flex-1 bg-transparent outline-none font-bold text-sm text-brand-dark"
+                                            placeholder="my-tenant-slug"
+                                        />
+                                    </div>
+                                    <p className="text-[11px] text-gray-400">Only lowercase letters, numbers, and hyphens allowed.</p>
+                                </div>
+                                <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-700 font-medium">
+                                    Changing the slug will break existing links. The Site ID stays the same.
+                                </div>
+                                <div className="flex gap-3 pt-1">
+                                    <button
+                                        type="button"
+                                        onClick={() => setUpdateUrlDialogOpen(false)}
+                                        className="flex-1 py-2.5 rounded-xl text-sm font-bold text-gray-500 hover:bg-gray-100 transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={updateUrlLoading}
+                                        className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white bg-brand-dark hover:bg-gray-800 shadow-md flex items-center justify-center gap-2 disabled:opacity-70"
+                                    >
+                                        {updateUrlLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Update URL'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
+
+                {/* HARD DELETE DIALOG */}
+                {deleteDialogOpen && selectedTenant && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                        <div className="bg-white rounded-3xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+                            <div className="p-5 border-b border-red-100 bg-red-50/50 flex items-center gap-3">
+                                <div className="w-10 h-10 bg-red-100 text-red-600 rounded-xl flex items-center justify-center shrink-0">
+                                    <Trash2 className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-red-700">Hard Delete Tenant</h3>
+                                    <p className="text-xs text-red-400">This action is permanent and cannot be undone.</p>
+                                </div>
+                            </div>
+                            <div className="p-6 space-y-5">
+                                <div className="bg-red-50 border border-red-200 rounded-xl p-4 space-y-1 text-sm text-red-700">
+                                    <p className="font-bold">The following will be permanently deleted:</p>
+                                    <ul className="list-disc list-inside space-y-0.5 text-red-600 font-medium">
+                                        <li>All Firestore data under <code className="bg-red-100 px-1 rounded">sites/{selectedTenant.id}</code></li>
+                                        <li>All Firebase Auth accounts for this site</li>
+                                        <li>Site document and all associated records</li>
+                                    </ul>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-gray-600 uppercase tracking-wider">
+                                        Type <span className="font-mono text-red-600 bg-red-50 px-1.5 py-0.5 rounded border border-red-200">{selectedTenant.id}</span> to confirm
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={deleteConfirmText}
+                                        onChange={e => setDeleteConfirmText(e.target.value)}
+                                        className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-red-400 outline-none font-mono text-sm text-brand-dark transition-colors"
+                                        placeholder={selectedTenant.id}
+                                        autoComplete="off"
+                                    />
+                                </div>
+                                <div className="flex gap-3 pt-1">
+                                    <button
+                                        type="button"
+                                        onClick={() => { setDeleteDialogOpen(false); setDeleteConfirmText(''); }}
+                                        className="flex-1 py-2.5 rounded-xl text-sm font-bold text-gray-500 hover:bg-gray-100 transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={handleHardDelete}
+                                        disabled={deleteLoading || deleteConfirmText !== selectedTenant.id}
+                                        className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white bg-red-600 hover:bg-red-700 shadow-md flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                                    >
+                                        {deleteLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Trash2 className="w-4 h-4" /> Obliterate</>}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>

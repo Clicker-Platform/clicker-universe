@@ -13,8 +13,8 @@ import {
     setDoc,
     getDocs
 } from 'firebase/firestore';
-import { Lead, PipelineConfig, PipelineStage } from './types';
-import { DEFAULT_PIPELINE_STAGES, MODULE_ID, COLLECTION_LEADS, COLLECTION_CONFIG } from './constants';
+import { Lead, PipelineConfig } from './types';
+import { DEFAULT_PIPELINE_STAGES, MODULE_ID, COLLECTION_LEADS } from './constants';
 
 // --- Configuration ---
 
@@ -66,8 +66,16 @@ export async function getAvailableForms(siteId: string): Promise<{ id: string, t
 
 // --- Leads ---
 
+function leadsCol(siteId: string) {
+    return collection(db, 'sites', siteId, 'modules', MODULE_ID, COLLECTION_LEADS);
+}
+
+function leadDoc(siteId: string, leadId: string) {
+    return doc(db, 'sites', siteId, 'modules', MODULE_ID, COLLECTION_LEADS, leadId);
+}
+
 export function subscribeToLeads(siteId: string, callback: (leads: Lead[]) => void, limitCount: number = 100): Unsubscribe {
-    const q = query(collection(db, 'sites', siteId, COLLECTION_LEADS), orderBy('updatedAt', 'desc'), limit(limitCount));
+    const q = query(leadsCol(siteId), orderBy('updatedAt', 'desc'), limit(limitCount));
 
     return onSnapshot(q, (snapshot) => {
         const leads = snapshot.docs.map(doc => ({
@@ -83,7 +91,7 @@ export function subscribeToLeads(siteId: string, callback: (leads: Lead[]) => vo
 
 export async function createLead(siteId: string, leadData: Omit<Lead, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
     const now = Date.now();
-    const docRef = await addDoc(collection(db, 'sites', siteId, COLLECTION_LEADS), {
+    const docRef = await addDoc(leadsCol(siteId), {
         ...leadData,
         createdAt: now,
         updatedAt: now
@@ -92,19 +100,17 @@ export async function createLead(siteId: string, leadData: Omit<Lead, 'id' | 'cr
 }
 
 export async function updateLeadStage(siteId: string, leadId: string, stageId: string): Promise<void> {
-    const leadRef = doc(db, 'sites', siteId, COLLECTION_LEADS, leadId);
-    await updateDoc(leadRef, {
+    await updateDoc(leadDoc(siteId, leadId), {
         stageId,
         updatedAt: Date.now()
     });
 }
 
 export async function updateLead(siteId: string, leadId: string, updates: Partial<Lead>): Promise<void> {
-    const leadRef = doc(db, 'sites', siteId, COLLECTION_LEADS, leadId);
     // Prevent overwriting immutable fields if accidentally passed
     const { id, createdAt, ...safeUpdates } = updates;
 
-    await updateDoc(leadRef, {
+    await updateDoc(leadDoc(siteId, leadId), {
         ...safeUpdates,
         updatedAt: Date.now()
     });

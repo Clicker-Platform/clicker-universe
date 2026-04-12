@@ -83,8 +83,8 @@ export const DefaultImageGalleryBlock = ({ data }: ImageGalleryBlockProps) => {
 
     const images = (data.images || []).filter(url => url && url.trim() !== '');
     // Fall back to full URLs for galleries uploaded before thumbnails were introduced
-    const thumbnails = (data.thumbnails || []).length === images.length
-        ? data.thumbnails!
+    const thumbnails = Array.isArray(data.thumbnails) && data.thumbnails.length === images.length
+        ? data.thumbnails
         : images;
 
     const validCover = data.coverImage?.trim() || null;
@@ -115,16 +115,19 @@ export const DefaultImageGalleryBlock = ({ data }: ImageGalleryBlockProps) => {
         <>
             {/* ── Mobile: single cover tile ── */}
             <div className="md:hidden w-full" style={{ borderRadius: 'var(--theme-radius)' }}>
-                {coverThumb ? (
-                    <GalleryTile
-                        src={coverThumb}
-                        alt="Gallery Cover"
-                        onClick={() => openAt(0)}
-                        priority
-                        badge={photoBadge}
-                        cardClass={`w-full ${cardClass}`}
-                    />
-                ) : null}
+                {coverThumb ? (() => {
+                    const coverIndex = validCover ? Math.max(0, images.indexOf(validCover)) : 0;
+                    return (
+                        <GalleryTile
+                            src={coverThumb}
+                            alt="Gallery Cover"
+                            onClick={() => openAt(coverIndex)}
+                            priority
+                            badge={photoBadge}
+                            cardClass={`w-full ${cardClass}`}
+                        />
+                    );
+                })() : null}
             </div>
 
             {/* ── Desktop: 2-column grid ── */}

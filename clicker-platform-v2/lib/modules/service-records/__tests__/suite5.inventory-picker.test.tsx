@@ -13,6 +13,10 @@ vi.mock('../api', () => ({
   updateServiceRecord: vi.fn(),
   findVehicleByPlate: vi.fn(),
   createVehicle: vi.fn(),
+  getCarCatalog: vi.fn().mockResolvedValue([]),
+  addCarCatalogEntry: vi.fn(),
+  ensureCarCatalogEntry: vi.fn(),
+  getVehicles: vi.fn().mockResolvedValue([]),
 }));
 
 vi.mock('@/lib/site-context', () => ({

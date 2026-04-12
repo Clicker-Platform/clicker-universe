@@ -65,7 +65,7 @@ describe('Suite 8 — RecordDetailPage: Booking Source Card (B5)', () => {
       expect(screen.getByText('Created from Reservation Booking')).toBeInTheDocument();
       
       const link = screen.getByRole('link', { name: /View Booking/i });
-      expect(link).toHaveAttribute('href', '/admin/reservations/bookings?id=bk_001');
+      expect(link).toHaveAttribute('href', '/admin/reservation/bookings?id=bk_001');
     });
   });
 

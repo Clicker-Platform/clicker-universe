@@ -139,7 +139,7 @@ export function PermissionEditor({ value, onChange, siteModules }: PermissionEdi
     // Grouping Logic
     const CATEGORIES: Record<string, string[]> = {
         'Operations': ['byod_pos', 'kitchen-display', 'kiosk'],
-        'Management': ['inventory', 'reservation', 'membership', 'sales-pipeline'],
+        'Management': ['inventory', 'reservation', 'membership', 'sales_pipeline'],
         'Finance & Reports': ['finance'],
         'System': ['settings', 'developer', 'web-builder']
     };

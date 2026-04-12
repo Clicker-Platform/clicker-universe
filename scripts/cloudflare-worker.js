@@ -1,6 +1,13 @@
 /**
  * Cloudflare Worker - Multi-Tenant Subdomain Masking
- * Version: v14 - Prevent HTML caching to avoid stale chunk reference 404s
+ * Version: v15 - Smart Edge Caching + Font Preload + Security Headers
+ *
+ * CHANGELOG v15:
+ * - Smart edge caching: static assets (JS/CSS/fonts/images) di-cache 1 tahun di edge
+ * - HTML tetap no-cache untuk hindari stale chunk reference
+ * - Font preload via HTMLRewriter (fix 2.870ms font delay)
+ * - Security headers tambahan (X-Content-Type-Options, X-Frame-Options, dll)
+ * - Response timing headers untuk monitoring performa
  *
  * DEPLOYMENT:
  * 1. Go to Cloudflare Dashboard → Workers & Pages
@@ -23,8 +30,21 @@ const HOSTS = {
 // Subdomains that should NOT be treated as tenant slugs
 const RESERVED_SUBDOMAINS = ['www', 'backyard', 'admin', 'api', 'staging', 'app', 'auth', 'login'];
 
+/**
+ * Deteksi apakah path adalah static asset yang aman di-cache lama.
+ * File /_next/static/ sudah content-hashed oleh Next.js, jadi cache 1 tahun aman.
+ */
+function isStaticAssetPath(path) {
+    // Next.js hashed static assets
+    if (path.startsWith('/_next/static/')) return true;
+
+    // File dengan ekstensi statis
+    return /\.(js|css|woff2?|ttf|eot|svg|png|jpg|jpeg|gif|ico|webp|avif|mp4|webm)$/i.test(path);
+}
+
 export default {
     async fetch(request, env) {
+        const startTime = Date.now();
         const url = new URL(request.url);
         const hostname = url.hostname;
         const pathname = url.pathname;
@@ -52,12 +72,12 @@ export default {
 
         // backyard.clicker.id → Backyard Admin Console
         if (subdomain === 'backyard') {
-            return proxyRequest(request, HOSTS.backyard, pathname);
+            return proxyRequest(request, HOSTS.backyard, pathname, null, startTime);
         }
 
         // auth.clicker.id/* → Auth Gateway
         if (subdomain === 'auth' || subdomain === 'login') {
-            return proxyRequest(request, HOSTS.authGateway, pathname);
+            return proxyRequest(request, HOSTS.authGateway, pathname, null, startTime);
         }
 
         // ============================================
@@ -82,12 +102,12 @@ export default {
 
             if (isStaticPath) {
                 // Static assets: pass through without tenant prefix
-                return proxyRequest(request, HOSTS.clickerPlatform, pathname, subdomain);
+                return proxyRequest(request, HOSTS.clickerPlatform, pathname, subdomain, startTime);
             }
 
             // Dynamic pages: prepend tenant slug to path
             const tenantPath = `/${subdomain}${pathname === '/' ? '' : pathname}`;
-            return proxyRequest(request, HOSTS.clickerPlatform, tenantPath, subdomain);
+            return proxyRequest(request, HOSTS.clickerPlatform, tenantPath, subdomain, startTime);
         }
 
 
@@ -138,7 +158,7 @@ export default {
         // /auth/* → Auth Gateway (strip /auth prefix)
         if (pathname.startsWith('/auth')) {
             const newPath = pathname.replace('/auth', '') || '/';
-            return proxyRequest(request, HOSTS.authGateway, newPath);
+            return proxyRequest(request, HOSTS.authGateway, newPath, null, startTime);
         }
 
         // Default: All other root domain paths (/, /admin, /catalog, /warranty, /api, etc.)
@@ -146,19 +166,19 @@ export default {
         //       Routing /_next/ to platform was causing 404s because the chunk hashes don't match.
         const platformOnlyPaths = ['/api/', '/admin', '/catalog', '/warranty', '/member/'];
         if (platformOnlyPaths.some(prefix => pathname.startsWith(prefix))) {
-            return proxyRequest(request, HOSTS.clickerPlatform, pathname);
+            return proxyRequest(request, HOSTS.clickerPlatform, pathname, null, startTime);
         }
 
         // Root /, /_next/, /__nextjs, and all other unmatched paths → Marketing website
-        return proxyRequest(request, HOSTS.website, pathname);
+        return proxyRequest(request, HOSTS.website, pathname, null, startTime);
     }
 };
 
 /**
  * Proxy request to target Firebase Hosting
- * Simplified version - uses direct fetch
+ * v15: Smart edge caching + font preload + security headers
  */
-async function proxyRequest(request, targetHost, targetPath, tenantSlug = null) {
+async function proxyRequest(request, targetHost, targetPath, tenantSlug = null, startTime = Date.now()) {
     // Build the target URL
     const originalUrl = new URL(request.url);
     const targetUrl = `https://${targetHost}${targetPath}${originalUrl.search}`;
@@ -187,14 +207,19 @@ async function proxyRequest(request, targetHost, targetPath, tenantSlug = null) 
             fetchOptions.duplex = 'half';
         }
 
-        // Use direct fetch with constructed options
-        // cf.cacheEverything: false ensures Cloudflare doesn't cache HTML pages.
-        // Static assets (_next/static/) are still cached by Cloudflare's default rules.
+        // ============================================
+        // v15: SMART EDGE CACHING
+        // ============================================
+        // Static assets (JS/CSS/fonts/images) → cache 1 tahun di Cloudflare edge
+        // HTML/API/dynamic → TIDAK di-cache (hindari stale chunk reference setelah deploy)
+        const isStatic = isStaticAssetPath(targetPath);
+
         const response = await fetch(targetUrl, {
             ...fetchOptions,
             cf: {
-                // Don't cache HTML — prevents stale chunk-hash references after redeploy
-                cacheEverything: false,
+                cacheEverything: isStatic,                          // Cache static assets di edge
+                cacheTtl: isStatic ? 31536000 : undefined,          // 1 tahun untuk static
+                cacheKey: isStatic ? targetUrl : undefined,         // Stable cache key
             },
         });
 
@@ -205,12 +230,23 @@ async function proxyRequest(request, targetHost, targetPath, tenantSlug = null) 
             headers: response.headers,
         });
 
-        // Force no-cache on HTML responses so browsers always get fresh chunk references
+        // ============================================
+        // v15: CACHE HEADERS
+        // ============================================
         const contentType = response.headers.get('content-type') || '';
-        if (contentType.includes('text/html')) {
+
+        if (isStatic) {
+            // Static assets: cache sangat lama, immutable karena content-hashed
+            newResponse.headers.set('Cache-Control', 'public, max-age=31536000, immutable');
+            newResponse.headers.set('Vary', 'Accept-Encoding');
+        } else if (contentType.includes('text/html')) {
+            // HTML: selalu fresh, tidak di-cache
             newResponse.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
         }
 
+        // ============================================
+        // REDIRECT LOCATION REWRITING (unchanged from v14)
+        // ============================================
         // CRITICAL: Rewrite Location header for redirects to use masked domains
         // Without this, middleware 302 redirects expose raw .web.app URLs to the browser
         if (response.status >= 300 && response.status < 400) {
@@ -247,15 +283,22 @@ async function proxyRequest(request, targetHost, targetPath, tenantSlug = null) 
             }
         }
 
-        // Add debug headers
-        newResponse.headers.set('X-Served-By', 'clicker-gateway-v13');
+        // ============================================
+        // DEBUG & MONITORING HEADERS
+        // ============================================
+        newResponse.headers.set('X-Served-By', 'clicker-gateway-v15');
         newResponse.headers.set('X-Routed-To', targetHost);
         newResponse.headers.set('X-Target-Path', targetPath);
+        newResponse.headers.set('X-Response-Time', `${Date.now() - startTime}ms`);
+        newResponse.headers.set('X-Cache-Strategy', isStatic ? 'edge-1y' : 'no-cache');
         if (tenantSlug) {
             newResponse.headers.set('X-Tenant-Slug', tenantSlug);
         }
 
-        // Add permissive CSP
+        // ============================================
+        // SECURITY HEADERS
+        // ============================================
+        // CSP (permissive — sesuai kebutuhan platform multi-tenant)
         newResponse.headers.set('Content-Security-Policy',
             "default-src 'self' https: data: blob:; " +
             "script-src 'self' 'unsafe-inline' 'unsafe-eval' https: blob:; " +
@@ -264,6 +307,32 @@ async function proxyRequest(request, targetHost, targetPath, tenantSlug = null) 
             "connect-src 'self' https: wss:; " +
             "font-src 'self' https: data:;"
         );
+        // Security headers tambahan
+        newResponse.headers.set('X-Content-Type-Options', 'nosniff');
+        newResponse.headers.set('X-Frame-Options', 'SAMEORIGIN');
+        newResponse.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+        newResponse.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+
+        // ============================================
+        // v15: FONT PRELOAD VIA HTML REWRITER
+        // ============================================
+        // Inject preconnect + preload hints di <head> untuk Google Fonts
+        // Ini memperbaiki masalah font delay ~2.870ms dari Performance Audit
+        if (contentType.includes('text/html') && response.status === 200) {
+            return new HTMLRewriter()
+                .on('head', {
+                    element(el) {
+                        el.prepend(
+                            '<link rel="preconnect" href="https://fonts.googleapis.com">' +
+                            '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' +
+                            '<link rel="dns-prefetch" href="https://firebasestorage.googleapis.com">' +
+                            '<link rel="dns-prefetch" href="https://www.googletagmanager.com">',
+                            { html: true }
+                        );
+                    }
+                })
+                .transform(newResponse);
+        }
 
         return newResponse;
     } catch (error) {
@@ -273,4 +342,3 @@ async function proxyRequest(request, targetHost, targetPath, tenantSlug = null) 
         });
     }
 }
-

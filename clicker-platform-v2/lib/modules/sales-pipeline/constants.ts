@@ -45,6 +45,6 @@ export const DEFAULT_PIPELINE_STAGES: PipelineStage[] = [
     }
 ];
 
-export const MODULE_ID = 'sales-pipeline';
+export const MODULE_ID = 'sales_pipeline';
 export const COLLECTION_LEADS = 'leads';
-export const COLLECTION_CONFIG = 'pipeline_config';
+export const COLLECTION_CONFIG = 'settings';

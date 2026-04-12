@@ -67,7 +67,7 @@ export async function handleNewSubmission(siteId: string, formId: string, submis
 
         // 5. Create Lead in Firestore (using Admin SDK, per-tenant path)
         const now = Date.now();
-        await adminDb.collection('sites').doc(siteId).collection(COLLECTION_LEADS).add({
+        await adminDb.collection('sites').doc(siteId).collection('modules').doc(MODULE_ID).collection(COLLECTION_LEADS).add({
             name,
             contact,
             source,

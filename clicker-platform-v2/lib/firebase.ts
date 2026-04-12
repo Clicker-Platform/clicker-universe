@@ -18,6 +18,18 @@ const firebaseConfig = {
     measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
 };
 
+// Safety guard: dev server must never connect to production Firebase
+if (
+    process.env.NODE_ENV === 'development' &&
+    firebaseConfig.projectId === 'clicker-universe'
+) {
+    throw new Error(
+        '\n\n[Firebase] ERROR: Dev server is pointing to PRODUCTION Firebase!\n' +
+        'Create .env.local with staging credentials.\n' +
+        'Run: make setup-env\n'
+    );
+}
+
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 console.log('[Firebase] Initialized with config:', {
     projectId: firebaseConfig.projectId,

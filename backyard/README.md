@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Backyard — Clicker Platform Superadmin Dashboard
 
-## Getting Started
+**God Mode** internal tool for Clicker staff. Manages all tenants, users, and platform configuration.
 
-First, run the development server:
+> For full development reference, use the `/backyard` Claude Code skill.
+
+---
+
+## Stack
+
+- **Framework:** Next.js App Router (standalone, port `3011`)
+- **Auth:** Firebase client SDK — `onAuthStateChanged` (superadmin only)
+- **Data:** All writes via Firebase Cloud Functions (`httpsCallable`) — never direct Firestore
+- **Styling:** Tailwind CSS v4
+
+## Run Locally
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cd backyard
+pnpm install
+pnpm dev    # http://localhost:3011
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Key Pages
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Route | Description |
+|-------|-------------|
+| `/` | Login + dashboard overview |
+| `/tenants` | Tenant Forge — create, suspend, manage modules, hard delete, update URL |
+| `/users` | Identity management — all Firebase Auth users platform-wide |
+| `/monitoring` | System health (coming soon) |
+| `/settings` | Global config (coming soon) |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Architecture Rules
 
-## Learn More
+- Every page has `'use client'` at the top — no Server Components
+- No `useSite()` or `useUser()` imports (platform-only contexts)
+- No `firebase-admin` imports (client SDK only)
+- All Firestore writes go through Cloud Functions
+- Module definitions in `lib/modules/definitions.ts` must stay in **strict parity** with `clicker-platform-v2/lib/modules/definitions.ts`
 
-To learn more about Next.js, take a look at the following resources:
+## Cloud Functions
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Function | Purpose |
+|---|---|
+| `getTenants` | Fetch all tenants |
+| `createTenant` | Create tenant + owner account |
+| `suspendTenant` | Toggle tenant active/suspended |
+| `updateTenantModules` | Enable/disable modules |
+| `hardDeleteTenant` | Permanently delete tenant data + auth accounts |
+| `updateTenantSlug` | Change tenant public URL slug |
+| `createUser` | Create user + assign role to site |
+| `removeUserFromSite` | Remove user from site |
+| `seedSiteData` | Reset/seed demo data |
+| `getUsers` | Fetch all Firebase Auth users |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Firebase Deployment
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+firebase deploy --only hosting:clicker-backyard-app
+```

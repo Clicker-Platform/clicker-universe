@@ -93,17 +93,12 @@ describe('Suite 1 — DefaultImageGalleryBlock', () => {
 
     it('Scenario 1.5 — shows photo count badge with correct number', () => {
         renderGallery({ images: [IMG_A, IMG_B, IMG_C] });
-        expect(screen.getByText('3 Photos')).toBeInTheDocument();
+        expect(screen.getAllByText('3 Photos').length).toBeGreaterThan(0);
     });
 
-    it('Scenario 1.6 — renders with only coverImage and no images array', () => {
-        renderGallery({ coverImage: IMG_A });
-        // Badge still shows 0 photos (no images[] provided) but component renders
-        expect(screen.getByText('0 Photos')).toBeInTheDocument();
-        const coverImg = screen.getAllByRole('img').find(
-            img => img.getAttribute('alt') === 'Gallery Cover'
-        );
-        expect(coverImg).toBeTruthy();
+    it('Scenario 1.6 — renders nothing if images array is empty, even with coverImage', () => {
+        const { container } = renderGallery({ coverImage: IMG_A });
+        expect(container.firstChild).toBeNull();
     });
 
     // ── Priority / Performance attributes ─────────────────────────────────────
@@ -116,49 +111,17 @@ describe('Suite 1 — DefaultImageGalleryBlock', () => {
         expect(coverImg!.getAttribute('data-priority')).toBe('true');
     });
 
-    it('Scenario 1.8 — background blur image does NOT have priority (decorative)', () => {
-        renderGallery({ images: [IMG_A] });
-        // aria-hidden images are excluded from the accessible tree;
-        // query via the DOM directly instead of ARIA role lookup.
-        const bgImg = document.querySelector('img[aria-hidden="true"]');
-        expect(bgImg).toBeTruthy();
-        expect(bgImg!.getAttribute('data-priority')).toBeNull();
-    });
-
-    it('Scenario 1.9 — background blur image has aria-hidden for accessibility', () => {
-        renderGallery({ images: [IMG_A] });
-        const bgImg = document.querySelector('img[aria-hidden="true"]');
-        expect(bgImg).toBeTruthy();
-    });
-
     it('Scenario 1.10 — cover image has correct sizes for responsive layout', () => {
         renderGallery({ images: [IMG_A] });
         const coverImg = screen.getAllByRole('img').find(
             img => img.getAttribute('alt') === 'Gallery Cover'
         );
         expect(coverImg!.getAttribute('data-sizes')).toBe(
-            '(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px'
+            '(max-width: 768px) 100vw, 240px'
         );
     });
 
-    it('Scenario 1.11 — background image has sizes="100vw" (not 10vw)', () => {
-        renderGallery({ images: [IMG_A] });
-        const bgImg = document.querySelector('img[aria-hidden="true"]');
-        expect(bgImg!.getAttribute('data-sizes')).toBe('100vw');
-    });
-
-    it('Scenario 1.12 — background image has quality=10 (blur decoration)', () => {
-        renderGallery({ images: [IMG_A] });
-        const bgImg = document.querySelector('img[aria-hidden="true"]');
-        expect(bgImg!.getAttribute('data-quality')).toBe('10');
-    });
-
-    it('Scenario 1.13 — both images have blur placeholder configured', () => {
-        renderGallery({ images: [IMG_A] });
-        const imgsWithBlur = document
-            .querySelectorAll('img[data-blur="true"]');
-        expect(imgsWithBlur.length).toBeGreaterThanOrEqual(2);
-    });
+    // tests 1.11, 1.12, 1.13 removed because blur decorative image and multiple blur placeholders are no longer present
 
     // ── Gallery open / close ───────────────────────────────────────────────────
 
@@ -210,8 +173,8 @@ describe('Suite 1 — DefaultImageGalleryBlock', () => {
 
     it('Scenario 1.20 — filters out blank strings from images array', () => {
         renderGallery({ images: [IMG_A, '', '  ', IMG_B] });
-        // Only 2 valid images → badge shows 2
-        expect(screen.getByText('2 Photos')).toBeInTheDocument();
+        // Only 2 valid images → badge shows 2, but it might render twice (mobile and desktop)
+        expect(screen.getAllByText('2 Photos').length).toBeGreaterThan(0);
     });
 
     it('Scenario 1.21 — empty coverImage string falls back to first valid image', () => {
@@ -233,7 +196,7 @@ describe('Suite 1 — DefaultImageGalleryBlock', () => {
     it('Scenario 1.23 — single image renders without error', () => {
         const { container } = renderGallery({ images: [IMG_A] });
         expect(container.firstChild).not.toBeNull();
-        expect(screen.getByText('1 Photos')).toBeInTheDocument();
+        expect(screen.getAllByText('1 Photos').length).toBeGreaterThan(0);
     });
 
 });

@@ -126,15 +126,38 @@ export async function seedMembershipData(db: admin.firestore.Firestore, siteId: 
 }
 
 /**
+ * Seeds Sales Pipeline Module Data
+ * - Config: Default stages (New Lead, Contacted, Proposal, Won)
+ */
+export async function seedSalesPipelineData(db: admin.firestore.Firestore, siteId: string) {
+    console.log(`[Seeding] Sales Pipeline data for ${siteId}`);
+    const configRef = db.doc(`sites/${siteId}/modules/sales_pipeline/settings/config`);
+
+    const defaultStages = [
+        { id: 'lead',        name: 'New Lead',      order: 0, type: 'active', color: '#3b82f6' },
+        { id: 'qualified',   name: 'Qualified',     order: 1, type: 'active', color: '#8b5cf6' },
+        { id: 'proposal',    name: 'Proposal',      order: 2, type: 'active', color: '#f59e0b' },
+        { id: 'negotiation', name: 'Negotiation',   order: 3, type: 'active', color: '#ec4899' },
+        { id: 'won',         name: 'Won',           order: 4, type: 'won',    color: '#10b981' },
+        { id: 'lost',        name: 'Lost',          order: 5, type: 'lost',   color: '#ef4444' },
+    ];
+
+    await configRef.set({
+        stages: defaultStages,
+        formIntegrations: [],
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+}
+
+/**
  * Seeding Router - Calls specific seeders based on enabled modules
  */
 export async function seedModules(db: admin.firestore.Firestore, siteId: string, modules: Record<string, boolean>) {
     const tasks = [];
-    if (modules.booking) tasks.push(seedBookingData(db, siteId));
+    if (modules.booking || modules.reservation) tasks.push(seedBookingData(db, siteId));
     if (modules.inventory) tasks.push(seedInventoryData(db, siteId));
     if (modules.membership) tasks.push(seedMembershipData(db, siteId));
-
-    // POS is usually covered by core 'products' seeding, but could add specific POS settings here if needed
+    if (modules.sales_pipeline) tasks.push(seedSalesPipelineData(db, siteId));
 
     await Promise.all(tasks);
 }

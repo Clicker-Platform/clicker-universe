@@ -1,0 +1,26 @@
+# Clicker Universe
+
+> Multi-tenant SaaS platform for local businesses. Each tenant gets a public biolink/website, admin dashboard, and optional add-on modules (POS, Inventory, Reservations, Membership, AI Agent).
+
+## Docs
+
+- [Architecture](ARCHITECTURE.md): System architecture and monorepo structure
+- [Tech Stack](TECHSTACK.md): Approved technologies and what NOT to introduce
+- [Conventions](CONVENTIONS.md): Coding conventions and patterns
+- [Contributing](CONTRIBUTING.md): How to contribute
+- [Agents Guide](AGENTS.md): AI agent instructions (build, test, style, rules)
+- [Deep Architecture](clicker-platform-v2/Docs/ARCHITECTURE.md): Full technical architecture reference
+
+## Apps
+
+- [clicker-platform-v2/](clicker-platform-v2/README.md): Main Next.js platform
+- [auth-gateway/](auth-gateway/): Centralized authentication
+- [backyard/](backyard/): Super-admin dashboard
+- [functions/](functions/): Firebase Cloud Functions
+
+## Key Concepts
+
+- **Multi-tenancy**: All data scoped under `sites/{siteId}` in Firestore
+- **Module system**: Opt-in features toggled per tenant; modules cannot import each other
+- **RBAC**: Roles (owner/editor/viewer/staff) enforced via `useUser().canEdit()`
+- **Templates**: 5 prebuilt public-facing themes per tenant

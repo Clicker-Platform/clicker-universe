@@ -349,13 +349,15 @@ collectionGroup index: `warrantyCards / warrantyCode ASC` (for public page)
 - [lib/modules/service-records/api.ts](clicker-platform-v2/lib/modules/service-records/api.ts) — Full client-side Firestore API
 
 **Admin pages:**
-- [lib/modules/service-records/admin/RecordsListPage.tsx](clicker-platform-v2/lib/modules/service-records/admin/RecordsListPage.tsx) — Records list with status tabs and search
-- [lib/modules/service-records/admin/RecordFormPage.tsx](clicker-platform-v2/lib/modules/service-records/admin/RecordFormPage.tsx) — Create/edit record form (4-section)
-- [lib/modules/service-records/admin/RecordDetailPage.tsx](clicker-platform-v2/lib/modules/service-records/admin/RecordDetailPage.tsx) — Record detail with status actions
-- [lib/modules/service-records/admin/VehiclesPage.tsx](clicker-platform-v2/lib/modules/service-records/admin/VehiclesPage.tsx) — Vehicle catalog management
-- [lib/modules/service-records/admin/ServiceTypesPage.tsx](clicker-platform-v2/lib/modules/service-records/admin/ServiceTypesPage.tsx) — Service type catalog (owner only)
-- [lib/modules/service-records/admin/RemindersPage.tsx](clicker-platform-v2/lib/modules/service-records/admin/RemindersPage.tsx) — Reminder engine config + template editor
-- [lib/modules/service-records/admin/SettingsPage.tsx](clicker-platform-v2/lib/modules/service-records/admin/SettingsPage.tsx) — Warranty prefix, feature flags (owner only)
+- [lib/modules/service-records/admin/RecordsListPage.tsx](clicker-platform-v2/lib/modules/service-records/admin/RecordsListPage.tsx) — `service_records:RecordsListPage` → `/admin/service-records/records`
+- [lib/modules/service-records/admin/RecordFormPage.tsx](clicker-platform-v2/lib/modules/service-records/admin/RecordFormPage.tsx) — `service_records:RecordFormPage` → `/admin/service-records/new` (hidden)
+- [lib/modules/service-records/admin/RecordDetailPage.tsx](clicker-platform-v2/lib/modules/service-records/admin/RecordDetailPage.tsx) — `service_records:RecordDetailPage` → `/admin/service-records/detail` (hidden)
+- [lib/modules/service-records/admin/ReportsPage.tsx](clicker-platform-v2/lib/modules/service-records/admin/ReportsPage.tsx) — `service_records:ReportsPage` → `/admin/service-records/reports` (permission: view_reports)
+- [lib/modules/service-records/admin/VehiclesPage.tsx](clicker-platform-v2/lib/modules/service-records/admin/VehiclesPage.tsx) — `service_records:VehiclesPage` → `/admin/service-records/vehicles`
+- [lib/modules/service-records/admin/VehicleDetailPage.tsx](clicker-platform-v2/lib/modules/service-records/admin/VehicleDetailPage.tsx) — `service_records:VehicleDetailPage` → `/admin/service-records/vehicles/detail` (hidden)
+- [lib/modules/service-records/admin/ServiceTypesPage.tsx](clicker-platform-v2/lib/modules/service-records/admin/ServiceTypesPage.tsx) — `service_records:ServiceTypesPage` → `/admin/service-records/service-types` (permission: settings)
+- [lib/modules/service-records/admin/RemindersPage.tsx](clicker-platform-v2/lib/modules/service-records/admin/RemindersPage.tsx) — `service_records:RemindersPage` → `/admin/service-records/reminders` (permission: settings)
+- [lib/modules/service-records/admin/SettingsPage.tsx](clicker-platform-v2/lib/modules/service-records/admin/SettingsPage.tsx) — `service_records:SettingsPage` → `/admin/service-records/settings` (permission: settings)
 
 **Shared components:**
 - [lib/modules/service-records/admin/components/RecordStatusBadge.tsx](clicker-platform-v2/lib/modules/service-records/admin/components/RecordStatusBadge.tsx)
@@ -369,7 +371,7 @@ collectionGroup index: `warrantyCards / warrantyCode ASC` (for public page)
 **Registration files modified:**
 - [middleware.ts](clicker-platform-v2/middleware.ts) — `'warranty'` added to specialRoutes
 - [lib/modules/definitions.ts](clicker-platform-v2/lib/modules/definitions.ts) — service_records adminRoutes
-- [lib/modules/components.tsx](clicker-platform-v2/lib/modules/components.tsx) — 7 dynamic imports
+- [lib/modules/components.tsx](clicker-platform-v2/lib/modules/components.tsx) — 9 dynamic imports (RecordsListPage, RecordFormPage, RecordDetailPage, ReportsPage, VehiclesPage, VehicleDetailPage, ServiceTypesPage, RemindersPage, SettingsPage)
 - [lib/modules/registry.ts](clicker-platform-v2/lib/modules/registry.ts) — Car, Wrench, Bell, Users, Plus icons added
 - [scripts/seed-modules.ts](clicker-platform-v2/scripts/seed-modules.ts) — service_records seed entry
 - [backyard/lib/modules/definitions.ts](backyard/lib/modules/definitions.ts) — backyard parity

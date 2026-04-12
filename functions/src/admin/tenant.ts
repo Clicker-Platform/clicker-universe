@@ -157,7 +157,7 @@ export const getTenants = functions.https.onCall(async (request) => {
     try {
         // 2. Fetch all sites using Admin SDK
         const snapshot = await admin.firestore().collection('sites').get();
-        const sites = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const sites = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
         return { list: sites };
     } catch (error: any) {
         console.error("Error fetching tenants:", error);
@@ -187,7 +187,13 @@ export const updateTenantModules = functions.https.onCall(async (request) => {
     const db = admin.firestore();
 
     try {
-        // 2. Update Modules Map
+        // 2. Verify site exists before updating
+        const siteSnap = await db.collection('sites').doc(siteId).get();
+        if (!siteSnap.exists) {
+            throw new functions.https.HttpsError('not-found', `Site "${siteId}" does not exist. Please create the tenant first.`);
+        }
+
+        // 3. Update Modules Map (use update to avoid creating corrupt documents)
         await db.collection('sites').doc(siteId).update({
             modules: modules,
             updatedAt: FieldValue.serverTimestamp()

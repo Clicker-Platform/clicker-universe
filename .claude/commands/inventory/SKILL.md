@@ -46,12 +46,11 @@ Read the following files and check each point. Report pass/fail with the exact f
    ```
    Verify these strings exactly — they are relative and get prepended with `sites/{siteId}/` at call time
 
-3. Entry exists in `dev/clicker-platform-v2/lib/modules/definitions.ts` → `STATIC_MODULE_DEFINITIONS['inventory']`:
+3. Entry exists in `lib/modules/definitions.ts` → `STATIC_MODULE_DEFINITIONS['inventory']`:
    - Route: `inventory:AdminDashboard` → `/admin/inventory/items`
 
-4. Entry exists in `dev/backyard/lib/modules/definitions.ts` with `displayName: 'Inventory'`, `description: 'Stock management'`:
-   - Route: `inventory:AdminDashboard` → `/admin/inventory`
-   - **Note:** Backyard uses `/admin/inventory` (no `/items` suffix) — this is an intentional discrepancy, not a bug
+4. Entry exists in `backyard/lib/modules/definitions.ts` (parity with platform):
+   - Route: `inventory:AdminDashboard` → `/admin/inventory/items`
 
 5. `inventory:AdminDashboard` is registered in `lib/modules/components.tsx`:
    - Dynamic import: `const InventoryAdminPage = dynamic(() => import('@/lib/modules/inventory/admin/InventoryAdminPage'))`
@@ -404,8 +403,8 @@ ADMIN SCREENS (lib/modules/inventory/admin/):
 REGISTRATION FILES:
   lib/modules/definitions.ts            ← STATIC_MODULE_DEFINITIONS['inventory'] → /admin/inventory/items
   lib/modules/components.tsx            ← MODULE_COMPONENTS['inventory:AdminDashboard']
-  scripts/seed-modules.ts               ← Firestore module seed (uses /admin/inventory — intentionally differs)
-  dev/backyard/lib/modules/definitions.ts  ← Uses /admin/inventory (no /items suffix) — intentional
+  scripts/seed-modules.ts               ← Firestore module seed → /admin/inventory/items
+  backyard/lib/modules/definitions.ts   ← STATIC_MODULE_DEFINITIONS['inventory'] → /admin/inventory/items (in parity)
 
 INTEGRATION CONSUMERS:
   lib/modules/byod_pos/api.ts           ← updateStock() on order completion (deduct) and cancellation (refund)
