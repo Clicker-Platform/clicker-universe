@@ -399,7 +399,6 @@ export function AdminSidebar() {
                                     {/* Nav links */}
                                     {[
                                         { icon: User, label: 'Account', href: '/admin/settings/account' },
-                                        { icon: Fingerprint, label: 'Identity', href: '/admin/settings/identity' },
                                         { icon: Building2, label: 'Business', href: '/admin/settings/business' },
                                         { icon: Users, label: 'Team', href: '/admin/settings/team' },
                                     ].map(({ icon: Icon, label, href }) => {
