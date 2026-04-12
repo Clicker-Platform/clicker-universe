@@ -66,3 +66,18 @@ worktree-new: ## Buat feature worktree baru. Usage: make worktree-new BRANCH=fea
 
 worktree-list: ## Lihat semua worktrees yang aktif
 	@git worktree list
+
+deploy-staging: ## Deploy semua ke staging (indexes + rules + functions + hosting)
+	./scripts/deploy-staging.sh all
+
+deploy-staging-core: ## Deploy hosting core saja ke staging
+	./scripts/deploy-staging.sh core
+
+deploy-staging-functions: ## Deploy functions saja ke staging
+	./scripts/deploy-staging.sh functions
+
+deploy-staging-indexes: ## Deploy Firestore indexes ke staging
+	./scripts/deploy-staging.sh indexes
+
+deploy-staging-firestore: ## Deploy Firestore rules + indexes ke staging
+	./scripts/deploy-staging.sh firestore
