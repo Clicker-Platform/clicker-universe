@@ -6,7 +6,6 @@ import { useSite } from '@/lib/site-context';
 
 const TABS = [
     { label: 'Account', path: '/admin/settings/account' },
-    { label: 'Identity', path: '/admin/settings/identity' },
     { label: 'Business', path: '/admin/settings/business' },
 ] as const;
 

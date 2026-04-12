@@ -5,7 +5,7 @@ import { httpsCallable } from 'firebase/functions';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { functions, db, auth } from '@/lib/firebase';
 import { toast } from 'sonner';
-import { Store, Power, PowerOff, Loader2, RefreshCw, Database, ExternalLink, Grid, Users, UserPlus, UserX } from 'lucide-react';
+import { Store, Power, PowerOff, Loader2, RefreshCw, Database, ExternalLink, Grid, Users, UserPlus, UserX, Trash2, Link, Pencil } from 'lucide-react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
 import Sidebar from '../../components/Sidebar';
@@ -170,7 +170,69 @@ export default function TenantsPage() {
         }
     };
 
-    // 5. Handle Team Management
+    // 5. Handle Hard Delete Tenant
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [deleteConfirmText, setDeleteConfirmText] = useState('');
+    const [deleteLoading, setDeleteLoading] = useState(false);
+
+    const openDeleteDialog = (tenant: any) => {
+        setSelectedTenant(tenant);
+        setDeleteConfirmText('');
+        setDeleteDialogOpen(true);
+    };
+
+    const handleHardDelete = async () => {
+        if (!selectedTenant) return;
+        if (deleteConfirmText !== selectedTenant.id) {
+            toast.error('Confirmation mismatch', { description: 'Type the exact Site ID to confirm deletion.' });
+            return;
+        }
+        setDeleteLoading(true);
+        try {
+            const hardDeleteFn = httpsCallable(functions, 'hardDeleteTenant');
+            await hardDeleteFn({ siteId: selectedTenant.id });
+            toast.success('Tenant Obliterated', { description: `${selectedTenant.name} and all its data have been permanently deleted.` });
+            setDeleteDialogOpen(false);
+            setSelectedTenant(null);
+            fetchTenants();
+        } catch (error: any) {
+            toast.error('Hard Delete Failed', { description: error.message });
+        } finally {
+            setDeleteLoading(false);
+        }
+    };
+
+    // 6. Handle Update URL / Slug
+    const [updateUrlDialogOpen, setUpdateUrlDialogOpen] = useState(false);
+    const [newSlug, setNewSlug] = useState('');
+    const [updateUrlLoading, setUpdateUrlLoading] = useState(false);
+
+    const openUpdateUrlDialog = (tenant: any) => {
+        setSelectedTenant(tenant);
+        setNewSlug(tenant.slug || tenant.id);
+        setUpdateUrlDialogOpen(true);
+    };
+
+    const handleUpdateUrl = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedTenant || !newSlug.trim()) return;
+        const sanitized = newSlug.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+        setUpdateUrlLoading(true);
+        try {
+            const updateSlugFn = httpsCallable(functions, 'updateTenantSlug');
+            await updateSlugFn({ siteId: selectedTenant.id, newSlug: sanitized });
+            toast.success('URL Updated', { description: `New URL: /${sanitized}` });
+            setUpdateUrlDialogOpen(false);
+            setSelectedTenant(null);
+            fetchTenants();
+        } catch (error: any) {
+            toast.error('URL Update Failed', { description: error.message });
+        } finally {
+            setUpdateUrlLoading(false);
+        }
+    };
+
+    // 7. Handle Team Management
     const [teamDialogOpen, setTeamDialogOpen] = useState(false);
     const [teamMembers, setTeamMembers] = useState<any[]>([]);
     const [teamLoading, setTeamLoading] = useState(false);
@@ -507,6 +569,13 @@ export default function TenantsPage() {
 
                                                         <div className="flex items-center gap-1">
                                                             <button
+                                                                onClick={() => openUpdateUrlDialog(tenant)}
+                                                                className="p-2 rounded-lg border border-blue-200 text-blue-600 hover:bg-blue-50 transition-all"
+                                                                title="Update URL / Slug"
+                                                            >
+                                                                <Pencil className="w-4 h-4" />
+                                                            </button>
+                                                            <button
                                                                 onClick={() => handleSeed(tenant)}
                                                                 className="p-2 rounded-lg border border-amber-200 text-amber-600 hover:bg-amber-50 transition-all"
                                                                 title="Seed Demo Data"
@@ -522,6 +591,13 @@ export default function TenantsPage() {
                                                                 title={tenant.status === 'active' ? 'Suspend' : 'Activate'}
                                                             >
                                                                 {tenant.status === 'active' ? <PowerOff className="w-4 h-4" /> : <Power className="w-4 h-4" />}
+                                                            </button>
+                                                            <button
+                                                                onClick={() => openDeleteDialog(tenant)}
+                                                                className="p-2 rounded-lg border border-red-300 text-red-700 hover:bg-red-50 transition-all"
+                                                                title="Hard Delete Tenant"
+                                                            >
+                                                                <Trash2 className="w-4 h-4" />
                                                             </button>
                                                         </div>
                                                     </div>

@@ -92,8 +92,12 @@ These are hard constraints. Violations are bugs, not preferences.
    Firestore Security Rules.
 
 5. **Service Records never writes to Members collections directly.** All
-   membership actions use `membershipModule.addPoints()`. addPoints() failure
-   must NOT roll back the COMPLETED status — log and surface to manager.
+   membership actions use `awardPointsWithSpend()` guarded by
+   `isModuleEnabled('membership')`. Points are awarded at whichever comes
+   first: payment status transitions to PAID (in `updateServiceRecord`) OR
+   at COMPLETED approval (in `approveRecord` Step 8) — but only once
+   (`loyaltyPointsAwarded` guard prevents double-award). Failure must NOT
+   roll back the COMPLETED status — log and surface to manager.
 
 6. **All reminder templates are tenant-configurable.** No hardcoded message
    copy anywhere in the codebase. All copy reads from
@@ -106,8 +110,11 @@ These are hard constraints. Violations are bugs, not preferences.
 8. **COMPLETED records are immutable.** No field edits after COMPLETED.
    Corrections via amendment notes subcollection only.
 
-9. **Vehicle plate number is the dedup key.** Warn (do not block) when a
-   plate already exists under a different memberId. Staff must confirm intent.
+9. **Vehicle plate number is the dedup key.** In `RecordFormPage`, when a
+   plate lookup returns a vehicle linked to a different member than the one
+   currently selected, show a `plateWarning` (do not block). Staff must
+   confirm intent. The warning must mention whose member the plate belongs
+   to by name.
 
 10. **outletId is required and never null on every document.** In v1.0 it is
     always the single configured outlet. All list queries include

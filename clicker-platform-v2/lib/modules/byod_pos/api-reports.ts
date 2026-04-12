@@ -152,11 +152,8 @@ export async function getMonthlyReport(
     return fetchOrders(siteId, start, end, limitCount, lastDoc);
 }
 
-// Local logic moved to calculator.ts
-import { calculateReportSummary, ReportSummary } from '../pos-reporting/calculator';
-export type { ReportSummary }; // Re-export for consumers if needed, or just let them import from calculator.
-// Actually, page.tsx imports it from here currently. So re-exporting is good for backward compat.
-
+import { calculateReportSummary, ReportSummary } from './reporting-utils';
+export type { ReportSummary };
 export { calculateReportSummary };
 
 /**

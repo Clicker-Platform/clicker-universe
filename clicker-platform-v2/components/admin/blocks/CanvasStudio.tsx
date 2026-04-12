@@ -2,7 +2,7 @@
 
 import { useEditor } from './EditorContext';
 import { BlockManager } from './BlockManager';
-import { Settings, Layers, Box, FileText, BarChart2, CheckSquare, Square, X, Plus, Link2, FileInput, ShoppingBag, Globe, Loader2 } from 'lucide-react';
+import { Settings, Layers, Box, FileText, BarChart2, CheckSquare, Square, X, Plus, Link2, FileInput, ShoppingBag, Globe, Loader2, Palette } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
 import { TemplateProvider } from '@/components/TemplateProvider';
 import { BlockRenderer } from '@/components/blocks/BlockRenderer';
@@ -31,6 +31,7 @@ const LinksPanel = dynamic(() => import('./panels/LinksPanel').then(m => m.Links
 const FormsPanel = dynamic(() => import('./panels/FormsPanel').then(m => m.FormsPanel));
 const ProductsPanel = dynamic(() => import('./panels/ProductsPanel').then(m => m.ProductsPanel));
 const SiteInfoPanel = dynamic(() => import('./panels/SiteInfoPanel').then(m => m.SiteInfoPanel));
+const BrandingPanel = dynamic(() => import('./panels/BrandingPanel').then(m => m.BrandingPanel));
 
 export function CanvasStudio({
     globalSettings,
@@ -71,7 +72,7 @@ export function CanvasStudio({
     const [host] = useState(() => typeof window !== 'undefined' ? window.location.host : '');
     const [tooltip, setTooltip] = useState<{ label: string; top: number; left: number; side?: boolean } | null>(null);
     const [leftPanel, setLeftPanel] = useState<'pages' | 'add' | 'navigator' | null>('navigator');
-    const [slideOverPanel, setSlideOverPanel] = useState<'links' | 'forms' | 'products' | 'siteinfo' | null>(null);
+    const [slideOverPanel, setSlideOverPanel] = useState<'links' | 'forms' | 'products' | 'siteinfo' | 'branding' | null>(null);
 
     // Mobile state
     const [mobileSheet, setMobileSheet] = useState<MobileActiveSheet>(null);
@@ -642,6 +643,7 @@ export function CanvasStudio({
                         { id: 'forms' as const, icon: FileInput, label: 'Forms', shortcut: 'F' },
                         { id: 'products' as const, icon: ShoppingBag, label: 'Products', shortcut: 'B' },
                         { id: 'siteinfo' as const, icon: Globe, label: 'Site Info', shortcut: 'I' },
+                        { id: 'branding' as const, icon: Palette, label: 'Branding', shortcut: 'G' },
                     ]).map(({ id, icon: Icon, label, shortcut }) => (
                         <button
                             key={id}
@@ -694,14 +696,15 @@ export function CanvasStudio({
             {/* Slide-over Panel (Links / Forms / Products / Site Info) */}
             {slideOverPanel && (
                 <SlideOverPanel
-                    title={slideOverPanel === 'links' ? 'Links' : slideOverPanel === 'forms' ? 'Forms' : slideOverPanel === 'products' ? 'Products' : slideOverPanel === 'siteinfo' ? 'Site Info' : slideOverPanel}
-                    icon={slideOverPanel === 'links' ? Link2 : slideOverPanel === 'forms' ? FileInput : slideOverPanel === 'products' ? ShoppingBag : slideOverPanel === 'siteinfo' ? Globe : Link2}
+                    title={slideOverPanel === 'links' ? 'Links' : slideOverPanel === 'forms' ? 'Forms' : slideOverPanel === 'products' ? 'Products' : slideOverPanel === 'siteinfo' ? 'Site Info' : slideOverPanel === 'branding' ? 'Branding' : slideOverPanel}
+                    icon={slideOverPanel === 'links' ? Link2 : slideOverPanel === 'forms' ? FileInput : slideOverPanel === 'products' ? ShoppingBag : slideOverPanel === 'siteinfo' ? Globe : slideOverPanel === 'branding' ? Palette : Link2}
                     onClose={() => setSlideOverPanel(null)}
                 >
                     {slideOverPanel === 'links' && <LinksPanel />}
                     {slideOverPanel === 'forms' && <FormsPanel />}
                     {slideOverPanel === 'products' && <ProductsPanel />}
                     {slideOverPanel === 'siteinfo' && <SiteInfoPanel />}
+                    {slideOverPanel === 'branding' && <BrandingPanel />}
                 </SlideOverPanel>
             )}
 

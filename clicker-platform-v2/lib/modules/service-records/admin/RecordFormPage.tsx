@@ -179,6 +179,12 @@ const [plateInput, setPlateInput] = useState('');
             setFoundVehicle(vehicle);
             setShowNewVehicleFields(false);
             if (vehicle.memberId) {
+                // Warn if the plate is linked to a different member than the one currently selected
+                if (selectedMemberId && vehicle.memberId !== selectedMemberId) {
+                    setPlateWarning(
+                        `This plate is registered under ${vehicle.memberName || 'another member'}. Proceeding will link this record to the plate's existing member.`
+                    );
+                }
                 setSelectedMemberId(vehicle.memberId);
                 setSelectedMemberName(vehicle.memberName || '');
             }
@@ -297,18 +303,16 @@ const [plateInput, setPlateInput] = useState('');
 
     if (loading) {
         return (
-            <div className="p-6">
-                <div className="animate-pulse space-y-4 max-w-2xl">
-                    <div className="h-8 bg-gray-200 dark:bg-neutral-700 rounded w-48" />
-                    <div className="h-48 bg-gray-200 dark:bg-neutral-700 rounded-2xl" />
-                    <div className="h-48 bg-gray-200 dark:bg-neutral-700 rounded-2xl" />
-                </div>
+            <div className="animate-pulse space-y-4 max-w-2xl">
+                <div className="h-8 bg-gray-200 dark:bg-neutral-700 rounded w-48" />
+                <div className="h-48 bg-gray-200 dark:bg-neutral-700 rounded-2xl" />
+                <div className="h-48 bg-gray-200 dark:bg-neutral-700 rounded-2xl" />
             </div>
         );
     }
 
     return (
-        <div className="p-6 max-w-3xl space-y-5">
+        <div className="max-w-3xl space-y-5">
             {toast && (
                 <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl text-sm font-medium shadow-lg ${
                     toast.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'

@@ -216,7 +216,7 @@ export default function TeamPage() {
 
     if (loading) {
         return (
-            <div className="p-8 flex flex-col items-center justify-center gap-4">
+            <div className="flex flex-col items-center justify-center gap-4">
                 <Loader2 className="animate-spin" />
                 <div className="text-sm text-gray-400 dark:text-neutral-600">
                     Loading Team... <br />
@@ -227,11 +227,11 @@ export default function TeamPage() {
     }
 
     if (!siteId) {
-        return <div className="p-8 text-center text-red-500">Error: Site ID missing. Please refresh.</div>;
+        return <div className="text-center text-red-500">Error: Site ID missing. Please refresh.</div>;
     }
 
     return (
-        <div className="p-8 max-w-5xl mx-auto">
+        <div className="max-w-5xl">
             {/* Debug Info (Can remove later) */}
             <div className="fixed bottom-4 right-4 text-xs text-gray-300 dark:text-neutral-700 pointer-events-none">
                 {siteId}

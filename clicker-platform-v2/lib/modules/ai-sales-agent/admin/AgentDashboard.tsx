@@ -28,10 +28,10 @@ export default function AgentDashboard() {
         return () => unsub();
     }, [siteId]);
 
-    if (loading) return <div className="p-8">Loading agent status...</div>;
+    if (loading) return <div>Loading agent status...</div>;
 
     return (
-        <div className="space-y-6 max-w-5xl mx-auto pb-20">
+        <div className="space-y-6 max-w-5xl pb-20">
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>

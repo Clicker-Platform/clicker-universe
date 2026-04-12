@@ -22,7 +22,7 @@ You are working on the **Clicker Platform Canvas Studio** — a full WYSIWYG pag
 ## Architecture Overview
 
 ```
-app/admin/(dashboard)/pages/page.tsx
+app/admin/(dashboard)/canvas/page.tsx
 └── PageStudioProvider (global page/save state)
     └── PageStudioInner
         └── EditorProvider (canvas selection state)
@@ -43,6 +43,8 @@ app/admin/(dashboard)/pages/page.tsx
                     ├── SEO & Analytics panel
                     └── BlockFormRenderer ← type-specific property forms
 ```
+
+> **Mobile:** On small screens, `MobileStudioTabBar` and `MobileBottomSheet` replace the desktop sidebar layout.
 
 ---
 
@@ -91,12 +93,13 @@ Defined in `components/admin/blocks/blockDefinitions.ts` (`BLOCK_OPTIONS`):
 | `link` | Link Card | `{ title, url, layoutVariant }` |
 | `map` | Map | `{ address, layoutVariant }` |
 | `image_gallery` | Image Gallery | `{ title, images: [], layoutVariant }` |
+| `social_embed` | Social Embeds | `{ title, limit: 6, items: [] }` |
 
-**System blocks** — handled in `getDefaultData()` but **not in `BLOCK_OPTIONS`** (cannot be added from the Add Blocks panel; they are placed programmatically or by templates only):
+**System blocks** — in `BLOCK_OPTIONS` and `getDefaultData()`, but auto-hydrate from site settings:
 
 | Type | Label | Notes |
 |---|---|---|
-| `quick_actions` | Quick Links | auto-hydrates from site settings |
+| `quick_actions` | Quick Actions | auto-hydrates from site settings |
 | `hours` | Operating Hours | auto-hydrates from site settings |
 | `featured_product` | Featured Product | auto-hydrates from site settings |
 | `branches` | Branches | auto-hydrates from site settings |
@@ -139,7 +142,7 @@ export type BlockType = 'hero' | 'text' | ... | 'testimonials' | string;
 components/admin/blocks/forms/TestimonialsForm.tsx
 ```
 
-Pattern — all forms receive `(data, onChange)`. Use canvas dark theme styles:
+Pattern — all forms use a **named export** and receive `(data, onChange)`. Use canvas dark theme styles:
 ```tsx
 'use client';
 
@@ -148,7 +151,7 @@ const labelClass = "block text-xs font-medium text-neutral-500 mb-1";
 const sectionClass = "p-3 bg-neutral-900/50 rounded-xl border border-neutral-800 space-y-3";
 
 interface Props { data: any; onChange: (data: any) => void; }
-export default function TestimonialsForm({ data, onChange }: Props) {
+export function TestimonialsForm({ data, onChange }: Props) {
   return (
     <div className="space-y-4">
       <div>
@@ -168,13 +171,20 @@ export default function TestimonialsForm({ data, onChange }: Props) {
 
 ### Step 4 — Register form in `BlockFormRenderer.tsx`
 
+Add a `dynamic()` import at the top of the file alongside the other form imports:
+
 ```typescript
-// components/admin/blocks/BlockFormRenderer.tsx
-case 'testimonials': {
-  const { default: Form } = await import('./forms/TestimonialsForm');
-  return <Form data={block.data} onChange={onDataChange} />;
-}
+// At the top of BlockFormRenderer.tsx, with the other dynamic imports:
+const TestimonialsForm = dynamic(() => import('./forms/TestimonialsForm').then(mod => mod.TestimonialsForm), { loading: () => <FormSkeleton /> });
 ```
+
+Then add the case in the switch (wrap with `renderWithLayoutPicker` if the block supports layout variants):
+
+```typescript
+case 'testimonials': return renderWithLayoutPicker(<TestimonialsForm data={block.data} onChange={handleDataChange} />);
+```
+
+> **Note:** Do NOT use inline `await import()` inside the switch — all form imports use top-level `dynamic()` from `next/dynamic`.
 
 ### Step 5 — Add the public render component
 
@@ -240,7 +250,7 @@ Module blocks are contributed by modules (e.g., `reservation`, `pos_menu`). They
 5. Add `BlockFormRenderer` case so the block is editable in the canvas
 6. Add a label in `BlockOutlineItem.tsx → getBlockLabel()` — the default fallback renders `'Module ({type})'`
 
-> **Note:** The `reservation` block type exists in `BlockType` and is rendered by `BlockRenderer.tsx`, but currently has no form in `BlockFormRenderer` and no label in `getBlockLabel()`. It is treated as a read-only module block. If you need to make it editable, follow steps 3–6 above.
+> **Note:** The `reservation` block type exists in `BlockType` and is rendered by `BlockRenderer.tsx` via `ReservationBlock.tsx`, but currently has no form in `BlockFormRenderer`. It is treated as a read-only module block. If you need to make it editable, follow steps 3–6 above.
 
 ---
 
@@ -351,7 +361,7 @@ Unsaved changes guard:
 
 **Block `data` is mutable but `id` and `type` are not.** Only call `updateBlockData(id, newData)` — never replace the whole block object (this would lose selection state).
 
-**System blocks render live data, not form data.** `quick_actions`, `hours`, `featured_product`, `branches` pull from `hydratePageBlocks(siteId, blocks)` which fetches site-wide settings. Their `data` field in Firestore is typically empty `{}`. These types are NOT in `BLOCK_OPTIONS` — they cannot be added via the Add Blocks panel.
+**System blocks render live data, not form data.** `quick_actions`, `hours`, `featured_product`, `branches` pull from `hydratePageBlocks(siteId, blocks)` which fetches site-wide settings. Their `data` field in Firestore is typically empty `{}`. These types ARE in `BLOCK_OPTIONS` — they can be added via the Add Blocks panel.
 
 **Slug must be unique per site.** `savePage()` checks for duplicate slugs. The homepage slug is stored separately in `siteSettings.homepageSlug` (default: `'home'`).
 
@@ -359,7 +369,15 @@ Unsaved changes guard:
 
 **Legacy pages have a `content` (HTML) field but no `blocks`.** `PageStudioContext` handles this with a migration prompt in `PageStudioInner`. Don't write new code that reads `page.content`.
 
+**`social_embed` does not use `LayoutVariantPicker`.** It's the only core block rendered without `renderWithLayoutPicker` in `BlockFormRenderer`. Don't add one without verifying the public component supports `layoutVariant`.
+
+**`BlockRenderer` checks for template-specific block overrides first.** Before rendering a `Default*` block, it reads `fullTemplate.components?.Blocks` and dispatches to the template's custom component if present (e.g. MRB's `MrbHero`, `MrbQuickActions`). When building new block types, add them to `BlockRenderer`'s switch — but be aware a template can shadow the default with its own implementation.
+
+**Public block prop signatures vary.** Not all blocks receive `theme` and `profile` — only `hero` passes both. `text`, `image`, `button`, `faq`, `map` receive neither in `BlockRenderer`. Check the actual switch case before assuming props are available in a public block component.
+
 **There is no static `LAYOUT_VARIANTS` constant.** The spec previously described this as an export from `blockDefinitions.ts`, but it does not exist. Variant defaults come from `template.config.defaultBlockLayouts` and are applied inside `getDefaultData()`.
+
+**The Canvas Studio entry route is `/canvas`, not `/pages`.** The `/pages` route now redirects to `/canvas`. The entry file is `app/admin/(dashboard)/canvas/page.tsx`.
 
 ---
 
@@ -369,7 +387,8 @@ Unsaved changes guard:
 ADMIN UI (clicker-platform-v2/):
 
 Page entry:
-  app/admin/(dashboard)/pages/page.tsx          ← entry, PageStudioProvider wrapper
+  app/admin/(dashboard)/canvas/page.tsx          ← entry, PageStudioProvider wrapper
+  app/admin/(dashboard)/pages/page.tsx           ← redirects to /canvas (legacy)
 
 Contexts:
   components/admin/blocks/PageStudioContext.tsx  ← page list, save, dirty tracking, trash, SEO/pixel setters
@@ -382,6 +401,11 @@ Main editor:
   components/admin/blocks/BlockOutlineItem.tsx   ← single navigator item
   components/admin/blocks/LeftSidebarPanels.tsx  ← PagesPanel, AddBlocksPanel
   components/admin/blocks/ChromeSlotPanel.tsx    ← header/footer/bottomnav props
+  components/admin/blocks/PageSwitcherDropdown.tsx ← page switcher dropdown component
+
+Mobile:
+  components/admin/blocks/MobileStudioTabBar.tsx ← mobile tab bar replacing desktop sidebar
+  components/admin/blocks/MobileBottomSheet.tsx  ← mobile slide-up panel for block forms
 
 Block form system:
   components/admin/blocks/BlockFormRenderer.tsx          ← dispatches to type-specific forms
@@ -390,21 +414,46 @@ Block form system:
   components/admin/blocks/forms/HeroForm.tsx
   components/admin/blocks/forms/TextForm.tsx
   components/admin/blocks/forms/ImageForm.tsx
-  components/admin/blocks/forms/FaqForm.tsx
+  components/admin/blocks/forms/ButtonForm.tsx
+  components/admin/blocks/forms/FAQForm.tsx              ← note: uppercase FAQ
   components/admin/blocks/forms/ProductsForm.tsx
   components/admin/blocks/forms/LinkBlockForm.tsx
   components/admin/blocks/forms/MapForm.tsx
   components/admin/blocks/forms/ImageGalleryBlockForm.tsx
   components/admin/blocks/forms/QuickActionsBlockForm.tsx
   components/admin/blocks/forms/SystemBlockForm.tsx      ← used for hours, featured_product, branches
+  components/admin/blocks/forms/SocialEmbedForm.tsx
 
 Block rendering (shared admin + public):
-  components/blocks/BlockRenderer.tsx            ← routes to Default* or custom components
+  components/blocks/BlockRenderer.tsx            ← routes to Default* or custom components; checks template.components.Blocks for overrides first
+  components/blocks/SafeBlockRenderer.tsx        ← error-boundary wrapper around every rendered block
   components/blocks/public/Default*.tsx          ← public block components
+  components/blocks/public/DefaultSocialEmbedBlock.tsx
+  components/blocks/public/ReservationBlock.tsx  ← reservation module block (read-only in canvas)
+  components/blocks/public/LinkBlockClient.tsx   ← client-side interactive wrapper for link blocks
+  components/blocks/public/ProductsBlockClient.tsx ← client-side interactive wrapper for product blocks
   components/blocks/public/cardStyles.ts         ← getCardClasses(), getTextColor()
+  components/blocks/mrb/                        ← MRB template-specific block overrides (MrbHero, MrbQuickActions, MrbOperatingHours)
 
 Image uploads in blocks:
   components/admin/blocks/BlockImageUploader.tsx ← image upload/preview widget
+
+Legacy block editor (deprecated — use BlockFormRenderer + CanvasStudio):
+  components/admin/blocks/BlockEditor.tsx        ← older inline-expand editor, still present but superseded
+
+Slide-over panels:
+  components/admin/blocks/SlideOverPanel.tsx     ← slide-over container used by L/F/B/I shortcuts
+  components/admin/blocks/panels/LinksPanel.tsx
+  components/admin/blocks/panels/FormsPanel.tsx
+  components/admin/blocks/panels/ProductsPanel.tsx
+  components/admin/blocks/panels/SiteInfoPanel.tsx
+  components/admin/blocks/panels/HeaderNavPanel.tsx
+  components/admin/blocks/panels/ChromeBottomNavProperties.tsx
+
+Rich text:
+  components/admin/blocks/rich-text/RichTextEditor.tsx
+  components/admin/blocks/rich-text/Toolbar.tsx
+  components/admin/blocks/rich-text/LinkSelector.tsx
 
 Types:
   data/mockData.ts                               ← PageBlock, Page, BlockType interfaces

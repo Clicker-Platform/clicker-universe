@@ -18,8 +18,6 @@ description: >
 
 You are helping work with the Clicker Platform module system.
 
-**Full architecture reference:** `memory/modularity.md`
-
 This skill is invoked as `/module [action] [moduleId]`
 
 ---
@@ -44,8 +42,8 @@ Before writing any code, collect from the user:
 1. **Module ID** — snake_case (e.g. `events`)
 2. **Display name** — human label (e.g. `Events`)
 3. **Description** — one sentence
-4. **Icon** — choose from: `dashboard`, `calendar`, `box`, `user`, `users`, `settings`, `credit-card`, `file-text`, `shopping-bag`, `clipboard-list`, `monitor-dot`, `trophy`, `bot`, `qr-code`, `list`
-5. **Admin routes** — for each: label, path suffix (e.g. `/admin/events/list`), component name
+4. **Icon** — choose from: `dashboard`, `calendar`, `box`, `user`, `users`, `settings`, `credit-card`, `file-text`, `shopping-bag`, `clipboard-list`, `monitor-dot`, `trophy`, `bot`, `qr-code`, `list`, `bar-chart-3`, `car`, `wrench`, `bell`, `plus`, `utensils`
+5. **Admin routes** — for each: label, full path (e.g. `/admin/events/list`), component name
 6. **Public routes?** — path + component name if yes
 7. **Page builder blocks?** — block type + component name if yes
 8. **Dashboard widgets?** — location + component name if yes
@@ -58,18 +56,29 @@ Before writing any code, collect from the user:
 - Define all TypeScript interfaces for module data models
 - Reference pattern: `lib/modules/membership/types.ts` or `lib/modules/reservation/types.ts`
 
+**`dev/clicker-platform-v2/lib/modules/{moduleId}/constants.ts`**
+
+- Define all Firestore collection path strings here as named constants
+- Never hardcode path strings inline in components or api files
+
+```typescript
+export const MODULE_ID = '{moduleId}';
+export const ITEMS_COLLECTION = 'modules/{moduleId}/items';
+export const SETTINGS_DOC = 'modules/{moduleId}/settings/config';
+```
+
 **`dev/clicker-platform-v2/lib/modules/{moduleId}/api.ts`**
 - Client-side Firestore operations using Firebase Client SDK only
-- Export collection path constants at top: `export const ITEMS_COLLECTION = 'modules/{moduleId}/items';`
+- Import path constants from `./constants` — do not redeclare them here
 - Import from `firebase/firestore` and `@/lib/firebase`
 - Do not import `firebase-admin` — this file runs on the client
-- Reference pattern: `lib/modules/membership/api.ts`
+- Reference pattern: `lib/modules/byod_pos/api.ts`
 
 **`dev/clicker-platform-v2/lib/modules/{moduleId}/admin/{Name}Page.tsx`**
 
 - Add `'use client'` at top — required because these pages use hooks
 - Import `useSite` from `@/lib/site-context` for siteId
-- Import `usePermission` from `@/lib/hooks/use-permission` for edit/view checks
+- Import `usePermission` from `@/lib/hooks/use-permission` for edit/view checks (see RBAC section below)
 - Reference pattern: `lib/modules/membership/admin/MemberListPage.tsx`
 
 ### Step 2 — Register Routes (TWO FILES, both required)
@@ -123,7 +132,12 @@ Add to `MODULE_COMPONENTS` object:
 '{moduleId}:{ComponentName}': {ComponentName},
 ```
 
-If component uses React hooks without server features, also add to `CLIENT_MODULE_COMPONENTS` in `lib/modules/client-registry.tsx`.
+**`dev/clicker-platform-v2/lib/modules/client-registry.tsx`** — only for dashboard widgets and page builder block components that must run in a pure client context (e.g., inside `MemberDashboard`). Admin route components do NOT need to be registered here — only in `MODULE_COMPONENTS`.
+
+```typescript
+// client-registry.tsx — only if registering a widget or block component
+'{moduleId}:{WidgetName}': {WidgetName},
+```
 
 ### Step 4 — Seed Firestore
 
@@ -165,15 +179,16 @@ Read the following files and check each point for `{moduleId}`:
 
 **Checklist (report pass/fail with file path for each):**
 
-1. Directory `lib/modules/{moduleId}/` exists with at least `types.ts`, `api.ts`, `admin/`
+1. Directory `lib/modules/{moduleId}/` exists with at least `types.ts`, `constants.ts`, `api.ts`, `admin/`
 2. Entry exists in `lib/modules/definitions.ts` → `STATIC_MODULE_DEFINITIONS`
 3. Entry exists in `dev/backyard/lib/modules/definitions.ts` (parity check)
 4. Every `componentKey` in adminRoutes has a matching key in `MODULE_COMPONENTS` (`lib/modules/components.tsx`)
 5. Every registered component has a `dynamic(() => import(...))` at the top of `components.tsx`
 6. Module entry exists in `scripts/seed-modules.ts` MODULES array
-7. All route `path` values end in a single-word segment (no trailing slashes, no nested dynamic params)
+7. All route `path` values match their full URL — the catch-all resolves by full path lookup, and permission checks use the last segment. Both single-segment (`/admin/pos/cashier`) and multi-segment (`/admin/service-records/records`) paths are valid.
 8. No `firebase-admin` imports in `components.tsx` or `client-registry.tsx`
 9. All admin components have `'use client'` directive
+10. All Firestore path strings are defined in `constants.ts` — not hardcoded inline
 
 ---
 
@@ -210,18 +225,18 @@ Missing components (routes with no MODULE_COMPONENTS entry): ...
 
 ```
 PLATFORM (dev/clicker-platform-v2/):
-  lib/modules/types.ts                              ← type interfaces
+  lib/modules/types.ts                              ← ModuleDefinition type interfaces
   lib/modules/definitions.ts                        ← STATIC_MODULE_DEFINITIONS
-  lib/modules/registry.ts                           ← runtime lookup
-  lib/modules/components.tsx                        ← MODULE_COMPONENTS
-  lib/modules/client-registry.tsx                   ← CLIENT_MODULE_COMPONENTS
+  lib/modules/registry.ts                           ← runtime Firestore lookup (findModuleForAdminRoute, isModuleEnabled)
+  lib/modules/components.tsx                        ← MODULE_COMPONENTS (all admin + public components)
+  lib/modules/client-registry.tsx                   ← CLIENT_MODULE_COMPONENTS (widgets + blocks only)
   scripts/seed-modules.ts                           ← Firestore seed
-  app/admin/(dashboard)/[...slug]/page.tsx          ← catch-all route
-  app/admin/(dashboard)/AdminSidebar.tsx            ← sidebar nav
+  app/admin/(dashboard)/[...slug]/page.tsx          ← catch-all route (full path lookup → component render)
+  app/admin/(dashboard)/AdminSidebar.tsx            ← sidebar nav (merges Firestore + STATIC_MODULE_DEFINITIONS)
   components/modules/ModuleLoader.tsx               ← component resolver
-  components/admin/PermissionGuard.tsx              ← access guard
-  lib/hooks/use-permission.ts                       ← usePermission() hook
-  lib/user-context.tsx                              ← moduleAccess state
+  components/admin/PermissionGuard.tsx              ← PermissionContext + usePermission() context hook
+  lib/hooks/use-permission.ts                       ← usePermission(moduleId, routeId) standalone hook
+  lib/user-context.tsx                              ← moduleAccess state, canEdit(), getAccessLevel()
   lib/site-context.tsx                              ← useSite() / siteId
 
 BACKYARD (dev/backyard/):
@@ -234,11 +249,37 @@ FUNCTIONS (dev/functions/):
 
 ---
 
+## RBAC in Admin Components
+
+Two mechanisms exist — use the right one for context:
+
+**`usePermission(moduleId, routeId)` from `@/lib/hooks/use-permission`** — use this in standalone module admin pages:
+
+```typescript
+import { usePermission } from '@/lib/hooks/use-permission';
+
+const { canEdit, canView, checkAccess } = usePermission('my_module', 'my_route');
+```
+
+**`useUser()` from `@/lib/user-context`** — use this when you need both auth state and access checks together, or need `getAccessLevel()` for fine-grained UI control:
+
+```typescript
+import { useUser } from '@/lib/user-context';
+
+const { canEdit, getAccessLevel } = useUser();
+const access = getAccessLevel('my_module', 'my_route'); // 'full' | 'view' | 'none'
+```
+
+> Note: `components/admin/PermissionGuard.tsx` also exports a `usePermission` — that is a React context hook for the `PermissionContext`, not the same as `lib/hooks/use-permission`. Do not confuse them.
+
+---
+
 ## Architecture Rules
 
 - **`componentKey` format is `{moduleId}:{ComponentName}` — exact match required.** The key in `adminRoutes` and the key in `MODULE_COMPONENTS` must be identical strings. A mismatch causes a silent "component not found" render — no error thrown.
-- **Route `path` uses the last URL segment only.** The catch-all route at `app/admin/(dashboard)/[...slug]/page.tsx` resolves components by the final path segment. Nested dynamic params won't resolve correctly.
+- **Route `path` is the full URL path.** `findModuleForAdminRoute()` in `registry.ts` matches the complete path (e.g. `/admin/sales-pipeline/board`). Permission checks then use the last segment only (`board`). Both single-segment and multi-segment paths work correctly.
 - **Admin page components need `'use client'` at top.** These components use hooks (`useSite`, `usePermission`, etc.) — without the directive they'll fail with a server component error.
 - **Never import `firebase-admin` in `components.tsx` or `client-registry.tsx`.** These files are bundled for the browser. `firebase-admin` is Node.js-only and will break the client build.
 - **Both `definitions.ts` files must be updated together.** Platform (`lib/modules/definitions.ts`) and Backyard (`dev/backyard/lib/modules/definitions.ts`) are separate apps that share the same route definitions. Updating only one causes the other to fall out of sync silently.
 - **Per-site module flag controls sidebar visibility.** `sites/{siteId}.modules[moduleId]: true` must be set for the module to appear — the global `enabled` flag in seed data only controls whether the module is available to assign, not whether it shows for a given site.
+- **All Firestore paths must live in `constants.ts`.** Never hardcode path strings in components or api files. Import from the module's own `constants.ts`.

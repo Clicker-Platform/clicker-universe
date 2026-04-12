@@ -57,7 +57,7 @@ export default function MembershipSettingsPage() {
     if (!settings) return <div className="p-8 text-center text-red-500">Error loading settings.</div>;
 
     return (
-        <div className="max-w-4xl mx-auto p-6">
+        <div className="max-w-4xl">
             <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-3">
                     <div className="w-12 h-12 bg-brand-dark/5 rounded-xl flex items-center justify-center text-brand-dark">

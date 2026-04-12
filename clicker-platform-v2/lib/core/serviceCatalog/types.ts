@@ -1,7 +1,7 @@
 import { Timestamp } from 'firebase/firestore';
 
 // Dynamic string — admins configure categories per outlet via settings/serviceCategories.
-// The 5 legacy defaults (COATING, PPF, DETAILING, WASH, OTHER) are seeded automatically.
+// The 5 neutral defaults (STANDARD, PREMIUM, SPECIALTY, MAINTENANCE, OTHER) are built-in fallbacks.
 export type ServiceCategory = string;
 
 // Per-outlet category configuration, stored in settings/serviceCategories
@@ -12,10 +12,10 @@ export interface ServiceCategoryConfig {
 }
 
 export const DEFAULT_SERVICE_CATEGORIES: ServiceCategoryConfig[] = [
-    { id: 'coating',   label: 'COATING',   color: 'bg-blue-100 text-blue-700' },
-    { id: 'ppf',       label: 'PPF',       color: 'bg-purple-100 text-purple-700' },
-    { id: 'detailing', label: 'DETAILING', color: 'bg-amber-100 text-amber-700' },
-    { id: 'wash',      label: 'WASH',      color: 'bg-cyan-100 text-cyan-700' },
+    { id: 'standard',  label: 'STANDARD',  color: 'bg-blue-100 text-blue-700' },
+    { id: 'premium',   label: 'PREMIUM',   color: 'bg-purple-100 text-purple-700' },
+    { id: 'specialty', label: 'SPECIALTY', color: 'bg-amber-100 text-amber-700' },
+    { id: 'maintenance', label: 'MAINTENANCE', color: 'bg-cyan-100 text-cyan-700' },
     { id: 'other',     label: 'OTHER',     color: 'bg-gray-100 text-gray-600' },
 ];
 
