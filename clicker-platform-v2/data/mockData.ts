@@ -150,6 +150,9 @@ export interface SiteSettings {
         tiktokPixelId?: string;
     };
     homepageSlug?: string;
+    // Extended color tokens for locked-background templates (MRB, MRB-Light)
+    backgroundColor?: string;  // overrides template background color
+    surfaceColor?: string;      // overrides template surface/card color
     navigation?: {
         topNav: NavigationItem[];
         bottomNav: NavigationItem[];

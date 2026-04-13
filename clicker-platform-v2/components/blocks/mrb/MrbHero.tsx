@@ -48,6 +48,7 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data }) => {
     const borderRadius = data?.imageFullWidth ? '0' : (theme.borderRadius || '1rem');
 
     const isFullbleed = data?.layoutVariant === 'fullbleed';
+    const isCentered = data?.layoutVariant === 'centered';
 
     // Text alignment — MrbHero default is left (bottom-left layout)
     const textAlign = data?.textAlign || 'left';
@@ -72,7 +73,7 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data }) => {
                 isFullbleed
                     ? 'rounded-none w-screen'
                     : 'w-full'
-            }`}
+            } ${isCentered ? dv(d, 'mt-6', 'md:mt-8') : ''}`}
             style={isFullbleed
                 ? { border: 'none', borderRadius: '0', position: 'relative', left: '50%', transform: 'translateX(-50%)' }
                 : { borderRadius }}
@@ -92,7 +93,11 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data }) => {
                 <div
                     className="absolute inset-0"
                     style={{
-                        background: `linear-gradient(to top, ${theme.colors.background} 0%, ${theme.colors.background}cc 40%, ${theme.colors.background}00 100%)`
+                        background: theme.decorations?.accentGlow === false
+                            // Light theme: subtle dark scrim so text is readable, no heavy color wash
+                            ? `linear-gradient(to top, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0) 100%)`
+                            // Dark theme: fade to background color
+                            : `linear-gradient(to top, ${theme.colors.background} 0%, ${theme.colors.background}cc 40%, ${theme.colors.background}00 100%)`
                     }}
                 />
             </div>
@@ -115,19 +120,19 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data }) => {
             {/* Text Content */}
             <div className={`flex flex-col gap-4 max-w-2xl relative z-10 w-full ${textAlignClass} ${flexAlignClass}`}>
                 {titleText ? (
-                    <h1 className={`${titleSizeClass} font-extrabold leading-[0.95] tracking-tighter text-white m-0`}
-                        style={data?.titleColor ? { color: data.titleColor } : undefined}>
+                    <h1 className={`${titleSizeClass} font-extrabold leading-[0.95] tracking-tighter m-0`}
+                        style={{ color: data?.titleColor || '#ffffff' }}>
                         {titleText}
                     </h1>
                 ) : (
-                    <h1 className={`${titleSizeClass} font-extrabold leading-[0.95] tracking-tighter text-white m-0`}
-                        style={data?.titleColor ? { color: data.titleColor } : undefined}>
+                    <h1 className={`${titleSizeClass} font-extrabold leading-[0.95] tracking-tighter m-0`}
+                        style={{ color: data?.titleColor || '#ffffff' }}>
                         {firstName}{restName && <><br /><span style={{ color: data?.titleColor || theme.colors.primary }}>{restName}</span></>}
                     </h1>
                 )}
                 {subtitle && (
                     <p className="text-lg font-medium leading-relaxed max-w-md m-0 opacity-80"
-                        style={{ color: data?.subtitleColor || theme.colors.foreground }}>
+                        style={{ color: data?.subtitleColor || '#ffffff' }}>
                         {subtitle}
                     </p>
                 )}

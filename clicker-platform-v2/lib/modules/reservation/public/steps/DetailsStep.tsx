@@ -1,7 +1,8 @@
 import { Service, Staff } from '../../types';
 import { User, Loader2 } from 'lucide-react';
 import { useState } from 'react';
-import { useSite } from '@/lib/site-context'; // New import
+import { useSite } from '@/lib/site-context';
+import { ThemeConfig } from '@/lib/templates/types';
 
 interface DetailsStepProps {
     selectedService: Service;
@@ -18,7 +19,7 @@ interface DetailsStepProps {
     };
     onSubmit: (customerInfo: any) => Promise<void>;
     onShowDialog: (title: string, message: string, variant: 'info' | 'error' | 'success') => void;
-    isGlass?: boolean;
+    theme: ThemeConfig;
 }
 
 export default function DetailsStep({
@@ -30,40 +31,40 @@ export default function DetailsStep({
     formConfig,
     onSubmit,
     onShowDialog,
-    isGlass = false,
+    theme,
 }: DetailsStepProps) {
     const { siteId } = useSite();
     const [loading, setLoading] = useState(false);
     const isRequest = selectedService.bookingType === 'request';
     const [customerInfo, setCustomerInfo] = useState({
-        name: '',
-        email: '',
-        phone: '',
-        notes: '',
-        preferredDate: '',
-        id: 'guest',
-        assetId: '',
-        assetModel: '',
+        name: '', email: '', phone: '', notes: '',
+        preferredDate: '', id: 'guest', assetId: '', assetModel: '',
     });
     const [memberSearchPhone, setMemberSearchPhone] = useState('');
+
+    const isGlass = theme.decorations?.surfaceStyle === 'glass' || theme.cardStyle === 'glass';
+    const surfaceBg = isGlass ? 'rgba(255,255,255,0.05)' : (theme.colors.surface || '#f9fafb');
+    const borderColor = isGlass ? 'rgba(255,255,255,0.1)' : (theme.colors.border || '#e5e7eb');
+    const mutedText = theme.colors.textMuted || theme.colors.foreground;
+    const subtleText = theme.colors.textSubtle || theme.colors.muted || theme.colors.foreground;
+
+    const inputStyle: React.CSSProperties = {
+        backgroundColor: isGlass ? 'rgba(255,255,255,0.05)' : (theme.colors.surfaceElevated || '#ffffff'),
+        borderColor,
+        color: theme.colors.foreground,
+    };
+    const labelStyle: React.CSSProperties = { color: subtleText };
 
     const checkMember = async () => {
         if (!memberSearchPhone || memberSearchPhone.length < 6) return;
         if (!membershipEnabled) return;
-
         setLoading(true);
         try {
             if (!siteId) return;
             const { findMemberByPhone } = await import('@/lib/modules/membership/api');
             const member = await findMemberByPhone(siteId, memberSearchPhone);
             if (member) {
-                setCustomerInfo(prev => ({
-                    ...prev,
-                    id: member.id,
-                    name: member.fullName,
-                    email: member.email || '',
-                    phone: member.phoneNumber
-                }));
+                setCustomerInfo(prev => ({ ...prev, id: member.id, name: member.fullName, email: member.email || '', phone: member.phoneNumber }));
                 onShowDialog('Welcome Back!', `Welcome back, ${member.fullName}! Your details have been pre-filled.`, 'success');
             } else {
                 onShowDialog('Member Not Found', "We couldn't find a membership linked to this number. Please check the number or continue as a guest.", 'info');
@@ -80,53 +81,37 @@ export default function DetailsStep({
         e.preventDefault();
         if (loading) return;
         setLoading(true);
-        try {
-            await onSubmit(customerInfo);
-        } finally {
-            setLoading(false);
-        }
+        try { await onSubmit(customerInfo); } finally { setLoading(false); }
     };
-
-    const inputClass = `w-full px-4 py-3 rounded-xl border focus:outline-none ${
-        isGlass
-            ? 'bg-white/5 border-white/10 text-white placeholder-white/30 focus:border-white/30'
-            : 'border-gray-200 focus:border-brand-dark'
-    }`;
-    const labelClass = `block text-xs font-bold uppercase mb-1 ${isGlass ? 'text-white/50' : 'text-gray-500'}`;
 
     return (
         <div className="space-y-4">
             {/* Booking summary */}
-            <div className={`p-4 rounded-xl mb-4 text-sm ${isGlass ? 'bg-white/5' : 'bg-gray-50'}`}>
+            <div className="p-4 rounded-xl mb-4 text-sm"
+                style={{ backgroundColor: surfaceBg, border: `1px solid ${borderColor}` }}>
                 <div className="flex justify-between mb-1">
-                    <span className={isGlass ? 'text-white/50' : 'text-gray-500'}>Service:</span>
-                    <span className={`font-bold ${isGlass ? 'text-white' : 'text-gray-900'}`}>{selectedService.name}</span>
+                    <span style={{ color: subtleText }}>Service:</span>
+                    <span className="font-bold" style={{ color: theme.colors.foreground }}>{selectedService.name}</span>
                 </div>
                 {selectedStaff && (
                     <div className="flex justify-between mb-1">
-                        <span className={isGlass ? 'text-white/50' : 'text-gray-500'}>Staff:</span>
-                        <span className={`font-bold ${isGlass ? 'text-white' : 'text-gray-900'}`}>{selectedStaff.name}</span>
+                        <span style={{ color: subtleText }}>Staff:</span>
+                        <span className="font-bold" style={{ color: theme.colors.foreground }}>{selectedStaff.name}</span>
                     </div>
                 )}
-                {isRequest ? (
-                    <div className="flex justify-between">
-                        <span className={isGlass ? 'text-white/50' : 'text-gray-500'}>Schedule:</span>
-                        <span className={`font-bold ${isGlass ? 'text-white' : 'text-gray-900'}`}>On Request</span>
-                    </div>
-                ) : (
-                    <div className="flex justify-between">
-                        <span className={isGlass ? 'text-white/50' : 'text-gray-500'}>Time:</span>
-                        <span className={`font-bold ${isGlass ? 'text-white' : 'text-gray-900'}`}>{date.toLocaleDateString()} at {time}</span>
-                    </div>
-                )}
+                <div className="flex justify-between">
+                    <span style={{ color: subtleText }}>{isRequest ? 'Schedule:' : 'Time:'}</span>
+                    <span className="font-bold" style={{ color: theme.colors.foreground }}>
+                        {isRequest ? 'On Request' : `${date.toLocaleDateString()} at ${time}`}
+                    </span>
+                </div>
             </div>
 
             {/* Membership Toggle */}
             {membershipEnabled && (
-                <div className={`border p-4 rounded-xl mb-6 ${
-                    isGlass ? 'border-white/10 bg-white/5' : 'border-brand-blue/20 bg-brand-blue/5'
-                }`}>
-                    <h3 className={`font-bold mb-2 text-sm flex items-center gap-2 ${isGlass ? 'text-white' : 'text-gray-900'}`}>
+                <div className="border p-4 rounded-xl mb-6"
+                    style={{ backgroundColor: `${theme.colors.primary}08`, borderColor: `${theme.colors.primary}30` }}>
+                    <h3 className="font-bold mb-2 text-sm flex items-center gap-2" style={{ color: theme.colors.foreground }}>
                         <User size={16} /> Already a Member?
                     </h3>
                     <div className="flex gap-2">
@@ -135,29 +120,15 @@ export default function DetailsStep({
                             value={memberSearchPhone}
                             onChange={(e) => setMemberSearchPhone(e.target.value)}
                             placeholder="Enter registered phone number"
-                            className={`flex-1 px-3 py-2 rounded-lg border text-sm focus:outline-none ${
-                                isGlass
-                                    ? 'bg-white/5 border-white/10 text-white placeholder-white/30 focus:border-white/30'
-                                    : 'border-gray-200 focus:border-brand-dark'
-                            }`}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                    e.preventDefault();
-                                    checkMember();
-                                }
-                            }}
+                            className="flex-1 px-3 py-2 rounded-lg border text-sm focus:outline-none"
+                            style={inputStyle}
+                            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); checkMember(); } }}
                         />
                         <button
-                            onClick={(e) => {
-                                e.preventDefault();
-                                checkMember();
-                            }}
+                            onClick={(e) => { e.preventDefault(); checkMember(); }}
                             disabled={loading || !memberSearchPhone}
-                            className={`px-4 py-2 rounded-lg text-sm font-bold disabled:opacity-50 ${
-                                isGlass
-                                    ? 'bg-[var(--theme-primary)] text-black'
-                                    : 'bg-brand-dark text-white'
-                            }`}
+                            className="px-4 py-2 rounded-lg text-sm font-bold disabled:opacity-50 hover:opacity-90 transition-opacity"
+                            style={{ backgroundColor: theme.colors.primary, color: theme.colors.accentForeground || '#ffffff' }}
                         >
                             Check
                         </button>
@@ -167,15 +138,15 @@ export default function DetailsStep({
 
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                    <label className={labelClass}>Full Name</label>
+                    <label className="block text-xs font-bold uppercase mb-1" style={labelStyle}>Full Name</label>
                     <div className="relative">
-                        <User className={`absolute left-4 top-1/2 -translate-y-1/2 ${isGlass ? 'text-white/30' : 'text-gray-400'}`} size={18} />
+                        <User className="absolute left-4 top-1/2 -translate-y-1/2" size={18} style={{ color: subtleText }} />
                         <input
-                            required
-                            type="text"
+                            required type="text"
                             value={customerInfo.name}
                             onChange={e => setCustomerInfo({ ...customerInfo, name: e.target.value })}
-                            className={`${inputClass} pl-10`}
+                            className="w-full pl-10 pr-4 py-3 rounded-xl border focus:outline-none"
+                            style={inputStyle}
                             placeholder="Jane Doe"
                         />
                     </div>
@@ -183,24 +154,24 @@ export default function DetailsStep({
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label className={labelClass}>Email</label>
+                        <label className="block text-xs font-bold uppercase mb-1" style={labelStyle}>Email</label>
                         <input
-                            required
-                            type="email"
+                            required type="email"
                             value={customerInfo.email}
                             onChange={e => setCustomerInfo({ ...customerInfo, email: e.target.value })}
-                            className={inputClass}
+                            className="w-full px-4 py-3 rounded-xl border focus:outline-none"
+                            style={inputStyle}
                             placeholder="jane@example.com"
                         />
                     </div>
                     <div>
-                        <label className={labelClass}>Phone</label>
+                        <label className="block text-xs font-bold uppercase mb-1" style={labelStyle}>Phone</label>
                         <input
-                            required
-                            type="tel"
+                            required type="tel"
                             value={customerInfo.phone}
                             onChange={e => setCustomerInfo({ ...customerInfo, phone: e.target.value })}
-                            className={inputClass}
+                            className="w-full px-4 py-3 rounded-xl border focus:outline-none"
+                            style={inputStyle}
                             placeholder="+62..."
                         />
                     </div>
@@ -208,40 +179,42 @@ export default function DetailsStep({
 
                 {isRequest && (
                     <div>
-                        <label className={labelClass}>Preferred Date <span className={isGlass ? 'text-white/30' : 'text-gray-400'}>(optional)</span></label>
+                        <label className="block text-xs font-bold uppercase mb-1" style={labelStyle}>
+                            Preferred Date <span style={{ color: subtleText, fontWeight: 'normal' }}>(optional)</span>
+                        </label>
                         <input
                             type="date"
                             min={new Date().toLocaleDateString('en-CA')}
                             value={customerInfo.preferredDate}
                             onChange={e => setCustomerInfo({ ...customerInfo, preferredDate: e.target.value })}
-                            className={inputClass}
-                            style={isGlass ? { colorScheme: 'dark' } : undefined}
+                            className="w-full px-4 py-3 rounded-xl border focus:outline-none"
+                            style={{ ...inputStyle, colorScheme: isGlass ? 'dark' : 'light' }}
                         />
-                        <p className={`text-xs mt-1 ${isGlass ? 'text-white/30' : 'text-gray-400'}`}>We will confirm the final schedule with you.</p>
+                        <p className="text-xs mt-1" style={{ color: subtleText }}>We will confirm the final schedule with you.</p>
                     </div>
                 )}
 
                 <div>
-                    <label className={labelClass}>Notes</label>
+                    <label className="block text-xs font-bold uppercase mb-1" style={labelStyle}>Notes</label>
                     <textarea
                         value={customerInfo.notes}
                         onChange={e => setCustomerInfo({ ...customerInfo, notes: e.target.value })}
-                        className={inputClass}
+                        className="w-full px-4 py-3 rounded-xl border focus:outline-none"
+                        style={inputStyle}
                         rows={2}
                         placeholder="Any special requests?"
                     />
                 </div>
 
-                {/* Asset fields — shown when formConfig.requireAsset is true */}
                 {formConfig?.requireAsset && (
                     <div>
-                        <label className={labelClass}>{formConfig.assetLabel}</label>
+                        <label className="block text-xs font-bold uppercase mb-1" style={labelStyle}>{formConfig.assetLabel}</label>
                         <input
-                            required
-                            type="text"
+                            required type="text"
                             value={customerInfo.assetId}
                             onChange={e => setCustomerInfo({ ...customerInfo, assetId: e.target.value })}
-                            className={inputClass}
+                            className="w-full px-4 py-3 rounded-xl border focus:outline-none"
+                            style={inputStyle}
                             placeholder={formConfig.assetPlaceholder}
                         />
                     </div>
@@ -249,13 +222,13 @@ export default function DetailsStep({
 
                 {formConfig?.requireAsset && formConfig?.requireAssetModel && (
                     <div>
-                        <label className={labelClass}>{formConfig.assetModelLabel}</label>
+                        <label className="block text-xs font-bold uppercase mb-1" style={labelStyle}>{formConfig.assetModelLabel}</label>
                         <input
-                            required
-                            type="text"
+                            required type="text"
                             value={customerInfo.assetModel}
                             onChange={e => setCustomerInfo({ ...customerInfo, assetModel: e.target.value })}
-                            className={inputClass}
+                            className="w-full px-4 py-3 rounded-xl border focus:outline-none"
+                            style={inputStyle}
                             placeholder={formConfig.assetModelLabel}
                         />
                     </div>
@@ -264,11 +237,8 @@ export default function DetailsStep({
                 <button
                     type="submit"
                     disabled={loading}
-                    className={`w-full py-3 font-bold rounded-xl mt-4 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
-                        isGlass
-                            ? 'bg-[var(--theme-primary)] text-black hover:opacity-90'
-                            : 'bg-brand-dark text-white hover:bg-brand-dark/90'
-                    }`}
+                    className="w-full py-3 font-bold rounded-xl mt-4 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
+                    style={{ backgroundColor: theme.colors.primary, color: theme.colors.accentForeground || '#ffffff' }}
                 >
                     {loading && <Loader2 size={18} className="animate-spin" />}
                     {loading ? 'Confirming...' : 'Confirm Booking'}

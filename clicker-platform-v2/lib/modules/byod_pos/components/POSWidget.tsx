@@ -17,6 +17,7 @@ import { useSearchParams } from 'next/navigation';
 import { CartProvider } from '../cart-context';
 import { useReceiptPrinter } from '@/lib/modules/byod_pos/hooks/useReceiptPrinter';
 import { useSite } from '@/lib/site-context'; // New import
+import { useTemplate } from '@/components/TemplateProvider';
 
 interface POSWidgetProps {
     initialItems?: any[];
@@ -26,7 +27,16 @@ interface POSWidgetProps {
 
 export function POSWidget({ initialItems, initialInventoryMap, settings: propSettings }: POSWidgetProps) {
     const { siteId } = useSite();
+    const { theme } = useTemplate();
     const { items, total, itemCount, removeFromCart, updateQuantity, clearCart, taxBreakdown } = useCart();
+
+    const isGlass = theme.decorations?.surfaceStyle === 'glass' || theme.cardStyle === 'glass';
+    const surfaceBg = isGlass ? 'rgba(20,20,20,0.9)' : (theme.colors.surfaceElevated || theme.colors.surface || '#ffffff');
+    const surfaceElevated = isGlass ? 'rgba(30,30,30,0.95)' : (theme.colors.surfaceElevated || '#ffffff');
+    const borderColor = isGlass ? 'rgba(255,255,255,0.1)' : (theme.colors.border || '#e5e7eb');
+    const subtleText = theme.colors.textSubtle || theme.colors.muted || theme.colors.foreground;
+    const primaryColor = theme.colors.primary;
+    const accentFg = theme.colors.accentForeground || '#ffffff';
     const { trackOrder, activeOrderIds, orders, clearCompletedOrders, user } = useOrderTracker();
     const { printReceipt } = useReceiptPrinter();
     const [successOrder, setSuccessOrder] = useState<any | null>(null);
@@ -210,10 +220,12 @@ export function POSWidget({ initialItems, initialInventoryMap, settings: propSet
                 <div className="fixed bottom-6 inset-x-0 z-20 flex justify-center px-4 pointer-events-none">
                     <button
                         onClick={() => setIsCartOpen(true)}
-                        className="bg-brand-dark text-white rounded-full shadow-2xl w-full max-w-md py-4 px-6 flex items-center justify-between pointer-events-auto transform transition-all duration-200 active:scale-95 hover:scale-[1.02]"
+                        className="rounded-full shadow-2xl w-full max-w-md py-4 px-6 flex items-center justify-between pointer-events-auto transform transition-all duration-200 active:scale-95 hover:scale-[1.02]"
+                        style={{ backgroundColor: primaryColor, color: accentFg }}
                     >
                         <div className="flex items-center gap-3">
-                            <div className="bg-brand-green text-brand-dark font-black w-8 h-8 rounded-full flex items-center justify-center text-sm">
+                            <div className="font-black w-8 h-8 rounded-full flex items-center justify-center text-sm"
+                                style={{ backgroundColor: 'rgba(255,255,255,0.25)', color: accentFg }}>
                                 {itemCount}
                             </div>
                             <span className="font-bold">View Cart</span>
@@ -228,10 +240,14 @@ export function POSWidget({ initialItems, initialInventoryMap, settings: propSet
             {/* Cart Modal / Drawer */}
             {isCartOpen && (
                 <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex justify-end">
-                    <div className="bg-white w-full max-w-md h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
-                        <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">
-                            <h2 className="font-black text-xl uppercase">Your Order</h2>
-                            <button onClick={() => setIsCartOpen(false)} className="p-2 hover:bg-gray-200 rounded-full">
+                    <div className="w-full max-w-md h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-300"
+                        style={{ backgroundColor: surfaceBg }}>
+                        <div className="p-4 border-b flex items-center justify-between"
+                            style={{ borderColor, backgroundColor: isGlass ? 'rgba(255,255,255,0.05)' : (theme.colors.surface || '#f9fafb') }}>
+                            <h2 className="font-black text-xl uppercase" style={{ color: theme.colors.foreground }}>Your Order</h2>
+                            <button onClick={() => setIsCartOpen(false)}
+                                className="p-2 rounded-full hover:opacity-70 transition-opacity"
+                                style={{ color: theme.colors.foreground }}>
                                 <X size={24} />
                             </button>
                         </div>
@@ -239,19 +255,19 @@ export function POSWidget({ initialItems, initialInventoryMap, settings: propSet
                         <div className="flex-1 overflow-y-auto p-4 space-y-4">
                             {/* Previous Items (if adding to existing) */}
                             {hasActiveOpenBill && activeOrder && activeOrder.items.length > 0 && (
-                                <div className="mb-6 pb-6 border-b border-dashed border-gray-200">
-                                    <div className="flex items-center gap-2 mb-3 text-gray-500 font-bold text-xs uppercase tracking-wider">
-                                        <div className="w-2 h-2 rounded-full bg-brand-green"></div>
+                                <div className="mb-6 pb-6 border-b border-dashed" style={{ borderColor }}>
+                                    <div className="flex items-center gap-2 mb-3 font-bold text-xs uppercase tracking-wider" style={{ color: subtleText }}>
+                                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: primaryColor }}></div>
                                         Previously Ordered
                                     </div>
-                                    <div className="space-y-3 opacity-75 grayscale-[30%]">
+                                    <div className="space-y-3 opacity-75">
                                         {activeOrder.items.map((item, idx) => (
                                             <div key={`prev-${idx}`} className="flex justify-between items-start text-sm">
                                                 <div className="flex gap-2">
-                                                    <span className="font-black text-gray-400">{item.quantity}x</span>
-                                                    <span className="font-medium text-gray-700">{item.name} {item.variantName && `(${item.variantName})`}</span>
+                                                    <span className="font-black" style={{ color: subtleText }}>{item.quantity}x</span>
+                                                    <span className="font-medium" style={{ color: theme.colors.foreground }}>{item.name} {item.variantName && `(${item.variantName})`}</span>
                                                 </div>
-                                                <span className="font-bold text-gray-400">
+                                                <span className="font-bold" style={{ color: subtleText }}>
                                                     {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(item.price * item.quantity)}
                                                 </span>
                                             </div>
@@ -263,24 +279,30 @@ export function POSWidget({ initialItems, initialInventoryMap, settings: propSet
                             {/* New Items */}
                             {items.map((item, idx) => (
                                 <div key={`${item.productId}-${item.variantId || 'base'}-${idx}`} className="flex gap-4 items-center">
-                                    <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                                    <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0"
+                                        style={{ backgroundColor: isGlass ? 'rgba(255,255,255,0.08)' : (theme.colors.surface || '#f3f4f6') }}>
                                         {item.image && <img src={item.image} className="w-full h-full object-cover" />}
                                     </div>
                                     <div className="flex-1">
-                                        <h4 className="font-bold text-gray-800 line-clamp-1">
+                                        <h4 className="font-bold line-clamp-1" style={{ color: theme.colors.foreground }}>
                                             {item.name}
-                                            {item.variantName && <span className="text-sm font-normal text-gray-500 ml-1">({item.variantName})</span>}
+                                            {item.variantName && <span className="text-sm font-normal ml-1" style={{ color: subtleText }}>({item.variantName})</span>}
                                         </h4>
-                                        <div className="text-sm font-black text-brand-dark">
+                                        <div className="text-sm font-black" style={{ color: primaryColor }}>
                                             {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(item.price)}
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-3 bg-gray-50 rounded-lg p-1">
-                                        <button onClick={() => updateQuantity(item.productId, -1, item.variantId)} className="w-8 h-8 flex items-center justify-center font-bold text-gray-500 hover:bg-white rounded shadow-sm">
+                                    <div className="flex items-center gap-3 rounded-lg p-1"
+                                        style={{ backgroundColor: isGlass ? 'rgba(255,255,255,0.08)' : (theme.colors.surface || '#f3f4f6') }}>
+                                        <button onClick={() => updateQuantity(item.productId, -1, item.variantId)}
+                                            className="w-8 h-8 flex items-center justify-center font-bold rounded hover:opacity-70 transition-opacity"
+                                            style={{ color: subtleText }}>
                                             <Minus size={16} />
                                         </button>
-                                        <span className="font-bold w-4 text-center">{item.quantity}</span>
-                                        <button onClick={() => updateQuantity(item.productId, 1, item.variantId)} className="w-8 h-8 flex items-center justify-center font-bold text-brand-dark hover:bg-white rounded shadow-sm">
+                                        <span className="font-bold w-4 text-center" style={{ color: theme.colors.foreground }}>{item.quantity}</span>
+                                        <button onClick={() => updateQuantity(item.productId, 1, item.variantId)}
+                                            className="w-8 h-8 flex items-center justify-center font-bold rounded hover:opacity-70 transition-opacity"
+                                            style={{ color: primaryColor }}>
                                             <Plus size={16} />
                                         </button>
                                     </div>
@@ -288,16 +310,17 @@ export function POSWidget({ initialItems, initialInventoryMap, settings: propSet
                             ))}
                         </div>
 
-                        <div className="p-4 border-t border-gray-100 bg-gray-50 space-y-4">
+                        <div className="p-4 border-t space-y-4"
+                            style={{ borderColor, backgroundColor: isGlass ? 'rgba(255,255,255,0.05)' : (theme.colors.surface || '#f9fafb') }}>
                             <POSMemberLookup
                                 selectedMember={member}
                                 onMemberSelect={setMember}
                             />
 
-                            {/* Table Number Input (If required and not in URL, and not adding to existing bill) */}
+                            {/* Table Number Input */}
                             {settings?.requireTableNumber && !tableParam && !hasActiveOpenBill && (
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
+                                    <label className="block text-xs font-bold uppercase mb-1" style={{ color: subtleText }}>
                                         Table Number <span className="text-red-500">*</span>
                                     </label>
                                     <input
@@ -305,31 +328,32 @@ export function POSWidget({ initialItems, initialInventoryMap, settings: propSet
                                         placeholder="Enter Table Number"
                                         value={manualTableNumber}
                                         onChange={(e) => setManualTableNumber(e.target.value)}
-                                        className="w-full p-3 bg-white border border-gray-200 rounded-xl font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-green/20 focus:border-brand-green transition-all"
+                                        className="w-full p-3 rounded-xl border font-bold focus:outline-none transition-all"
+                                        style={{ backgroundColor: surfaceElevated, borderColor, color: theme.colors.foreground }}
                                     />
                                 </div>
                             )}
 
                             <div className="space-y-2 mb-4">
-                                <div className="flex justify-between items-center text-sm text-gray-500">
+                                <div className="flex justify-between items-center text-sm" style={{ color: subtleText }}>
                                     <span>Subtotal</span>
                                     <span>{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(taxBreakdown?.subtotal || total)}</span>
                                 </div>
                                 {taxBreakdown?.serviceCharge > 0 && (
-                                    <div className="flex justify-between items-center text-sm text-gray-500">
+                                    <div className="flex justify-between items-center text-sm" style={{ color: subtleText }}>
                                         <span>Service Charge ({taxBreakdown.serviceChargeRate}%)</span>
                                         <span>{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(taxBreakdown.serviceCharge)}</span>
                                     </div>
                                 )}
                                 {taxBreakdown?.restaurantTax > 0 && (
-                                    <div className="flex justify-between items-center text-sm text-gray-500">
+                                    <div className="flex justify-between items-center text-sm" style={{ color: subtleText }}>
                                         <span>PB1 ({taxBreakdown.restaurantTaxRate}%)</span>
                                         <span>{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(taxBreakdown.restaurantTax)}</span>
                                     </div>
                                 )}
-                                <div className="flex justify-between items-center pt-2 border-t border-gray-200">
-                                    <span className="text-gray-900 font-bold">Total</span>
-                                    <span className="text-2xl font-black text-brand-dark">
+                                <div className="flex justify-between items-center pt-2 border-t" style={{ borderColor }}>
+                                    <span className="font-bold" style={{ color: theme.colors.foreground }}>Total</span>
+                                    <span className="text-2xl font-black" style={{ color: primaryColor }}>
                                         {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(total)}
                                     </span>
                                 </div>
@@ -338,7 +362,8 @@ export function POSWidget({ initialItems, initialInventoryMap, settings: propSet
                             <button
                                 onClick={handleAction}
                                 disabled={isCheckingOut || loadingSettings}
-                                className="w-full bg-brand-dark text-white py-4 rounded-xl font-bold text-lg hover:bg-gray-800 disabled:bg-gray-400 flex items-center justify-center gap-2"
+                                className="w-full py-4 rounded-xl font-bold text-lg disabled:opacity-50 flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+                                style={{ backgroundColor: primaryColor, color: accentFg }}
                             >
                                 {isCheckingOut || loadingSettings ? 'Processing...' : (
                                     <>
@@ -355,25 +380,29 @@ export function POSWidget({ initialItems, initialInventoryMap, settings: propSet
             {/* Success Modal */}
             {successOrder && (
                 <div className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
-                    <div className="bg-white rounded-3xl shadow-xl w-full max-w-sm p-6 text-center transform scale-100">
-                        <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4 text-green-600">
+                    <div className="rounded-3xl shadow-xl w-full max-w-sm p-6 text-center"
+                        style={{ backgroundColor: surfaceBg }}>
+                        <div className="mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4"
+                            style={{ backgroundColor: `${primaryColor}20`, color: primaryColor }}>
                             <ShoppingBag size={32} />
                         </div>
-                        <h3 className="text-2xl font-black text-gray-900 mb-2">Order Placed!</h3>
-                        <p className="text-gray-500 mb-6">
+                        <h3 className="text-2xl font-black mb-2" style={{ color: theme.colors.foreground }}>Order Placed!</h3>
+                        <p className="mb-6" style={{ color: subtleText }}>
                             Order #{successOrder.id.slice(-4)} has been successfully created.
                         </p>
 
                         <div className="space-y-3">
                             <button
                                 onClick={() => printReceipt(successOrder, settings || undefined)}
-                                className="w-full bg-gray-900 text-white py-3 rounded-xl font-bold text-sm hover:bg-gray-800 flex items-center justify-center gap-2"
+                                className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+                                style={{ backgroundColor: primaryColor, color: accentFg }}
                             >
                                 Print Receipt
                             </button>
                             <button
                                 onClick={() => setSuccessOrder(null)}
-                                className="w-full bg-gray-100 text-gray-900 py-3 rounded-xl font-bold text-sm hover:bg-gray-200"
+                                className="w-full py-3 rounded-xl font-bold text-sm border hover:opacity-70 transition-opacity"
+                                style={{ backgroundColor: 'transparent', borderColor, color: theme.colors.foreground }}
                             >
                                 New Order
                             </button>

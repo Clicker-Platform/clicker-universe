@@ -69,8 +69,9 @@ export function CanvasStudio({
 
     // Desktop state
     const [activePanel, setActivePanel] = useState<'page' | 'seo' | null>('page');
+    const [rightPanelOpen, setRightPanelOpen] = useState(true);
     const [host] = useState(() => typeof window !== 'undefined' ? window.location.host : '');
-    const [tooltip, setTooltip] = useState<{ label: string; top: number; left: number; side?: boolean } | null>(null);
+    const [tooltip, setTooltip] = useState<{ label: string; top: number; left: number; side?: boolean; sideLeft?: boolean } | null>(null);
     const [leftPanel, setLeftPanel] = useState<'pages' | 'add' | 'navigator' | null>('navigator');
     const [slideOverPanel, setSlideOverPanel] = useState<'links' | 'forms' | 'products' | 'siteinfo' | 'branding' | null>(null);
 
@@ -92,6 +93,7 @@ export function CanvasStudio({
         if (isMobile) return;
         if (selectedBlockId) {
             setActivePanel(null);
+            setRightPanelOpen(true);
         } else {
             setActivePanel(prev => prev === null ? 'page' : prev);
         }
@@ -742,52 +744,85 @@ export function CanvasStudio({
             {canvasContent}
 
             {/* Right Sidebar - Properties */}
-            <div className="w-80 bg-gray-50 dark:bg-neutral-900 border-l border-gray-200 dark:border-neutral-800 flex flex-col z-10">
-                <div className="px-4 h-10 border-b border-gray-200 dark:border-neutral-800 font-bold text-sm text-neutral-900 dark:text-neutral-200 flex items-center gap-2 flex-shrink-0">
-                    <Settings size={16} className="text-neutral-500 dark:text-neutral-400" />
-                    <span className="flex-1">
-                        {activePanel === 'page' ? 'Title & Slug' : activePanel === 'seo' ? 'SEO & Analytics' : 'Properties'}
-                    </span>
-                    <div className="flex items-center gap-1">
-                        <button
-                            type="button"
-                            onClick={() => setActivePanel(activePanel === 'page' ? null : 'page')}
-                            onMouseEnter={(e) => { const r = e.currentTarget.getBoundingClientRect(); setTooltip({ label: 'Title & Slug', top: r.bottom + 6, left: r.left + r.width / 2 }); }}
-                            onMouseLeave={() => setTooltip(null)}
-                            className={`p-1.5 rounded-md transition-colors ${activePanel === 'page'
-                                    ? 'bg-blue-500/20 text-blue-400'
-                                    : 'text-neutral-400 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800'
-                                }`}
-                        >
-                            <FileText size={14} />
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setActivePanel(activePanel === 'seo' ? null : 'seo')}
-                            onMouseEnter={(e) => { const r = e.currentTarget.getBoundingClientRect(); setTooltip({ label: 'SEO & Analytics', top: r.bottom + 6, left: r.left + r.width / 2 }); }}
-                            onMouseLeave={() => setTooltip(null)}
-                            className={`p-1.5 rounded-md transition-colors ${activePanel === 'seo'
-                                    ? 'bg-blue-500/20 text-blue-400'
-                                    : 'text-neutral-400 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800'
-                                }`}
-                        >
-                            <BarChart2 size={14} />
-                        </button>
-                        {activePanel && (
+            {rightPanelOpen ? (
+                <div className="w-80 bg-gray-50 dark:bg-neutral-900 border-l border-gray-200 dark:border-neutral-800 flex flex-col z-10 flex-shrink-0">
+                    <div className="px-4 h-10 border-b border-gray-200 dark:border-neutral-800 font-bold text-sm text-neutral-900 dark:text-neutral-200 flex items-center gap-2 flex-shrink-0">
+                        <span className="flex-1">
+                            {activePanel === 'page' ? 'Title & Slug' : activePanel === 'seo' ? 'SEO & Analytics' : 'Properties'}
+                        </span>
+                        <div className="flex items-center gap-1">
                             <button
                                 type="button"
-                                onClick={() => setActivePanel(null)}
-                                onMouseEnter={(e) => { const r = e.currentTarget.getBoundingClientRect(); setTooltip({ label: 'Close', top: r.bottom + 6, left: r.left + r.width / 2 }); }}
+                                onClick={() => {
+                                    if (activePanel === 'page') { setRightPanelOpen(false); setActivePanel(null); }
+                                    else { setActivePanel('page'); }
+                                }}
+                                onMouseEnter={(e) => { const r = e.currentTarget.getBoundingClientRect(); setTooltip({ label: 'Title & Slug', top: r.bottom + 6, left: r.left + r.width / 2 }); }}
+                                onMouseLeave={() => setTooltip(null)}
+                                className={`p-1.5 rounded-md transition-colors ${activePanel === 'page'
+                                        ? 'bg-blue-500/20 text-blue-400'
+                                        : 'text-neutral-400 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800'
+                                    }`}
+                            >
+                                <FileText size={14} />
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    if (activePanel === 'seo') { setRightPanelOpen(false); setActivePanel(null); }
+                                    else { setActivePanel('seo'); }
+                                }}
+                                onMouseEnter={(e) => { const r = e.currentTarget.getBoundingClientRect(); setTooltip({ label: 'SEO & Analytics', top: r.bottom + 6, left: r.left + r.width / 2 }); }}
+                                onMouseLeave={() => setTooltip(null)}
+                                className={`p-1.5 rounded-md transition-colors ${activePanel === 'seo'
+                                        ? 'bg-blue-500/20 text-blue-400'
+                                        : 'text-neutral-400 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800'
+                                    }`}
+                            >
+                                <BarChart2 size={14} />
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => { setRightPanelOpen(false); setActivePanel(null); }}
+                                onMouseEnter={(e) => { const r = e.currentTarget.getBoundingClientRect(); setTooltip({ label: 'Close panel', top: r.bottom + 6, left: r.left + r.width / 2 }); }}
                                 onMouseLeave={() => setTooltip(null)}
                                 className="p-1.5 rounded-md text-neutral-400 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
                             >
                                 <X size={14} />
                             </button>
-                        )}
+                        </div>
                     </div>
+                    {rightSidebarContent}
                 </div>
-                {rightSidebarContent}
-            </div>
+            ) : (
+                /* Collapsed right strip */
+                <div className="w-12 bg-gray-50 dark:bg-neutral-900 border-l border-gray-200 dark:border-neutral-800 flex flex-col items-center pt-2 gap-0.5 flex-shrink-0 z-10">
+                    <button
+                        onClick={() => { setRightPanelOpen(true); setActivePanel('page'); }}
+                        onMouseEnter={(e) => { const r = e.currentTarget.getBoundingClientRect(); setTooltip({ label: 'Title & Slug', top: r.top + r.height / 2, left: r.left - 8, sideLeft: true }); }}
+                        onMouseLeave={() => setTooltip(null)}
+                        className="w-9 h-9 flex items-center justify-center rounded-lg text-neutral-400 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
+                    >
+                        <FileText size={17} />
+                    </button>
+                    <button
+                        onClick={() => { setRightPanelOpen(true); setActivePanel('seo'); }}
+                        onMouseEnter={(e) => { const r = e.currentTarget.getBoundingClientRect(); setTooltip({ label: 'SEO & Analytics', top: r.top + r.height / 2, left: r.left - 8, sideLeft: true }); }}
+                        onMouseLeave={() => setTooltip(null)}
+                        className="w-9 h-9 flex items-center justify-center rounded-lg text-neutral-400 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
+                    >
+                        <BarChart2 size={17} />
+                    </button>
+                    <button
+                        onClick={() => { setRightPanelOpen(true); setActivePanel(null); }}
+                        onMouseEnter={(e) => { const r = e.currentTarget.getBoundingClientRect(); setTooltip({ label: 'Properties', top: r.top + r.height / 2, left: r.left - 8, sideLeft: true }); }}
+                        onMouseLeave={() => setTooltip(null)}
+                        className="w-9 h-9 flex items-center justify-center rounded-lg text-neutral-400 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
+                    >
+                        <Settings size={17} />
+                    </button>
+                </div>
+            )}
 
             {tooltip && (
                 tooltip.side ? (
@@ -797,6 +832,14 @@ export function CanvasStudio({
                     >
                         {tooltip.label}
                         <div className="absolute top-1/2 -translate-y-1/2 -left-1.5 border-4 border-transparent border-r-gray-900" />
+                    </div>
+                ) : tooltip.sideLeft ? (
+                    <div
+                        className="fixed z-[100] bg-gray-900 text-white text-xs font-bold px-2.5 py-1.5 rounded-lg shadow-xl animate-in fade-in duration-150 pointer-events-none whitespace-nowrap -translate-y-1/2 -translate-x-full"
+                        style={{ top: tooltip.top, left: tooltip.left }}
+                    >
+                        {tooltip.label}
+                        <div className="absolute top-1/2 -translate-y-1/2 -right-1.5 border-4 border-transparent border-l-gray-900" />
                     </div>
                 ) : (
                     <div

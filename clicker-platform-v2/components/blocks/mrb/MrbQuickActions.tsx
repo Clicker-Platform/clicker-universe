@@ -83,10 +83,18 @@ export const MrbQuickActions: React.FC<QuickActionsProps> = ({ links, contact, s
         }
     };
 
+    const isGlass = theme.decorations?.surfaceStyle === 'glass';
+    const surfaceBg = isGlass
+        ? `${theme.colors.surfaceElevated || theme.colors.surface}99`
+        : (theme.colors.surfaceElevated || theme.colors.surface);
+    const surfaceBlur = isGlass ? 'blur(12px)' : undefined;
+    const iconBg = isGlass ? 'rgba(255,255,255,0.10)' : `${theme.colors.primary}15`;
+
     return (
         <section className="w-full">
             {showOnHome && !theme.custom?.hideQuickActionsTitle && (
-                <h3 className="text-slate-400 text-xs font-bold uppercase tracking-[0.2em] mb-6">
+                <h3 className="text-xs font-bold uppercase tracking-[0.2em] mb-6"
+                    style={{ color: theme.colors.textMuted || theme.colors.foreground }}>
                     {sectionTitle}
                 </h3>
             )}
@@ -111,34 +119,40 @@ export const MrbQuickActions: React.FC<QuickActionsProps> = ({ links, contact, s
                             key={link.id}
                             {...wrapperProps}
                             className={`
-                                group relative overflow-hidden rounded-2xl glass-effect transition-all hover:bg-primary/10 w-full
+                                group relative overflow-hidden rounded-2xl transition-all w-full
                                 ${layout === 'list' ? 'p-4 flex items-center gap-4' : 'p-6 flex flex-col items-center justify-center gap-4'}
-                                ${isHighlight ? 'neon-border border-primary/50' : 'border-white/10'}
                             `}
                             style={{
-                                background: 'rgba(26, 26, 26, 0.6)',
-                                backdropFilter: 'blur(12px)',
-                                borderWidth: '1px'
+                                background: surfaceBg,
+                                backdropFilter: surfaceBlur,
+                                border: `1px solid ${isHighlight ? `${theme.colors.primary}50` : theme.colors.border || `${theme.colors.foreground}15`}`,
                             }}
                         >
-                            <div className={`
-                                rounded-full flex items-center justify-center group-hover:scale-110 transition-transform
-                                ${layout === 'list' ? 'size-10 shrink-0' : 'size-14'}
-                                ${isHighlight ? 'bg-primary/20 text-primary' : 'bg-white/10 text-white'}
-                            `}>
+                            <div
+                                className={`
+                                    rounded-full flex items-center justify-center group-hover:scale-110 transition-transform
+                                    ${layout === 'list' ? 'size-10 shrink-0' : 'size-14'}
+                                `}
+                                style={{
+                                    backgroundColor: isHighlight ? `${theme.colors.primary}20` : iconBg,
+                                    color: isHighlight ? theme.colors.primary : theme.colors.foreground,
+                                }}
+                            >
                                 <Icon size={layout === 'list' ? 20 : 28} strokeWidth={2} />
                             </div>
                             <div className={layout === 'list' ? 'text-left flex-1' : 'text-center'}>
-                                <p className="text-white font-bold text-lg">{link.title}</p>
+                                <p className="font-bold text-lg" style={{ color: theme.colors.foreground }}>{link.title}</p>
                                 {link.subtitle && (
-                                    <p className="text-slate-500 text-sm">{link.subtitle}</p>
+                                    <p className="text-sm" style={{ color: theme.colors.textSubtle || theme.colors.muted || theme.colors.foreground }}>{link.subtitle}</p>
                                 )}
                             </div>
 
                             {/* Loading State Overlay */}
                             {isLoadingForm && link.type === 'form' && (
-                                <div className="absolute inset-0 bg-background-dark/50 flex items-center justify-center">
-                                    <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                                <div className="absolute inset-0 flex items-center justify-center"
+                                    style={{ backgroundColor: `${theme.colors.background}80` }}>
+                                    <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin"
+                                        style={{ borderColor: theme.colors.primary }}></div>
                                 </div>
                             )}
                         </Wrapper>

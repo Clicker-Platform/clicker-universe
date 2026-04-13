@@ -40,12 +40,12 @@ export default function BookingForm({
     // const { siteId } = useSite(); // Use prop instead of context for robust widget behavior
 
     const { theme } = useTemplate();
-    const isGlass = theme.cardStyle === 'glass';
+    const isGlass = theme.decorations?.surfaceStyle === 'glass' || theme.cardStyle === 'glass';
+    const surfaceBg = isGlass ? 'rgba(0,0,0,0.2)' : (theme.colors.surfaceElevated || theme.colors.surface || '#ffffff');
+    const surfaceBorder = isGlass ? 'rgba(255,255,255,0.1)' : (theme.colors.border || '#e5e7eb');
 
     const [step, setStep] = useState(1);
     // ... rest of state
-
-    const [loading, setLoading] = useState(false);
 
     // Data
     const [services] = useState<Service[]>(initialServices);
@@ -120,7 +120,6 @@ export default function BookingForm({
         const isRequest = selectedService?.bookingType === 'request';
         if (!selectedService || (!isRequest && !selectedTime)) return;
 
-        setLoading(true);
         try {
             let bookingStart: Date;
             let bookingEnd: Date;
@@ -161,41 +160,40 @@ export default function BookingForm({
         } catch (error) {
             console.error(error);
             handleShowDialog('Booking Failed', 'Unable to create booking. Please try again.', 'error');
-        } finally {
-            setLoading(false);
         }
     };
 
     if (step === 5) {
         return (
-            <div className={`text-center p-8 rounded-2xl animate-in fade-in ${
-                isGlass
-                    ? 'bg-black/20 backdrop-blur-md border border-white/10 text-white'
-                    : 'bg-green-50 border border-green-100 text-gray-900'
-            }`}>
-                <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${
-                    isGlass ? 'bg-white/10 text-white' : 'bg-green-100 text-green-600'
-                }`}>
+            <div
+                className="text-center p-8 rounded-2xl animate-in fade-in"
+                style={{
+                    background: isGlass ? 'rgba(0,0,0,0.2)' : surfaceBg,
+                    backdropFilter: isGlass ? 'blur(12px)' : undefined,
+                    border: `1px solid ${surfaceBorder}`,
+                    color: theme.colors.foreground,
+                }}
+            >
+                <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+                    style={{ backgroundColor: `${theme.colors.primary}20`, color: theme.colors.primary }}>
                     <Check size={32} strokeWidth={3} />
                 </div>
-                <h2 className={`text-2xl font-black mb-2 ${isGlass ? 'text-white' : 'text-brand-dark'}`}>Booking Confirmed!</h2>
-                <p className={`mb-6 ${isGlass ? 'text-white/70' : 'text-gray-600'}`}>Your appointment for <span className="font-bold">{selectedService?.name}</span> has been received.</p>
-                <div className={`p-4 rounded-xl border border-dashed inline-block text-left text-sm mb-6 ${
-                    isGlass ? 'bg-white/5 border-white/20 text-white/70' : 'bg-white border-green-200 text-gray-500'
-                }`}>
-                    <p>Reference: <span className={`font-mono font-bold ${isGlass ? 'text-white' : 'text-brand-dark'}`}>{bookingRef}</span></p>
+                <h2 className="text-2xl font-black mb-2" style={{ color: theme.colors.foreground }}>Booking Confirmed!</h2>
+                <p className="mb-6" style={{ color: theme.colors.textMuted || theme.colors.foreground }}>
+                    Your appointment for <span className="font-bold">{selectedService?.name}</span> has been received.
+                </p>
+                <div className="p-4 rounded-xl border border-dashed inline-block text-left text-sm mb-6"
+                    style={{ backgroundColor: `${theme.colors.primary}08`, borderColor: `${theme.colors.primary}30`, color: theme.colors.textMuted || theme.colors.foreground }}>
+                    <p>Reference: <span className="font-mono font-bold" style={{ color: theme.colors.foreground }}>{bookingRef}</span></p>
                     {selectedService?.bookingType === 'request'
                         ? <p>We will contact you to confirm the schedule.</p>
-                        : <p>Date: <span suppressHydrationWarning className={`font-bold ${isGlass ? 'text-white' : 'text-brand-dark'}`}>{date?.toLocaleDateString()} at {selectedTime}</span></p>
+                        : <p>Date: <span suppressHydrationWarning className="font-bold" style={{ color: theme.colors.foreground }}>{date?.toLocaleDateString()} at {selectedTime}</span></p>
                     }
                 </div>
                 <button
                     onClick={() => window.location.reload()}
-                    className={`block w-full py-3 font-bold rounded-xl ${
-                        isGlass
-                            ? 'bg-[var(--theme-primary)] text-black hover:opacity-90'
-                            : 'bg-brand-dark text-white hover:bg-brand-dark/90'
-                    }`}
+                    className="block w-full py-3 font-bold rounded-xl hover:opacity-90 transition-opacity"
+                    style={{ backgroundColor: theme.colors.primary, color: theme.colors.accentForeground || '#ffffff' }}
                 >
                     Book Another
                 </button>
@@ -204,17 +202,22 @@ export default function BookingForm({
     }
 
     return (
-        <div className={`overflow-hidden w-full transition-all duration-200 rounded-2xl ${
-            isGlass
-                ? 'bg-black/20 backdrop-blur-md border border-white/10 shadow-xl'
-                : 'bg-white border border-gray-200 shadow-sm'
-        }`}>
+        <div
+            className="overflow-hidden w-full transition-all duration-200 rounded-2xl"
+            style={{
+                background: isGlass ? 'rgba(0,0,0,0.2)' : surfaceBg,
+                backdropFilter: isGlass ? 'blur(12px)' : undefined,
+                border: `1px solid ${surfaceBorder}`,
+            }}
+        >
             {/* Header */}
-            <div className={`p-6 rounded-t-2xl ${
-                isGlass
-                    ? 'bg-white/5 border-b border-white/10'
-                    : 'bg-gray-900'
-            }`}>
+            <div
+                className="p-6 rounded-t-2xl border-b"
+                style={{
+                    backgroundColor: isGlass ? 'rgba(255,255,255,0.05)' : theme.colors.foreground,
+                    borderColor: isGlass ? 'rgba(255,255,255,0.1)' : 'transparent',
+                }}
+            >
                 <div className="flex items-center justify-between mb-2">
                     {step > 1 && (
                         <button onClick={() => {
@@ -225,16 +228,17 @@ export default function BookingForm({
                             } else {
                                 setStep(step - 1);
                             }
-                        }} className="p-1 hover:bg-white/10 rounded-lg">
-                            <ChevronLeft size={20} className="text-white" />
+                        }} className="p-1 rounded-lg hover:opacity-70 transition-opacity"
+                            style={{ color: theme.colors.background }}>
+                            <ChevronLeft size={20} />
                         </button>
                     )}
-                    <span className="font-bold text-sm text-white/80">
+                    <span className="font-bold text-sm opacity-70" style={{ color: theme.colors.background }}>
                         Step {step} of {selectedService?.bookingType === 'request' ? (settings.allowStaffSelection ? 3 : 2) : 4}
                     </span>
-                    <div className="w-6"></div> {/* Spacer */}
+                    <div className="w-6" />
                 </div>
-                <h2 className="text-2xl font-black text-white">
+                <h2 className="text-2xl font-black" style={{ color: theme.colors.background }}>
                     {step === 1 && (settings.bookingTitle || "Select Service")}
                     {step === 2 && `Select ${settings.staffLabel || 'Staff'}`}
                     {step === 3 && "Select Time"}
@@ -243,12 +247,12 @@ export default function BookingForm({
             </div>
 
             {/* Content */}
-            <div className={`p-6 min-h-[400px] ${isGlass ? 'text-white' : 'text-gray-900'}`}>
+            <div className="p-6 min-h-[400px]" style={{ color: theme.colors.foreground }}>
                 {step === 1 && (
                     <ServiceStep
                         services={services}
                         onSelect={handleServiceSelect}
-                        isGlass={isGlass}
+                        theme={theme}
                         pricingDisplay={(settings.pricingDisplay as any) || 'fixed'}
                     />
                 )}
@@ -257,7 +261,7 @@ export default function BookingForm({
                     <StaffStep
                         staffList={staffList}
                         onSelect={handleStaffSelect}
-                        isGlass={isGlass}
+                        theme={theme}
                         staffLabel={settings.staffLabel}
                     />
                 )}
@@ -270,9 +274,8 @@ export default function BookingForm({
                         selectedService={selectedService}
                         selectedStaff={selectedStaff}
                         staffList={staffList}
-
                         onSelectTime={handleTimeSelect}
-                        isGlass={isGlass}
+                        theme={theme}
                     />
                 )}
 
@@ -286,7 +289,7 @@ export default function BookingForm({
                         formConfig={settings.formConfig}
                         onSubmit={handleSubmit}
                         onShowDialog={handleShowDialog}
-                        isGlass={isGlass}
+                        theme={theme}
                     />
                 )}
             </div>

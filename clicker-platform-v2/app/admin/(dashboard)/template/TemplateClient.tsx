@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
 // @ts-ignore
-import { doc, getDoc, setDoc, collection, getDocs } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { SiteSettings, NavigationItem } from '@/data/mockData';
 import { Save, Search, Globe, ImageIcon, Palette, GripVertical, DownloadCloud, ChevronDown, ChevronUp, Trash2, Link as LinkIcon, Plus } from 'lucide-react';
 import { FormSkeleton } from '@/components/skeletons/FormSkeleton';
@@ -14,7 +14,6 @@ import { TemplateDocument } from '@/lib/templates/types';
 import { IconSelector } from '@/components/admin/IconSelector';
 import { ICON_MAP } from '@/data/icons';
 import { useSite } from '@/lib/site-context';
-import { ThemeMockup } from '@/components/admin/ThemeMockup';
 
 export default function TemplateClient() {
     const { siteId } = useSite();
@@ -41,58 +40,13 @@ export default function TemplateClient() {
 
     // Template Management State
     const [templates, setTemplates] = useState<TemplateDocument[]>([]);
-    const [forms, setForms] = useState<any[]>([]);
-    const [pages, setPages] = useState<any[]>([]);
-    const [realData, setRealData] = useState<any>(null);
     const [seeding, setSeeding] = useState(false);
-
 
     useEffect(() => {
         if (!siteId) return;
         fetchSettings();
         fetchTemplates();
-        fetchResources();
     }, [siteId]);
-
-    const fetchResources = async () => {
-        if (!siteId) return;
-        try {
-            const [formsSnap, pagesSnap, linksSnap, productsSnap, branchesSnap, featuredSnap, contactSnap, prodSettingsSnap, linkSettingsSnap] = await Promise.all([
-                getDocs(collection(db, 'sites', siteId, 'forms')),
-                getDocs(collection(db, 'sites', siteId, 'pages')),
-                getDocs(collection(db, 'sites', siteId, 'links')),
-                getDocs(collection(db, 'sites', siteId, 'products')),
-                getDocs(collection(db, 'sites', siteId, 'branches')),
-                getDoc(doc(db, 'sites', siteId, 'content', 'featuredProduct')),
-                getDoc(doc(db, 'sites', siteId, 'content', 'contact')),
-                getDoc(doc(db, 'sites', siteId, 'content', 'productSettings')),
-                getDoc(doc(db, 'sites', siteId, 'content', 'linkSettings'))
-            ]);
-
-            const fetchedForms = formsSnap.docs.map((d: any) => ({ id: d.id, ...d.data() }));
-            const fetchedPages = pagesSnap.docs.map((d: any) => ({ id: d.id, ...d.data() }));
-            const fetchedLinks = linksSnap.docs.map((d: any) => ({ id: d.id, ...d.data() }));
-            const fetchedProducts = productsSnap.docs.map((d: any) => ({ id: d.id, ...d.data() }));
-            const fetchedBranches = branchesSnap.docs.map((d: any) => ({ id: d.id, ...d.data() }));
-
-            setForms(fetchedForms);
-            setPages(fetchedPages);
-
-            setRealData({
-                links: fetchedLinks.sort((a, b) => (a.order || 0) - (b.order || 0)),
-                products: fetchedProducts,
-                branches: fetchedBranches,
-                featuredProduct: featuredSnap.exists() ? featuredSnap.data() : null,
-                contact: contactSnap.exists() ? contactSnap.data() : null,
-                productSettings: prodSettingsSnap.exists() ? prodSettingsSnap.data() : null,
-                linkSettings: linkSettingsSnap.exists() ? linkSettingsSnap.data() : null,
-                forms: fetchedForms,
-                pages: fetchedPages
-            });
-        } catch (err) {
-            console.error("Failed to load resources:", err);
-        }
-    };
 
     const fetchTemplates = async () => {
         const fetched = await getAvailableTemplates();
@@ -220,7 +174,7 @@ export default function TemplateClient() {
                 </div>
             )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+            <div className="grid grid-cols-1 gap-8 items-start">
                 <div className="flex flex-col gap-6">
                     {/* Editor Form */}
                     <form onSubmit={handleSave} className={`space-y-6 bg-white dark:bg-neutral-900 p-8 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm h-fit transition-opacity duration-200 ${saving ? 'opacity-50 pointer-events-none' : ''}`}>
@@ -321,8 +275,9 @@ export default function TemplateClient() {
                                     </div>
                                 </div>
 
-                                {allowColorOverride && (
+                                {allowColorOverride ? (
                                     <>
+                                        {/* Standard templates: full background + accent control */}
                                         <div>
                                             <label className="block text-brand-dark font-bold mb-3">Quick Themes</label>
                                             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -352,7 +307,6 @@ export default function TemplateClient() {
                                                                 <div className="w-8 h-8 rounded-full shadow-sm" style={{ backgroundColor: theme.accent }}></div>
                                                             </div>
                                                             <span className={`text-sm font-bold ${isSelected ? 'text-brand-dark' : 'text-gray-500 dark:text-neutral-500'}`}>{theme.name}</span>
-
                                                             {isSelected && (
                                                                 <div className="absolute top-3 right-3 w-4 h-4 bg-brand-dark rounded-full border border-white shadow-sm animate-fade-in"></div>
                                                             )}
@@ -385,6 +339,106 @@ export default function TemplateClient() {
                                                         className="w-12 h-12 rounded-lg border border-gray-200 dark:border-neutral-700 p-1 cursor-pointer"
                                                     />
                                                     <span className="text-sm font-mono text-gray-500 dark:text-neutral-500 uppercase">{settings.accentColor || '#0E3B2E'}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        {/* Locked-background templates (MRB, MRB-Light): accent color only */}
+                                        <div>
+                                            <label className="block text-brand-dark font-bold mb-1">Accent Color</label>
+                                            <p className="text-xs text-gray-400 dark:text-neutral-500 mb-3">
+                                                Customize the accent color. Background and surface colors are set by the template.
+                                            </p>
+                                            <div className="grid grid-cols-3 gap-3">
+                                                {(settings.templateId === 'mrb-light' ? [
+                                                    { name: 'Terracotta', color: '#c2693a' },
+                                                    { name: 'Sage', color: '#6b8f71' },
+                                                    { name: 'Plum', color: '#7c4f7c' },
+                                                    { name: 'Dusty Rose', color: '#c2848a' },
+                                                    { name: 'Clay', color: '#b07850' },
+                                                    { name: 'Slate Blue', color: '#5a7a9e' },
+                                                ] : [
+                                                    { name: 'Neon Orange', color: '#ec5b13' },
+                                                    { name: 'Electric Blue', color: '#3b82f6' },
+                                                    { name: 'Neon Green', color: '#22c55e' },
+                                                    { name: 'Hot Pink', color: '#ec4899' },
+                                                    { name: 'Gold', color: '#f59e0b' },
+                                                    { name: 'Violet', color: '#8b5cf6' },
+                                                ]).map((swatch) => {
+                                                    const isSelected = settings.themeColor === swatch.color;
+                                                    return (
+                                                        <button
+                                                            key={swatch.name}
+                                                            type="button"
+                                                            onClick={() => setSettings({ ...settings, themeColor: swatch.color })}
+                                                            className={`
+                                                                group relative flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all duration-200
+                                                                ${isSelected
+                                                                    ? 'border-brand-dark shadow-sm bg-gray-50 dark:bg-neutral-800/50'
+                                                                    : 'border-gray-100 dark:border-neutral-800/50 hover:border-gray-200 dark:hover:border-neutral-700 hover:shadow-sm'
+                                                                }
+                                                            `}
+                                                        >
+                                                            <div className="w-full aspect-square rounded-xl" style={{ backgroundColor: swatch.color }} />
+                                                            <span className={`text-xs font-bold text-center ${isSelected ? 'text-brand-dark' : 'text-gray-500 dark:text-neutral-500'}`}>{swatch.name}</span>
+                                                            {isSelected && (
+                                                                <div className="absolute top-2 right-2 w-3 h-3 bg-brand-dark rounded-full border border-white shadow-sm" />
+                                                            )}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-brand-dark font-bold mb-2">Accent Color</label>
+                                                <div className="flex items-center gap-2">
+                                                    <input
+                                                        type="color"
+                                                        value={settings.themeColor || '#c2693a'}
+                                                        onChange={(e) => setSettings({ ...settings, themeColor: e.target.value })}
+                                                        className="w-12 h-12 rounded-lg border border-gray-200 dark:border-neutral-700 p-1 cursor-pointer"
+                                                    />
+                                                    <span className="text-sm font-mono text-gray-500 dark:text-neutral-500 uppercase">{settings.themeColor || '#c2693a'}</span>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label className="block text-brand-dark font-bold mb-2">Text Color</label>
+                                                <div className="flex items-center gap-2">
+                                                    <input
+                                                        type="color"
+                                                        value={settings.accentColor || '#2A2724'}
+                                                        onChange={(e) => setSettings({ ...settings, accentColor: e.target.value })}
+                                                        className="w-12 h-12 rounded-lg border border-gray-200 dark:border-neutral-700 p-1 cursor-pointer"
+                                                    />
+                                                    <span className="text-sm font-mono text-gray-500 dark:text-neutral-500 uppercase">{settings.accentColor || '#2A2724'}</span>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label className="block text-brand-dark font-bold mb-2">Background Color</label>
+                                                <div className="flex items-center gap-2">
+                                                    <input
+                                                        type="color"
+                                                        value={settings.backgroundColor || '#FAF7F2'}
+                                                        onChange={(e) => setSettings({ ...settings, backgroundColor: e.target.value })}
+                                                        className="w-12 h-12 rounded-lg border border-gray-200 dark:border-neutral-700 p-1 cursor-pointer"
+                                                    />
+                                                    <span className="text-sm font-mono text-gray-500 dark:text-neutral-500 uppercase">{settings.backgroundColor || '#FAF7F2'}</span>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label className="block text-brand-dark font-bold mb-2">Surface Color</label>
+                                                <div className="flex items-center gap-2">
+                                                    <input
+                                                        type="color"
+                                                        value={settings.surfaceColor || '#FFFFFF'}
+                                                        onChange={(e) => setSettings({ ...settings, surfaceColor: e.target.value })}
+                                                        className="w-12 h-12 rounded-lg border border-gray-200 dark:border-neutral-700 p-1 cursor-pointer"
+                                                    />
+                                                    <span className="text-sm font-mono text-gray-500 dark:text-neutral-500 uppercase">{settings.surfaceColor || '#FFFFFF'}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -435,29 +489,6 @@ export default function TemplateClient() {
                     </form>
                 </div>
 
-                {/* Right Column: Live Site Preview */}
-                <div className="sticky top-24 hidden lg:block">
-                    <div className="flex items-center justify-between mb-4">
-                        <label className="text-xs font-semibold text-gray-400 dark:text-neutral-600 uppercase tracking-widest">Live Site Preview</label>
-                        <div className="flex gap-2">
-                            <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
-                            <div className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
-                            <div className="w-2.5 h-2.5 rounded-full bg-green-400" />
-                        </div>
-                    </div>
-                    <div className="bg-brand-dark rounded-[2.5rem] p-4 shadow-2xl border-4 border-gray-200 dark:border-neutral-700 relative">
-                        <div className="aspect-[9/19] bg-white rounded-[2rem] overflow-hidden border-4 border-brand-dark/5 shadow-inner">
-                            <ThemeMockup
-                                template={templatesToDisplay.find(t => t.id === settings.templateId) || templatesToDisplay[0]}
-                                settings={settings}
-                                realData={realData}
-                                siteId={siteId}
-                            />
-                        </div>
-                        {/* Status bar mock */}
-                        <div className="absolute top-6 left-1/2 -translate-x-1/2 w-20 h-4 bg-brand-dark rounded-full" />
-                    </div>
-                </div>
             </div>
         </div>
     );

@@ -3,6 +3,7 @@
 import { CartProvider } from '@/lib/modules/byod_pos/cart-context';
 import { POSWidget } from '@/lib/modules/byod_pos/components/POSWidget';
 import { useSite } from '@/lib/site-context';
+import { useTemplate } from '@/components/TemplateProvider';
 
 import { useEffect, useState } from 'react';
 import { getPOSSettings } from '@/lib/modules/byod_pos/api';
@@ -14,18 +15,27 @@ interface POSInterfaceProps {
 }
 
 function POSInterface({ siteId, settings }: POSInterfaceProps) {
-    // Use businessName from POS settings, fallback to generic name
+    const { theme } = useTemplate();
     const businessName = settings?.businessName || 'Self Order';
 
+    const isGlass = theme.decorations?.surfaceStyle === 'glass' || theme.cardStyle === 'glass';
+    const surfaceBg = isGlass ? 'rgba(20,20,20,0.9)' : (theme.colors.surfaceElevated || '#ffffff');
+    const borderColor = isGlass ? 'rgba(255,255,255,0.1)' : (theme.colors.border || '#e5e7eb');
+    const primaryColor = theme.colors.primary;
+    const accentFg = theme.colors.accentForeground || '#ffffff';
+    const subtleText = theme.colors.textSubtle || theme.colors.muted || theme.colors.foreground;
+
     return (
-        <div className="min-h-screen bg-gray-50 pb-32">
+        <div className="min-h-screen pb-32" style={{ backgroundColor: theme.colors.background || '#f9fafb' }}>
             {/* Mobile Header */}
-            <header className="bg-white p-4 sticky top-0 z-10 shadow-sm border-b border-gray-100 flex justify-between items-center">
+            <header className="p-4 sticky top-0 z-10 shadow-sm border-b flex justify-between items-center"
+                style={{ backgroundColor: surfaceBg, borderColor }}>
                 <div>
-                    <h1 className="font-black text-xl text-brand-dark uppercase">{businessName}</h1>
-                    <p className="text-xs text-gray-500 font-bold">Self Order</p>
+                    <h1 className="font-black text-xl uppercase" style={{ color: theme.colors.foreground }}>{businessName}</h1>
+                    <p className="text-xs font-bold" style={{ color: subtleText }}>Self Order</p>
                 </div>
-                <div className="w-8 h-8 rounded-full bg-brand-green border border-brand-dark flex items-center justify-center font-black text-[10px]">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center font-black text-[10px]"
+                    style={{ backgroundColor: `${primaryColor}20`, color: primaryColor, border: `1px solid ${primaryColor}40` }}>
                     {businessName.slice(0, 1)}
                 </div>
             </header>

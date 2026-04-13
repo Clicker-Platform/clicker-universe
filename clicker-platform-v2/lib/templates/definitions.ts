@@ -193,22 +193,29 @@ export const templateDefinitions: Record<string, Omit<TemplateDefinition, 'compo
                 foreground: '#f8fafc', // Off-White
                 surface: '#1a1a1a', // Dark Gray Cards
                 border: '#262626', // Subtle Borders
+                accentForeground: '#ffffff',
+                surfaceElevated: '#222222',
+                textMuted: '#94a3b8',   // slate-400
+                textSubtle: '#64748b',  // slate-500
             },
             fonts: {
-                // The Stitch HTML uses Public Sans, mapping to Inter for now or closest match
                 heading: 'var(--font-inter), sans-serif',
                 body: 'var(--font-inter), sans-serif',
             },
             borderRadius: '1rem',
-            cardStyle: 'glass', // Maps to outlined concept usually
-            cardVariant: 'outlined', // Outlined handles glassmorphic aesthetic often
-            backgroundElements: [], // Keep clean background as per design
+            cardStyle: 'glass',
+            cardVariant: 'outlined',
+            backgroundElements: [],
             allowThemeColorOverride: false,
             headerLayout: 'center',
             homeButtonStyle: 'pill',
             homeButtonColor: 'primary',
             taglineStyle: 'contrast',
-
+            decorations: {
+                surfaceStyle: 'glass',
+                accentGlow: true,
+                neutralTone: 'cool',
+            },
             layout: {
                 containerWidth: 'boxed',
                 navMode: 'adaptive',
@@ -224,6 +231,60 @@ export const templateDefinitions: Record<string, Omit<TemplateDefinition, 'compo
             },
             custom: {
                 bottomNavStyle: 'glass',
+            }
+        },
+        homeBlockOrder: ['hero', 'quick_actions', 'branches', 'featured', 'gallery', 'hours'],
+    },
+    'mrb-light': {
+        id: 'mrb-light',
+        name: 'Mr Brightside Light',
+        description: 'Modern minimalist elegance with warm tones and terracotta accents.',
+        config: {
+            colors: {
+                primary: '#c2693a',       // Terracotta (default accent — user can override)
+                accent: '#c2693a',
+                background: '#FAF7F2',    // Warm off-white / cream
+                foreground: '#2A2724',    // Soft charcoal — not true black
+                surface: '#F0EBE3',       // Warm card surface
+                border: '#E5DDD4',        // Warm subtle border
+                accentForeground: '#ffffff',
+                surfaceElevated: '#FFFFFF', // Pure white cards elevated above cream
+                textMuted: '#8C7B6E',     // Warm medium gray
+                textSubtle: '#B5A99E',    // Warm light gray (captions, meta)
+            },
+            fonts: {
+                heading: 'var(--font-inter), sans-serif',
+                body: 'var(--font-inter), sans-serif',
+            },
+            borderRadius: '1rem',
+            cardStyle: 'clean',
+            cardVariant: 'shadow',
+            backgroundElements: [],
+            allowThemeColorOverride: false,
+            headerLayout: 'center',
+            homeButtonStyle: 'pill',
+            homeButtonColor: 'primary',
+            taglineStyle: 'gentle',
+            decorations: {
+                surfaceStyle: 'soft',
+                accentGlow: false,
+                neutralTone: 'warm',
+            },
+            layout: {
+                containerWidth: 'boxed',
+                navMode: 'adaptive',
+                showBottomNav: true,
+                grid: { mobile: 1, tablet: 1, desktop: 1, gap: 'gap-6' }
+            },
+            defaultBlockLayouts: {
+                hero: 'centered',
+                text: 'two-column',
+                image: 'full-width',
+                faq: 'accordion',
+                map: 'embed-full'
+            },
+            custom: {
+                bottomNavStyle: 'minimal',
             }
         },
         homeBlockOrder: ['hero', 'quick_actions', 'branches', 'featured', 'gallery', 'hours'],

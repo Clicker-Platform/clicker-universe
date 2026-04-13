@@ -1,7 +1,7 @@
 import { Service, Staff } from '../../types';
 import { ChevronLeft, ChevronRight, Loader2, Calendar as CalendarIcon } from 'lucide-react';
 import { useState, useEffect } from 'react';
-
+import { ThemeConfig } from '@/lib/templates/types';
 
 interface TimeStepProps {
     siteId: string;
@@ -11,7 +11,7 @@ interface TimeStepProps {
     selectedStaff: Staff | null;
     staffList: Staff[];
     onSelectTime: (time: string) => void;
-    isGlass?: boolean;
+    theme: ThemeConfig;
 }
 
 export default function TimeStep({
@@ -22,7 +22,7 @@ export default function TimeStep({
     selectedStaff,
     staffList,
     onSelectTime,
-    isGlass = false,
+    theme,
 }: TimeStepProps) {
     const [loadingSlots, setLoadingSlots] = useState(false);
     interface SlotStatus {
@@ -34,39 +34,36 @@ export default function TimeStep({
     const [generatedSlots, setGeneratedSlots] = useState<SlotStatus[]>([]);
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
 
-    // Format Date for Input - use local time for date input to avoid timezone shifts
-    const formattedDate = date.toLocaleDateString('en-CA'); // YYYY-MM-DD
+    const isGlass = theme.decorations?.surfaceStyle === 'glass' || theme.cardStyle === 'glass';
+    const surfaceBg = isGlass ? 'rgba(255,255,255,0.05)' : (theme.colors.surface || '#f9fafb');
+    const borderColor = isGlass ? 'rgba(255,255,255,0.1)' : (theme.colors.border || '#e5e7eb');
+    const mutedText = theme.colors.textMuted || theme.colors.foreground;
+    const subtleText = theme.colors.textSubtle || theme.colors.muted || theme.colors.foreground;
+
+    const formattedDate = date.toLocaleDateString('en-CA');
     const todayStr = new Date().toLocaleDateString('en-CA');
     const isToday = formattedDate === todayStr;
 
     const handleDateChange = (newDate: Date) => {
-        // Prevent selecting past dates
         const now = new Date();
         now.setHours(0, 0, 0, 0);
         if (newDate < now) return;
-
         setDate(newDate);
         setSelectedTime(null);
     };
 
     const handleInputDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const d = new Date(e.target.value);
-        // Correct for timezone offset when parsing from input string
         const userTimezoneOffset = d.getTimezoneOffset() * 60000;
         const adjustedDate = new Date(d.getTime() + userTimezoneOffset);
-
-        if (!isNaN(adjustedDate.getTime())) {
-            handleDateChange(adjustedDate);
-        }
+        if (!isNaN(adjustedDate.getTime())) handleDateChange(adjustedDate);
     };
 
-    // Generate Slots when Date or Dependencies change
     useEffect(() => {
         async function fetchAvailability() {
             setLoadingSlots(true);
             try {
-                const dayOfWeek = date.getDay(); // 0=Sunday
-
+                const dayOfWeek = date.getDay();
                 const { getBookingsForDay, getGlobalSchedule } = await import('@/lib/modules/reservation/api');
                 const [dayBookings, globalSchedule] = await Promise.all([
                     getBookingsForDay(siteId, date),
@@ -74,14 +71,9 @@ export default function TimeStep({
                 ]);
 
                 const activeStaffCount = staffList.filter(s => s.isActive).length;
-                // If no staff configured, treat capacity as 1 (unmanaged mode — slots based on hours only)
                 const maxCapacity = selectedStaff ? 1 : (activeStaffCount || 1);
-
-                // Generate candidate slots
                 const candidates: SlotStatus[] = [];
-
                 const parseTime = (t: string) => t.split(':').map(Number);
-
                 const globalDay = globalSchedule.find((d: any) => d.dayOfWeek === dayOfWeek);
 
                 if (!globalDay || !globalDay.isOpen || globalDay.hours.length === 0) {
@@ -99,19 +91,11 @@ export default function TimeStep({
                     if (endMins > maxTime) maxTime = endMins;
                 });
 
-                const startHour = Math.floor(minTime / 60);
-                const startMinute = minTime % 60;
-                const endHour = Math.floor(maxTime / 60);
-                const endMinute = maxTime % 60;
-
                 let current = new Date(date);
-                current.setHours(startHour, startMinute, 0, 0);
-
+                current.setHours(Math.floor(minTime / 60), minTime % 60, 0, 0);
                 const closeTime = new Date(date);
-                closeTime.setHours(endHour, endMinute, 0, 0);
+                closeTime.setHours(Math.floor(maxTime / 60), maxTime % 60, 0, 0);
 
-                // We need to ensure service finishes before the specific slot's end time (as per weeklySlots)
-                // AND fits within Global Schedule.
                 const serviceDuration = (selectedService.durationMinutes ?? 60) * 60000;
                 const latestStartTime = new Date(closeTime.getTime() - serviceDuration);
 
@@ -119,22 +103,15 @@ export default function TimeStep({
                     const timeString = current.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
                     const slotStart = current.getTime();
                     const slotEnd = slotStart + serviceDuration;
-
                     const activeBookings = dayBookings.filter(b => b.status !== 'cancelled' && b.status !== 'completed');
-
                     let relevantBookings = activeBookings;
-                    if (selectedStaff) {
-                        relevantBookings = activeBookings.filter(b => b.staffId === selectedStaff.id);
-                    }
+                    if (selectedStaff) relevantBookings = activeBookings.filter(b => b.staffId === selectedStaff.id);
 
-                    // Check specific staff conflicts
                     const conflicts = relevantBookings.filter(b => {
                         const bStart = b.startAt.toDate().getTime();
                         const bEnd = b.endAt.toDate().getTime();
                         return (bStart < slotEnd) && (bEnd > slotStart);
                     });
-
-                    // Check Global Capacity
                     const globalOverlaps = activeBookings.filter(b => {
                         const bStart = b.startAt.toDate().getTime();
                         const bEnd = b.endAt.toDate().getTime();
@@ -143,22 +120,15 @@ export default function TimeStep({
 
                     const isGlobalAvailable = globalOverlaps.length < maxCapacity;
                     const isSpecificAvailable = conflicts.length === 0;
-
                     let available = false;
                     let reason: SlotStatus['reason'] = undefined;
 
                     if (selectedStaff) {
-                        if (isSpecificAvailable && isGlobalAvailable) {
-                            available = true;
-                        } else {
-                            reason = 'booked';
-                        }
+                        available = isSpecificAvailable && isGlobalAvailable;
+                        if (!available) reason = 'booked';
                     } else {
-                        if (isGlobalAvailable) {
-                            available = true;
-                        } else {
-                            reason = 'booked';
-                        }
+                        available = isGlobalAvailable;
+                        if (!available) reason = 'booked';
                     }
 
                     candidates.push({ time: timeString, available, reason });
@@ -166,46 +136,39 @@ export default function TimeStep({
                 }
 
                 setGeneratedSlots(candidates);
-
             } catch (error) {
                 console.error("Error generating slots:", error);
             } finally {
                 setLoadingSlots(false);
             }
         }
-
         fetchAvailability();
     }, [date, selectedService, selectedStaff, staffList]);
 
     return (
         <div>
             {/* Date Navigation */}
-            <div className={`flex items-center justify-between mb-6 p-2 rounded-xl ${
-                isGlass ? 'bg-white/5' : 'bg-gray-50'
-            }`}>
+            <div className="flex items-center justify-between mb-6 p-2 rounded-xl"
+                style={{ backgroundColor: surfaceBg }}>
                 <button
-                    onClick={() => {
-                        const d = new Date(date);
-                        d.setDate(d.getDate() - 1);
-                        handleDateChange(d);
-                    }}
+                    onClick={() => { const d = new Date(date); d.setDate(d.getDate() - 1); handleDateChange(d); }}
                     disabled={isToday}
-                    className={`p-2 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${
-                        isGlass ? 'hover:bg-white/10 text-white' : 'hover:bg-white'
-                    }`}
+                    className="p-2 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed hover:opacity-70"
+                    style={{ color: theme.colors.foreground }}
                 >
                     <ChevronLeft size={20} />
                 </button>
 
                 <div className="text-center relative group cursor-pointer">
-                    <p className={`text-xs font-bold uppercase ${isGlass ? 'text-white/40' : 'text-gray-400'}`}>
+                    <p className="text-xs font-bold uppercase" style={{ color: subtleText }}>
                         {date.toLocaleDateString(undefined, { weekday: 'long' })}
                     </p>
                     <div className="flex items-center justify-center gap-2">
-                        <p className={`font-black text-lg ${isGlass ? 'text-white' : 'text-gray-900'}`}>
+                        <p className="font-black text-lg" style={{ color: theme.colors.foreground }}>
                             {date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                         </p>
-                        <CalendarIcon size={16} className={`opacity-50 group-hover:opacity-100 ${isGlass ? 'text-white' : 'text-brand-blue'}`} />
+                        <CalendarIcon size={16} className="opacity-50 group-hover:opacity-100"
+                            style={{ color: theme.colors.primary }} />
                     </div>
                     <input
                         type="date"
@@ -217,14 +180,9 @@ export default function TimeStep({
                 </div>
 
                 <button
-                    onClick={() => {
-                        const d = new Date(date);
-                        d.setDate(d.getDate() + 1);
-                        handleDateChange(d);
-                    }}
-                    className={`p-2 rounded-lg transition-colors ${
-                        isGlass ? 'hover:bg-white/10 text-white' : 'hover:bg-white'
-                    }`}
+                    onClick={() => { const d = new Date(date); d.setDate(d.getDate() + 1); handleDateChange(d); }}
+                    className="p-2 rounded-lg transition-colors hover:opacity-70"
+                    style={{ color: theme.colors.foreground }}
                 >
                     <ChevronRight size={20} />
                 </button>
@@ -232,60 +190,49 @@ export default function TimeStep({
 
             <div className="grid grid-cols-3 gap-3">
                 {loadingSlots ? (
-                    <div className={`col-span-3 text-center py-8 flex flex-col items-center ${isGlass ? 'text-white/40' : 'text-gray-400'}`}>
+                    <div className="col-span-3 text-center py-8 flex flex-col items-center"
+                        style={{ color: subtleText }}>
                         <Loader2 className="animate-spin mb-2" />
                         Checking availability...
                     </div>
                 ) : generatedSlots.length === 0 ? (
-                    <div className={`col-span-3 text-center py-8 ${isGlass ? 'text-white/40' : 'text-gray-400'}`}>
+                    <div className="col-span-3 text-center py-8" style={{ color: subtleText }}>
                         No slots available for this date.
                     </div>
                 ) : (
                     generatedSlots.map((slot: any) => {
                         const time = typeof slot === 'string' ? slot : slot.time;
                         const available = typeof slot === 'string' ? true : slot.available;
-                        const reason = typeof slot === 'string' ? undefined : slot.reason;
                         let isPast = false;
                         if (isToday) {
-                            const now = new Date();
                             const [slotHour, slotMinute] = time.split(':').map(Number);
                             const slotTime = new Date(date);
                             slotTime.setHours(slotHour, slotMinute, 0, 0);
-                            if (slotTime < new Date(now.getTime() + 30 * 60000)) {
-                                isPast = true;
-                            }
+                            if (slotTime < new Date(Date.now() + 30 * 60000)) isPast = true;
                         }
-
                         const isDisabled = !available || isPast;
+                        const isSelected = selectedTime === time;
+
+                        let slotStyle: React.CSSProperties;
+                        if (isDisabled) {
+                            slotStyle = { backgroundColor: surfaceBg, color: subtleText, borderColor, cursor: 'not-allowed', opacity: 0.5 };
+                        } else if (isSelected) {
+                            slotStyle = { backgroundColor: theme.colors.primary, color: theme.colors.accentForeground || '#ffffff', borderColor: theme.colors.primary };
+                        } else {
+                            slotStyle = { backgroundColor: surfaceBg, color: theme.colors.foreground, borderColor };
+                        }
 
                         return (
                             <button
                                 key={time}
                                 disabled={isDisabled}
-                                onClick={() => {
-                                    if (!isDisabled) setSelectedTime(time);
-                                }}
-                                className={`py-3 rounded-xl text-sm font-bold border transition-all ${
-                                    isDisabled
-                                        ? isGlass
-                                            ? 'bg-white/5 text-white/20 border-white/5 cursor-not-allowed'
-                                            : 'bg-gray-50 text-gray-300 border-gray-100 cursor-not-allowed'
-                                        : selectedTime === time
-                                            ? isGlass
-                                                ? 'bg-[var(--theme-primary)] text-black border-transparent scale-105 shadow-lg'
-                                                : 'bg-brand-dark text-white border-brand-dark scale-105 shadow-lg'
-                                            : isGlass
-                                                ? 'bg-white/5 text-white border-white/10 hover:bg-white/10 hover:border-white/20'
-                                                : 'bg-white text-gray-600 border-gray-200 hover:border-brand-dark hover:text-brand-dark'
-                                }`}
+                                onClick={() => { if (!isDisabled) setSelectedTime(time); }}
+                                className="py-3 rounded-xl text-sm font-bold border transition-all"
+                                style={slotStyle}
                             >
-                                <span className={isPast ? 'line-through decoration-2 decoration-gray-300' : ''}>
-                                    {time}
-                                </span>
+                                <span className={isPast ? 'line-through decoration-2' : ''}>{time}</span>
                                 {!available && !isPast && (
-                                    <span className="block text-[10px] font-normal opacity-70">
-                                        Booked
-                                    </span>
+                                    <span className="block text-[10px] font-normal opacity-70">Booked</span>
                                 )}
                             </button>
                         );
@@ -297,11 +244,8 @@ export default function TimeStep({
                 <button
                     disabled={!selectedTime}
                     onClick={() => selectedTime && onSelectTime(selectedTime)}
-                    className={`w-full py-3 font-bold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${
-                        isGlass
-                            ? 'bg-[var(--theme-primary)] text-black hover:opacity-90'
-                            : 'bg-brand-dark text-white hover:bg-brand-dark/90'
-                    }`}
+                    className="w-full py-3 font-bold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-opacity hover:opacity-90"
+                    style={{ backgroundColor: theme.colors.primary, color: theme.colors.accentForeground || '#ffffff' }}
                 >
                     Continue
                 </button>

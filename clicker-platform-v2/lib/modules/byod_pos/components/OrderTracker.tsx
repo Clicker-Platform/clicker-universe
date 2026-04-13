@@ -8,15 +8,24 @@ import { toast } from 'sonner';
 import { POSOrder } from '../types';
 
 import { useSite } from '@/lib/site-context';
+import { useTemplate } from '@/components/TemplateProvider';
+import { ThemeConfig } from '@/lib/templates/types';
 
 export function OrderTracker() {
     const { siteId } = useSite();
+    const { theme } = useTemplate();
     const { orders, dismissOrder, clearCompletedOrders, isTrackerOpen, setIsTrackerOpen } = useOrderTracker();
 
-    // Only show if there are tracked orders
     if (orders.length === 0) return null;
 
-    // Calculate Totals
+    const isGlass = theme.decorations?.surfaceStyle === 'glass' || theme.cardStyle === 'glass';
+    const surfaceBg = isGlass ? 'rgba(20,20,20,0.95)' : (theme.colors.surfaceElevated || '#ffffff');
+    const surfaceMuted = isGlass ? 'rgba(255,255,255,0.05)' : (theme.colors.surface || '#f9fafb');
+    const borderColor = isGlass ? 'rgba(255,255,255,0.1)' : (theme.colors.border || '#e5e7eb');
+    const subtleText = theme.colors.textSubtle || theme.colors.muted || theme.colors.foreground;
+    const primaryColor = theme.colors.primary;
+    const accentFg = theme.colors.accentForeground || '#ffffff';
+
     const grandTotal = orders.reduce((sum, o) => sum + o.total, 0);
     const outstandingTotal = orders.reduce((sum, o) => (o.paymentStatus === 'paid' ? sum : sum + o.total), 0);
     const allPaid = orders.length > 0 && orders.every(o => o.paymentStatus === 'paid' || o.status === 'cancelled');
@@ -27,16 +36,19 @@ export function OrderTracker() {
             <div className="fixed bottom-24 md:bottom-6 left-4 md:left-6 z-50 transition-all duration-300">
                 <button
                     onClick={() => setIsTrackerOpen(true)}
-                    className="bg-white border-[3px] border-brand-dark shadow-lg rounded-2xl p-4 flex items-center gap-3 hover:scale-105 transition-transform active:scale-95"
+                    className="shadow-lg rounded-2xl p-4 flex items-center gap-3 hover:scale-105 transition-transform active:scale-95 border"
+                    style={{ backgroundColor: surfaceBg, borderColor }}
                 >
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center border-2 border-brand-dark font-black bg-brand-yellow text-brand-dark">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center font-black"
+                        style={{ backgroundColor: `${primaryColor}20`, color: primaryColor, border: `2px solid ${primaryColor}` }}>
                         {orders.length}
                     </div>
                     <div className="text-left">
-                        <div className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                        <div className="text-xs font-bold uppercase tracking-wider" style={{ color: subtleText }}>
                             {outstandingTotal === 0 ? 'My Order' : 'Unpaid'}
                         </div>
-                        <div className={`font-black leading-none flex items-center gap-1 ${outstandingTotal === 0 ? 'text-green-600' : 'text-brand-dark'}`}>
+                        <div className="font-black leading-none flex items-center gap-1"
+                            style={{ color: outstandingTotal === 0 ? '#22c55e' : primaryColor }}>
                             {outstandingTotal === 0
                                 ? 'PAID'
                                 : new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(outstandingTotal)
@@ -50,24 +62,30 @@ export function OrderTracker() {
             {/* Order Details Modal */}
             {isTrackerOpen && (
                 <div className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm flex justify-center items-end md:items-center md:p-4 animate-in fade-in duration-200">
-                    <div className="bg-white w-full md:w-full md:max-w-md rounded-t-3xl md:rounded-3xl border-t-[3px] md:border-[3px] border-x-[3px] md:border-x-[3px] border-b-0 md:border-b-[3px] border-brand-dark shadow-2xl overflow-hidden flex flex-col h-[85vh] md:h-auto md:max-h-[85vh] animate-in slide-in-from-bottom duration-300">
+                    <div className="w-full md:w-full md:max-w-md rounded-t-3xl md:rounded-3xl border shadow-2xl overflow-hidden flex flex-col h-[85vh] md:h-auto md:max-h-[85vh] animate-in slide-in-from-bottom duration-300"
+                        style={{ backgroundColor: surfaceBg, borderColor }}>
                         {/* Header */}
-                        <div className="bg-gray-50 p-4 border-b border-gray-100 flex justify-between items-center shrink-0">
-                            <h3 className="font-black text-xl uppercase flex items-center gap-2">
+                        <div className="p-4 border-b flex justify-between items-center shrink-0"
+                            style={{ borderColor, backgroundColor: surfaceMuted }}>
+                            <h3 className="font-black text-xl uppercase flex items-center gap-2" style={{ color: theme.colors.foreground }}>
                                 <Store size={24} /> My Orders ({orders.length})
                             </h3>
-                            <button onClick={() => setIsTrackerOpen(false)} className="p-2 hover:bg-gray-200 rounded-full transition-colors">
+                            <button onClick={() => setIsTrackerOpen(false)}
+                                className="p-2 rounded-full hover:opacity-70 transition-opacity"
+                                style={{ color: theme.colors.foreground }}>
                                 <X size={24} />
                             </button>
                         </div>
 
                         {/* Content */}
-                        <div className="p-0 overflow-y-auto flex-1 bg-gray-50/50">
+                        <div className="p-0 overflow-y-auto flex-1" style={{ backgroundColor: surfaceMuted }}>
                             {orders.map((order) => (
-                                <div key={order.id} className="bg-white border-b border-gray-100 mb-2 last:mb-0 pb-6">
-                                    <div className="p-4 bg-gray-50/50 border-b border-gray-100 flex justify-between items-center">
+                                <div key={order.id} className="border-b mb-2 last:mb-0 pb-6"
+                                    style={{ backgroundColor: surfaceBg, borderColor }}>
+                                    <div className="p-4 border-b flex justify-between items-center"
+                                        style={{ borderColor, backgroundColor: surfaceMuted }}>
                                         <div className="flex items-center gap-2">
-                                            <span className="font-black text-gray-600 uppercase text-sm">#{order.id.slice(-4).toUpperCase()}</span>
+                                            <span className="font-black uppercase text-sm" style={{ color: subtleText }}>#{order.id.slice(-4).toUpperCase()}</span>
                                             {(order.status === 'completed' || order.status === 'cancelled') && (
                                                 <button
                                                     onClick={(e) => {
@@ -75,7 +93,8 @@ export function OrderTracker() {
                                                         dismissOrder(order.id);
                                                         toast.success("Order removed from list");
                                                     }}
-                                                    className="p-1 -ml-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                                                    className="p-1 -ml-1 rounded-full transition-colors hover:text-red-500 hover:bg-red-50"
+                                                    style={{ color: subtleText }}
                                                     title="Remove from list"
                                                 >
                                                     <X size={16} />
@@ -86,47 +105,51 @@ export function OrderTracker() {
                                             ? 'bg-yellow-100 text-yellow-700 border-yellow-200 animate-pulse'
                                             : order.paymentStatus === 'paid'
                                                 ? 'bg-green-100 text-green-700 border-green-200'
-                                                : 'bg-white text-gray-700 border-gray-200'
-                                            }`}>
+                                                : ''
+                                            }`}
+                                            style={order.paymentStatus !== 'pending_confirmation' && order.paymentStatus !== 'paid'
+                                                ? { backgroundColor: surfaceMuted, borderColor, color: subtleText }
+                                                : undefined
+                                            }>
                                             {getStatusLabel(order)}
                                         </div>
                                     </div>
 
                                     <div className="px-4 pt-4">
-                                        <OrderStepper status={order.status} />
+                                        <OrderStepper status={order.status} theme={theme} />
                                     </div>
 
                                     <div className="p-4 space-y-3">
                                         {order.items.map((item, idx) => (
                                             <div key={idx} className="flex justify-between items-start gap-4 text-sm">
                                                 <div className="flex gap-2">
-                                                    <div className="font-bold text-brand-dark min-w-[20px]">
+                                                    <div className="font-bold min-w-[20px]" style={{ color: primaryColor }}>
                                                         {item.quantity}x
                                                     </div>
-                                                    <span className="font-medium text-gray-800">{item.name} {item.variantName && `(${item.variantName})`}</span>
+                                                    <span className="font-medium" style={{ color: theme.colors.foreground }}>{item.name} {item.variantName && `(${item.variantName})`}</span>
                                                 </div>
-                                                <span className="font-bold text-gray-600 shrink-0">
+                                                <span className="font-bold shrink-0" style={{ color: subtleText }}>
                                                     {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(item.price * item.quantity)}
                                                 </span>
                                             </div>
                                         ))}
                                     </div>
 
-                                    <div className="px-4 flex justify-between items-center text-sm font-bold text-gray-500">
+                                    <div className="px-4 flex justify-between items-center text-sm font-bold" style={{ color: subtleText }}>
                                         <span>Subtotal</span>
                                         <span>{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(order.total)}</span>
                                     </div>
-
-                                    {/* Action per Order (Removed - Consolidated in Footer) */}
                                 </div>
                             ))}
                         </div>
 
                         {/* Footer / Grand Total */}
-                        <div className="p-4 bg-white border-t border-gray-100 shrink-0 shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
+                        <div className="p-4 border-t shrink-0"
+                            style={{ backgroundColor: surfaceBg, borderColor }}>
                             <div className="flex justify-between items-center mb-4">
-                                <span className="font-black text-xl text-gray-400">Total Pay</span>
-                                <span className={`font-black text-2xl ${outstandingTotal > 0 ? 'text-brand-dark' : 'text-green-500'}`}>
+                                <span className="font-black text-xl" style={{ color: subtleText }}>Total Pay</span>
+                                <span className="font-black text-2xl"
+                                    style={{ color: outstandingTotal > 0 ? primaryColor : '#22c55e' }}>
                                     {outstandingTotal > 0
                                         ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(outstandingTotal)
                                         : 'PAID'
@@ -134,7 +157,6 @@ export function OrderTracker() {
                                 </span>
                             </div>
 
-                            {/* Consolidated Request Payment Action */}
                             {(() => {
                                 const payableOrders = orders.filter(o => o.status !== 'cancelled' && o.paymentStatus !== 'paid' && o.paymentStatus !== 'pending_confirmation');
                                 const pendingOrders = orders.filter(o => o.status !== 'cancelled' && o.paymentStatus === 'pending_confirmation');
@@ -152,7 +174,8 @@ export function OrderTracker() {
                                                     toast.error("Failed to request payment");
                                                 }
                                             }}
-                                            className="w-full py-4 mb-3 bg-brand-dark text-white font-bold rounded-xl hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
+                                            className="w-full py-4 mb-3 font-bold rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+                                            style={{ backgroundColor: primaryColor, color: accentFg }}
                                         >
                                             <CreditCard size={20} /> Pay
                                         </button>
@@ -178,10 +201,11 @@ export function OrderTracker() {
                                     }
                                     setIsTrackerOpen(false);
                                 }}
-                                className={`w-full py-4 font-bold rounded-xl transition-colors ${orders.some(o => o.status !== 'cancelled' && o.paymentStatus !== 'paid')
-                                    ? "bg-white border-2 border-gray-200 text-gray-600 hover:bg-gray-50"
-                                    : "bg-brand-dark text-white hover:bg-gray-800"
-                                    }`}
+                                className="w-full py-4 font-bold rounded-xl border transition-opacity hover:opacity-80"
+                                style={orders.some(o => o.status !== 'cancelled' && o.paymentStatus !== 'paid')
+                                    ? { backgroundColor: 'transparent', borderColor, color: theme.colors.foreground }
+                                    : { backgroundColor: primaryColor, color: accentFg, borderColor: primaryColor }
+                                }
                             >
                                 {allPaid ? 'Start New Order' : 'Close'}
                             </button>
@@ -207,8 +231,14 @@ function getStatusLabel(order: POSOrder) {
     }
 }
 
-function OrderStepper({ status }: { status: string }) {
-    // If status is 'open', show it as the first step (active)
+function OrderStepper({ status, theme }: { status: string; theme: ThemeConfig }) {
+    const isGlass = theme.decorations?.surfaceStyle === 'glass' || theme.cardStyle === 'glass';
+    const surfaceBg = isGlass ? 'rgba(20,20,20,0.95)' : (theme.colors.surfaceElevated || '#ffffff');
+    const borderColor = isGlass ? 'rgba(255,255,255,0.1)' : (theme.colors.border || '#e5e7eb');
+    const subtleText = theme.colors.textSubtle || theme.colors.muted || theme.colors.foreground;
+    const primaryColor = theme.colors.primary;
+    const accentFg = theme.colors.accentForeground || '#ffffff';
+
     const steps = [
         { id: 'open', label: 'Bill Open', icon: ShoppingBag },
         { id: 'preparing', label: 'Kitchen', icon: Play },
@@ -218,7 +248,7 @@ function OrderStepper({ status }: { status: string }) {
 
     let activeIndex = 0;
     if (status === 'open') activeIndex = 0;
-    if (status === 'pending') activeIndex = 0; // Treat pending as start
+    if (status === 'pending') activeIndex = 0;
     if (status === 'preparing') activeIndex = 1;
     if (status === 'ready') activeIndex = 2;
     if (status === 'completed') activeIndex = 3;
@@ -226,10 +256,14 @@ function OrderStepper({ status }: { status: string }) {
     return (
         <div className="relative flex justify-between items-center px-4">
             {/* Connecting Line */}
-            <div className="absolute top-1/2 left-8 right-8 h-1 bg-gray-100 -z-10 -translate-y-1/2 rounded-full">
+            <div className="absolute top-1/2 left-8 right-8 h-1 -z-10 -translate-y-1/2 rounded-full"
+                style={{ backgroundColor: borderColor }}>
                 <div
-                    className="h-full bg-brand-dark transition-all duration-500 rounded-full"
-                    style={{ width: `${Math.min(100, (Math.max(0, activeIndex) / (steps.length - 1)) * 100)}%` }}
+                    className="h-full transition-all duration-500 rounded-full"
+                    style={{
+                        width: `${Math.min(100, (Math.max(0, activeIndex) / (steps.length - 1)) * 100)}%`,
+                        backgroundColor: primaryColor
+                    }}
                 />
             </div>
 
@@ -239,15 +273,22 @@ function OrderStepper({ status }: { status: string }) {
                 const Icon = step.icon;
 
                 return (
-                    <div key={step.id} className="flex flex-col items-center gap-2 bg-white px-2">
-                        <div className={`
-                            w-12 h-12 rounded-full flex items-center justify-center border-[3px] transition-all duration-300
-                            ${isActive ? 'bg-brand-dark border-brand-dark text-white' : 'bg-white border-gray-200 text-gray-300'}
-                            ${isCurrent ? 'scale-110 shadow-lg ring-4 ring-brand-green/20' : ''}
-                        `}>
+                    <div key={step.id} className="flex flex-col items-center gap-2 px-2"
+                        style={{ backgroundColor: surfaceBg }}>
+                        <div
+                            className="w-12 h-12 rounded-full flex items-center justify-center border-[3px] transition-all duration-300"
+                            style={{
+                                backgroundColor: isActive ? primaryColor : surfaceBg,
+                                borderColor: isActive ? primaryColor : borderColor,
+                                color: isActive ? accentFg : subtleText,
+                                boxShadow: isCurrent ? `0 0 0 4px ${primaryColor}30` : undefined,
+                                transform: isCurrent ? 'scale(1.1)' : undefined,
+                            }}
+                        >
                             <Icon size={20} strokeWidth={3} />
                         </div>
-                        <span className={`text-[10px] font-bold uppercase tracking-wider transition-colors duration-300 ${isActive ? 'text-brand-dark' : 'text-gray-300'}`}>
+                        <span className="text-[10px] font-bold uppercase tracking-wider transition-colors duration-300"
+                            style={{ color: isActive ? primaryColor : subtleText }}>
                             {step.label}
                         </span>
                     </div>

@@ -13,6 +13,11 @@ export interface ThemeColors {
     surface?: string;
     border?: string;
     muted?: string;
+    // Extended tokens — optional, fall back gracefully on old templates
+    accentForeground?: string;  // text color placed on top of accent/primary buttons
+    surfaceElevated?: string;   // elevated card/panel surface (lifts off background)
+    textMuted?: string;         // secondary text (labels, subtitles)
+    textSubtle?: string;        // tertiary text (captions, meta, placeholders)
 }
 
 export interface ThemeFonts {
@@ -53,6 +58,13 @@ export interface TemplateConfig {
     // --- Template-Specific Configuration (Phase 3) ---
     // Flexible bucket for settings specific to a single template (e.g. Shuvo-only options)
     custom?: Record<string, any>;
+
+    // --- Decoration Tokens ---
+    decorations?: {
+        surfaceStyle?: 'glass' | 'soft' | 'outline' | 'solid'; // glass = MRB, soft = MRB-Light, outline = clean bordered
+        accentGlow?: boolean; // neon glow effect on accent elements (MRB: true, light themes: false)
+        neutralTone?: 'warm' | 'cool' | 'neutral'; // shapes auto-derived grays (warm = cream/sand, cool = slate, neutral = gray)
+    };
 }
 
 export interface TemplateGridConfig {

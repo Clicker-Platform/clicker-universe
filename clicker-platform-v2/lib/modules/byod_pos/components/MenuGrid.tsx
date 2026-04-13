@@ -11,6 +11,7 @@ import { POSItem } from '@/lib/modules/byod_pos/types';
 
 import { VariantSelectionDialog } from './VariantSelectionDialog';
 import { useSite } from '@/lib/site-context';
+import { useTemplate } from '@/components/TemplateProvider';
 
 interface MenuGridProps {
     initialItems?: POSItem[];
@@ -19,7 +20,16 @@ interface MenuGridProps {
 
 export function MenuGrid({ initialItems, initialInventoryMap }: MenuGridProps) {
     const { siteId } = useSite();
+    const { theme } = useTemplate();
     const { addToCart, itemCount } = useCart();
+
+    const isGlass = theme.decorations?.surfaceStyle === 'glass' || theme.cardStyle === 'glass';
+    const surfaceBg = isGlass ? 'rgba(255,255,255,0.05)' : (theme.colors.surfaceElevated || theme.colors.surface || '#ffffff');
+    const borderColor = isGlass ? 'rgba(255,255,255,0.15)' : (theme.colors.border || '#e5e7eb');
+    const mutedText = theme.colors.textMuted || theme.colors.foreground;
+    const subtleText = theme.colors.textSubtle || theme.colors.muted || theme.colors.foreground;
+    const primaryColor = theme.colors.primary;
+    const accentFg = theme.colors.accentForeground || '#ffffff';
     const [items, setItems] = useState<POSItem[]>(initialItems || []);
     const [inventoryMap, setInventoryMap] = useState<Record<string, InventoryItem>>(initialInventoryMap || {});
     const [inventoryById, setInventoryById] = useState<Record<string, InventoryItem>>({});
@@ -212,7 +222,7 @@ export function MenuGrid({ initialItems, initialInventoryMap }: MenuGridProps) {
             <div className="space-y-4 px-2">
                 {/* Search Bar */}
                 <div className="relative">
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2" style={{ color: subtleText }}>
                         <Search size={20} />
                     </div>
                     <input
@@ -220,7 +230,12 @@ export function MenuGrid({ initialItems, initialInventoryMap }: MenuGridProps) {
                         placeholder="Search items..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-12 pr-4 py-3 bg-white rounded-xl border-[3px] border-brand-dark focus:outline-none focus:ring-4 focus:ring-brand-dark/10 font-bold transition-shadow"
+                        className="w-full pl-12 pr-4 py-3 rounded-xl border focus:outline-none font-bold transition-shadow"
+                        style={{
+                            backgroundColor: surfaceBg,
+                            borderColor,
+                            color: theme.colors.foreground,
+                        }}
                     />
                 </div>
 
@@ -230,12 +245,11 @@ export function MenuGrid({ initialItems, initialInventoryMap }: MenuGridProps) {
                         <button
                             key={cat}
                             onClick={() => setActiveCategory(cat)}
-                            className={`
-                                px-4 py-2 rounded-full font-bold whitespace-nowrap border-[3px] transition-all
-                                ${activeCategory === cat
-                                    ? 'bg-brand-dark text-white border-brand-dark shadow-md'
-                                    : 'bg-white text-gray-700 border-brand-dark hover:bg-gray-50'}
-                            `}
+                            className="px-4 py-2 rounded-full font-bold whitespace-nowrap border transition-all"
+                            style={activeCategory === cat
+                                ? { backgroundColor: primaryColor, color: accentFg, borderColor: primaryColor }
+                                : { backgroundColor: surfaceBg, color: mutedText, borderColor }
+                            }
                         >
                             {cat}
                         </button>
@@ -247,7 +261,7 @@ export function MenuGrid({ initialItems, initialInventoryMap }: MenuGridProps) {
             {loading ? (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4">
                     {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
-                        <div key={i} className="aspect-square bg-gray-100 rounded-3xl animate-pulse" />
+                        <div key={i} className="aspect-square rounded-2xl animate-pulse" style={{ backgroundColor: borderColor }} />
                     ))}
                 </div>
             ) : (
@@ -258,8 +272,12 @@ export function MenuGrid({ initialItems, initialInventoryMap }: MenuGridProps) {
                         const isOutOfStock = !hasVariants && linkedStock && linkedStock.currentStock <= 0;
 
                         return (
-                            <div key={item.id} className={`bg-white rounded-3xl border-[3px] border-brand-dark shadow-sm overflow-hidden flex flex-col hover:-translate-y-1 hover:shadow-md transition-all duration-300 ${isOutOfStock ? 'opacity-60 grayscale' : ''}`}>
-                                <div className="aspect-square bg-gray-100 relative">
+                            <div
+                                key={item.id}
+                                className={`rounded-2xl border overflow-hidden flex flex-col hover:-translate-y-1 hover:shadow-md transition-all duration-300 ${isOutOfStock ? 'opacity-60 grayscale' : ''}`}
+                                style={{ backgroundColor: surfaceBg, borderColor }}
+                            >
+                                <div className="aspect-square relative" style={{ backgroundColor: isGlass ? 'rgba(255,255,255,0.05)' : (theme.colors.surface || '#f3f4f6') }}>
                                     {item.imageUrl ? (
                                         <NextImage
                                             src={item.imageUrl}
@@ -271,7 +289,7 @@ export function MenuGrid({ initialItems, initialInventoryMap }: MenuGridProps) {
                                             priority={index < 4}
                                         />
                                     ) : (
-                                        <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400 font-bold text-4xl uppercase">
+                                        <div className="w-full h-full flex items-center justify-center font-bold text-4xl uppercase" style={{ color: subtleText }}>
                                             {item.name.slice(0, 2)}
                                         </div>
                                     )}
@@ -283,9 +301,9 @@ export function MenuGrid({ initialItems, initialInventoryMap }: MenuGridProps) {
                                 </div>
                                 <div className="p-3 flex items-start justify-between gap-2 flex-1">
                                     <div>
-                                        <h3 className="font-bold text-gray-800 text-sm line-clamp-2 leading-tight mb-1">{item.name}</h3>
-                                        <div className="text-brand-dark font-black text-sm">
-                                            {hasVariants && <span className="text-xs text-gray-400 font-normal mr-1">from</span>}
+                                        <h3 className="font-bold text-sm line-clamp-2 leading-tight mb-1" style={{ color: theme.colors.foreground }}>{item.name}</h3>
+                                        <div className="font-black text-sm" style={{ color: primaryColor }}>
+                                            {hasVariants && <span className="text-xs font-normal mr-1" style={{ color: subtleText }}>from</span>}
                                             {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(item.price)}
                                         </div>
                                     </div>
@@ -294,7 +312,8 @@ export function MenuGrid({ initialItems, initialInventoryMap }: MenuGridProps) {
                                     <button
                                         disabled={isOutOfStock}
                                         onClick={() => handleItemClick(item, linkedStock)}
-                                        className="w-full py-3 bg-brand-dark text-white font-bold text-sm rounded-xl flex items-center justify-center gap-2 hover:bg-gray-800 disabled:bg-gray-300 transition-all duration-200 active:scale-95 hover:scale-[1.02]"
+                                        className="w-full py-3 font-bold text-sm rounded-xl flex items-center justify-center gap-2 disabled:opacity-40 transition-all duration-200 active:scale-95 hover:opacity-90"
+                                        style={{ backgroundColor: primaryColor, color: accentFg }}
                                     >
                                         <Plus size={18} /> Add
                                     </button>
@@ -303,7 +322,7 @@ export function MenuGrid({ initialItems, initialInventoryMap }: MenuGridProps) {
                         );
                     })}
                     {items.length === 0 && (
-                        <div className="col-span-full py-12 text-center text-gray-400">
+                        <div className="col-span-full py-12 text-center" style={{ color: subtleText }}>
                             No items found matching your search.
                         </div>
                     )}
@@ -316,7 +335,8 @@ export function MenuGrid({ initialItems, initialInventoryMap }: MenuGridProps) {
                     <button
                         onClick={loadMore}
                         disabled={loadingMore}
-                        className="px-6 py-3 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl shadow-sm hover:bg-gray-50 disabled:opacity-50"
+                        className="px-6 py-3 font-bold rounded-xl border transition-opacity hover:opacity-80 disabled:opacity-50"
+                        style={{ backgroundColor: surfaceBg, borderColor, color: theme.colors.foreground }}
                     >
                         {loadingMore ? 'Loading...' : 'Load More Items'}
                     </button>

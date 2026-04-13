@@ -58,7 +58,9 @@ export function SharedPageLayout({
         contact,
         socialLinks,
         showHeaderAddress,
-        hideFooterContact
+        hideFooterContact,
+        backgroundColor,
+        surfaceColor,
     } = data;
 
     // Resolve Template
@@ -84,15 +86,26 @@ export function SharedPageLayout({
 
     // Theme Color Logic
     const finalThemeColor = pageOverrides?.themeColor || themeColor;
-    const pageBackgroundColor = template.config.allowThemeColorOverride === false
-        ? template.config.colors.background
+    const isLockedTemplate = template.config.allowThemeColorOverride === false;
+    const pageBackgroundColor = isLockedTemplate
+        ? (backgroundColor || template.config.colors.background)
         : (finalThemeColor || template.config.colors.background);
+
+    // Build color overrides for locked-background templates
+    const lockedColorOverrides = isLockedTemplate ? {
+        ...(finalThemeColor ? { primary: finalThemeColor, accent: finalThemeColor } : {}),
+        ...(backgroundColor ? { background: backgroundColor } : {}),
+        ...(surfaceColor ? { surface: surfaceColor } : {}),
+    } : {};
 
     return (
         <TemplateProvider
             templateId={activeTemplateId}
             themeOverrides={{
                 borderRadius: radiusValue,
+                ...(isLockedTemplate && Object.keys(lockedColorOverrides).length > 0
+                    ? { colors: lockedColorOverrides }
+                    : {}),
                 ...pageOverrides?.customConfig
             }}
         >

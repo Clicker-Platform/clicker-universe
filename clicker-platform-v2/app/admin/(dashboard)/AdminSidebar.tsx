@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { LayoutDashboard, LogOut, Menu, X, Palette, Inbox, Box, Users, Sun, Moon, PanelLeftClose, PanelLeftOpen, User, Fingerprint, Building2, ChevronUp, Layers } from 'lucide-react';
+import { LayoutDashboard, LogOut, Menu, X, Palette, Inbox, Box, Users, Sun, Moon, PanelLeftClose, PanelLeftOpen, User, Building2, ChevronUp, ChevronDown, Layers } from 'lucide-react';
 import { collection, query, where, onSnapshot, doc } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase';
 import { signOut, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
@@ -28,7 +28,11 @@ interface NavItem {
 interface SidebarGroup {
     title: string;
     items: NavItem[];
+    isModule?: boolean;
+    moduleIcon?: any;
 }
+
+const CORE_GROUPS = ['Core'];
 
 export function AdminSidebar() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -37,8 +41,10 @@ export function AdminSidebar() {
     const [modules, setModules] = useState<ModuleDefinition[]>([]);
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [hoveredItem, setHoveredItem] = useState<{ label: string, top: number } | null>(null);
+    const [hoveredModule, setHoveredModule] = useState<{ group: SidebarGroup, top: number } | null>(null);
     const [logoHovered, setLogoHovered] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
+    const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
     const settingsRef = useRef<HTMLDivElement>(null);
     const pathname = usePathname();
     const router = useRouter();
@@ -47,11 +53,9 @@ export function AdminSidebar() {
 
     const handleLogout = async () => {
         try {
-            // Clear __session at current origin
             const isSecure = window.location.protocol === 'https:';
             const secureFlag = isSecure ? '; Secure' : '';
             document.cookie = `__session=; path=/; max-age=0; SameSite=Lax${secureFlag}`;
-            // Clear __session at domain level so all tenant subdomains are invalidated
             const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN;
             if (baseDomain && isSecure) {
                 document.cookie = `__session=; path=/; max-age=0; Domain=.${baseDomain}; SameSite=Lax; Secure`;
@@ -81,6 +85,18 @@ export function AdminSidebar() {
         localStorage.setItem('sidebar_collapsed', JSON.stringify(newValue));
     };
 
+    const toggleGroup = (title: string) => {
+        setExpandedGroups(prev => {
+            const next = new Set(prev);
+            if (next.has(title)) {
+                next.delete(title);
+            } else {
+                next.add(title);
+            }
+            return next;
+        });
+    };
+
     const isMobile = useIsMobile();
     const { permissions: userPermissions, isOwner, hasAccess } = useUser();
     const { isDark, toggle: toggleDark } = useAdminTheme();
@@ -107,30 +123,20 @@ export function AdminSidebar() {
         }
 
         const unsubscribeAuth = onAuthStateChanged(auth, (user: FirebaseUser | null) => {
-            if (unsubscribeSnapshot) {
-                unsubscribeSnapshot();
-                unsubscribeSnapshot = null;
-            }
-            if (unsubscribeBookingSnapshot) {
-                unsubscribeBookingSnapshot();
-                unsubscribeBookingSnapshot = null;
-            }
+            if (unsubscribeSnapshot) { unsubscribeSnapshot(); unsubscribeSnapshot = null; }
+            if (unsubscribeBookingSnapshot) { unsubscribeBookingSnapshot(); unsubscribeBookingSnapshot = null; }
 
             if (user) {
                 try {
                     const q = query(collection(db, 'sites', siteId, 'inbox'), where('status', '==', 'new'));
                     unsubscribeSnapshot = onSnapshot(q, (snapshot) => {
                         setUnreadCount(snapshot.size);
-                    }, (error) => {
-                        console.error("Inbox listener error:", error);
-                    });
+                    }, (error) => { console.error("Inbox listener error:", error); });
 
                     const qBookings = query(collection(db, 'sites', siteId, 'modules/reservation/bookings'), where('status', '==', 'pending'));
                     unsubscribeBookingSnapshot = onSnapshot(qBookings, (snapshot) => {
                         setNewBookingCount(snapshot.size);
-                    }, (error) => {
-                        console.error("Bookings listener error:", error);
-                    });
+                    }, (error) => { console.error("Bookings listener error:", error); });
                 } catch (e) {
                     console.error("Error setting up listeners:", e);
                 }
@@ -210,26 +216,15 @@ export function AdminSidebar() {
             let groupTitle = m.displayName || m.id;
             if (groupTitle === 'Self Order' || groupTitle === 'BYOD POS') groupTitle = 'POS';
 
-            return { title: groupTitle, items };
+            // Pick the module-level icon for the collapsed parent
+            const moduleIcon = MODULE_ICONS[m.icon] || items[0]?.icon || Box;
+
+            return { title: groupTitle, items, isModule: true, moduleIcon };
         }).filter(Boolean) as SidebarGroup[];
 
-        const groupsDef = [
-            {
-                title: 'Workspace',
-                match: (item: NavItem) => ['Overview', 'Template'].includes(item.label)
-            },
-            {
-                title: 'Site & Content',
-                match: (item: NavItem) => ['Canvas Studio', 'Services'].includes(item.label)
-            },
-        ];
+        const coreGroup: SidebarGroup = { title: 'Core', items: coreItems, isModule: false };
 
-        const groups: SidebarGroup[] = groupsDef.map(g => ({
-            title: g.title,
-            items: coreItems.filter(item => g.match(item))
-        }));
-
-        groups.push(...moduleGroups);
+        const groups: SidebarGroup[] = [coreGroup, ...moduleGroups];
         return groups.filter(g => g.items.length > 0);
     }, [modules, siteEnabledModules, tenantSlug, userPermissions, isOwner, hasAccess, isSubdomain]);
 
@@ -240,27 +235,65 @@ export function AdminSidebar() {
                 pathname === item.href ||
                 (pathname?.startsWith(item.href) && item.href !== '/admin')
             ) {
-                if (!best || item.href.length > best.href.length) {
-                    return item;
-                }
+                if (!best || item.href.length > best.href.length) return item;
             }
             return best;
         }, null as NavItem | null);
     }, [pathname, groupedNavItems]);
 
+    // Auto-expand the group that contains the active route
+    useEffect(() => {
+        if (!activeRoute) return;
+        const activeGroup = groupedNavItems.find(g => g.isModule && g.items.some(i => i.href === activeRoute.href));
+        if (activeGroup) {
+            setExpandedGroups(prev => {
+                if (prev.has(activeGroup.title)) return prev;
+                const next = new Set(prev);
+                next.add(activeGroup.title);
+                return next;
+            });
+        }
+    }, [activeRoute, groupedNavItems]);
+
     // The module group the user is currently navigating within (for mobile tab bar)
     const activeModuleGroup = useMemo(() => {
         if (!isMobile) return null;
-        // Core groups ("Workspace", "Site & Content") don't get a tab bar
-        const coreGroupTitles = ['Workspace', 'Site & Content'];
         return groupedNavItems.find(
-            g => !coreGroupTitles.includes(g.title) && g.items.some(i => i.href === activeRoute?.href)
+            g => g.isModule && g.items.some(i => i.href === activeRoute?.href)
         ) ?? null;
     }, [isMobile, groupedNavItems, activeRoute]);
 
+    const renderNavItem = (item: NavItem, inPopover = false) => {
+        const isActive = activeRoute?.href === item.href;
+        return (
+            <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setSidebarOpen(false)}
+                className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg font-semibold transition-colors text-sm relative ${
+                    isActive
+                        ? inPopover
+                            ? 'bg-studio-blue text-white'
+                            : 'bg-studio-blue/10 text-studio-blue dark:text-studio-blue-muted'
+                        : inPopover
+                            ? 'text-neutral-300 hover:bg-neutral-700 hover:text-white'
+                            : 'text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:text-gray-900 dark:hover:text-neutral-100'
+                }`}
+            >
+                <item.icon size={16} className="shrink-0" />
+                <span className="truncate">{item.label}</span>
+                {item.label === 'Bookings' && newBookingCount > 0 && (
+                    <span className={`ml-auto text-[10px] font-black px-1.5 py-0.5 rounded-full ${isActive ? 'bg-brand-green text-brand-dark' : 'bg-studio-blue text-white'}`}>
+                        {newBookingCount}
+                    </span>
+                )}
+            </Link>
+        );
+    };
+
     return (
         <>
-            {/* Mobile module tab bar — shown when inside a module on mobile */}
+            {/* Mobile module tab bar */}
             {isMobile && activeModuleGroup && (
                 <MobileModuleTabBar
                     items={activeModuleGroup.items}
@@ -272,12 +305,7 @@ export function AdminSidebar() {
             <div className="md:hidden bg-white dark:bg-neutral-900 border-b border-gray-200 dark:border-neutral-800 p-4 flex items-center justify-between sticky top-0 z-30">
                 <div className="flex items-center gap-3">
                     <div className="relative w-8 h-8">
-                        <Image
-                            src="/clicker_brand_logo.png"
-                            alt="Clicker Logo"
-                            fill
-                            className="object-contain"
-                        />
+                        <Image src="/clicker_brand_logo.png" alt="Clicker Logo" fill className="object-contain" />
                     </div>
                     <span className="font-black text-lg text-brand-dark">Clicker</span>
                 </div>
@@ -288,10 +316,7 @@ export function AdminSidebar() {
 
             {/* Overlay */}
             {sidebarOpen && (
-                <div
-                    className="fixed inset-0 bg-black/50 z-40 md:hidden backdrop-blur-sm"
-                    onClick={() => setSidebarOpen(false)}
-                />
+                <div className="fixed inset-0 bg-black/50 z-40 md:hidden backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
             )}
 
             {/* Sidebar */}
@@ -299,12 +324,11 @@ export function AdminSidebar() {
                 fixed inset-y-0 left-0 z-50 bg-white dark:bg-neutral-900 border-r border-gray-200 dark:border-neutral-800 flex flex-col transition-all duration-300 ease-in-out
                 w-full md:sticky md:top-0 md:h-screen
                 ${sidebarOpen ? 'translate-x-0 shadow-xl' : '-translate-x-full shadow-none'}
-                ${isCollapsed ? 'md:w-16' : 'md:w-64'}
+                ${isCollapsed ? 'md:w-14' : 'md:w-56'}
                 md:translate-x-0
             `}>
                 {/* Header */}
-                <div className={`py-4 flex items-center shrink-0 ${(!isCollapsed || sidebarOpen) ? 'px-6 justify-between' : 'px-6'}`}>
-                    {/* Logo — doubles as expand button when collapsed */}
+                <div className={`py-3.5 flex items-center shrink-0 ${(!isCollapsed || sidebarOpen) ? 'px-4 justify-between' : 'px-4'}`}>
                     <button
                         onClick={isCollapsed ? toggleSidebarCollapse : undefined}
                         onMouseEnter={() => isCollapsed && setLogoHovered(true)}
@@ -320,14 +344,10 @@ export function AdminSidebar() {
                             className={`object-contain rounded-full transition-opacity duration-200 ${(isCollapsed && logoHovered) ? 'opacity-0' : 'opacity-100'}`}
                         />
                         {isCollapsed && (
-                            <PanelLeftOpen
-                                size={16}
-                                className={`absolute transition-opacity duration-200 text-brand-dark dark:text-neutral-200 ${logoHovered ? 'opacity-100' : 'opacity-0'}`}
-                            />
+                            <PanelLeftOpen size={16} className={`absolute transition-opacity duration-200 text-brand-dark dark:text-neutral-200 ${logoHovered ? 'opacity-100' : 'opacity-0'}`} />
                         )}
                     </button>
 
-                    {/* Title + collapse button row (expanded only) */}
                     {(!isCollapsed || sidebarOpen) && (
                         <>
                             <span className="font-bold text-sm text-brand-dark dark:text-neutral-200 ml-2 flex-1">Clicker</span>
@@ -345,79 +365,150 @@ export function AdminSidebar() {
                     )}
                 </div>
 
-                <nav className="flex-1 overflow-y-auto px-3 pb-4 space-y-6 scrollbar-hide">
-                    {groupedNavItems.map((group) => (
-                        <div key={group.title}>
-                            {(!isCollapsed || sidebarOpen) && (
-                                <h3 className="px-3 text-xs font-semibold text-gray-400 dark:text-neutral-600 uppercase tracking-wider mb-2 truncate">
-                                    {group.title}
-                                </h3>
-                            )}
-                            {(isCollapsed && !sidebarOpen) && (
-                                <div className="h-px bg-gray-100 dark:bg-neutral-800 my-2 mx-2"></div>
-                            )}
-                            <div className="space-y-1">
-                                {group.items.map((item) => {
-                                    const isActive = activeRoute?.href === item.href;
-                                    return (
-                                        <Link
-                                            key={item.href}
-                                            href={item.href}
-                                            onClick={() => setSidebarOpen(false)}
-                                            onMouseEnter={(e) => {
-                                                if (isCollapsed && !sidebarOpen) {
-                                                    const rect = e.currentTarget.getBoundingClientRect();
-                                                    setHoveredItem({ label: item.label, top: rect.top });
-                                                }
-                                            }}
-                                            onMouseLeave={() => setHoveredItem(null)}
-                                            className={`flex items-center gap-3 px-3 py-2 rounded-xl font-bold transition-colors text-sm group relative ${isActive
-                                                ? 'bg-studio-blue text-white shadow-sm'
-                                                : 'text-gray-500 dark:text-neutral-400 hover:bg-studio-blue-muted/15 hover:text-studio-blue dark:hover:bg-studio-blue-muted/15 dark:hover:text-studio-blue-muted'
-                                                } ${(!isCollapsed || sidebarOpen) ? 'justify-between' : ''}`}
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                <item.icon size={20} className={`shrink-0 ${isActive ? 'stroke-[2.5px]' : ''}`} />
-                                                {(!isCollapsed || sidebarOpen) && <span className="truncate">{item.label}</span>}
-                                            </div>
-                                            {(!isCollapsed || sidebarOpen) && item.label === 'Bookings' && newBookingCount > 0 && (
-                                                <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full ${isActive ? 'bg-brand-green text-brand-dark' : 'bg-brand-blue text-white'}`}>
-                                                    {newBookingCount}
-                                                </span>
-                                            )}
-                                            {(isCollapsed && !sidebarOpen) && item.label === 'Bookings' && newBookingCount > 0 && (
-                                                <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-brand-blue rounded-full border-2 border-white dark:border-neutral-900"></span>
-                                            )}
-                                        </Link>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    ))}
+                {/* Nav */}
+                <nav className="flex-1 overflow-y-auto px-2 pb-4 space-y-1 scrollbar-hide">
+                    {groupedNavItems.map((group, index) => {
+                        const isCore = !group.isModule;
+                        const isExpanded = expandedGroups.has(group.title);
+                        const hasActiveItem = group.items.some(i => i.href === activeRoute?.href);
+                        const isFirstModule = group.isModule && groupedNavItems.findIndex(g => g.isModule) === index;
 
-                    {/* Tooltip for collapsed items */}
+                        if (isCore) {
+                            // Core groups: flat list, no accordion, section label when expanded
+                            return (
+                                <div key={group.title}>
+                                    {(!isCollapsed || sidebarOpen) && (
+                                        <p className="px-3 pt-3 pb-1 text-[10px] font-semibold text-gray-400 dark:text-neutral-600 uppercase tracking-wider truncate">
+                                            {group.title}
+                                        </p>
+                                    )}
+                                    {(isCollapsed && !sidebarOpen) && <div className="h-px bg-gray-100 dark:bg-neutral-800 my-2 mx-1" />}
+                                    <div className="space-y-0.5">
+                                        {group.items.map(item => {
+                                            const isActive = activeRoute?.href === item.href;
+                                            return (
+                                                <Link
+                                                    key={item.href}
+                                                    href={item.href}
+                                                    onClick={() => setSidebarOpen(false)}
+                                                    onMouseEnter={(e) => {
+                                                        if (isCollapsed && !sidebarOpen) {
+                                                            const rect = e.currentTarget.getBoundingClientRect();
+                                                            setHoveredItem({ label: item.label, top: rect.top + rect.height / 2 });
+                                                        }
+                                                    }}
+                                                    onMouseLeave={() => setHoveredItem(null)}
+                                                    className={`flex items-center gap-2.5 px-3 py-2 rounded-xl font-semibold transition-colors text-sm ${
+                                                        isActive
+                                                            ? 'bg-studio-blue text-white shadow-sm'
+                                                            : 'text-gray-500 dark:text-neutral-400 hover:bg-studio-blue-muted/15 hover:text-studio-blue dark:hover:bg-studio-blue-muted/15 dark:hover:text-studio-blue-muted'
+                                                    } ${(isCollapsed && !sidebarOpen) ? 'justify-center' : ''}`}
+                                                >
+                                                    <item.icon size={18} className="shrink-0" />
+                                                    {(!isCollapsed || sidebarOpen) && <span className="truncate">{item.label}</span>}
+                                                </Link>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            );
+                        }
+
+                        // Module groups: collapsible accordion
+                        const ModuleIcon = group.moduleIcon || Box;
+
+                        if (isCollapsed && !sidebarOpen) {
+                            return (
+                                <div key={group.title}>
+                                    {isFirstModule && <div className="h-px bg-gray-100 dark:bg-neutral-800 my-2 mx-1" />}
+                                    <div className="relative">
+                                        <button
+                                            className={`w-full flex items-center justify-center p-2 rounded-xl transition-colors ${
+                                                hasActiveItem
+                                                    ? 'bg-studio-blue/10 text-studio-blue dark:text-studio-blue-muted'
+                                                    : 'text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:text-gray-900 dark:hover:text-neutral-100'
+                                            }`}
+                                            onMouseEnter={(e) => {
+                                                const rect = e.currentTarget.getBoundingClientRect();
+                                                setHoveredModule({ group, top: rect.top });
+                                            }}
+                                            onMouseLeave={() => setHoveredModule(null)}
+                                        >
+                                            <ModuleIcon size={18} className="shrink-0" />
+                                        </button>
+                                    </div>
+                                </div>
+                            );
+                        }
+
+                        // Expanded sidebar: accordion
+                        return (
+                            <div key={group.title}>
+                                {isFirstModule && (
+                                    <p className="px-3 pt-3 pb-1 text-[10px] font-semibold text-gray-400 dark:text-neutral-600 uppercase tracking-wider truncate">
+                                        Apps
+                                    </p>
+                                )}
+                                <button
+                                    onClick={() => toggleGroup(group.title)}
+                                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl font-semibold transition-colors text-sm ${
+                                        hasActiveItem && !isExpanded
+                                            ? 'text-studio-blue dark:text-studio-blue-muted'
+                                            : 'text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:text-gray-900 dark:hover:text-neutral-100'
+                                    }`}
+                                >
+                                    <ModuleIcon size={18} className="shrink-0" />
+                                    <span className="flex-1 text-left truncate">{group.title}</span>
+                                    <ChevronDown
+                                        size={14}
+                                        className={`shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                                    />
+                                </button>
+
+                                {isExpanded && (
+                                    <div className="ml-3 pl-3 border-l border-gray-200 dark:border-neutral-800 mt-0.5 mb-1 space-y-0.5">
+                                        {group.items.map(item => renderNavItem(item))}
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
+
+                    {/* Collapsed: flat item tooltip */}
                     {(isCollapsed && !sidebarOpen) && hoveredItem && (
                         <div
-                            className="fixed left-16 z-[60] bg-gray-900 text-white text-sm font-bold px-3 py-1.5 rounded-lg shadow-xl animate-in fade-in slide-in-from-left-2 duration-150 pointer-events-none whitespace-nowrap"
-                            style={{ top: hoveredItem.top + 6 }}
+                            className="fixed left-14 z-[60] bg-gray-900 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-xl animate-in fade-in duration-150 pointer-events-none whitespace-nowrap -translate-y-1/2"
+                            style={{ top: hoveredItem.top }}
                         >
                             {hoveredItem.label}
-                            <div className="absolute top-1/2 -left-1 -translate-y-1/2 border-4 border-transparent border-r-gray-900" />
+                            <div className="absolute top-1/2 -left-1.5 -translate-y-1/2 border-4 border-transparent border-r-gray-900" />
+                        </div>
+                    )}
+
+                    {/* Collapsed: module popover */}
+                    {(isCollapsed && !sidebarOpen) && hoveredModule && (
+                        <div
+                            className="fixed left-14 z-[60] bg-neutral-900 border border-neutral-700 rounded-xl shadow-2xl p-1.5 min-w-[160px] animate-in fade-in duration-150"
+                            style={{ top: hoveredModule.top }}
+                            onMouseEnter={() => {/* keep open */}}
+                            onMouseLeave={() => setHoveredModule(null)}
+                        >
+                            <p className="px-3 py-1 text-[10px] font-bold text-neutral-500 uppercase tracking-wider">
+                                {hoveredModule.group.title}
+                            </p>
+                            {hoveredModule.group.items.map(item => renderNavItem(item, true))}
                         </div>
                     )}
                 </nav>
 
                 {/* Footer */}
-                <div className="p-3 border-t border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 shrink-0">
-                    {/* Collapsed: stacked icons. Expanded: row with Settings + Inbox */}
+                <div className="p-2 border-t border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 shrink-0">
                     <div className={`${(isCollapsed && !sidebarOpen) ? 'flex flex-col gap-1 items-center' : 'flex items-center gap-1'}`}>
 
                         {/* Settings button + popover */}
                         <div ref={settingsRef} className={`relative ${(isCollapsed && !sidebarOpen) ? 'w-full' : 'flex-1 min-w-0'}`}>
-                            {/* Settings popover */}
                             {settingsOpen && (
                                 <div className={`absolute z-50 bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-xl shadow-xl p-1.5 min-w-[200px] ${isCollapsed && !sidebarOpen ? 'left-full ml-2 bottom-0' : 'bottom-full mb-2 left-0'}`}>
-                                    {/* Nav links */}
                                     {[
                                         { icon: User, label: 'Account', href: '/admin/settings/account' },
                                         { icon: Building2, label: 'Business', href: '/admin/settings/business' },
@@ -441,7 +532,6 @@ export function AdminSidebar() {
 
                                     <div className="my-1 h-px bg-gray-100 dark:bg-neutral-700" />
 
-                                    {/* Utility actions */}
                                     <button
                                         onClick={() => { toggleDark(); }}
                                         className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-bold text-gray-600 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-700 hover:text-brand-dark dark:hover:text-neutral-100 transition-colors"
@@ -462,9 +552,9 @@ export function AdminSidebar() {
                             <button
                                 onClick={() => setSettingsOpen(prev => !prev)}
                                 title="Settings"
-                                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl font-bold transition-colors text-sm relative ${settingsOpen ? 'bg-gray-100 dark:bg-neutral-800 text-brand-dark dark:text-neutral-100' : 'text-gray-500 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800 hover:text-brand-dark dark:hover:text-neutral-200'} ${(isCollapsed && !sidebarOpen) ? 'justify-center' : ''}`}
+                                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl font-semibold transition-colors text-sm relative ${settingsOpen ? 'bg-gray-100 dark:bg-neutral-800 text-brand-dark dark:text-neutral-100' : 'text-gray-500 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800 hover:text-brand-dark dark:hover:text-neutral-200'} ${(isCollapsed && !sidebarOpen) ? 'justify-center' : ''}`}
                             >
-                                <User size={20} className="shrink-0" />
+                                <User size={18} className="shrink-0" />
                                 {(!isCollapsed || sidebarOpen) && (
                                     <>
                                         <span className="flex-1 text-left truncate">Settings</span>
@@ -474,13 +564,13 @@ export function AdminSidebar() {
                             </button>
                         </div>
 
-                        {/* Inbox shortcut button */}
+                        {/* Inbox */}
                         <button
                             onClick={() => openInboxPanel()}
                             title="Inbox"
-                            className={`relative flex items-center justify-center px-3 py-2 rounded-xl font-bold text-gray-500 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800 hover:text-brand-dark dark:hover:text-neutral-200 transition-colors shrink-0 ${(isCollapsed && !sidebarOpen) ? 'w-full' : ''}`}
+                            className={`relative flex items-center justify-center px-3 py-2 rounded-xl font-semibold text-gray-500 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800 hover:text-brand-dark dark:hover:text-neutral-200 transition-colors shrink-0 ${(isCollapsed && !sidebarOpen) ? 'w-full' : ''}`}
                         >
-                            <Inbox size={20} />
+                            <Inbox size={18} />
                             {unreadCount > 0 && (
                                 <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-neutral-900" />
                             )}
@@ -489,7 +579,7 @@ export function AdminSidebar() {
                 </div>
             </aside>
 
-            {/* Inbox panel (controlled via InboxPanelContext) */}
+            {/* Inbox panel */}
             <InboxPanel sidebarCollapsed={isCollapsed} />
         </>
     );

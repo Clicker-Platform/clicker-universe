@@ -32,7 +32,16 @@ const templateComponents: Record<string, any> = {
     },
     'mrb': {
         Header: MrbHeader,
-        Background: () => null, // Mr Brightside has no background decorations based on Stitch input
+        Background: () => null,
+        Blocks: {
+            Hero: MrbHero,
+            QuickActions: MrbQuickActions,
+            OperatingHours: MrbOperatingHours
+        }
+    },
+    'mrb-light': {
+        Header: MrbHeader,
+        Background: () => null,
         Blocks: {
             Hero: MrbHero,
             QuickActions: MrbQuickActions,

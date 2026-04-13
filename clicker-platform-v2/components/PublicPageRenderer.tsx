@@ -58,6 +58,8 @@ export interface PublicPageProps {
         homeBlockOrder: string[];
         themeColor?: string;
         accentColor?: string;
+        backgroundColor?: string;
+        surfaceColor?: string;
         hiddenBlockIds?: string[];
         galleryTitle?: string;
         borderRadius?: 'small' | 'medium' | 'large';

@@ -40,6 +40,7 @@ export const TemplateProvider: React.FC<TemplateProviderProps> = ({ templateId, 
                 const doc = await fetchTemplate(templateId);
 
                 if (doc && isMounted) {
+                    const lockedColors = staticDef.config.allowThemeColorOverride === false;
 
                     setActiveDefinition({
                         id: doc.id,
@@ -49,12 +50,19 @@ export const TemplateProvider: React.FC<TemplateProviderProps> = ({ templateId, 
                         config: {
                             ...staticDef.config,
                             ...doc.config,
-                            // Deep merge specific nested objects if needed (like layout)
-                            // Special Case: For 'shuvo' and 'mrb', enforce strict layout (ignore DB for now to prevent hydration mismatches/hidden nav)
-                            layout: (['shuvo', 'mrb'].includes(doc.id) ? staticDef.config.layout : {
+                            // If the template locks its colors, always use static definition colors —
+                            // never let saved DB values overwrite background, surface, border, etc.
+                            colors: lockedColors
+                                ? staticDef.config.colors
+                                : { ...staticDef.config.colors, ...doc.config.colors },
+                            layout: (['shuvo', 'mrb', 'mrb-light'].includes(doc.id) ? staticDef.config.layout : {
                                 ...staticDef.config.layout,
                                 ...(doc.config.layout || {})
                             }),
+                            decorations: {
+                                ...staticDef.config.decorations,
+                                ...(doc.config.decorations || {})
+                            },
                             custom: {
                                 ...(staticDef.config.custom || {}),
                                 ...(doc.config.custom || {})

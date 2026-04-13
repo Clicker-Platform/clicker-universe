@@ -107,7 +107,7 @@ export function InboxPanel({ sidebarCollapsed }: { sidebarCollapsed?: boolean })
         : null;
 
     const newCount = submissions.filter(s => s.status === 'new').length;
-    const leftOffset = sidebarCollapsed ? 'md:left-16' : 'md:left-64';
+    const leftOffset = sidebarCollapsed ? 'md:left-14' : 'md:left-56';
 
     return (
         <>
@@ -118,7 +118,7 @@ export function InboxPanel({ sidebarCollapsed }: { sidebarCollapsed?: boolean })
             />
 
             {/* Panel */}
-            <div className={`fixed inset-y-0 left-0 ${leftOffset} z-[200] w-[360px] bg-white dark:bg-neutral-900 border-r border-gray-200 dark:border-neutral-800 shadow-xl flex flex-col`}>
+            <div className={`fixed inset-y-0 left-0 ${leftOffset} z-40 w-[360px] bg-white dark:bg-neutral-900 border-r border-gray-200 dark:border-neutral-800 shadow-xl flex flex-col`}>
                 {/* Panel header */}
                 <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-neutral-800 shrink-0">
                     <div className="flex items-center gap-2">
