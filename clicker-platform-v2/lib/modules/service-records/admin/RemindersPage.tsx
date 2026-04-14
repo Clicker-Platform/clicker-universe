@@ -132,10 +132,7 @@ export default function RemindersPage() {
                 </div>
             )}
 
-            <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">Reminders</h1>
-                <p className="text-sm text-gray-500 dark:text-neutral-500 mt-0.5">Configure notification reminders sent after service completion.</p>
-            </div>
+            <h1 className="hidden md:block text-2xl font-bold text-gray-900 dark:text-neutral-100">Reminders</h1>
 
             {/* Master toggle */}
             <div className="bg-white dark:bg-neutral-900 p-5 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm flex items-center justify-between">

@@ -58,16 +58,8 @@ export default function MembershipSettingsPage() {
 
     return (
         <div className="max-w-4xl">
-            <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-brand-dark/5 rounded-xl flex items-center justify-center text-brand-dark">
-                        <SettingsIcon size={24} />
-                    </div>
-                    <div>
-                        <h1 className="text-2xl font-black text-brand-dark">Membership Settings</h1>
-                        <p className="text-gray-500 dark:text-neutral-500">Configure your loyalty program and membership rules.</p>
-                    </div>
-                </div>
+            <div className="hidden md:flex items-center justify-between mb-8">
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">Membership Settings</h1>
                 {!canEdit && (
                     <div className="bg-amber-50 text-amber-700 px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 border border-amber-100">
                         <Lock size={16} />
@@ -84,7 +76,7 @@ export default function MembershipSettingsPage() {
                 </div>
             )}
 
-            <div className="bg-white dark:bg-neutral-900 rounded-3xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden flex flex-col min-h-[600px]">
+            <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden flex flex-col min-h-[600px]">
                 <div className={`flex-1 overflow-auto p-8 space-y-8 ${!canEdit ? 'opacity-80 pointer-events-none grayscale-[0.5]' : ''}`}>
                     {/* General Settings */}
                     <section>

@@ -15,8 +15,8 @@ export const templateDefinitions: Record<string, Omit<TemplateDefinition, 'compo
                 border: '#0E3B2E',
             },
             fonts: {
-                heading: 'var(--font-jakarta), sans-serif',
-                body: 'var(--font-jakarta), sans-serif',
+                heading: 'var(--font-inter), sans-serif',
+                body: 'var(--font-inter), sans-serif',
             },
             borderRadius: '1.5rem',
             cardStyle: 'brutalist',
@@ -145,7 +145,7 @@ export const templateDefinitions: Record<string, Omit<TemplateDefinition, 'compo
             },
             fonts: {
                 heading: 'var(--font-playfair), serif', // Assuming Playfair exists, else fallback to Serif
-                body: 'var(--font-jakarta), sans-serif',
+                body: 'var(--font-inter), sans-serif',
             },
             borderRadius: '1rem',
             cardStyle: 'clean',

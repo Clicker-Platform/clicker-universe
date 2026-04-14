@@ -106,7 +106,7 @@ export default function ServiceTypesPage() {
                             categoryFilter === cat ? 'bg-gray-900 dark:bg-neutral-100 text-white dark:text-neutral-900' : 'bg-gray-100 dark:bg-neutral-800 text-gray-600 dark:text-neutral-400 hover:bg-gray-200 dark:hover:bg-neutral-700'
                         }`}
                     >
-                        {cat}
+                        {cat.charAt(0).toUpperCase() + cat.slice(1).toLowerCase()}
                     </button>
                 ))}
             </div>

@@ -111,15 +111,12 @@ export default function AgentSettingsPage() {
     return (
         <div className="space-y-6 max-w-4xl pb-20">
             {/* Header */}
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight">AI Sales Agent</h1>
-                    <p className="text-gray-500 dark:text-neutral-500 mt-1">Configure your AI assistant for customer interaction</p>
-                </div>
+            <div className="hidden md:flex items-center justify-between">
+                <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-neutral-100">AI Sales Agent</h1>
                 <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="flex items-center gap-2 px-6 py-2.5 bg-studio-blue text-white rounded-xl font-bold hover:opacity-90 transition disabled:opacity-50"
+                    className="flex items-center gap-1.5 bg-studio-blue text-white px-3 py-2 rounded-lg text-sm font-semibold transition-colors hover:bg-studio-blue/90 disabled:opacity-50 active:scale-95"
                 >
                     {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                     Save Changes

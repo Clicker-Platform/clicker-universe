@@ -35,7 +35,7 @@ export default function ServiceStep({ services, onSelect, theme, pricingDisplay 
         <div className="space-y-4">
             {/* Sticky Header */}
             <div
-                className="sticky top-0 z-10 pb-2 border-b -mx-6 px-6 pt-2"
+                className="sticky top-0 z-10 pb-2 border-b -mx-4 px-4 sm:-mx-6 sm:px-6 pt-2"
                 style={{ backgroundColor: isGlass ? 'rgba(0,0,0,0.4)' : surfaceBg, borderColor }}
             >
                 <div className="space-y-3">

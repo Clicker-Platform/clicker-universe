@@ -31,7 +31,7 @@ export const ResponsiveNavBar: React.FC<ResponsiveNavBarProps> = ({
     pageTitle,
 }) => {
     const router = useRouter();
-    const { theme } = useTemplate();
+    const { theme, templateId } = useTemplate();
     const deviceView = useDeviceView();
     const isPreview = deviceView !== 'responsive';
     const { layout } = theme;
@@ -182,8 +182,8 @@ export const ResponsiveNavBar: React.FC<ResponsiveNavBarProps> = ({
                     {(topNav.length > 0 || navActions.cta?.enabled) && <button
                         type="button"
                         onClick={(e) => { e.preventDefault(); setIsMenuOpen(!isMenuOpen); }}
-                        className={`${forceMobile ? 'block' : 'lg:hidden'} p-2 rounded-xl border transition-all`}
-                        style={{
+                        className={`${forceMobile ? 'block' : 'lg:hidden'} p-2 transition-all ${templateId === 'mrb-light' ? '' : 'rounded-xl border'}`}
+                        style={templateId === 'mrb-light' ? { color: theme.colors.foreground } : {
                             backgroundColor: `${theme.colors.surface || theme.colors.background}`,
                             borderColor: navBorder,
                             color: textMuted,

@@ -67,11 +67,8 @@ export default function KDSClient({ initialOrders = [] }: { initialOrders?: POSO
 
     return (
         <div>
-            <div className="flex items-center gap-4 mb-8">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100 mb-1">Kitchen display</h1>
-                    <p className="text-gray-600 dark:text-neutral-400 font-medium">Order fulfillment & production queue</p>
-                </div>
+            <div className="hidden md:flex items-center gap-4 mb-8">
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">Kitchen display</h1>
                 <div className="ml-auto flex items-center gap-2">
                     <span className="bg-studio-blue text-white px-3 py-1 rounded-full font-bold text-sm">
                         {kdsOrders.length} Active

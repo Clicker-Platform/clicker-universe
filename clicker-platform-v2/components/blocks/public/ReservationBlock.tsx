@@ -91,7 +91,7 @@ export const ReservationBlock = ({ data, siteId, initialServices, initialStaff, 
     // Embed Mode
     return (
         <div className={`
-            container mx-auto px-4
+            container mx-auto px-4 sm:px-6
             ${isGlass
                 ? 'bg-black/20 backdrop-blur-md border border-white/10 shadow-xl'
                 : isClean

@@ -140,7 +140,7 @@ export default function MemberDetailsPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Profile Card */}
                 <div className="md:col-span-1 space-y-6">
-                    <div className="bg-white dark:bg-neutral-900 p-6 rounded-3xl shadow-sm border border-gray-200 dark:border-neutral-800 text-center">
+                    <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-neutral-800 text-center">
                         <div className="w-24 h-24 mx-auto bg-blue-100 dark:bg-blue-950/30 rounded-full flex items-center justify-center text-3xl font-bold text-blue-600 dark:text-blue-400 mb-4">
                             {member.fullName.charAt(0)}
                         </div>
@@ -169,7 +169,7 @@ export default function MemberDetailsPage() {
                         </div>
                     </div>
 
-                    <div className="bg-white dark:bg-neutral-900 p-6 rounded-3xl shadow-sm border border-gray-200 dark:border-neutral-800">
+                    <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-neutral-800">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="font-bold text-gray-700 dark:text-neutral-300">Actions</h3>
                             <button
@@ -213,7 +213,7 @@ export default function MemberDetailsPage() {
                 </div>
 
                 {/* History */}
-                <div className="md:col-span-2 bg-white dark:bg-neutral-900 rounded-3xl shadow-sm border border-gray-200 dark:border-neutral-800 overflow-hidden">
+                <div className="md:col-span-2 bg-white dark:bg-neutral-900 rounded-2xl shadow-sm border border-gray-200 dark:border-neutral-800 overflow-hidden">
                     <div className="p-6 border-b border-gray-100 dark:border-neutral-800">
                         <h3 className="font-bold text-gray-800 dark:text-neutral-200">Transaction History</h3>
                     </div>

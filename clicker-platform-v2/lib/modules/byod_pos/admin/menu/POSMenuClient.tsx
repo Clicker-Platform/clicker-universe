@@ -216,22 +216,28 @@ export default function POSMenuClient({ initialItems = [] }: POSMenuClientProps)
 
     return (
         <div>
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100 mb-1">Menu manager</h1>
-                    <p className="text-gray-600 dark:text-neutral-400 font-medium">Manage your product catalog</p>
-                </div>
+            <div className="hidden md:flex md:items-center justify-between gap-4 mb-8">
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">Menu manager</h1>
                 <button
                     onClick={openAddDialog}
-                    className="flex items-center gap-2 bg-studio-blue text-white px-6 py-3 rounded-xl font-bold hover:bg-studio-blue/85 transition-all active:scale-95"
+                    className="flex items-center gap-1.5 bg-studio-blue text-white px-3 py-2 rounded-lg text-sm font-semibold transition-colors hover:bg-studio-blue/90 active:scale-95"
                 >
-                    <Plus size={20} /> Add Item
+                    <Plus size={15} /> Add Item
                 </button>
             </div>
 
+            {/* Mobile FAB */}
+            <button
+                onClick={openAddDialog}
+                className="md:hidden fixed bottom-20 right-4 z-30 w-14 h-14 bg-studio-blue text-white rounded-full shadow-lg flex items-center justify-center active:scale-95 transition-transform"
+                style={{ marginBottom: 'env(safe-area-inset-bottom)' }}
+                aria-label="Add Item"
+            >
+                <Plus size={24} />
+            </button>
 
-            {/* Brutalist Unified Container */}
-            <div className="bg-white dark:bg-neutral-900 rounded-3xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden flex flex-col min-h-[600px]">
+            {/* Unified Container */}
+            <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden flex flex-col min-h-[600px]">
                 {/* Header Controls */}
                 <div className="p-4 border-b border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 flex flex-col xl:flex-row gap-4 justify-between items-start xl:items-center">
                     {/* Category Filter */}

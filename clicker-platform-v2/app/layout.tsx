@@ -1,19 +1,12 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, Inter, Space_Mono } from "next/font/google";
+import { Figtree, Space_Mono } from "next/font/google";
 import { Toaster } from 'sonner';
 import "./globals.css";
 
-const jakarta = Plus_Jakarta_Sans({
+const figtree = Figtree({
   subsets: ["latin"],
   variable: "--font-jakarta",
   weight: ['400', '500', '600', '700', '800'],
-  display: 'swap',
-});
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  weight: ['400', '500', '600', '700'],
   display: 'swap',
 });
 
@@ -90,7 +83,7 @@ export default async function RootLayout({
       </head>
       <body
         suppressHydrationWarning
-        className={`${jakarta.variable} ${inter.variable} ${spaceMono.variable} antialiased font-sans selection:bg-brand-dark selection:text-brand-green`}
+        className={`${figtree.variable} ${spaceMono.variable} antialiased font-sans selection:bg-brand-dark selection:text-brand-green`}
       >
         <SiteProvider siteId={siteId} tenantSlug={tenantSlug} isSubdomain={isSubdomain}>
           <ThemeRegistry initialSettings={settings} />

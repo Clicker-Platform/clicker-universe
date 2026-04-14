@@ -91,21 +91,26 @@ export function SharedPageLayout({
         ? (backgroundColor || template.config.colors.background)
         : (finalThemeColor || template.config.colors.background);
 
-    // Build color overrides for locked-background templates
-    const lockedColorOverrides = isLockedTemplate ? {
+    // Build color overrides
+    const colorOverrides = isLockedTemplate ? {
+        // Locked templates: only primary/accent + optional background/surface
         ...(finalThemeColor ? { primary: finalThemeColor, accent: finalThemeColor } : {}),
         ...(backgroundColor ? { background: backgroundColor } : {}),
         ...(surfaceColor ? { surface: surfaceColor } : {}),
-    } : {};
+    } : {
+        // Standard templates: apply all user-configured color fields
+        ...(finalThemeColor ? { primary: finalThemeColor } : {}),
+        ...(data.accentColor ? { foreground: data.accentColor } : {}),
+        ...(backgroundColor ? { background: backgroundColor } : {}),
+        ...(surfaceColor ? { surface: surfaceColor } : {}),
+    };
 
     return (
         <TemplateProvider
             templateId={activeTemplateId}
             themeOverrides={{
                 borderRadius: radiusValue,
-                ...(isLockedTemplate && Object.keys(lockedColorOverrides).length > 0
-                    ? { colors: lockedColorOverrides }
-                    : {}),
+                ...(Object.keys(colorOverrides).length > 0 ? { colors: colorOverrides } : {}),
                 ...pageOverrides?.customConfig
             }}
         >

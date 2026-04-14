@@ -52,24 +52,21 @@ export default function POSSettingsPage() {
 
     return (
         <div className="space-y-8">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100 mb-1">POS settings</h1>
-                    <p className="text-gray-600 dark:text-neutral-400 font-medium">Configure POS system</p>
-                </div>
+            <div className="hidden md:flex md:items-center justify-between gap-4">
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">POS settings</h1>
                 <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="flex items-center gap-2 bg-studio-blue text-white px-6 py-3 rounded-xl font-bold hover:bg-studio-blue/85 disabled:bg-gray-400 transition-all active:scale-95"
+                    className="flex items-center gap-1.5 bg-studio-blue text-white px-3 py-2 rounded-lg text-sm font-semibold transition-colors hover:bg-studio-blue/90 disabled:opacity-50 active:scale-95"
                 >
-                    {saving ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
+                    {saving ? <Loader2 className="animate-spin" size={15} /> : <Save size={15} />}
                     Save Changes
                 </button>
             </div>
 
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                 {/* Operation Mode */}
-                <div className="bg-white dark:bg-neutral-900 rounded-3xl border border-gray-200 dark:border-neutral-800 p-6 shadow-sm">
+                <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 p-6 shadow-sm">
                     <div className="flex items-center gap-3 mb-6">
                         <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 border border-blue-200">
                             <LayoutTemplate size={20} />
@@ -117,7 +114,7 @@ export default function POSSettingsPage() {
                 </div>
 
                 {/* Table Management */}
-                <div className="bg-white dark:bg-neutral-900 rounded-3xl border border-gray-200 dark:border-neutral-800 p-6 shadow-sm">
+                <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 p-6 shadow-sm">
                     <div className="flex items-center gap-3 mb-6">
                         <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 border border-purple-200">
                             <Hash size={20} />
@@ -143,7 +140,7 @@ export default function POSSettingsPage() {
                 </div>
 
                 {/* Payment Methods */}
-                <div className="col-span-1 xl:col-span-2 bg-white dark:bg-neutral-900 rounded-3xl border border-gray-200 dark:border-neutral-800 p-6 shadow-sm">
+                <div className="col-span-1 xl:col-span-2 bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 p-6 shadow-sm">
                     <div className="flex items-center gap-3 mb-6">
                         <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-950/30 flex items-center justify-center text-green-600 dark:text-green-400 border border-green-200 dark:border-green-900/50">
                             <CreditCard size={20} />
@@ -206,7 +203,7 @@ export default function POSSettingsPage() {
                 </div>
 
                 {/* Tax & Service Charge */}
-                <div className="col-span-1 xl:col-span-2 bg-white dark:bg-neutral-900 rounded-3xl border border-gray-200 dark:border-neutral-800 p-6 shadow-sm">
+                <div className="col-span-1 xl:col-span-2 bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 p-6 shadow-sm">
                     <div className="flex items-center gap-3 mb-6">
                         <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 border border-orange-200">
                             <span className="font-bold text-lg">%</span>

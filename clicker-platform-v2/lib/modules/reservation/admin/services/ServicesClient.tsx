@@ -40,16 +40,13 @@ export default function ServicesClient({ initialServices = [] }: ServicesClientP
     return (
         <div>
             <ReservationBreadcrumb currentPage="Services" />
-            <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100 mb-2">Services</h1>
-                    <p className="text-gray-600 dark:text-neutral-400 font-medium">Bookable services from the shared catalog</p>
-                </div>
+            <div className="hidden md:flex md:items-center justify-between mb-6 gap-4">
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">Services</h1>
                 <Link
                     href="/admin/services"
-                    className="bg-studio-blue text-white px-6 py-2.5 rounded-xl font-bold hover:bg-studio-blue/85 flex items-center gap-2 shadow-lg hover:shadow-xl transition-all active:scale-95"
+                    className="flex items-center gap-1.5 bg-studio-blue text-white px-3 py-2 rounded-lg text-sm font-semibold transition-colors hover:bg-studio-blue/90 active:scale-95"
                 >
-                    <ExternalLink size={18} /> Manage in Services Catalog
+                    <ExternalLink size={15} /> Manage in Catalog
                 </Link>
             </div>
 
@@ -62,7 +59,7 @@ export default function ServicesClient({ initialServices = [] }: ServicesClientP
             </div>
 
             {/* Services container */}
-            <div className="bg-white dark:bg-neutral-900 rounded-3xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden flex flex-col min-h-[500px]">
+            <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden flex flex-col min-h-[500px]">
                 {/* Header Controls */}
                 <div className="p-4 border-b border-gray-100 dark:border-neutral-800 flex flex-col md:flex-row gap-4">
                     <div className="relative flex-1">

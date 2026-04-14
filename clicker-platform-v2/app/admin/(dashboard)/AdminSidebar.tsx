@@ -303,13 +303,10 @@ export function AdminSidebar() {
 
             {/* Mobile Header */}
             <div className="md:hidden bg-white dark:bg-neutral-900 border-b border-gray-200 dark:border-neutral-800 p-4 flex items-center justify-between sticky top-0 z-30">
-                <div className="flex items-center gap-3">
-                    <div className="relative w-8 h-8">
-                        <Image src="/clicker_brand_logo.png" alt="Clicker Logo" fill className="object-contain" />
-                    </div>
-                    <span className="font-black text-lg text-brand-dark">Clicker</span>
-                </div>
-                <button onClick={() => setSidebarOpen(true)} className="p-2 text-brand-dark hover:bg-gray-100 rounded-lg">
+                <span className="font-black text-lg text-brand-dark dark:text-neutral-100">
+                    {activeRoute?.label ?? 'Clicker'}
+                </span>
+                <button onClick={() => setSidebarOpen(true)} className="p-2 text-brand-dark hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-lg">
                     <Menu size={24} />
                 </button>
             </div>

@@ -362,13 +362,13 @@ export default function LinksManager({ initialLinks }: LinksClientProps) {
 
     return (
         <div className="max-w-4xl">
-            <div className="flex items-center justify-between mb-8">
+            <div className="hidden md:flex items-center justify-between mb-8">
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">Manage Links</h1>
                 <button
                     onClick={() => setShowSettings(!showSettings)}
-                    className="flex items-center gap-2 bg-gray-100 dark:bg-neutral-800 px-4 py-2 rounded-xl font-bold text-gray-700 dark:text-neutral-300 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors"
+                    className="flex items-center gap-1.5 bg-gray-100 dark:bg-neutral-800 px-3 py-2 rounded-lg text-sm font-semibold text-gray-700 dark:text-neutral-300 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors border border-gray-200 dark:border-neutral-700"
                 >
-                    <Settings size={18} /> Configure
+                    <Settings size={15} /> Configure
                 </button>
             </div>
 

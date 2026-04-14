@@ -212,7 +212,7 @@ export default function BookingForm({
         >
             {/* Header */}
             <div
-                className="p-6 rounded-t-2xl border-b"
+                className="p-4 sm:p-6 rounded-t-2xl border-b"
                 style={{
                     backgroundColor: isGlass ? 'rgba(255,255,255,0.05)' : theme.colors.foreground,
                     borderColor: isGlass ? 'rgba(255,255,255,0.1)' : 'transparent',
@@ -234,7 +234,11 @@ export default function BookingForm({
                         </button>
                     )}
                     <span className="font-bold text-sm opacity-70" style={{ color: theme.colors.background }}>
-                        Step {step} of {selectedService?.bookingType === 'request' ? (settings.allowStaffSelection ? 3 : 2) : 4}
+                        Step {step} of {
+                            selectedService?.bookingType === 'request'
+                                ? (settings.allowStaffSelection ? 3 : 2)
+                                : (settings.allowStaffSelection ? 4 : 3)
+                        }
                     </span>
                     <div className="w-6" />
                 </div>
@@ -247,7 +251,7 @@ export default function BookingForm({
             </div>
 
             {/* Content */}
-            <div className="p-6 min-h-[400px]" style={{ color: theme.colors.foreground }}>
+            <div className="p-4 sm:p-6" style={{ color: theme.colors.foreground }}>
                 {step === 1 && (
                     <ServiceStep
                         services={services}

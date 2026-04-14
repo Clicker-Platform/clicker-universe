@@ -195,26 +195,33 @@ export default function VehiclesPage() {
 
             {/* Header */}
             <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">Vehicles</h1>
-                    <p className="text-sm text-gray-500 dark:text-neutral-500 mt-0.5">Vehicle profiles and car type catalog.</p>
-                </div>
+                <h1 className="hidden md:block text-2xl font-bold text-gray-900 dark:text-neutral-100">Vehicles</h1>
                 {tab === 'vehicles' ? (
                     <button
                         onClick={openCreateVehicle}
-                        className="flex items-center gap-2 bg-studio-blue text-white px-4 py-2.5 rounded-xl text-sm font-medium"
+                        className="hidden md:flex items-center gap-1.5 bg-studio-blue text-white px-3 py-2 rounded-lg text-sm font-semibold transition-colors hover:bg-studio-blue/90 active:scale-95"
                     >
                         <Plus className="w-4 h-4" /> Add Vehicle
                     </button>
                 ) : (
                     <button
                         onClick={openCreateCarType}
-                        className="flex items-center gap-2 bg-studio-blue text-white px-4 py-2.5 rounded-xl text-sm font-medium"
+                        className="hidden md:flex items-center gap-1.5 bg-studio-blue text-white px-3 py-2 rounded-lg text-sm font-semibold transition-colors hover:bg-studio-blue/90 active:scale-95"
                     >
                         <Plus className="w-4 h-4" /> Add Car Type
                     </button>
                 )}
             </div>
+
+            {/* Mobile FAB */}
+            <button
+                onClick={tab === 'vehicles' ? openCreateVehicle : openCreateCarType}
+                className="md:hidden fixed bottom-20 right-4 z-30 w-14 h-14 bg-studio-blue text-white rounded-full shadow-lg flex items-center justify-center active:scale-95 transition-transform"
+                style={{ marginBottom: 'env(safe-area-inset-bottom)' }}
+                aria-label={tab === 'vehicles' ? 'Add Vehicle' : 'Add Car Type'}
+            >
+                <Plus className="w-6 h-6" />
+            </button>
 
             {/* Tabs */}
             <div className="flex gap-1 bg-gray-100 dark:bg-neutral-800 p-1 rounded-xl w-fit">

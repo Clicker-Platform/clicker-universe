@@ -660,32 +660,42 @@ export default function ServiceCatalogClient({ initialItems = [] }: Props) {
 
     return (
         <div>
-            <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100 mb-1">Services</h1>
-                    <p className="text-gray-600 dark:text-neutral-400 font-medium">Shared service catalog — used by Reservation and Service Records</p>
-                </div>
-                <div className="flex items-center gap-3">
+            {/* Desktop header */}
+            <div className="hidden md:flex md:items-center justify-between mb-8 gap-4">
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">Services</h1>
+                <div className="flex items-center gap-2">
                     {isOwner && (
                         <button
                             onClick={() => setIsCategoryManagerOpen(true)}
-                            className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold border border-gray-200 dark:border-neutral-700 text-gray-600 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800 transition-all text-sm"
+                            className="flex items-center gap-1.5 px-3 py-2 rounded-lg font-semibold border border-gray-200 dark:border-neutral-700 text-gray-600 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors text-sm"
                         >
-                            <Settings2 size={16} /> Categories
+                            <Settings2 size={15} /> Categories
                         </button>
                     )}
                     {isOwner && (
                         <button
                             onClick={openCreate}
-                            className="bg-studio-blue text-white px-6 py-2.5 rounded-xl font-bold hover:bg-studio-blue/85 flex items-center gap-2 shadow-lg hover:shadow-xl transition-all cursor-pointer active:scale-95"
+                            className="flex items-center gap-1.5 px-3 py-2 rounded-lg font-semibold text-sm bg-studio-blue text-white hover:bg-studio-blue/90 transition-colors active:scale-95"
                         >
-                            <Plus size={20} /> Add Service
+                            <Plus size={15} /> Add Service
                         </button>
                     )}
                 </div>
             </div>
 
-            <div className="bg-white dark:bg-neutral-900 rounded-3xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden">
+            {/* Mobile FAB */}
+            {isOwner && (
+                <button
+                    onClick={openCreate}
+                    className="md:hidden fixed bottom-6 right-4 z-30 w-14 h-14 bg-studio-blue text-white rounded-full shadow-lg flex items-center justify-center active:scale-95 transition-transform"
+                    style={{ marginBottom: 'env(safe-area-inset-bottom)' }}
+                    aria-label="Add Service"
+                >
+                    <Plus size={24} />
+                </button>
+            )}
+
+            <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden">
                 {/* Search */}
                 <div className="p-4 border-b border-gray-100 dark:border-neutral-800">
                     <div className="relative">
@@ -711,7 +721,7 @@ export default function ServiceCatalogClient({ initialItems = [] }: Props) {
                                 : 'bg-gray-100 dark:bg-neutral-800 text-gray-500 dark:text-neutral-500 hover:bg-gray-200 dark:hover:bg-neutral-700'
                             }`}
                         >
-                            {cat}
+                            {cat.charAt(0).toUpperCase() + cat.slice(1).toLowerCase()}
                         </button>
                     ))}
                 </div>

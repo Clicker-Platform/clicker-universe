@@ -200,24 +200,32 @@ export default function InventoryPage() {
     return (
         <div className="max-w-7xl animate-in fade-in duration-500">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100 mb-1">Inventory</h1>
-                    <p className="text-gray-600 dark:text-neutral-400 font-medium">Manage products, stock levels and usage</p>
-                </div>
+            <div className="hidden md:flex md:items-center justify-between mb-8 gap-4">
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">Inventory</h1>
                 {!isViewOnly && (
                     <button
                         onClick={openAddModal}
-                        className="bg-studio-blue text-white px-6 py-2.5 rounded-xl font-bold hover:bg-studio-blue/85 flex items-center gap-2 shadow-lg hover:shadow-xl transition-all cursor-pointer active:scale-95"
+                        className="flex items-center gap-1.5 bg-studio-blue text-white px-3 py-2 rounded-lg text-sm font-semibold transition-colors hover:bg-studio-blue/90 active:scale-95"
                     >
-                        <Plus size={20} /> Add Item
+                        <Plus size={15} /> Add Item
                     </button>
                 )}
             </div>
 
+            {/* Mobile FAB */}
+            {!isViewOnly && (
+                <button
+                    onClick={openAddModal}
+                    className="md:hidden fixed bottom-20 right-4 z-30 w-14 h-14 bg-studio-blue text-white rounded-full shadow-lg flex items-center justify-center active:scale-95 transition-transform"
+                    style={{ marginBottom: 'env(safe-area-inset-bottom)' }}
+                    aria-label="Add Item"
+                >
+                    <Plus size={24} />
+                </button>
+            )}
 
             {/* Inventory List Container */}
-            <div className="bg-white dark:bg-neutral-900 rounded-3xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden flex flex-col min-h-[600px]">
+            <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden flex flex-col min-h-[600px]">
                 {/* Search Header */}
                 <div className="p-4 border-b border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900">
                     <div className="relative max-w-md">

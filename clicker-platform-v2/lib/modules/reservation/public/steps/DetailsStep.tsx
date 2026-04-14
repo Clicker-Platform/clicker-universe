@@ -89,19 +89,19 @@ export default function DetailsStep({
             {/* Booking summary */}
             <div className="p-4 rounded-xl mb-4 text-sm"
                 style={{ backgroundColor: surfaceBg, border: `1px solid ${borderColor}` }}>
-                <div className="flex justify-between mb-1">
-                    <span style={{ color: subtleText }}>Service:</span>
-                    <span className="font-bold" style={{ color: theme.colors.foreground }}>{selectedService.name}</span>
+                <div className="flex justify-between gap-3 mb-1">
+                    <span className="shrink-0" style={{ color: subtleText }}>Service:</span>
+                    <span className="font-bold text-right" style={{ color: theme.colors.foreground }}>{selectedService.name}</span>
                 </div>
                 {selectedStaff && (
-                    <div className="flex justify-between mb-1">
-                        <span style={{ color: subtleText }}>Staff:</span>
-                        <span className="font-bold" style={{ color: theme.colors.foreground }}>{selectedStaff.name}</span>
+                    <div className="flex justify-between gap-3 mb-1">
+                        <span className="shrink-0" style={{ color: subtleText }}>Staff:</span>
+                        <span className="font-bold text-right" style={{ color: theme.colors.foreground }}>{selectedStaff.name}</span>
                     </div>
                 )}
-                <div className="flex justify-between">
-                    <span style={{ color: subtleText }}>{isRequest ? 'Schedule:' : 'Time:'}</span>
-                    <span className="font-bold" style={{ color: theme.colors.foreground }}>
+                <div className="flex justify-between gap-3">
+                    <span className="shrink-0" style={{ color: subtleText }}>{isRequest ? 'Schedule:' : 'Time:'}</span>
+                    <span className="font-bold text-right" style={{ color: theme.colors.foreground }}>
                         {isRequest ? 'On Request' : `${date.toLocaleDateString()} at ${time}`}
                     </span>
                 </div>
@@ -109,30 +109,27 @@ export default function DetailsStep({
 
             {/* Membership Toggle */}
             {membershipEnabled && (
-                <div className="border p-4 rounded-xl mb-6"
-                    style={{ backgroundColor: `${theme.colors.primary}08`, borderColor: `${theme.colors.primary}30` }}>
-                    <h3 className="font-bold mb-2 text-sm flex items-center gap-2" style={{ color: theme.colors.foreground }}>
+                <div className="space-y-2">
+                    <p className="font-bold text-sm flex items-center gap-2" style={{ color: theme.colors.foreground }}>
                         <User size={16} /> Already a Member?
-                    </h3>
-                    <div className="flex gap-2">
-                        <input
-                            type="tel"
-                            value={memberSearchPhone}
-                            onChange={(e) => setMemberSearchPhone(e.target.value)}
-                            placeholder="Enter registered phone number"
-                            className="flex-1 px-3 py-2 rounded-lg border text-sm focus:outline-none"
-                            style={inputStyle}
-                            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); checkMember(); } }}
-                        />
-                        <button
-                            onClick={(e) => { e.preventDefault(); checkMember(); }}
-                            disabled={loading || !memberSearchPhone}
-                            className="px-4 py-2 rounded-lg text-sm font-bold disabled:opacity-50 hover:opacity-90 transition-opacity"
-                            style={{ backgroundColor: theme.colors.primary, color: theme.colors.accentForeground || '#ffffff' }}
-                        >
-                            Check
-                        </button>
-                    </div>
+                    </p>
+                    <input
+                        type="tel"
+                        value={memberSearchPhone}
+                        onChange={(e) => setMemberSearchPhone(e.target.value)}
+                        placeholder="Enter registered phone number"
+                        className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none"
+                        style={inputStyle}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); checkMember(); } }}
+                    />
+                    <button
+                        onClick={(e) => { e.preventDefault(); checkMember(); }}
+                        disabled={loading || !memberSearchPhone}
+                        className="w-full py-2 rounded-lg text-sm font-bold disabled:opacity-50 hover:opacity-90 transition-opacity"
+                        style={{ backgroundColor: theme.colors.primary, color: theme.colors.accentForeground || '#ffffff' }}
+                    >
+                        Check
+                    </button>
                 </div>
             )}
 

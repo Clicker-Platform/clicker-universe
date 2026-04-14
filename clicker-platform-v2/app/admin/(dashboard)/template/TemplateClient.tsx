@@ -394,31 +394,8 @@ export default function TemplateClient() {
 
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
-                                                <label className="block text-brand-dark font-bold mb-2">Accent Color</label>
-                                                <div className="flex items-center gap-2">
-                                                    <input
-                                                        type="color"
-                                                        value={settings.themeColor || '#c2693a'}
-                                                        onChange={(e) => setSettings({ ...settings, themeColor: e.target.value })}
-                                                        className="w-12 h-12 rounded-lg border border-gray-200 dark:border-neutral-700 p-1 cursor-pointer"
-                                                    />
-                                                    <span className="text-sm font-mono text-gray-500 dark:text-neutral-500 uppercase">{settings.themeColor || '#c2693a'}</span>
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <label className="block text-brand-dark font-bold mb-2">Text Color</label>
-                                                <div className="flex items-center gap-2">
-                                                    <input
-                                                        type="color"
-                                                        value={settings.accentColor || '#2A2724'}
-                                                        onChange={(e) => setSettings({ ...settings, accentColor: e.target.value })}
-                                                        className="w-12 h-12 rounded-lg border border-gray-200 dark:border-neutral-700 p-1 cursor-pointer"
-                                                    />
-                                                    <span className="text-sm font-mono text-gray-500 dark:text-neutral-500 uppercase">{settings.accentColor || '#2A2724'}</span>
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <label className="block text-brand-dark font-bold mb-2">Background Color</label>
+                                                <label className="block text-brand-dark font-bold mb-0.5">Background</label>
+                                                <p className="text-xs text-gray-400 dark:text-neutral-500 mb-2">Page canvas color</p>
                                                 <div className="flex items-center gap-2">
                                                     <input
                                                         type="color"
@@ -430,7 +407,21 @@ export default function TemplateClient() {
                                                 </div>
                                             </div>
                                             <div>
-                                                <label className="block text-brand-dark font-bold mb-2">Surface Color</label>
+                                                <label className="block text-brand-dark font-bold mb-0.5">Foreground</label>
+                                                <p className="text-xs text-gray-400 dark:text-neutral-500 mb-2">Text, icons & inverted panels</p>
+                                                <div className="flex items-center gap-2">
+                                                    <input
+                                                        type="color"
+                                                        value={settings.accentColor || '#2A2724'}
+                                                        onChange={(e) => setSettings({ ...settings, accentColor: e.target.value })}
+                                                        className="w-12 h-12 rounded-lg border border-gray-200 dark:border-neutral-700 p-1 cursor-pointer"
+                                                    />
+                                                    <span className="text-sm font-mono text-gray-500 dark:text-neutral-500 uppercase">{settings.accentColor || '#2A2724'}</span>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label className="block text-brand-dark font-bold mb-0.5">Surface</label>
+                                                <p className="text-xs text-gray-400 dark:text-neutral-500 mb-2">Cards & input fields</p>
                                                 <div className="flex items-center gap-2">
                                                     <input
                                                         type="color"
@@ -439,6 +430,19 @@ export default function TemplateClient() {
                                                         className="w-12 h-12 rounded-lg border border-gray-200 dark:border-neutral-700 p-1 cursor-pointer"
                                                     />
                                                     <span className="text-sm font-mono text-gray-500 dark:text-neutral-500 uppercase">{settings.surfaceColor || '#FFFFFF'}</span>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label className="block text-brand-dark font-bold mb-0.5">Accent</label>
+                                                <p className="text-xs text-gray-400 dark:text-neutral-500 mb-2">Buttons & brand highlights</p>
+                                                <div className="flex items-center gap-2">
+                                                    <input
+                                                        type="color"
+                                                        value={settings.themeColor || '#c2693a'}
+                                                        onChange={(e) => setSettings({ ...settings, themeColor: e.target.value })}
+                                                        className="w-12 h-12 rounded-lg border border-gray-200 dark:border-neutral-700 p-1 cursor-pointer"
+                                                    />
+                                                    <span className="text-sm font-mono text-gray-500 dark:text-neutral-500 uppercase">{settings.themeColor || '#c2693a'}</span>
                                                 </div>
                                             </div>
                                         </div>

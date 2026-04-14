@@ -173,14 +173,11 @@ export default function TransactionsClient({ initialOrders = [] }: { initialOrde
 
     return (
         <div>
-            <div className="flex items-center gap-4 mb-8">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100 mb-1">Transaction history</h1>
-                    <p className="text-gray-600 dark:text-neutral-400 font-medium">Consolidated view of past bills and cancellations</p>
-                </div>
+            <div className="hidden md:flex items-center gap-4 mb-8">
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">Transaction history</h1>
             </div>
 
-            <div className="bg-white dark:bg-neutral-900 rounded-3xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden animate-in fade-in duration-300">
+            <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden animate-in fade-in duration-300">
                 <div className="divide-y divide-gray-100 dark:divide-neutral-800">
                     {/* Skeleton Loading State */}
                     {isLoading && orders.length === 0 && (

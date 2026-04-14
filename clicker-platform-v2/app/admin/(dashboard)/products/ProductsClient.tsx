@@ -201,20 +201,20 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
 
     return (
         <div className="max-w-4xl">
-            <div className="flex items-center justify-between mb-8">
+            <div className="hidden md:flex items-center justify-between mb-8">
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">Manage Products</h1>
                 <div className="flex gap-2">
                     <button
                         onClick={handleCreate}
-                        className="bg-studio-blue text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 hover:bg-studio-blue/85 transition shadow-lg active:scale-95"
+                        className="flex items-center gap-1.5 bg-studio-blue text-white px-3 py-2 rounded-lg text-sm font-semibold transition-colors hover:bg-studio-blue/90 active:scale-95"
                     >
-                        <Plus size={20} /> Add Product
+                        <Plus size={15} /> Add Product
                     </button>
                     <button
                         onClick={() => setShowSettings(!showSettings)}
-                        className="flex items-center gap-2 bg-gray-100 dark:bg-neutral-800 px-4 py-2 rounded-xl font-bold text-gray-700 dark:text-neutral-300 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors border border-gray-200 dark:border-neutral-700"
+                        className="flex items-center gap-1.5 bg-gray-100 dark:bg-neutral-800 px-3 py-2 rounded-lg text-sm font-semibold text-gray-700 dark:text-neutral-300 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors border border-gray-200 dark:border-neutral-700"
                     >
-                        <Settings size={18} /> Configure
+                        <Settings size={15} /> Configure
                     </button>
                     <div className="flex bg-gray-100 dark:bg-neutral-800 p-1 rounded-lg border border-gray-200 dark:border-neutral-700">
                         <button
@@ -234,6 +234,16 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
                     </div>
                 </div>
             </div>
+
+            {/* Mobile FAB */}
+            <button
+                onClick={handleCreate}
+                className="md:hidden fixed bottom-6 right-4 z-30 w-14 h-14 bg-studio-blue text-white rounded-full shadow-lg flex items-center justify-center active:scale-95 transition-transform"
+                style={{ marginBottom: 'env(safe-area-inset-bottom)' }}
+                aria-label="Add Product"
+            >
+                <Plus size={24} />
+            </button>
 
             {/* Settings Panel */}
             {showSettings && (

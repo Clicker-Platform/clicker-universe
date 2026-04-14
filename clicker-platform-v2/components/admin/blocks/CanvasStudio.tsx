@@ -164,7 +164,14 @@ export function CanvasStudio({
 
     // ─── Shared canvas content ────────────────────────────────────────────────
     const canvasContent = (
-        <div className={`flex-1 flex justify-center bg-gray-200 dark:bg-neutral-950 relative overflow-y-auto ${isMobile ? 'pb-20' : ''}`}>
+        <div
+            className={`flex-1 flex justify-center relative overflow-y-auto [--canvas-bg:rgb(229_231_235)] [--canvas-dot:rgb(0_0_0_/_0.15)] dark:[--canvas-bg:rgb(10_10_10)] dark:[--canvas-dot:rgb(255_255_255_/_0.08)] ${isMobile ? 'pb-20' : ''}`}
+            style={{
+                backgroundColor: 'var(--canvas-bg)',
+                backgroundImage: 'radial-gradient(circle, var(--canvas-dot) 1px, transparent 1px)',
+                backgroundSize: '20px 20px',
+            }}
+        >
             {/* Page switch overlay */}
             {pageLoading && (
                 <div className="absolute inset-0 z-30 bg-white/60 dark:bg-neutral-950/60 backdrop-blur-[2px] flex items-center justify-center transition-opacity duration-200">

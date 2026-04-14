@@ -8,11 +8,8 @@ export default function CalendarClient() {
     return (
         <div>
             <ReservationBreadcrumb currentPage="Calendar Settings" />
-            <div className="flex items-center justify-between mb-8">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100 mb-2">Calendar Settings</h1>
-                    <p className="text-gray-600 dark:text-neutral-400 font-medium">Manage your business hours and availability</p>
-                </div>
+            <div className="hidden md:flex items-center justify-between mb-8">
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">Calendar Settings</h1>
             </div>
 
             <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm p-8 max-w-xl">
