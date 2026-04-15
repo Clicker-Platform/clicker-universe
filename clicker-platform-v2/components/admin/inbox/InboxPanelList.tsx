@@ -86,10 +86,10 @@ export const InboxPanelList = memo(function InboxPanelList({
                                 : Object.entries(sub.data || {}).slice(0, 3);
 
                             return (
-                                <button
+                                <div
                                     key={sub.id}
                                     onClick={() => onSelect(sub.id)}
-                                    className={`w-full text-left px-5 py-4 transition-colors hover:bg-gray-50 dark:hover:bg-neutral-800/50 ${isNew ? 'bg-blue-50/50 dark:bg-blue-950/10' : ''}`}
+                                    className={`w-full text-left px-5 py-4 transition-colors hover:bg-gray-50 dark:hover:bg-neutral-800/50 cursor-pointer ${isNew ? 'bg-blue-50/50 dark:bg-blue-950/10' : ''}`}
                                 >
                                     <div className="flex items-start justify-between gap-3">
                                         <div className="flex items-start gap-2.5 min-w-0">
@@ -118,21 +118,22 @@ export const InboxPanelList = memo(function InboxPanelList({
                                                 {formatDate(sub.submittedAt)}
                                             </span>
                                             {isNew && (
-                                                <div
-                                                    role="button"
+                                                <button
+                                                    type="button"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         onMarkRead(sub.id);
                                                     }}
                                                     title="Mark as read"
-                                                    className={`p-1 rounded-lg text-gray-400 dark:text-neutral-600 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:text-brand-dark dark:hover:text-neutral-200 transition-colors ${isLoading ? 'opacity-40 pointer-events-none' : ''}`}
+                                                    disabled={isLoading}
+                                                    className={`p-1 rounded-lg text-gray-400 dark:text-neutral-600 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:text-brand-dark dark:hover:text-neutral-200 transition-colors ${isLoading ? 'opacity-40' : ''}`}
                                                 >
                                                     <MailOpen size={13} />
-                                                </div>
+                                                </button>
                                             )}
                                         </div>
                                     </div>
-                                </button>
+                                </div>
                             );
                         })}
 

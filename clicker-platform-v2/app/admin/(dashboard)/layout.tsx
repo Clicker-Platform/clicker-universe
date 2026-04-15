@@ -20,10 +20,12 @@ function AdminContentWrapper({ children }: { children: React.ReactNode }) {
     );
 }
 
+// UserProvider MUST be outside AdminGuard so the guard reads from useUser()
+// instead of making its own duplicate Firebase/Firestore calls.
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     return (
-        <AdminGuard>
-            <UserProvider>
+        <UserProvider>
+            <AdminGuard>
                 <AdminThemeProvider>
                     <InboxPanelProvider>
                         <AdminContentWrapper>
@@ -31,7 +33,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         </AdminContentWrapper>
                     </InboxPanelProvider>
                 </AdminThemeProvider>
-            </UserProvider>
-        </AdminGuard>
+            </AdminGuard>
+        </UserProvider>
     );
 }

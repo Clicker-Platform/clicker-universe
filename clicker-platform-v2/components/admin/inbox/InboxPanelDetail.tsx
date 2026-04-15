@@ -1,8 +1,9 @@
 'use client';
 
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import { ArrowLeft, Clock, Mail, MailOpen, Archive, ArchiveRestore, Trash2, Download, ExternalLink } from 'lucide-react';
 import { Submission } from '@/data/mockData';
+import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 
 interface InboxPanelDetailProps {
     submission: Submission;
@@ -33,6 +34,7 @@ export const InboxPanelDetail = memo(function InboxPanelDetail({
 }: InboxPanelDetailProps) {
     const isLoading = loadingId === sub.id;
     const isNew = sub.status === 'new';
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     return (
         <div className="flex flex-col h-full">
@@ -98,17 +100,25 @@ export const InboxPanelDetail = memo(function InboxPanelDetail({
                     </button>
                 )}
                 <button
-                    onClick={() => {
-                        if (confirm('Delete this submission?')) {
-                            onAction(sub.id, 'delete');
-                        }
-                    }}
+                    onClick={() => setShowDeleteConfirm(true)}
                     disabled={isLoading}
                     title="Delete"
                     className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold text-gray-500 dark:text-neutral-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500 dark:hover:text-red-400 transition-colors disabled:opacity-40 ml-auto"
                 >
                     <Trash2 size={13} /> Delete
                 </button>
+                <ConfirmationDialog
+                    isOpen={showDeleteConfirm}
+                    title="Delete Submission"
+                    message="This submission will be permanently deleted. This action cannot be undone."
+                    confirmLabel="Delete"
+                    onConfirm={() => {
+                        setShowDeleteConfirm(false);
+                        onAction(sub.id, 'delete');
+                    }}
+                    onCancel={() => setShowDeleteConfirm(false)}
+                    isLoading={isLoading}
+                />
             </div>
 
             {/* Metadata */}

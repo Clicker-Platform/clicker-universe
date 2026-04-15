@@ -21,6 +21,8 @@ export function InboxPanel({ sidebarCollapsed }: { sidebarCollapsed?: boolean })
     const [loadingId, setLoadingId] = useState<string | null>(null);
     const [itemLimit, setItemLimit] = useState(BATCH_SIZE);
     const formsFetched = useRef(false);
+    // Tracks optimistic status overrides while API writes are in-flight
+    const pendingUpdates = useRef<Map<string, string>>(new Map());
 
     // Fetch form field map once
     useEffect(() => {
@@ -54,7 +56,11 @@ export function InboxPanel({ sidebarCollapsed }: { sidebarCollapsed?: boolean })
             limit(itemLimit)
         );
         const unsub = onSnapshot(q, (snap) => {
-            setSubmissions(snap.docs.map(d => ({ id: d.id, ...d.data() } as Submission)));
+            setSubmissions(snap.docs.map(d => {
+                const data = { id: d.id, ...d.data() } as Submission;
+                const pending = pendingUpdates.current.get(d.id);
+                return pending ? { ...data, status: pending as Submission['status'] } : data;
+            }));
         });
         return () => unsub();
     }, [isOpen, siteId, itemLimit]);
@@ -71,23 +77,24 @@ export function InboxPanel({ sidebarCollapsed }: { sidebarCollapsed?: boolean })
 
     const handleAction = useCallback(async (id: string, action: string) => {
         setLoadingId(id);
+        if (action !== 'delete') {
+            pendingUpdates.current.set(id, action);
+            setSubmissions(prev => prev.map(s => s.id === id ? { ...s, status: action as Submission['status'] } : s));
+        }
         try {
             const res = await fetch('/api/submissions/update', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id, action, siteId }),
             });
-            if (res.ok) {
-                if (action === 'delete') {
-                    setSubmissions(prev => prev.filter(s => s.id !== id));
-                    if (selectedSubmissionId === id) selectSubmission(null);
-                } else {
-                    setSubmissions(prev => prev.map(s => s.id === id ? { ...s, status: action as Submission['status'] } : s));
-                }
+            if (res.ok && action === 'delete') {
+                setSubmissions(prev => prev.filter(s => s.id !== id));
+                if (selectedSubmissionId === id) selectSubmission(null);
             }
         } catch (error) {
             console.error('Error updating submission:', error);
         } finally {
+            pendingUpdates.current.delete(id);
             setLoadingId(null);
         }
     }, [siteId, selectedSubmissionId, selectSubmission]);
