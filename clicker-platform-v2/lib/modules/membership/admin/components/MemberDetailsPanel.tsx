@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { MEMBERS_COLLECTION, getMemberHistory, awardPoints, updateMemberProfile } from '../../api';
-import { Member, LoyaltyTransaction } from '../../types';
+import { Member, LoyaltyTransaction, getTier, TIER_COLORS, DEFAULT_TIER_THRESHOLDS, TierThreshold } from '../../types';
 import { PlusCircle, MinusCircle, Lock, User, Menu } from 'lucide-react';
 import { toast } from 'sonner';
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
@@ -69,10 +69,12 @@ export function MemberDetailsPanel({ memberId, isOpen, onClose }: MemberDetailsP
         setLoading(true);
         try {
             const docRef = doc(db, 'sites', siteId, MEMBERS_COLLECTION, memberId);
-            const docSnap = await getDoc(docRef);
+            const [docSnap, txs] = await Promise.all([
+                getDoc(docRef),
+                getMemberHistory(siteId, memberId),
+            ]);
             if (docSnap.exists()) {
                 setMember({ id: docSnap.id, ...docSnap.data() } as Member);
-                const txs = await getMemberHistory(siteId, memberId);
                 setHistory(txs);
             }
         } catch (e) {
@@ -86,13 +88,20 @@ export function MemberDetailsPanel({ memberId, isOpen, onClose }: MemberDetailsP
     useEffect(() => {
         if (isOpen && memberId && siteId) {
             refreshData();
-        } else if (!isOpen) {
-            // reset when closed
-            setMember(null);
-            setHistory([]);
-            setLoading(true);
         }
     }, [isOpen, memberId, siteId]);
+
+    // Reset state after panel finishes closing (avoids flash of loading spinner on reopen)
+    useEffect(() => {
+        if (!isOpen) {
+            const t = setTimeout(() => {
+                setMember(null);
+                setHistory([]);
+                setLoading(true);
+            }, 300); // matches slide-out animation duration
+            return () => clearTimeout(t);
+        }
+    }, [isOpen]);
 
     useEffect(() => {
         if (member) {
@@ -164,11 +173,16 @@ export function MemberDetailsPanel({ memberId, isOpen, onClose }: MemberDetailsP
                         <div className="flex items-center gap-3">
                             {/* Avatar */}
                             <div className="w-10 h-10 flex-shrink-0 rounded-full bg-blue-100 dark:bg-blue-950/30 flex items-center justify-center text-base font-bold text-blue-600 dark:text-blue-400">
-                                {member.fullName.charAt(0)}
+                                {(() => {
+                                    const parts = member.fullName.trim().split(/\s+/);
+                                    return parts.length === 1
+                                        ? parts[0].slice(0, 2).toUpperCase()
+                                        : (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+                                })()}
                             </div>
                             {/* Name + contact */}
                             <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-1.5">
+                                <div className="flex items-center gap-1.5 flex-wrap">
                                     <p className="font-bold text-sm text-gray-900 dark:text-neutral-100 truncate">{member.fullName}</p>
                                     {canEdit && (
                                         <button
@@ -179,12 +193,23 @@ export function MemberDetailsPanel({ memberId, isOpen, onClose }: MemberDetailsP
                                         </button>
                                     )}
                                 </div>
+                                {member.memberCode && (
+                                    <p className="text-[10px] text-gray-400 dark:text-neutral-600 font-medium">{member.memberCode}</p>
+                                )}
                                 <p className="text-xs text-gray-500 dark:text-neutral-500 truncate">{member.phoneNumber}</p>
                                 <p className="text-[10px] text-gray-400 dark:text-neutral-600 truncate">{member.email}</p>
                             </div>
-                            {/* Points badge */}
+                            {/* Points + Tier badge */}
                             <div className="flex-shrink-0 text-right">
-                                <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-neutral-600">Balance</p>
+                                {(() => {
+                                    const tier = getTier(member.currentPoints || 0, DEFAULT_TIER_THRESHOLDS);
+                                    const colors = TIER_COLORS[tier];
+                                    return (
+                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border mb-1 ${colors.bg} ${colors.text} ${colors.border}`}>
+                                            {tier}
+                                        </span>
+                                    );
+                                })()}
                                 <p className="text-lg font-black text-indigo-600 dark:text-indigo-400 leading-tight">{member.currentPoints.toLocaleString()}</p>
                                 <p className="text-[10px] text-gray-400 dark:text-neutral-600">pts</p>
                             </div>

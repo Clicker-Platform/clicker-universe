@@ -3,7 +3,6 @@ import {
     doc,
     getDocs,
     getDoc,
-    addDoc,
     updateDoc,
     setDoc,
     query,
@@ -23,10 +22,10 @@ import { db } from '@/lib/firebase';
 import { Member, LoyaltyTransaction, MembershipSettings, MembershipStaffMember } from './types';
 
 // Collection References
-// Collection Suffixes
 export const MEMBERS_COLLECTION = 'modules/membership/members';
 export const TRANSACTIONS_COLLECTION = 'modules/membership/transactions';
 export const SETTINGS_DOC = 'modules/membership/settings/config';
+export const COUNTER_DOC = 'modules/membership/settings/counter';
 
 // --- Member Identity API ---
 
@@ -155,7 +154,11 @@ export async function searchMembers(siteId: string, term: string): Promise<Membe
     return Array.from(members.values());
 }
 
-export async function createMember(siteId: string, data: Omit<Member, 'id' | 'createdAt' | 'updatedAt' | 'currentPoints'>): Promise<Member> {
+export async function createMember(
+    siteId: string,
+    data: Omit<Member, 'id' | 'createdAt' | 'updatedAt' | 'currentPoints'>,
+    memberCodePrefix?: string
+): Promise<Member> {
     // Normalize phone before check/create
     const normalizedPhone = normalizePhoneNumber(data.phoneNumber);
 
@@ -173,19 +176,35 @@ export async function createMember(siteId: string, data: Omit<Member, 'id' | 'cr
         return existingEmail;
     }
 
-    // 3. Create New Member
-    const docRef = await addDoc(collection(db, 'sites', siteId, MEMBERS_COLLECTION), {
-        ...data,
-        phoneNumber: normalizedPhone, // Explicit override
-        currentPoints: 0,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
+    // 3. Atomically assign member code + create member doc
+    const prefix = (memberCodePrefix || 'MBR').toUpperCase().slice(0, 5);
+    const counterRef = doc(db, 'sites', siteId, COUNTER_DOC);
+    const newMemberRef = doc(collection(db, 'sites', siteId, MEMBERS_COLLECTION));
+    let memberCode = '';
+
+    await runTransaction(db, async (transaction) => {
+        const counterSnap = await transaction.get(counterRef);
+        const currentCount = counterSnap.exists() ? (counterSnap.data().memberCount || 0) : 0;
+        const newCount = currentCount + 1;
+        memberCode = `${prefix}-${String(newCount).padStart(3, '0')}`;
+
+        transaction.set(newMemberRef, {
+            ...data,
+            phoneNumber: normalizedPhone,
+            memberCode,
+            currentPoints: 0,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+        });
+        transaction.set(counterRef, { memberCount: newCount }, { merge: true });
     });
 
     // 4. Return the new Member object (optimistic timestamp)
     return {
-        id: docRef.id,
+        id: newMemberRef.id,
         ...data,
+        phoneNumber: normalizedPhone,
+        memberCode,
         currentPoints: 0,
         totalSpent: 0,
         totalTransactions: 0,
@@ -311,11 +330,12 @@ export async function awardPointsWithSpend(
     });
 }
 
-export async function getMemberHistory(siteId: string, memberId: string): Promise<LoyaltyTransaction[]> {
+export async function getMemberHistory(siteId: string, memberId: string, pageSize = 30): Promise<LoyaltyTransaction[]> {
     const q = query(
         collection(db, 'sites', siteId, TRANSACTIONS_COLLECTION),
         where('memberId', '==', memberId),
-        orderBy('createdAt', 'desc')
+        orderBy('createdAt', 'desc'),
+        limit(pageSize)
     );
     const snapshot = await getDocs(q);
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as LoyaltyTransaction));
@@ -335,6 +355,38 @@ export async function getMembershipSettings(siteId: string): Promise<MembershipS
         pointsName: 'Points',
         earningRatio: 1
     };
+}
+
+export async function backfillMemberCodes(
+    siteId: string,
+    prefix: string,
+    onProgress?: (done: number, total: number) => void
+): Promise<{ backfilled: number; skipped: number }> {
+    const membersRef = collection(db, 'sites', siteId, MEMBERS_COLLECTION);
+    const snapshot = await getDocs(query(membersRef, orderBy('createdAt', 'asc')));
+
+    const toBackfill = snapshot.docs.filter(d => !d.data().memberCode);
+    const total = toBackfill.length;
+
+    if (total === 0) return { backfilled: 0, skipped: snapshot.docs.length };
+
+    const cleanPrefix = prefix.toUpperCase().slice(0, 5) || 'MBR';
+    const counterRef = doc(db, 'sites', siteId, COUNTER_DOC);
+    const counterSnap = await getDoc(counterRef);
+    let counter = counterSnap.exists() ? (counterSnap.data().memberCount || 0) : 0;
+
+    let done = 0;
+    for (const memberDoc of toBackfill) {
+        counter++;
+        const memberCode = `${cleanPrefix}-${String(counter).padStart(3, '0')}`;
+        await updateDoc(memberDoc.ref, { memberCode });
+        done++;
+        onProgress?.(done, total);
+    }
+
+    await setDoc(counterRef, { memberCount: counter }, { merge: true });
+
+    return { backfilled: total, skipped: snapshot.docs.length - total };
 }
 
 export async function updateMembershipSettings(siteId: string, settings: Partial<MembershipSettings>): Promise<void> {
