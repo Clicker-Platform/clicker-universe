@@ -11,7 +11,6 @@ export const useAnalytics = () => {
         if (typeof window === 'undefined') return;
         if (!event.siteId || event.siteId === 'pending' || event.siteId === 'default') return;
 
-        console.log('Track:', event);
         try {
             // Fire and forget - don't await to avoid blocking UI
             fetch('/api/analytics/track', {

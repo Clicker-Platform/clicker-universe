@@ -1,17 +1,31 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { db } from '@/lib/firebase';
-import { collection, doc, getDoc, getDocs, query, orderBy, limit, getCountFromServer } from 'firebase/firestore';
-import { Eye, MousePointer2, TrendingUp, Link as LinkIcon, ShoppingBag, Loader2 } from 'lucide-react';
+import { collection, onSnapshot, query, orderBy, limit, getCountFromServer } from 'firebase/firestore';
+import { Eye, MousePointer2, TrendingUp, Link as LinkIcon, ShoppingBag } from 'lucide-react';
 import { DashboardSkeleton } from '@/components/skeletons/DashboardSkeleton';
 import { useSite } from '@/lib/site-context';
+import { getSiteStatsTotals } from '@/lib/analytics/counters';
+
+interface DashboardLink {
+    id: string;
+    title: string;
+    url?: string;
+    clicks?: number;
+}
+
+interface DashboardProduct {
+    id: string;
+    title: string;
+    price?: string;
+    image?: string;
+    clicks?: number;
+}
 
 export default function AdminDashboard() {
     const [loading, setLoading] = useState(true);
-    const [refreshing, setRefreshing] = useState(false);
-    const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-    const [autoRefresh, setAutoRefresh] = useState(false);
     const { siteId } = useSite();
     const [stats, setStats] = useState({
         linksCount: 0,
@@ -19,69 +33,75 @@ export default function AdminDashboard() {
         pageViews: 0,
         totalClicks: 0
     });
-    const [topLinks, setTopLinks] = useState<any[]>([]);
-    const [topProducts, setTopProducts] = useState<any[]>([]);
+    const [topLinks, setTopLinks] = useState<DashboardLink[]>([]);
+    const [topProducts, setTopProducts] = useState<DashboardProduct[]>([]);
 
-    const fetchDashboardData = async (isRefresh = false) => {
+    useEffect(() => {
         if (!siteId) return;
-        if (isRefresh) setRefreshing(true);
-        try {
-            // Execute all fetches in parallel
-            const [
-                linksCountSnap,
-                productsCountSnap,
-                statsSnap,
-                topLinksSnap,
-                topProductsSnap
-            ] = await Promise.all([
-                // 1. Fetch Counts
-                getCountFromServer(collection(db, 'sites', siteId, 'links')),
-                getCountFromServer(collection(db, 'sites', siteId, 'products')),
-                // 2. Fetch Analytics Stats
-                getDoc(doc(db, 'sites', siteId, 'analytics', 'siteStats')),
-                // 3. Fetch Top Performing Links (Limit 3)
-                getDocs(query(collection(db, 'sites', siteId, 'links'), orderBy('clicks', 'desc'), limit(3))),
-                // 4. Fetch Top Performing Products (Limit 3)
-                getDocs(query(collection(db, 'sites', siteId, 'products'), orderBy('clicks', 'desc'), limit(3)))
-            ]);
 
-            const siteStats = statsSnap.exists() ? statsSnap.data() : { pageViews: 0, totalClicks: 0 };
+        setLoading(true);
 
-            setStats({
+        // One-shot counts (getCountFromServer doesn't support onSnapshot)
+        Promise.all([
+            getCountFromServer(collection(db, 'sites', siteId, 'links')),
+            getCountFromServer(collection(db, 'sites', siteId, 'products')),
+        ]).then(([linksCountSnap, productsCountSnap]) => {
+            setStats(prev => ({
+                ...prev,
                 linksCount: linksCountSnap.data().count,
                 productsCount: productsCountSnap.data().count,
-                pageViews: siteStats.pageViews || 0,
-                totalClicks: siteStats.totalClicks || 0
-            });
+            }));
+        }).catch(err => console.error('Error fetching counts:', err));
 
-            setTopLinks(topLinksSnap.docs.map(d => ({ id: d.id, ...d.data() })));
-            setTopProducts(topProductsSnap.docs.map(d => ({ id: d.id, ...d.data() })));
-            setLastUpdated(new Date());
-
-        } catch (error) {
-            console.error("Error fetching dashboard data:", error);
-        } finally {
-            setLoading(false);
-            setRefreshing(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchDashboardData();
-    }, [siteId]);
-
-    // Auto-refresh logic
-    useEffect(() => {
-        let intervalId: NodeJS.Timeout;
-        if (autoRefresh) {
-            intervalId = setInterval(() => {
-                fetchDashboardData(true);
-            }, 30000); // 30 seconds
-        }
-        return () => {
-            if (intervalId) clearInterval(intervalId);
+        // Aggregated totals from distributed counter shards — polled every 60s
+        const fetchTotals = async () => {
+            try {
+                const totals = await getSiteStatsTotals(siteId);
+                setStats(prev => ({ ...prev, ...totals }));
+            } catch (err) {
+                console.error('Error fetching analytics totals:', err);
+            } finally {
+                setLoading(false);
+            }
         };
-    }, [autoRefresh]);
+        fetchTotals();
+        const totalsIntervalId = setInterval(fetchTotals, 60_000);
+
+        // Real-time: top links by clicks
+        const unsubLinks = onSnapshot(
+            query(collection(db, 'sites', siteId, 'links'), orderBy('clicks', 'desc'), limit(3)),
+            (snap) => {
+                setTopLinks(snap.docs.map(d => ({
+                    id: d.id,
+                    title: d.data().title ?? 'Untitled',
+                    url: d.data().url,
+                    clicks: d.data().clicks,
+                })));
+            },
+            (err) => console.error('Error subscribing to top links:', err)
+        );
+
+        // Real-time: top products by clicks
+        const unsubProducts = onSnapshot(
+            query(collection(db, 'sites', siteId, 'products'), orderBy('clicks', 'desc'), limit(3)),
+            (snap) => {
+                setTopProducts(snap.docs.map(d => ({
+                    id: d.id,
+                    title: d.data().name ?? d.data().title ?? 'Untitled',
+                    price: d.data().price,
+                    image: d.data().image ?? d.data().imageUrl,
+                    clicks: d.data().clicks,
+                })));
+            },
+            (err) => console.error('Error subscribing to top products:', err)
+        );
+
+        return () => {
+            clearInterval(totalsIntervalId);
+            unsubLinks();
+            unsubProducts();
+        };
+    }, [siteId]);
 
     if (loading) {
         return <DashboardSkeleton />;
@@ -89,41 +109,9 @@ export default function AdminDashboard() {
 
     return (
         <div>
-            <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100 mb-2">Dashboard</h1>
-                    <p className="text-gray-600 dark:text-neutral-400 font-medium">Welcome back! Manage your content below.</p>
-                </div>
-
-                <div className="flex items-center gap-4 bg-white dark:bg-neutral-900 p-2 rounded-xl border border-gray-100 dark:border-neutral-800/50 shadow-sm">
-                    {lastUpdated && (
-                        <p className="text-xs text-gray-400 dark:text-neutral-600 font-medium hidden sm:block">
-                            Updated: {lastUpdated.toLocaleTimeString()}
-                        </p>
-                    )}
-
-                    <div className="h-6 w-px bg-gray-200 dark:bg-neutral-700 mx-1 hidden sm:block"></div>
-
-                    <button
-                        onClick={() => setAutoRefresh(!autoRefresh)}
-                        className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 ${autoRefresh
-                            ? 'bg-brand-green/10 text-brand-dark'
-                            : 'bg-gray-50 dark:bg-neutral-800 text-gray-500 dark:text-neutral-500 hover:bg-gray-100 dark:hover:bg-neutral-700'
-                            }`}
-                    >
-                        <div className={`w-2 h-2 rounded-full ${autoRefresh ? 'bg-green-500 animate-pulse' : 'bg-gray-300'}`}></div>
-                        Auto
-                    </button>
-
-                    <button
-                        onClick={() => fetchDashboardData(true)}
-                        disabled={refreshing}
-                        className="bg-studio-blue text-white p-2 rounded-lg hover:bg-studio-blue/85 transition-all active:scale-95 disabled:opacity-70 disabled:active:scale-100"
-                        title="Refresh Data"
-                    >
-                        <Loader2 size={18} className={refreshing ? 'animate-spin' : ''} />
-                    </button>
-                </div>
+            <div className="mb-8">
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100 mb-2">Dashboard</h1>
+                <p className="text-gray-600 dark:text-neutral-400 font-medium">Welcome back! Manage your content below.</p>
             </div>
 
             {/* Content Overview */}
@@ -148,12 +136,14 @@ export default function AdminDashboard() {
                         <Eye size={20} /> <span className="font-bold">Total Page Views</span>
                     </div>
                     <p className="text-4xl font-bold text-gray-900 dark:text-neutral-100">{stats.pageViews}</p>
+                    <p className="text-xs text-gray-400 dark:text-neutral-600 mt-1">All time</p>
                 </div>
                 <div className="bg-green-50 dark:bg-green-950/30 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm">
                     <div className="flex items-center gap-3 mb-2 text-green-700 dark:text-neutral-300">
                         <MousePointer2 size={20} /> <span className="font-bold">Total Clicks</span>
                     </div>
                     <p className="text-4xl font-bold text-gray-900 dark:text-neutral-100">{stats.totalClicks}</p>
+                    <p className="text-xs text-gray-400 dark:text-neutral-600 mt-1">All time</p>
                 </div>
             </div>
 
@@ -167,7 +157,12 @@ export default function AdminDashboard() {
                     </h2>
                     <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 overflow-hidden shadow-sm">
                         {topLinks.length === 0 ? (
-                            <p className="p-6 text-gray-500 dark:text-neutral-500 text-center">No data yet.</p>
+                            <div className="p-6 text-center">
+                                <p className="text-gray-500 dark:text-neutral-500 mb-2">No links yet.</p>
+                                <Link href="/admin/links" className="text-sm text-studio-blue hover:underline font-medium">
+                                    Add your first link →
+                                </Link>
+                            </div>
                         ) : (
                             <div className="divide-y divide-gray-100 dark:divide-neutral-800">
                                 {topLinks.map(data => (
@@ -177,7 +172,7 @@ export default function AdminDashboard() {
                                             <p className="text-sm text-gray-500 dark:text-neutral-500 truncate">{data.url}</p>
                                         </div>
                                         <div className="bg-brand-green/20 text-brand-dark px-3 py-1 rounded-full font-bold text-sm">
-                                            {data.clicks || 0} clicks
+                                            {data.clicks ?? 0} clicks
                                         </div>
                                     </div>
                                 ))}
@@ -193,32 +188,32 @@ export default function AdminDashboard() {
                     </h2>
                     <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 overflow-hidden shadow-sm">
                         {topProducts.length === 0 ? (
-                            <p className="p-6 text-gray-500 dark:text-neutral-500 text-center">No data yet.</p>
+                            <div className="p-6 text-center">
+                                <p className="text-gray-500 dark:text-neutral-500 mb-2">No products yet.</p>
+                                <Link href="/admin/products" className="text-sm text-studio-blue hover:underline font-medium">
+                                    Add your first product →
+                                </Link>
+                            </div>
                         ) : (
                             <div className="divide-y divide-gray-100 dark:divide-neutral-800">
-                                {topProducts.map(data => {
-                                    const productName = data.name || data.title || 'Untitled';
-                                    const productImage = data.imageUrl || data.image;
-
-                                    return (
-                                        <div key={data.id} className="p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-neutral-800">
-                                            <div className="flex items-center gap-3 flex-1 min-w-0 pr-4">
-                                                {productImage && (
-                                                    <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-neutral-800 overflow-hidden flex-shrink-0 border border-gray-200 dark:border-neutral-700">
-                                                        <img src={productImage} alt={productName} className="w-full h-full object-cover" />
-                                                    </div>
-                                                )}
-                                                <div>
-                                                    <p className="font-bold text-brand-dark truncate">{productName}</p>
-                                                    <p className="text-sm text-gray-500 dark:text-neutral-500">{data.price}</p>
+                                {topProducts.map(data => (
+                                    <div key={data.id} className="p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-neutral-800">
+                                        <div className="flex items-center gap-3 flex-1 min-w-0 pr-4">
+                                            {data.image && (
+                                                <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-neutral-800 overflow-hidden flex-shrink-0 border border-gray-200 dark:border-neutral-700">
+                                                    <img src={data.image} alt={data.title} className="w-full h-full object-cover" />
                                                 </div>
-                                            </div>
-                                            <div className="bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 px-3 py-1 rounded-full font-bold text-sm">
-                                                {data.clicks || 0} clicks
+                                            )}
+                                            <div>
+                                                <p className="font-bold text-brand-dark truncate">{data.title}</p>
+                                                <p className="text-sm text-gray-500 dark:text-neutral-500">{data.price}</p>
                                             </div>
                                         </div>
-                                    );
-                                })}
+                                        <div className="bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 px-3 py-1 rounded-full font-bold text-sm">
+                                            {data.clicks ?? 0} clicks
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         )}
                     </div>

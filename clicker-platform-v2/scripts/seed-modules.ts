@@ -102,7 +102,6 @@ const MODULES = [
         enabled: true,
         adminRoutes: [
             { label: 'Members',        path: '/admin/membership/list',     icon: 'users',    componentKey: 'membership:MemberListPage' },
-            { label: 'Member Details', path: '/admin/membership/details',  icon: 'user',     componentKey: 'membership:MemberDetailsPage', hidden: true },
             { label: 'Settings',       path: '/admin/membership/settings', icon: 'settings', componentKey: 'membership:Settings', permission: 'settings' },
         ],
         publicRoutes: [

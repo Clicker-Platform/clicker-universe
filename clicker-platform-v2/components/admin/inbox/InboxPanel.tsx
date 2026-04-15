@@ -111,14 +111,14 @@ export function InboxPanel({ sidebarCollapsed }: { sidebarCollapsed?: boolean })
 
     return (
         <>
-            {/* Backdrop */}
+            {/* Backdrop — sits behind the panel */}
             <div
-                className="fixed inset-0 z-[199] bg-black/20 dark:bg-black/40 md:bg-transparent md:dark:bg-transparent"
+                className="fixed inset-0 z-40 bg-black/20 dark:bg-black/40 md:bg-transparent md:dark:bg-transparent"
                 onClick={close}
             />
 
-            {/* Panel */}
-            <div className={`fixed inset-y-0 left-0 ${leftOffset} z-40 w-[360px] bg-white dark:bg-neutral-900 border-r border-gray-200 dark:border-neutral-800 shadow-xl flex flex-col`}>
+            {/* Panel — above the backdrop */}
+            <div className={`fixed inset-y-0 left-0 ${leftOffset} z-50 w-[360px] bg-white dark:bg-neutral-900 border-r border-gray-200 dark:border-neutral-800 shadow-[10px_0_20px_-5px_rgba(0,0,0,0.1)] dark:shadow-[10px_0_20px_-5px_rgba(0,0,0,0.3)] flex flex-col`}>
                 {/* Panel header */}
                 <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-neutral-800 shrink-0">
                     <div className="flex items-center gap-2">

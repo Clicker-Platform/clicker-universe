@@ -749,6 +749,14 @@ export async function addCarCatalogEntry(
     return ref.id;
 }
 
+export async function updateCarCatalogEntry(
+    siteId: string,
+    id: string,
+    data: { make: string; model: string; type: VehicleType }
+): Promise<void> {
+    await updateDoc(doc(db, 'sites', siteId, SR_CAR_CATALOG, id), { ...data });
+}
+
 /** Ensure a make/model/type combo exists in the catalog. Returns the entry id. */
 export async function ensureCarCatalogEntry(
     siteId: string,

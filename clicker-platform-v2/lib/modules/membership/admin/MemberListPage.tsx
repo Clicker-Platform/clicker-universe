@@ -7,11 +7,13 @@ import { Member } from '../types';
 import { Loader2, Plus, Search, User, Settings, X } from 'lucide-react';
 // import { Link } from 'lucide-react'; // Avoid conflict, use NextLink
 import Link from 'next/link';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { toast } from 'sonner';
 import { useSite } from '@/lib/site-context';
 // Import API methods
 import { createMember } from '../api';
 import { usePermission } from '@/lib/hooks/use-permission';
+import { MemberDetailsPanel } from './components/MemberDetailsPanel';
 
 export default function MemberListPage() {
     const { siteId, tenantSlug } = useSite();
@@ -22,7 +24,24 @@ export default function MemberListPage() {
     const [hasMore, setHasMore] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
 
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+    const detailsId = searchParams.get('detailsId');
+
     const { canEdit, checkAccess } = usePermission('membership', 'members');
+
+    const openDetails = (id: string) => {
+        const params = new URLSearchParams(searchParams.toString());
+        params.set('detailsId', id);
+        router.push(`${pathname}?${params.toString()}`);
+    };
+
+    const closeDetails = () => {
+        const params = new URLSearchParams(searchParams.toString());
+        params.delete('detailsId');
+        router.push(`${pathname}?${params.toString()}`);
+    };
 
     // Unified Fetch Logic
     useEffect(() => {
@@ -208,12 +227,12 @@ export default function MemberListPage() {
                                                     {(member.currentPoints || 0).toLocaleString()}
                                                 </td>
                                                 <td className="p-4 text-right">
-                                                    <Link
-                                                        href={`${tenantSlug ? `/${tenantSlug}` : ''}/admin/membership/details?id=${member.id}`}
+                                                    <button
+                                                        onClick={() => openDetails(member.id)}
                                                         className="px-3 py-1.5 text-xs font-bold text-gray-600 dark:text-neutral-400 hover:text-brand-dark bg-gray-100 dark:bg-neutral-800 hover:bg-gray-200 dark:hover:bg-neutral-700 rounded-lg transition-colors inline-block"
                                                     >
                                                         View
-                                                    </Link>
+                                                    </button>
                                                 </td>
                                             </tr>
                                         ))
@@ -255,10 +274,10 @@ export default function MemberListPage() {
                     ) : (
                         <>
                             {filteredMembers.map(member => (
-                                <Link
+                                <button
                                     key={member.id}
-                                    href={`${siteId ? `/${siteId}` : ''}/admin/membership/details?id=${member.id}`}
-                                    className="block bg-white dark:bg-neutral-900 p-4 rounded-2xl border border-gray-100 dark:border-neutral-800 shadow-sm active:scale-[0.98] transition-transform"
+                                    onClick={() => openDetails(member.id)}
+                                    className="w-full text-left block bg-white dark:bg-neutral-900 p-4 rounded-2xl border border-gray-100 dark:border-neutral-800 shadow-sm active:scale-[0.98] transition-transform"
                                 >
                                     <div className="flex items-center justify-between mb-2">
                                         <div className="flex items-center gap-3">
@@ -274,7 +293,7 @@ export default function MemberListPage() {
                                             {(member.currentPoints || 0).toLocaleString()} pts
                                         </div>
                                     </div>
-                                </Link>
+                                </button>
                             ))}
 
                             {/* Load More Trigger */}
@@ -352,6 +371,13 @@ export default function MemberListPage() {
                     </div>
                 </div>
             )}
+
+            {/* Slide Panel for Member Details */}
+            <MemberDetailsPanel
+                memberId={detailsId}
+                isOpen={!!detailsId}
+                onClose={closeDetails}
+            />
         </div>
     );
 }

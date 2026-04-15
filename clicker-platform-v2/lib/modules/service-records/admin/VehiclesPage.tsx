@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Plus, Edit2, Car, Search, AlertTriangle, List } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useSite } from '@/lib/site-context';
-import { getVehicles, createVehicle, updateVehicle, findVehicleByPlate, getCarCatalog, addCarCatalogEntry } from '../api';
+import { getVehicles, createVehicle, updateVehicle, findVehicleByPlate, getCarCatalog, addCarCatalogEntry, updateCarCatalogEntry } from '../api';
 import type { Vehicle, CarCatalogEntry, VehicleType } from '../types';
 
 const VEHICLE_TYPES: VehicleType[] = ['SEDAN', 'SUV', 'MPV', 'HATCHBACK', 'PICKUP', 'MOTORCYCLE', 'OTHER'];
@@ -37,6 +37,7 @@ export default function VehiclesPage() {
 
     // Car types state
     const [isCarTypeModalOpen, setIsCarTypeModalOpen] = useState(false);
+    const [editingCarType, setEditingCarType] = useState<CarCatalogEntry | null>(null);
     const [carTypeForm, setCarTypeForm] = useState(EMPTY_CAR_TYPE_FORM);
     const [carTypeDupeWarning, setCarTypeDupeWarning] = useState<string | null>(null);
     const [carTypeSubmitting, setCarTypeSubmitting] = useState(false);
@@ -129,7 +130,15 @@ export default function VehiclesPage() {
     // ── Car Type CRUD ───────────────────────────────────────────────────────────
 
     function openCreateCarType() {
+        setEditingCarType(null);
         setCarTypeForm(EMPTY_CAR_TYPE_FORM);
+        setCarTypeDupeWarning(null);
+        setIsCarTypeModalOpen(true);
+    }
+
+    function openEditCarType(entry: CarCatalogEntry) {
+        setEditingCarType(entry);
+        setCarTypeForm({ make: entry.make, model: entry.model, type: entry.type });
         setCarTypeDupeWarning(null);
         setIsCarTypeModalOpen(true);
     }
@@ -149,20 +158,26 @@ export default function VehiclesPage() {
         const model = carTypeForm.model.trim();
         if (!make || !model) { showToast('error', 'Make and model are required'); return; }
         const dupe = carCatalog.find(
-            c => c.make.toLowerCase() === make.toLowerCase()
+            c => c.id !== editingCarType?.id
+              && c.make.toLowerCase() === make.toLowerCase()
               && c.model.toLowerCase() === model.toLowerCase()
         );
         if (dupe) { showToast('error', `${make} ${model} already exists`); return; }
         setCarTypeSubmitting(true);
         try {
-            await addCarCatalogEntry(siteId, { make, model, type: carTypeForm.type });
-            showToast('success', 'Car type added');
+            if (editingCarType) {
+                await updateCarCatalogEntry(siteId, editingCarType.id, { make, model, type: carTypeForm.type });
+                showToast('success', 'Car type updated');
+            } else {
+                await addCarCatalogEntry(siteId, { make, model, type: carTypeForm.type });
+                showToast('success', 'Car type added');
+            }
             setIsCarTypeModalOpen(false);
             const updated = await getCarCatalog(siteId);
             setCarCatalog(updated);
         } catch (err) {
             console.error('[SR VehiclesPage] car type save error:', err);
-            showToast('error', 'Failed to add car type');
+            showToast('error', editingCarType ? 'Failed to update car type' : 'Failed to add car type');
         } finally {
             setCarTypeSubmitting(false);
         }
@@ -364,6 +379,7 @@ export default function VehiclesPage() {
                                             <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-neutral-500 uppercase tracking-wide">Make</th>
                                             <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-neutral-500 uppercase tracking-wide">Model</th>
                                             <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-neutral-500 uppercase tracking-wide">Type</th>
+                                            <th className="px-4 py-3" />
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-50 dark:divide-neutral-800">
@@ -372,6 +388,14 @@ export default function VehiclesPage() {
                                                 <td className="px-4 py-3 font-medium text-gray-900 dark:text-neutral-100">{c.make}</td>
                                                 <td className="px-4 py-3 text-gray-700 dark:text-neutral-300">{c.model}</td>
                                                 <td className="px-4 py-3 text-xs text-gray-500 dark:text-neutral-500">{c.type}</td>
+                                                <td className="px-4 py-3">
+                                                    <button
+                                                        onClick={() => openEditCarType(c)}
+                                                        className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-700 text-gray-500 dark:text-neutral-400"
+                                                    >
+                                                        <Edit2 className="w-3.5 h-3.5" />
+                                                    </button>
+                                                </td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -379,9 +403,17 @@ export default function VehiclesPage() {
                             </div>
                             <div className="md:hidden divide-y divide-gray-50 dark:divide-neutral-800">
                                 {carCatalog.map(c => (
-                                    <div key={c.id} className="px-4 py-3">
-                                        <p className="font-medium text-gray-900 dark:text-neutral-100">{c.make} {c.model}</p>
-                                        <p className="text-xs text-gray-500 dark:text-neutral-500 mt-0.5">{c.type}</p>
+                                    <div key={c.id} className="px-4 py-3 flex items-center justify-between">
+                                        <div>
+                                            <p className="font-medium text-gray-900 dark:text-neutral-100">{c.make} {c.model}</p>
+                                            <p className="text-xs text-gray-500 dark:text-neutral-500 mt-0.5">{c.type}</p>
+                                        </div>
+                                        <button
+                                            onClick={() => openEditCarType(c)}
+                                            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-700 text-gray-500 dark:text-neutral-400"
+                                        >
+                                            <Edit2 className="w-4 h-4" />
+                                        </button>
                                     </div>
                                 ))}
                             </div>
@@ -476,7 +508,9 @@ export default function VehiclesPage() {
                 <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
                     <div className="bg-white dark:bg-neutral-900 rounded-2xl w-full max-w-sm shadow-xl">
                         <div className="p-6 border-b border-gray-100 dark:border-neutral-800">
-                            <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100">Add Car Type</h2>
+                            <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100">
+                                {editingCarType ? 'Edit Car Type' : 'Add Car Type'}
+                            </h2>
                         </div>
                         <form onSubmit={handleCarTypeSave} className="p-6 space-y-4">
                             <div className="grid grid-cols-2 gap-3">
@@ -538,7 +572,7 @@ export default function VehiclesPage() {
                                     disabled={carTypeSubmitting || !!carTypeDupeWarning}
                                     className="bg-studio-blue text-white px-5 py-2 rounded-xl text-sm font-medium disabled:opacity-50"
                                 >
-                                    {carTypeSubmitting ? 'Saving…' : 'Add Car Type'}
+                                    {carTypeSubmitting ? 'Saving…' : editingCarType ? 'Update' : 'Add Car Type'}
                                 </button>
                             </div>
                         </form>

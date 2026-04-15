@@ -70,6 +70,16 @@ body:has(.dark.admin-layout) {
   color: #e5e5e5;
 }
 
+/* Fix browser autofill injecting hardcoded white backgrounds in dark mode */
+.dark input:-webkit-autofill,
+.dark input:-webkit-autofill:hover, 
+.dark input:-webkit-autofill:focus, 
+.dark input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #262626 inset !important; /* Match neutral-800 */
+  -webkit-text-fill-color: #e5e5e5 !important; /* Match neutral-200 */
+  border-color: #404040 !important; /* Match neutral-700 */
+}
+
 /* Dynamic Grid Layout for Block System */
 .dynamic-grid {
   display: grid;

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X, AlertTriangle } from 'lucide-react';
+import { useAdminTheme } from '@/lib/use-admin-theme';
 
 interface ConfirmationDialogProps {
     isOpen: boolean;
@@ -29,13 +30,14 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
     children,
     hideFooter = false,
 }) => {
+    const { isDark } = useAdminTheme();
     const [mounted, setMounted] = useState(false);
     useEffect(() => { setMounted(true); }, []);
 
     if (!isOpen || !mounted) return null;
 
     const dialog = (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className={`fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200 ${isDark ? 'dark' : ''}`}>
             <div
                 className="bg-white dark:bg-neutral-900 rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200"
                 role="dialog"

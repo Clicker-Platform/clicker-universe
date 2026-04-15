@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/firebase';
-import { doc, collection, writeBatch, increment } from 'firebase/firestore';
+import { doc, writeBatch, increment } from 'firebase/firestore';
+import { randomShardId, analyticsShardRef } from '@/lib/analytics/counters';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
     try {
-        console.log('--- Incoming POST Analytics ---');
         const headersList = Object.fromEntries(request.headers.entries());
 
         let body;
@@ -44,30 +44,28 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Database connection failed', details: dbError.message }, { status: 500 });
         }
 
+        // Pick a random shard to distribute write load across 10 documents
+        const shardId = randomShardId();
+        const shard = analyticsShardRef(siteId, shardId);
+
         if (type === 'page_view') {
-            const statsRef = doc(db, `sites/${siteId}/analytics/siteStats`);
-            batch.set(statsRef, { pageViews: increment(1) }, { merge: true });
+            batch.set(shard, { pageViews: increment(1) }, { merge: true });
         }
 
         if (type === 'link_click' && id) {
             const linkRef = doc(db, `sites/${siteId}/links/${id}`);
             batch.set(linkRef, { clicks: increment(1) }, { merge: true });
-
-            const statsRef = doc(db, `sites/${siteId}/analytics/siteStats`);
-            batch.set(statsRef, { totalClicks: increment(1) }, { merge: true });
+            batch.set(shard, { totalClicks: increment(1) }, { merge: true });
         }
 
         if (type === 'product_click' && id) {
             const productRef = doc(db, `sites/${siteId}/products/${id}`);
             batch.set(productRef, { clicks: increment(1) }, { merge: true });
-
-            const statsRef = doc(db, `sites/${siteId}/analytics/siteStats`);
-            batch.set(statsRef, { totalClicks: increment(1) }, { merge: true });
+            batch.set(shard, { totalClicks: increment(1) }, { merge: true });
         }
 
         try {
             await batch.commit();
-            console.log('[Analytics] Tracked successfully');
             return NextResponse.json({ success: true });
         } catch (commitError: any) {
             console.error('[Analytics] Failed to commit batch:', commitError);
@@ -75,7 +73,6 @@ export async function POST(request: Request) {
         }
 
     } catch (error: any) {
-        // PERMISSION_DENIED often happens in local dev or if rules restrict it
         const errorMessage = error?.message || '';
 
         if (

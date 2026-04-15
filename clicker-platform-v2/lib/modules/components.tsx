@@ -47,7 +47,6 @@ const SalesPipelineSettingsPage = dynamic(() => import('@/lib/modules/sales-pipe
 
 // Admin Pages (Membership)
 const MemberListPage = dynamic(() => import('@/lib/modules/membership/admin/MemberListPage'));
-const MemberDetailsPage = dynamic(() => import('@/lib/modules/membership/admin/MemberDetailsPage'));
 const MembershipSettingsPage = dynamic(() => import('@/lib/modules/membership/admin/SettingsPage'));
 
 // Module Block Components
@@ -89,7 +88,6 @@ export const MODULE_COMPONENTS: Record<string, any> = {
 
     // Membership Module
     'membership:MemberListPage': MemberListPage,
-    'membership:MemberDetailsPage': MemberDetailsPage,
     'membership:Settings': MembershipSettingsPage,
     'membership:LoginPage': dynamic(() => import('@/lib/modules/membership/components/public/LoginPage')),
 

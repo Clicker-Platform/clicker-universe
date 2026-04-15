@@ -159,6 +159,13 @@ service cloud.firestore {
         allow write: if false; // Server-side only
       }
 
+      // ANALYTICS SHARDS (Distributed counters — replaces siteStats for high-throughput writes)
+      match /analytics_shards/{shardId} {
+        allow read: if hasSiteAccess(siteId);
+        allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['pageViews', 'totalClicks']);
+        allow create: if request.resource.data.keys().hasOnly(['pageViews', 'totalClicks']);
+      }
+
       // === CORE CMS CONTENT ===
       // Pages, Content, Posts, Products, Links, Forms, Branches
       

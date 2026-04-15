@@ -169,9 +169,9 @@ export function BillCard({ group, onProcessPayment, disabled }: BillCardProps) {
                         onProcessPayment(group.orders);
                     }}
                     disabled={disabled}
-                    className={`w-full py-4 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 cursor-pointer ${disabled ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''} ${group.aggregatedStatus === 'pending_confirmation'
-                        ? 'bg-amber-400 text-amber-900 shadow-amber-200 hover:bg-amber-300 animate-pulse'
-                        : 'bg-studio-blue text-white shadow-gray-200 hover:bg-studio-blue/85'
+                    className={`w-full py-3 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer ${disabled ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''} ${group.aggregatedStatus === 'pending_confirmation'
+                        ? 'bg-amber-400 text-amber-900 hover:bg-amber-300 animate-pulse'
+                        : 'bg-studio-blue text-white hover:bg-studio-blue/90'
                         }`}
                 >
                     <CreditCard size={18} />
