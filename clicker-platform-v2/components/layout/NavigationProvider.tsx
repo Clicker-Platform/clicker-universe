@@ -4,13 +4,15 @@ import React, { createContext, useContext, useEffect, useState, useMemo, useCall
 import { db } from '@/lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { NavigationItem } from '@/data/mockData';
-import { useNavigationConfig, TopNavActions } from '@/lib/hooks/useNavigationConfig';
+import { useNavigationConfig, TopNavActions, NavBarStyle } from '@/lib/hooks/useNavigationConfig';
 
 interface NavigationContextType {
     topNav: NavigationItem[];
     topNavActions: TopNavActions | null;
     bottomNav: NavigationItem[];
     fab: NavigationItem | null;
+    headerStyle: NavBarStyle;
+    bottomNavStyle: NavBarStyle;
     loading: boolean;
     error: Error | null;
     // Pre-fetched form data, keyed by formId — enables instant modal open on click
@@ -78,6 +80,8 @@ const NAVIGATION_FALLBACK: NavigationContextType = {
     topNavActions: null,
     bottomNav: [],
     fab: null,
+    headerStyle: {},
+    bottomNavStyle: {},
     loading: false,
     error: null,
     formCache: {},

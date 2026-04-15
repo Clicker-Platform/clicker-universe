@@ -120,7 +120,7 @@ export default async function TenantPage({ params, searchParams }: TenantPagePro
                     style={{ gridTemplateColumns: '1fr' }}
                 >
                     {blocksToRender.map(block => (
-                        <div key={block.id}>
+                        <div key={block.id} className="min-w-0">
                             <BlockRenderer
                                 block={block}
                                 phoneNumber={contact?.whatsapp}

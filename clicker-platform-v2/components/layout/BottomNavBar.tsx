@@ -23,7 +23,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({ previewMode = false 
     const { siteId } = useSite();
     const { layout } = theme;
 
-    const { bottomNav, fab, loading, formCache } = useNavigation();
+    const { bottomNav, fab, bottomNavStyle, loading, formCache } = useNavigation();
 
     const [selectedForm, setSelectedForm] = useState<any>(null);
     const [isFormOpen, setIsFormOpen] = useState(false);
@@ -86,8 +86,8 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({ previewMode = false 
 
     const FabIcon = fab?.icon ? getIcon(fab.icon) : PlusCircle;
 
-    const barBg = theme.colors.background + 'f0';
-    const borderColor = theme.colors.border;
+    const barBg = bottomNavStyle.bgColor ?? (theme.colors.background + 'f0');
+    const borderColor = bottomNavStyle.showBorder ? (theme.colors.border || '#e5e7eb') : 'transparent';
     const inactiveColor = theme.colors.foreground + '60';
     const fabBg = theme.colors.accent || theme.colors.primary;
 

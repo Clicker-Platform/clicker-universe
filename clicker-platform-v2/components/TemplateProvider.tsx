@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useMemo, useState } from '
 import { getTemplateDefinition } from '@/lib/templates/definitions';
 import { TemplateDefinition, ThemeConfig } from '@/lib/templates/types';
 import { deepMerge } from '@/lib/utils/deepMerge';
+import { getContrastColor } from '@/lib/utils/color';
 
 export interface TemplateContextType {
     templateId: string;
@@ -83,10 +84,22 @@ export const TemplateProvider: React.FC<TemplateProviderProps> = ({ templateId, 
     // Merge template config with overrides using deep merge
     const theme = useMemo(() => {
         const baseConfig = activeDefinition.config;
-        if (!themeOverrides) return baseConfig;
+        const merged = themeOverrides
+            ? deepMerge(baseConfig, themeOverrides) as ThemeConfig
+            : baseConfig;
 
-        // Use deep merge for proper nested object handling
-        return deepMerge(baseConfig, themeOverrides) as ThemeConfig;
+        // Always auto-derive accentForeground from accent/primary luminance
+        // so text on accent-colored buttons is always readable,
+        // regardless of what value was hardcoded in the template definition.
+        const accentColor = merged.colors.accent || merged.colors.primary;
+        const autoAccentFg = getContrastColor(accentColor);
+        return {
+            ...merged,
+            colors: {
+                ...merged.colors,
+                accentForeground: autoAccentFg,
+            },
+        };
     }, [activeDefinition, themeOverrides]);
 
     const template = useMemo(() => ({

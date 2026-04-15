@@ -24,9 +24,10 @@ interface MrbHeroProps {
         tagline?: string;
         imageUrl?: string;
         imagePosition?: string;
+        imagePositionMobile?: string;
+        imageUrlMobile?: string;
         textAlign?: string;
         titleSize?: string;
-        imageFullWidth?: boolean;
         layoutVariant?: string;
         primaryBtn?: CtaBtn | null;
         secondaryBtn?: CtaBtn | null;
@@ -43,9 +44,23 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data }) => {
     const defaultHero = "https://lh3.googleusercontent.com/aida-public/AB6AXuAHd7B70Bcb1uWEcIBcn_xhhy47_DyI5SXZVEiUzf-tKxj1KFRwGS5Ud_8q_bwMYgtCRfnYaEZHQgdSmWqgw8gvdjBDjpg0DUSN_LDBYpX_1THYO_73OY2hcgMVUVrx75mGZdmaBdiL78ZPKz9UV9yIiSvcwhTkNfJ7F-Wa6nQyo0gmJUQ7nFq2lN3GGAK3YciJGqEhihA8mzcKu9FvF0jopfHK4M99Lp1sqL_7vhXIAAqgQG51V3b89V-ffqXoCGn5rQt2EvC68ayw";
 
     const imageUrl = data?.imageUrl || defaultHero;
+    // Desktop focal point
     const imgPos = data?.imagePosition || 'center';
+    // Mobile: use dedicated focal point if set, otherwise fall back to desktop (Option B default)
+    const imgPosMobile = data?.imagePositionMobile || imgPos;
+    // Optional separate mobile image (Option A escape hatch)
+    const imageUrlMobile = data?.imageUrlMobile || null;
+
+    // For Canvas Studio preview: d is 'mobile' | 'tablet' | 'desktop' | 'responsive'.
+    // On real public pages d = 'responsive', so the CSS @media style tag handles mobile.
+    // In Canvas Studio mobile/tablet preview we apply the mobile focal point directly via inline style.
+    const isMobilePreview = d === 'mobile' || d === 'tablet';
+    // If a separate mobile image exists, effectiveImgPos controls ITS position in Canvas preview.
+    // Otherwise it controls the single shared image's focal point.
+    const effectiveImgPos = isMobilePreview ? imgPosMobile : imgPos;
+
     const titleSizeClass = TITLE_SIZES(d)[data?.titleSize || 'lg']; // MrbHero default is bigger
-    const borderRadius = data?.imageFullWidth ? '0' : (theme.borderRadius || '1rem');
+    const borderRadius = theme.borderRadius || '1rem';
 
     const isFullbleed = data?.layoutVariant === 'fullbleed';
     const isCentered = data?.layoutVariant === 'centered';
@@ -73,13 +88,14 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data }) => {
                 isFullbleed
                     ? 'rounded-none w-screen'
                     : 'w-full'
-            } ${isCentered ? dv(d, 'mt-6', 'md:mt-8') : ''}`}
+            }`}
             style={isFullbleed
                 ? { border: 'none', borderRadius: '0', position: 'relative', left: '50%', transform: 'translateX(-50%)' }
                 : { borderRadius }}
         >
             {/* Background image */}
             <div className="absolute inset-0 z-0">
+                {/* Desktop image — hidden on mobile only when a separate mobile image is provided */}
                 <Image
                     src={imageUrl}
                     alt=""
@@ -87,9 +103,30 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data }) => {
                     priority
                     fetchPriority="high"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
-                    className="object-cover"
-                    style={{ objectPosition: imgPos }}
+                    className={`object-cover mrb-hero-bg ${imageUrlMobile ? dv(d, 'hidden', 'md:block') : ''}`}
+                    style={{ objectPosition: imageUrlMobile ? imgPos : effectiveImgPos }}
                 />
+                {/* Option B: CSS @media overrides objectPosition for real mobile browsers (d='responsive') */}
+                {!imageUrlMobile && imgPosMobile !== imgPos && (
+                    <style>{`
+                        @media (max-width: 767px) {
+                            .mrb-hero-bg { object-position: ${imgPosMobile} !important; }
+                        }
+                    `}</style>
+                )}
+                {/* Option A escape hatch: separate mobile image, shown only on small screens */}
+                {imageUrlMobile && (
+                    <Image
+                        src={imageUrlMobile}
+                        alt=""
+                        fill
+                        priority
+                        fetchPriority="high"
+                        sizes="100vw"
+                        className={`object-cover ${dv(d, 'block', 'md:hidden')}`}
+                        style={{ objectPosition: imgPosMobile }}
+                    />
+                )}
                 <div
                     className="absolute inset-0"
                     style={{

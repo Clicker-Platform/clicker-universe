@@ -30,10 +30,11 @@ function parseFocalPoint(value: string): [number, number] {
     return [50, 50];
 }
 
-function FocalPointPicker({ imageUrl, value, onChange }: {
+function FocalPointPicker({ imageUrl, value, onChange, label: pickerLabel }: {
     imageUrl: string;
     value: string;
     onChange: (v: string) => void;
+    label?: string;
 }) {
     const containerRef = useRef<HTMLDivElement>(null);
     const isDragging = useRef(false);
@@ -76,7 +77,7 @@ function FocalPointPicker({ imageUrl, value, onChange }: {
     return (
         <div>
             <label className="block text-xs font-medium text-neutral-400 dark:text-neutral-500 mb-2">
-                Focal Point <span className="normal-case font-normal text-neutral-400 dark:text-neutral-600 ml-1">drag to set focus area</span>
+                {pickerLabel ?? 'Focal Point'} <span className="normal-case font-normal text-neutral-400 dark:text-neutral-600 ml-1">drag to set focus area</span>
             </label>
             <div
                 ref={containerRef}
@@ -173,6 +174,7 @@ export const HeroForm = ({ data, onChange }: HeroFormProps) => {
     const secondaryBtn = safeData.secondaryBtn || null;
     const currentAlign = safeData.textAlign || '';
     const currentPosition = safeData.imagePosition || 'center';
+    const currentPositionMobile = safeData.imagePositionMobile || currentPosition;
 
     return (
         <div className="space-y-4">
@@ -301,7 +303,7 @@ export const HeroForm = ({ data, onChange }: HeroFormProps) => {
 
             {/* Hero Image */}
             <div>
-                <BlockImageUploader label="Hero Image" currentUrl={safeData.imageUrl}
+                <BlockImageUploader label="Hero Image (Desktop)" currentUrl={safeData.imageUrl}
                     onUpload={(url) => handleChange('imageUrl', url)}
                     onRemove={() => handleChange('imageUrl', '')} />
             </div>
@@ -309,24 +311,44 @@ export const HeroForm = ({ data, onChange }: HeroFormProps) => {
             {/* Image controls — only when image is set */}
             {safeData.imageUrl && (
                 <>
+                    {/* Desktop focal point */}
                     <FocalPointPicker
                         imageUrl={safeData.imageUrl}
                         value={currentPosition}
                         onChange={(v) => handleChange('imagePosition', v)}
+                        label="Focal Point — Desktop"
                     />
 
-                    <div className="flex items-center justify-between p-3 bg-gray-100/50 dark:bg-neutral-900/50 rounded-xl border border-gray-200 dark:border-neutral-800">
-                        <div>
-                            <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-200">Full-width image</p>
-                            <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5">Remove rounded corners — image bleeds to edges</p>
-                        </div>
-                        <button type="button" onClick={() => handleChange('imageFullWidth', !safeData.imageFullWidth)}
-                            className={`relative w-10 h-6 rounded-full transition-colors flex-shrink-0 ${safeData.imageFullWidth ? 'bg-blue-600' : 'bg-gray-300 dark:bg-neutral-700'}`}>
-                            <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${safeData.imageFullWidth ? 'translate-x-4' : 'translate-x-0'}`} />
-                        </button>
-                    </div>
+                    {/* Mobile focal point — separate from desktop */}
+                    <FocalPointPicker
+                        imageUrl={safeData.imageUrl}
+                        value={currentPositionMobile}
+                        onChange={(v) => handleChange('imagePositionMobile', v)}
+                        label="Focal Point — Mobile"
+                    />
+
                 </>
             )}
+
+            {/* Optional separate mobile image (escape hatch) */}
+            <div>
+                <BlockImageUploader label="Mobile Image (optional override)" currentUrl={safeData.imageUrlMobile}
+                    onUpload={(url) => handleChange('imageUrlMobile', url)}
+                    onRemove={() => handleChange('imageUrlMobile', '')} />
+                <p className="text-[10px] text-neutral-400 dark:text-neutral-600 mt-1 px-1">
+                    Upload a portrait-cropped version for mobile. If left empty, the desktop image is used with the mobile focal point above.
+                </p>
+                {safeData.imageUrlMobile && (
+                    <div className="mt-2">
+                        <FocalPointPicker
+                            imageUrl={safeData.imageUrlMobile}
+                            value={currentPositionMobile}
+                            onChange={(v) => handleChange('imagePositionMobile', v)}
+                            label="Focal Point — Mobile Image"
+                        />
+                    </div>
+                )}
+            </div>
         </div>
     );
 };

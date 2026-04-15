@@ -49,6 +49,7 @@ export function SharedPageLayout({
     forceMobile = false,
     isSubPage = false,
     pageTitle,
+    heroFirst = false,
 }: SharedLayoutProps) {
     const {
         profile,
@@ -131,7 +132,7 @@ export function SharedPageLayout({
 
                 <main
                     className={`
-                        min-h-screen py-12 relative transition-colors duration-300 overflow-x-clip
+                        min-h-screen ${heroFirst ? 'pt-0 pb-12' : 'py-12'} relative transition-colors duration-300 overflow-x-clip
                         ${template.config.layout?.navMode === 'adaptive' ? 'pt-16' : ''}
                     `}
                     style={{ backgroundColor: pageBackgroundColor }}
@@ -144,7 +145,7 @@ export function SharedPageLayout({
 
                     {/* ResponsiveContainer Inlined */}
                     <div
-                        className={`w-full mx-auto px-4 md:px-6 transition-all duration-300 relative z-10 flex flex-col min-h-[90vh]`}
+                        className={`w-full mx-auto px-4 md:px-6 transition-all duration-300 relative z-10 flex flex-col gap-6 min-h-[90vh]`}
                         style={{ maxWidth: 'var(--layout-max-width, 480px)' }}
                     >
                         {/* Header */}

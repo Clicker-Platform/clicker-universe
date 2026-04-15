@@ -13,6 +13,33 @@ import { VariantSelectionDialog } from './VariantSelectionDialog';
 import { useSite } from '@/lib/site-context';
 import { useTemplate } from '@/components/TemplateProvider';
 
+function AddButton({ disabled, onClick, primaryColor, borderColor }: {
+    disabled: boolean;
+    onClick: () => void;
+    primaryColor: string;
+    borderColor: string;
+}) {
+    const [hovered, setHovered] = useState(false);
+    return (
+        <div className="p-3 pt-0 mt-auto">
+            <button
+                disabled={disabled}
+                onClick={onClick}
+                onMouseEnter={() => setHovered(true)}
+                onMouseLeave={() => setHovered(false)}
+                className="w-full py-3 font-bold text-sm rounded-full flex items-center justify-center gap-2 disabled:opacity-40 transition-all duration-200 active:scale-95 border"
+                style={{
+                    backgroundColor: hovered ? `${primaryColor}15` : 'transparent',
+                    borderColor,
+                    color: primaryColor,
+                }}
+            >
+                <Plus size={18} /> Add
+            </button>
+        </div>
+    );
+}
+
 interface MenuGridProps {
     initialItems?: POSItem[];
     initialInventoryMap?: Record<string, InventoryItem>;
@@ -25,7 +52,7 @@ export function MenuGrid({ initialItems, initialInventoryMap }: MenuGridProps) {
 
     const isGlass = theme.decorations?.surfaceStyle === 'glass' || theme.cardStyle === 'glass';
     const surfaceBg = isGlass ? 'rgba(255,255,255,0.05)' : (theme.colors.surfaceElevated || theme.colors.surface || '#ffffff');
-    const borderColor = isGlass ? 'rgba(255,255,255,0.15)' : (theme.colors.border || '#e5e7eb');
+    const borderColor = isGlass ? 'rgba(255,255,255,0.1)' : (theme.colors.border || '#e5e7eb'); // Match reservation: 0.1 not 0.15
     const mutedText = theme.colors.textMuted || theme.colors.foreground;
     const subtleText = theme.colors.textSubtle || theme.colors.muted || theme.colors.foreground;
     const primaryColor = theme.colors.primary;
@@ -220,35 +247,34 @@ export function MenuGrid({ initialItems, initialInventoryMap }: MenuGridProps) {
         <div className={`p-2 ${itemCount > 0 ? 'pb-24' : 'pb-2'} space-y-6`}>
             {/* Search & Filter Header */}
             <div className="space-y-4 px-2">
-                {/* Search Bar */}
+                {/* Search Bar — tokens match reservation ServiceStep */}
                 <div className="relative">
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2" style={{ color: subtleText }}>
-                        <Search size={20} />
-                    </div>
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2" size={18}
+                        style={{ color: subtleText }} />
                     <input
                         type="text"
                         placeholder="Search items..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-12 pr-4 py-3 rounded-xl border focus:outline-none font-bold transition-shadow"
+                        className="w-full pl-10 pr-4 py-3 rounded-xl border focus:outline-none"
                         style={{
-                            backgroundColor: surfaceBg,
+                            backgroundColor: isGlass ? 'rgba(255,255,255,0.05)' : (theme.colors.surface || '#f9fafb'),
                             borderColor,
                             color: theme.colors.foreground,
                         }}
                     />
                 </div>
 
-                {/* Categories */}
+                {/* Categories — tokens match reservation ServiceStep */}
                 <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
                     {categories.map(cat => (
                         <button
                             key={cat}
                             onClick={() => setActiveCategory(cat)}
-                            className="px-4 py-2 rounded-full font-bold whitespace-nowrap border transition-all"
+                            className="whitespace-nowrap px-4 py-2 rounded-full text-xs font-bold transition-all"
                             style={activeCategory === cat
-                                ? { backgroundColor: primaryColor, color: accentFg, borderColor: primaryColor }
-                                : { backgroundColor: surfaceBg, color: mutedText, borderColor }
+                                ? { backgroundColor: primaryColor, color: accentFg }
+                                : { backgroundColor: isGlass ? 'rgba(255,255,255,0.1)' : (theme.colors.surface || '#f3f4f6'), color: mutedText }
                             }
                         >
                             {cat}
@@ -289,7 +315,13 @@ export function MenuGrid({ initialItems, initialInventoryMap }: MenuGridProps) {
                                             priority={index < 4}
                                         />
                                     ) : (
-                                        <div className="w-full h-full flex items-center justify-center font-bold text-4xl uppercase" style={{ color: subtleText }}>
+                                        <div
+                                            className="w-full h-full flex items-center justify-center font-black text-3xl uppercase tracking-wide"
+                                            style={{
+                                                backgroundColor: isGlass ? 'rgba(255,255,255,0.06)' : `${primaryColor}12`,
+                                                color: `${primaryColor}60`,
+                                            }}
+                                        >
                                             {item.name.slice(0, 2)}
                                         </div>
                                     )}
@@ -299,25 +331,19 @@ export function MenuGrid({ initialItems, initialInventoryMap }: MenuGridProps) {
                                         </div>
                                     )}
                                 </div>
-                                <div className="p-3 flex items-start justify-between gap-2 flex-1">
-                                    <div>
-                                        <h3 className="font-bold text-sm line-clamp-2 leading-tight mb-1" style={{ color: theme.colors.foreground }}>{item.name}</h3>
-                                        <div className="font-black text-sm" style={{ color: primaryColor }}>
-                                            {hasVariants && <span className="text-xs font-normal mr-1" style={{ color: subtleText }}>from</span>}
-                                            {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(item.price)}
-                                        </div>
+                                <div className="px-3 pt-3 pb-1 flex flex-col gap-1 flex-1">
+                                    <h3 className="text-xs font-medium line-clamp-2 leading-snug" style={{ color: mutedText }}>{item.name}</h3>
+                                    <div className="font-black text-base leading-tight" style={{ color: theme.colors.foreground }}>
+                                        {hasVariants && <span className="text-xs font-normal mr-1" style={{ color: subtleText }}>from</span>}
+                                        {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(item.price)}
                                     </div>
                                 </div>
-                                <div className="p-3 pt-0 mt-auto">
-                                    <button
-                                        disabled={isOutOfStock}
-                                        onClick={() => handleItemClick(item, linkedStock)}
-                                        className="w-full py-3 font-bold text-sm rounded-xl flex items-center justify-center gap-2 disabled:opacity-40 transition-all duration-200 active:scale-95 hover:opacity-90"
-                                        style={{ backgroundColor: primaryColor, color: accentFg }}
-                                    >
-                                        <Plus size={18} /> Add
-                                    </button>
-                                </div>
+                                <AddButton
+                                    disabled={!!isOutOfStock}
+                                    onClick={() => handleItemClick(item, linkedStock)}
+                                    primaryColor={primaryColor}
+                                    borderColor={borderColor}
+                                />
                             </div>
                         );
                     })}

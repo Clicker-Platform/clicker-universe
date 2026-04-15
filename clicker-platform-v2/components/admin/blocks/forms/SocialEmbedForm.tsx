@@ -116,53 +116,47 @@ export function SocialEmbedForm({ data, onChange }: SocialEmbedFormProps) {
                     </div>
                 )}
 
-                <div className="space-y-3">
+                <div className="space-y-4">
                     {items.map((item, index) => (
-                        <div key={index} className="p-4 bg-gray-100 dark:bg-neutral-800 rounded-2xl border border-gray-300 dark:border-neutral-700 relative group shadow-sm space-y-3">
-                            {/* URL + platform badge */}
-                            <div>
-                                <div className="flex items-center gap-2 mb-1">
-                                    <label className={labelClass + ' mb-0'}>URL</label>
-                                    {item.platform && (
-                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${platformBadge[item.platform]}`}>
-                                            {platformLabel[item.platform]}
-                                        </span>
-                                    )}
-                                    {item.url && !item.platform && (
-                                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border bg-yellow-500/20 text-yellow-300 border-yellow-500/20">
-                                            Unrecognized
-                                        </span>
-                                    )}
-                                </div>
-                                <input
-                                    type="url"
-                                    value={item.url}
-                                    onChange={e => handleItemChange(index, 'url', e.target.value)}
-                                    className="w-full px-4 py-2.5 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl text-sm text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-600 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-medium"
-                                    placeholder="https://www.tiktok.com/@user/video/..."
-                                />
+                        <div key={index} className="space-y-2">
+                            {index > 0 && <div className="border-t border-gray-200 dark:border-neutral-800 pt-4" />}
+                            {/* Header row: label + badge + delete */}
+                            <div className="flex items-center gap-2">
+                                <label className={labelClass + ' mb-0'}>URL {index + 1}</label>
+                                {item.platform && (
+                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${platformBadge[item.platform]}`}>
+                                        {platformLabel[item.platform]}
+                                    </span>
+                                )}
+                                {item.url && !item.platform && (
+                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border bg-yellow-500/20 text-yellow-300 border-yellow-500/20">
+                                        Unrecognized
+                                    </span>
+                                )}
+                                <button
+                                    type="button"
+                                    onClick={() => handleDeleteItem(index)}
+                                    className="ml-auto text-neutral-400 dark:text-neutral-500 hover:text-red-400 transition-colors"
+                                    title="Remove embed"
+                                >
+                                    <Trash2 size={13} />
+                                </button>
                             </div>
-
-                            {/* Caption */}
-                            <div>
-                                <label className={labelClass}>Caption (optional)</label>
-                                <input
-                                    type="text"
-                                    value={item.caption || ''}
-                                    onChange={e => handleItemChange(index, 'caption', e.target.value)}
-                                    className="w-full px-4 py-2.5 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl text-sm text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-600 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-medium"
-                                    placeholder="Optional caption"
-                                />
-                            </div>
-
-                            <button
-                                type="button"
-                                onClick={() => handleDeleteItem(index)}
-                                className="absolute top-2 right-2 p-1.5 bg-gray-200 dark:bg-neutral-700 text-neutral-500 dark:text-neutral-400 hover:text-red-400 rounded-lg shadow-sm opacity-0 group-hover:opacity-100 transition-all active:scale-90"
-                                title="Remove embed"
-                            >
-                                <Trash2 size={14} />
-                            </button>
+                            <input
+                                type="url"
+                                value={item.url}
+                                onChange={e => handleItemChange(index, 'url', e.target.value)}
+                                className={inputClass}
+                                placeholder="https://www.tiktok.com/@user/video/..."
+                            />
+                            <label className={labelClass}>Caption (optional)</label>
+                            <input
+                                type="text"
+                                value={item.caption || ''}
+                                onChange={e => handleItemChange(index, 'caption', e.target.value)}
+                                className={inputClass}
+                                placeholder="Optional caption"
+                            />
                         </div>
                     ))}
                 </div>

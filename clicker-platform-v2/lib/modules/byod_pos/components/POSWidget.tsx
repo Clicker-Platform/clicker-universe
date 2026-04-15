@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { ShoppingBag, X, Plus, Minus } from 'lucide-react';
 import { useCart } from '@/lib/modules/byod_pos/cart-context';
 import { useOrderTracker } from '../order-tracker-context';
@@ -41,6 +42,7 @@ export function POSWidget({ initialItems, initialInventoryMap, settings: propSet
     const { printReceipt } = useReceiptPrinter();
     const [successOrder, setSuccessOrder] = useState<any | null>(null);
 
+    const [mounted, setMounted] = useState(false);
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [isCheckingOut, setIsCheckingOut] = useState(false);
     const [member, setMember] = useState<Member | null>(null);
@@ -50,6 +52,8 @@ export function POSWidget({ initialItems, initialInventoryMap, settings: propSet
     const tableParam = searchParams.get('table');
 
     const [loadingSettings, setLoadingSettings] = useState(!propSettings); // Loading if no prop
+
+    useEffect(() => { setMounted(true); return () => setMounted(false); }, []);
 
     // Initial Settings Load if not provided via props
     useEffect(() => {
@@ -215,9 +219,9 @@ export function POSWidget({ initialItems, initialInventoryMap, settings: propSet
                 <MenuGrid initialItems={initialItems} initialInventoryMap={initialInventoryMap} />
             </div>
 
-            {/* Floating Cart Button */}
-            {itemCount > 0 && (
-                <div className="fixed bottom-6 inset-x-0 z-20 flex justify-center px-4 pointer-events-none">
+            {/* Floating Cart Button — portaled to escape <main> stacking context */}
+            {mounted && itemCount > 0 && createPortal(
+                <div className="fixed bottom-20 md:bottom-6 inset-x-0 z-[55] flex justify-center px-4 pointer-events-none">
                     <button
                         onClick={() => setIsCartOpen(true)}
                         className="rounded-full shadow-2xl w-full max-w-md py-4 px-6 flex items-center justify-between pointer-events-auto transform transition-all duration-200 active:scale-95 hover:scale-[1.02]"
@@ -234,12 +238,13 @@ export function POSWidget({ initialItems, initialInventoryMap, settings: propSet
                             {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(total)}
                         </span>
                     </button>
-                </div>
+                </div>,
+                document.body
             )}
 
-            {/* Cart Modal / Drawer */}
-            {isCartOpen && (
-                <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex justify-end">
+            {/* Cart Modal / Drawer — portaled to escape <main> stacking context */}
+            {mounted && isCartOpen && createPortal(
+                <div className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm flex justify-end">
                     <div className="w-full max-w-md h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-300"
                         style={{ backgroundColor: surfaceBg }}>
                         <div className="p-4 border-b flex items-center justify-between"
@@ -375,10 +380,10 @@ export function POSWidget({ initialItems, initialInventoryMap, settings: propSet
                         </div>
                     </div>
                 </div>
-            )}
+            , document.body)}
 
-            {/* Success Modal */}
-            {successOrder && (
+            {/* Success Modal — portaled to escape <main> stacking context */}
+            {mounted && successOrder && createPortal(
                 <div className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
                     <div className="rounded-3xl shadow-xl w-full max-w-sm p-6 text-center"
                         style={{ backgroundColor: surfaceBg }}>
@@ -409,7 +414,7 @@ export function POSWidget({ initialItems, initialInventoryMap, settings: propSet
                         </div>
                     </div>
                 </div>
-            )}
+            , document.body)}
         </div>
     );
 }

@@ -117,7 +117,7 @@ export function DefaultSocialEmbedBlock({ data, previewMode }: DefaultSocialEmbe
                 </h2>
             )}
 
-            <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 pt-2 -webkit-overflow-scrolling-touch [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
+            <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 pt-2 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
                 {validItems.map((item, idx) => (
                     <div key={idx} className={`${cardClass} snap-start`}>
                         <EmbedTile item={item} previewMode={previewMode} />

@@ -202,7 +202,7 @@ type PanelView =
 
 export function HeaderNavPanel() {
     const { siteId } = useSite();
-    const [navigation, setNavigation] = useState<any>({ topNav: [], topNavActions: {} });
+    const [navigation, setNavigation] = useState<any>({ topNav: [], topNavActions: {}, headerStyle: {} });
     const [forms, setForms] = useState<any[]>([]);
     const [pages, setPages] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -395,6 +395,59 @@ export function HeaderNavPanel() {
                         </SortableContext>
                     </DndContext>
                 )}
+            </div>
+
+            {/* Appearance */}
+            <div className="border-t border-gray-200 dark:border-neutral-800 pt-4 space-y-3">
+                <h5 className="text-xs font-bold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider">Appearance</h5>
+                <div>
+                    <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-1">Background Color</label>
+                    <div className="flex items-center gap-2">
+                        <label
+                            className="w-8 h-8 rounded-lg border border-gray-400 dark:border-neutral-600 cursor-pointer overflow-hidden flex-shrink-0 relative"
+                            style={{ backgroundColor: navigation.headerStyle?.bgColor || '#ffffff' }}
+                        >
+                            <input
+                                type="color"
+                                value={navigation.headerStyle?.bgColor || '#ffffff'}
+                                onChange={(e) => setNavigation((prev: any) => ({ ...prev, headerStyle: { ...prev.headerStyle, bgColor: e.target.value } }))}
+                                className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
+                            />
+                        </label>
+                        <input
+                            type="text"
+                            value={navigation.headerStyle?.bgColor || ''}
+                            onChange={(e) => setNavigation((prev: any) => ({ ...prev, headerStyle: { ...prev.headerStyle, bgColor: e.target.value } }))}
+                            placeholder="e.g. #ffffff  (empty = theme default)"
+                            className="flex-1 px-3 py-1.5 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-lg text-xs text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-600 outline-none focus:border-blue-500 font-mono"
+                        />
+                        {navigation.headerStyle?.bgColor && (
+                            <button
+                                type="button"
+                                onClick={() => setNavigation((prev: any) => ({ ...prev, headerStyle: { ...prev.headerStyle, bgColor: undefined } }))}
+                                className="text-neutral-400 hover:text-red-400 transition-colors text-xs px-1 font-bold"
+                            >×</button>
+                        )}
+                    </div>
+                </div>
+                <div className="flex items-center justify-between">
+                    <div>
+                        <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300">Show Border Bottom</span>
+                        <p className="text-[10px] text-neutral-400 dark:text-neutral-600 mt-0.5">Uses theme border token</p>
+                    </div>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                        <span className="text-xs text-neutral-400 dark:text-neutral-500">{navigation.headerStyle?.showBorder ? 'On' : 'Off'}</span>
+                        <div className={`relative inline-flex h-5 w-9 rounded-full border-2 border-transparent transition-colors ${navigation.headerStyle?.showBorder ? 'bg-blue-500' : 'bg-gray-300 dark:bg-neutral-700'}`}>
+                            <input
+                                type="checkbox"
+                                className="sr-only"
+                                checked={!!navigation.headerStyle?.showBorder}
+                                onChange={(e) => setNavigation((prev: any) => ({ ...prev, headerStyle: { ...prev.headerStyle, showBorder: e.target.checked } }))}
+                            />
+                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition duration-200 ${navigation.headerStyle?.showBorder ? 'translate-x-4' : 'translate-x-0'}`} />
+                        </div>
+                    </label>
+                </div>
             </div>
 
             {/* CTA Button */}

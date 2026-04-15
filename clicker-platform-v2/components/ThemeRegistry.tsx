@@ -20,7 +20,6 @@ export default function ThemeRegistry({ initialSettings }: { initialSettings: Si
             <>
                 {isCustomFont && (
                     <>
-                        <link rel="preload" href={fontUrl} as="style" crossOrigin="anonymous" />
                         <link href={fontUrl} rel="stylesheet" media="print" data-font-swap />
                         <script dangerouslySetInnerHTML={{ __html: `document.querySelector('link[data-font-swap]').media='all'` }} />
                         <noscript><link href={fontUrl} rel="stylesheet" /></noscript>

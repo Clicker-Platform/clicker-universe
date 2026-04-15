@@ -36,7 +36,7 @@ export const ResponsiveNavBar: React.FC<ResponsiveNavBarProps> = ({
     const isPreview = deviceView !== 'responsive';
     const { layout } = theme;
 
-    const { topNav, topNavActions, loading, formCache } = useNavigation();
+    const { topNav, topNavActions, headerStyle, loading, formCache } = useNavigation();
 
     const [selectedForm, setSelectedForm] = useState<any>(null);
     const [isFormOpen, setIsFormOpen] = useState(false);
@@ -92,8 +92,8 @@ export const ResponsiveNavBar: React.FC<ResponsiveNavBarProps> = ({
     if (loading) return <TopNavSkeleton forceMobile={forceMobile || isPreview} />;
 
     // Template-adaptive colors
-    const navBg = theme.colors.background;
-    const navBorder = theme.colors.border || theme.colors.surface || 'transparent';
+    const navBg = headerStyle.bgColor ?? theme.colors.background;
+    const navBorder = headerStyle.showBorder ? (theme.colors.border || '#e5e7eb') : 'transparent';
     const textMuted = `${theme.colors.foreground}80`;
 
     return (
@@ -169,7 +169,7 @@ export const ResponsiveNavBar: React.FC<ResponsiveNavBarProps> = ({
                                         href={getHref(linkValue)}
                                         onClick={(e) => handleItemClick(e, actionItem)}
                                         className="px-5 py-2 rounded-full font-black text-[10px] uppercase tracking-[0.15em] hover:opacity-90 transition-opacity"
-                                        style={{ backgroundColor: theme.colors.primary, color: theme.colors.foreground }}
+                                        style={{ backgroundColor: theme.colors.primary, color: theme.colors.accentForeground || '#ffffff' }}
                                     >
                                         {label || 'Order'}
                                     </Link>
@@ -227,7 +227,7 @@ export const ResponsiveNavBar: React.FC<ResponsiveNavBarProps> = ({
                                             href={getHref(linkValue)}
                                             onClick={(e) => { handleItemClick(e, actionItem); setIsMenuOpen(false); }}
                                             className="block w-full py-5 rounded-full font-black text-sm uppercase tracking-[0.3em] text-center shadow-2xl"
-                                            style={{ backgroundColor: theme.colors.primary, color: theme.colors.foreground }}
+                                            style={{ backgroundColor: theme.colors.primary, color: theme.colors.accentForeground || '#ffffff' }}
                                         >
                                             {label || 'Order Now'}
                                         </Link>

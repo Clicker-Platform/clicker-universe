@@ -236,7 +236,7 @@ export function CanvasStudio({
                                         </div>
                                     )}
 
-                                    <div className="px-4 pb-8">
+                                    <div className="px-4 pt-4 pb-8">
                                         {/* Template Header (Profile) */}
                                         {HeaderComponent && globalSettings?.profile && (
                                             <div className="relative z-10">
@@ -264,7 +264,7 @@ export function CanvasStudio({
                                                         setSelectedBlockId?.(block.id);
                                                     }}
                                                 >
-                                                    <div className="pointer-events-none">
+                                                    <div className={block.type === 'social_embed' ? 'pointer-events-auto' : 'pointer-events-none'}>
                                                         <BlockRenderer
                                                             block={block}
                                                             templateId={templateId}

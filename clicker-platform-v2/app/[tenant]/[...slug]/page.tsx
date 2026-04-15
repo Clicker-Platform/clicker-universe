@@ -170,7 +170,7 @@ export default async function TenantCatchAllPage({ params, searchParams }: Props
                         const spanClass = isSingleCol ? 'col-span-full' : getBlockSpan(block.type);
 
                         return (
-                            <div key={block.id} className={spanClass}>
+                            <div key={block.id} className={`${spanClass} min-w-0`}>
                                 <BlockRenderer
                                     block={block}
                                     phoneNumber={contact?.whatsapp}
