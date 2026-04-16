@@ -392,7 +392,7 @@ export function SiteInfoPanel() {
                 <SubmitButton
                     isLoading={saving}
                     loadingLabel="Saving..."
-                    className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+                    className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
                         saved
                             ? 'bg-green-600/20 text-green-400 border border-green-600/30'
                             : 'bg-blue-600 hover:bg-blue-500 text-white'

@@ -80,17 +80,17 @@ export function BookingList({ bookings, selectedId, onSelect, activeTab, onTabCh
                             return (
                                 <React.Fragment key={booking.id}>
                                     {showDivider && (
-                                        <div className="sticky top-0 z-10 bg-gray-50/95 dark:bg-neutral-800/95 backdrop-blur-sm py-2 px-4 text-xs font-bold text-gray-500 dark:text-neutral-500 uppercase tracking-wider border-b border-gray-100/50 dark:border-neutral-700/50 shadow-sm mx-2 rounded-lg mt-2 mb-1">
+                                        <div className="sticky top-0 z-10 bg-gray-50/95 dark:bg-neutral-800/95 backdrop-blur-sm py-2 px-4 text-xs font-bold text-gray-500 dark:text-neutral-500 uppercase tracking-wider border-b border-gray-100/50 dark:border-neutral-700/50 mx-2 rounded-lg mt-2 mb-1">
                                             {dateString}
                                         </div>
                                     )}
                                     <div
                                         onClick={() => onSelect(booking)}
-                                        className={`p-4 rounded-xl cursor-pointer transition-all border mx-2 ${selectedId === booking.id
-                                            ? 'bg-white dark:bg-neutral-800 border-brand-dark shadow-sm ring-1 ring-brand-dark/5'
+                                        className={`p-4 rounded-lg cursor-pointer transition-all border mx-2 ${selectedId === booking.id
+                                            ? 'bg-white dark:bg-neutral-800 border-brand-dark ring-1 ring-brand-dark/5'
                                             : !booking.isRead
-                                                ? 'bg-orange-50 dark:bg-orange-950/20 border-orange-100 dark:border-orange-900/30 shadow-sm'
-                                                : 'bg-transparent border-transparent hover:bg-white dark:hover:bg-neutral-800 hover:border-gray-200 dark:hover:border-neutral-700 hover:shadow-sm'
+                                                ? 'bg-orange-50 dark:bg-orange-950/20 border-orange-100 dark:border-orange-900/30'
+                                                : 'bg-transparent border-transparent hover:bg-white dark:hover:bg-neutral-800 hover:border-gray-200 dark:hover:border-neutral-700 hover:'
                                             }`}
                                     >
                                         <div className="flex justify-between items-start mb-1">
@@ -136,7 +136,7 @@ export function BookingList({ bookings, selectedId, onSelect, activeTab, onTabCh
                             <button
                                 onClick={onLoadMore}
                                 disabled={loadingMore}
-                                className="w-full py-3 text-sm font-bold text-gray-500 dark:text-neutral-500 hover:text-brand-dark hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-xl mt-2 transition-colors disabled:opacity-50"
+                                className="w-full py-3 text-sm font-bold text-gray-500 dark:text-neutral-500 hover:text-brand-dark hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-lg mt-2 transition-colors disabled:opacity-50"
                             >
                                 {loadingMore ? 'Loading...' : 'Load More'}
                             </button>

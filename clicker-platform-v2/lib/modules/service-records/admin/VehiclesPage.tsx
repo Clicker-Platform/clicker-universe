@@ -201,7 +201,7 @@ export default function VehiclesPage() {
     return (
         <div className="space-y-5">
             {toast && (
-                <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl text-sm font-medium shadow-lg ${
+                <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${
                     toast.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
                 }`}>
                     {toast.message}
@@ -239,12 +239,12 @@ export default function VehiclesPage() {
             </button>
 
             {/* Tabs */}
-            <div className="flex gap-1 bg-gray-100 dark:bg-neutral-800 p-1 rounded-xl w-fit">
+            <div className="flex gap-1 bg-gray-100 dark:bg-neutral-800 p-1 rounded-lg w-fit">
                 <button
                     onClick={() => setTab('vehicles')}
                     className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                         tab === 'vehicles'
-                            ? 'bg-white dark:bg-neutral-900 text-gray-900 dark:text-neutral-100 shadow-sm'
+                            ? 'bg-white dark:bg-neutral-900 text-gray-900 dark:text-neutral-100'
                             : 'text-gray-500 dark:text-neutral-400 hover:text-gray-700 dark:hover:text-neutral-200'
                     }`}
                 >
@@ -254,7 +254,7 @@ export default function VehiclesPage() {
                     onClick={() => setTab('car-types')}
                     className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                         tab === 'car-types'
-                            ? 'bg-white dark:bg-neutral-900 text-gray-900 dark:text-neutral-100 shadow-sm'
+                            ? 'bg-white dark:bg-neutral-900 text-gray-900 dark:text-neutral-100'
                             : 'text-gray-500 dark:text-neutral-400 hover:text-gray-700 dark:hover:text-neutral-200'
                     }`}
                 >
@@ -272,11 +272,11 @@ export default function VehiclesPage() {
                             value={search}
                             onChange={e => setSearch(e.target.value)}
                             placeholder="Search by plate…"
-                            className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 text-sm"
+                            className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 text-sm"
                         />
                     </div>
 
-                    <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden">
+                    <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 overflow-hidden">
                         {loading ? (
                             <div className="p-8 text-center text-sm text-gray-400 dark:text-neutral-500">Loading…</div>
                         ) : filtered.length === 0 ? (
@@ -359,7 +359,7 @@ export default function VehiclesPage() {
 
             {/* ── Car Types Tab ── */}
             {tab === 'car-types' && (
-                <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden">
+                <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 overflow-hidden">
                     {loading ? (
                         <div className="p-8 text-center text-sm text-gray-400 dark:text-neutral-500">Loading…</div>
                     ) : carCatalog.length === 0 ? (
@@ -425,7 +425,7 @@ export default function VehiclesPage() {
             {/* ── Vehicle Modal ── */}
             {isVehicleModalOpen && (
                 <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-neutral-900 rounded-2xl w-full max-w-md shadow-xl">
+                    <div className="bg-white dark:bg-neutral-900 rounded-lg w-full max-w-md shadow-xl">
                         <div className="p-6 border-b border-gray-100 dark:border-neutral-800">
                             <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100">
                                 {editingVehicle ? 'Edit Vehicle' : 'Add Vehicle'}
@@ -441,7 +441,7 @@ export default function VehiclesPage() {
                                     onBlur={() => handlePlateCheck(vehicleForm.plateNumber || '')}
                                     placeholder="e.g. B1234XYZ"
                                     required
-                                    className="w-full font-mono rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
+                                    className="w-full font-mono rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
                                 />
                                 {plateWarning && (
                                     <div className="mt-1.5 flex items-start gap-1.5 text-xs text-amber-600 dark:text-amber-400">
@@ -455,7 +455,7 @@ export default function VehiclesPage() {
                                 <select
                                     value={vehicleForm.carCatalogId || ''}
                                     onChange={e => setVehicleForm(f => ({ ...f, carCatalogId: e.target.value }))}
-                                    className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
+                                    className="w-full rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
                                 >
                                     <option value="">— Select car type —</option>
                                     {carCatalog.map(car => (
@@ -479,21 +479,21 @@ export default function VehiclesPage() {
                                     value={vehicleForm.color || ''}
                                     onChange={e => setVehicleForm(f => ({ ...f, color: e.target.value }))}
                                     placeholder="Silver"
-                                    className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
+                                    className="w-full rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
                                 />
                             </div>
                             <div className="flex justify-end gap-3 pt-2">
                                 <button
                                     type="button"
                                     onClick={() => setIsVehicleModalOpen(false)}
-                                    className="px-4 py-2 rounded-xl text-sm font-medium border border-gray-200 dark:border-neutral-700 text-gray-700 dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-neutral-800"
+                                    className="px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 dark:border-neutral-700 text-gray-700 dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-neutral-800"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={vehicleSubmitting}
-                                    className="bg-studio-blue text-white px-5 py-2 rounded-xl text-sm font-medium disabled:opacity-50"
+                                    className="bg-studio-blue text-white px-5 py-2 rounded-lg text-sm font-medium disabled:opacity-50"
                                 >
                                     {vehicleSubmitting ? 'Saving…' : editingVehicle ? 'Update' : 'Add Vehicle'}
                                 </button>
@@ -506,7 +506,7 @@ export default function VehiclesPage() {
             {/* ── Car Type Modal ── */}
             {isCarTypeModalOpen && (
                 <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-neutral-900 rounded-2xl w-full max-w-sm shadow-xl">
+                    <div className="bg-white dark:bg-neutral-900 rounded-lg w-full max-w-sm shadow-xl">
                         <div className="p-6 border-b border-gray-100 dark:border-neutral-800">
                             <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100">
                                 {editingCarType ? 'Edit Car Type' : 'Add Car Type'}
@@ -525,7 +525,7 @@ export default function VehiclesPage() {
                                         }}
                                         placeholder="Toyota"
                                         required
-                                        className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
+                                        className="w-full rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
                                     />
                                 </div>
                                 <div>
@@ -539,7 +539,7 @@ export default function VehiclesPage() {
                                         }}
                                         placeholder="Fortuner"
                                         required
-                                        className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
+                                        className="w-full rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
                                     />
                                 </div>
                             </div>
@@ -554,7 +554,7 @@ export default function VehiclesPage() {
                                 <select
                                     value={carTypeForm.type}
                                     onChange={e => setCarTypeForm(f => ({ ...f, type: e.target.value as VehicleType }))}
-                                    className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
+                                    className="w-full rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
                                 >
                                     {VEHICLE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                                 </select>
@@ -563,14 +563,14 @@ export default function VehiclesPage() {
                                 <button
                                     type="button"
                                     onClick={() => setIsCarTypeModalOpen(false)}
-                                    className="px-4 py-2 rounded-xl text-sm font-medium border border-gray-200 dark:border-neutral-700 text-gray-700 dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-neutral-800"
+                                    className="px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 dark:border-neutral-700 text-gray-700 dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-neutral-800"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={carTypeSubmitting || !!carTypeDupeWarning}
-                                    className="bg-studio-blue text-white px-5 py-2 rounded-xl text-sm font-medium disabled:opacity-50"
+                                    className="bg-studio-blue text-white px-5 py-2 rounded-lg text-sm font-medium disabled:opacity-50"
                                 >
                                     {carTypeSubmitting ? 'Saving…' : editingCarType ? 'Update' : 'Add Car Type'}
                                 </button>

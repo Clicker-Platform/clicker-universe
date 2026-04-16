@@ -107,7 +107,7 @@ export default function RecordsListPage() {
             </button>
 
             {/* Tabs */}
-            <div className="flex gap-1 bg-gray-100 dark:bg-neutral-800 p-1 rounded-xl overflow-x-auto">
+            <div className="flex gap-1 bg-gray-100 dark:bg-neutral-800 p-1 rounded-lg overflow-x-auto">
                 {TABS.map(tab => (
                     <button
                         key={tab.key}
@@ -133,12 +133,12 @@ export default function RecordsListPage() {
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                     placeholder="Search by plate, owner, or service type…"
-                    className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 text-sm"
+                    className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 text-sm"
                 />
             </div>
 
             {/* Records */}
-            <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden">
+            <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 overflow-hidden">
                 {loading ? (
                     <div className="p-8 text-center text-sm text-gray-400 dark:text-neutral-500">Loading records…</div>
                 ) : filtered.length === 0 ? (

@@ -20,7 +20,7 @@ export function StageColumn({ stage, leads, onLeadClick }: StageColumnProps) {
     const isTerminal = stage.type === 'won' || stage.type === 'lost';
 
     return (
-        <div className="flex flex-col h-full min-w-[280px] md:min-w-[320px] max-w-[320px] rounded-xl bg-gray-50 dark:bg-neutral-800/50 border border-gray-200 dark:border-neutral-700 flex-shrink-0 snap-center">
+        <div className="flex flex-col h-full min-w-[280px] md:min-w-[320px] max-w-[320px] rounded-lg bg-gray-50 dark:bg-neutral-800/50 border border-gray-200 dark:border-neutral-700 flex-shrink-0 snap-center">
             {/* Header */}
             <div className={cn(
                 "p-3 rounded-t-xl border-b border-gray-200 dark:border-neutral-700 flex items-center justify-between sticky top-0 bg-gray-50 dark:bg-neutral-800/50 z-10",

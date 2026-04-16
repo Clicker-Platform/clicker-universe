@@ -39,7 +39,7 @@ export const LinkSelector = ({ editor, isOpen, onClose }: LinkSelectorProps) => 
     if (!isOpen) return null;
 
     return (
-        <div className="absolute top-12 left-0 z-50 bg-white dark:bg-neutral-900 rounded-xl shadow-2xl border border-gray-200 dark:border-neutral-800 p-2 flex items-center gap-2 min-w-[320px] animate-in fade-in slide-in-from-top-2 duration-300 backdrop-blur-xl">
+        <div className="absolute top-12 left-0 z-50 bg-white dark:bg-neutral-900 rounded-lg shadow-2xl border border-gray-200 dark:border-neutral-800 p-2 flex items-center gap-2 min-w-[320px] animate-in fade-in slide-in-from-top-2 duration-300 backdrop-blur-xl">
             <Link2 size={16} className="text-neutral-400 dark:text-neutral-500 ml-1" />
             <input
                 ref={inputRef}

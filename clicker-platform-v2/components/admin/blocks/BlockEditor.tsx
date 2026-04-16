@@ -148,9 +148,9 @@ export const BlockEditor = memo(({ block, onChange, onDelete }: BlockEditorProps
                     return (
                         <div className="space-y-4">
                             {/* Configuration Header */}
-                            <div className="bg-gray-50 rounded-xl p-4 border border-gray-100 flex items-center justify-between">
+                            <div className="bg-gray-50 rounded-lg p-4 border border-gray-100 flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-brand-dark">
+                                    <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-brand-dark">
                                         <Settings size={20} />
                                     </div>
                                     <div>
@@ -173,7 +173,7 @@ export const BlockEditor = memo(({ block, onChange, onDelete }: BlockEditorProps
 
                             {/* Live Preview */}
                             {ModuleComponent ? (
-                                <div className="border-2 border-dashed border-gray-200 rounded-xl overflow-hidden min-h-[200px]">
+                                <div className="border-2 border-dashed border-gray-200 rounded-lg overflow-hidden min-h-[200px]">
                                     <div className="bg-gray-50 px-3 py-1 border-b border-gray-200 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">
                                         Live Preview
                                     </div>
@@ -187,7 +187,7 @@ export const BlockEditor = memo(({ block, onChange, onDelete }: BlockEditorProps
                                     </div>
                                 </div>
                             ) : (
-                                <div className="text-center py-8 text-gray-400 text-sm bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                                <div className="text-center py-8 text-gray-400 text-sm bg-gray-50 rounded-lg border border-dashed border-gray-200">
                                     No preview available for this block.
                                 </div>
                             )}
@@ -204,7 +204,7 @@ export const BlockEditor = memo(({ block, onChange, onDelete }: BlockEditorProps
     };
 
     return (
-        <div ref={setNodeRef} style={style} className="bg-white rounded-xl border-2 border-gray-100 shadow-sm overflow-hidden mb-4 transition-all hover:border-brand-dark/50">
+        <div ref={setNodeRef} style={style} className="bg-white rounded-lg border-2 border-gray-100 overflow-hidden mb-4 transition-all hover:border-brand-dark/50">
             {/* Header / Drag Handle */}
             <div className="flex items-center justify-between p-3 bg-gray-50 border-b border-gray-100">
                 <div className="flex items-center gap-3">

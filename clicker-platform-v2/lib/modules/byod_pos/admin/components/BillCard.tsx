@@ -62,7 +62,7 @@ export function BillCard({ group, onProcessPayment, disabled }: BillCardProps) {
     };
 
     return (
-        <div className="bg-white dark:bg-neutral-900 rounded-3xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden scale-100 hover:scale-[1.01] transition-transform duration-300">
+        <div className="bg-white dark:bg-neutral-900 rounded-3xl border border-gray-200 dark:border-neutral-800 overflow-hidden scale-100 hover:scale-[1.01] transition-transform duration-300">
             {/* Header */}
             <div className="p-4 flex justify-between items-start bg-white dark:bg-neutral-900 border-b border-gray-100 dark:border-neutral-800">
                 <div className="flex-1">
@@ -169,7 +169,7 @@ export function BillCard({ group, onProcessPayment, disabled }: BillCardProps) {
                         onProcessPayment(group.orders);
                     }}
                     disabled={disabled}
-                    className={`w-full py-3 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer ${disabled ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''} ${group.aggregatedStatus === 'pending_confirmation'
+                    className={`w-full py-3 rounded-lg font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer ${disabled ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''} ${group.aggregatedStatus === 'pending_confirmation'
                         ? 'bg-amber-400 text-amber-900 hover:bg-amber-300 animate-pulse'
                         : 'bg-studio-blue text-white hover:bg-studio-blue/90'
                         }`}

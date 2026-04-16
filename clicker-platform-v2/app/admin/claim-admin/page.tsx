@@ -64,7 +64,7 @@ export default function ClaimAdminPage() {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-            <div className="max-w-md w-full p-6 text-center space-y-6 bg-white rounded-xl shadow-lg border border-gray-100">
+            <div className="max-w-md w-full p-6 text-center space-y-6 bg-white rounded-lg shadow-lg border border-gray-100">
                 <div className="flex justify-center">
                     <div className="w-16 h-16 bg-brand-primary/10 rounded-full flex items-center justify-center text-brand-primary">
                         <ShieldCheck size={32} />

@@ -63,7 +63,7 @@ export default function MemberHistoryList({ memberId }: MemberHistoryListProps) 
 
     if (history.length === 0) {
         return (
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 text-center">
+            <div className="bg-white p-6 rounded-lg border border-gray-100 text-center">
                 <p className="text-gray-400 text-sm">No transaction history yet.</p>
             </div>
         );
@@ -74,7 +74,7 @@ export default function MemberHistoryList({ memberId }: MemberHistoryListProps) 
             <h3 className="text-lg font-bold text-gray-800 px-1">Recent Activity</h3>
             <div className="space-y-3">
                 {history.map((tx) => (
-                    <div key={tx.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
+                    <div key={tx.id} className="bg-white p-4 rounded-lg border border-gray-100 flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <div className={`p-2 rounded-full ${tx.pointsDelta >= 0 ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
                                 {tx.pointsDelta >= 0 ? <CreditCard size={18} /> : <CreditCard size={18} />}
@@ -108,7 +108,7 @@ export default function MemberHistoryList({ memberId }: MemberHistoryListProps) 
             {/* Receipt Modal */}
             {viewingReceipt && receiptHtml && (
                 <div className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden flex flex-col max-h-[90vh]">
+                    <div className="bg-white rounded-lg shadow-2xl w-full max-w-sm overflow-hidden flex flex-col max-h-[90vh]">
                         <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">
                             <h3 className="font-bold text-gray-900 flex items-center gap-2">
                                 <FileText size={18} />

@@ -104,7 +104,7 @@ export default function SettingsPage() {
 
     return (
         <div className="max-w-2xl">
-            <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 overflow-hidden shadow-sm">
+            <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 overflow-hidden">
                 <div className="p-6 border-b border-gray-100 dark:border-neutral-800">
                     <h2 className="text-lg font-bold text-gray-900 dark:text-neutral-200">Pipeline Settings</h2>
                     <p className="text-sm text-gray-400 dark:text-neutral-600 font-medium mt-0.5">Configure stages and form integrations</p>
@@ -131,7 +131,7 @@ export default function SettingsPage() {
                                 </div>
                                 <div className="space-y-2">
                                     {config.stages.sort((a, b) => a.order - b.order).map((stage, idx) => (
-                                        <div key={stage.id} className="bg-white dark:bg-neutral-800 p-3 rounded-xl border border-gray-200 dark:border-neutral-700 shadow-sm flex items-center gap-3 group">
+                                        <div key={stage.id} className="bg-white dark:bg-neutral-800 p-3 rounded-lg border border-gray-200 dark:border-neutral-700 flex items-center gap-3 group">
                                             <div className="text-gray-300 dark:text-neutral-700 cursor-grab px-1"><GripVertical className="w-4 h-4" /></div>
                                             <div className="w-3 h-8 rounded-full bg-brand-green/20" />
                                             <div className="flex-1">
@@ -147,7 +147,7 @@ export default function SettingsPage() {
                                     ))}
                                 </div>
                                 <div className="flex justify-end pt-2">
-                                    <button onClick={async () => { if (!config || !siteId) return; setIsSaving(true); try { await savePipelineConfig(siteId, config); toast.success("Pipeline stages updated"); } catch { toast.error("Failed to save changes"); } finally { setIsSaving(false); } }} disabled={isSaving} className="bg-studio-blue text-white font-bold py-3 px-8 rounded-xl shadow-lg hover:bg-studio-blue/85 transition-all flex items-center gap-2">
+                                    <button onClick={async () => { if (!config || !siteId) return; setIsSaving(true); try { await savePipelineConfig(siteId, config); toast.success("Pipeline stages updated"); } catch { toast.error("Failed to save changes"); } finally { setIsSaving(false); } }} disabled={isSaving} className="bg-studio-blue text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-studio-blue/85 transition-all flex items-center gap-2">
                                         {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save Changes
                                     </button>
                                 </div>
@@ -163,7 +163,7 @@ export default function SettingsPage() {
                                     </button>
                                 </div>
                                 {!config?.formIntegrations?.length ? (
-                                    <div className="text-center py-12 border-2 border-dashed border-gray-200 dark:border-neutral-700 rounded-2xl">
+                                    <div className="text-center py-12 border-2 border-dashed border-gray-200 dark:border-neutral-700 rounded-lg">
                                         <p className="text-gray-400 dark:text-neutral-600 text-sm font-medium">No form integrations configured.</p>
                                     </div>
                                 ) : (
@@ -172,7 +172,7 @@ export default function SettingsPage() {
                                             const formName = availableForms.find(f => f.id === integration.formId)?.title || integration.formId;
                                             const stageName = config.stages.find(s => s.id === integration.targetStageId)?.name || integration.targetStageId;
                                             return (
-                                                <div key={`${integration.formId}-${idx}`} className="bg-white dark:bg-neutral-800 p-4 rounded-xl border border-gray-100 dark:border-neutral-700 shadow-sm flex items-center justify-between">
+                                                <div key={`${integration.formId}-${idx}`} className="bg-white dark:bg-neutral-800 p-4 rounded-lg border border-gray-100 dark:border-neutral-700 flex items-center justify-between">
                                                     <div>
                                                         <div className="flex items-center gap-2 mb-1">
                                                             <span className="font-bold text-brand-dark dark:text-neutral-200">{formName}</span>
@@ -194,7 +194,7 @@ export default function SettingsPage() {
                         )}
 
                         {isAddingIntegration && (
-                            <div className="bg-white dark:bg-neutral-800 p-6 rounded-2xl border-2 border-brand-green/20 shadow-sm">
+                            <div className="bg-white dark:bg-neutral-800 p-6 rounded-lg border-2 border-brand-green/20">
                                 <div className="flex items-center justify-between mb-6">
                                     <h3 className="font-bold text-gray-800 dark:text-neutral-200">{editingIndex !== null ? 'Edit Integration' : 'Add New Integration'}</h3>
                                     <button onClick={() => { setIsAddingIntegration(false); setEditingIndex(null); setNewIntegration({ fieldMapping: { name: '', contact: '' } }); }} className="text-xs font-bold text-gray-400 hover:text-gray-600">Cancel</button>
@@ -202,7 +202,7 @@ export default function SettingsPage() {
                                 <div className="space-y-4">
                                     <div>
                                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Source Form</label>
-                                        <select className="w-full p-3 bg-gray-50 dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 dark:text-neutral-200 rounded-xl font-medium focus:ring-2 focus:ring-brand-green/20 focus:border-brand-green outline-none" value={newIntegration.formId || ''} onChange={e => setNewIntegration({ ...newIntegration, formId: e.target.value })}>
+                                        <select className="w-full p-3 bg-gray-50 dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 dark:text-neutral-200 rounded-lg font-medium focus:ring-2 focus:ring-brand-green/20 focus:border-brand-green outline-none" value={newIntegration.formId || ''} onChange={e => setNewIntegration({ ...newIntegration, formId: e.target.value })}>
                                             <option value="">Select a form...</option>
                                             {availableForms.map(f => (<option key={f.id} value={f.id}>{f.title}</option>))}
                                         </select>
@@ -242,7 +242,7 @@ export default function SettingsPage() {
                                             </div>
                                         )}
                                     </div>
-                                    <button onClick={handleSaveIntegration} disabled={isSaving} className="w-full mt-4 py-3 bg-studio-blue text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-studio-blue/85 transition-colors disabled:opacity-50">
+                                    <button onClick={handleSaveIntegration} disabled={isSaving} className="w-full mt-4 py-3 bg-studio-blue text-white rounded-lg font-bold flex items-center justify-center gap-2 hover:bg-studio-blue/85 transition-colors disabled:opacity-50">
                                         {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
                                         {editingIndex !== null ? 'Update Integration' : 'Save Integration'}
                                     </button>

@@ -177,7 +177,7 @@ export default function UsersPage() {
                                     <span className="bg-brand-dark text-white px-2 py-1 rounded text-xs font-bold">{users.length} Found</span>
                                     <button
                                         onClick={() => setCreateOpen(true)}
-                                        className="bg-blue-600 hover:bg-blue-700 text-white p-1.5 rounded-lg transition-colors shadow-sm"
+                                        className="bg-blue-600 hover:bg-blue-700 text-white p-1.5 rounded-lg transition-colors"
                                         title="Register New Identity"
                                     >
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
@@ -190,7 +190,7 @@ export default function UsersPage() {
                                     type="text"
                                     value={searchQuery}
                                     onChange={e => setSearchQuery(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2 rounded-xl border-2 border-gray-200 focus:border-brand-dark outline-none font-medium text-sm transition-colors"
+                                    className="w-full pl-10 pr-4 py-2 rounded-lg border-2 border-gray-200 focus:border-brand-dark outline-none font-medium text-sm transition-colors"
                                     placeholder="Search by email, name or UID..."
                                 />
                             </div>
@@ -209,7 +209,7 @@ export default function UsersPage() {
                                     <button
                                         key={u.uid}
                                         onClick={() => setUser(u)}
-                                        className={`w-full text-left p-4 rounded-xl border-2 transition-all flex items-center gap-4 group ${user?.uid === u.uid
+                                        className={`w-full text-left p-4 rounded-lg border-2 transition-all flex items-center gap-4 group ${user?.uid === u.uid
                                             ? 'border-brand-dark bg-brand-dark text-white shadow-md'
                                             : 'border-transparent hover:bg-gray-50 hover:border-gray-200'
                                             }`}
@@ -243,7 +243,7 @@ export default function UsersPage() {
                                 <p className="font-medium">Select a subject to manage access.</p>
                             </div>
                         ) : (
-                            <div className="bg-white rounded-3xl border-[3px] border-brand-dark shadow-sm overflow-hidden flex flex-col h-full">
+                            <div className="bg-white rounded-3xl border-[3px] border-brand-dark overflow-hidden flex flex-col h-full">
                                 <div className="p-6 border-b border-gray-100 bg-gray-50/30 flex justify-between items-start">
                                     <div>
                                         <h2 className="text-2xl font-black text-brand-dark">{user.displayName || 'Unnamed Subject'}</h2>
@@ -269,7 +269,7 @@ export default function UsersPage() {
                                 <div className="p-8 flex-1 space-y-8 overflow-auto">
                                     {/* SUPERADMIN LOCK */}
                                     {user.email === 'clickerplatform@gmail.com' && (
-                                        <div className="bg-red-50 border-2 border-red-100 rounded-2xl p-6 flex flex-col items-center text-center text-red-900">
+                                        <div className="bg-red-50 border-2 border-red-100 rounded-lg p-6 flex flex-col items-center text-center text-red-900">
                                             <ShieldAlert className="w-10 h-10 mb-3 text-red-600" />
                                             <h3 className="font-black text-lg">Immutable Subject</h3>
                                             <p className="text-sm opacity-80 mt-1 max-w-xs">
@@ -288,7 +288,7 @@ export default function UsersPage() {
                                                 ) : (
                                                     <div className="grid grid-cols-2 gap-4">
                                                         {Object.entries(user.customClaims || {}).map(([key, val]: any) => (
-                                                            <div key={key} className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                                                            <div key={key} className="bg-gray-50 p-4 rounded-lg border border-gray-100">
                                                                 <div className="text-xs text-gray-400 font-mono mb-1">{key}</div>
                                                                 <div className="font-bold text-brand-dark">{String(val)}</div>
                                                             </div>
@@ -300,7 +300,7 @@ export default function UsersPage() {
                                             {/* ACTION ZONE */}
                                             <div>
                                                 <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 border-b pb-2">Grant Privileges</h3>
-                                                <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200">
+                                                <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                                         <div className="space-y-2">
                                                             <label className="text-xs font-bold text-gray-600">Target Tenant (Site ID)</label>
@@ -328,13 +328,13 @@ export default function UsersPage() {
                                                     <div className="flex gap-4">
                                                         <button
                                                             onClick={() => setConfirmOpen(true)}
-                                                            className="flex-1 py-3 bg-brand-dark text-white rounded-xl font-bold hover:bg-gray-800 transition-all hover:-translate-y-0.5 shadow-sm"
+                                                            className="flex-1 py-3 bg-brand-dark text-white rounded-lg font-bold hover:bg-gray-800 transition-all hover:-translate-y-0.5"
                                                         >
                                                             Assign Role
                                                         </button>
                                                         <button
                                                             onClick={handleRevoke}
-                                                            className="px-6 py-3 border-2 border-red-100 text-red-600 bg-red-50 rounded-xl font-bold hover:bg-red-100 transition-colors flex items-center gap-2"
+                                                            className="px-6 py-3 border-2 border-red-100 text-red-600 bg-red-50 rounded-lg font-bold hover:bg-red-100 transition-colors flex items-center gap-2"
                                                         >
                                                             <UserX className="w-5 h-5" />
                                                             Revoke
@@ -344,7 +344,7 @@ export default function UsersPage() {
                                             </div>
 
                                             {/* TIPS PANEL MOVED HERE */}
-                                            <div className="bg-blue-50 rounded-xl border border-blue-100 p-4 text-xs text-blue-800 flex gap-2">
+                                            <div className="bg-blue-50 rounded-lg border border-blue-100 p-4 text-xs text-blue-800 flex gap-2">
                                                 <ShieldAlert className="w-4 h-4 flex-shrink-0" />
                                                 <p>
                                                     Use <strong>Tenant ID</strong> (subdomain) to verify roles. Platform roles are strictly enforced.
@@ -370,7 +370,7 @@ export default function UsersPage() {
             {/* CREATE USER DIALOG */}
             {createOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                    <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                         <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                             <h3 className="font-bold text-lg text-brand-dark flex items-center gap-2">
                                 <Users className="w-5 h-5 text-blue-600" />
@@ -389,7 +389,7 @@ export default function UsersPage() {
                                     required
                                     value={newEmail}
                                     onChange={e => setNewEmail(e.target.value)}
-                                    className="w-full px-4 py-2 rounded-xl border-2 border-gray-200 focus:border-brand-dark outline-none font-medium text-sm"
+                                    className="w-full px-4 py-2 rounded-lg border-2 border-gray-200 focus:border-brand-dark outline-none font-medium text-sm"
                                     placeholder="user@example.com"
                                 />
                             </div>
@@ -400,7 +400,7 @@ export default function UsersPage() {
                                     required
                                     value={newName}
                                     onChange={e => setNewName(e.target.value)}
-                                    className="w-full px-4 py-2 rounded-xl border-2 border-gray-200 focus:border-brand-dark outline-none font-medium text-sm"
+                                    className="w-full px-4 py-2 rounded-lg border-2 border-gray-200 focus:border-brand-dark outline-none font-medium text-sm"
                                     placeholder="John Doe"
                                 />
                             </div>
@@ -412,7 +412,7 @@ export default function UsersPage() {
                                     minLength={6}
                                     value={newPassword}
                                     onChange={e => setNewPassword(e.target.value)}
-                                    className="w-full px-4 py-2 rounded-xl border-2 border-gray-200 focus:border-brand-dark outline-none font-medium text-sm"
+                                    className="w-full px-4 py-2 rounded-lg border-2 border-gray-200 focus:border-brand-dark outline-none font-medium text-sm"
                                     placeholder="••••••••"
                                 />
                             </div>
@@ -433,7 +433,7 @@ export default function UsersPage() {
                                     <div className="space-y-1">
                                         <label className="text-[10px] font-bold text-gray-400 uppercase">Start Role</label>
                                         <select
-                                            className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 transition-all appearance-none"
+                                            className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 transition-all appearance-none"
                                             value={newRole}
                                             onChange={(e) => setNewRole(e.target.value)}
                                         >
@@ -447,7 +447,7 @@ export default function UsersPage() {
                             <button
                                 type="submit"
                                 disabled={actionLoading}
-                                className="w-full py-3 mt-2 bg-brand-dark text-white rounded-xl font-bold hover:bg-gray-800 transition-all shadow-md flex items-center justify-center gap-2"
+                                className="w-full py-3 mt-2 bg-brand-dark text-white rounded-lg font-bold hover:bg-gray-800 transition-all shadow-md flex items-center justify-center gap-2"
                             >
                                 {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Create Identity'}
                             </button>

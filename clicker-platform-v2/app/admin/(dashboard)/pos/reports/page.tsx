@@ -234,7 +234,7 @@ export default function POSReportsPage() {
             </div>
 
             {/* SCREEN ONLY VIEW */}
-            <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden flex flex-col min-h-[600px] h-full print:hidden">
+            <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 overflow-hidden flex flex-col min-h-[600px] h-full print:hidden">
                 {/* Header / Toolbar (Controls) */}
                 <div className="p-4 border-b border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 flex flex-col xl:flex-row gap-4 justify-between items-start xl:items-center">
                     {/* Left Side: Tabs & Date */}
@@ -246,7 +246,7 @@ export default function POSReportsPage() {
                                     key={tab}
                                     onClick={() => setActiveTab(tab as any)}
                                     className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors flex-1 md:flex-none text-center whitespace-nowrap ${activeTab === tab
-                                        ? 'bg-black dark:bg-white text-white dark:text-black shadow-sm'
+                                        ? 'bg-black dark:bg-white text-white dark:text-black'
                                         : 'text-gray-600 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-700'
                                         }`}
                                 >
@@ -310,23 +310,23 @@ export default function POSReportsPage() {
                     {/* Summary Cards */}
                     {summary ? (
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 mb-4 md:mb-6">
-                            <div className="bg-white dark:bg-neutral-900 p-3 md:p-4 rounded-lg md:rounded-xl border md:border-gray-100 dark:md:border-neutral-800 shadow-none md:shadow-sm print:border-gray-300">
+                            <div className="bg-white dark:bg-neutral-900 p-3 md:p-4 rounded-lg md:rounded-lg border md:border-gray-100 dark:md:border-neutral-800 shadow-none md:print:border-gray-300">
                                 <p className="text-[10px] md:text-xs text-gray-500 dark:text-neutral-500 font-medium uppercase">Total Sales</p>
                                 <p className="text-xl md:text-2xl font-bold mt-1 dark:text-neutral-100">
                                     {formatCurrency(summary.totalSales)}
                                 </p>
                             </div>
-                            <div className="bg-white dark:bg-neutral-900 p-3 md:p-4 rounded-lg md:rounded-xl border md:border-gray-100 dark:md:border-neutral-800 shadow-none md:shadow-sm print:border-gray-300">
+                            <div className="bg-white dark:bg-neutral-900 p-3 md:p-4 rounded-lg md:rounded-lg border md:border-gray-100 dark:md:border-neutral-800 shadow-none md:print:border-gray-300">
                                 <p className="text-[10px] md:text-xs text-gray-500 dark:text-neutral-500 font-medium uppercase">Total Orders</p>
                                 <p className="text-xl md:text-2xl font-bold mt-1 dark:text-neutral-100">{summary.totalOrders}</p>
                             </div>
-                            <div className="bg-white dark:bg-neutral-900 p-3 md:p-4 rounded-lg md:rounded-xl border md:border-gray-100 dark:md:border-neutral-800 shadow-none md:shadow-sm print:border-gray-300">
+                            <div className="bg-white dark:bg-neutral-900 p-3 md:p-4 rounded-lg md:rounded-lg border md:border-gray-100 dark:md:border-neutral-800 shadow-none md:print:border-gray-300">
                                 <p className="text-[10px] md:text-xs text-gray-500 dark:text-neutral-500 font-medium uppercase">Avg. Ticket</p>
                                 <p className="text-xl md:text-2xl font-bold mt-1 dark:text-neutral-100">
                                     {formatCurrency(summary.averageOrderValue)}
                                 </p>
                             </div>
-                            <div className="bg-white dark:bg-neutral-900 p-3 md:p-4 rounded-lg md:rounded-xl border md:border-gray-100 dark:md:border-neutral-800 shadow-none md:shadow-sm print:border-gray-300">
+                            <div className="bg-white dark:bg-neutral-900 p-3 md:p-4 rounded-lg md:rounded-lg border md:border-gray-100 dark:md:border-neutral-800 shadow-none md:print:border-gray-300">
                                 <p className="text-[10px] md:text-xs text-gray-500 dark:text-neutral-500 font-medium uppercase">Cancelled</p>
                                 <p className="text-xl md:text-2xl font-bold mt-1 text-red-500 dark:text-red-400">
                                     {summary.cancelledOrders} <span className="text-xs md:text-sm font-normal text-gray-400 dark:text-neutral-600">({formatCurrency(summary.cancelledValue)})</span>
@@ -334,7 +334,7 @@ export default function POSReportsPage() {
                             </div>
 
                             {/* Payment Breakdown Card */}
-                            <div className="bg-white dark:bg-neutral-900 p-3 md:p-4 rounded-lg md:rounded-xl border md:border-gray-100 dark:md:border-neutral-800 shadow-none md:shadow-sm print:border-gray-300 col-span-2 md:col-span-4 lg:col-span-4">
+                            <div className="bg-white dark:bg-neutral-900 p-3 md:p-4 rounded-lg md:rounded-lg border md:border-gray-100 dark:md:border-neutral-800 shadow-none md:print:border-gray-300 col-span-2 md:col-span-4 lg:col-span-4">
                                 <p className="text-[10px] md:text-xs text-gray-500 dark:text-neutral-500 font-medium uppercase mb-2 md:mb-3">Payment Breakdown</p>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
                                     {(Object.entries(summary.paymentBreakdown || {})).length > 0 ? (
@@ -351,7 +351,7 @@ export default function POSReportsPage() {
                             </div>
 
                             {/* ITEM SALES / PRODUCT PERFORMANCE CARD */}
-                            <div className="bg-white dark:bg-neutral-900 p-3 md:p-4 rounded-lg md:rounded-xl border md:border-gray-100 dark:md:border-neutral-800 shadow-none md:shadow-sm print:border-gray-300 col-span-2 md:col-span-4 lg:col-span-4">
+                            <div className="bg-white dark:bg-neutral-900 p-3 md:p-4 rounded-lg md:rounded-lg border md:border-gray-100 dark:md:border-neutral-800 shadow-none md:print:border-gray-300 col-span-2 md:col-span-4 lg:col-span-4">
                                 <div className="flex justify-between items-center mb-2 md:mb-3">
                                     <p className="text-[10px] md:text-xs text-gray-500 dark:text-neutral-500 font-medium uppercase">Product Performance</p>
                                     <span className="text-[10px] text-gray-400 dark:text-neutral-500 font-mono">Top Selling (Completed)</span>
@@ -404,7 +404,7 @@ export default function POSReportsPage() {
                         // Skeleton / Loading State for Summary
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                             {[1, 2, 3, 4].map(i => (
-                                <div key={i} className="bg-white dark:bg-neutral-900 p-4 rounded-xl border border-gray-100 dark:border-neutral-800 shadow-sm h-24 animate-pulse bg-gray-50 dark:bg-neutral-800" />
+                                <div key={i} className="bg-white dark:bg-neutral-900 p-4 rounded-lg border border-gray-100 dark:border-neutral-800 h-24 animate-pulse bg-gray-50 dark:bg-neutral-800" />
                             ))}
                         </div>
                     )}
@@ -418,7 +418,7 @@ export default function POSReportsPage() {
                             </span>
                         </div>
 
-                        <div className="bg-transparent md:bg-white dark:md:bg-neutral-900 rounded-none md:rounded-xl border-none md:border md:border-gray-100 dark:md:border-neutral-800 shadow-none md:shadow-sm overflow-hidden print:border-gray-300 flex flex-col min-h-[400px]">
+                        <div className="bg-transparent md:bg-white dark:md:bg-neutral-900 rounded-none md:rounded-lg border-none md:border md:border-gray-100 dark:md:border-neutral-800 shadow-none md:overflow-hidden print:border-gray-300 flex flex-col min-h-[400px]">
                              <div className="flex-1 overflow-x-auto">
                                 <table className="w-full text-left text-sm min-w-full">
                                     <thead className="bg-gray-50 dark:bg-neutral-800 border-b border-gray-100 dark:border-neutral-700">

@@ -51,7 +51,7 @@ function SortableLinkItem({ link, onEdit, onDelete }: { link: AdminLinkItem, onE
     };
 
     return (
-        <div ref={setNodeRef} style={style} className="bg-white dark:bg-neutral-900 p-4 rounded-xl border border-gray-200 dark:border-neutral-800 group relative">
+        <div ref={setNodeRef} style={style} className="bg-white dark:bg-neutral-900 p-4 rounded-lg border border-gray-200 dark:border-neutral-800 group relative">
             <div className="flex items-start gap-3">
                 {/* Drag Handle */}
                 <div {...attributes} {...listeners} className="p-2 mt-1 bg-gray-50 dark:bg-neutral-800/50 rounded-lg text-gray-400 dark:text-neutral-600 cursor-grab active:cursor-grabbing hover:bg-gray-100 dark:hover:bg-neutral-700 hover:text-brand-dark shrink-0">
@@ -374,7 +374,7 @@ export default function LinksManager({ initialLinks }: LinksClientProps) {
 
             {/* Settings Panel */}
             {showSettings && (
-                <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm mb-8 animate-in slide-in-from-top-2">
+                <div className="bg-white dark:bg-neutral-900 p-6 rounded-lg border border-gray-200 dark:border-neutral-800 mb-8 animate-in slide-in-from-top-2">
                     <h2 className="text-lg font-bold text-brand-dark mb-4">Section Settings</h2>
                     <div className="space-y-4">
                         <div>
@@ -415,7 +415,7 @@ export default function LinksManager({ initialLinks }: LinksClientProps) {
             )}
 
             {/* Add/Edit Link Form */}
-            <div className={`bg-white dark:bg-neutral-900 p-6 rounded-2xl border shadow-sm mb-8 transition-colors ${editingId ? 'border-blue-500 ring-4 ring-blue-50' : 'border-gray-400 dark:border-neutral-700'}`}>
+            <div className={`bg-white dark:bg-neutral-900 p-6 rounded-lg border mb-8 transition-colors ${editingId ? 'border-blue-500 ring-4 ring-blue-50' : 'border-gray-400 dark:border-neutral-700'}`}>
                 <h2 className={`text-lg font-bold mb-4 flex items-center gap-2 ${editingId ? 'text-blue-600' : 'text-brand-dark'}`}>
                     {editingId ? <><Pencil size={20} /> Edit Link</> : <><Plus size={20} /> Add New Link</>}
                 </h2>
@@ -423,7 +423,7 @@ export default function LinksManager({ initialLinks }: LinksClientProps) {
 
                     {/* Link Type Selector */}
                     <div className="md:col-span-2 flex flex-wrap gap-4 mb-2">
-                        <label className="flex items-center gap-2 cursor-pointer bg-gray-50 dark:bg-neutral-800/50 px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 has-[:checked]:border-gray-400 has-[:checked]:bg-brand-green/10 transition-colors">
+                        <label className="flex items-center gap-2 cursor-pointer bg-gray-50 dark:bg-neutral-800/50 px-4 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 has-[:checked]:border-gray-400 has-[:checked]:bg-brand-green/10 transition-colors">
                             <input
                                 type="radio"
                                 checked={newLink.type === 'url' || !newLink.type}
@@ -432,7 +432,7 @@ export default function LinksManager({ initialLinks }: LinksClientProps) {
                             />
                             <span className="font-bold text-sm flex items-center gap-2"><LinkIcon size={16} /> External URL</span>
                         </label>
-                        <label className="flex items-center gap-2 cursor-pointer bg-gray-50 dark:bg-neutral-800/50 px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 has-[:checked]:border-gray-400 has-[:checked]:bg-brand-green/10 transition-colors">
+                        <label className="flex items-center gap-2 cursor-pointer bg-gray-50 dark:bg-neutral-800/50 px-4 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 has-[:checked]:border-gray-400 has-[:checked]:bg-brand-green/10 transition-colors">
                             <input
                                 type="radio"
                                 checked={newLink.type === 'form'}
@@ -441,7 +441,7 @@ export default function LinksManager({ initialLinks }: LinksClientProps) {
                             />
                             <span className="font-bold text-sm flex items-center gap-2"><FileText size={16} /> Link to Form</span>
                         </label>
-                        <label className="flex items-center gap-2 cursor-pointer bg-gray-50 dark:bg-neutral-800/50 px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 has-[:checked]:border-gray-400 has-[:checked]:bg-brand-green/10 transition-colors">
+                        <label className="flex items-center gap-2 cursor-pointer bg-gray-50 dark:bg-neutral-800/50 px-4 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 has-[:checked]:border-gray-400 has-[:checked]:bg-brand-green/10 transition-colors">
                             <input
                                 type="radio"
                                 checked={newLink.type === 'page'}
@@ -506,7 +506,7 @@ export default function LinksManager({ initialLinks }: LinksClientProps) {
                     />
 
                     <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <label className="flex items-center gap-2 cursor-pointer bg-gray-50 dark:bg-neutral-800/50 px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 has-[:checked]:border-gray-400 has-[:checked]:bg-brand-green/10 transition-colors w-full">
+                        <label className="flex items-center gap-2 cursor-pointer bg-gray-50 dark:bg-neutral-800/50 px-4 py-3 rounded-lg border border-gray-200 dark:border-neutral-700 has-[:checked]:border-gray-400 has-[:checked]:bg-brand-green/10 transition-colors w-full">
                             <input
                                 type="checkbox"
                                 checked={newLink.hideOnHome || false}
@@ -519,7 +519,7 @@ export default function LinksManager({ initialLinks }: LinksClientProps) {
                             </div>
                         </label>
 
-                        <label className="flex items-center gap-2 cursor-pointer bg-gray-50 dark:bg-neutral-800/50 px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 has-[:checked]:border-gray-400 has-[:checked]:bg-brand-green/10 transition-colors w-full">
+                        <label className="flex items-center gap-2 cursor-pointer bg-gray-50 dark:bg-neutral-800/50 px-4 py-3 rounded-lg border border-gray-200 dark:border-neutral-700 has-[:checked]:border-gray-400 has-[:checked]:bg-brand-green/10 transition-colors w-full">
                             <input
                                 type="checkbox"
                                 checked={newLink.openInNewTab || false}

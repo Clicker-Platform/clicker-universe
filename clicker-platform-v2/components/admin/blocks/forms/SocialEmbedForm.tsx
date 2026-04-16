@@ -15,7 +15,7 @@ interface SocialEmbedFormProps {
     onChange: (data: any) => void;
 }
 
-const inputClass = "w-full px-4 py-2.5 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-600 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-medium";
+const inputClass = "w-full px-4 py-2.5 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-lg text-sm text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-600 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-medium";
 const labelClass = "block text-xs font-medium text-neutral-400 dark:text-neutral-500 mb-1";
 
 function detectPlatform(url: string): Platform | null {
@@ -108,7 +108,7 @@ export function SocialEmbedForm({ data, onChange }: SocialEmbedFormProps) {
                 {items.length === 0 && (
                     <div
                         onClick={handleAddItem}
-                        className="text-center py-10 bg-gray-100/50 dark:bg-neutral-900/50 rounded-2xl border-2 border-dashed border-gray-200 dark:border-neutral-800 text-neutral-400 dark:text-neutral-500 text-sm cursor-pointer hover:border-gray-300 dark:hover:border-neutral-700 hover:bg-gray-100 dark:hover:bg-neutral-800/50 transition-all group"
+                        className="text-center py-10 bg-gray-100/50 dark:bg-neutral-900/50 rounded-lg border-2 border-dashed border-gray-200 dark:border-neutral-800 text-neutral-400 dark:text-neutral-500 text-sm cursor-pointer hover:border-gray-300 dark:hover:border-neutral-700 hover:bg-gray-100 dark:hover:bg-neutral-800/50 transition-all group"
                     >
                         <Play size={24} className="mx-auto mb-2 opacity-30 group-hover:opacity-60 transition-opacity" />
                         <p className="font-bold text-neutral-500 dark:text-neutral-400">No embeds yet</p>

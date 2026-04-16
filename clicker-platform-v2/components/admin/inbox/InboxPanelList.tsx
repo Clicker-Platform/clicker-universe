@@ -142,7 +142,7 @@ export const InboxPanelList = memo(function InboxPanelList({
                             <div className="px-5 py-3">
                                 <button
                                     onClick={onLoadMore}
-                                    className="w-full py-2 rounded-xl bg-gray-50 dark:bg-neutral-800 text-xs font-bold text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-700 hover:text-brand-dark dark:hover:text-neutral-200 transition-colors"
+                                    className="w-full py-2 rounded-lg bg-gray-50 dark:bg-neutral-800 text-xs font-bold text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-700 hover:text-brand-dark dark:hover:text-neutral-200 transition-colors"
                                 >
                                     Load more
                                 </button>

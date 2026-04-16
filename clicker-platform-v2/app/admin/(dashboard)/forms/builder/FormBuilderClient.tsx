@@ -88,7 +88,7 @@ export function FormBuilderClient({ initialForm }: FormBuilderClientProps) {
                 <button
                     onClick={handleSave}
                     disabled={loading}
-                    className="inline-flex items-center gap-2 bg-studio-blue text-white px-6 py-3 rounded-xl font-bold hover:bg-studio-blue/85 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="inline-flex items-center gap-2 bg-studio-blue text-white px-6 py-3 rounded-lg font-bold hover:bg-studio-blue/85 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     <Save size={20} />
                     {loading ? 'Saving...' : 'Save Form'}
@@ -99,7 +99,7 @@ export function FormBuilderClient({ initialForm }: FormBuilderClientProps) {
                 {/* Left Column: Settings & Fields */}
                 <div className="lg:col-span-2 space-y-8">
                     {/* General Settings */}
-                    <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm">
+                    <div className="bg-white dark:bg-neutral-900 p-6 rounded-lg border border-gray-200 dark:border-neutral-800">
                         <h2 className="text-lg font-semibold text-gray-800 dark:text-neutral-200 mb-4 flex items-center gap-2">
                             <Settings size={20} /> General Settings
                         </h2>
@@ -110,7 +110,7 @@ export function FormBuilderClient({ initialForm }: FormBuilderClientProps) {
                                     type="text"
                                     value={form.title}
                                     onChange={e => setForm(prev => ({ ...prev, title: e.target.value }))}
-                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 focus:ring-0 transition-colors font-bold"
+                                    className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 focus:ring-0 transition-colors font-bold"
                                 />
                             </div>
                             <div>
@@ -119,7 +119,7 @@ export function FormBuilderClient({ initialForm }: FormBuilderClientProps) {
                                     type="text"
                                     value={form.buttonText}
                                     onChange={e => setForm(prev => ({ ...prev, buttonText: e.target.value }))}
-                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 focus:ring-0 transition-colors"
+                                    className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 focus:ring-0 transition-colors"
                                 />
                             </div>
                             <div className="flex items-center gap-4">
@@ -140,7 +140,7 @@ export function FormBuilderClient({ initialForm }: FormBuilderClientProps) {
                                     value={form.emailNotificationTo || ''}
                                     onChange={e => setForm(prev => ({ ...prev, emailNotificationTo: e.target.value }))}
                                     placeholder="Enter email to receive alerts"
-                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 focus:ring-0 transition-colors"
+                                    className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 focus:ring-0 transition-colors"
                                 />
                             </div>
                         </div>
@@ -152,14 +152,14 @@ export function FormBuilderClient({ initialForm }: FormBuilderClientProps) {
                             <h2 className="text-lg font-semibold text-gray-800 dark:text-neutral-200">Form Fields</h2>
                             <button
                                 onClick={addField}
-                                className="inline-flex items-center gap-2 bg-gray-100 dark:bg-neutral-800 text-brand-dark px-4 py-2 rounded-xl font-bold hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors"
+                                className="inline-flex items-center gap-2 bg-gray-100 dark:bg-neutral-800 text-brand-dark px-4 py-2 rounded-lg font-bold hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors"
                             >
                                 <Plus size={18} /> Add Field
                             </button>
                         </div>
 
                         {form.fields?.map((field, index) => (
-                            <div key={field.id} className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm group">
+                            <div key={field.id} className="bg-white dark:bg-neutral-900 p-6 rounded-lg border border-gray-200 dark:border-neutral-800 group">
                                 <div className="flex items-start justify-between mb-4">
                                     <div className="flex items-center gap-2 text-gray-400 dark:text-neutral-600">
                                         <GripVertical size={20} className="cursor-move" />
@@ -176,7 +176,7 @@ export function FormBuilderClient({ initialForm }: FormBuilderClientProps) {
                                         <select
                                             value={field.type}
                                             onChange={e => updateField(field.id, { type: e.target.value as any })}
-                                            className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 bg-gray-50 font-medium"
+                                            className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 bg-gray-50 font-medium"
                                         >
                                             <option value="text">Text Input</option>
                                             <option value="email">Email</option>
@@ -192,7 +192,7 @@ export function FormBuilderClient({ initialForm }: FormBuilderClientProps) {
                                             type="text"
                                             value={field.label}
                                             onChange={e => updateField(field.id, { label: e.target.value })}
-                                            className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400"
+                                            className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400"
                                         />
                                     </div>
                                     <div className="col-span-1 md:col-span-2">
@@ -201,20 +201,20 @@ export function FormBuilderClient({ initialForm }: FormBuilderClientProps) {
                                             type="text"
                                             value={field.placeholder || ''}
                                             onChange={e => updateField(field.id, { placeholder: e.target.value })}
-                                            className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400"
+                                            className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400"
                                         />
                                     </div>
 
                                     {/* Dropdown Options Editor */}
                                     {field.type === 'select' && (
-                                        <div className="col-span-1 md:col-span-2 bg-yellow-50 dark:bg-yellow-950/30 p-4 rounded-xl border border-yellow-100">
+                                        <div className="col-span-1 md:col-span-2 bg-yellow-50 dark:bg-yellow-950/30 p-4 rounded-lg border border-yellow-100">
                                             <label className="block text-xs font-bold text-yellow-700 dark:text-amber-400 mb-1 uppercase">Options (comma separated)</label>
                                             <input
                                                 type="text"
                                                 value={field.options?.join(', ') || ''}
                                                 onChange={e => updateField(field.id, { options: e.target.value.split(',').map(s => s.trim()) })}
                                                 placeholder="Option 1, Option 2, Option 3"
-                                                className="w-full px-3 py-2 rounded-xl border border-yellow-200 focus:border-yellow-400 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+                                                className="w-full px-3 py-2 rounded-lg border border-yellow-200 focus:border-yellow-400 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
                                             />
                                         </div>
                                     )}
@@ -240,7 +240,7 @@ export function FormBuilderClient({ initialForm }: FormBuilderClientProps) {
                 <div className="lg:col-span-1">
                     <div className="sticky top-8">
                         <h2 className="text-xs font-semibold text-gray-400 dark:text-neutral-600 uppercase tracking-widest mb-4 text-center">Live Preview</h2>
-                        <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm min-h-[400px] flex flex-col relative overflow-hidden">
+                        <div className="bg-white dark:bg-neutral-900 p-6 rounded-lg border border-gray-200 dark:border-neutral-800 min-h-[400px] flex flex-col relative overflow-hidden">
                             {/* Decorative Header */}
                             <div className="absolute top-0 inset-x-0 h-2 bg-brand-green"></div>
 
@@ -258,16 +258,16 @@ export function FormBuilderClient({ initialForm }: FormBuilderClientProps) {
                                         {field.type === 'textarea' ? (
                                             <textarea
                                                 placeholder={field.placeholder}
-                                                className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 bg-gray-50 resize-none h-24"
+                                                className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 bg-gray-50 resize-none h-24"
                                                 readOnly
                                             ></textarea>
                                         ) : field.type === 'select' ? (
-                                            <select className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 bg-gray-50" disabled>
+                                            <select className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 bg-gray-50" disabled>
                                                 <option value="">Select option...</option>
                                                 {field.options?.map(opt => <option key={opt}>{opt}</option>)}
                                             </select>
                                         ) : field.type === 'file' ? (
-                                            <div className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 bg-gray-50 flex items-center gap-2 text-gray-500 dark:text-neutral-500">
+                                            <div className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 bg-gray-50 flex items-center gap-2 text-gray-500 dark:text-neutral-500">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" x2="12" y1="3" y2="15" /></svg>
                                                 <span className="text-sm">Choose File...</span>
                                             </div>
@@ -275,7 +275,7 @@ export function FormBuilderClient({ initialForm }: FormBuilderClientProps) {
                                             <input
                                                 type={field.type}
                                                 placeholder={field.placeholder}
-                                                className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 bg-gray-50"
+                                                className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 bg-gray-50"
                                                 readOnly
                                             />
                                         )}
@@ -284,7 +284,7 @@ export function FormBuilderClient({ initialForm }: FormBuilderClientProps) {
                             </div>
 
                             <div className="mt-8">
-                                <button className="w-full bg-studio-blue text-white font-bold py-3 rounded-xl shadow-lg opacity-90 cursor-default">
+                                <button className="w-full bg-studio-blue text-white font-bold py-3 rounded-lg shadow-lg opacity-90 cursor-default">
                                     {form.buttonText || 'Submit'}
                                 </button>
                             </div>

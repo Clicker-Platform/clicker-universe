@@ -196,7 +196,7 @@ export default function MemberListPage() {
                 </button>
             )}
 
-            <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden flex flex-col min-h-[600px]">
+            <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 overflow-hidden flex flex-col min-h-[600px]">
                 {/* Search Header */}
                 <div className="p-4 border-b border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 space-y-2">
                     <div className="relative max-w-md">
@@ -317,7 +317,7 @@ export default function MemberListPage() {
                                     <button
                                         key={member.id}
                                         onClick={() => openDetails(member.id)}
-                                        className="w-full text-left block bg-white dark:bg-neutral-900 p-4 rounded-2xl border border-gray-100 dark:border-neutral-800 shadow-sm active:scale-[0.98] transition-transform"
+                                        className="w-full text-left block bg-white dark:bg-neutral-900 p-4 rounded-lg border border-gray-100 dark:border-neutral-800 active:scale-[0.98] transition-transform"
                                     >
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-3 min-w-0">
@@ -353,7 +353,7 @@ export default function MemberListPage() {
                                     <button
                                         onClick={loadMore}
                                         disabled={loadingMore}
-                                        className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-brand-dark bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 shadow-sm hover:bg-gray-50 dark:hover:bg-neutral-800 rounded-xl transition-all disabled:opacity-50 w-full justify-center"
+                                        className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-brand-dark bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-800 rounded-lg transition-all disabled:opacity-50 w-full justify-center"
                                     >
                                         {loadingMore ? <Loader2 size={16} className="animate-spin" /> : <span>▼</span>}
                                         {loadingMore ? 'Loading...' : 'Load More'}
@@ -368,7 +368,7 @@ export default function MemberListPage() {
             {/* Registration Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}>
-                    <div className="bg-white dark:bg-neutral-900 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+                    <div className="bg-white dark:bg-neutral-900 rounded-lg w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
                         <div className="p-6 border-b border-gray-100 dark:border-neutral-800 flex justify-between items-center bg-gray-50 dark:bg-neutral-800/50">
                             <h2 className="text-xl font-black text-brand-dark">Register New Member</h2>
                             <button onClick={() => setIsModalOpen(false)} className="text-gray-400 dark:text-neutral-600 hover:text-gray-600 dark:hover:text-neutral-400">
@@ -410,7 +410,7 @@ export default function MemberListPage() {
                             <button
                                 type="submit"
                                 disabled={submitting}
-                                className="w-full py-3 bg-studio-blue text-white font-bold rounded-xl hover:bg-studio-blue/85 mt-2"
+                                className="w-full py-3 bg-studio-blue text-white font-bold rounded-lg hover:bg-studio-blue/85 mt-2"
                             >
                                 {submitting ? 'Registering...' : 'Register Member'}
                             </button>

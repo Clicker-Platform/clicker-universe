@@ -75,7 +75,7 @@ export default function ReservationSettingsPage() {
     return (
         <div className="max-w-2xl space-y-6">
             {toast && (
-                <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl text-sm font-medium shadow-lg ${
+                <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${
                     toast.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
                 }`}>
                     {toast.message}
@@ -91,7 +91,7 @@ export default function ReservationSettingsPage() {
                 <Settings className="w-6 h-6 text-gray-300 dark:text-neutral-700" />
             </div>
 
-            <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm divide-y divide-gray-100 dark:divide-neutral-800">
+            <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 divide-y divide-gray-100 dark:divide-neutral-800">
 
                 {/* Staff Selection Toggle */}
                 <div className="p-5 flex items-center justify-between gap-4">
@@ -129,7 +129,7 @@ export default function ReservationSettingsPage() {
                         value={settings.staffLabel ?? 'Staff'}
                         onChange={e => setSettings(s => ({ ...s, staffLabel: e.target.value }))}
                         placeholder="Staff"
-                        className="w-full max-w-xs rounded-xl border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm text-gray-900 dark:text-neutral-200 placeholder-gray-400 dark:placeholder-neutral-600"
+                        className="w-full max-w-xs rounded-lg border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm text-gray-900 dark:text-neutral-200 placeholder-gray-400 dark:placeholder-neutral-600"
                     />
                     {label && (
                         <p className="text-xs text-gray-400 dark:text-neutral-600 mt-2">
@@ -153,7 +153,7 @@ export default function ReservationSettingsPage() {
                         value={settings.bookingTitle ?? ''}
                         onChange={e => setSettings(s => ({ ...s, bookingTitle: e.target.value }))}
                         placeholder="Select Service"
-                        className="w-full max-w-xs rounded-xl border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm text-gray-900 dark:text-neutral-200 placeholder-gray-400 dark:placeholder-neutral-600"
+                        className="w-full max-w-xs rounded-lg border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm text-gray-900 dark:text-neutral-200 placeholder-gray-400 dark:placeholder-neutral-600"
                     />
                     {settings.bookingTitle?.trim() && (
                         <p className="text-xs text-gray-400 dark:text-neutral-600 mt-2">
@@ -181,7 +181,7 @@ export default function ReservationSettingsPage() {
                         ] as { value: PricingDisplay; label: string; desc: string }[]).map(opt => (
                             <label
                                 key={opt.value}
-                                className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                                className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
                                     settings.pricingDisplay === opt.value
                                         ? 'border-brand-dark dark:border-brand-dark bg-brand-dark/5 dark:bg-brand-dark/10'
                                         : 'border-gray-200 dark:border-neutral-700 hover:border-gray-300 dark:hover:border-neutral-600'
@@ -244,7 +244,7 @@ export default function ReservationSettingsPage() {
                                     value={settings.formConfig?.assetLabel ?? ''}
                                     onChange={e => setSettings(s => ({ ...s, formConfig: { ...s.formConfig!, assetLabel: e.target.value } }))}
                                     placeholder="License Plate"
-                                    className="w-full max-w-xs rounded-xl border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm text-gray-900 dark:text-neutral-200 placeholder-gray-400 dark:placeholder-neutral-600"
+                                    className="w-full max-w-xs rounded-lg border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm text-gray-900 dark:text-neutral-200 placeholder-gray-400 dark:placeholder-neutral-600"
                                 />
                             </div>
                             <div>
@@ -254,7 +254,7 @@ export default function ReservationSettingsPage() {
                                     value={settings.formConfig?.assetPlaceholder ?? ''}
                                     onChange={e => setSettings(s => ({ ...s, formConfig: { ...s.formConfig!, assetPlaceholder: e.target.value } }))}
                                     placeholder="e.g. B 1234 CD"
-                                    className="w-full max-w-xs rounded-xl border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm text-gray-900 dark:text-neutral-200 placeholder-gray-400 dark:placeholder-neutral-600"
+                                    className="w-full max-w-xs rounded-lg border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm text-gray-900 dark:text-neutral-200 placeholder-gray-400 dark:placeholder-neutral-600"
                                 />
                             </div>
 
@@ -286,7 +286,7 @@ export default function ReservationSettingsPage() {
                                         value={settings.formConfig?.assetModelLabel ?? ''}
                                         onChange={e => setSettings(s => ({ ...s, formConfig: { ...s.formConfig!, assetModelLabel: e.target.value } }))}
                                         placeholder="Vehicle Make & Model"
-                                        className="w-full max-w-xs rounded-xl border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm text-gray-900 dark:text-neutral-200 placeholder-gray-400 dark:placeholder-neutral-600"
+                                        className="w-full max-w-xs rounded-lg border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm text-gray-900 dark:text-neutral-200 placeholder-gray-400 dark:placeholder-neutral-600"
                                     />
                                 </div>
                             )}
@@ -299,7 +299,7 @@ export default function ReservationSettingsPage() {
                 <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="bg-studio-blue text-white px-5 py-2.5 rounded-xl text-sm font-medium disabled:opacity-50"
+                    className="bg-studio-blue text-white px-5 py-2.5 rounded-lg text-sm font-medium disabled:opacity-50"
                 >
                     {saving ? 'Saving…' : 'Save Settings'}
                 </button>

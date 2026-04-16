@@ -114,7 +114,7 @@ export default function RemindersPage() {
         return (
             <div className="animate-pulse space-y-4 max-w-3xl">
                 <div className="h-8 bg-gray-200 dark:bg-neutral-700 rounded w-48" />
-                <div className="h-40 bg-gray-200 dark:bg-neutral-700 rounded-2xl" />
+                <div className="h-40 bg-gray-200 dark:bg-neutral-700 rounded-lg" />
             </div>
         );
     }
@@ -125,7 +125,7 @@ export default function RemindersPage() {
     return (
         <div className="max-w-3xl space-y-5">
             {toast && (
-                <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl text-sm font-medium shadow-lg ${
+                <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${
                     toast.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
                 }`}>
                     {toast.message}
@@ -135,7 +135,7 @@ export default function RemindersPage() {
             <h1 className="hidden md:block text-2xl font-bold text-gray-900 dark:text-neutral-100">Reminders</h1>
 
             {/* Master toggle */}
-            <div className="bg-white dark:bg-neutral-900 p-5 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm flex items-center justify-between">
+            <div className="bg-white dark:bg-neutral-900 p-5 rounded-lg border border-gray-200 dark:border-neutral-800 flex items-center justify-between">
                 <div>
                     <p className="text-sm font-semibold text-gray-800 dark:text-neutral-200">Reminder Engine</p>
                     <p className="text-xs text-gray-400 dark:text-neutral-500 mt-0.5">
@@ -159,7 +159,7 @@ export default function RemindersPage() {
             </div>
 
             {/* Reminder configurations */}
-            <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden">
+            <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 overflow-hidden">
                 {/* R0 */}
                 <div className="p-5 border-b border-gray-50 dark:border-neutral-800">
                     <div className="flex items-center justify-between">
@@ -313,7 +313,7 @@ export default function RemindersPage() {
             </div>
 
             {/* Template Editor */}
-            <div className="bg-white dark:bg-neutral-900 p-5 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm space-y-4">
+            <div className="bg-white dark:bg-neutral-900 p-5 rounded-lg border border-gray-200 dark:border-neutral-800 space-y-4">
                 <div className="flex items-center justify-between">
                     <div>
                         <p className="text-sm font-semibold text-gray-800 dark:text-neutral-200">Email Templates</p>
@@ -322,7 +322,7 @@ export default function RemindersPage() {
                 </div>
 
                 {/* Template tabs */}
-                <div className="flex gap-1 bg-gray-100 dark:bg-neutral-800 p-1 rounded-xl">
+                <div className="flex gap-1 bg-gray-100 dark:bg-neutral-800 p-1 rounded-lg">
                     {(['r0', 'r1', 'r2', 'r3'] as const).map(key => (
                         <button
                             key={key}
@@ -345,7 +345,7 @@ export default function RemindersPage() {
                             value={templates[activeTemplate].subject}
                             onChange={e => isOwner && updateTemplate(activeTemplate, 'subject', e.target.value)}
                             disabled={!isOwner}
-                            className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm disabled:bg-gray-50 dark:disabled:bg-neutral-800"
+                            className="w-full rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm disabled:bg-gray-50 dark:disabled:bg-neutral-800"
                         />
                     </div>
                     <div>
@@ -355,7 +355,7 @@ export default function RemindersPage() {
                             onChange={e => isOwner && updateTemplate(activeTemplate, 'body', e.target.value)}
                             disabled={!isOwner}
                             rows={6}
-                            className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm resize-none font-mono disabled:bg-gray-50 dark:disabled:bg-neutral-800"
+                            className="w-full rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm resize-none font-mono disabled:bg-gray-50 dark:disabled:bg-neutral-800"
                         />
                     </div>
                     {/* Template variable hints */}
@@ -387,7 +387,7 @@ export default function RemindersPage() {
                     <button
                         onClick={handleSave}
                         disabled={saving}
-                        className="bg-studio-blue text-white px-6 py-3 rounded-xl text-sm font-medium disabled:opacity-50"
+                        className="bg-studio-blue text-white px-6 py-3 rounded-lg text-sm font-medium disabled:opacity-50"
                     >
                         {saving ? 'Saving…' : 'Save Reminder Settings'}
                     </button>
@@ -395,7 +395,7 @@ export default function RemindersPage() {
             )}
 
             {/* Reminder Queue */}
-            <div className="bg-white dark:bg-neutral-900 p-5 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm space-y-3">
+            <div className="bg-white dark:bg-neutral-900 p-5 rounded-lg border border-gray-200 dark:border-neutral-800 space-y-3">
                 <div className="flex items-center gap-2">
                     <Bell className="w-4 h-4 text-gray-400 dark:text-neutral-500" />
                     <p className="text-sm font-semibold text-gray-800 dark:text-neutral-200">Recent Queue</p>

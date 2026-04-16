@@ -83,7 +83,7 @@ function FocalPointPicker({ imageUrl, value, onChange, label: pickerLabel }: {
                 ref={containerRef}
                 onMouseDown={handlePointerDown}
                 onTouchStart={handlePointerDown}
-                className="relative w-full rounded-xl overflow-hidden cursor-crosshair select-none border border-gray-300 dark:border-neutral-700"
+                className="relative w-full rounded-lg overflow-hidden cursor-crosshair select-none border border-gray-300 dark:border-neutral-700"
                 style={{ height: 140, backgroundImage: `url(${imageUrl})`, backgroundSize: 'cover', backgroundPosition: `${focal[0]}% ${focal[1]}%` }}
             >
                 {/* Focal point dot */}
@@ -115,9 +115,9 @@ const TITLE_SIZES = [
     { value: 'xl', label: 'XL' },
 ];
 
-const inputClass = "w-full px-4 py-2.5 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-600 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-medium";
+const inputClass = "w-full px-4 py-2.5 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-lg text-sm text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-600 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-medium";
 const labelClass = "block text-xs font-medium text-neutral-400 dark:text-neutral-500 mb-1";
-const sectionClass = "p-3 bg-gray-100/50 dark:bg-neutral-900/50 rounded-xl border border-gray-200 dark:border-neutral-800 space-y-3";
+const sectionClass = "p-3 bg-gray-100/50 dark:bg-neutral-900/50 rounded-lg border border-gray-200 dark:border-neutral-800 space-y-3";
 
 const ColorInput = ({ label, value, onChange, onClear }: {
     label: string;
@@ -196,7 +196,7 @@ export const HeroForm = ({ data, onChange }: HeroFormProps) => {
                 <label className={labelClass}>Title</label>
                 <input type="text" value={safeData.title || ''} onChange={(e) => handleChange('title', e.target.value)}
                     className={inputClass} placeholder="Welcome to our page" />
-                <div className="flex gap-1 p-1 mt-2 bg-gray-50 dark:bg-neutral-900 rounded-xl border border-gray-200 dark:border-neutral-800">
+                <div className="flex gap-1 p-1 mt-2 bg-gray-50 dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800">
                     {TITLE_SIZES.map(({ value, label }) => (
                         <button key={value} type="button" onClick={() => handleChange('titleSize', value)}
                             className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all ${
@@ -230,7 +230,7 @@ export const HeroForm = ({ data, onChange }: HeroFormProps) => {
             {/* Text Alignment */}
             <div>
                 <label className={`${labelClass} mb-1.5`}>Text Alignment</label>
-                <div className="flex gap-1 p-1 bg-gray-50 dark:bg-neutral-900 rounded-xl border border-gray-200 dark:border-neutral-800">
+                <div className="flex gap-1 p-1 bg-gray-50 dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800">
                     {ALIGN_OPTIONS.map(({ value, icon: Icon, label }) => (
                         <button key={value} type="button" title={label} onClick={() => handleChange('textAlign', value)}
                             className={`flex-1 flex items-center justify-center py-2 rounded-lg transition-all text-sm font-medium ${
@@ -268,7 +268,7 @@ export const HeroForm = ({ data, onChange }: HeroFormProps) => {
                         </div>
                     ) : (
                         <button type="button" onClick={() => handleChange('primaryBtn', { label: 'Get Started', url: '' })}
-                            className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-dashed border-gray-300 dark:border-neutral-700 text-xs font-bold text-neutral-400 dark:text-neutral-500 hover:text-blue-400 hover:border-blue-500/50 transition-all">
+                            className="w-full flex items-center justify-center gap-2 py-2 rounded-lg border border-dashed border-gray-300 dark:border-neutral-700 text-xs font-bold text-neutral-400 dark:text-neutral-500 hover:text-blue-400 hover:border-blue-500/50 transition-all">
                             <Plus size={13} /> Add Primary Button
                         </button>
                     )}
@@ -293,7 +293,7 @@ export const HeroForm = ({ data, onChange }: HeroFormProps) => {
                             </div>
                         ) : (
                             <button type="button" onClick={() => handleChange('secondaryBtn', { label: 'Learn More', url: '' })}
-                                className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-dashed border-gray-300 dark:border-neutral-700 text-xs font-bold text-neutral-400 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 hover:border-gray-400 dark:hover:border-neutral-600 transition-all">
+                                className="w-full flex items-center justify-center gap-2 py-2 rounded-lg border border-dashed border-gray-300 dark:border-neutral-700 text-xs font-bold text-neutral-400 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 hover:border-gray-400 dark:hover:border-neutral-600 transition-all">
                                 <Plus size={13} /> Add Secondary Button
                             </button>
                         )

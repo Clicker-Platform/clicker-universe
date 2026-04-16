@@ -14,7 +14,7 @@ export default function AccountSettingsPage() {
 
             <SettingsSubNav />
 
-            <div className="mb-8 bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm">
+            <div className="mb-8 bg-white dark:bg-neutral-900 p-6 rounded-lg border border-gray-200 dark:border-neutral-800">
                 <h2 className="text-sm font-bold text-gray-400 dark:text-neutral-600 uppercase tracking-wider mb-4">Login Details</h2>
                 <div className="space-y-3">
                     <div>

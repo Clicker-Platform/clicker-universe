@@ -181,12 +181,12 @@ export function PermissionEditor({ value, onChange, siteModules }: PermissionEdi
     return (
         <div className="space-y-4">
             {/* Toolbar */}
-            <div className="flex items-center justify-between gap-4 bg-gray-50 p-3 rounded-[20px] border border-gray-100 shadow-sm">
+            <div className="flex items-center justify-between gap-4 bg-gray-50 p-3 rounded-[20px] border border-gray-100">
                 <div className="flex items-center gap-2">
                     <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">Presets:</span>
-                    <button type="button" onClick={() => applyPreset('cashier')} className="text-[10px] font-black uppercase bg-white border border-gray-200 px-3 py-1.5 rounded-xl hover:border-brand-dark hover:text-brand-dark transition-all active:scale-95 shadow-sm">Cashier</button>
+                    <button type="button" onClick={() => applyPreset('cashier')} className="text-[10px] font-black uppercase bg-white border border-gray-200 px-3 py-1.5 rounded-lg hover:border-brand-dark hover:text-brand-dark transition-all active:scale-95">Cashier</button>
                 </div>
-                <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-gray-200 shadow-sm">
+                <div className="flex items-center gap-1 bg-white p-1 rounded-lg border border-gray-200">
                     <button
                         type="button"
                         onClick={handleSelectAll}
@@ -206,13 +206,13 @@ export function PermissionEditor({ value, onChange, siteModules }: PermissionEdi
             </div>
 
             {/* Categories */}
-            <div className="flex gap-2 bg-gray-100/30 p-1 rounded-2xl border border-gray-100 shadow-inner mt-4">
+            <div className="flex gap-2 bg-gray-100/30 p-1 rounded-lg border border-gray-100 shadow-inner mt-4">
                 {sortedCategories.map(cat => (
                     <button
                         key={cat}
                         type="button"
                         onClick={() => setActiveCategory(cat)}
-                        className={`flex-1 py-1.5 px-3 text-[9px] uppercase font-black rounded-xl transition-all duration-300 ${activeCategory === cat
+                        className={`flex-1 py-1.5 px-3 text-[9px] uppercase font-black rounded-lg transition-all duration-300 ${activeCategory === cat
                             ? 'bg-brand-dark text-white shadow-md transform scale-[1.02]'
                             : 'text-gray-400 hover:text-gray-600 hover:bg-white/50'
                             }`}
@@ -236,7 +236,7 @@ export function PermissionEditor({ value, onChange, siteModules }: PermissionEdi
                             const Icon = ICON_MAP[iconName] || Box;
 
                             return (
-                                <div key={module.id} className="border border-gray-200 rounded-xl overflow-hidden h-fit bg-white shadow-sm hover:border-brand-dark/20 transition-all group">
+                                <div key={module.id} className="border border-gray-200 rounded-lg overflow-hidden h-fit bg-white hover:border-brand-dark/20 transition-all group">
                                     {/* Module Header */}
                                     <div className="bg-gray-50/50 p-3.5 flex items-center justify-between border-b border-gray-100 group-hover:bg-gray-50 transition-colors">
                                         <div className="flex items-center gap-3">
@@ -282,7 +282,7 @@ export function PermissionEditor({ value, onChange, siteModules }: PermissionEdi
                                                         </div>
 
                                                         {/* Access Level Selector */}
-                                                        <div className="flex bg-gray-100/50 p-1 rounded-xl border border-gray-200/50 shadow-inner shrink-0">
+                                                        <div className="flex bg-gray-100/50 p-1 rounded-lg border border-gray-200/50 shadow-inner shrink-0">
                                                             {(['none', 'view', 'full'] as const).map((level) => {
                                                                 const isSelected = accessLevel === level || (!accessLevel && level === 'none');
                                                                 return (

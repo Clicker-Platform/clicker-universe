@@ -93,14 +93,14 @@ export default function MembershipSettingsPage() {
             </div>
 
             {message && (
-                <div className={`p-4 rounded-xl mb-6 flex items-center gap-3 ${message.type === 'success' ? 'bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-400 border border-green-100 dark:border-green-900/50' : 'bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 border border-red-100 dark:border-red-900/50'
+                <div className={`p-4 rounded-lg mb-6 flex items-center gap-3 ${message.type === 'success' ? 'bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-400 border border-green-100 dark:border-green-900/50' : 'bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 border border-red-100 dark:border-red-900/50'
                     }`}>
                     <AlertCircle size={20} />
                     <p className="font-bold">{message.text}</p>
                 </div>
             )}
 
-            <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden flex flex-col min-h-[600px]">
+            <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 overflow-hidden flex flex-col min-h-[600px]">
                 <div className={`flex-1 overflow-auto p-8 space-y-8 ${!canEdit ? 'opacity-80 pointer-events-none grayscale-[0.5]' : ''}`}>
                     {/* General Settings */}
                     <section>
@@ -108,7 +108,7 @@ export default function MembershipSettingsPage() {
                             General Configuration
                         </h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="bg-gray-50 dark:bg-neutral-800/50 p-6 rounded-2xl border border-gray-100 dark:border-neutral-800">
+                            <div className="bg-gray-50 dark:bg-neutral-800/50 p-6 rounded-lg border border-gray-100 dark:border-neutral-800">
                                 <label className="flex items-center justify-between cursor-pointer group">
                                     <div>
                                         <span className="font-bold text-gray-900 dark:text-neutral-100 block mb-1">Enable Loyalty Program</span>
@@ -118,7 +118,7 @@ export default function MembershipSettingsPage() {
                                         className={`w-14 h-8 rounded-full p-1 transition-colors duration-200 ${settings.enableLoyalty ? 'bg-green-500' : 'bg-gray-300 dark:bg-neutral-600'}`}
                                         onClick={() => canEdit && setSettings({ ...settings, enableLoyalty: !settings.enableLoyalty })}
                                     >
-                                        <div className={`w-6 h-6 bg-white rounded-full shadow-sm transition-transform duration-200 ${settings.enableLoyalty ? 'translate-x-6' : 'translate-x-0'}`} />
+                                        <div className={`w-6 h-6 bg-white rounded-full transition-transform duration-200 ${settings.enableLoyalty ? 'translate-x-6' : 'translate-x-0'}`} />
                                     </div>
                                 </label>
                             </div>
@@ -140,7 +140,7 @@ export default function MembershipSettingsPage() {
                                     value={settings.pointsName}
                                     readOnly={!canEdit}
                                     onChange={(e) => setSettings({ ...settings, pointsName: e.target.value })}
-                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-brand-dark focus:ring-2 focus:ring-brand-dark/10 outline-none transition-all font-bold disabled:bg-gray-50 dark:disabled:bg-neutral-800"
+                                    className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-brand-dark focus:ring-2 focus:ring-brand-dark/10 outline-none transition-all font-bold disabled:bg-gray-50 dark:disabled:bg-neutral-800"
                                     placeholder="e.g. Stars, Coins, Credits"
                                 />
                                 <p className="mt-2 text-xs text-gray-400 dark:text-neutral-600">What do you call your loyalty currency?</p>
@@ -155,7 +155,7 @@ export default function MembershipSettingsPage() {
                                     value={settings.currency || '$'}
                                     readOnly={!canEdit}
                                     onChange={(e) => setSettings({ ...settings, currency: e.target.value })}
-                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-brand-dark focus:ring-2 focus:ring-brand-dark/10 outline-none transition-all font-bold disabled:bg-gray-50 dark:disabled:bg-neutral-800"
+                                    className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-brand-dark focus:ring-2 focus:ring-brand-dark/10 outline-none transition-all font-bold disabled:bg-gray-50 dark:disabled:bg-neutral-800"
                                     placeholder="$"
                                 />
                                 <p className="mt-2 text-xs text-gray-400 dark:text-neutral-600">Used for display only.</p>
@@ -181,7 +181,7 @@ export default function MembershipSettingsPage() {
                                                 const visiblePoints = settings.earningRatio * (settings.spendBlock || 1);
                                                 setSettings({ ...settings, spendBlock: spend, earningRatio: visiblePoints / spend });
                                             }}
-                                            className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-brand-dark focus:ring-2 focus:ring-brand-dark/10 outline-none transition-all font-bold pl-8 disabled:bg-gray-50 dark:disabled:bg-neutral-800"
+                                            className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-brand-dark focus:ring-2 focus:ring-brand-dark/10 outline-none transition-all font-bold pl-8 disabled:bg-gray-50 dark:disabled:bg-neutral-800"
                                             placeholder="Spend"
                                         />
                                     </div>
@@ -201,7 +201,7 @@ export default function MembershipSettingsPage() {
                                                 const spend = settings.spendBlock || 1;
                                                 setSettings({ ...settings, earningRatio: points / spend });
                                             }}
-                                            className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-brand-dark focus:ring-2 focus:ring-brand-dark/10 outline-none transition-all font-bold pl-8 disabled:bg-gray-50 dark:disabled:bg-neutral-800"
+                                            className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-brand-dark focus:ring-2 focus:ring-brand-dark/10 outline-none transition-all font-bold pl-8 disabled:bg-gray-50 dark:disabled:bg-neutral-800"
                                             placeholder="Points"
                                         />
                                         <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-neutral-600 text-xs font-bold">Pts</div>
@@ -231,13 +231,13 @@ export default function MembershipSettingsPage() {
                                 value={settings.memberCodePrefix || ''}
                                 onChange={(e) => setSettings({ ...settings, memberCodePrefix: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '') })}
                                 placeholder="MBR"
-                                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-brand-dark focus:ring-2 focus:ring-brand-dark/10 outline-none transition-all font-bold tracking-widest uppercase"
+                                className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-brand-dark focus:ring-2 focus:ring-brand-dark/10 outline-none transition-all font-bold tracking-widest uppercase"
                             />
                             <p className="mt-2 text-xs text-gray-400 dark:text-neutral-600">Max 5 characters. Applies to new members only.</p>
                         </div>
 
                         {/* Backfill */}
-                        <div className="mt-6 p-4 rounded-xl border border-dashed border-gray-200 dark:border-neutral-700 bg-gray-50 dark:bg-neutral-800/30">
+                        <div className="mt-6 p-4 rounded-lg border border-dashed border-gray-200 dark:border-neutral-700 bg-gray-50 dark:bg-neutral-800/30">
                             <p className="text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">Backfill Existing Members</p>
                             <p className="text-xs text-gray-400 dark:text-neutral-600 mb-3">
                                 Assign codes to all members that don't have one yet, using the prefix above.
@@ -253,7 +253,7 @@ export default function MembershipSettingsPage() {
                                 <button
                                     onClick={handleBackfill}
                                     disabled={backfilling || !canEdit}
-                                    className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 text-gray-700 dark:text-neutral-300 text-sm font-bold rounded-xl hover:bg-gray-100 dark:hover:bg-neutral-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 text-gray-700 dark:text-neutral-300 text-sm font-bold rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <RefreshCw size={14} className={backfilling ? 'animate-spin' : ''} />
                                     {backfilling
@@ -302,7 +302,7 @@ export default function MembershipSettingsPage() {
                                                     const updated = base.map(t => t.tier === tier ? { ...t, minPoints: newVal } : t);
                                                     setSettings({ ...settings, tierThresholds: updated });
                                                 }}
-                                                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-brand-dark focus:ring-2 focus:ring-brand-dark/10 outline-none transition-all font-bold disabled:bg-gray-50 dark:disabled:bg-neutral-800 read-only:bg-gray-50 dark:read-only:bg-neutral-800 read-only:cursor-not-allowed"
+                                                className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-brand-dark focus:ring-2 focus:ring-brand-dark/10 outline-none transition-all font-bold disabled:bg-gray-50 dark:disabled:bg-neutral-800 read-only:bg-gray-50 dark:read-only:bg-neutral-800 read-only:cursor-not-allowed"
                                             />
                                             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 dark:text-neutral-600 font-bold">pts</span>
                                         </div>
@@ -321,7 +321,7 @@ export default function MembershipSettingsPage() {
                     <button
                         onClick={handleSave}
                         disabled={saving || !canEdit}
-                        className="flex items-center gap-2 bg-studio-blue text-white font-bold py-3 px-8 rounded-xl hover:bg-studio-blue/85 transition-all shadow-lg shadow-brand-dark/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+                        className="flex items-center gap-2 bg-studio-blue text-white font-bold py-3 px-8 rounded-lg hover:bg-studio-blue/85 transition-all shadow-lg shadow-brand-dark/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
                     >
                         {saving ? (
                             <>Processing...</>

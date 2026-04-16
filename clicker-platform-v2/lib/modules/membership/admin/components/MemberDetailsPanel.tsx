@@ -169,7 +169,7 @@ export function MemberDetailsPanel({ memberId, isOpen, onClose }: MemberDetailsP
                     )}
 
                     {/* Ultra-compact Profile Card: horizontal avatar + info */}
-                    <div className="bg-white dark:bg-neutral-900 px-3 py-2.5 rounded-xl border border-gray-200 dark:border-neutral-800">
+                    <div className="bg-white dark:bg-neutral-900 px-3 py-2.5 rounded-lg border border-gray-200 dark:border-neutral-800">
                         <div className="flex items-center gap-3">
                             {/* Avatar */}
                             <div className="w-10 h-10 flex-shrink-0 rounded-full bg-blue-100 dark:bg-blue-950/30 flex items-center justify-center text-base font-bold text-blue-600 dark:text-blue-400">
@@ -229,7 +229,7 @@ export function MemberDetailsPanel({ memberId, isOpen, onClose }: MemberDetailsP
                     </div>
 
                     {/* Ultra-compact Actions Card */}
-                    <div className="bg-white dark:bg-neutral-900 px-3 py-2.5 rounded-xl border border-gray-200 dark:border-neutral-800">
+                    <div className="bg-white dark:bg-neutral-900 px-3 py-2.5 rounded-lg border border-gray-200 dark:border-neutral-800">
                         <div className="flex items-center mb-2">
                             <p className="text-xs font-bold text-gray-600 dark:text-neutral-400 uppercase tracking-wider">Adjust Points</p>
                         </div>
@@ -265,7 +265,7 @@ export function MemberDetailsPanel({ memberId, isOpen, onClose }: MemberDetailsP
                 {/* ── Scrollable Transaction History ── */}
                 <div className="flex-1 min-h-0 overflow-y-auto">
                     <div className="px-3 pb-3">
-                        <div className="bg-white dark:bg-neutral-900 rounded-xl border border-gray-200 dark:border-neutral-800 overflow-hidden">
+                        <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 overflow-hidden">
                             <div className="px-3 py-2 border-b border-gray-100 dark:border-neutral-800">
                                 <h3 className="font-bold text-gray-800 dark:text-neutral-200 text-xs uppercase tracking-wider">Transaction History</h3>
                             </div>
@@ -352,7 +352,7 @@ export function MemberDetailsPanel({ memberId, isOpen, onClose }: MemberDetailsP
             {/* Edit Profile Modal */}
             {isEditModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setIsEditModalOpen(false)}>
-                    <div className="bg-white dark:bg-neutral-900 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+                    <div className="bg-white dark:bg-neutral-900 rounded-lg w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
                         <div className="p-6 border-b border-gray-100 dark:border-neutral-800 flex justify-between items-center bg-gray-50 dark:bg-neutral-800/50">
                             <h2 className="text-xl font-black text-brand-dark">Edit Member Profile</h2>
                         </div>
@@ -410,14 +410,14 @@ export function MemberDetailsPanel({ memberId, isOpen, onClose }: MemberDetailsP
                                 <button
                                     type="button"
                                     onClick={() => setIsEditModalOpen(false)}
-                                    className="flex-1 py-2.5 font-bold text-gray-500 dark:text-neutral-500 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-xl transition"
+                                    className="flex-1 py-2.5 font-bold text-gray-500 dark:text-neutral-500 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-lg transition"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={isSavingProfile}
-                                    className="flex-1 py-2.5 bg-studio-blue text-white font-bold rounded-xl hover:bg-studio-blue/85 transition shadow-lg shadow-brand-dark/20 disabled:opacity-70"
+                                    className="flex-1 py-2.5 bg-studio-blue text-white font-bold rounded-lg hover:bg-studio-blue/85 transition shadow-lg shadow-brand-dark/20 disabled:opacity-70"
                                 >
                                     {isSavingProfile ? 'Saving...' : 'Save Changes'}
                                 </button>

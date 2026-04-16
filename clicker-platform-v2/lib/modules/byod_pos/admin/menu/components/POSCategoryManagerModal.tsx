@@ -64,7 +64,7 @@ export function POSCategoryManagerModal({ categories, onSave, onClose }: POSCate
                         <p className="text-sm text-gray-400 dark:text-neutral-600 text-center py-4">No categories yet.</p>
                     )}
                     {cats.map(cat => (
-                        <div key={cat.id} className="flex items-center justify-between gap-3 px-3 py-2.5 bg-gray-50 dark:bg-neutral-800 rounded-xl">
+                        <div key={cat.id} className="flex items-center justify-between gap-3 px-3 py-2.5 bg-gray-50 dark:bg-neutral-800 rounded-lg">
                             <span className={`px-2.5 py-0.5 rounded-md text-xs font-bold uppercase tracking-wide ${cat.color}`}>
                                 {cat.label}
                             </span>
@@ -87,7 +87,7 @@ export function POSCategoryManagerModal({ categories, onSave, onClose }: POSCate
                         value={newLabel}
                         onChange={e => setNewLabel(e.target.value)}
                         onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addCategory())}
-                        className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200 text-sm"
+                        className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200 text-sm"
                     />
                     <div className="flex flex-wrap gap-2">
                         {COLOR_PRESETS.map(preset => (
@@ -105,7 +105,7 @@ export function POSCategoryManagerModal({ categories, onSave, onClose }: POSCate
                         type="button"
                         onClick={addCategory}
                         disabled={!newLabel.trim()}
-                        className="w-full py-2 rounded-xl border-2 border-dashed border-gray-300 dark:border-neutral-700 text-sm font-bold text-gray-500 dark:text-neutral-500 hover:border-brand-dark hover:text-brand-dark transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                        className="w-full py-2 rounded-lg border-2 border-dashed border-gray-300 dark:border-neutral-700 text-sm font-bold text-gray-500 dark:text-neutral-500 hover:border-brand-dark hover:text-brand-dark transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                         + Add Category
                     </button>
@@ -115,14 +115,14 @@ export function POSCategoryManagerModal({ categories, onSave, onClose }: POSCate
             <div className="p-5 border-t border-gray-100 dark:border-neutral-800 flex gap-3 flex-shrink-0">
                 <button
                     onClick={onClose}
-                    className="flex-1 py-2.5 rounded-xl font-bold text-gray-600 dark:text-neutral-400 bg-gray-100 dark:bg-neutral-800 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors"
+                    className="flex-1 py-2.5 rounded-lg font-bold text-gray-600 dark:text-neutral-400 bg-gray-100 dark:bg-neutral-800 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors"
                 >
                     Cancel
                 </button>
                 <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="flex-1 py-2.5 rounded-xl font-bold text-white bg-studio-blue hover:bg-studio-blue/85 transition-colors disabled:opacity-50"
+                    className="flex-1 py-2.5 rounded-lg font-bold text-white bg-studio-blue hover:bg-studio-blue/85 transition-colors disabled:opacity-50"
                 >
                     {saving ? 'Saving…' : 'Save Categories'}
                 </button>
@@ -145,7 +145,7 @@ export function POSCategoryManagerModal({ categories, onSave, onClose }: POSCate
 
     return (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-            <div className="bg-white dark:bg-neutral-900 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[80vh]">
+            <div className="bg-white dark:bg-neutral-900 rounded-lg w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[80vh]">
                 <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-neutral-800 flex-shrink-0">
                     <h2 className="text-lg font-bold text-brand-dark">Manage Categories</h2>
                     <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-full transition-colors">
@@ -190,7 +190,7 @@ export function POSCategoryPicker({ value, onChange, categories, onRequestManage
                 <ChevronDown size={16} className="text-gray-400 shrink-0" />
             </button>
             {open && (
-                <div className="absolute z-50 mt-1 w-full bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-xl shadow-lg overflow-hidden">
+                <div className="absolute z-50 mt-1 w-full bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-lg shadow-lg overflow-hidden">
                     <div className="max-h-48 overflow-y-auto">
                         {categories.length === 0 && (
                             <p className="px-4 py-3 text-sm text-gray-400 dark:text-neutral-500">No categories yet.</p>

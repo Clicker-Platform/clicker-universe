@@ -70,7 +70,7 @@ export const ScheduleEditor: React.FC<ScheduleEditorProps> = ({ schedule, onChan
                     <div
                         key={day.dayOfWeek}
                         className={`
-                            flex items-center justify-between p-4 rounded-xl border transition-all
+                            flex items-center justify-between p-4 rounded-lg border transition-all
                             ${day.isOpen
                                 ? 'bg-white dark:bg-neutral-900 border-gray-200 dark:border-neutral-700'
                                 : 'bg-gray-50 dark:bg-neutral-800/50 border-gray-100 dark:border-neutral-800/50 opacity-75'

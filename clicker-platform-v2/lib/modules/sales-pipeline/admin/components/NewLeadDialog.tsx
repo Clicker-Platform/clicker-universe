@@ -56,7 +56,7 @@ export function NewLeadDialog({ defaultStageId, isOpen, onClose }: NewLeadDialog
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
             <div
-                className="bg-white dark:bg-neutral-900 rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200"
+                className="bg-white dark:bg-neutral-900 rounded-lg shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200"
                 role="dialog"
             >
                 <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900">

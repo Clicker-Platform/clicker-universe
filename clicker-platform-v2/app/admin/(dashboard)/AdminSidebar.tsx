@@ -395,9 +395,9 @@ export function AdminSidebar() {
                                                         }
                                                     }}
                                                     onMouseLeave={() => setHoveredItem(null)}
-                                                    className={`flex items-center gap-2.5 px-3 py-2 rounded-xl font-semibold transition-colors text-sm ${
+                                                    className={`flex items-center gap-2.5 px-3 py-2 rounded-lg font-semibold transition-colors text-sm ${
                                                         isActive
-                                                            ? 'bg-studio-blue text-white shadow-sm'
+                                                            ? 'bg-studio-blue text-white'
                                                             : 'text-gray-500 dark:text-neutral-400 hover:bg-studio-blue-muted/15 hover:text-studio-blue dark:hover:bg-studio-blue-muted/15 dark:hover:text-studio-blue-muted'
                                                     } ${(isCollapsed && !sidebarOpen) ? 'justify-center' : ''}`}
                                                 >
@@ -420,7 +420,7 @@ export function AdminSidebar() {
                                     {isFirstModule && <div className="h-px bg-gray-100 dark:bg-neutral-800 my-2 mx-1" />}
                                     <div className="relative">
                                         <button
-                                            className={`w-full flex items-center justify-center p-2 rounded-xl transition-colors ${
+                                            className={`w-full flex items-center justify-center p-2 rounded-lg transition-colors ${
                                                 hasActiveItem
                                                     ? 'bg-studio-blue/10 text-studio-blue dark:text-studio-blue-muted'
                                                     : 'text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:text-gray-900 dark:hover:text-neutral-100'
@@ -448,7 +448,7 @@ export function AdminSidebar() {
                                 )}
                                 <button
                                     onClick={() => toggleGroup(group.title)}
-                                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl font-semibold transition-colors text-sm ${
+                                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg font-semibold transition-colors text-sm ${
                                         hasActiveItem && !isExpanded
                                             ? 'text-studio-blue dark:text-studio-blue-muted'
                                             : 'text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:text-gray-900 dark:hover:text-neutral-100'
@@ -485,7 +485,7 @@ export function AdminSidebar() {
                     {/* Collapsed: module popover */}
                     {(isCollapsed && !sidebarOpen) && hoveredModule && (
                         <div
-                            className="fixed left-14 z-[60] bg-neutral-900 border border-neutral-700 rounded-xl shadow-2xl p-1.5 min-w-[160px] animate-in fade-in duration-150"
+                            className="fixed left-14 z-[60] bg-neutral-900 border border-neutral-700 rounded-lg shadow-2xl p-1.5 min-w-[160px] animate-in fade-in duration-150"
                             style={{ top: hoveredModule.top }}
                             onMouseEnter={() => {/* keep open */}}
                             onMouseLeave={() => setHoveredModule(null)}
@@ -505,7 +505,7 @@ export function AdminSidebar() {
                         {/* Settings button + popover */}
                         <div ref={settingsRef} className={`relative ${(isCollapsed && !sidebarOpen) ? 'w-full' : 'flex-1 min-w-0'}`}>
                             {settingsOpen && (
-                                <div className={`absolute z-50 bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-xl shadow-xl p-1.5 min-w-[200px] ${isCollapsed && !sidebarOpen ? 'left-full ml-2 bottom-0' : 'bottom-full mb-2 left-0'}`}>
+                                <div className={`absolute z-50 bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-lg shadow-xl p-1.5 min-w-[200px] ${isCollapsed && !sidebarOpen ? 'left-full ml-2 bottom-0' : 'bottom-full mb-2 left-0'}`}>
                                     {[
                                         { icon: User, label: 'Account', href: '/admin/settings/account' },
                                         { icon: Building2, label: 'Business', href: '/admin/settings/business' },
@@ -549,7 +549,7 @@ export function AdminSidebar() {
                             <button
                                 onClick={() => setSettingsOpen(prev => !prev)}
                                 title="Settings"
-                                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl font-semibold transition-colors text-sm relative ${settingsOpen ? 'bg-gray-100 dark:bg-neutral-800 text-brand-dark dark:text-neutral-100' : 'text-gray-500 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800 hover:text-brand-dark dark:hover:text-neutral-200'} ${(isCollapsed && !sidebarOpen) ? 'justify-center' : ''}`}
+                                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg font-semibold transition-colors text-sm relative ${settingsOpen ? 'bg-gray-100 dark:bg-neutral-800 text-brand-dark dark:text-neutral-100' : 'text-gray-500 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800 hover:text-brand-dark dark:hover:text-neutral-200'} ${(isCollapsed && !sidebarOpen) ? 'justify-center' : ''}`}
                             >
                                 <User size={18} className="shrink-0" />
                                 {(!isCollapsed || sidebarOpen) && (
@@ -565,7 +565,7 @@ export function AdminSidebar() {
                         <button
                             onClick={() => openInboxPanel()}
                             title="Inbox"
-                            className={`relative flex items-center justify-center px-3 py-2 rounded-xl font-semibold text-gray-500 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800 hover:text-brand-dark dark:hover:text-neutral-200 transition-colors shrink-0 ${(isCollapsed && !sidebarOpen) ? 'w-full' : ''}`}
+                            className={`relative flex items-center justify-center px-3 py-2 rounded-lg font-semibold text-gray-500 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800 hover:text-brand-dark dark:hover:text-neutral-200 transition-colors shrink-0 ${(isCollapsed && !sidebarOpen) ? 'w-full' : ''}`}
                         >
                             <Inbox size={18} />
                             {unreadCount > 0 && (

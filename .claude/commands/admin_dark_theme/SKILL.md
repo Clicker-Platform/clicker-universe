@@ -139,13 +139,13 @@ Add `dark:` counterparts alongside every light-theme class:
 
 ```tsx
 // Before
-<div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+<div className="bg-white p-6 rounded-lg border border-gray-200">
   <h2 className="text-gray-600 font-semibold">Title</h2>
   <input className="border border-gray-200 rounded-lg px-4 py-2" />
 </div>
 
 // After
-<div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm">
+<div className="bg-white dark:bg-neutral-900 p-6 rounded-lg border border-gray-200 dark:border-neutral-800">
   <h2 className="text-gray-600 dark:text-neutral-400 font-semibold">Title</h2>
   <input className="border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 rounded-lg px-4 py-2" />
 </div>

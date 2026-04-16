@@ -94,20 +94,20 @@ export function AccountSecurity() {
 
             <div className="space-y-8">
                 {/* Change Email */}
-                <div className="bg-white dark:bg-neutral-800 p-8 rounded-2xl border border-gray-200 dark:border-neutral-700 shadow-sm">
+                <div className="bg-white dark:bg-neutral-800 p-8 rounded-lg border border-gray-200 dark:border-neutral-700">
                     <h3 className="text-xl font-bold text-brand-dark dark:text-neutral-100 mb-6 flex items-center gap-2">
                         <Mail size={24} /> Change Email
                     </h3>
 
                     {emailState.message.text && (
-                        <div className={`p-4 rounded-xl mb-6 font-bold flex items-center gap-2 ${emailState.message.type === 'error' ? 'bg-red-100 dark:bg-red-950/30 text-red-700 dark:text-red-400' : 'bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-400'}`}>
+                        <div className={`p-4 rounded-lg mb-6 font-bold flex items-center gap-2 ${emailState.message.type === 'error' ? 'bg-red-100 dark:bg-red-950/30 text-red-700 dark:text-red-400' : 'bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-400'}`}>
                             {emailState.message.type === 'error' ? <AlertTriangle size={20} /> : <CheckCircle size={20} />}
                             {emailState.message.text}
                         </div>
                     )}
 
                     <form onSubmit={handleUpdateEmail} className="space-y-4">
-                        <div className="bg-gray-50 dark:bg-neutral-700/50 p-4 rounded-xl mb-4">
+                        <div className="bg-gray-50 dark:bg-neutral-700/50 p-4 rounded-lg mb-4">
                             <p className="text-sm font-bold text-gray-500 dark:text-neutral-400 uppercase mb-1">Current Email</p>
                             <p className="text-lg font-bold text-brand-dark dark:text-neutral-100">{auth.currentUser?.email}</p>
                         </div>
@@ -118,7 +118,7 @@ export function AccountSecurity() {
                                 type="email"
                                 value={newEmail}
                                 onChange={(e) => setNewEmail(e.target.value)}
-                                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-brand-dark dark:text-neutral-100 placeholder-gray-400 dark:placeholder-neutral-500 focus:border-gray-400 dark:focus:border-neutral-400 outline-none font-medium transition-colors"
+                                className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-brand-dark dark:text-neutral-100 placeholder-gray-400 dark:placeholder-neutral-500 focus:border-gray-400 dark:focus:border-neutral-400 outline-none font-medium transition-colors"
                                 placeholder="name@example.com"
                                 required
                             />
@@ -130,7 +130,7 @@ export function AccountSecurity() {
                                 type="password"
                                 value={emailPassword}
                                 onChange={(e) => setEmailPassword(e.target.value)}
-                                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-brand-dark dark:text-neutral-100 placeholder-gray-400 dark:placeholder-neutral-500 focus:border-gray-400 dark:focus:border-neutral-400 outline-none font-medium transition-colors"
+                                className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-brand-dark dark:text-neutral-100 placeholder-gray-400 dark:placeholder-neutral-500 focus:border-gray-400 dark:focus:border-neutral-400 outline-none font-medium transition-colors"
                                 placeholder="Confirm your password"
                                 required
                             />
@@ -140,19 +140,19 @@ export function AccountSecurity() {
                             isLoading={emailState.loading}
                             loadingLabel="Updating Email..."
                             label="Update Email"
-                            className="w-full md:w-auto bg-brand-dark text-white px-6 py-3 rounded-xl font-bold hover:bg-brand-green hover:text-brand-dark transition-colors"
+                            className="w-full md:w-auto bg-brand-dark text-white px-6 py-3 rounded-lg font-bold hover:bg-brand-green hover:text-brand-dark transition-colors"
                         />
                     </form>
                 </div>
 
                 {/* Change Password */}
-                <div className="bg-white dark:bg-neutral-800 p-8 rounded-2xl border border-gray-200 dark:border-neutral-700 shadow-sm">
+                <div className="bg-white dark:bg-neutral-800 p-8 rounded-lg border border-gray-200 dark:border-neutral-700">
                     <h3 className="text-xl font-bold text-brand-dark dark:text-neutral-100 mb-6 flex items-center gap-2">
                         <Key size={24} /> Change Password
                     </h3>
 
                     {passwordState.message.text && (
-                        <div className={`p-4 rounded-xl mb-6 font-bold flex items-center gap-2 ${passwordState.message.type === 'error' ? 'bg-red-100 dark:bg-red-950/30 text-red-700 dark:text-red-400' : 'bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-400'}`}>
+                        <div className={`p-4 rounded-lg mb-6 font-bold flex items-center gap-2 ${passwordState.message.type === 'error' ? 'bg-red-100 dark:bg-red-950/30 text-red-700 dark:text-red-400' : 'bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-400'}`}>
                             {passwordState.message.type === 'error' ? <AlertTriangle size={20} /> : <CheckCircle size={20} />}
                             {passwordState.message.text}
                         </div>
@@ -165,7 +165,7 @@ export function AccountSecurity() {
                                 type="password"
                                 value={currentPassword}
                                 onChange={(e) => setCurrentPassword(e.target.value)}
-                                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-brand-dark dark:text-neutral-100 placeholder-gray-400 dark:placeholder-neutral-500 focus:border-gray-400 dark:focus:border-neutral-400 outline-none font-medium transition-colors"
+                                className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-brand-dark dark:text-neutral-100 placeholder-gray-400 dark:placeholder-neutral-500 focus:border-gray-400 dark:focus:border-neutral-400 outline-none font-medium transition-colors"
                                 placeholder="Enter current password"
                                 required
                             />
@@ -177,7 +177,7 @@ export function AccountSecurity() {
                                 type="password"
                                 value={newPassword}
                                 onChange={(e) => setNewPassword(e.target.value)}
-                                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-brand-dark dark:text-neutral-100 placeholder-gray-400 dark:placeholder-neutral-500 focus:border-gray-400 dark:focus:border-neutral-400 outline-none font-medium transition-colors"
+                                className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-brand-dark dark:text-neutral-100 placeholder-gray-400 dark:placeholder-neutral-500 focus:border-gray-400 dark:focus:border-neutral-400 outline-none font-medium transition-colors"
                                 placeholder="Enter new password (min. 6 chars)"
                                 required
                             />
@@ -189,7 +189,7 @@ export function AccountSecurity() {
                                 type="password"
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value)}
-                                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-brand-dark dark:text-neutral-100 placeholder-gray-400 dark:placeholder-neutral-500 focus:border-gray-400 dark:focus:border-neutral-400 outline-none font-medium transition-colors"
+                                className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-brand-dark dark:text-neutral-100 placeholder-gray-400 dark:placeholder-neutral-500 focus:border-gray-400 dark:focus:border-neutral-400 outline-none font-medium transition-colors"
                                 placeholder="Re-enter new password"
                                 required
                             />
@@ -199,7 +199,7 @@ export function AccountSecurity() {
                             isLoading={passwordState.loading}
                             loadingLabel="Updating Password..."
                             label="Update Password"
-                            className="w-full md:w-auto bg-brand-dark text-white px-6 py-3 rounded-xl font-bold hover:bg-brand-green hover:text-brand-dark transition-colors"
+                            className="w-full md:w-auto bg-brand-dark text-white px-6 py-3 rounded-lg font-bold hover:bg-brand-green hover:text-brand-dark transition-colors"
                         />
                     </form>
                 </div>

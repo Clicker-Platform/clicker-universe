@@ -372,14 +372,14 @@ export default function TenantsPage() {
 
                 <div className="flex flex-col gap-8">
                     {/* FORGE PANEL */}
-                    <div className="bg-white rounded-[32px] border-[3px] border-brand-dark shadow-sm overflow-hidden flex flex-col">
+                    <div className="bg-white rounded-[32px] border-[3px] border-brand-dark overflow-hidden flex flex-col">
                         <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/30">
                             <div>
                                 <h2 className="text-xl font-bold text-brand-dark">Tenant Forge</h2>
                                 <p className="text-xs text-gray-400 font-medium">Deploy a new instance into the universe</p>
                             </div>
                             <div className="flex gap-2">
-                                <button onClick={() => fetchTenants()} className="p-2 hover:bg-white rounded-xl transition-all border border-transparent hover:border-gray-100">
+                                <button onClick={() => fetchTenants()} className="p-2 hover:bg-white rounded-lg transition-all border border-transparent hover:border-gray-100">
                                     <RefreshCw className={`w-5 h-5 text-brand-dark ${loading ? 'animate-spin' : ''}`} />
                                 </button>
                             </div>
@@ -396,7 +396,7 @@ export default function TenantsPage() {
                                             required
                                             value={name}
                                             onChange={e => setName(e.target.value)}
-                                            className="w-full px-4 py-3 rounded-2xl border-[3px] border-gray-100 focus:border-brand-dark outline-none font-bold text-sm bg-gray-50/30 transition-all"
+                                            className="w-full px-4 py-3 rounded-lg border-[3px] border-gray-100 focus:border-brand-dark outline-none font-bold text-sm bg-gray-50/30 transition-all"
                                             placeholder="Cafe Quattro"
                                         />
                                     </div>
@@ -406,7 +406,7 @@ export default function TenantsPage() {
                                             <button
                                                 type="button"
                                                 onClick={() => setHostingId('quattro')}
-                                                className={`px-4 py-3 rounded-2xl border-[3px] font-black text-[10px] uppercase transition-all ${hostingId === 'quattro'
+                                                className={`px-4 py-3 rounded-lg border-[3px] font-black text-[10px] uppercase transition-all ${hostingId === 'quattro'
                                                     ? 'border-brand-dark bg-brand-dark text-white shadow-md'
                                                     : 'border-gray-100 bg-white text-gray-400 hover:border-gray-200'
                                                     }`}
@@ -416,7 +416,7 @@ export default function TenantsPage() {
                                             <button
                                                 type="button"
                                                 onClick={() => setHostingId('aletra')}
-                                                className={`px-4 py-3 rounded-2xl border-[3px] font-black text-[10px] uppercase transition-all ${hostingId === 'aletra'
+                                                className={`px-4 py-3 rounded-lg border-[3px] font-black text-[10px] uppercase transition-all ${hostingId === 'aletra'
                                                     ? 'border-brand-dark bg-brand-dark text-white shadow-md'
                                                     : 'border-gray-100 bg-white text-gray-400 hover:border-gray-200'
                                                     }`}
@@ -432,7 +432,7 @@ export default function TenantsPage() {
                                             required
                                             value={subdomain}
                                             onChange={e => setSubdomain(e.target.value)}
-                                            className="w-full px-4 py-3 rounded-2xl border-[3px] border-gray-100 focus:border-brand-dark outline-none font-bold text-sm bg-gray-50/30 transition-all"
+                                            className="w-full px-4 py-3 rounded-lg border-[3px] border-gray-100 focus:border-brand-dark outline-none font-bold text-sm bg-gray-50/30 transition-all"
                                             placeholder="cafe-quattro"
                                         />
                                     </div>
@@ -443,7 +443,7 @@ export default function TenantsPage() {
                                     <label className="text-xs font-bold text-brand-dark uppercase tracking-wider pl-1">Active Modules & Provisions</label>
                                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                                         {SYSTEM_MODULES.map((mod: any) => (
-                                            <label key={mod.id} className={`flex items-center gap-3 p-3 rounded-2xl border-[3px] cursor-pointer transition-all ${modules[mod.id]
+                                            <label key={mod.id} className={`flex items-center gap-3 p-3 rounded-lg border-[3px] cursor-pointer transition-all ${modules[mod.id]
                                                 ? 'border-brand-dark bg-brand-dark text-white shadow-md'
                                                 : 'border-gray-100 bg-white text-gray-400 hover:border-gray-200'
                                                 }`}>
@@ -469,7 +469,7 @@ export default function TenantsPage() {
                                                     required
                                                     value={ownerEmail}
                                                     onChange={e => setOwnerEmail(e.target.value)}
-                                                    className="w-full px-4 py-3 rounded-2xl border-[3px] border-gray-100 focus:border-brand-dark outline-none font-bold text-sm bg-gray-50/30"
+                                                    className="w-full px-4 py-3 rounded-lg border-[3px] border-gray-100 focus:border-brand-dark outline-none font-bold text-sm bg-gray-50/30"
                                                     placeholder="owner@cafe.com"
                                                 />
                                             </div>
@@ -480,7 +480,7 @@ export default function TenantsPage() {
                                                     required
                                                     value={password}
                                                     onChange={e => setPassword(e.target.value)}
-                                                    className="w-full px-4 py-3 rounded-2xl border-[3px] border-gray-100 focus:border-brand-dark outline-none font-bold text-sm bg-gray-50/30"
+                                                    className="w-full px-4 py-3 rounded-lg border-[3px] border-gray-100 focus:border-brand-dark outline-none font-bold text-sm bg-gray-50/30"
                                                     placeholder="••••••••"
                                                     minLength={6}
                                                 />
@@ -502,13 +502,13 @@ export default function TenantsPage() {
                     </div>
 
                     {/* LIST PANEL */}
-                    <div className="bg-white rounded-[32px] border-[3px] border-brand-dark shadow-sm overflow-hidden flex flex-col">
+                    <div className="bg-white rounded-[32px] border-[3px] border-brand-dark overflow-hidden flex flex-col">
                         <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/30">
                             <div>
                                 <h2 className="text-xl font-bold text-brand-dark">Active Contexts</h2>
                                 <p className="text-xs text-gray-400 font-medium">Manifested tenants currently in operation</p>
                             </div>
-                            <div className="bg-brand-dark px-4 py-2 rounded-2xl text-[10px] font-black text-white shadow-md uppercase tracking-widest">
+                            <div className="bg-brand-dark px-4 py-2 rounded-lg text-[10px] font-black text-white shadow-md uppercase tracking-widest">
                                 Manifestations: {tenants.length}
                             </div>
                         </div>
@@ -572,17 +572,17 @@ export default function TenantsPage() {
                                                 </td>
                                                 <td className="p-4 text-right pr-6">
                                                     <div className="flex justify-end items-center gap-2">
-                                                        <div className="flex items-center bg-gray-50 p-1 rounded-xl border border-gray-100 shadow-sm gap-1">
+                                                        <div className="flex items-center bg-gray-50 p-1 rounded-lg border border-gray-100 gap-1">
                                                             <button
                                                                 onClick={() => openTeamDialog(tenant)}
-                                                                className="p-2 rounded-lg text-indigo-600 hover:bg-white hover:shadow-sm transition-all"
+                                                                className="p-2 rounded-lg text-indigo-600 hover:bg-white hover:transition-all"
                                                                 title="Manage Team"
                                                             >
                                                                 <Users className="w-4.5 h-4.5" />
                                                             </button>
                                                             <button
                                                                 onClick={() => openModuleDialog(tenant)}
-                                                                className="p-2 rounded-lg text-blue-600 hover:bg-white hover:shadow-sm transition-all"
+                                                                className="p-2 rounded-lg text-blue-600 hover:bg-white hover:transition-all"
                                                                 title="Manage Modules"
                                                             >
                                                                 <Grid className="w-4.5 h-4.5" />
@@ -654,7 +654,7 @@ export default function TenantsPage() {
                         <div className="bg-white rounded-3xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
                             <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-white shrink-0">
                                 <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-brand-light rounded-xl text-brand-dark">
+                                    <div className="p-2 bg-brand-light rounded-lg text-brand-dark">
                                         <Grid className="w-5 h-5" />
                                     </div>
                                     <h3 className="font-bold text-lg text-brand-dark">Manage Modules</h3>
@@ -675,7 +675,7 @@ export default function TenantsPage() {
                                         <div
                                             key={mod.id}
                                             onClick={() => setManagingModules((prev: any) => ({ ...prev, [mod.id]: !prev[mod.id] }))}
-                                            className={`flex items-center justify-between p-3 rounded-xl border-2 cursor-pointer transition-all ${managingModules?.[mod.id]
+                                            className={`flex items-center justify-between p-3 rounded-lg border-2 cursor-pointer transition-all ${managingModules?.[mod.id]
                                                 ? 'border-blue-500 bg-blue-50/30'
                                                 : 'border-gray-100 hover:border-gray-200'
                                                 }`}>
@@ -702,14 +702,14 @@ export default function TenantsPage() {
                             <div className="p-5 border-t border-gray-100 flex justify-end gap-3 bg-gray-50/50">
                                 <button
                                     onClick={() => setModuleDialogOpen(false)}
-                                    className="px-4 py-2 rounded-xl text-sm font-bold text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+                                    className="px-4 py-2 rounded-lg text-sm font-bold text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     onClick={saveModules}
                                     disabled={actionLoading}
-                                    className="px-5 py-2 rounded-xl text-sm font-bold text-white bg-brand-dark hover:bg-gray-800 shadow-md flex items-center gap-2 disabled:opacity-70"
+                                    className="px-5 py-2 rounded-lg text-sm font-bold text-white bg-brand-dark hover:bg-gray-800 shadow-md flex items-center gap-2 disabled:opacity-70"
                                 >
                                     {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save Changes'}
                                 </button>
@@ -724,7 +724,7 @@ export default function TenantsPage() {
                         <div className="bg-white rounded-3xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
                             <div className="p-5 border-b border-gray-100 flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-9 h-9 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
+                                    <div className="w-9 h-9 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center">
                                         <Pencil className="w-4 h-4" />
                                     </div>
                                     <div>
@@ -739,7 +739,7 @@ export default function TenantsPage() {
                             <form onSubmit={handleUpdateUrl} className="p-6 space-y-5">
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">New Slug / URL</label>
-                                    <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
+                                    <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
                                         <span className="text-gray-400 text-sm font-medium shrink-0">clickerapps.web.app/</span>
                                         <input
                                             type="text"
@@ -752,21 +752,21 @@ export default function TenantsPage() {
                                     </div>
                                     <p className="text-[11px] text-gray-400">Only lowercase letters, numbers, and hyphens allowed.</p>
                                 </div>
-                                <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-700 font-medium">
+                                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-700 font-medium">
                                     Changing the slug will break existing links. The Site ID stays the same.
                                 </div>
                                 <div className="flex gap-3 pt-1">
                                     <button
                                         type="button"
                                         onClick={() => setUpdateUrlDialogOpen(false)}
-                                        className="flex-1 py-2.5 rounded-xl text-sm font-bold text-gray-500 hover:bg-gray-100 transition-colors"
+                                        className="flex-1 py-2.5 rounded-lg text-sm font-bold text-gray-500 hover:bg-gray-100 transition-colors"
                                     >
                                         Cancel
                                     </button>
                                     <button
                                         type="submit"
                                         disabled={updateUrlLoading}
-                                        className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white bg-brand-dark hover:bg-gray-800 shadow-md flex items-center justify-center gap-2 disabled:opacity-70"
+                                        className="flex-1 py-2.5 rounded-lg text-sm font-bold text-white bg-brand-dark hover:bg-gray-800 shadow-md flex items-center justify-center gap-2 disabled:opacity-70"
                                     >
                                         {updateUrlLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Update URL'}
                                     </button>
@@ -781,7 +781,7 @@ export default function TenantsPage() {
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
                         <div className="bg-white rounded-3xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
                             <div className="p-5 border-b border-red-100 bg-red-50/50 flex items-center gap-3">
-                                <div className="w-10 h-10 bg-red-100 text-red-600 rounded-xl flex items-center justify-center shrink-0">
+                                <div className="w-10 h-10 bg-red-100 text-red-600 rounded-lg flex items-center justify-center shrink-0">
                                     <Trash2 className="w-5 h-5" />
                                 </div>
                                 <div>
@@ -790,7 +790,7 @@ export default function TenantsPage() {
                                 </div>
                             </div>
                             <div className="p-6 space-y-5">
-                                <div className="bg-red-50 border border-red-200 rounded-xl p-4 space-y-1 text-sm text-red-700">
+                                <div className="bg-red-50 border border-red-200 rounded-lg p-4 space-y-1 text-sm text-red-700">
                                     <p className="font-bold">The following will be permanently deleted:</p>
                                     <ul className="list-disc list-inside space-y-0.5 text-red-600 font-medium">
                                         <li>All Firestore data under <code className="bg-red-100 px-1 rounded">sites/{selectedTenant.id}</code></li>
@@ -806,7 +806,7 @@ export default function TenantsPage() {
                                         type="text"
                                         value={deleteConfirmText}
                                         onChange={e => setDeleteConfirmText(e.target.value)}
-                                        className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-red-400 outline-none font-mono text-sm text-brand-dark transition-colors"
+                                        className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-red-400 outline-none font-mono text-sm text-brand-dark transition-colors"
                                         placeholder={selectedTenant.id}
                                         autoComplete="off"
                                     />
@@ -815,14 +815,14 @@ export default function TenantsPage() {
                                     <button
                                         type="button"
                                         onClick={() => { setDeleteDialogOpen(false); setDeleteConfirmText(''); }}
-                                        className="flex-1 py-2.5 rounded-xl text-sm font-bold text-gray-500 hover:bg-gray-100 transition-colors"
+                                        className="flex-1 py-2.5 rounded-lg text-sm font-bold text-gray-500 hover:bg-gray-100 transition-colors"
                                     >
                                         Cancel
                                     </button>
                                     <button
                                         onClick={handleHardDelete}
                                         disabled={deleteLoading || deleteConfirmText !== selectedTenant.id}
-                                        className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white bg-red-600 hover:bg-red-700 shadow-md flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                                        className="flex-1 py-2.5 rounded-lg text-sm font-bold text-white bg-red-600 hover:bg-red-700 shadow-md flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
                                     >
                                         {deleteLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Trash2 className="w-4 h-4" /> Obliterate</>}
                                     </button>
@@ -875,13 +875,13 @@ export default function TenantsPage() {
                                                         // Prevent password edit for now or handle it separately if needed
                                                         setNewMemberPassword('');
                                                     }}
-                                                    className={`p-4 rounded-2xl border-[2px] transition-all flex items-center justify-between group cursor-pointer ${newMemberEmail === m.email
+                                                    className={`p-4 rounded-lg border-[2px] transition-all flex items-center justify-between group cursor-pointer ${newMemberEmail === m.email
                                                         ? 'bg-white border-brand-dark shadow-lg -translate-y-0.5'
-                                                        : 'bg-white border-gray-100 shadow-sm hover:border-gray-300 hover:bg-gray-50/50'
+                                                        : 'bg-white border-gray-100 hover:border-gray-300 hover:bg-gray-50/50'
                                                         }`}
                                                 >
                                                     <div className="flex items-center gap-3 flex-1 min-w-0">
-                                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm shrink-0 border-2 ${newMemberEmail === m.email ? 'bg-brand-dark text-white border-brand-dark' : 'bg-gray-100 text-gray-400 border-gray-200'}`}>
+                                                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-black text-sm shrink-0 border-2 ${newMemberEmail === m.email ? 'bg-brand-dark text-white border-brand-dark' : 'bg-gray-100 text-gray-400 border-gray-200'}`}>
                                                             {(m.displayName || m.email || '?').charAt(0).toUpperCase()}
                                                         </div>
                                                         <div className="flex-1 min-w-0">
@@ -935,7 +935,7 @@ export default function TenantsPage() {
                                                     setPermissions([]);
                                                     setModuleAccess({});
                                                 }}
-                                                className="text-[10px] font-black text-brand-dark hover:opacity-70 uppercase bg-white border border-gray-200 px-2.5 py-1.5 rounded-lg shadow-sm active:scale-95 transition-all"
+                                                className="text-[10px] font-black text-brand-dark hover:opacity-70 uppercase bg-white border border-gray-200 px-2.5 py-1.5 rounded-lg active:scale-95 transition-all"
                                             >
                                                 + New Member
                                             </button>
@@ -952,7 +952,7 @@ export default function TenantsPage() {
                                                             required
                                                             value={newMemberEmail}
                                                             onChange={e => setNewMemberEmail(e.target.value)}
-                                                            className="w-full px-4 py-3 rounded-2xl border-[3px] border-gray-100 focus:border-brand-dark outline-none font-bold text-sm bg-gray-50/30 transition-all placeholder:text-gray-300"
+                                                            className="w-full px-4 py-3 rounded-lg border-[3px] border-gray-100 focus:border-brand-dark outline-none font-bold text-sm bg-gray-50/30 transition-all placeholder:text-gray-300"
                                                             placeholder="staff@cafe.com"
                                                         />
                                                     </div>
@@ -963,7 +963,7 @@ export default function TenantsPage() {
                                                             required
                                                             value={newMemberName}
                                                             onChange={e => setNewMemberName(e.target.value)}
-                                                            className="w-full px-4 py-3 rounded-2xl border-[3px] border-gray-100 focus:border-brand-dark outline-none font-bold text-sm bg-gray-50/30 transition-all placeholder:text-gray-300"
+                                                            className="w-full px-4 py-3 rounded-lg border-[3px] border-gray-100 focus:border-brand-dark outline-none font-bold text-sm bg-gray-50/30 transition-all placeholder:text-gray-300"
                                                             placeholder="Jane Doe"
                                                         />
                                                     </div>
@@ -976,7 +976,7 @@ export default function TenantsPage() {
                                                             required
                                                             value={newMemberPassword}
                                                             onChange={e => setNewMemberPassword(e.target.value)}
-                                                            className="w-full px-4 py-3 rounded-2xl border-[3px] border-gray-100 focus:border-brand-dark outline-none font-bold text-sm bg-gray-50/30 transition-all placeholder:text-gray-300"
+                                                            className="w-full px-4 py-3 rounded-lg border-[3px] border-gray-100 focus:border-brand-dark outline-none font-bold text-sm bg-gray-50/30 transition-all placeholder:text-gray-300"
                                                             placeholder="••••••••"
                                                             minLength={6}
                                                         />
@@ -986,7 +986,7 @@ export default function TenantsPage() {
                                                         <select
                                                             value={newMemberRole}
                                                             onChange={e => setNewMemberRole(e.target.value)}
-                                                            className="w-full px-4 py-3 rounded-2xl border-[3px] border-gray-100 focus:border-brand-dark outline-none font-bold text-sm bg-gray-50/30 transition-all appearance-none cursor-pointer"
+                                                            className="w-full px-4 py-3 rounded-lg border-[3px] border-gray-100 focus:border-brand-dark outline-none font-bold text-sm bg-gray-50/30 transition-all appearance-none cursor-pointer"
                                                         >
                                                             <option value="staff">Staff Member</option>
                                                             <option value="owner">Admin Owner</option>
@@ -999,7 +999,7 @@ export default function TenantsPage() {
                                                         <label className="text-xs font-bold text-gray-500 uppercase">
                                                             Access Permissions
                                                         </label>
-                                                        <div className="bg-gray-50/50 rounded-xl border border-gray-200 p-2">
+                                                        <div className="bg-gray-50/50 rounded-lg border border-gray-200 p-2">
                                                             <PermissionEditor
                                                                 value={{ permissions, moduleAccess }}
                                                                 onChange={(val: any) => {
@@ -1016,7 +1016,7 @@ export default function TenantsPage() {
                                                 <button
                                                     type="submit"
                                                     disabled={actionLoading}
-                                                    className="w-full py-2.5 bg-brand-dark text-white rounded-xl font-bold hover:bg-gray-800 transition-all shadow-md mt-2 flex items-center justify-center gap-2"
+                                                    className="w-full py-2.5 bg-brand-dark text-white rounded-lg font-bold hover:bg-gray-800 transition-all shadow-md mt-2 flex items-center justify-center gap-2"
                                                 >
                                                     {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : (teamMembers.some(m => m.email === newMemberEmail) ? 'Update Member' : 'Add to Team')}
                                                 </button>

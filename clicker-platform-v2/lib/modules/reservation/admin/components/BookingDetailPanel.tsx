@@ -381,7 +381,7 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
                     {/* Service Details */}
                     <div>
                         <label className="text-xs font-bold text-gray-400 dark:text-neutral-500 uppercase tracking-wider block mb-3">Service Details</label>
-                        <div className="bg-gray-50 dark:bg-neutral-800/50 p-5 rounded-2xl border border-gray-100 dark:border-neutral-800">
+                        <div className="bg-gray-50 dark:bg-neutral-800/50 p-5 rounded-lg border border-gray-100 dark:border-neutral-800">
                             <p className="font-semibold text-lg text-gray-900 dark:text-neutral-100 mb-2">{booking.serviceName}</p>
                             {booking.preferredDate ? (
                                 <>
@@ -415,7 +415,7 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
 
                 {/* Edit Form or View Mode */}
                 {isEditing ? (
-                    <div className="bg-gray-50 dark:bg-neutral-800/50 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 animate-in fade-in zoom-in-95 duration-200 mb-6">
+                    <div className="bg-gray-50 dark:bg-neutral-800/50 p-6 rounded-lg border border-gray-200 dark:border-neutral-800 animate-in fade-in zoom-in-95 duration-200 mb-6">
                         <div className="flex justify-between items-center mb-4">
                             <h3 className="font-bold text-brand-dark">Edit Reservation</h3>
                             <button onClick={() => setIsEditing(false)} className="text-sm text-gray-500 dark:text-neutral-500 hover:underline">Cancel</button>
@@ -456,7 +456,7 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
                             <button
                                 onClick={handleSave}
                                 disabled={updating}
-                                className="px-6 py-2 bg-studio-blue text-white font-bold rounded-xl hover:bg-studio-blue/85 transition-all shadow-lg shadow-brand-dark/20"
+                                className="px-6 py-2 bg-studio-blue text-white font-bold rounded-lg hover:bg-studio-blue/85 transition-all shadow-lg shadow-brand-dark/20"
                             >
                                 {updating ? 'Saving...' : 'Save Changes'}
                             </button>
@@ -468,7 +468,7 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
                             {showStaff && (
                                 <div>
                                     <label className="text-xs font-bold text-gray-400 dark:text-neutral-500 uppercase tracking-wider block mb-3">Assigned {staffLabel}</label>
-                                    <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-neutral-800/50 rounded-xl border border-gray-100 dark:border-neutral-800">
+                                    <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-neutral-800/50 rounded-lg border border-gray-100 dark:border-neutral-800">
                                         <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xs">
                                             {(booking.staffName || 'A').charAt(0)}
                                         </div>
@@ -481,7 +481,7 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
                             {(booking as any).assetId && (
                                 <div>
                                     <label className="text-xs font-bold text-gray-400 dark:text-neutral-500 uppercase tracking-wider block mb-3">Vehicle Info</label>
-                                    <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-neutral-800/50 rounded-xl border border-gray-100 dark:border-neutral-800">
+                                    <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-neutral-800/50 rounded-lg border border-gray-100 dark:border-neutral-800">
                                         <Car size={18} className="text-brand-dark/60 flex-shrink-0" />
                                         <div>
                                             <p className="font-bold text-gray-900 dark:text-neutral-100 font-mono tracking-wider">{(booking as any).assetId}</p>
@@ -495,7 +495,7 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
 
                             <div>
                                 <label className="text-xs font-bold text-gray-400 dark:text-neutral-500 uppercase tracking-wider block mb-3">Additional Notes</label>
-                                <div className="p-4 bg-yellow-50 rounded-xl border border-yellow-100 text-yellow-800 text-sm">
+                                <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-100 text-yellow-800 text-sm">
                                     {booking.notes || 'No notes provided for this booking.'}
                                 </div>
                             </div>
@@ -507,7 +507,7 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
                 {booking.status === 'cancelled' && booking.cancellationReason && (
                     <div className="mb-8">
                         <label className="text-xs font-bold text-red-400 dark:text-red-500 uppercase tracking-wider block mb-3">Cancellation Reason</label>
-                        <div className="p-4 bg-red-50 dark:bg-red-950/20 rounded-xl border border-red-100 dark:border-red-900/30 text-red-700 dark:text-red-400 text-sm">
+                        <div className="p-4 bg-red-50 dark:bg-red-950/20 rounded-lg border border-red-100 dark:border-red-900/30 text-red-700 dark:text-red-400 text-sm">
                             {booking.cancellationReason}
                         </div>
                     </div>
@@ -520,7 +520,7 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
                             {booking.status === 'pending' && (
                                 <>
                                     {booking.serviceRecordId ? (
-                                        <div className="flex-1 flex items-center gap-2 px-4 py-3 rounded-xl bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 text-sm font-medium">
+                                        <div className="flex-1 flex items-center gap-2 px-4 py-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 text-sm font-medium">
                                             <ClipboardList size={16} />
                                             Linked Service Record
                                             <a
@@ -552,7 +552,7 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
                                 <>
                                     {booking.serviceRecordId ? (
                                         <div className="w-full flex flex-col gap-3">
-                                            <div className="flex-1 flex items-center gap-2 px-4 py-3 rounded-xl bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 text-sm font-medium">
+                                            <div className="flex-1 flex items-center gap-2 px-4 py-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 text-sm font-medium">
                                                 <ClipboardList size={16} />
                                                 Service in Progress
                                                 <a
@@ -611,7 +611,7 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
             {/* Vehicle Plate Modal */}
             {showPlateModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-neutral-900 rounded-2xl w-full max-w-sm shadow-2xl p-6 animate-in fade-in zoom-in-95 duration-200">
+                    <div className="bg-white dark:bg-neutral-900 rounded-lg w-full max-w-sm shadow-2xl p-6 animate-in fade-in zoom-in-95 duration-200">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-lg font-bold text-brand-dark">Start Service Record</h3>
                             <button onClick={() => { setShowPlateModal(false); setPlateInput(''); setVehicleLookup({ status: 'idle' }); setSelectedCatalogId(''); setNewVehicleColor(''); }} className="p-2 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-full">
@@ -629,7 +629,7 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
                                 value={plateInput}
                                 onChange={e => setPlateInput(e.target.value.toUpperCase())}
                                 placeholder="e.g. B 1234 XYZ"
-                                className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 dark:text-neutral-200 font-mono text-lg tracking-widest uppercase focus:outline-none focus:border-brand-dark"
+                                className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 dark:text-neutral-200 font-mono text-lg tracking-widest uppercase focus:outline-none focus:border-brand-dark"
                                 onKeyDown={e => { if (e.key === 'Enter' && plateInput.trim()) handleStartServiceRecord(); }}
                             />
                             {vehicleLookup.status === 'loading' && (
@@ -638,7 +638,7 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
                                 </div>
                             )}
                             {vehicleLookup.status === 'found' && vehicleLookup.vehicle && (
-                                <div className="mt-2 flex items-center gap-2 px-3 py-2 rounded-xl bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 text-xs text-green-800 dark:text-green-300">
+                                <div className="mt-2 flex items-center gap-2 px-3 py-2 rounded-lg bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 text-xs text-green-800 dark:text-green-300">
                                     <Car size={13} className="flex-shrink-0" />
                                     <span className="font-semibold">Vehicle found</span>
                                     {vehicleLookup.vehicle.memberName && (
@@ -647,14 +647,14 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
                                 </div>
                             )}
                             {vehicleLookup.status === 'not_found' && plateInput.trim().length >= 4 && (
-                                <div className="mt-3 space-y-3 p-3 rounded-xl bg-gray-50 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700">
+                                <div className="mt-3 space-y-3 p-3 rounded-lg bg-gray-50 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700">
                                     <p className="text-xs font-medium text-gray-600 dark:text-neutral-400">New vehicle — select car type to register</p>
                                     <div>
                                         <label className="text-xs text-gray-500 dark:text-neutral-500 block mb-1">Car Type <span className="text-red-500">*</span></label>
                                         <select
                                             value={selectedCatalogId}
                                             onChange={e => setSelectedCatalogId(e.target.value)}
-                                            className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 dark:text-neutral-200 focus:outline-none focus:border-brand-dark px-3 py-2 text-sm"
+                                            className="w-full rounded-lg border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 dark:text-neutral-200 focus:outline-none focus:border-brand-dark px-3 py-2 text-sm"
                                         >
                                             <option value="">— Select car type —</option>
                                             {carCatalog.map(car => (
@@ -671,7 +671,7 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
                                             value={newVehicleColor}
                                             onChange={e => setNewVehicleColor(e.target.value)}
                                             placeholder="e.g. Black, White"
-                                            className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 dark:text-neutral-200 focus:outline-none focus:border-brand-dark px-3 py-2 text-sm"
+                                            className="w-full rounded-lg border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 dark:text-neutral-200 focus:outline-none focus:border-brand-dark px-3 py-2 text-sm"
                                         />
                                     </div>
                                 </div>
@@ -680,14 +680,14 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
                         <div className="flex gap-3">
                             <button
                                 onClick={() => { setShowPlateModal(false); setPlateInput(''); setVehicleLookup({ status: 'idle' }); setSelectedCatalogId(''); setNewVehicleColor(''); }}
-                                className="flex-1 py-2.5 rounded-xl font-bold bg-gray-100 dark:bg-neutral-800 text-gray-600 dark:text-neutral-400 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors"
+                                className="flex-1 py-2.5 rounded-lg font-bold bg-gray-100 dark:bg-neutral-800 text-gray-600 dark:text-neutral-400 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleStartServiceRecord}
                                 disabled={creatingSR || !plateInput.trim()}
-                                className="flex-1 py-2.5 rounded-xl font-bold bg-studio-blue text-white hover:bg-studio-blue/85 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                                className="flex-1 py-2.5 rounded-lg font-bold bg-studio-blue text-white hover:bg-studio-blue/85 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                             >
                                 <ClipboardList size={16} />
                                 {creatingSR ? 'Creating…' : 'Create Record'}
@@ -759,7 +759,7 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
 }
 
 function ActionButton({ onClick, disabled, label, icon, variant }: { onClick: () => void, disabled: boolean, label: string, icon: React.ReactNode, variant: 'primary' | 'success' | 'danger' | 'gray' }) {
-    const baseClass = "flex-1 font-bold py-3 px-4 rounded-xl transition-colors active:scale-95 flex items-center justify-center gap-2";
+    const baseClass = "flex-1 font-bold py-3 px-4 rounded-lg transition-colors active:scale-95 flex items-center justify-center gap-2";
     const variants = {
         primary: "bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20",
         success: "bg-green-600 text-white hover:bg-green-700 shadow-lg shadow-green-600/20",

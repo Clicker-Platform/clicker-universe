@@ -76,7 +76,7 @@ export default function Home() {
                     {/* LOGIN FORM */}
                     <form onSubmit={handleLogin} className="p-8 space-y-6">
                         {loginError && (
-                            <div className="p-4 bg-red-50 text-red-600 text-sm font-bold border-2 border-red-100 rounded-xl flex items-center gap-2">
+                            <div className="p-4 bg-red-50 text-red-600 text-sm font-bold border-2 border-red-100 rounded-lg flex items-center gap-2">
                                 <ShieldAlert className="w-4 h-4" /> {loginError}
                             </div>
                         )}
@@ -88,7 +88,7 @@ export default function Home() {
                                 required
                                 value={loginEmail}
                                 onChange={e => setLoginEmail(e.target.value)}
-                                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-brand-dark outline-none font-medium transition-colors text-gray-900 bg-white"
+                                className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-brand-dark outline-none font-medium transition-colors text-gray-900 bg-white"
                                 placeholder="officer@clicker.com"
                             />
                         </div>
@@ -102,7 +102,7 @@ export default function Home() {
                                     required
                                     value={loginPassword}
                                     onChange={e => setLoginPassword(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-brand-dark outline-none font-medium transition-colors text-gray-900 bg-white"
+                                    className="w-full pl-10 pr-4 py-3 rounded-lg border-2 border-gray-200 focus:border-brand-dark outline-none font-medium transition-colors text-gray-900 bg-white"
                                     placeholder="••••••••"
                                 />
                             </div>
@@ -111,7 +111,7 @@ export default function Home() {
                         <button
                             type="submit"
                             disabled={actionLoading}
-                            className="w-full py-4 bg-brand-dark text-white rounded-xl font-bold text-lg hover:bg-gray-800 hover:shadow-lg hover:-translate-y-0.5 transition-all disabled:opacity-50"
+                            className="w-full py-4 bg-brand-dark text-white rounded-lg font-bold text-lg hover:bg-gray-800 hover:shadow-lg hover:-translate-y-0.5 transition-all disabled:opacity-50"
                         >
                             {actionLoading ? 'Verifying Credentials...' : 'Authenticate'}
                         </button>
@@ -184,7 +184,7 @@ export default function Home() {
                         <div className="bg-white rounded-3xl border border-gray-100 p-8 hover:shadow-lg transition-all relative overflow-hidden group">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
                             <div className="relative">
-                                <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-4">
+                                <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center mb-4">
                                     <Store className="w-6 h-6" />
                                 </div>
                                 <h2 className="text-4xl font-black text-brand-dark mb-1">--</h2>
@@ -196,7 +196,7 @@ export default function Home() {
                         <div className="bg-white rounded-3xl border border-gray-100 p-8 hover:shadow-lg transition-all relative overflow-hidden group">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-purple-50 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
                             <div className="relative">
-                                <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center mb-4">
+                                <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-lg flex items-center justify-center mb-4">
                                     <Users className="w-6 h-6" />
                                 </div>
                                 <h2 className="text-4xl font-black text-brand-dark mb-1">--</h2>
@@ -208,7 +208,7 @@ export default function Home() {
                         <div className="bg-white rounded-3xl border border-gray-100 p-8 hover:shadow-lg transition-all relative overflow-hidden group">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-green-50 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
                             <div className="relative">
-                                <div className="w-12 h-12 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center mb-4">
+                                <div className="w-12 h-12 bg-green-50 text-green-600 rounded-lg flex items-center justify-center mb-4">
                                     <Activity className="w-6 h-6" />
                                 </div>
                                 <h2 className="text-4xl font-black text-brand-dark mb-1">99.9%</h2>

@@ -82,9 +82,10 @@ pnpm test         # Vitest
 ## Style Conventions
 
 - Admin UI uses neutral productivity-dashboard aesthetic (Figma/Linear style).
-- Cards: `bg-white p-6 rounded-2xl border border-gray-200 shadow-sm`
-- Primary button: `bg-brand-dark text-white px-6 py-3 rounded-xl font-bold`
+- Cards: `bg-white p-6 rounded-lg border border-gray-200`
+- Primary button: `bg-brand-dark text-white px-6 py-3 rounded-lg font-bold`
 - Never use `border-[2px]`, `border-[3px]`, `shadow-sticker`, or `hover:-translate-y-1` in admin UI.
+- Never use `shadow-*` properties or heavy corner radiuses in admin components to maintain a flat aesthetic.
 - Dividers: `border-t border-gray-100` (never `border-t-2`)
 
 ---

@@ -54,7 +54,7 @@ export function SocialMediaManager({ links, onChange }: SocialMediaManagerProps)
             <h2 className="text-xl font-bold text-brand-dark">Social Media Links</h2>
 
             {/* Add New Link */}
-            <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
+            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                 <div className="flex flex-col gap-4">
                     <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-1">Platform</label>
@@ -87,13 +87,13 @@ export function SocialMediaManager({ links, onChange }: SocialMediaManagerProps)
                                 value={url}
                                 onChange={(e) => setUrl(e.target.value)}
                                 placeholder={currentPlatform.placeholder}
-                                className="flex-1 px-4 py-2 rounded-xl border border-gray-200 focus:border-gray-400 outline-none font-medium text-sm"
+                                className="flex-1 px-4 py-2 rounded-lg border border-gray-200 focus:border-gray-400 outline-none font-medium text-sm"
                             />
                             <button
                                 type="button"
                                 onClick={handleAdd}
                                 disabled={!url}
-                                className="bg-brand-dark text-white px-4 rounded-xl font-bold hover:bg-brand-green hover:text-brand-dark transition-colors disabled:opacity-50 flex items-center gap-2"
+                                className="bg-brand-dark text-white px-4 rounded-lg font-bold hover:bg-brand-green hover:text-brand-dark transition-colors disabled:opacity-50 flex items-center gap-2"
                             >
                                 <Plus size={18} />
                                 Add
@@ -111,7 +111,7 @@ export function SocialMediaManager({ links, onChange }: SocialMediaManagerProps)
                         const Icon = platformData.icon;
 
                         return (
-                            <div key={index} className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-xl shadow-sm">
+                            <div key={index} className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
                                 <div className="flex items-center gap-3 overflow-hidden">
                                     <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0 text-gray-600">
                                         <Icon size={20} />

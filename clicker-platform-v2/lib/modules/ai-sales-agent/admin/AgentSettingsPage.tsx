@@ -146,7 +146,7 @@ export default function AgentSettingsPage() {
             {activeTab === 'general' && (
                 <div className="space-y-6">
                     {/* Status Card */}
-                    <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 p-6">
+                    <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 p-6">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <Power className="h-5 w-5 text-brand-dark" />
@@ -172,7 +172,7 @@ export default function AgentSettingsPage() {
 
                     <div className="grid gap-6 md:grid-cols-2">
                         {/* Identity Card */}
-                        <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 p-6 space-y-4">
+                        <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 p-6 space-y-4">
                             <div className="flex items-center gap-2 mb-4">
                                 <Bot className="h-5 w-5 text-purple-600" />
                                 <h3 className="font-bold text-lg">Identity & Persona</h3>
@@ -185,7 +185,7 @@ export default function AgentSettingsPage() {
                                     value={config.name}
                                     onChange={(e) => updateConfig('name', e.target.value)}
                                     placeholder="e.g. Maya"
-                                    className="w-full px-4 py-2.5 rounded-xl border-2 border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-brand-dark focus:ring-0 outline-none transition"
+                                    className="w-full px-4 py-2.5 rounded-lg border-2 border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-brand-dark focus:ring-0 outline-none transition"
                                 />
                             </div>
 
@@ -194,7 +194,7 @@ export default function AgentSettingsPage() {
                                 <select
                                     value={config.personality}
                                     onChange={(e) => updateConfig('personality', e.target.value)}
-                                    className="w-full px-4 py-2.5 rounded-xl border-2 border-gray-200 dark:border-neutral-700 focus:border-brand-dark focus:ring-0 outline-none transition bg-white dark:bg-neutral-800 dark:text-neutral-200"
+                                    className="w-full px-4 py-2.5 rounded-lg border-2 border-gray-200 dark:border-neutral-700 focus:border-brand-dark focus:ring-0 outline-none transition bg-white dark:bg-neutral-800 dark:text-neutral-200"
                                 >
                                     <option value="professional">Professional & Formal</option>
                                     <option value="friendly">Friendly & Casual</option>
@@ -208,7 +208,7 @@ export default function AgentSettingsPage() {
                                 <select
                                     value={config.model}
                                     onChange={(e) => updateConfig('model', e.target.value)}
-                                    className="w-full px-4 py-2.5 rounded-xl border-2 border-gray-200 dark:border-neutral-700 focus:border-brand-dark focus:ring-0 outline-none transition bg-white dark:bg-neutral-800 dark:text-neutral-200"
+                                    className="w-full px-4 py-2.5 rounded-lg border-2 border-gray-200 dark:border-neutral-700 focus:border-brand-dark focus:ring-0 outline-none transition bg-white dark:bg-neutral-800 dark:text-neutral-200"
                                 >
                                     <option value="gemini-2.0-flash">Gemini 2.0 Flash (Fastest)</option>
                                     <option value="gemini-pro">Gemini Pro</option>
@@ -218,7 +218,7 @@ export default function AgentSettingsPage() {
                         </div>
 
                         {/* Behavior Card */}
-                        <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 p-6 space-y-4">
+                        <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 p-6 space-y-4">
                             <div className="flex items-center gap-2 mb-4">
                                 <MessageSquare className="h-5 w-5 text-blue-600" />
                                 <h3 className="font-bold text-lg">Interaction Settings</h3>
@@ -278,7 +278,7 @@ export default function AgentSettingsPage() {
                     </div>
 
                     {/* System Prompt */}
-                    <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 p-6">
+                    <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 p-6">
                         <div className="flex items-center gap-2 mb-4">
                             <Sparkles className="h-5 w-5 text-amber-500" />
                             <h3 className="font-bold text-lg">System Prompt</h3>
@@ -286,7 +286,7 @@ export default function AgentSettingsPage() {
                         <textarea
                             value={config.systemPrompt}
                             onChange={(e) => updateConfig('systemPrompt', e.target.value)}
-                            className="w-full min-h-[200px] px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-brand-dark focus:ring-0 outline-none transition font-mono text-sm"
+                            className="w-full min-h-[200px] px-4 py-3 rounded-lg border-2 border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-brand-dark focus:ring-0 outline-none transition font-mono text-sm"
                             placeholder="You are a helpful assistant..."
                         />
                         <button
@@ -300,7 +300,7 @@ export default function AgentSettingsPage() {
             )}
 
             {activeTab === 'knowledge' && (
-                <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 p-6">
+                <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 p-6">
                     <div className="flex items-center gap-2 mb-4">
                         <Brain className="h-5 w-5 text-purple-600" />
                         <h3 className="font-bold text-lg">Knowledge Base</h3>
@@ -308,7 +308,7 @@ export default function AgentSettingsPage() {
                     <p className="text-gray-500 dark:text-neutral-500 text-sm mb-4">
                         Train the AI with your website content and PDF documents. This feature is coming soon.
                     </p>
-                    <div className="bg-gray-50 dark:bg-neutral-800/50 border-2 border-dashed border-gray-200 dark:border-neutral-800 rounded-xl p-8 text-center">
+                    <div className="bg-gray-50 dark:bg-neutral-800/50 border-2 border-dashed border-gray-200 dark:border-neutral-800 rounded-lg p-8 text-center">
                         <RefreshCw className="h-8 w-8 text-gray-300 mx-auto mb-3" />
                         <p className="text-gray-400 dark:text-neutral-600">Knowledge Base Management Coming Soon</p>
                     </div>

@@ -224,13 +224,13 @@ export default function POSClient({ initialOrders = [] }: { initialOrders?: POSO
                 <div className="flex p-1 bg-gray-100 dark:bg-neutral-800 rounded-lg border border-gray-200 dark:border-neutral-800">
                     <button
                         onClick={() => setActiveTab('active')}
-                        className={`px-4 py-2 rounded-md font-bold text-sm transition-all duration-200 flex items-center gap-2 ${activeTab === 'active' ? 'bg-white dark:bg-neutral-900 text-brand-dark shadow-sm' : 'text-gray-500 dark:text-neutral-500 hover:text-gray-700 dark:hover:text-neutral-300'}`}
+                        className={`px-4 py-2 rounded-md font-bold text-sm transition-all duration-200 flex items-center gap-2 ${activeTab === 'active' ? 'bg-white dark:bg-neutral-900 text-brand-dark' : 'text-gray-500 dark:text-neutral-500 hover:text-gray-700 dark:hover:text-neutral-300'}`}
                     >
                         Active <span className="bg-studio-blue text-white px-1.5 py-0.5 rounded text-[10px]">{kdsOrders.length}</span>
                     </button>
                     <button
                         onClick={() => setActiveTab('completed')}
-                        className={`px-4 py-2 rounded-md font-bold text-sm transition-all duration-200 flex items-center gap-2 ${activeTab === 'completed' ? 'bg-white dark:bg-neutral-900 text-brand-dark shadow-sm' : 'text-gray-500 dark:text-neutral-500 hover:text-gray-700 dark:hover:text-neutral-300'}`}
+                        className={`px-4 py-2 rounded-md font-bold text-sm transition-all duration-200 flex items-center gap-2 ${activeTab === 'completed' ? 'bg-white dark:bg-neutral-900 text-brand-dark' : 'text-gray-500 dark:text-neutral-500 hover:text-gray-700 dark:hover:text-neutral-300'}`}
                     >
                         History
                     </button>
@@ -238,16 +238,16 @@ export default function POSClient({ initialOrders = [] }: { initialOrders?: POSO
 
                 {/* View Toggle (only when Active tab) */}
                 {activeTab === 'active' && (
-                    <div className="flex p-1 bg-gray-100 dark:bg-neutral-800 rounded-xl">
+                    <div className="flex p-1 bg-gray-100 dark:bg-neutral-800 rounded-lg">
                         <button
                             onClick={() => setViewMode('kitchen')}
-                            className={`px-4 py-2 rounded-lg font-bold text-xs transition-all duration-200 flex items-center gap-2 ${viewMode === 'kitchen' ? 'bg-white dark:bg-neutral-900 text-brand-dark shadow-sm' : 'text-gray-500 dark:text-neutral-500 hover:text-gray-700 dark:hover:text-neutral-300'}`}
+                            className={`px-4 py-2 rounded-lg font-bold text-xs transition-all duration-200 flex items-center gap-2 ${viewMode === 'kitchen' ? 'bg-white dark:bg-neutral-900 text-brand-dark' : 'text-gray-500 dark:text-neutral-500 hover:text-gray-700 dark:hover:text-neutral-300'}`}
                         >
                             <Grid size={16} /> KDS
                         </button>
                         <button
                             onClick={() => setViewMode('cashier')}
-                            className={`px-4 py-2 rounded-lg font-bold text-xs transition-all duration-200 flex items-center gap-2 ${viewMode === 'cashier' ? 'bg-white dark:bg-neutral-900 text-brand-dark shadow-sm' : 'text-gray-500 dark:text-neutral-500 hover:text-gray-700 dark:hover:text-neutral-300'}`}
+                            className={`px-4 py-2 rounded-lg font-bold text-xs transition-all duration-200 flex items-center gap-2 ${viewMode === 'cashier' ? 'bg-white dark:bg-neutral-900 text-brand-dark' : 'text-gray-500 dark:text-neutral-500 hover:text-gray-700 dark:hover:text-neutral-300'}`}
                         >
                             <List size={16} /> Cashier
                         </button>
@@ -271,7 +271,7 @@ export default function POSClient({ initialOrders = [] }: { initialOrders?: POSO
                     ))}
 
                     {kdsOrders.length === 0 && (
-                        <div className="col-span-full py-20 flex flex-col items-center justify-center text-gray-400 dark:text-neutral-600 bg-white dark:bg-neutral-900 rounded-xl border border-dashed border-gray-200 dark:border-neutral-800">
+                        <div className="col-span-full py-20 flex flex-col items-center justify-center text-gray-400 dark:text-neutral-600 bg-white dark:bg-neutral-900 rounded-lg border border-dashed border-gray-200 dark:border-neutral-800">
                             <ShoppingBag size={48} className="mb-4 opacity-20" />
                             <p className="font-bold text-lg">All caught up!</p>
                             <p className="text-sm">No active orders to prepare.</p>
@@ -291,7 +291,7 @@ export default function POSClient({ initialOrders = [] }: { initialOrders?: POSO
                     ))}
 
                     {billGroups.length === 0 && (
-                        <div className="col-span-full py-20 flex flex-col items-center justify-center text-gray-400 dark:text-neutral-600 bg-white dark:bg-neutral-900 rounded-xl border border-dashed border-gray-200 dark:border-neutral-800">
+                        <div className="col-span-full py-20 flex flex-col items-center justify-center text-gray-400 dark:text-neutral-600 bg-white dark:bg-neutral-900 rounded-lg border border-dashed border-gray-200 dark:border-neutral-800">
                             <ShoppingBag size={48} className="mb-4 opacity-20" />
                             <p className="font-bold text-lg">No active bills</p>
                             <p className="text-sm">New orders will appear here automatically.</p>
@@ -304,7 +304,7 @@ export default function POSClient({ initialOrders = [] }: { initialOrders?: POSO
 
             {/* Completed Orders List */}
             {activeTab === 'completed' && (
-                <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden animate-in fade-in duration-300">
+                <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 overflow-hidden animate-in fade-in duration-300">
                     <div className="divide-y divide-gray-100 dark:divide-neutral-800">
                         {completedOrders.map(order => (
                             <POSOrderRow

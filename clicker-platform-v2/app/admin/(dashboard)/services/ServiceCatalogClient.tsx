@@ -121,7 +121,7 @@ function CategoryPicker({
             <button
                 type="button"
                 onClick={() => setOpen(o => !o)}
-                className="w-full flex items-center justify-between px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:border-brand-dark text-sm dark:text-neutral-200"
+                className="w-full flex items-center justify-between px-4 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:border-brand-dark text-sm dark:text-neutral-200"
             >
                 <span className={`px-2 py-0.5 rounded-md text-xs font-bold uppercase tracking-wide ${colorClass}`}>
                     {value || 'Select category'}
@@ -129,7 +129,7 @@ function CategoryPicker({
                 <ChevronDown size={16} className="text-gray-400" />
             </button>
             {open && (
-                <div className="absolute z-50 mt-1 w-full bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-xl shadow-lg overflow-hidden">
+                <div className="absolute z-50 mt-1 w-full bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-lg shadow-lg overflow-hidden">
                     {categories.map(cat => (
                         <button
                             key={cat.id}
@@ -204,7 +204,7 @@ function CategoryManagerModal({
                 {/* Existing categories */}
                 <div className="space-y-2">
                     {cats.map(cat => (
-                        <div key={cat.id} className="flex items-center justify-between gap-3 px-3 py-2.5 bg-gray-50 dark:bg-neutral-800 rounded-xl">
+                        <div key={cat.id} className="flex items-center justify-between gap-3 px-3 py-2.5 bg-gray-50 dark:bg-neutral-800 rounded-lg">
                             <span className={`px-2.5 py-0.5 rounded-md text-xs font-bold uppercase tracking-wide ${cat.color}`}>
                                 {cat.label}
                             </span>
@@ -227,7 +227,7 @@ function CategoryManagerModal({
                         value={newLabel}
                         onChange={e => setNewLabel(e.target.value)}
                         onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addCategory())}
-                        className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200 text-sm"
+                        className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200 text-sm"
                     />
                     <div className="flex flex-wrap gap-2">
                         {COLOR_PRESETS.map(preset => (
@@ -245,7 +245,7 @@ function CategoryManagerModal({
                         type="button"
                         onClick={addCategory}
                         disabled={!newLabel.trim()}
-                        className="w-full py-2 rounded-xl border-2 border-dashed border-gray-300 dark:border-neutral-700 text-sm font-bold text-gray-500 dark:text-neutral-500 hover:border-brand-dark hover:text-brand-dark transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                        className="w-full py-2 rounded-lg border-2 border-dashed border-gray-300 dark:border-neutral-700 text-sm font-bold text-gray-500 dark:text-neutral-500 hover:border-brand-dark hover:text-brand-dark transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                         + Add Category
                     </button>
@@ -255,14 +255,14 @@ function CategoryManagerModal({
             <div className="p-5 border-t border-gray-100 dark:border-neutral-800 flex gap-3 flex-shrink-0">
                 <button
                     onClick={onClose}
-                    className="flex-1 py-2.5 rounded-xl font-bold text-gray-600 dark:text-neutral-400 bg-gray-100 dark:bg-neutral-800 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors"
+                    className="flex-1 py-2.5 rounded-lg font-bold text-gray-600 dark:text-neutral-400 bg-gray-100 dark:bg-neutral-800 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors"
                 >
                     Cancel
                 </button>
                 <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="flex-1 py-2.5 rounded-xl font-bold text-white bg-studio-blue hover:bg-studio-blue/85 transition-colors disabled:opacity-50"
+                    className="flex-1 py-2.5 rounded-lg font-bold text-white bg-studio-blue hover:bg-studio-blue/85 transition-colors disabled:opacity-50"
                 >
                     {saving ? 'Saving…' : 'Save Categories'}
                 </button>
@@ -285,7 +285,7 @@ function CategoryManagerModal({
 
     return (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-            <div className="bg-white dark:bg-neutral-900 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[80vh]">
+            <div className="bg-white dark:bg-neutral-900 rounded-lg w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[80vh]">
                 <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-neutral-800 flex-shrink-0">
                     <h2 className="text-lg font-bold text-brand-dark">Manage Categories</h2>
                     <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-full transition-colors">
@@ -326,7 +326,7 @@ function ServiceForm({ form, set, categories, pricingDisplay, isSubmitting, edit
                     type="text"
                     value={form.name}
                     onChange={e => set({ name: e.target.value })}
-                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
+                    className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
                 />
             </div>
 
@@ -338,7 +338,7 @@ function ServiceForm({ form, set, categories, pricingDisplay, isSubmitting, edit
                     onChange={e => set({ description: e.target.value })}
                     rows={2}
                     placeholder="Displayed on the public booking form"
-                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
+                    className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
                 />
             </div>
 
@@ -356,7 +356,7 @@ function ServiceForm({ form, set, categories, pricingDisplay, isSubmitting, edit
                         min="0"
                         value={form.price}
                         onChange={e => set({ price: Number(e.target.value) })}
-                        className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
+                        className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
                     />
                     {form.bookable && pricingDisplay === 'starting_from' && (
                         <p className="text-xs text-indigo-600 dark:text-indigo-500 mt-1">Shown as "Mulai dari" on the booking page.</p>
@@ -386,7 +386,7 @@ function ServiceForm({ form, set, categories, pricingDisplay, isSubmitting, edit
             </div>
 
             {/* Reservation config */}
-            <div className="border border-indigo-200 dark:border-indigo-900 rounded-xl p-4 space-y-3">
+            <div className="border border-indigo-200 dark:border-indigo-900 rounded-lg p-4 space-y-3">
                 <div className="flex items-center gap-2">
                     <input
                         type="checkbox"
@@ -407,7 +407,7 @@ function ServiceForm({ form, set, categories, pricingDisplay, isSubmitting, edit
                                         key={bt}
                                         type="button"
                                         onClick={() => set({ bookingType: bt })}
-                                        className={`flex flex-col items-start px-3 py-2.5 rounded-xl border text-left transition-all ${form.bookingType === bt
+                                        className={`flex flex-col items-start px-3 py-2.5 rounded-lg border text-left transition-all ${form.bookingType === bt
                                             ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-950/30'
                                             : 'border-gray-200 dark:border-neutral-700 hover:border-indigo-300'
                                         }`}
@@ -431,7 +431,7 @@ function ServiceForm({ form, set, categories, pricingDisplay, isSubmitting, edit
                                     placeholder={`e.g. ${form.price * 3 || 500000}`}
                                     value={form.maxPrice}
                                     onChange={e => set({ maxPrice: e.target.value === '' ? '' : Number(e.target.value) })}
-                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
+                                    className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
                                 />
                                 <p className="text-xs text-indigo-600 dark:text-indigo-500 mt-1">Upper bound shown on booking page, e.g. Rp {form.price.toLocaleString('id-ID')} – Rp {(Number(form.maxPrice) || form.price * 3 || 500000).toLocaleString('id-ID')}</p>
                             </div>
@@ -446,7 +446,7 @@ function ServiceForm({ form, set, categories, pricingDisplay, isSubmitting, edit
                                     step="5"
                                     value={form.durationMinutes}
                                     onChange={e => set({ durationMinutes: Number(e.target.value) })}
-                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
+                                    className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
                                 />
                                 <p className="text-xs text-indigo-600 dark:text-indigo-500 mt-1.5">Controls booking slot length in the public booking form.</p>
                             </div>
@@ -456,7 +456,7 @@ function ServiceForm({ form, set, categories, pricingDisplay, isSubmitting, edit
             </div>
 
             {/* Service Records config */}
-            <div className="border border-green-200 dark:border-green-900 rounded-xl p-4 space-y-3">
+            <div className="border border-green-200 dark:border-green-900 rounded-lg p-4 space-y-3">
                 <div className="flex items-center gap-2">
                     <input
                         type="checkbox"
@@ -489,7 +489,7 @@ function ServiceForm({ form, set, categories, pricingDisplay, isSubmitting, edit
                                     min="1"
                                     value={form.defaultWarrantyMonths}
                                     onChange={e => set({ defaultWarrantyMonths: Number(e.target.value) })}
-                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
+                                    className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
                                 />
                             </div>
                         )}
@@ -501,7 +501,7 @@ function ServiceForm({ form, set, categories, pricingDisplay, isSubmitting, edit
                                 placeholder={`Default: ${form.price}`}
                                 value={form.defaultPrice}
                                 onChange={e => set({ defaultPrice: e.target.value === '' ? '' : Number(e.target.value) })}
-                                className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
+                                className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
                             />
                         </div>
                     </div>
@@ -516,14 +516,14 @@ function ServiceForm({ form, set, categories, pricingDisplay, isSubmitting, edit
                     type="button"
                     disabled={isSubmitting}
                     onClick={onCancel}
-                    className="flex-1 py-3 px-4 rounded-xl font-bold text-gray-600 dark:text-neutral-400 bg-gray-100 dark:bg-neutral-800 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer active:scale-95 disabled:opacity-50"
+                    className="flex-1 py-3 px-4 rounded-lg font-bold text-gray-600 dark:text-neutral-400 bg-gray-100 dark:bg-neutral-800 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer active:scale-95 disabled:opacity-50"
                 >
                     Cancel
                 </button>
                 <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-studio-blue hover:bg-studio-blue/85 transition-colors cursor-pointer active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="flex-1 py-3 px-4 rounded-lg font-bold text-white bg-studio-blue hover:bg-studio-blue/85 transition-colors cursor-pointer active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                     {isSubmitting ? 'Saving...' : editing ? 'Save Changes' : 'Add Service'}
                 </button>
@@ -695,7 +695,7 @@ export default function ServiceCatalogClient({ initialItems = [] }: Props) {
                 </button>
             )}
 
-            <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden">
+            <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 overflow-hidden">
                 {/* Search */}
                 <div className="p-4 border-b border-gray-100 dark:border-neutral-800">
                     <div className="relative">
@@ -838,7 +838,7 @@ export default function ServiceCatalogClient({ initialItems = [] }: Props) {
                 </MobileBottomSheet>
             ) : isModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-neutral-900 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col">
+                    <div className="bg-white dark:bg-neutral-900 rounded-lg w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col">
                         <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-neutral-800 flex-shrink-0">
                             <h2 className="text-xl font-bold text-brand-dark">
                                 {editing ? 'Edit Service' : 'New Service'}

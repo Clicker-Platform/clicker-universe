@@ -225,7 +225,7 @@ export default function InventoryPage() {
             )}
 
             {/* Inventory List Container */}
-            <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden flex flex-col min-h-[600px]">
+            <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 overflow-hidden flex flex-col min-h-[600px]">
                 {/* Search Header */}
                 <div className="p-4 border-b border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900">
                     <div className="relative max-w-md">
@@ -338,7 +338,7 @@ export default function InventoryPage() {
                                     {filteredItems.map(item => {
                                         const isLowStock = item.currentStock <= item.lowStockThreshold;
                                         return (
-                                            <div key={item.id} className="bg-white dark:bg-neutral-900 p-5 rounded-2xl border border-gray-100 dark:border-neutral-800 shadow-sm hover:shadow-md transition-all flex flex-col">
+                                            <div key={item.id} className="bg-white dark:bg-neutral-900 p-5 rounded-lg border border-gray-100 dark:border-neutral-800 hover:shadow-md transition-all flex flex-col">
                                                 <div className="flex justify-between items-start mb-3">
                                                     <div>
                                                         <div className="flex items-center gap-2 mb-1">
@@ -408,7 +408,7 @@ export default function InventoryPage() {
                             </p>
                             <button
                                 onClick={openAddModal}
-                                className="bg-studio-blue text-white px-6 py-3 rounded-xl font-bold hover:bg-studio-blue/85 transition shadow-lg shadow-brand-dark/20"
+                                className="bg-studio-blue text-white px-6 py-3 rounded-lg font-bold hover:bg-studio-blue/85 transition shadow-lg shadow-brand-dark/20"
                             >
                                 Create First Item
                             </button>

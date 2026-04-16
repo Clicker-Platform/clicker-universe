@@ -95,7 +95,7 @@ export const ThemeMockup: React.FC<ThemeMockupProps> = ({ template, settings: cu
         <div 
             className={`
                 w-full overflow-hidden transition-all duration-300 relative
-                ${isMini ? 'h-full flex items-center justify-center' : 'h-[800px] border shadow-sm'}
+                ${isMini ? 'h-full flex items-center justify-center' : 'h-[800px] border'}
             `}
             style={{
                 borderColor: isMini ? 'transparent' : displaySettings.accentColor,

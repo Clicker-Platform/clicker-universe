@@ -137,7 +137,7 @@ export const BlockFormRenderer = memo(({ block, onChange, templateId = 'classic'
             if (moduleInfo) {
                 return (
                     <div className="space-y-4">
-                        <div className="bg-gray-100 dark:bg-neutral-800 rounded-xl p-4 border border-gray-300 dark:border-neutral-700 flex items-center justify-between shadow-sm">
+                        <div className="bg-gray-100 dark:bg-neutral-800 rounded-lg p-4 border border-gray-300 dark:border-neutral-700 flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 bg-gray-200 dark:bg-neutral-700 rounded-full flex items-center justify-center shadow-lg text-neutral-900 dark:text-neutral-200">
                                     <Settings size={20} />
@@ -156,7 +156,7 @@ export const BlockFormRenderer = memo(({ block, onChange, templateId = 'classic'
                         {moduleInfo.manageUrl && (
                             <Link
                                 href={moduleInfo.manageUrl}
-                                className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-xl font-bold hover:bg-gray-200 dark:hover:bg-neutral-700 hover:text-neutral-900 dark:hover:text-neutral-100 transition-all shadow-sm"
+                                className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-lg font-bold hover:bg-gray-200 dark:hover:bg-neutral-700 hover:text-neutral-900 dark:hover:text-neutral-100 transition-all"
                             >
                                 <ExternalLink size={18} />
                                 Configure {moduleInfo.name} Settings
@@ -167,7 +167,7 @@ export const BlockFormRenderer = memo(({ block, onChange, templateId = 'classic'
                 );
             }
             return (
-                <div className="bg-amber-100/20 dark:bg-amber-900/20 rounded-xl p-4 border border-amber-300/30 dark:border-amber-800/30">
+                <div className="bg-amber-100/20 dark:bg-amber-900/20 rounded-lg p-4 border border-amber-300/30 dark:border-amber-800/30">
                     <p className="text-sm font-bold text-amber-700 dark:text-amber-200">Unsupported block type: {block.type}</p>
                 </div>
             );

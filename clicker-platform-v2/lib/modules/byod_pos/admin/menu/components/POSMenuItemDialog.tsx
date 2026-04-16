@@ -136,7 +136,7 @@ export function POSMenuItemDialog({ isOpen, onClose, onSave, initialData, isLoad
                                 />
                             </div>
 
-                            <div className="border border-gray-200 dark:border-neutral-700 rounded-xl p-4">
+                            <div className="border border-gray-200 dark:border-neutral-700 rounded-lg p-4">
                                 <div className="flex items-center gap-2">
                                     <input
                                         type="checkbox"
@@ -152,7 +152,7 @@ export function POSMenuItemDialog({ isOpen, onClose, onSave, initialData, isLoad
 
                         {/* Inventory Linking (Simple) */}
                         {(!formData.variants || formData.variants.length === 0) && (
-                            <div className="md:col-span-2 bg-blue-50/50 rounded-xl p-4 border border-blue-100">
+                            <div className="md:col-span-2 bg-blue-50/50 rounded-lg p-4 border border-blue-100">
                                 <h3 className="text-sm font-bold text-blue-900 mb-2 flex items-center gap-2">
                                     Inventory Linking
                                     <span className="text-xs font-normal text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full">Optional</span>
@@ -187,13 +187,13 @@ export function POSMenuItemDialog({ isOpen, onClose, onSave, initialData, isLoad
                             </div>
 
                             {(!formData.variants || formData.variants.length === 0) ? (
-                                <div className="text-center py-6 bg-gray-50 dark:bg-neutral-800/50 rounded-xl border border-dashed border-gray-200 dark:border-neutral-700 text-gray-400 dark:text-neutral-600 text-sm">
+                                <div className="text-center py-6 bg-gray-50 dark:bg-neutral-800/50 rounded-lg border border-dashed border-gray-200 dark:border-neutral-700 text-gray-400 dark:text-neutral-600 text-sm">
                                     No variants added (Standard Product)
                                 </div>
                             ) : (
                                 <div className="space-y-3">
                                     {formData.variants.map((variant, index) => (
-                                        <div key={variant.id} className="flex flex-col sm:flex-row gap-3 bg-gray-50 dark:bg-neutral-800/50 p-3 rounded-xl border border-gray-200 dark:border-neutral-700 items-start sm:items-center relative group">
+                                        <div key={variant.id} className="flex flex-col sm:flex-row gap-3 bg-gray-50 dark:bg-neutral-800/50 p-3 rounded-lg border border-gray-200 dark:border-neutral-700 items-start sm:items-center relative group">
                                             <div className="flex-1 w-full sm:w-auto">
                                                 <input
                                                     placeholder="Variant Name (e.g. Large)"
@@ -244,7 +244,7 @@ export function POSMenuItemDialog({ isOpen, onClose, onSave, initialData, isLoad
                                                     const newVariants = formData.variants?.filter((_, i) => i !== index);
                                                     setFormData({ ...formData, variants: newVariants });
                                                 }}
-                                                className="p-2 text-gray-400 dark:text-neutral-600 hover:text-red-500 hover:bg-white dark:hover:bg-neutral-900 rounded-lg transition-colors sm:static absolute -top-2 -right-2 sm:shadow-none shadow-sm bg-white dark:bg-neutral-900 sm:bg-transparent dark:sm:bg-transparent border sm:border-none border-gray-100 dark:border-neutral-800"
+                                                className="p-2 text-gray-400 dark:text-neutral-600 hover:text-red-500 hover:bg-white dark:hover:bg-neutral-900 rounded-lg transition-colors sm:static absolute -top-2 -right-2 sm:shadow-none bg-white dark:bg-neutral-900 sm:bg-transparent dark:sm:bg-transparent border sm:border-none border-gray-100 dark:border-neutral-800"
                                             >
                                                 <X size={16} />
                                             </button>
@@ -256,7 +256,7 @@ export function POSMenuItemDialog({ isOpen, onClose, onSave, initialData, isLoad
 
                         <div className="md:col-span-2">
                             <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-2">Item Images</label>
-                            <div className="bg-gray-50 dark:bg-neutral-800/50 rounded-xl border border-dashed border-gray-200 dark:border-neutral-700 p-4">
+                            <div className="bg-gray-50 dark:bg-neutral-800/50 rounded-lg border border-dashed border-gray-200 dark:border-neutral-700 p-4">
                                 <MultiImageUpload
                                     images={formData.images}
                                     onImagesChange={(newImages) => setFormData({ ...formData, images: newImages })}
@@ -272,7 +272,7 @@ export function POSMenuItemDialog({ isOpen, onClose, onSave, initialData, isLoad
                     <button
                         type="button"
                         onClick={onClose}
-                        className="px-6 py-2.5 rounded-xl font-bold text-gray-600 dark:text-neutral-400 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors"
+                        className="px-6 py-2.5 rounded-lg font-bold text-gray-600 dark:text-neutral-400 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors"
                     >
                         Cancel
                     </button>
@@ -281,7 +281,7 @@ export function POSMenuItemDialog({ isOpen, onClose, onSave, initialData, isLoad
                         isLoading={isLoading}
                         loadingLabel={isEditMode ? 'Updating...' : 'Creating...'}
                         label={isEditMode ? 'Save Changes' : 'Create Item'}
-                        className="bg-studio-blue text-white hover:bg-studio-blue/85 px-8 py-2.5 rounded-xl font-bold transition-all shadow-lg hover:shadow-xl cursor-pointer active:scale-95"
+                        className="bg-studio-blue text-white hover:bg-studio-blue/85 px-8 py-2.5 rounded-lg font-bold transition-all shadow-lg hover:shadow-xl cursor-pointer active:scale-95"
                     />
                 </div>
         </>
@@ -304,11 +304,11 @@ export function POSMenuItemDialog({ isOpen, onClose, onSave, initialData, isLoad
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-neutral-900 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl animate-in zoom-in-95 duration-200 border border-gray-100 dark:border-neutral-800">
+            <div className="bg-white dark:bg-neutral-900 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl animate-in zoom-in-95 duration-200 border border-gray-100 dark:border-neutral-800">
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-800/50 flex-shrink-0">
                     <div className="flex items-center gap-3 text-brand-dark">
-                        <div className="p-2 bg-white dark:bg-neutral-900 rounded-lg shadow-sm text-brand-dark">
+                        <div className="p-2 bg-white dark:bg-neutral-900 rounded-lg text-brand-dark">
                             {isEditMode ? <Pencil size={20} /> : <Plus size={20} />}
                         </div>
                         <h2 className="text-xl font-bold">{isEditMode ? 'Edit Item' : 'Add New Item'}</h2>

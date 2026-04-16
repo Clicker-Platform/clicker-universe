@@ -232,12 +232,12 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
             </div>
 
             {/* Content Area */}
-            <div className="bg-white dark:bg-neutral-900 p-6 md:px-8 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm min-h-[400px]">
+            <div className="bg-white dark:bg-neutral-900 p-6 md:px-8 rounded-lg border border-gray-200 dark:border-neutral-800 min-h-[400px]">
 
                 {/* --- CONTACT TAB --- */}
                 {activeTab === 'contact' && (
                     <form onSubmit={handleSaveSettings} className="space-y-6">
-                        <div className="flex items-center gap-3 mb-6 p-4 bg-blue-50 dark:bg-blue-950/30 text-blue-800 dark:text-blue-400 rounded-xl border border-blue-100 dark:border-blue-800">
+                        <div className="flex items-center gap-3 mb-6 p-4 bg-blue-50 dark:bg-blue-950/30 text-blue-800 dark:text-blue-400 rounded-lg border border-blue-100 dark:border-blue-800">
                             <MapPin size={24} />
                             <div>
                                 <h3 className="font-bold">Main Location</h3>
@@ -316,7 +316,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                                 isLoading={isSubmitting}
                                 label="Save Contact Info"
                                 loadingLabel="Saving..."
-                                className="bg-studio-blue text-white px-8 py-3 rounded-xl font-bold hover:bg-studio-blue/85 transition-all shadow-lg"
+                                className="bg-studio-blue text-white px-8 py-3 rounded-lg font-bold hover:bg-studio-blue/85 transition-all shadow-lg"
                             />
                         </div>
                     </form>
@@ -325,7 +325,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                 {/* --- HOURS TAB --- */}
                 {activeTab === 'hours' && (
                     <form onSubmit={handleSaveSettings} className="space-y-6">
-                        <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-neutral-800/50 rounded-xl border border-gray-200 dark:border-neutral-700">
+                        <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-neutral-800/50 rounded-lg border border-gray-200 dark:border-neutral-700">
                             <div>
                                 <h3 className="font-bold text-lg text-brand-dark dark:text-neutral-100">Display Widget</h3>
                                 <p className="text-sm text-gray-500 dark:text-neutral-500">Show/Hide hours on public page</p>
@@ -366,7 +366,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                                 isLoading={isSubmitting}
                                 label="Save Hours"
                                 loadingLabel="Saving..."
-                                className="bg-studio-blue text-white px-8 py-3 rounded-xl font-bold hover:bg-studio-blue/85 transition-all shadow-lg"
+                                className="bg-studio-blue text-white px-8 py-3 rounded-lg font-bold hover:bg-studio-blue/85 transition-all shadow-lg"
                             />
                         </div>
                     </form>
@@ -376,7 +376,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                 {activeTab === 'branches' && (
                     <div className="space-y-6">
                         {/* Has Branches Toggle */}
-                        <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-neutral-800/50 rounded-xl border border-gray-200 dark:border-neutral-700">
+                        <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-neutral-800/50 rounded-lg border border-gray-200 dark:border-neutral-700">
                             <div>
                                 <h3 className="font-bold text-lg text-brand-dark dark:text-neutral-100">Has Branches</h3>
                                 <p className="text-sm text-gray-500 dark:text-neutral-500">Enable to manage and display multiple locations</p>
@@ -403,7 +403,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                                 </div>
 
                                 {branches.length === 0 ? (
-                                    <div className="text-center py-12 bg-gray-50 dark:bg-neutral-800/50 rounded-xl border border-dashed border-gray-200 dark:border-neutral-700">
+                                    <div className="text-center py-12 bg-gray-50 dark:bg-neutral-800/50 rounded-lg border border-dashed border-gray-200 dark:border-neutral-700">
                                         <GitBranch size={48} className="mx-auto text-gray-300 dark:text-neutral-600 mb-3" />
                                         <p className="text-gray-500 dark:text-neutral-500 font-medium">No branches added yet.</p>
                                         <p className="text-sm text-gray-400 dark:text-neutral-600 mt-1">Add your first branch location above.</p>
@@ -411,7 +411,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                                 ) : (
                                     <div className="space-y-4">
                                         {branches.map((branch) => (
-                                            <div key={branch.id} className="bg-gray-50 dark:bg-neutral-800/50 p-4 rounded-xl border border-gray-200 dark:border-neutral-700 flex items-start justify-between group hover:border-brand-dark/50 transition-colors">
+                                            <div key={branch.id} className="bg-gray-50 dark:bg-neutral-800/50 p-4 rounded-lg border border-gray-200 dark:border-neutral-700 flex items-start justify-between group hover:border-brand-dark/50 transition-colors">
                                                 <div className="flex-1">
                                                     <div className="flex items-center gap-2 mb-1">
                                                         <h4 className="font-bold text-lg text-brand-dark dark:text-neutral-100">{branch.name}</h4>
@@ -461,7 +461,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
             {/* Branch Modal */}
             {isBranchModalOpen && editingBranch && (
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-neutral-900 rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
+                    <div className="bg-white dark:bg-neutral-900 rounded-lg w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
                         <div className="p-6 border-b border-gray-100 dark:border-neutral-800/50 flex justify-between items-center sticky top-0 bg-white dark:bg-neutral-900 z-10">
                             <h3 className="text-xl font-bold text-brand-dark dark:text-neutral-100">
                                 {editingBranch.id === 'new' ? 'Add New Branch' : 'Edit Branch'}
@@ -522,7 +522,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                                 <button
                                     type="button"
                                     onClick={() => setIsBranchModalOpen(false)}
-                                    className="flex-1 px-4 py-3 font-bold text-gray-600 dark:text-neutral-400 bg-gray-100 dark:bg-neutral-800 hover:bg-gray-200 dark:hover:bg-neutral-700 rounded-xl transition-colors"
+                                    className="flex-1 px-4 py-3 font-bold text-gray-600 dark:text-neutral-400 bg-gray-100 dark:bg-neutral-800 hover:bg-gray-200 dark:hover:bg-neutral-700 rounded-lg transition-colors"
                                 >
                                     Cancel
                                 </button>
@@ -530,7 +530,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                                     isLoading={isSubmitting}
                                     label="Save Branch"
                                     loadingLabel="Saving..."
-                                    className="flex-1 bg-studio-blue text-white px-4 py-3 rounded-xl font-bold hover:bg-studio-blue/85 transition-all"
+                                    className="flex-1 bg-studio-blue text-white px-4 py-3 rounded-lg font-bold hover:bg-studio-blue/85 transition-all"
                                 />
                             </div>
                         </form>

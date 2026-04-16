@@ -83,7 +83,7 @@ export function ProductFormModal({ isOpen, onClose, onSubmit, initialData, isSub
 
     return (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-neutral-900 rounded-2xl w-full max-w-4xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col">
+            <div className="bg-white dark:bg-neutral-900 rounded-lg w-full max-w-4xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col">
                 {/* Header */}
                 <div className="px-6 py-4 border-b border-gray-100 dark:border-neutral-800/50 flex justify-between items-center bg-gray-50 dark:bg-neutral-800/50 flex-shrink-0">
                     <h3 className="font-bold text-lg text-gray-800 dark:text-neutral-200 flex items-center gap-2">
@@ -115,7 +115,7 @@ export function ProductFormModal({ isOpen, onClose, onSubmit, initialData, isSub
                             </div>
 
                             {/* Price Section */}
-                            <div className="bg-white dark:bg-neutral-900 rounded-xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden group hover:border-gray-300 dark:hover:border-neutral-700 transition-colors">
+                            <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 overflow-hidden group hover:border-gray-300 dark:hover:border-neutral-700 transition-colors">
                                 <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-neutral-800/50 border-b border-gray-100 dark:border-neutral-800/50">
                                     <label className="text-xs font-bold text-gray-700 dark:text-neutral-300 uppercase tracking-wider flex items-center gap-2">
                                         Price
@@ -153,7 +153,7 @@ export function ProductFormModal({ isOpen, onClose, onSubmit, initialData, isSub
                             </div>
 
                             {/* Label (Category) Section */}
-                            <div className="bg-white dark:bg-neutral-900 rounded-xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden group hover:border-gray-300 dark:hover:border-neutral-700 transition-colors">
+                            <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 overflow-hidden group hover:border-gray-300 dark:hover:border-neutral-700 transition-colors">
                                 <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-neutral-800/50 border-b border-gray-100 dark:border-neutral-800/50">
                                     <label className="text-xs font-bold text-gray-700 dark:text-neutral-300 uppercase tracking-wider flex items-center gap-2">
                                         Label / Category
@@ -197,7 +197,7 @@ export function ProductFormModal({ isOpen, onClose, onSubmit, initialData, isSub
                                         ${formData.isActive ? 'bg-brand-green' : 'bg-gray-300 dark:bg-neutral-600'}
                                     `}
                                 >
-                                    <div className={`w-5 h-5 bg-white rounded-full shadow-sm transform transition-transform ml-1 ${formData.isActive ? 'translate-x-5' : ''}`} />
+                                    <div className={`w-5 h-5 bg-white rounded-full transform transition-transform ml-1 ${formData.isActive ? 'translate-x-5' : ''}`} />
                                 </div>
                                 <span className="text-sm font-bold text-gray-700 dark:text-neutral-300 select-none">
                                     {formData.isActive ? 'Visible to Public' : 'Hidden (Draft Mode)'}
@@ -227,7 +227,7 @@ export function ProductFormModal({ isOpen, onClose, onSubmit, initialData, isSub
                     <button
                         type="button"
                         onClick={onClose}
-                        className="px-6 py-2 rounded-xl font-bold text-gray-500 dark:text-neutral-500 hover:bg-gray-200 dark:hover:bg-neutral-600 transition-colors"
+                        className="px-6 py-2 rounded-lg font-bold text-gray-500 dark:text-neutral-500 hover:bg-gray-200 dark:hover:bg-neutral-600 transition-colors"
                     >
                         Cancel
                     </button>
@@ -235,7 +235,7 @@ export function ProductFormModal({ isOpen, onClose, onSubmit, initialData, isSub
                         isLoading={isSubmitting}
                         loadingLabel={initialData ? 'Updating...' : 'Adding...'}
                         label={initialData ? 'Update Product' : 'Add Product'}
-                        className={`text-white px-8 py-2 rounded-xl font-bold transition-all shadow-md transform active:scale-95 ${initialData ? 'bg-studio-blue hover:bg-studio-blue/85' : 'bg-studio-blue hover:bg-studio-blue/85'
+                        className={`text-white px-8 py-2 rounded-lg font-bold transition-all shadow-md transform active:scale-95 ${initialData ? 'bg-studio-blue hover:bg-studio-blue/85' : 'bg-studio-blue hover:bg-studio-blue/85'
                             }`}
                         form="product-form" // Link to form via ID
                     />

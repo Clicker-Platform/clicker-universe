@@ -57,7 +57,7 @@ export const ProductsForm = ({ data, onChange }: ProductsFormProps) => {
         onChange({ ...safeData, productIds: newIds });
     };
 
-    if (loading) return <div className="py-12 bg-gray-100/30 dark:bg-neutral-900/30 rounded-2xl border border-gray-200/50 dark:border-neutral-800/50 flex flex-col items-center justify-center gap-3">
+    if (loading) return <div className="py-12 bg-gray-100/30 dark:bg-neutral-900/30 rounded-lg border border-gray-200/50 dark:border-neutral-800/50 flex flex-col items-center justify-center gap-3">
         <Loader2 className="animate-spin text-blue-500" size={24} />
         <p className="text-xs font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest">Loading Catalog</p>
     </div>;
@@ -70,7 +70,7 @@ export const ProductsForm = ({ data, onChange }: ProductsFormProps) => {
                     type="text"
                     value={safeData.title || ''}
                     onChange={(e) => onChange({ ...safeData, title: e.target.value })}
-                    className="w-full px-4 py-2 bg-gray-50 dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl text-sm font-bold text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-600 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none"
+                    className="w-full px-4 py-2 bg-gray-50 dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-lg text-sm font-bold text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-600 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none"
                     placeholder="e.g. Featured Products"
                 />
             </div>
@@ -78,7 +78,7 @@ export const ProductsForm = ({ data, onChange }: ProductsFormProps) => {
             <div>
                 <label className="block text-xs font-medium text-neutral-400 dark:text-neutral-500 mb-2">Select Products</label>
                 {products.length === 0 ? (
-                    <div className="p-10 bg-gray-100/50 dark:bg-neutral-900/50 rounded-2xl border-2 border-dashed border-gray-200 dark:border-neutral-800 text-center">
+                    <div className="p-10 bg-gray-100/50 dark:bg-neutral-900/50 rounded-lg border-2 border-dashed border-gray-200 dark:border-neutral-800 text-center">
                         <p className="text-sm font-medium text-neutral-400 dark:text-neutral-500">No products found in catalog.</p>
                     </div>
                 ) : (
@@ -90,7 +90,7 @@ export const ProductsForm = ({ data, onChange }: ProductsFormProps) => {
                                     key={product.id}
                                     onClick={() => toggleProduct(product.id)}
                                     className={`
-                                        p-3 rounded-xl border cursor-pointer flex items-center gap-4 transition-all active:scale-[0.98]
+                                        p-3 rounded-lg border cursor-pointer flex items-center gap-4 transition-all active:scale-[0.98]
                                         ${isSelected 
                                             ? 'border-blue-500 bg-blue-500/10 shadow-[0_0_15px_-5px_italic] shadow-blue-500/20' 
                                             : 'border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:border-gray-300 dark:hover:border-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-800'

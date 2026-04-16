@@ -12,9 +12,9 @@ export default function CalendarClient() {
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">Calendar Settings</h1>
             </div>
 
-            <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm p-8 max-w-xl">
+            <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 p-8 max-w-xl">
                 <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 bg-brand-dark/10 rounded-xl flex items-center justify-center">
+                    <div className="w-10 h-10 bg-brand-dark/10 rounded-lg flex items-center justify-center">
                         <Clock size={20} className="text-brand-dark" />
                     </div>
                     <h2 className="text-lg font-bold text-brand-dark">Business Hours</h2>
@@ -25,7 +25,7 @@ export default function CalendarClient() {
                 </p>
                 <Link
                     href="/admin/business/profile"
-                    className="inline-flex items-center gap-2 bg-studio-blue text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-studio-blue/85 transition-colors"
+                    className="inline-flex items-center gap-2 bg-studio-blue text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-studio-blue/85 transition-colors"
                 >
                     Go to Business Profile
                     <ExternalLink size={15} />

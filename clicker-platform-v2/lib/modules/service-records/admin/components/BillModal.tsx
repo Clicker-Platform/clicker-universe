@@ -139,7 +139,7 @@ export default function BillModal({ siteId, record, approvedByEmail, onCompleted
 
     return (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-            <div className="bg-white dark:bg-neutral-900 rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="bg-white dark:bg-neutral-900 rounded-t-2xl sm:rounded-lg w-full sm:max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
                 {/* Header */}
                 <div className="sticky top-0 bg-white dark:bg-neutral-900 border-b border-gray-100 dark:border-neutral-800 px-6 py-4 rounded-t-2xl sm:rounded-t-2xl">
                     <h2 className="text-lg font-bold text-gray-900 dark:text-neutral-100">Finalize Service</h2>
@@ -169,14 +169,14 @@ export default function BillModal({ siteId, record, approvedByEmail, onCompleted
                                         value={item.label}
                                         onChange={e => updateLineItem(item._id, 'label', e.target.value)}
                                         placeholder="Description…"
-                                        className="flex-1 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-600 focus:ring-0 px-3 py-2 text-sm"
+                                        className="flex-1 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-600 focus:ring-0 px-3 py-2 text-sm"
                                     />
                                     <input
                                         type="number"
                                         value={item.amount || ''}
                                         onChange={e => updateLineItem(item._id, 'amount', parseFloat(e.target.value) || 0)}
                                         placeholder="0"
-                                        className="w-32 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-600 focus:ring-0 px-3 py-2 text-sm text-right"
+                                        className="w-32 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-600 focus:ring-0 px-3 py-2 text-sm text-right"
                                     />
                                     {lineItems.length > 1 && (
                                         <button
@@ -225,7 +225,7 @@ export default function BillModal({ siteId, record, approvedByEmail, onCompleted
                                                         : item
                                                 ));
                                             }}
-                                            className="flex-1 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-600 focus:ring-0 px-3 py-2 text-sm"
+                                            className="flex-1 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-600 focus:ring-0 px-3 py-2 text-sm"
                                         >
                                             <option value="">— Select item —</option>
                                             {inventoryItems.map(item => (
@@ -243,7 +243,7 @@ export default function BillModal({ siteId, record, approvedByEmail, onCompleted
                                                     ? { ...item, quantity: Math.max(1, parseInt(e.target.value) || 1) }
                                                     : item
                                             ))}
-                                            className="w-16 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-600 focus:ring-0 px-3 py-2 text-sm text-center"
+                                            className="w-16 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-600 focus:ring-0 px-3 py-2 text-sm text-center"
                                         />
                                         <button
                                             type="button"
@@ -268,7 +268,7 @@ export default function BillModal({ siteId, record, approvedByEmail, onCompleted
                             value={productUsed}
                             onChange={e => setProductUsed(e.target.value)}
                             placeholder="e.g. Ceramic Pro Gold 9H"
-                            className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-600 focus:ring-0 px-3 py-2 text-sm"
+                            className="w-full rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-600 focus:ring-0 px-3 py-2 text-sm"
                         />
                     </div>
 
@@ -282,7 +282,7 @@ export default function BillModal({ siteId, record, approvedByEmail, onCompleted
                             onChange={e => setNotes(e.target.value)}
                             rows={2}
                             placeholder="Internal notes…"
-                            className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-600 focus:ring-0 px-3 py-2 text-sm resize-none"
+                            className="w-full rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-600 focus:ring-0 px-3 py-2 text-sm resize-none"
                         />
                     </div>
 
@@ -299,7 +299,7 @@ export default function BillModal({ siteId, record, approvedByEmail, onCompleted
                                     max={120}
                                     value={warrantyMonths}
                                     onChange={e => setWarrantyMonths(parseInt(e.target.value) || 12)}
-                                    className="w-24 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-600 focus:ring-0 px-3 py-2 text-sm"
+                                    className="w-24 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-600 focus:ring-0 px-3 py-2 text-sm"
                                 />
                                 <span className="text-sm text-gray-500 dark:text-neutral-400">months</span>
                             </div>
@@ -317,7 +317,7 @@ export default function BillModal({ siteId, record, approvedByEmail, onCompleted
                                     min={0}
                                     value={amountPaid || ''}
                                     onChange={e => setAmountPaid(parseFloat(e.target.value) || 0)}
-                                    className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-600 focus:ring-0 px-3 py-2 text-sm"
+                                    className="w-full rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-600 focus:ring-0 px-3 py-2 text-sm"
                                 />
                             </div>
                             <div>
@@ -325,7 +325,7 @@ export default function BillModal({ siteId, record, approvedByEmail, onCompleted
                                 <select
                                     value={paymentMethod}
                                     onChange={e => setPaymentMethod(e.target.value as PaymentMethod | '')}
-                                    className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-600 focus:ring-0 px-3 py-2 text-sm"
+                                    className="w-full rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-600 focus:ring-0 px-3 py-2 text-sm"
                                 >
                                     <option value="">Select…</option>
                                     {PAYMENT_METHODS.map(m => (
@@ -335,7 +335,7 @@ export default function BillModal({ siteId, record, approvedByEmail, onCompleted
                             </div>
                         </div>
                         {/* Balance summary */}
-                        <div className={`rounded-xl px-4 py-3 text-sm flex justify-between items-center ${
+                        <div className={`rounded-lg px-4 py-3 text-sm flex justify-between items-center ${
                             balance <= 0
                                 ? 'bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-400'
                                 : 'bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400'
@@ -348,7 +348,7 @@ export default function BillModal({ siteId, record, approvedByEmail, onCompleted
                     </div>
 
                     {/* Consequence notice */}
-                    <div className="bg-gray-50 dark:bg-neutral-800 rounded-xl px-4 py-3 text-xs text-gray-500 dark:text-neutral-400 space-y-1">
+                    <div className="bg-gray-50 dark:bg-neutral-800 rounded-lg px-4 py-3 text-xs text-gray-500 dark:text-neutral-400 space-y-1">
                         <p className="font-semibold text-gray-700 dark:text-neutral-300">On completion:</p>
                         <p>✓ Service record will be marked COMPLETED</p>
                         {record.hasWarranty && <p>✓ Warranty card will be generated and sent</p>}
@@ -356,7 +356,7 @@ export default function BillModal({ siteId, record, approvedByEmail, onCompleted
                     </div>
 
                     {error && (
-                        <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 rounded-xl px-4 py-3">
+                        <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 rounded-lg px-4 py-3">
                             {error}
                         </p>
                     )}
@@ -368,7 +368,7 @@ export default function BillModal({ siteId, record, approvedByEmail, onCompleted
                         type="button"
                         onClick={onCancel}
                         disabled={submitting}
-                        className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-neutral-700 text-sm font-medium text-gray-700 dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-neutral-800 disabled:opacity-50"
+                        className="flex-1 px-4 py-2.5 rounded-lg border border-gray-200 dark:border-neutral-700 text-sm font-medium text-gray-700 dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-neutral-800 disabled:opacity-50"
                     >
                         Back
                     </button>
@@ -376,7 +376,7 @@ export default function BillModal({ siteId, record, approvedByEmail, onCompleted
                         type="button"
                         onClick={handleComplete}
                         disabled={submitting}
-                        className="flex-1 px-4 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white text-sm font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
+                        className="flex-1 px-4 py-2.5 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
                     >
                         {submitting ? (
                             <>

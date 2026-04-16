@@ -263,18 +263,18 @@ export default function AdminBookingWizard({
 
     if (step === 5) {
         return (
-            <div className="text-center p-8 bg-green-50 dark:bg-green-950/30 rounded-2xl border border-green-100 animate-in fade-in">
+            <div className="text-center p-8 bg-green-50 dark:bg-green-950/30 rounded-lg border border-green-100 animate-in fade-in">
                 <div className="w-16 h-16 bg-green-100 dark:bg-green-950/30 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Check size={32} strokeWidth={3} />
                 </div>
                 <h2 className="text-xl font-bold text-gray-900 dark:text-neutral-100 mb-2">Booking Confirmed!</h2>
-                <div className="bg-white dark:bg-neutral-900 p-4 rounded-xl border border-dashed border-green-200 inline-block text-left text-sm text-gray-500 dark:text-neutral-500 mb-6">
+                <div className="bg-white dark:bg-neutral-900 p-4 rounded-lg border border-dashed border-green-200 inline-block text-left text-sm text-gray-500 dark:text-neutral-500 mb-6">
                     <p>Reference: <span className="font-mono text-brand-dark">{bookingRef}</span></p>
                     <p>Date: <span className="font-bold text-brand-dark">{date.toLocaleDateString()} at {selectedTime}</span></p>
                 </div>
                 <button
                     onClick={onSuccess}
-                    className="block w-full py-3 bg-studio-blue text-white font-bold rounded-xl"
+                    className="block w-full py-3 bg-studio-blue text-white font-bold rounded-lg"
                 >
                     Close
                 </button>
@@ -319,7 +319,7 @@ export default function AdminBookingWizard({
                                 <button
                                     key={service.id}
                                     onClick={() => handleServiceSelect(service)}
-                                    className="w-full text-left p-4 rounded-xl border border-gray-100 dark:border-neutral-800 hover:border-brand-dark hover:shadow-md transition-all group"
+                                    className="w-full text-left p-4 rounded-lg border border-gray-100 dark:border-neutral-800 hover:border-brand-dark hover:shadow-md transition-all group"
                                 >
                                     <div className="flex justify-between items-start mb-1">
                                         <h3 className="font-bold text-brand-dark group-hover:text-brand-blue transition-colors">
@@ -343,7 +343,7 @@ export default function AdminBookingWizard({
                     <div className="space-y-3">
                         <button
                             onClick={() => handleStaffSelect(null)}
-                            className="w-full text-left p-4 rounded-xl border border-gray-100 dark:border-neutral-800 hover:border-brand-dark hover:shadow-md transition-all flex items-center gap-4"
+                            className="w-full text-left p-4 rounded-lg border border-gray-100 dark:border-neutral-800 hover:border-brand-dark hover:shadow-md transition-all flex items-center gap-4"
                         >
                             <div className="w-10 h-10 bg-gray-100 dark:bg-neutral-800 rounded-full flex items-center justify-center text-gray-400 dark:text-neutral-500">
                                 <User size={20} />
@@ -358,7 +358,7 @@ export default function AdminBookingWizard({
                             <button
                                 key={staff.id}
                                 onClick={() => handleStaffSelect(staff)}
-                                className="w-full text-left p-4 rounded-xl border border-gray-100 dark:border-neutral-800 hover:border-brand-dark hover:shadow-md transition-all flex items-center gap-4"
+                                className="w-full text-left p-4 rounded-lg border border-gray-100 dark:border-neutral-800 hover:border-brand-dark hover:shadow-md transition-all flex items-center gap-4"
                             >
                                 <div className="w-10 h-10 bg-brand-blue/10 text-brand-blue rounded-full flex items-center justify-center font-bold">
                                     {staff.name.charAt(0)}
@@ -381,7 +381,7 @@ export default function AdminBookingWizard({
                 {/* STEP 3: DATE & TIME */}
                 {step === 3 && (
                     <div>
-                        <div className="flex items-center justify-between mb-6 bg-gray-50 dark:bg-neutral-800/50 p-2 rounded-xl sticky top-0 z-10">
+                        <div className="flex items-center justify-between mb-6 bg-gray-50 dark:bg-neutral-800/50 p-2 rounded-lg sticky top-0 z-10">
                             <button onClick={() => handleDateChange(-1)} className="p-2 hover:bg-white dark:hover:bg-neutral-700 rounded-lg transition-colors">
                                 <ChevronLeft size={20} />
                             </button>
@@ -409,7 +409,7 @@ export default function AdminBookingWizard({
                                     <button
                                         key={time}
                                         onClick={() => handleTimeSelect(time)}
-                                        className={`py-3 rounded-xl text-sm font-bold border transition-all ${selectedTime === time
+                                        className={`py-3 rounded-lg text-sm font-bold border transition-all ${selectedTime === time
                                             ? 'bg-studio-blue text-white border-brand-dark scale-105 shadow-lg'
                                             : 'bg-white dark:bg-neutral-800 text-gray-600 dark:text-neutral-400 border-gray-200 dark:border-neutral-700 hover:border-brand-dark hover:text-brand-dark'
                                             }`}
@@ -423,7 +423,7 @@ export default function AdminBookingWizard({
                             <button
                                 disabled={!selectedTime}
                                 onClick={() => setStep(4)}
-                                className="w-full py-3 bg-studio-blue text-white font-bold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-studio-blue/85 transition-colors"
+                                className="w-full py-3 bg-studio-blue text-white font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-studio-blue/85 transition-colors"
                             >
                                 Continue
                             </button>
@@ -434,7 +434,7 @@ export default function AdminBookingWizard({
                 {/* STEP 4: DETAILS */}
                 {step === 4 && (
                     <form onSubmit={handleSubmit} className="space-y-4">
-                        <div className="bg-gray-50 dark:bg-neutral-800/50 p-4 rounded-xl mb-6 text-sm">
+                        <div className="bg-gray-50 dark:bg-neutral-800/50 p-4 rounded-lg mb-6 text-sm">
                             <div className="flex justify-between mb-1">
                                 <span className="text-gray-500 dark:text-neutral-500">Service:</span>
                                 <span className="font-bold text-brand-dark">{selectedService?.name}</span>
@@ -452,7 +452,7 @@ export default function AdminBookingWizard({
                         </div>
 
                         {/* Member Search */}
-                        <div className="bg-brand-blue/5 border border-brand-blue/20 p-4 rounded-xl mb-6 relative">
+                        <div className="bg-brand-blue/5 border border-brand-blue/20 p-4 rounded-lg mb-6 relative">
                             <h3 className="text-brand-dark font-bold mb-2 text-sm flex items-center gap-2">
                                 <Search size={16} /> Load Member (Walk-in)
                             </h3>
@@ -467,7 +467,7 @@ export default function AdminBookingWizard({
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-neutral-600" size={14} />
 
                                 {(searchResults?.length > 0) && (
-                                    <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-neutral-900 rounded-xl shadow-xl border border-gray-100 dark:border-neutral-800 z-50 max-h-[200px] overflow-y-auto">
+                                    <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-neutral-900 rounded-lg shadow-xl border border-gray-100 dark:border-neutral-800 z-50 max-h-[200px] overflow-y-auto">
                                         {searchResults.map((member: any) => (
                                             <button
                                                 key={member.id}
@@ -506,7 +506,7 @@ export default function AdminBookingWizard({
                                     type="text"
                                     value={customerInfo.name}
                                     onChange={e => setCustomerInfo({ ...customerInfo, name: e.target.value })}
-                                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
+                                    className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
                                     placeholder="Guest Name / Walk-in"
                                 />
                             </div>
@@ -519,7 +519,7 @@ export default function AdminBookingWizard({
                                     type="tel"
                                     value={customerInfo.phone}
                                     onChange={e => setCustomerInfo({ ...customerInfo, phone: e.target.value })}
-                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
+                                    className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
                                     placeholder="+62..."
                                 />
                             </div>
@@ -529,7 +529,7 @@ export default function AdminBookingWizard({
                                     type="email"
                                     value={customerInfo.email}
                                     onChange={e => setCustomerInfo({ ...customerInfo, email: e.target.value })}
-                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
+                                    className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
                                     placeholder="email@example.com"
                                 />
                             </div>
@@ -540,7 +540,7 @@ export default function AdminBookingWizard({
                             <textarea
                                 value={customerInfo.notes}
                                 onChange={e => setCustomerInfo({ ...customerInfo, notes: e.target.value })}
-                                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
+                                className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
                                 rows={2}
                                 placeholder="Any special notes?"
                             />
@@ -549,7 +549,7 @@ export default function AdminBookingWizard({
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full py-3 bg-studio-blue text-white font-bold rounded-xl mt-4 hover:bg-studio-blue/85 transition-colors flex items-center justify-center gap-2"
+                            className="w-full py-3 bg-studio-blue text-white font-bold rounded-lg mt-4 hover:bg-studio-blue/85 transition-colors flex items-center justify-center gap-2"
                         >
                             {loading && <Loader2 size={18} className="animate-spin" />}
                             {loading ? 'Confirming...' : 'Confirm Booking'}

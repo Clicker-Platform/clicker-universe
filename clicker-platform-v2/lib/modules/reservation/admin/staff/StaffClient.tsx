@@ -211,7 +211,7 @@ export default function StaffClient({ initialStaff }: StaffClientProps) {
             </button>
 
             {/* Global Settings Panel */}
-            <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-100 dark:border-neutral-800 shadow-sm p-5 mb-8">
+            <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-100 dark:border-neutral-800 p-5 mb-8">
                 <div className="flex items-center gap-2 mb-4 text-brand-dark">
                     <Settings size={20} className="stroke-[2.5px]" />
                     <h3 className="font-bold text-lg">Configuration</h3>
@@ -222,7 +222,7 @@ export default function StaffClient({ initialStaff }: StaffClientProps) {
                         <Loader2 size={16} className="animate-spin" /> Loading settings...
                     </div>
                 ) : (
-                    <label className="flex items-center justify-between p-3 rounded-xl border border-gray-200 dark:border-neutral-700 cursor-pointer hover:border-brand-dark transition-colors bg-gray-50/50 dark:bg-neutral-800/50 max-w-2xl">
+                    <label className="flex items-center justify-between p-3 rounded-lg border border-gray-200 dark:border-neutral-700 cursor-pointer hover:border-brand-dark transition-colors bg-gray-50/50 dark:bg-neutral-800/50 max-w-2xl">
                         <div>
                             <span className="block font-bold text-gray-800 dark:text-neutral-200">Allow {settings.staffLabel || 'Staff'} Selection</span>
                             <span className="text-sm text-gray-500 dark:text-neutral-500">Customers can explicitly choose a specific {(settings.staffLabel || 'Staff').toLowerCase()} during booking.</span>
@@ -249,13 +249,13 @@ export default function StaffClient({ initialStaff }: StaffClientProps) {
                         <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
                     </div>
                 ) : staffList.length === 0 ? (
-                    <div className="col-span-full text-center py-12 bg-gray-50 dark:bg-neutral-800/50 rounded-2xl border-2 border-dashed border-gray-200 dark:border-neutral-700">
+                    <div className="col-span-full text-center py-12 bg-gray-50 dark:bg-neutral-800/50 rounded-lg border-2 border-dashed border-gray-200 dark:border-neutral-700">
                         <p className="text-gray-500 dark:text-neutral-500 font-medium">No resources found.</p>
                         <button onClick={() => handleOpenModal()} className="text-brand-dark font-bold mt-2 hover:underline">Add your first one</button>
                     </div>
                 ) : (
                     staffList.map(member => (
-                        <div key={member.id} className="bg-white dark:bg-neutral-900 p-5 rounded-xl border border-gray-100 dark:border-neutral-800 shadow-sm hover:shadow-md transition-all group relative">
+                        <div key={member.id} className="bg-white dark:bg-neutral-900 p-5 rounded-lg border border-gray-100 dark:border-neutral-800 hover:shadow-md transition-all group relative">
                             <div className="flex items-start justify-between mb-4">
                                 <div className="flex items-center gap-4">
                                     <div className="w-12 h-12 bg-gray-50 dark:bg-neutral-800 rounded-full flex items-center justify-center text-gray-400 dark:text-neutral-600">
@@ -310,7 +310,7 @@ export default function StaffClient({ initialStaff }: StaffClientProps) {
             {/* Create/Edit Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-neutral-900 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                    <div className="bg-white dark:bg-neutral-900 rounded-lg w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                         <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-neutral-800">
                             <h2 className="text-xl font-bold text-brand-dark">
                                 {editingStaff ? 'Edit Resource' : 'Add New Resource'}
@@ -328,14 +328,14 @@ export default function StaffClient({ initialStaff }: StaffClientProps) {
                                     type="text"
                                     value={formData.name}
                                     onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
+                                    className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
                                     placeholder="e.g. Sarah Jones"
                                 />
                             </div>
 
                             <div>
                                 <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">Label (Tags)</label>
-                                <div className="w-full px-2 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 focus-within:border-brand-dark bg-white dark:bg-neutral-800 flex flex-wrap gap-2 items-center">
+                                <div className="w-full px-2 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 focus-within:border-brand-dark bg-white dark:bg-neutral-800 flex flex-wrap gap-2 items-center">
                                     {tags.map(tag => (
                                         <span key={tag} className="px-2 py-1 bg-brand-dark/10 text-brand-dark text-xs font-bold rounded-lg flex items-center gap-1">
                                             {tag}
@@ -376,14 +376,14 @@ export default function StaffClient({ initialStaff }: StaffClientProps) {
                                     type="button"
                                     disabled={isSubmitting}
                                     onClick={() => setIsModalOpen(false)}
-                                    className="flex-1 py-3 px-4 rounded-xl font-bold text-gray-600 dark:text-neutral-400 bg-gray-100 dark:bg-neutral-800 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors"
+                                    className="flex-1 py-3 px-4 rounded-lg font-bold text-gray-600 dark:text-neutral-400 bg-gray-100 dark:bg-neutral-800 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-studio-blue hover:bg-studio-blue/85 transition-colors flex items-center justify-center gap-2"
+                                    className="flex-1 py-3 px-4 rounded-lg font-bold text-white bg-studio-blue hover:bg-studio-blue/85 transition-colors flex items-center justify-center gap-2"
                                 >
                                     <Save size={18} />
                                     {isSubmitting ? 'Saving...' : 'Save Resource'}

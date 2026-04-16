@@ -237,7 +237,7 @@ export default function POSMenuClient({ initialItems = [] }: POSMenuClientProps)
             </button>
 
             {/* Unified Container */}
-            <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden flex flex-col min-h-[600px]">
+            <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 overflow-hidden flex flex-col min-h-[600px]">
                 {/* Header Controls */}
                 <div className="p-4 border-b border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 flex flex-col xl:flex-row gap-4 justify-between items-start xl:items-center">
                     {/* Category Filter */}
@@ -263,14 +263,14 @@ export default function POSMenuClient({ initialItems = [] }: POSMenuClientProps)
                         <div className="flex bg-gray-50 dark:bg-neutral-800/50 p-1 rounded-lg border border-gray-200 dark:border-neutral-800">
                             <button
                                 onClick={() => setViewMode('grid')}
-                                className={`p-2 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-neutral-900 text-brand-dark shadow-sm ring-1 ring-gray-200 dark:ring-neutral-700' : 'text-gray-400 dark:text-neutral-600 hover:text-gray-600 dark:hover:text-neutral-400'}`}
+                                className={`p-2 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-neutral-900 text-brand-dark ring-1 ring-gray-200 dark:ring-neutral-700' : 'text-gray-400 dark:text-neutral-600 hover:text-gray-600 dark:hover:text-neutral-400'}`}
                                 title="Grid View"
                             >
                                 <LayoutGrid size={18} />
                             </button>
                             <button
                                 onClick={() => setViewMode('list')}
-                                className={`p-2 rounded-md transition-all ${viewMode === 'list' ? 'bg-white dark:bg-neutral-900 text-brand-dark shadow-sm ring-1 ring-gray-200 dark:ring-neutral-700' : 'text-gray-400 dark:text-neutral-600 hover:text-gray-600 dark:hover:text-neutral-400'}`}
+                                className={`p-2 rounded-md transition-all ${viewMode === 'list' ? 'bg-white dark:bg-neutral-900 text-brand-dark ring-1 ring-gray-200 dark:ring-neutral-700' : 'text-gray-400 dark:text-neutral-600 hover:text-gray-600 dark:hover:text-neutral-400'}`}
                                 title="List View"
                             >
                                 <List size={18} />
@@ -347,8 +347,8 @@ export default function POSMenuClient({ initialItems = [] }: POSMenuClientProps)
 
                                 return (
                                     <div key={item.id} className={`
-                                    bg-white dark:bg-neutral-900 p-4 rounded-xl border transition-all duration-300 group relative overflow-hidden
-                                    ${!isActive ? 'opacity-70 border-gray-200 dark:border-neutral-800' : 'border-gray-200 dark:border-neutral-800 hover:border-brand-dark shadow-sm hover:shadow-md'}
+                                    bg-white dark:bg-neutral-900 p-4 rounded-lg border transition-all duration-300 group relative overflow-hidden
+                                    ${!isActive ? 'opacity-70 border-gray-200 dark:border-neutral-800' : 'border-gray-200 dark:border-neutral-800 hover:border-brand-dark hover:shadow-md'}
                                 `}>
                                         {!isActive && (
                                             <div className="absolute top-0 right-0 left-0 bg-gray-800/80 text-white text-xs font-bold py-1 z-10 text-center backdrop-blur-sm">
@@ -371,9 +371,9 @@ export default function POSMenuClient({ initialItems = [] }: POSMenuClientProps)
                                         </p>
 
                                         <div className="absolute top-3 right-3 flex flex-col gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <button onClick={() => handleEdit(item)} className="p-1.5 bg-white/90 backdrop-blur text-blue-600 rounded-md hover:bg-blue-600 hover:text-white transition-colors shadow-sm ring-1 ring-black/5"><Pencil size={14} /></button>
-                                            <button onClick={() => toggleItemVisibility(item)} className="p-1.5 bg-white/90 backdrop-blur text-gray-600 rounded-md hover:bg-gray-800 hover:text-white transition-colors shadow-sm ring-1 ring-black/5">{isActive ? <Eye size={14} /> : <EyeOff size={14} />}</button>
-                                            <button onClick={() => handleDeleteClick(item.id)} className="p-1.5 bg-white/90 backdrop-blur text-red-500 rounded-md hover:bg-red-500 hover:text-white transition-colors shadow-sm ring-1 ring-black/5"><Trash2 size={14} /></button>
+                                            <button onClick={() => handleEdit(item)} className="p-1.5 bg-white/90 backdrop-blur text-blue-600 rounded-md hover:bg-blue-600 hover:text-white transition-colors ring-1 ring-black/5"><Pencil size={14} /></button>
+                                            <button onClick={() => toggleItemVisibility(item)} className="p-1.5 bg-white/90 backdrop-blur text-gray-600 rounded-md hover:bg-gray-800 hover:text-white transition-colors ring-1 ring-black/5">{isActive ? <Eye size={14} /> : <EyeOff size={14} />}</button>
+                                            <button onClick={() => handleDeleteClick(item.id)} className="p-1.5 bg-white/90 backdrop-blur text-red-500 rounded-md hover:bg-red-500 hover:text-white transition-colors ring-1 ring-black/5"><Trash2 size={14} /></button>
                                         </div>
                                     </div>
                                 );

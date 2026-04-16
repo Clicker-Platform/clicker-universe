@@ -20,7 +20,7 @@ export const ButtonForm = ({ data, onChange }: ButtonFormProps) => {
                     type="text"
                     value={safeData.label || ''}
                     onChange={(e) => handleChange('label', e.target.value)}
-                    className="w-full px-4 py-2.5 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-600 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-medium"
+                    className="w-full px-4 py-2.5 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-lg text-sm text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-600 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-medium"
                     placeholder="Click Here"
                 />
             </div>
@@ -30,7 +30,7 @@ export const ButtonForm = ({ data, onChange }: ButtonFormProps) => {
                     type="text"
                     value={safeData.url || ''}
                     onChange={(e) => handleChange('url', e.target.value)}
-                    className="w-full px-4 py-2.5 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-600 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-mono"
+                    className="w-full px-4 py-2.5 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-lg text-sm text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-600 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-mono"
                     placeholder="https://..."
                 />
             </div>
@@ -39,7 +39,7 @@ export const ButtonForm = ({ data, onChange }: ButtonFormProps) => {
                 <select
                     value={safeData.variant || 'primary'}
                     onChange={(e) => handleChange('variant', e.target.value)}
-                    className="w-full px-4 py-2.5 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-medium appearance-none cursor-pointer"
+                    className="w-full px-4 py-2.5 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-lg text-sm text-neutral-900 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-medium appearance-none cursor-pointer"
                 >
                     <option value="primary">Solid (Brand)</option>
                     <option value="secondary">Secondary</option>
@@ -51,7 +51,7 @@ export const ButtonForm = ({ data, onChange }: ButtonFormProps) => {
                 <select
                     value={safeData.align || 'center'}
                     onChange={(e) => handleChange('align', e.target.value)}
-                    className="w-full px-4 py-2.5 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-medium appearance-none cursor-pointer"
+                    className="w-full px-4 py-2.5 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-lg text-sm text-neutral-900 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-medium appearance-none cursor-pointer"
                 >
                     <option value="left">Left</option>
                     <option value="center">Center</option>

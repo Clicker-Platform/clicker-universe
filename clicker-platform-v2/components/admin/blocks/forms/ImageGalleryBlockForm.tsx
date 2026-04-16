@@ -134,7 +134,7 @@ export const ImageGalleryBlockForm = ({ data, onChange }: ImageGalleryBlockFormP
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploading || images.length >= 10}
-                    className="flex items-center gap-2 text-xs font-bold text-neutral-900 dark:text-neutral-200 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 hover:bg-gray-200 dark:hover:bg-neutral-700 px-4 py-2 rounded-xl transition-all disabled:opacity-50 active:scale-95 shadow-sm"
+                    className="flex items-center gap-2 text-xs font-bold text-neutral-900 dark:text-neutral-200 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 hover:bg-gray-200 dark:hover:bg-neutral-700 px-4 py-2 rounded-lg transition-all disabled:opacity-50 active:scale-95"
                 >
                     {uploading ? <Loader2 size={14} className="animate-spin text-blue-500" /> : <Plus size={14} />}
                     Add Images
@@ -144,7 +144,7 @@ export const ImageGalleryBlockForm = ({ data, onChange }: ImageGalleryBlockFormP
             {images.length === 0 ? (
                 <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="border-2 border-dashed border-gray-200 dark:border-neutral-800 bg-gray-100/50 dark:bg-neutral-900/50 rounded-2xl p-10 flex flex-col items-center justify-center text-neutral-400 dark:text-neutral-500 cursor-pointer hover:border-gray-300 dark:hover:border-neutral-700 hover:bg-gray-100 dark:hover:bg-neutral-800/50 transition-all group"
+                    className="border-2 border-dashed border-gray-200 dark:border-neutral-800 bg-gray-100/50 dark:bg-neutral-900/50 rounded-lg p-10 flex flex-col items-center justify-center text-neutral-400 dark:text-neutral-500 cursor-pointer hover:border-gray-300 dark:hover:border-neutral-700 hover:bg-gray-100 dark:hover:bg-neutral-800/50 transition-all group"
                 >
                     <ImageIcon size={32} className="mb-3 opacity-30 group-hover:opacity-100 group-hover:text-blue-500 transition-all" />
                     <p className="text-sm font-bold text-neutral-400">Click to upload images</p>
@@ -153,7 +153,7 @@ export const ImageGalleryBlockForm = ({ data, onChange }: ImageGalleryBlockFormP
             ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                     {images.map((url, index) => (
-                        <div key={index} className="group relative aspect-square bg-gray-100 dark:bg-neutral-900 rounded-xl overflow-hidden border border-gray-200 dark:border-neutral-800 shadow-inner">
+                        <div key={index} className="group relative aspect-square bg-gray-100 dark:bg-neutral-900 rounded-lg overflow-hidden border border-gray-200 dark:border-neutral-800 shadow-inner">
                             <img
                                 src={thumbnails[index] || url}
                                 alt={`Gallery ${index + 1}`}

@@ -47,7 +47,7 @@ export const LinkBlockForm = ({ data, onChange }: LinkBlockFormProps) => {
     };
 
     if (loading) {
-        return <div className="flex justify-center p-8 bg-gray-100/30 dark:bg-neutral-900/30 rounded-2xl border border-gray-200/50 dark:border-neutral-800/50"><Loader2 className="animate-spin text-blue-500" /></div>;
+        return <div className="flex justify-center p-8 bg-gray-100/30 dark:bg-neutral-900/30 rounded-lg border border-gray-200/50 dark:border-neutral-800/50"><Loader2 className="animate-spin text-blue-500" /></div>;
     }
 
     return (
@@ -61,7 +61,7 @@ export const LinkBlockForm = ({ data, onChange }: LinkBlockFormProps) => {
                 <select
                     value={safeData.linkId || ''}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 bg-gray-50 dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl text-sm font-bold text-neutral-900 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none appearance-none cursor-pointer"
+                    className="w-full px-4 py-3 bg-gray-50 dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-lg text-sm font-bold text-neutral-900 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none appearance-none cursor-pointer"
                 >
                     <option value="" className="bg-gray-50 dark:bg-neutral-900 text-neutral-400">-- Select a Link --</option>
                     {links.map(link => (
@@ -73,7 +73,7 @@ export const LinkBlockForm = ({ data, onChange }: LinkBlockFormProps) => {
             </div>
 
             {links.length === 0 && (
-                <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
+                <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
                     <p className="text-xs font-bold text-red-400 leading-relaxed">
                         No links found. Please create some links in the "Links" menu first.
                     </p>

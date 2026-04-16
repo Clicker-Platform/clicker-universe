@@ -98,7 +98,7 @@ export const Toolbar = ({ editor }: ToolbarProps) => {
             }}
             title={title}
             className={`
-                p-2 rounded-xl transition-all active:scale-95
+                p-2 rounded-lg transition-all active:scale-95
                 ${isActive
                     ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20'
                     : 'text-neutral-400 dark:text-neutral-500 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-neutral-200'
@@ -227,7 +227,7 @@ export const Toolbar = ({ editor }: ToolbarProps) => {
                     disabled={uploading}
                     title="Upload Image"
                     className={`
-                        p-2 rounded-xl transition-all active:scale-95 text-neutral-400 dark:text-neutral-500 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-neutral-200 disabled:opacity-50
+                        p-2 rounded-lg transition-all active:scale-95 text-neutral-400 dark:text-neutral-500 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-neutral-200 disabled:opacity-50
                     `}
                 >
                     {uploading ? <Loader2 size={16} className="animate-spin text-blue-500" /> : <ImageIcon size={16} />}

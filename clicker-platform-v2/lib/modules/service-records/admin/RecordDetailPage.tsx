@@ -113,8 +113,8 @@ function RecordDetailContent() {
         return (
             <div className="animate-pulse space-y-4 max-w-3xl">
                 <div className="h-8 bg-gray-200 dark:bg-neutral-700 rounded w-64" />
-                <div className="h-40 bg-gray-200 dark:bg-neutral-700 rounded-2xl" />
-                <div className="h-40 bg-gray-200 dark:bg-neutral-700 rounded-2xl" />
+                <div className="h-40 bg-gray-200 dark:bg-neutral-700 rounded-lg" />
+                <div className="h-40 bg-gray-200 dark:bg-neutral-700 rounded-lg" />
             </div>
         );
     }
@@ -133,7 +133,7 @@ function RecordDetailContent() {
     return (
         <div className="max-w-3xl space-y-5">
             {toast && (
-                <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl text-sm font-medium shadow-lg ${
+                <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${
                     toast.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
                 }`}>
                     {toast.message}
@@ -142,7 +142,7 @@ function RecordDetailContent() {
 
             {/* Header */}
             <div className="flex items-center gap-3">
-                <button onClick={() => router.push('/admin/service-records/records')} className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-neutral-800 text-gray-500 dark:text-neutral-400">
+                <button onClick={() => router.push('/admin/service-records/records')} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-800 text-gray-500 dark:text-neutral-400">
                     <ChevronLeft className="w-5 h-5" />
                 </button>
                 <div className="flex-1">
@@ -158,7 +158,7 @@ function RecordDetailContent() {
 
             {/* Primary Action: Ready for Delivery */}
             {record.status === 'ACTIVE' && (
-                <div className="bg-white dark:bg-neutral-900 p-5 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm">
+                <div className="bg-white dark:bg-neutral-900 p-5 rounded-lg border border-gray-200 dark:border-neutral-800">
                     <div className="flex items-center justify-between flex-wrap gap-3">
                         <div>
                             <p className="text-sm font-semibold text-gray-800 dark:text-neutral-200">Car ready for delivery?</p>
@@ -170,7 +170,7 @@ function RecordDetailContent() {
                             <button
                                 onClick={() => setShowBillModal(true)}
                                 disabled={actionLoading}
-                                className="px-5 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white text-sm font-semibold disabled:opacity-50"
+                                className="px-5 py-2.5 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-semibold disabled:opacity-50"
                             >
                                 Ready for Delivery
                             </button>
@@ -178,7 +178,7 @@ function RecordDetailContent() {
                                 <button
                                     onClick={() => { setCancelReason(''); setShowCancelDialog(true); }}
                                     disabled={actionLoading}
-                                    className="px-4 py-2.5 rounded-xl border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-50 dark:hover:bg-red-950/30 disabled:opacity-50"
+                                    className="px-4 py-2.5 rounded-lg border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-50 dark:hover:bg-red-950/30 disabled:opacity-50"
                                 >
                                     Cancel
                                 </button>
@@ -190,12 +190,12 @@ function RecordDetailContent() {
 
             {/* Vehicle & Customer */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="bg-white dark:bg-neutral-900 p-5 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm">
+                <div className="bg-white dark:bg-neutral-900 p-5 rounded-lg border border-gray-200 dark:border-neutral-800">
                     <p className="text-xs font-medium text-gray-500 dark:text-neutral-500 mb-3">VEHICLE</p>
                     <p className="text-xl font-mono font-bold text-gray-900 dark:text-neutral-100">{record.vehiclePlate}</p>
                     <p className="text-sm text-gray-600 dark:text-neutral-400 mt-1">{record.memberName || '—'}</p>
                 </div>
-                <div className="bg-white dark:bg-neutral-900 p-5 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm">
+                <div className="bg-white dark:bg-neutral-900 p-5 rounded-lg border border-gray-200 dark:border-neutral-800">
                     <p className="text-xs font-medium text-gray-500 dark:text-neutral-500 mb-3">CUSTOMER</p>
                     {record.memberId ? (
                         <>
@@ -216,7 +216,7 @@ function RecordDetailContent() {
 
             {/* Booking source */}
             {record.bookingId && record.bookingSource === 'reservation' && (
-                <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/50 rounded-2xl p-4 flex items-center justify-between gap-3">
+                <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/50 rounded-lg p-4 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
                         <div className="w-8 h-8 bg-blue-100 dark:bg-blue-950/50 rounded-full flex items-center justify-center">
                             <ExternalLink size={15} className="text-blue-600 dark:text-blue-400" />
@@ -236,7 +236,7 @@ function RecordDetailContent() {
             )}
 
             {/* Service Details */}
-            <div className="bg-white dark:bg-neutral-900 p-5 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm space-y-3">
+            <div className="bg-white dark:bg-neutral-900 p-5 rounded-lg border border-gray-200 dark:border-neutral-800 space-y-3">
                 <p className="text-xs font-medium text-gray-500 dark:text-neutral-500">SERVICE</p>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
@@ -278,7 +278,7 @@ function RecordDetailContent() {
 
             {/* Payment — read-only, shown only after completion */}
             {record.status === 'COMPLETED' && (
-                <div className="bg-white dark:bg-neutral-900 p-5 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm">
+                <div className="bg-white dark:bg-neutral-900 p-5 rounded-lg border border-gray-200 dark:border-neutral-800">
                     <p className="text-xs font-medium text-gray-500 dark:text-neutral-500 mb-3">PAYMENT</p>
                     <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
@@ -309,7 +309,7 @@ function RecordDetailContent() {
 
             {/* Warranty Card */}
             {record.hasWarranty && (
-                <div className="bg-white dark:bg-neutral-900 p-5 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm">
+                <div className="bg-white dark:bg-neutral-900 p-5 rounded-lg border border-gray-200 dark:border-neutral-800">
                     <p className="text-xs font-medium text-gray-500 dark:text-neutral-500 mb-3">WARRANTY CARD</p>
 
                     {record.status !== 'COMPLETED' && !record.warrantyCardId && (
@@ -389,7 +389,7 @@ function RecordDetailContent() {
 
             {/* Completion info */}
             {record.status === 'COMPLETED' && record.approvedBy && (
-                <div className="bg-green-50 dark:bg-green-950/30 border border-green-100 dark:border-green-900/50 rounded-xl p-4 text-sm text-green-700 dark:text-green-400">
+                <div className="bg-green-50 dark:bg-green-950/30 border border-green-100 dark:border-green-900/50 rounded-lg p-4 text-sm text-green-700 dark:text-green-400">
                     <p className="font-medium flex items-center gap-1.5">
                         <CheckCircle className="w-4 h-4" /> Service Completed
                     </p>
@@ -401,7 +401,7 @@ function RecordDetailContent() {
 
             {/* Cancellation info */}
             {record.status === 'CANCELLED' && record.cancelReason && (
-                <div className="bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-900/50 rounded-xl p-4 text-sm text-red-700 dark:text-red-400">
+                <div className="bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-900/50 rounded-lg p-4 text-sm text-red-700 dark:text-red-400">
                     <p className="font-medium">Cancellation reason:</p>
                     <p className="mt-0.5">{record.cancelReason}</p>
                 </div>
@@ -446,7 +446,7 @@ function RecordDetailContent() {
                             value={voidConfirmText}
                             onChange={e => setVoidConfirmText(e.target.value.toUpperCase())}
                             placeholder="Type VOID"
-                            className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 focus:border-red-400 focus:ring-1 focus:ring-red-400 px-3 py-2 text-sm bg-white dark:bg-neutral-800 text-gray-900 dark:text-neutral-100"
+                            className="w-full rounded-lg border border-gray-200 dark:border-neutral-700 focus:border-red-400 focus:ring-1 focus:ring-red-400 px-3 py-2 text-sm bg-white dark:bg-neutral-800 text-gray-900 dark:text-neutral-100"
                             autoFocus
                         />
                     </div>
@@ -477,7 +477,7 @@ function RecordDetailContent() {
             {/* Cancel Dialog */}
             {showCancelDialog && (
                 <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-neutral-900 rounded-2xl w-full max-w-sm shadow-xl p-6 space-y-4">
+                    <div className="bg-white dark:bg-neutral-900 rounded-lg w-full max-w-sm shadow-xl p-6 space-y-4">
                         <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100">Cancel Record?</h2>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Reason *</label>
@@ -486,17 +486,17 @@ function RecordDetailContent() {
                                 onChange={e => setCancelReason(e.target.value)}
                                 rows={3}
                                 placeholder="Enter reason…"
-                                className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm resize-none"
+                                className="w-full rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm resize-none"
                             />
                         </div>
                         <div className="flex justify-end gap-3">
-                            <button onClick={() => setShowCancelDialog(false)} className="px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 text-sm font-medium text-gray-700 dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-neutral-800">
+                            <button onClick={() => setShowCancelDialog(false)} className="px-4 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 text-sm font-medium text-gray-700 dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-neutral-800">
                                 Back
                             </button>
                             <button
                                 onClick={handleCancel}
                                 disabled={!cancelReason.trim() || actionLoading}
-                                className="px-4 py-2 rounded-xl bg-red-600 text-white text-sm font-medium disabled:opacity-50"
+                                className="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-medium disabled:opacity-50"
                             >
                                 {actionLoading ? 'Cancelling…' : 'Confirm Cancel'}
                             </button>

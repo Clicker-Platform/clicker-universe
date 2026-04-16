@@ -67,7 +67,7 @@ export const RichTextEditor = ({ value, onChange, placeholder = 'Write something
 
     return (
         <div
-            className="bg-gray-50 dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 overflow-hidden focus-within:border-blue-500/50 transition-all shadow-lg"
+            className="bg-gray-50 dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 overflow-hidden focus-within:border-blue-500/50 transition-all shadow-lg"
             style={{
                 // Fallback variables for Admin Context where TemplateProvider is missing
                 ['--theme-foreground' as any]: '#e5e5e5', // neutral-200

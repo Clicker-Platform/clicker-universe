@@ -215,9 +215,9 @@ function RecordFormContent() {
         return (
             <div className="animate-pulse space-y-4 max-w-2xl">
                 <div className="h-8 bg-gray-200 dark:bg-neutral-700 rounded w-48" />
-                <div className="h-48 bg-gray-200 dark:bg-neutral-700 rounded-2xl" />
-                <div className="h-48 bg-gray-200 dark:bg-neutral-700 rounded-2xl" />
-                <div className="h-32 bg-gray-200 dark:bg-neutral-700 rounded-2xl" />
+                <div className="h-48 bg-gray-200 dark:bg-neutral-700 rounded-lg" />
+                <div className="h-48 bg-gray-200 dark:bg-neutral-700 rounded-lg" />
+                <div className="h-32 bg-gray-200 dark:bg-neutral-700 rounded-lg" />
             </div>
         );
     }
@@ -225,7 +225,7 @@ function RecordFormContent() {
     return (
         <div className="max-w-2xl space-y-5">
             {toast && (
-                <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl text-sm font-medium shadow-lg ${
+                <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${
                     toast.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
                 }`}>
                     {toast.message}
@@ -236,7 +236,7 @@ function RecordFormContent() {
             <div className="flex items-center gap-3">
                 <button
                     onClick={() => router.back()}
-                    className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-neutral-800 text-gray-500 dark:text-neutral-400"
+                    className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-800 text-gray-500 dark:text-neutral-400"
                 >
                     <ChevronLeft className="w-5 h-5" />
                 </button>
@@ -249,7 +249,7 @@ function RecordFormContent() {
             </div>
 
             {/* Section 1: Customer */}
-            <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm space-y-4">
+            <div className="bg-white dark:bg-neutral-900 p-6 rounded-lg border border-gray-200 dark:border-neutral-800 space-y-4">
                 <h2 className="text-base font-semibold text-gray-800 dark:text-neutral-200">Customer</h2>
 
                 {/* Member search (if membership module enabled) */}
@@ -264,10 +264,10 @@ function RecordFormContent() {
                                 value={memberSearch}
                                 onChange={e => handleMemberSearch(e.target.value)}
                                 placeholder="Type name or phone…"
-                                className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
+                                className="w-full rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
                             />
                             {memberResults.length > 0 && (
-                                <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-xl shadow-lg z-10 max-h-48 overflow-y-auto">
+                                <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto">
                                     {memberResults.map(m => (
                                         <button
                                             key={m.memberId}
@@ -283,7 +283,7 @@ function RecordFormContent() {
                             )}
                         </div>
                         {selectedMemberId && (
-                            <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50 rounded-xl p-3 text-sm">
+                            <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50 rounded-lg p-3 text-sm">
                                 <p className="font-semibold text-blue-700 dark:text-blue-400">{selectedMemberName}</p>
                                 <p className="text-blue-500 dark:text-blue-400/70 text-xs">{selectedMemberPhone}</p>
                                 <button
@@ -314,7 +314,7 @@ function RecordFormContent() {
                                     value={customerName}
                                     onChange={e => setCustomerName(e.target.value)}
                                     placeholder="Customer name"
-                                    className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
+                                    className="w-full rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
                                 />
                             </div>
                             <div>
@@ -324,7 +324,7 @@ function RecordFormContent() {
                                     value={customerPhone}
                                     onChange={e => setCustomerPhone(e.target.value)}
                                     placeholder="08xx-xxxx-xxxx"
-                                    className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
+                                    className="w-full rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
                                 />
                             </div>
                         </div>
@@ -335,7 +335,7 @@ function RecordFormContent() {
                                 value={customerEmail}
                                 onChange={e => setCustomerEmail(e.target.value)}
                                 placeholder="customer@email.com (optional)"
-                                className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
+                                className="w-full rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
                             />
                         </div>
                     </div>
@@ -343,7 +343,7 @@ function RecordFormContent() {
             </div>
 
             {/* Section 2: Vehicle */}
-            <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm space-y-4">
+            <div className="bg-white dark:bg-neutral-900 p-6 rounded-lg border border-gray-200 dark:border-neutral-800 space-y-4">
                 <h2 className="text-base font-semibold text-gray-800 dark:text-neutral-200">Vehicle</h2>
 
                 <div className="flex gap-2">
@@ -358,12 +358,12 @@ function RecordFormContent() {
                             setPlateWarning(null);
                         }}
                         placeholder="Plate number e.g. B2022XYZ"
-                        className="flex-1 font-mono rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
+                        className="flex-1 font-mono rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
                     />
                     <button
                         type="button"
                         onClick={handlePlateSearch}
-                        className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 text-sm font-medium hover:bg-gray-50 dark:hover:bg-neutral-800 dark:text-neutral-200"
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 text-sm font-medium hover:bg-gray-50 dark:hover:bg-neutral-800 dark:text-neutral-200"
                     >
                         <Search className="w-4 h-4" />
                         Look up
@@ -371,14 +371,14 @@ function RecordFormContent() {
                 </div>
 
                 {plateWarning && (
-                    <div className="flex items-start gap-1.5 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-900/50 rounded-xl p-3">
+                    <div className="flex items-start gap-1.5 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-900/50 rounded-lg p-3">
                         <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
                         {plateWarning}
                     </div>
                 )}
 
                 {vehicleLookupDone && foundVehicle && (
-                    <div className="bg-green-50 dark:bg-green-950/30 border border-green-100 dark:border-green-900/50 rounded-xl p-3 text-sm">
+                    <div className="bg-green-50 dark:bg-green-950/30 border border-green-100 dark:border-green-900/50 rounded-lg p-3 text-sm">
                         <p className="font-semibold text-green-700 dark:text-green-400">Vehicle found</p>
                         <p className="text-green-600 dark:text-green-500">
                             {foundVehicle.plateNumber}{foundVehicle.color && ` · ${foundVehicle.color}`}
@@ -387,7 +387,7 @@ function RecordFormContent() {
                 )}
 
                 {vehicleLookupDone && showNewVehicleFields && (
-                    <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50 rounded-xl p-4 space-y-3">
+                    <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50 rounded-lg p-4 space-y-3">
                         <p className="text-sm font-medium text-blue-700 dark:text-blue-400">
                             New vehicle — enter details to register.
                         </p>
@@ -398,7 +398,7 @@ function RecordFormContent() {
                             <select
                                 value={vehicleForm.carCatalogId}
                                 onChange={e => setVehicleForm(f => ({ ...f, carCatalogId: e.target.value }))}
-                                className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
+                                className="w-full rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
                             >
                                 <option value="">— Select car type —</option>
                                 {carCatalog.map(car => (
@@ -417,7 +417,7 @@ function RecordFormContent() {
                                 value={vehicleForm.color}
                                 onChange={e => setVehicleForm(f => ({ ...f, color: e.target.value }))}
                                 placeholder="e.g. Black, White, Silver"
-                                className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
+                                className="w-full rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
                             />
                         </div>
                     </div>
@@ -425,7 +425,7 @@ function RecordFormContent() {
             </div>
 
             {/* Section 3: Service Type */}
-            <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm space-y-4">
+            <div className="bg-white dark:bg-neutral-900 p-6 rounded-lg border border-gray-200 dark:border-neutral-800 space-y-4">
                 <h2 className="text-base font-semibold text-gray-800 dark:text-neutral-200">Service</h2>
                 <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">
@@ -437,7 +437,7 @@ function RecordFormContent() {
                             const type = serviceTypes.find(t => t.id === e.target.value) || null;
                             setSelectedServiceType(type);
                         }}
-                        className="w-full rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
+                        className="w-full rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm"
                     >
                         <option value="">Select service type…</option>
                         {serviceTypes.map(t => (
@@ -457,7 +457,7 @@ function RecordFormContent() {
                 <button
                     type="button"
                     onClick={() => router.back()}
-                    className="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-neutral-700 text-sm font-medium text-gray-700 dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-neutral-800"
+                    className="px-5 py-2.5 rounded-lg border border-gray-200 dark:border-neutral-700 text-sm font-medium text-gray-700 dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-neutral-800"
                 >
                     Cancel
                 </button>
@@ -465,7 +465,7 @@ function RecordFormContent() {
                     type="button"
                     onClick={handleSave}
                     disabled={submitting}
-                    className="bg-studio-blue text-white px-6 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-50"
+                    className="bg-studio-blue text-white px-6 py-2.5 rounded-lg text-sm font-semibold disabled:opacity-50"
                 >
                     {submitting ? 'Creating…' : 'Create Service Record'}
                 </button>

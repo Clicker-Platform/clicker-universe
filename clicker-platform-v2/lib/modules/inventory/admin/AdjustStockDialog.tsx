@@ -48,7 +48,7 @@ export function AdjustStockDialog({ isOpen, onClose, item, onConfirm }: AdjustSt
 
     const formContent = (
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
-            <div className="p-5 bg-gray-50 dark:bg-neutral-800/50 rounded-xl text-center border border-gray-100 dark:border-neutral-800">
+            <div className="p-5 bg-gray-50 dark:bg-neutral-800/50 rounded-lg text-center border border-gray-100 dark:border-neutral-800">
                 <span className="text-gray-500 dark:text-neutral-500 text-xs uppercase font-bold tracking-wider">Current Stock</span>
                 <div className="text-4xl font-black text-brand-dark mt-1">{item.currentStock}</div>
                 <div className="text-sm font-medium text-gray-400 dark:text-neutral-600 mt-1">{item.unit}</div>
@@ -59,7 +59,7 @@ export function AdjustStockDialog({ isOpen, onClose, item, onConfirm }: AdjustSt
                 <input
                     type="number"
                     required
-                    className="w-full border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 p-3 rounded-xl text-lg font-mono focus:ring-2 focus:ring-brand-dark/10 focus:border-brand-dark outline-none transition-all"
+                    className="w-full border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 p-3 rounded-lg text-lg font-mono focus:ring-2 focus:ring-brand-dark/10 focus:border-brand-dark outline-none transition-all"
                     value={adjustQuantity}
                     onChange={e => setAdjustQuantity(e.target.value === '' ? 0 : parseInt(e.target.value))}
                     placeholder="e.g. 10 or -5"
@@ -89,7 +89,7 @@ export function AdjustStockDialog({ isOpen, onClose, item, onConfirm }: AdjustSt
             <button
                 type="submit"
                 disabled={isSubmitting || adjustQuantity === 0}
-                className={`w-full text-white py-3 rounded-xl font-bold mt-2 transition-all transform active:scale-[0.98] ${isSubmitting || adjustQuantity === 0
+                className={`w-full text-white py-3 rounded-lg font-bold mt-2 transition-all transform active:scale-[0.98] ${isSubmitting || adjustQuantity === 0
                         ? 'bg-gray-400 dark:bg-neutral-600 cursor-not-allowed'
                         : 'bg-studio-blue hover:bg-studio-blue/85 shadow-md hover:shadow-lg'
                     }`}
@@ -116,7 +116,7 @@ export function AdjustStockDialog({ isOpen, onClose, item, onConfirm }: AdjustSt
 
     return (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-neutral-900 rounded-2xl w-full max-w-md shadow-xl overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="bg-white dark:bg-neutral-900 rounded-lg w-full max-w-md shadow-xl overflow-hidden animate-in zoom-in-95 duration-200">
                 <div className="px-6 py-4 border-b border-gray-100 dark:border-neutral-800 flex justify-between items-center bg-gray-50 dark:bg-neutral-800/50">
                     <h3 className="font-bold text-lg text-gray-800 dark:text-neutral-200">Adjust Stock: {item.name}</h3>
                     <button

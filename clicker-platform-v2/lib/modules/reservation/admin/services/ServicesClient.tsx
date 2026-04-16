@@ -51,7 +51,7 @@ export default function ServicesClient({ initialServices = [] }: ServicesClientP
             </div>
 
             {/* Info banner */}
-            <div className="mb-5 px-4 py-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-xl text-sm text-blue-700 dark:text-blue-300 font-medium">
+            <div className="mb-5 px-4 py-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg text-sm text-blue-700 dark:text-blue-300 font-medium">
                 Showing services marked as <strong>bookable</strong> from the shared catalog. To add, edit, or remove services, use the{' '}
                 <Link href="/admin/services" className="underline underline-offset-2 hover:text-blue-900">
                     Services Catalog
@@ -59,7 +59,7 @@ export default function ServicesClient({ initialServices = [] }: ServicesClientP
             </div>
 
             {/* Services container */}
-            <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden flex flex-col min-h-[500px]">
+            <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 overflow-hidden flex flex-col min-h-[500px]">
                 {/* Header Controls */}
                 <div className="p-4 border-b border-gray-100 dark:border-neutral-800 flex flex-col md:flex-row gap-4">
                     <div className="relative flex-1">
@@ -76,7 +76,7 @@ export default function ServicesClient({ initialServices = [] }: ServicesClientP
                         <button
                             onClick={() => setViewMode('list')}
                             className={`p-1.5 rounded-md transition-all flex items-center gap-2 px-3 text-sm ${viewMode === 'list'
-                                ? 'bg-white dark:bg-neutral-700 text-brand-dark shadow-sm font-bold border border-gray-100 dark:border-neutral-600'
+                                ? 'bg-white dark:bg-neutral-700 text-brand-dark font-bold border border-gray-100 dark:border-neutral-600'
                                 : 'text-gray-500 dark:text-neutral-500 hover:text-gray-700 dark:hover:text-neutral-300 font-medium'
                             }`}
                         >
@@ -85,7 +85,7 @@ export default function ServicesClient({ initialServices = [] }: ServicesClientP
                         <button
                             onClick={() => setViewMode('grid')}
                             className={`p-1.5 rounded-md transition-all flex items-center gap-2 px-3 text-sm ${viewMode === 'grid'
-                                ? 'bg-white dark:bg-neutral-700 text-brand-dark shadow-sm font-bold border border-gray-100 dark:border-neutral-600'
+                                ? 'bg-white dark:bg-neutral-700 text-brand-dark font-bold border border-gray-100 dark:border-neutral-600'
                                 : 'text-gray-500 dark:text-neutral-500 hover:text-gray-700 dark:hover:text-neutral-300 font-medium'
                             }`}
                         >
@@ -122,7 +122,7 @@ export default function ServicesClient({ initialServices = [] }: ServicesClientP
                             </p>
                             <Link
                                 href="/admin/services"
-                                className="inline-flex items-center gap-2 bg-studio-blue text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-studio-blue/85 transition-all"
+                                className="inline-flex items-center gap-2 bg-studio-blue text-white px-5 py-2.5 rounded-lg font-bold text-sm hover:bg-studio-blue/85 transition-all"
                             >
                                 <ExternalLink size={16} /> Go to Services Catalog
                             </Link>
@@ -178,7 +178,7 @@ export default function ServicesClient({ initialServices = [] }: ServicesClientP
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {filteredServices.map(service => (
-                                <div key={service.id} className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 p-5 shadow-sm hover:shadow-md transition-all hover:border-brand-dark/20">
+                                <div key={service.id} className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 p-5 hover:shadow-md transition-all hover:border-brand-dark/20">
                                     <div className="mb-3">
                                         <h3 className="text-lg font-semibold text-gray-900 dark:text-neutral-100 leading-tight">{service.name}</h3>
                                         <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-neutral-500 bg-gray-100 dark:bg-neutral-800 px-2 py-0.5 rounded-md inline-block mt-2">

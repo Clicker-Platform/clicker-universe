@@ -334,7 +334,7 @@ export function HeaderNavPanel() {
     if (loading) {
         return (
             <div className="space-y-3 animate-pulse">
-                <div className="h-16 bg-gray-100 dark:bg-neutral-800 rounded-xl" />
+                <div className="h-16 bg-gray-100 dark:bg-neutral-800 rounded-lg" />
                 <div className="h-10 bg-gray-100 dark:bg-neutral-800 rounded-lg" />
                 <div className="h-10 bg-gray-100 dark:bg-neutral-800 rounded-lg" />
             </div>
@@ -344,7 +344,7 @@ export function HeaderNavPanel() {
     return (
         <div className="space-y-5 animate-fade-in">
             {/* Global Badge */}
-            <div className="bg-blue-500/10 rounded-xl p-4 border border-blue-500/20 flex items-center gap-3 shadow-sm">
+            <div className="bg-blue-500/10 rounded-lg p-4 border border-blue-500/20 flex items-center gap-3">
                 <div className="w-10 h-10 bg-gray-100 dark:bg-neutral-800 rounded-full flex items-center justify-center shadow-lg text-blue-400">
                     <Globe size={20} />
                 </div>

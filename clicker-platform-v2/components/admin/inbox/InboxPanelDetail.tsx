@@ -146,7 +146,7 @@ export const InboxPanelDetail = memo(function InboxPanelDetail({
                                 <div key={key}>
                                     <p className="text-[11px] font-bold text-gray-400 dark:text-neutral-500 uppercase mb-1">{label}</p>
                                     {isImage ? (
-                                        <div className="group relative rounded-xl overflow-hidden border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-900">
+                                        <div className="group relative rounded-lg overflow-hidden border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-900">
                                             <img src={stringValue} alt={label} className="w-full h-auto object-cover max-h-[240px]" />
                                             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
                                                 <a

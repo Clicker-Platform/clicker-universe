@@ -219,14 +219,14 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
                     <div className="flex bg-gray-100 dark:bg-neutral-800 p-1 rounded-lg border border-gray-200 dark:border-neutral-700">
                         <button
                             onClick={() => setViewMode('grid')}
-                            className={`p-2 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-neutral-900 text-brand-dark shadow-sm' : 'text-gray-400 dark:text-neutral-600 hover:text-gray-600 dark:hover:text-neutral-300'}`}
+                            className={`p-2 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-neutral-900 text-brand-dark' : 'text-gray-400 dark:text-neutral-600 hover:text-gray-600 dark:hover:text-neutral-300'}`}
                             title="Grid View"
                         >
                             <LayoutGrid size={20} />
                         </button>
                         <button
                             onClick={() => setViewMode('list')}
-                            className={`p-2 rounded-md transition-all ${viewMode === 'list' ? 'bg-white dark:bg-neutral-900 text-brand-dark shadow-sm' : 'text-gray-400 dark:text-neutral-600 hover:text-gray-600 dark:hover:text-neutral-300'}`}
+                            className={`p-2 rounded-md transition-all ${viewMode === 'list' ? 'bg-white dark:bg-neutral-900 text-brand-dark' : 'text-gray-400 dark:text-neutral-600 hover:text-gray-600 dark:hover:text-neutral-300'}`}
                             title="List View"
                         >
                             <List size={20} />
@@ -247,7 +247,7 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
 
             {/* Settings Panel */}
             {showSettings && (
-                <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm mb-8 animate-in slide-in-from-top-2">
+                <div className="bg-white dark:bg-neutral-900 p-6 rounded-lg border border-gray-200 dark:border-neutral-800 mb-8 animate-in slide-in-from-top-2">
                     <h2 className="text-lg font-bold text-brand-dark mb-4">Gallery Settings</h2>
                     <div className="space-y-4">
                         <div>
@@ -398,7 +398,7 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
                         <button
                             onClick={saveSettings}
                             disabled={isSavingSettings}
-                            className="bg-studio-blue text-white px-8 py-3 rounded-xl font-bold hover:bg-studio-blue/85 transition-colors disabled:opacity-50 shadow-lg"
+                            className="bg-studio-blue text-white px-8 py-3 rounded-lg font-bold hover:bg-studio-blue/85 transition-colors disabled:opacity-50 shadow-lg"
                         >
                             {isSavingSettings ? 'Saving Changes...' : 'Save All Settings'}
                         </button>
@@ -422,8 +422,8 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
                     if (viewMode === 'list') {
                         return (
                             <div key={product.id} className={`
-                                bg-white dark:bg-neutral-900 p-4 rounded-xl border transition-all duration-300 group flex flex-col md:flex-row md:items-center gap-4
-                                ${isFeatured ? 'border border-yellow-300 shadow-sm' : 'border-gray-200 dark:border-neutral-800'}
+                                bg-white dark:bg-neutral-900 p-4 rounded-lg border transition-all duration-300 group flex flex-col md:flex-row md:items-center gap-4
+                                ${isFeatured ? 'border border-yellow-300' : 'border-gray-200 dark:border-neutral-800'}
                                 ${!isActive ? 'opacity-60 bg-gray-50 dark:bg-neutral-800/50' : ''}
                             `}>
                                 <div className="flex items-start gap-4 flex-1 w-full">
@@ -497,8 +497,8 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
 
                     return (
                         <div key={product.id} className={`
-                            bg-white dark:bg-neutral-900 p-4 rounded-xl border transition-all duration-300 group relative overflow-hidden
-                            ${isFeatured ? 'border border-yellow-300 shadow-sm' : 'border-gray-200 dark:border-neutral-800'}
+                            bg-white dark:bg-neutral-900 p-4 rounded-lg border transition-all duration-300 group relative overflow-hidden
+                            ${isFeatured ? 'border border-yellow-300' : 'border-gray-200 dark:border-neutral-800'}
                             ${!isActive ? 'opacity-70' : ''}
                         `}>
 
@@ -537,28 +537,28 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
                             <div className="absolute top-3 right-2 flex flex-col gap-2">
                                 <button
                                     onClick={() => handleEdit(product)}
-                                    className="p-2 bg-white/90 backdrop-blur text-blue-500 rounded-lg hover:bg-blue-500 hover:text-white transition-colors shadow-sm"
+                                    className="p-2 bg-white/90 backdrop-blur text-blue-500 rounded-lg hover:bg-blue-500 hover:text-white transition-colors"
                                     title="Edit Product"
                                 >
                                     <Pencil size={18} />
                                 </button>
                                 <button
                                     onClick={() => toggleProductVisibility(product)}
-                                    className="p-2 bg-white/90 backdrop-blur text-gray-600 rounded-lg hover:bg-gray-800 hover:text-white transition-colors shadow-sm"
+                                    className="p-2 bg-white/90 backdrop-blur text-gray-600 rounded-lg hover:bg-gray-800 hover:text-white transition-colors"
                                     title={isActive ? "Hide Product" : "Show Product"}
                                 >
                                     {isActive ? <Eye size={18} /> : <EyeOff size={18} />}
                                 </button>
                                 <button
                                     onClick={() => handleSetFeatured(product)}
-                                    className={`p-2 bg-white/90 backdrop-blur rounded-lg transition-colors shadow-sm ${isFeatured ? 'text-yellow-500' : 'text-gray-400 hover:text-yellow-500'}`}
+                                    className={`p-2 bg-white/90 backdrop-blur rounded-lg transition-colors ${isFeatured ? 'text-yellow-500' : 'text-gray-400 hover:text-yellow-500'}`}
                                     title="Set as Featured"
                                 >
                                     <Star size={18} fill={isFeatured ? "currentColor" : "none"} />
                                 </button>
                                 <button
                                     onClick={() => handleDeleteClick(product.id)}
-                                    className="p-2 bg-white/90 backdrop-blur text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-colors shadow-sm"
+                                    className="p-2 bg-white/90 backdrop-blur text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-colors"
                                     title="Delete Product"
                                 >
                                     <Trash2 size={18} />

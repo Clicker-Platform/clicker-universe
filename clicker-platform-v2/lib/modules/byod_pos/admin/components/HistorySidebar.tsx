@@ -106,7 +106,7 @@ export function HistorySidebar({ isOpen, onClose, group }: HistorySidebarProps) 
                     {group ? (
                         <div className="space-y-8">
                             {/* Bill Summary Card */}
-                            <div className="bg-gray-50 dark:bg-neutral-800/50 rounded-2xl p-6 border border-gray-100 dark:border-neutral-800">
+                            <div className="bg-gray-50 dark:bg-neutral-800/50 rounded-lg p-6 border border-gray-100 dark:border-neutral-800">
                                 <div className="flex justify-between items-start mb-6">
                                     <div>
                                         <h3 className="text-2xl font-black text-gray-900 dark:text-neutral-100 mb-1">{group.label}</h3>
@@ -173,7 +173,7 @@ export function HistorySidebar({ isOpen, onClose, group }: HistorySidebarProps) 
                                 {/* Payment Methods Used */}
                                 <div className="space-y-2">
                                     {Array.from(new Set(group.orders.map(o => o.paymentMethod).filter(Boolean))).map(method => (
-                                        <div key={method} className="flex items-center gap-2 text-sm text-gray-600 dark:text-neutral-400 bg-white dark:bg-neutral-900 p-2 rounded-lg border border-gray-100 dark:border-neutral-800 shadow-sm">
+                                        <div key={method} className="flex items-center gap-2 text-sm text-gray-600 dark:text-neutral-400 bg-white dark:bg-neutral-900 p-2 rounded-lg border border-gray-100 dark:border-neutral-800">
                                             <CreditCard size={16} />
                                             <span className="capitalize">Paid via {method}</span>
                                         </div>
@@ -190,7 +190,7 @@ export function HistorySidebar({ isOpen, onClose, group }: HistorySidebarProps) 
 
                                 <div className="space-y-4">
                                     {group.orders.map((order, idx) => (
-                                        <div key={order.id} className="border border-gray-100 dark:border-neutral-800 rounded-xl overflow-hidden">
+                                        <div key={order.id} className="border border-gray-100 dark:border-neutral-800 rounded-lg overflow-hidden">
                                             <div className="bg-gray-50/50 dark:bg-neutral-800/50 p-3 flex justify-between items-center text-xs text-gray-500 dark:text-neutral-500 border-b border-gray-100 dark:border-neutral-800">
                                                 <div className="flex items-center gap-2">
                                                     <span className="font-mono bg-white dark:bg-neutral-900 px-1.5 py-0.5 rounded border border-gray-200 dark:border-neutral-700">#{order.id.slice(-4)}</span>

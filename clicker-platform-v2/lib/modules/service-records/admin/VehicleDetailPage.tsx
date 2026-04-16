@@ -89,9 +89,9 @@ function MemberPanel({ memberId, siteId, onClose, onOpenFullPage }: MemberPanelP
 
                 {loading ? (
                     <div className="flex-1 p-5 space-y-4 animate-pulse">
-                        <div className="h-20 bg-gray-100 dark:bg-neutral-800 rounded-2xl" />
-                        <div className="h-32 bg-gray-100 dark:bg-neutral-800 rounded-2xl" />
-                        <div className="h-48 bg-gray-100 dark:bg-neutral-800 rounded-2xl" />
+                        <div className="h-20 bg-gray-100 dark:bg-neutral-800 rounded-lg" />
+                        <div className="h-32 bg-gray-100 dark:bg-neutral-800 rounded-lg" />
+                        <div className="h-48 bg-gray-100 dark:bg-neutral-800 rounded-lg" />
                     </div>
                 ) : !member ? (
                     <div className="flex-1 flex items-center justify-center text-sm text-gray-400 dark:text-neutral-500">
@@ -114,17 +114,17 @@ function MemberPanel({ memberId, siteId, onClose, onOpenFullPage }: MemberPanelP
 
                             {/* Stats */}
                             <div className="mt-4 grid grid-cols-3 gap-3">
-                                <div className="bg-gray-50 dark:bg-neutral-800 rounded-xl p-3 text-center">
+                                <div className="bg-gray-50 dark:bg-neutral-800 rounded-lg p-3 text-center">
                                     <p className="text-[10px] uppercase tracking-wide text-gray-500 dark:text-neutral-500 font-medium">Points</p>
                                     <p className="text-lg font-bold text-indigo-600 dark:text-indigo-400 mt-0.5">{member.currentPoints.toLocaleString()}</p>
                                 </div>
-                                <div className="bg-gray-50 dark:bg-neutral-800 rounded-xl p-3 text-center">
+                                <div className="bg-gray-50 dark:bg-neutral-800 rounded-lg p-3 text-center">
                                     <p className="text-[10px] uppercase tracking-wide text-gray-500 dark:text-neutral-500 font-medium">Spent</p>
                                     <p className="text-sm font-bold text-gray-900 dark:text-neutral-100 mt-0.5">
                                         {new Intl.NumberFormat('id-ID', { notation: 'compact' }).format(member.totalSpent || 0)}
                                     </p>
                                 </div>
-                                <div className="bg-gray-50 dark:bg-neutral-800 rounded-xl p-3 text-center">
+                                <div className="bg-gray-50 dark:bg-neutral-800 rounded-lg p-3 text-center">
                                     <p className="text-[10px] uppercase tracking-wide text-gray-500 dark:text-neutral-500 font-medium">Visits</p>
                                     <p className="text-lg font-bold text-gray-900 dark:text-neutral-100 mt-0.5">{member.totalTransactions || 0}</p>
                                 </div>
@@ -216,8 +216,8 @@ function VehicleDetailContent() {
             <div className="space-y-4 max-w-3xl">
                 <div className="animate-pulse space-y-4">
                     <div className="h-8 bg-gray-200 dark:bg-neutral-700 rounded w-40" />
-                    <div className="h-32 bg-gray-200 dark:bg-neutral-700 rounded-2xl" />
-                    <div className="h-48 bg-gray-200 dark:bg-neutral-700 rounded-2xl" />
+                    <div className="h-32 bg-gray-200 dark:bg-neutral-700 rounded-lg" />
+                    <div className="h-48 bg-gray-200 dark:bg-neutral-700 rounded-lg" />
                 </div>
             </div>
         );
@@ -255,9 +255,9 @@ function VehicleDetailContent() {
             </button>
 
             {/* Vehicle header */}
-            <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm p-6">
+            <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 p-6">
                 <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-gray-100 dark:bg-neutral-800 flex items-center justify-center flex-shrink-0">
+                    <div className="w-12 h-12 rounded-lg bg-gray-100 dark:bg-neutral-800 flex items-center justify-center flex-shrink-0">
                         <Car className="w-6 h-6 text-gray-500 dark:text-neutral-400" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -293,7 +293,7 @@ function VehicleDetailContent() {
 
             {/* Customer */}
             {memberName && (
-                <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm p-5">
+                <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 p-5">
                     <h2 className="text-sm font-semibold text-gray-500 dark:text-neutral-500 uppercase tracking-wide mb-3">Customer</h2>
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
@@ -318,7 +318,7 @@ function VehicleDetailContent() {
             )}
 
             {/* Service history */}
-            <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden">
+            <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 overflow-hidden">
                 <div className="px-5 py-4 border-b border-gray-100 dark:border-neutral-800">
                     <h2 className="text-sm font-semibold text-gray-500 dark:text-neutral-500 uppercase tracking-wide">Service History</h2>
                 </div>

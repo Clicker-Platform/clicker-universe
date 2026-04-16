@@ -40,8 +40,8 @@ function StatCard({
     color?: string;
 }) {
     return (
-        <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 p-5 shadow-sm flex gap-4 items-start">
-            <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-neutral-800 shrink-0">
+        <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 p-5 flex gap-4 items-start">
+            <div className="p-2.5 rounded-lg bg-gray-50 dark:bg-neutral-800 shrink-0">
                 <Icon className="w-5 h-5 text-gray-500 dark:text-neutral-400" />
             </div>
             <div className="min-w-0">
@@ -55,7 +55,7 @@ function StatCard({
 
 function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
     return (
-        <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 overflow-hidden">
             <div className="px-5 py-3.5 border-b border-gray-100 dark:border-neutral-800">
                 <h3 className="text-sm font-semibold text-gray-700 dark:text-neutral-300">{title}</h3>
             </div>
@@ -87,12 +87,12 @@ function Skeleton() {
         <div className="space-y-4 animate-pulse">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {[1,2,3,4].map(i => (
-                    <div key={i} className="h-28 rounded-2xl bg-gray-100 dark:bg-neutral-800" />
+                    <div key={i} className="h-28 rounded-lg bg-gray-100 dark:bg-neutral-800" />
                 ))}
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {[1,2,3,4].map(i => (
-                    <div key={i} className="h-56 rounded-2xl bg-gray-100 dark:bg-neutral-800" />
+                    <div key={i} className="h-56 rounded-lg bg-gray-100 dark:bg-neutral-800" />
                 ))}
             </div>
         </div>
@@ -190,14 +190,14 @@ export default function ReportsPage() {
                     <button
                         onClick={handleExport}
                         disabled={loading || !records.length}
-                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-gray-200 dark:border-neutral-700 text-sm font-medium text-gray-700 dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-neutral-800 disabled:opacity-40"
+                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 text-sm font-medium text-gray-700 dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-neutral-800 disabled:opacity-40"
                     >
                         <Download className="w-4 h-4" />
                         Export CSV
                     </button>
                     <button
                         onClick={() => window.print()}
-                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-black text-sm font-medium hover:bg-gray-700 dark:hover:bg-neutral-100"
+                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-gray-900 dark:bg-white text-white dark:text-black text-sm font-medium hover:bg-gray-700 dark:hover:bg-neutral-100"
                     >
                         <Printer className="w-4 h-4" />
                         Print
@@ -208,14 +208,14 @@ export default function ReportsPage() {
             {/* ── Toolbar ── */}
             <div className="flex flex-col sm:flex-row gap-3 print:hidden">
                 {/* Period tabs */}
-                <div className="flex items-center gap-1 bg-gray-100 dark:bg-neutral-800 rounded-xl p-1">
+                <div className="flex items-center gap-1 bg-gray-100 dark:bg-neutral-800 rounded-lg p-1">
                     {(['daily', 'weekly', 'monthly'] as const).map(tab => (
                         <button
                             key={tab}
                             onClick={() => setActiveTab(tab)}
                             className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                                 activeTab === tab
-                                    ? 'bg-white dark:bg-neutral-700 text-gray-900 dark:text-neutral-100 shadow-sm'
+                                    ? 'bg-white dark:bg-neutral-700 text-gray-900 dark:text-neutral-100'
                                     : 'text-gray-500 dark:text-neutral-400 hover:text-gray-700 dark:hover:text-neutral-200'
                             }`}
                         >
@@ -231,7 +231,7 @@ export default function ReportsPage() {
                             type="date"
                             value={selectedDate}
                             onChange={e => setSelectedDate(e.target.value)}
-                            className="rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 px-3 py-2 text-sm focus:ring-0"
+                            className="rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 px-3 py-2 text-sm focus:ring-0"
                         />
                     )}
                     {activeTab === 'weekly' && (
@@ -239,7 +239,7 @@ export default function ReportsPage() {
                             type="date"
                             value={selectedWeekStart}
                             onChange={e => setSelectedWeekStart(e.target.value)}
-                            className="rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 px-3 py-2 text-sm focus:ring-0"
+                            className="rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 px-3 py-2 text-sm focus:ring-0"
                         />
                     )}
                     {activeTab === 'monthly' && (
@@ -247,7 +247,7 @@ export default function ReportsPage() {
                             type="month"
                             value={selectedMonth}
                             onChange={e => setSelectedMonth(e.target.value)}
-                            className="rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 px-3 py-2 text-sm focus:ring-0"
+                            className="rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 px-3 py-2 text-sm focus:ring-0"
                         />
                     )}
                 </div>
@@ -255,7 +255,7 @@ export default function ReportsPage() {
 
             {/* ── Error ── */}
             {error && (
-                <div className="rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 px-4 py-3 text-sm text-red-700 dark:text-red-400">
+                <div className="rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 px-4 py-3 text-sm text-red-700 dark:text-red-400">
                     {error}
                 </div>
             )}
@@ -421,11 +421,11 @@ export default function ReportsPage() {
                         <SectionCard title="Vehicle Insights">
                             <div className="space-y-4">
                                 <div className="grid grid-cols-2 gap-3">
-                                    <div className="bg-gray-50 dark:bg-neutral-800 rounded-xl p-3 text-center">
+                                    <div className="bg-gray-50 dark:bg-neutral-800 rounded-lg p-3 text-center">
                                         <p className="text-2xl font-bold text-gray-900 dark:text-neutral-100">{summary.uniqueVehicles}</p>
                                         <p className="text-xs text-gray-500 dark:text-neutral-500 mt-0.5">Unique Vehicles</p>
                                     </div>
-                                    <div className="bg-gray-50 dark:bg-neutral-800 rounded-xl p-3 text-center">
+                                    <div className="bg-gray-50 dark:bg-neutral-800 rounded-lg p-3 text-center">
                                         <p className="text-2xl font-bold text-gray-900 dark:text-neutral-100">
                                             {summary.topVehicles[0]?.visitCount ?? 0}
                                         </p>
@@ -463,11 +463,11 @@ export default function ReportsPage() {
                             <SectionCard title="Customer Type">
                                 <div className="space-y-3">
                                     <div className="grid grid-cols-2 gap-3">
-                                        <div className="bg-blue-50 dark:bg-blue-950/30 rounded-xl p-4 text-center">
+                                        <div className="bg-blue-50 dark:bg-blue-950/30 rounded-lg p-4 text-center">
                                             <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{summary.memberRecords}</p>
                                             <p className="text-xs text-blue-500 dark:text-blue-500 mt-0.5">Members</p>
                                         </div>
-                                        <div className="bg-gray-50 dark:bg-neutral-800 rounded-xl p-4 text-center">
+                                        <div className="bg-gray-50 dark:bg-neutral-800 rounded-lg p-4 text-center">
                                             <p className="text-2xl font-bold text-gray-700 dark:text-neutral-300">{summary.walkInRecords}</p>
                                             <p className="text-xs text-gray-500 dark:text-neutral-500 mt-0.5">Walk-ins</p>
                                         </div>
@@ -487,7 +487,7 @@ export default function ReportsPage() {
                             {/* Warranty */}
                             <SectionCard title="Warranty Cards">
                                 <div className="flex items-center gap-4">
-                                    <div className="p-3 rounded-xl bg-green-50 dark:bg-green-950/30">
+                                    <div className="p-3 rounded-lg bg-green-50 dark:bg-green-950/30">
                                         <Shield className="w-6 h-6 text-green-600 dark:text-green-400" />
                                     </div>
                                     <div>

@@ -163,7 +163,7 @@ export function LeadDetailSheet({ lead, stages, isOpen, onClose }: LeadDetailShe
                         <button
                             onClick={handleSave}
                             disabled={isSaving}
-                            className="px-6 py-2 rounded-lg text-sm font-medium text-white bg-black dark:bg-neutral-800 hover:bg-gray-800 dark:hover:bg-neutral-700 transition-colors flex items-center shadow-sm disabled:opacity-70"
+                            className="px-6 py-2 rounded-lg text-sm font-medium text-white bg-black dark:bg-neutral-800 hover:bg-gray-800 dark:hover:bg-neutral-700 transition-colors flex items-center disabled:opacity-70"
                         >
                             {isSaving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                             Save Changes

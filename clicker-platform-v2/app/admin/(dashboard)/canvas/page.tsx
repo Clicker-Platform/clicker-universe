@@ -41,7 +41,7 @@ function PageStudioInner() {
         <div className="-m-4 md:-m-8 flex flex-col overflow-hidden h-[calc(100dvh-57px)] md:h-screen">
             {/* Legacy HTML warning */}
             {activePageId && formData.content && formData.blocks.length === 0 && (
-                <div className="mx-4 md:mx-8 mt-4 md:mt-8 bg-amber-50 p-4 rounded-xl border border-amber-200">
+                <div className="mx-4 md:mx-8 mt-4 md:mt-8 bg-amber-50 p-4 rounded-lg border border-amber-200">
                     <h3 className="font-bold text-amber-800 mb-2">Legacy HTML Content Detected</h3>
                     <p className="text-sm text-amber-700 mb-4">This page was built with the old editor. You can clear it to start using the new Block Builder.</p>
                     <button type="button" onClick={() => setContent('')} className="text-xs font-bold text-red-600 hover:underline">

@@ -55,7 +55,7 @@ export function ProductImageUpload({ currentImageUrl, onUpload, onRemove }: Prod
         <div className="w-full">
              <div
                 className={`
-                    relative w-full h-40 bg-gray-50 dark:bg-neutral-800/50 rounded-xl border-2 border-dashed
+                    relative w-full h-40 bg-gray-50 dark:bg-neutral-800/50 rounded-lg border-2 border-dashed
                     flex flex-col items-center justify-center cursor-pointer overflow-hidden group transition-all
                     ${error ? 'border-red-300 bg-red-50 dark:border-red-900/50 dark:bg-red-900/20' : 'border-gray-300 dark:border-neutral-700 hover:border-brand-dark dark:hover:border-neutral-600 hover:bg-white dark:hover:bg-neutral-800'}
                     ${uploading ? 'opacity-70 pointer-events-none' : ''}
@@ -93,7 +93,7 @@ export function ProductImageUpload({ currentImageUrl, onUpload, onRemove }: Prod
                                     e.stopPropagation();
                                     onRemove();
                                 }}
-                                className="absolute top-2 right-2 p-1 bg-white dark:bg-neutral-800 text-red-500 dark:text-red-400 rounded-md shadow-sm opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50 dark:hover:bg-red-900/20"
+                                className="absolute top-2 right-2 p-1 bg-white dark:bg-neutral-800 text-red-500 dark:text-red-400 rounded-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50 dark:hover:bg-red-900/20"
                                 title="Remove Image"
                             >
                                 <X size={16} />

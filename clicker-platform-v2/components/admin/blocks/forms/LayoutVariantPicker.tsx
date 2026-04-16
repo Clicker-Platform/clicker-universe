@@ -50,7 +50,7 @@ export const LayoutVariantPicker = ({ blockType, currentVariant, templateDefault
     const isOverridden = templateDefault && currentVariant !== templateDefault;
 
     return (
-        <div className="mb-6 p-4 bg-gray-100 dark:bg-neutral-800 rounded-2xl border border-gray-300 dark:border-neutral-700 shadow-sm">
+        <div className="mb-6 p-4 bg-gray-100 dark:bg-neutral-800 rounded-lg border border-gray-300 dark:border-neutral-700">
             <h4 className="text-sm font-bold text-neutral-900 dark:text-neutral-200 mb-3 flex items-center justify-between">
                 Layout Variant
                 {isOverridden && (
@@ -76,18 +76,18 @@ export const LayoutVariantPicker = ({ blockType, currentVariant, templateDefault
                             disabled={isDisabled}
                             onClick={() => !isDisabled && onChange(v.id)}
                             className={cn(
-                                "relative flex flex-col items-center justify-center p-3 rounded-xl border text-sm font-bold transition-all group",
+                                "relative flex flex-col items-center justify-center p-3 rounded-lg border text-sm font-bold transition-all group",
                                 isDisabled
                                     ? "border-transparent bg-gray-100/30 dark:bg-neutral-900/30 text-neutral-400 dark:text-neutral-700 cursor-not-allowed opacity-50"
                                     : isActive
                                         ? "border-blue-500 bg-gray-200 dark:bg-neutral-700 text-blue-400 shadow-lg"
-                                        : "border-transparent bg-gray-100/50 dark:bg-neutral-900/50 text-neutral-400 dark:text-neutral-500 hover:border-gray-300 dark:hover:border-neutral-700 hover:bg-gray-200 dark:hover:bg-neutral-700 hover:text-neutral-700 dark:hover:text-neutral-300 shadow-sm"
+                                        : "border-transparent bg-gray-100/50 dark:bg-neutral-900/50 text-neutral-400 dark:text-neutral-500 hover:border-gray-300 dark:hover:border-neutral-700 hover:bg-gray-200 dark:hover:bg-neutral-700 hover:text-neutral-700 dark:hover:text-neutral-300"
                             )}
                         >
                             <Icon size={18} className="mb-1.5 opacity-70 transition-opacity" />
                             {v.label}
                             {isActive && !isDisabled && (
-                                <div className="absolute top-1.5 right-1.5 w-3.5 h-3.5 bg-blue-500 rounded-full flex items-center justify-center shadow-sm">
+                                <div className="absolute top-1.5 right-1.5 w-3.5 h-3.5 bg-blue-500 rounded-full flex items-center justify-center">
                                     <Check size={10} className="text-white" strokeWidth={3} />
                                 </div>
                             )}

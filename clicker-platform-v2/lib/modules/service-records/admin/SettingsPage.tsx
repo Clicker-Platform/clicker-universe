@@ -77,7 +77,7 @@ export default function SettingsPage() {
         return (
             <div className="animate-pulse space-y-4">
                 <div className="h-8 bg-gray-200 dark:bg-neutral-700 rounded w-48" />
-                <div className="h-40 bg-gray-200 dark:bg-neutral-700 rounded-2xl" />
+                <div className="h-40 bg-gray-200 dark:bg-neutral-700 rounded-lg" />
             </div>
         );
     }
@@ -85,7 +85,7 @@ export default function SettingsPage() {
     return (
         <div className="max-w-2xl space-y-6">
             {toast && (
-                <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl text-sm font-medium shadow-lg ${
+                <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${
                     toast.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
                 }`}>
                     {toast.message}
@@ -95,7 +95,7 @@ export default function SettingsPage() {
             <h1 className="hidden md:block text-2xl font-bold text-gray-900 dark:text-neutral-100">Service Records Settings</h1>
 
             {/* Warranty Card Settings */}
-            <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm space-y-5">
+            <div className="bg-white dark:bg-neutral-900 p-6 rounded-lg border border-gray-200 dark:border-neutral-800 space-y-5">
                 <h2 className="text-base font-semibold text-gray-800 dark:text-neutral-200">Warranty Card</h2>
 
                 <div>
@@ -110,7 +110,7 @@ export default function SettingsPage() {
                             disabled={!isOwner}
                             maxLength={5}
                             placeholder="SVC"
-                            className="w-32 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm disabled:bg-gray-50 dark:disabled:bg-neutral-800 disabled:text-gray-400 dark:disabled:text-neutral-500"
+                            className="w-32 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 dark:focus:border-neutral-500 focus:ring-0 px-3 py-2 text-sm disabled:bg-gray-50 dark:disabled:bg-neutral-800 disabled:text-gray-400 dark:disabled:text-neutral-500"
                         />
                         <div className="text-sm text-gray-500 dark:text-neutral-500">
                             Preview: <span className="font-mono font-semibold text-gray-800 dark:text-neutral-200">{previewCode}</span>
@@ -140,7 +140,7 @@ export default function SettingsPage() {
             </div>
 
             {/* Reminder Engine */}
-            <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm">
+            <div className="bg-white dark:bg-neutral-900 p-6 rounded-lg border border-gray-200 dark:border-neutral-800">
                 <div className="flex items-center justify-between">
                     <div>
                         <p className="text-sm font-semibold text-gray-800 dark:text-neutral-200">Reminder Engine</p>
@@ -164,7 +164,7 @@ export default function SettingsPage() {
             </div>
 
             {/* Module Info */}
-            <div className="bg-gray-50 dark:bg-neutral-800 p-4 rounded-xl border border-gray-100 dark:border-neutral-700">
+            <div className="bg-gray-50 dark:bg-neutral-800 p-4 rounded-lg border border-gray-100 dark:border-neutral-700">
                 <p className="text-xs text-gray-500 dark:text-neutral-500">
                     <span className="font-medium">Module:</span> service_records v1.0.0
                     {' · '}
@@ -177,7 +177,7 @@ export default function SettingsPage() {
                     <button
                         onClick={handleSave}
                         disabled={saving}
-                        className="bg-studio-blue text-white px-6 py-3 rounded-xl text-sm font-medium disabled:opacity-50"
+                        className="bg-studio-blue text-white px-6 py-3 rounded-lg text-sm font-medium disabled:opacity-50"
                     >
                         {saving ? 'Saving…' : 'Save Settings'}
                     </button>

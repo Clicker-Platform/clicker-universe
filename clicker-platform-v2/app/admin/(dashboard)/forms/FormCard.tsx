@@ -54,7 +54,7 @@ export const FormCard: React.FC<FormCardProps> = ({ form }) => {
 
     if (isDeleting) {
         return (
-            <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-red-100 shadow-sm flex flex-col items-center justify-center min-h-[200px] animate-pulse">
+            <div className="bg-white dark:bg-neutral-900 p-6 rounded-lg border border-red-100 flex flex-col items-center justify-center min-h-[200px] animate-pulse">
                 <Trash2 className="text-red-300 mb-2" size={32} />
                 <p className="text-red-300 font-bold">Deleting...</p>
             </div>
@@ -65,7 +65,7 @@ export const FormCard: React.FC<FormCardProps> = ({ form }) => {
         <>
             <Link
                 href={`/admin/forms/builder?id=${form.id}`}
-                className="group bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm hover:shadow-md transition-all duration-200 block relative"
+                className="group bg-white dark:bg-neutral-900 p-6 rounded-lg border border-gray-200 dark:border-neutral-800 hover:shadow-md transition-all duration-200 block relative"
             >
                 {/* Delete Button */}
                 <button
@@ -81,7 +81,7 @@ export const FormCard: React.FC<FormCardProps> = ({ form }) => {
                     {form.isPublished ? 'Published' : 'Draft'}
                 </div>
 
-                <div className="w-12 h-12 bg-gray-50 dark:bg-neutral-800/50 rounded-xl border border-gray-200 dark:border-neutral-700 flex items-center justify-center mb-4 text-brand-dark group-hover:bg-gray-100 dark:group-hover:bg-neutral-700 transition-colors mt-8">
+                <div className="w-12 h-12 bg-gray-50 dark:bg-neutral-800/50 rounded-lg border border-gray-200 dark:border-neutral-700 flex items-center justify-center mb-4 text-brand-dark group-hover:bg-gray-100 dark:group-hover:bg-neutral-700 transition-colors mt-8">
                     <FileText size={24} strokeWidth={2.5} />
                 </div>
 

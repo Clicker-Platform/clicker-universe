@@ -115,7 +115,7 @@ export function MultiImageUpload({ images, onImagesChange, maxImages = 10 }: Mul
                         }
                     }}
                     className={`
-                        w-full border-2 border-dashed rounded-xl p-8 mb-6 flex flex-col items-center justify-center cursor-pointer transition-all duration-200
+                        w-full border-2 border-dashed rounded-lg p-8 mb-6 flex flex-col items-center justify-center cursor-pointer transition-all duration-200
                         ${error ? 'border-red-300 bg-red-50 dark:border-red-900/50 dark:bg-red-900/20' : 'border-gray-300 dark:border-neutral-700 hover:border-brand-green dark:hover:border-brand-green hover:bg-brand-green/5 dark:hover:bg-brand-green/10'}
                         ${uploading ? 'opacity-50 pointer-events-none' : ''}
                     `}
@@ -127,7 +127,7 @@ export function MultiImageUpload({ images, onImagesChange, maxImages = 10 }: Mul
                         </div>
                     ) : (
                         <>
-                            <div className="bg-gray-100 dark:bg-neutral-800 p-4 rounded-full mb-3 group-hover:bg-white dark:group-hover:bg-neutral-700 group-hover:shadow-sm transition-all">
+                            <div className="bg-gray-100 dark:bg-neutral-800 p-4 rounded-full mb-3 group-hover:bg-white dark:group-hover:bg-neutral-700 group-hover:transition-all">
                                 <Upload className="text-gray-400 dark:text-neutral-500 group-hover:text-brand-green transition-colors" size={24} />
                             </div>
                             <h3 className="text-brand-dark dark:text-neutral-200 font-bold text-base mb-1">Click to upload or drag and drop</h3>
@@ -147,7 +147,7 @@ export function MultiImageUpload({ images, onImagesChange, maxImages = 10 }: Mul
                         <div
                             key={`${url}-${index}`}
                             className={`
-                                relative aspect-square rounded-xl overflow-hidden border group shadow-sm
+                                relative aspect-square rounded-lg overflow-hidden border group
                                 ${index === 0 ? 'border-gray-400 dark:border-neutral-500 ring-2 ring-gray-400 dark:ring-neutral-500 ring-offset-2 dark:ring-offset-neutral-900' : 'border-gray-200 dark:border-neutral-800'}
                             `}
                         >
@@ -173,7 +173,7 @@ export function MultiImageUpload({ images, onImagesChange, maxImages = 10 }: Mul
                                 <button
                                     type="button"
                                     onClick={() => removeImage(index)}
-                                    className="bg-red-500 text-white p-1.5 rounded-full hover:bg-red-600 transition-colors shadow-sm"
+                                    className="bg-red-500 text-white p-1.5 rounded-full hover:bg-red-600 transition-colors"
                                     title="Remove Image"
                                 >
                                     <X size={14} />

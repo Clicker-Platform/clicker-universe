@@ -119,26 +119,26 @@ export default function AdminDashboard() {
                 <TrendingUp size={24} /> Content Overview
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-                <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm">
+                <div className="bg-white dark:bg-neutral-900 p-6 rounded-lg border border-gray-200 dark:border-neutral-800">
                     <div className="flex items-center gap-3 mb-2 text-brand-dark/70">
                         <LinkIcon size={20} /> <span className="font-bold">Total Links</span>
                     </div>
                     <p className="text-4xl font-bold text-gray-900 dark:text-neutral-100">{stats.linksCount}</p>
                 </div>
-                <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm">
+                <div className="bg-white dark:bg-neutral-900 p-6 rounded-lg border border-gray-200 dark:border-neutral-800">
                     <div className="flex items-center gap-3 mb-2 text-brand-dark/70">
                         <ShoppingBag size={20} /> <span className="font-bold">Products</span>
                     </div>
                     <p className="text-4xl font-bold text-gray-900 dark:text-neutral-100">{stats.productsCount}</p>
                 </div>
-                <div className="bg-blue-50 dark:bg-blue-950/30 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm">
+                <div className="bg-blue-50 dark:bg-blue-950/30 p-6 rounded-lg border border-gray-200 dark:border-neutral-800">
                     <div className="flex items-center gap-3 mb-2 text-blue-600">
                         <Eye size={20} /> <span className="font-bold">Total Page Views</span>
                     </div>
                     <p className="text-4xl font-bold text-gray-900 dark:text-neutral-100">{stats.pageViews}</p>
                     <p className="text-xs text-gray-400 dark:text-neutral-600 mt-1">All time</p>
                 </div>
-                <div className="bg-green-50 dark:bg-green-950/30 p-6 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm">
+                <div className="bg-green-50 dark:bg-green-950/30 p-6 rounded-lg border border-gray-200 dark:border-neutral-800">
                     <div className="flex items-center gap-3 mb-2 text-green-700 dark:text-neutral-300">
                         <MousePointer2 size={20} /> <span className="font-bold">Total Clicks</span>
                     </div>
@@ -155,7 +155,7 @@ export default function AdminDashboard() {
                     <h2 className="text-xl font-bold mb-4 text-brand-dark flex items-center gap-2">
                         Top Links <span className="text-sm font-normal text-gray-500 dark:text-neutral-500">(by clicks)</span>
                     </h2>
-                    <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 overflow-hidden shadow-sm">
+                    <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 overflow-hidden">
                         {topLinks.length === 0 ? (
                             <div className="p-6 text-center">
                                 <p className="text-gray-500 dark:text-neutral-500 mb-2">No links yet.</p>
@@ -186,7 +186,7 @@ export default function AdminDashboard() {
                     <h2 className="text-xl font-bold mb-4 text-brand-dark flex items-center gap-2">
                         Top Products <span className="text-sm font-normal text-gray-500 dark:text-neutral-500">(by clicks)</span>
                     </h2>
-                    <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 overflow-hidden shadow-sm">
+                    <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 overflow-hidden">
                         {topProducts.length === 0 ? (
                             <div className="p-6 text-center">
                                 <p className="text-gray-500 dark:text-neutral-500 mb-2">No products yet.</p>

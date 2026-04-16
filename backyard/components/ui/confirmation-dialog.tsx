@@ -53,7 +53,7 @@ export function ConfirmationDialog({
             />
 
             {/* Modal */}
-            <div className="relative bg-white rounded-2xl shadow-xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                 <div className="p-6">
                     <div className="flex items-start gap-4">
                         <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center ${styles.icon}`}>
@@ -84,7 +84,7 @@ export function ConfirmationDialog({
                         type="button"
                         onClick={onConfirm}
                         disabled={loading}
-                        className={`inline-flex justify-center items-center rounded-xl px-4 py-2.5 text-sm font-bold shadow-sm sm:w-auto w-full transition-all ${styles.button} ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                        className={`inline-flex justify-center items-center rounded-lg px-4 py-2.5 text-sm font-bold sm:w-auto w-full transition-all ${styles.button} ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
                     >
                         {loading ? 'Processing...' : 'Confirm Action'}
                     </button>
@@ -92,7 +92,7 @@ export function ConfirmationDialog({
                         type="button"
                         onClick={onCancel}
                         disabled={loading}
-                        className="inline-flex justify-center items-center rounded-xl border-2 border-gray-200 bg-white px-4 py-2.5 text-sm font-bold text-gray-700 shadow-sm hover:bg-gray-50 hover:border-gray-300 sm:w-auto w-full transition-all"
+                        className="inline-flex justify-center items-center rounded-lg border-2 border-gray-200 bg-white px-4 py-2.5 text-sm font-bold text-gray-700 hover:bg-gray-50 hover:border-gray-300 sm:w-auto w-full transition-all"
                     >
                         Cancel
                     </button>

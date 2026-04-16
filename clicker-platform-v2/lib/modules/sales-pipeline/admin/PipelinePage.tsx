@@ -46,7 +46,7 @@ export default function PipelinePage() {
     }
 
     return (
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col h-[calc(100vh-2rem)] md:h-[calc(100vh-6rem)]">
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden flex flex-col h-[calc(100vh-2rem)] md:h-[calc(100vh-6rem)]">
             <PipelineBoard stages={stages} leads={leads} />
         </div>
     );

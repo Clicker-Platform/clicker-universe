@@ -119,7 +119,7 @@ export function InventoryItemForm({ isOpen, onClose, onSubmit, initialData, posI
             <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`w-full text-white py-3 rounded-xl font-bold mt-2 transition-all transform active:scale-[0.98] ${isSubmitting
+                className={`w-full text-white py-3 rounded-lg font-bold mt-2 transition-all transform active:scale-[0.98] ${isSubmitting
                         ? 'bg-gray-400 dark:bg-neutral-600 cursor-not-allowed'
                         : 'bg-studio-blue hover:bg-studio-blue/85 shadow-md hover:shadow-lg'
                     }`}
@@ -146,7 +146,7 @@ export function InventoryItemForm({ isOpen, onClose, onSubmit, initialData, posI
 
     return (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-neutral-900 rounded-2xl w-full max-w-lg shadow-xl overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="bg-white dark:bg-neutral-900 rounded-lg w-full max-w-lg shadow-xl overflow-hidden animate-in zoom-in-95 duration-200">
                 <div className="px-6 py-4 border-b border-gray-100 dark:border-neutral-800 flex justify-between items-center bg-gray-50 dark:bg-neutral-800/50">
                     <h3 className="font-bold text-lg text-gray-800 dark:text-neutral-200">{initialData ? 'Edit Item' : 'Add New Item'}</h3>
                     <button

@@ -15,7 +15,7 @@ interface QuickActionsBlockFormProps {
     onChange: (data: any) => void;
 }
 
-const inputClass = "w-full px-4 py-2 bg-gray-50 dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl text-sm font-bold text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-600 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none";
+const inputClass = "w-full px-4 py-2 bg-gray-50 dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-lg text-sm font-bold text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-600 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none";
 const labelClass = "flex items-center gap-2 text-xs font-medium text-neutral-400 dark:text-neutral-500 mb-2";
 
 export function QuickActionsBlockForm({ data, onChange }: QuickActionsBlockFormProps) {
@@ -57,7 +57,7 @@ export function QuickActionsBlockForm({ data, onChange }: QuickActionsBlockFormP
     return (
         <div className="space-y-6 animate-fade-in">
             {/* System block notice */}
-            <div className="bg-blue-500/5 rounded-2xl p-5 border border-blue-500/10">
+            <div className="bg-blue-500/5 rounded-lg p-5 border border-blue-500/10">
                 <h4 className="font-black text-blue-400 text-xs uppercase tracking-widest mb-2">Dynamic System Block</h4>
                 <p className="text-sm text-neutral-400 leading-relaxed">
                     Content is sourced from your Links. Configure visibility and layout below.
@@ -91,7 +91,7 @@ export function QuickActionsBlockForm({ data, onChange }: QuickActionsBlockFormP
                 <div className="flex gap-2">
                     <button
                         onClick={() => setLayout('list')}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm font-bold transition-all ${
+                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border text-sm font-bold transition-all ${
                             layout === 'list'
                                 ? 'bg-blue-500/10 border-blue-500/40 text-blue-400'
                                 : 'bg-gray-50 dark:bg-neutral-900 border-gray-200 dark:border-neutral-800 text-neutral-400 dark:text-neutral-500 hover:border-gray-300 dark:hover:border-neutral-700'
@@ -102,7 +102,7 @@ export function QuickActionsBlockForm({ data, onChange }: QuickActionsBlockFormP
                     </button>
                     <button
                         onClick={() => setLayout('grid')}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm font-bold transition-all ${
+                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border text-sm font-bold transition-all ${
                             layout === 'grid'
                                 ? 'bg-blue-500/10 border-blue-500/40 text-blue-400'
                                 : 'bg-gray-50 dark:bg-neutral-900 border-gray-200 dark:border-neutral-800 text-neutral-400 dark:text-neutral-500 hover:border-gray-300 dark:hover:border-neutral-700'
@@ -125,11 +125,11 @@ export function QuickActionsBlockForm({ data, onChange }: QuickActionsBlockFormP
                 </p>
 
                 {loading ? (
-                    <div className="flex justify-center p-6 bg-gray-100/30 dark:bg-neutral-900/30 rounded-xl border border-gray-200/50 dark:border-neutral-800/50">
+                    <div className="flex justify-center p-6 bg-gray-100/30 dark:bg-neutral-900/30 rounded-lg border border-gray-200/50 dark:border-neutral-800/50">
                         <Loader2 className="animate-spin text-blue-500" size={20} />
                     </div>
                 ) : links.length === 0 ? (
-                    <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
+                    <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
                         <p className="text-xs font-bold text-red-400 leading-relaxed">
                             No links found. Create links in the Links menu first.
                         </p>
@@ -143,7 +143,7 @@ export function QuickActionsBlockForm({ data, onChange }: QuickActionsBlockFormP
                                 <button
                                     key={link.id}
                                     onClick={() => toggleLink(link.id)}
-                                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-all text-left ${
+                                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg border transition-all text-left ${
                                         isHidden
                                             ? 'bg-gray-100/30 dark:bg-neutral-900/30 border-gray-200/50 dark:border-neutral-800/50 opacity-50'
                                             : 'bg-gray-50 dark:bg-neutral-900 border-gray-200 dark:border-neutral-800 hover:border-gray-300 dark:hover:border-neutral-700'
@@ -169,7 +169,7 @@ export function QuickActionsBlockForm({ data, onChange }: QuickActionsBlockFormP
                 <h5 className="font-bold text-neutral-900 dark:text-neutral-200 text-xs uppercase tracking-wider mb-4">Manage Content</h5>
                 <Link
                     href="/admin/links"
-                    className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 text-neutral-900 dark:text-neutral-200 rounded-xl font-bold hover:bg-gray-200 dark:hover:bg-neutral-700 transition-all active:scale-[0.98]"
+                    className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 text-neutral-900 dark:text-neutral-200 rounded-lg font-bold hover:bg-gray-200 dark:hover:bg-neutral-700 transition-all active:scale-[0.98]"
                 >
                     Edit Links
                     <ExternalLink size={16} />

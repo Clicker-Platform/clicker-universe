@@ -92,7 +92,7 @@ export default function KDSClient({ initialOrders = [] }: { initialOrders?: POSO
                 ))}
 
                 {kdsOrders.length === 0 && (
-                    <div className="col-span-full py-20 flex flex-col items-center justify-center text-gray-400 dark:text-neutral-600 bg-white dark:bg-neutral-900 rounded-xl border border-dashed border-gray-200 dark:border-neutral-800">
+                    <div className="col-span-full py-20 flex flex-col items-center justify-center text-gray-400 dark:text-neutral-600 bg-white dark:bg-neutral-900 rounded-lg border border-dashed border-gray-200 dark:border-neutral-800">
                         <ShoppingBag size={48} className="mb-4 opacity-20" />
                         <p className="font-bold text-lg">All caught up!</p>
                         <p className="text-sm">No active orders to prepare.</p>

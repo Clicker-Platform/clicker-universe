@@ -165,7 +165,7 @@ export function PermissionEditor({ value, onChange, siteModules }: PermissionEdi
     return (
         <div className="space-y-4">
             {/* Toolbar */}
-            <div className="flex flex-col gap-4 bg-gray-50 dark:bg-neutral-900 p-4 rounded-xl border border-gray-100 dark:border-neutral-800">
+            <div className="flex flex-col gap-4 bg-gray-50 dark:bg-neutral-900 p-4 rounded-lg border border-gray-100 dark:border-neutral-800">
                 <div className="flex flex-col sm:flex-row justify-between gap-4 items-center">
                     <div className="flex items-center gap-2">
                         <span className="text-xs font-medium text-gray-500 dark:text-neutral-500">Quick Presets:</span>
@@ -200,7 +200,7 @@ export function PermissionEditor({ value, onChange, siteModules }: PermissionEdi
                             type="button"
                             onClick={() => setActiveCategory(cat)}
                             className={`px-4 py-2 rounded-md text-sm font-bold whitespace-nowrap transition-all ${activeCategory === cat
-                                ? 'bg-white dark:bg-neutral-700 text-brand-dark dark:text-neutral-100 shadow-sm'
+                                ? 'bg-white dark:bg-neutral-700 text-brand-dark dark:text-neutral-100'
                                 : 'text-gray-500 dark:text-neutral-500 hover:text-gray-700 dark:hover:text-neutral-300 hover:bg-gray-200/50 dark:hover:bg-neutral-700/50'
                                 }`}
                         >
@@ -222,7 +222,7 @@ export function PermissionEditor({ value, onChange, siteModules }: PermissionEdi
                             if (routes.length === 0) return null;
 
                             return (
-                                <div key={module.id} className="border border-gray-200 dark:border-neutral-800 rounded-xl overflow-hidden h-fit bg-white dark:bg-neutral-900 shadow-sm hover:border-brand-dark/20 dark:hover:border-neutral-700 transition-colors">
+                                <div key={module.id} className="border border-gray-200 dark:border-neutral-800 rounded-lg overflow-hidden h-fit bg-white dark:bg-neutral-900 hover:border-brand-dark/20 dark:hover:border-neutral-700 transition-colors">
                                     {/* Module Header */}
                                     <div className="bg-gray-50/50 dark:bg-neutral-800/50 p-3 flex items-center justify-between border-b border-gray-100 dark:border-neutral-800">
                                         <div className="flex items-center gap-3">
@@ -271,9 +271,9 @@ export function PermissionEditor({ value, onChange, siteModules }: PermissionEdi
                                                                         className={`
                                                                             px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all
                                                                             ${isSelected
-                                                                                ? (level === 'none' ? 'bg-white dark:bg-neutral-700 text-gray-400 dark:text-neutral-500 shadow-sm' :
-                                                                                    level === 'view' ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 shadow-sm border border-blue-200 dark:border-blue-800' :
-                                                                                        'bg-brand-dark dark:bg-neutral-600 text-white shadow-sm')
+                                                                                ? (level === 'none' ? 'bg-white dark:bg-neutral-700 text-gray-400 dark:text-neutral-500' :
+                                                                                    level === 'view' ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800' :
+                                                                                        'bg-brand-dark dark:bg-neutral-600 text-white')
                                                                                 : 'text-gray-400 dark:text-neutral-600 hover:text-gray-600 dark:hover:text-neutral-400 hover:bg-gray-200/50 dark:hover:bg-neutral-700/50'}
                                                                         `}
                                                                     >

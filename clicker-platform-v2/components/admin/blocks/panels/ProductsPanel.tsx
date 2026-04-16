@@ -443,7 +443,7 @@ export function ProductsPanel() {
                             <div className="flex items-center justify-between px-3 py-2">
                                 <span className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase">Price</span>
                                 <button type="button" onClick={() => setFormData(p => ({ ...p, showPrice: !p.showPrice }))} className={`w-8 h-4.5 rounded-full transition-colors relative ${formData.showPrice ? 'bg-blue-500' : 'bg-gray-300 dark:bg-neutral-700'}`}>
-                                    <span className={`absolute top-0.5 w-3.5 h-3.5 bg-white rounded-full transition-transform shadow-sm ${formData.showPrice ? 'left-[18px]' : 'left-0.5'}`} />
+                                    <span className={`absolute top-0.5 w-3.5 h-3.5 bg-white rounded-full transition-transform ${formData.showPrice ? 'left-[18px]' : 'left-0.5'}`} />
                                 </button>
                             </div>
                             {formData.showPrice && (
@@ -458,7 +458,7 @@ export function ProductsPanel() {
                             <div className="flex items-center justify-between px-3 py-2">
                                 <span className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase">Label / Category</span>
                                 <button type="button" onClick={() => setFormData(p => ({ ...p, showLabel: !p.showLabel }))} className={`w-8 h-4.5 rounded-full transition-colors relative ${formData.showLabel ? 'bg-blue-500' : 'bg-gray-300 dark:bg-neutral-700'}`}>
-                                    <span className={`absolute top-0.5 w-3.5 h-3.5 bg-white rounded-full transition-transform shadow-sm ${formData.showLabel ? 'left-[18px]' : 'left-0.5'}`} />
+                                    <span className={`absolute top-0.5 w-3.5 h-3.5 bg-white rounded-full transition-transform ${formData.showLabel ? 'left-[18px]' : 'left-0.5'}`} />
                                 </button>
                             </div>
                             {formData.showLabel && (

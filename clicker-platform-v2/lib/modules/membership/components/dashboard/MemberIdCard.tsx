@@ -19,14 +19,14 @@ export default function MemberIdCard({ member }: MemberIdCardProps) {
                 <p className="text-indigo-200 text-sm mb-6">{member.phoneNumber}</p>
 
                 <div className="grid grid-cols-2 gap-4 w-full">
-                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 flex flex-col items-center">
+                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 flex flex-col items-center">
                         <span className="text-xs text-indigo-200 uppercase tracking-wider mb-1">Points</span>
                         <span className="text-2xl font-bold flex items-center gap-2">
                             <Sparkles size={18} className="text-yellow-300" />
                             {member.currentPoints.toLocaleString()}
                         </span>
                     </div>
-                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 flex flex-col items-center">
+                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 flex flex-col items-center">
                         <span className="text-xs text-indigo-200 uppercase tracking-wider mb-1">Tier</span>
                         <span className="text-xl font-bold">Gold</span>
                     </div>

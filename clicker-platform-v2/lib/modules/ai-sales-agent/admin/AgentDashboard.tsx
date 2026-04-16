@@ -40,7 +40,7 @@ export default function AgentDashboard() {
                 </div>
                 <Link
                     href={`/${siteId}/admin/ai-sales/settings`}
-                    className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-neutral-800 transition"
+                    className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-neutral-800 transition"
                 >
                     <Settings className="h-4 w-4" />
                     Configure Agent
@@ -49,9 +49,9 @@ export default function AgentDashboard() {
 
             {/* Status Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 p-6">
+                <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 p-6">
                     <div className="flex items-center justify-between mb-4">
-                        <div className="p-3 bg-purple-50 rounded-xl">
+                        <div className="p-3 bg-purple-50 rounded-lg">
                             <Bot className="h-6 w-6 text-purple-600" />
                         </div>
                         <span className={`px-3 py-1 rounded-full text-xs font-bold ${status?.enabled ? 'bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-neutral-800 text-gray-500 dark:text-neutral-500'}`}>
@@ -62,9 +62,9 @@ export default function AgentDashboard() {
                     <p className="text-gray-500 dark:text-neutral-500 text-sm mt-1">Assistant Name</p>
                 </div>
 
-                <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 p-6">
+                <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 p-6">
                     <div className="flex items-center justify-between mb-4">
-                        <div className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-xl">
+                        <div className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
                             <MessageSquare className="h-6 w-6 text-blue-600" />
                         </div>
                     </div>
@@ -72,7 +72,7 @@ export default function AgentDashboard() {
                     <p className="text-gray-500 dark:text-neutral-500 text-sm mt-1">Total Conversations</p>
                 </div>
 
-                <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 p-6 flex flex-col justify-center items-center text-center space-y-3">
+                <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 p-6 flex flex-col justify-center items-center text-center space-y-3">
                     <p className="text-gray-500 dark:text-neutral-500 text-sm">Want to customize behavior?</p>
                     <Link
                         href={`/${siteId}/admin/ai-sales/settings`}
@@ -84,7 +84,7 @@ export default function AgentDashboard() {
             </div>
 
             {/* Placeholder for Recent Chats */}
-            <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 overflow-hidden">
+            <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 overflow-hidden">
                 <div className="p-6 border-b border-gray-100 dark:border-neutral-800">
                     <h3 className="font-bold text-lg">Recent Conversations</h3>
                 </div>

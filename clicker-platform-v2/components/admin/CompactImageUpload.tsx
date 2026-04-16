@@ -63,7 +63,7 @@ export function CompactImageUpload({ currentUrl, onUpload, onRemove, label = "Up
             />
 
             {currentUrl ? (
-                <div className="flex items-center gap-3 p-2 bg-gray-50 dark:bg-neutral-800/50 border border-gray-200 dark:border-neutral-800 rounded-xl group hover:border-brand-dark dark:hover:border-neutral-700 transition-colors">
+                <div className="flex items-center gap-3 p-2 bg-gray-50 dark:bg-neutral-800/50 border border-gray-200 dark:border-neutral-800 rounded-lg group hover:border-brand-dark dark:hover:border-neutral-700 transition-colors">
                     {/* Thumbnail */}
                     <div className="w-10 h-10 rounded-lg bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 overflow-hidden flex-shrink-0 flex items-center justify-center">
                         <img src={currentUrl} alt="Preview" className="w-full h-full object-cover" />
@@ -100,7 +100,7 @@ export function CompactImageUpload({ currentUrl, onUpload, onRemove, label = "Up
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploading}
                     className={`
-                        w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-dashed border-gray-300 dark:border-neutral-700
+                        w-full flex items-center gap-3 px-4 py-3 rounded-lg border border-dashed border-gray-300 dark:border-neutral-700
                         text-gray-500 dark:text-neutral-400 font-bold hover:border-brand-dark dark:hover:border-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-800 transition-all text-sm
                         ${uploading ? 'opacity-70 cursor-wait' : ''}
                     `}

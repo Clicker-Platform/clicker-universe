@@ -66,7 +66,7 @@ export default function ServiceTypesPage() {
     return (
         <div className="space-y-5">
             {toast && (
-                <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl text-sm font-medium shadow-lg ${
+                <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${
                     toast.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
                 }`}>
                     {toast.message}
@@ -81,7 +81,7 @@ export default function ServiceTypesPage() {
                 </div>
                 <Link
                     href="/admin/services"
-                    className="flex items-center gap-2 bg-studio-blue text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-studio-blue/85 transition-all"
+                    className="flex items-center gap-2 bg-studio-blue text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-studio-blue/85 transition-all"
                 >
                     <ExternalLink className="w-4 h-4" />
                     Manage in Services Catalog
@@ -89,7 +89,7 @@ export default function ServiceTypesPage() {
             </div>
 
             {/* Info banner */}
-            <div className="px-4 py-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/50 rounded-xl text-sm text-blue-700 dark:text-blue-400 font-medium">
+            <div className="px-4 py-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/50 rounded-lg text-sm text-blue-700 dark:text-blue-400 font-medium">
                 Showing service types from the shared catalog with <strong>Service Records</strong> config enabled. To add or edit service types, use the{' '}
                 <Link href="/admin/services" className="underline underline-offset-2 hover:text-blue-900 dark:hover:text-blue-300">
                     Services Catalog
@@ -112,7 +112,7 @@ export default function ServiceTypesPage() {
             </div>
 
             {/* Table */}
-            <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden">
+            <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 overflow-hidden">
                 {loading ? (
                     <div className="p-8 text-center text-sm text-gray-400 dark:text-neutral-500">Loading…</div>
                 ) : filtered.length === 0 ? (

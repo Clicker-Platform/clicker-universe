@@ -216,7 +216,7 @@ export default function ReservationDashboard() {
             />
 
             {/* Inbox Unified Container */}
-            <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden grid grid-cols-1 lg:grid-cols-3 divide-y lg:divide-y-0 lg:divide-x divide-gray-100 dark:divide-neutral-800 h-[700px]">
+            <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 overflow-hidden grid grid-cols-1 lg:grid-cols-3 divide-y lg:divide-y-0 lg:divide-x divide-gray-100 dark:divide-neutral-800 h-[700px]">
                 <BookingList
                     bookings={bookings}
                     selectedId={selectedBooking?.id || null}

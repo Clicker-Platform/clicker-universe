@@ -39,7 +39,7 @@ export default function SeedTool() {
 
             <div className="relative z-10">
                 <div className="flex items-center gap-4 mb-6">
-                    <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center">
+                    <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-lg flex items-center justify-center">
                         <Database className="w-6 h-6" />
                     </div>
                     <div>
@@ -56,14 +56,14 @@ export default function SeedTool() {
                             value={siteId}
                             onChange={(e) => setSiteId(e.target.value)}
                             placeholder="e.g. demo-site"
-                            className="w-full px-4 py-3 rounded-xl border-2 border-gray-100 focus:border-brand-dark outline-none font-medium text-gray-900 bg-gray-50/50 transition-colors"
+                            className="w-full px-4 py-3 rounded-lg border-2 border-gray-100 focus:border-brand-dark outline-none font-medium text-gray-900 bg-gray-50/50 transition-colors"
                         />
                     </div>
 
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-lg font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {loading ? (
                             <>

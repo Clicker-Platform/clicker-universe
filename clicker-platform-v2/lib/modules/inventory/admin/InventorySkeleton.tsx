@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export function InventorySkeleton() {
     return (
-        <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-sm border border-gray-100 dark:border-neutral-800 overflow-hidden">
+        <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-100 dark:border-neutral-800 overflow-hidden">
             <div className="p-4 border-b border-gray-200 dark:border-neutral-700 bg-gray-50 dark:bg-neutral-800/50 flex items-center justify-between">
                 <Skeleton className="h-6 w-32 bg-gray-200 dark:bg-neutral-700" />
                 <Skeleton className="h-8 w-24 bg-gray-200 dark:bg-neutral-700 rounded-lg" />

@@ -82,7 +82,7 @@ export function AgentTrainingSection({ siteId }: AgentTrainingSectionProps) {
 
     if (!siteId) {
         return (
-            <div className="p-8 text-center text-gray-500 dark:text-neutral-500 bg-gray-50 dark:bg-neutral-800/50 rounded-xl border-2 border-dashed border-gray-200 dark:border-neutral-800">
+            <div className="p-8 text-center text-gray-500 dark:text-neutral-500 bg-gray-50 dark:bg-neutral-800/50 rounded-lg border-2 border-dashed border-gray-200 dark:border-neutral-800">
                 Context missing. Cannot load knowledge base.
             </div>
         );
@@ -90,7 +90,7 @@ export function AgentTrainingSection({ siteId }: AgentTrainingSectionProps) {
 
     return (
         <div className="space-y-6">
-            <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 p-6">
+            <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 p-6">
                 <div className="flex items-center justify-between mb-4">
                     <div>
                         <h3 className="flex items-center gap-2 text-lg font-bold">
@@ -120,7 +120,7 @@ export function AgentTrainingSection({ siteId }: AgentTrainingSectionProps) {
                             value={knowledgeUrls}
                             onChange={(e) => setKnowledgeUrls(e.target.value)}
                             placeholder="https://example.com/menu&#10;https://example.com/about"
-                            className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-brand-dark focus:ring-0 outline-none transition font-mono text-sm min-h-[100px]"
+                            className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-brand-dark focus:ring-0 outline-none transition font-mono text-sm min-h-[100px]"
                         />
                         <div className="flex justify-end">
                             <button
@@ -138,7 +138,7 @@ export function AgentTrainingSection({ siteId }: AgentTrainingSectionProps) {
                             <FileText className="w-4 h-4 text-red-500" />
                             Upload PDF Document
                         </label>
-                        <div className="bg-gray-50 dark:bg-neutral-800/50 border-2 border-dashed border-gray-200 dark:border-neutral-800 rounded-xl p-6 text-center transition-colors hover:bg-white dark:hover:bg-neutral-800 hover:border-purple-300">
+                        <div className="bg-gray-50 dark:bg-neutral-800/50 border-2 border-dashed border-gray-200 dark:border-neutral-800 rounded-lg p-6 text-center transition-colors hover:bg-white dark:hover:bg-neutral-800 hover:border-purple-300">
                             <div className="flex flex-col items-center gap-2">
                                 <Upload className="w-8 h-8 text-gray-400 dark:text-neutral-600 mb-2" />
                                 <label htmlFor="pdf-upload" className="cursor-pointer text-sm font-medium text-purple-600 hover:text-purple-700">
@@ -166,7 +166,7 @@ export function AgentTrainingSection({ siteId }: AgentTrainingSectionProps) {
                         <button
                             onClick={handleSyncKnowledge}
                             disabled={isSyncing}
-                            className="w-full flex justify-center items-center gap-2 px-4 py-3 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 transition disabled:opacity-50"
+                            className="w-full flex justify-center items-center gap-2 px-4 py-3 bg-purple-600 text-white rounded-lg font-bold hover:bg-purple-700 transition disabled:opacity-50"
                         >
                             {isSyncing ? (
                                 <>

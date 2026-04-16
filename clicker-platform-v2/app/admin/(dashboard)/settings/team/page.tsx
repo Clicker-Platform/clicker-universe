@@ -244,7 +244,7 @@ export default function TeamPage() {
                 </div>
                 <button
                     onClick={openAddModal}
-                    className="flex items-center gap-2 bg-studio-blue text-white px-6 py-3 rounded-xl font-bold hover:bg-studio-blue/85 transition-colors"
+                    className="flex items-center gap-2 bg-studio-blue text-white px-6 py-3 rounded-lg font-bold hover:bg-studio-blue/85 transition-colors"
                 >
                     <Plus size={20} />
                     Add Member
@@ -252,7 +252,7 @@ export default function TeamPage() {
             </div>
 
             {/* Active Members */}
-            <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden mb-8">
+            <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 overflow-hidden mb-8">
                 <div className="p-6 border-b border-gray-100 dark:border-neutral-800 bg-gray-50/50 dark:bg-neutral-800/50">
                     <h2 className="font-bold text-lg flex items-center gap-2 dark:text-neutral-200">
                         <User size={20} className="text-brand-dark" />
@@ -322,7 +322,7 @@ export default function TeamPage() {
             {/* Member Modal */}
             {isMemberModalOpen && (
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-neutral-900 rounded-2xl w-full max-w-3xl p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+                    <div className="bg-white dark:bg-neutral-900 rounded-lg w-full max-w-3xl p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-xl font-bold text-gray-900 dark:text-neutral-100">
                                 {editingMember ? 'Edit Member' : 'Add New Member'}
@@ -342,7 +342,7 @@ export default function TeamPage() {
                                     onChange={(e) => setMemberEmail(e.target.value)}
                                     placeholder="colleague@example.com"
                                     disabled={!!editingMember}
-                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 outline-none transition-colors disabled:bg-gray-100 dark:disabled:bg-neutral-700 disabled:text-gray-500 dark:disabled:text-neutral-500"
+                                    className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 outline-none transition-colors disabled:bg-gray-100 dark:disabled:bg-neutral-700 disabled:text-gray-500 dark:disabled:text-neutral-500"
                                 />
                             </div>
 
@@ -357,7 +357,7 @@ export default function TeamPage() {
                                     onChange={(e) => setMemberPassword(e.target.value)}
                                     placeholder="••••••••"
                                     minLength={6}
-                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 outline-none transition-colors"
+                                    className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 outline-none transition-colors"
                                 />
                                 <p className="text-xs text-gray-400 dark:text-neutral-600 mt-1">Min. 6 characters. If user exists, this will be ignored.</p>
                             </div>
@@ -381,7 +381,7 @@ export default function TeamPage() {
                             <button
                                 type="submit"
                                 disabled={isSaving}
-                                className="w-full bg-studio-blue text-white py-3 rounded-xl font-bold hover:bg-studio-blue/85 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-4"
+                                className="w-full bg-studio-blue text-white py-3 rounded-lg font-bold hover:bg-studio-blue/85 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-4"
                             >
                                 {isSaving ? 'Saving...' : (editingMember ? 'Update Member' : 'Add Member')}
                             </button>

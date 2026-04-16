@@ -55,7 +55,7 @@ export function MobileModuleTabBar({ items, activeHref }: MobileModuleTabBarProp
                                 key={item.href}
                                 href={item.href}
                                 onClick={() => setMoreOpen(false)}
-                                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
+                                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                                     isActive
                                         ? 'text-blue-400 bg-blue-500/10'
                                         : 'text-neutral-400 dark:text-neutral-500 hover:text-neutral-200 hover:bg-neutral-800'

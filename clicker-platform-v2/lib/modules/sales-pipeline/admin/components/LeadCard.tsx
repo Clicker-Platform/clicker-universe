@@ -29,7 +29,7 @@ export function LeadCard({ lead, onClick, isOverlay, color }: LeadCardProps) {
     const content = (
         <div
             className={`
-                bg-white dark:bg-neutral-800 rounded-lg p-3 border-l-4 shadow-sm
+                bg-white dark:bg-neutral-800 rounded-lg p-3 border-l-4
                 ${isOverlay ? 'shadow-xl rotate-2 cursor-grabbing border-gray-300 dark:border-neutral-700' : 'hover:shadow-md border-gray-100 dark:border-neutral-700 cursor-grab'}
                 transition-all border
             `}

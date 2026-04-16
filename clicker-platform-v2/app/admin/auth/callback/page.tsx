@@ -207,7 +207,7 @@ function AuthCallbackHandler() {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-100">
-            <div className="bg-white p-8 rounded-2xl shadow-lg max-w-sm w-full border border-gray-200 text-center">
+            <div className="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full border border-gray-200 text-center">
                 {error ? (
                     <div className="text-red-600 font-bold">
                         <p className="text-4xl mb-4">⚠️</p>
@@ -239,7 +239,7 @@ function AuthCallbackHandler() {
                                     }
                                 });
                             }}
-                            className="mt-2 w-full bg-gray-800 text-white font-bold py-3 rounded-xl hover:bg-gray-700 transition-colors text-sm"
+                            className="mt-2 w-full bg-gray-800 text-white font-bold py-3 rounded-lg hover:bg-gray-700 transition-colors text-sm"
                         >
                             🔄 Login Dengan Akun Lain
                         </button>
@@ -252,7 +252,7 @@ function AuthCallbackHandler() {
                                 <p className="font-bold mb-4">{status}</p>
                                 <button
                                     onClick={() => window.location.href = `${window.location.origin}${safeNextPath}`}
-                                    className="w-full bg-brand-green text-brand-dark font-black uppercase py-3 rounded-xl border border-gray-200 hover:scale-105 transition-transform"
+                                    className="w-full bg-brand-green text-brand-dark font-black uppercase py-3 rounded-lg border border-gray-200 hover:scale-105 transition-transform"
                                 >
                                     Buka Dashboard
                                 </button>

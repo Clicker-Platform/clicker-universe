@@ -47,7 +47,7 @@ function AdminLoginForm() {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-100">
-            <div className="bg-white p-8 rounded-2xl shadow-lg max-w-sm w-full border border-gray-200">
+            <div className="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full border border-gray-200">
                 <div className="flex justify-center mb-6">
                     <div className="relative w-20 h-20">
                         <Image
@@ -91,7 +91,7 @@ function AdminLoginForm() {
 
                     <button
                         type="submit"
-                        className="w-full bg-brand-dark text-brand-green font-black uppercase py-3 rounded-xl border border-gray-200 hover:bg-brand-green hover:text-brand-dark transition-all shadow-sm translate-x-0 hover:translate-x-[2px] hover:translate-y-[2px]"
+                        className="w-full bg-brand-dark text-brand-green font-black uppercase py-3 rounded-lg border border-gray-200 hover:bg-brand-green hover:text-brand-dark transition-all translate-x-0 hover:translate-x-[2px] hover:translate-y-[2px]"
                     >
                         Enter Dashboard
                     </button>

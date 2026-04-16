@@ -23,7 +23,7 @@ export function IconSelector({ selectedIcon, onSelect, onClose }: IconSelectorPr
 
     const modal = (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="bg-neutral-900 border border-neutral-700 rounded-lg shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
                 {/* Header */}
                 <div className="px-5 py-4 border-b border-neutral-800 flex items-center justify-between flex-shrink-0">
                     <h3 className="font-bold text-base text-neutral-100">Select Icon</h3>
@@ -62,7 +62,7 @@ export function IconSelector({ selectedIcon, onSelect, onClose }: IconSelectorPr
                                     key={name}
                                     onClick={() => onSelect(name)}
                                     className={`
-                                        flex flex-col items-center gap-1.5 p-2.5 rounded-xl border transition-all
+                                        flex flex-col items-center gap-1.5 p-2.5 rounded-lg border transition-all
                                         hover:scale-105 active:scale-95
                                         ${isSelected
                                             ? 'border-blue-500/60 bg-blue-500/15 text-blue-300'
@@ -145,7 +145,7 @@ export function InlinePanelIconPicker({
                             <button
                                 key={name}
                                 onClick={() => onSelect(name)}
-                                className={`flex flex-col items-center gap-1 p-2 rounded-xl border transition-all hover:scale-105 active:scale-95 ${
+                                className={`flex flex-col items-center gap-1 p-2 rounded-lg border transition-all hover:scale-105 active:scale-95 ${
                                     isSelected
                                         ? 'border-blue-500/60 bg-blue-500/15 text-blue-300'
                                         : 'border-neutral-800 bg-neutral-800/50 text-neutral-400 hover:border-neutral-600 hover:text-neutral-200 hover:bg-neutral-800'
