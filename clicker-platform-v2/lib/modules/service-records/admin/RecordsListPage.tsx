@@ -12,9 +12,9 @@ import type { QueryDocumentSnapshot } from 'firebase/firestore';
 
 type TabStatus = 'ALL' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
 
-const TABS: { key: TabStatus; label: string }[] = [
+const TABS: { key: TabStatus; label: string; highlight?: boolean }[] = [
     { key: 'ALL',       label: 'All' },
-    { key: 'ACTIVE',    label: 'Active' },
+    { key: 'ACTIVE',    label: 'Active', highlight: true },
     { key: 'COMPLETED', label: 'Completed' },
     { key: 'CANCELLED', label: 'Cancelled' },
 ];

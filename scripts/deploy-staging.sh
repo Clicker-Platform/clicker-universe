@@ -59,6 +59,18 @@ export NO_UPDATE_NOTIFIER=true
 npx -y firebase-tools@latest experiments:enable webframeworks >/dev/null 2>&1 || true
 npx -y firebase-tools@latest use staging >/dev/null
 
+# ─── Build functions jika diperlukan ─────────────────────────────────────────
+if [[ "$TARGET" == "all" || "$TARGET" == "functions" ]]; then
+  if [ ! -f "$ROOT_DIR/functions/lib/index.js" ]; then
+    echo "→ Building Cloud Functions (lib/index.js not found)..."
+    cd "$ROOT_DIR/functions"
+    npm install --silent
+    npm run build
+    cd "$ROOT_DIR"
+    echo ""
+  fi
+fi
+
 # ─── Deploy berdasarkan target ───────────────────────────────────────────────
 case "$TARGET" in
 
