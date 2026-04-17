@@ -6,7 +6,8 @@ import {
     DndContext,
     closestCenter,
     KeyboardSensor,
-    PointerSensor,
+    MouseSensor,
+    TouchSensor,
     useSensor,
     useSensors,
     DragEndEvent
@@ -34,7 +35,13 @@ export const BlockManager = ({ blocks, onChange, templateId, onAddClick }: Block
     const [blockToDelete, setBlockToDelete] = useState<string | null>(null);
 
     const sensors = useSensors(
-        useSensor(PointerSensor),
+        useSensor(MouseSensor),
+        useSensor(TouchSensor, {
+            activationConstraint: {
+                delay: 200,
+                tolerance: 8,
+            },
+        }),
         useSensor(KeyboardSensor, {
             coordinateGetter: sortableKeyboardCoordinates,
         })

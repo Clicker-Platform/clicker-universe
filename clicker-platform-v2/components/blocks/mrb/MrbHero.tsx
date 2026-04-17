@@ -1,10 +1,93 @@
 'use client';
 
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import Image from 'next/image';
 import { BusinessProfile } from '@/data/mockData';
 import { useTemplate } from '@/components/TemplateProvider';
 import { useDeviceView, dv, type DeviceView } from '@/components/DeviceViewContext';
+import { toolbarMouseDownRef } from '@/components/admin/blocks/InlineEditToolbar';
+
+function FieldSelectionChrome() {
+    return (
+        <div className="absolute pointer-events-none z-10" style={{ inset: -2 }}>
+            <div className="absolute inset-0 border-[1.5px] border-blue-500" style={{ borderRadius: 0 }} />
+            <div className="absolute -top-[3.5px] -left-[3.5px] w-[7px] h-[7px] bg-white border-[1.5px] border-blue-500" />
+            <div className="absolute -top-[3.5px] left-1/2 -translate-x-1/2 w-[7px] h-[7px] bg-white border-[1.5px] border-blue-500" />
+            <div className="absolute -top-[3.5px] -right-[3.5px] w-[7px] h-[7px] bg-white border-[1.5px] border-blue-500" />
+            <div className="absolute top-1/2 -translate-y-1/2 -left-[3.5px] w-[7px] h-[7px] bg-white border-[1.5px] border-blue-500" />
+            <div className="absolute top-1/2 -translate-y-1/2 -right-[3.5px] w-[7px] h-[7px] bg-white border-[1.5px] border-blue-500" />
+            <div className="absolute -bottom-[3.5px] -left-[3.5px] w-[7px] h-[7px] bg-white border-[1.5px] border-blue-500" />
+            <div className="absolute -bottom-[3.5px] left-1/2 -translate-x-1/2 w-[7px] h-[7px] bg-white border-[1.5px] border-blue-500" />
+            <div className="absolute -bottom-[3.5px] -right-[3.5px] w-[7px] h-[7px] bg-white border-[1.5px] border-blue-500" />
+        </div>
+    );
+}
+
+function EditableText({
+    value,
+    field,
+    tag: Tag = 'span',
+    className,
+    style,
+    placeholder,
+    onInlineChange,
+    onFieldFocus,
+}: {
+    value?: string;
+    field: string;
+    tag?: React.ElementType;
+    className?: string;
+    style?: React.CSSProperties;
+    placeholder?: string;
+    onInlineChange?: (field: string, value: string) => void;
+    onFieldFocus?: (field: string, rect: DOMRect) => void;
+}) {
+    const ref = useRef<HTMLElement>(null);
+    const [focused, setFocused] = useState(false);
+    const El = Tag as any;
+
+    if (!onInlineChange) {
+        return <El className={className} style={style}>{value}</El>;
+    }
+
+    return (
+        <div className="relative">
+            <El
+                ref={ref}
+                contentEditable
+                suppressContentEditableWarning
+                data-placeholder={placeholder}
+                className={`${className ?? ''} outline-none cursor-text relative
+                    before:content-[attr(data-placeholder)] before:absolute before:inset-0 before:opacity-40 before:pointer-events-none
+                    [&:not(:empty)]:before:hidden`}
+                style={style}
+                onFocus={() => {
+                    setFocused(true);
+                    if (onFieldFocus && ref.current) {
+                        onFieldFocus(field, ref.current.getBoundingClientRect());
+                    }
+                }}
+                onBlur={(e: React.FocusEvent<HTMLElement>) => {
+                    if (!toolbarMouseDownRef.current) {
+                        setFocused(false);
+                        onInlineChange(field, e.currentTarget.textContent || '');
+                    }
+                }}
+                onKeyDown={(e: React.KeyboardEvent<HTMLElement>) => {
+                    if (e.key === 'Enter') { e.preventDefault(); (e.target as HTMLElement).blur(); }
+                    if (e.key === 'v' && (e.metaKey || e.ctrlKey)) {
+                        e.preventDefault();
+                        navigator.clipboard?.readText().then(text => {
+                            document.execCommand('insertText', false, text);
+                        });
+                    }
+                }}
+                dangerouslySetInnerHTML={{ __html: value || '' }}
+            />
+            {focused && <FieldSelectionChrome />}
+        </div>
+    );
+}
 
 const TITLE_SIZES = (d: DeviceView): Record<string, string> => ({
     sm: dv(d, 'text-3xl', 'md:text-4xl'),
@@ -18,10 +101,13 @@ interface CtaBtn { label?: string; url?: string; }
 interface MrbHeroProps {
     profile: BusinessProfile;
     previewMode?: boolean;
+    onInlineChange?: (field: string, value: string) => void;
+    onFieldFocus?: (field: string, rect: DOMRect) => void;
     data?: {
         title?: string;
         subtitle?: string;
         tagline?: string;
+        subtitleWeight?: string;
         imageUrl?: string;
         imagePosition?: string;
         imagePositionMobile?: string;
@@ -37,7 +123,7 @@ interface MrbHeroProps {
     };
 }
 
-export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data }) => {
+export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, onInlineChange, onFieldFocus }) => {
     const { theme } = useTemplate();
     const d = useDeviceView();
 
@@ -139,39 +225,58 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data }) => {
                 />
             </div>
 
-            {/* Tagline Bubble */}
-            {tagline && (
-                <div className={`absolute top-8 z-10 ${dv(d, 'px-6', 'md:px-12')} w-full flex ${justifyClass}`}>
-                    <span className="inline-flex items-center rounded-full px-4 py-1.5 text-[10px] font-bold uppercase border"
-                        style={{
-                            backgroundColor: `${theme.colors.primary}15`,
-                            color: data?.taglineColor || theme.colors.primary,
-                            borderColor: `${theme.colors.primary}33`,
-                            letterSpacing: '0.25em'
-                        }}>
-                        {tagline}
-                    </span>
-                </div>
-            )}
-
             {/* Text Content */}
             <div className={`flex flex-col gap-4 max-w-2xl relative z-10 w-full ${textAlignClass} ${flexAlignClass}`}>
-                {titleText ? (
-                    <h1 className={`${titleSizeClass} font-extrabold leading-[0.95] tracking-tighter m-0`}
-                        style={{ color: data?.titleColor || '#ffffff' }}>
-                        {titleText}
-                    </h1>
+                {/* Tagline Bubble — in flow so it aligns with title/subtitle */}
+                {(tagline || onInlineChange) && (
+                    <div className={`flex ${justifyClass}`}>
+                        <EditableText
+                            tag="span"
+                            field="tagline"
+                            value={tagline}
+                            placeholder="Add tagline…"
+                            onInlineChange={onInlineChange}
+                            onFieldFocus={onFieldFocus}
+                            className="inline-flex items-center rounded-full px-4 py-1.5 text-[10px] font-bold uppercase border"
+                            style={{
+                                backgroundColor: `${theme.colors.primary}15`,
+                                color: data?.taglineColor || theme.colors.primary,
+                                borderColor: `${theme.colors.primary}33`,
+                                letterSpacing: '0.25em',
+                            }}
+                        />
+                    </div>
+                )}
+                {/* When onInlineChange is active always show an editable title field;
+                    otherwise fall back to the split profile name when no data.title set */}
+                {(titleText || onInlineChange) ? (
+                    <EditableText
+                        tag="h1"
+                        field="title"
+                        value={titleText}
+                        placeholder="Add title…"
+                        onInlineChange={onInlineChange}
+                        onFieldFocus={onFieldFocus}
+                        className={`${titleSizeClass} font-extrabold leading-[0.95] tracking-tighter m-0`}
+                        style={{ color: data?.titleColor || '#ffffff' }}
+                    />
                 ) : (
                     <h1 className={`${titleSizeClass} font-extrabold leading-[0.95] tracking-tighter m-0`}
                         style={{ color: data?.titleColor || '#ffffff' }}>
                         {firstName}{restName && <><br /><span style={{ color: data?.titleColor || theme.colors.primary }}>{restName}</span></>}
                     </h1>
                 )}
-                {subtitle && (
-                    <p className={`text-lg ${data?.subtitleWeight ? `font-${data.subtitleWeight}` : 'font-medium'} leading-relaxed max-w-md m-0 opacity-80`}
-                        style={{ color: data?.subtitleColor || '#ffffff' }}>
-                        {subtitle}
-                    </p>
+                {(subtitle || onInlineChange) && (
+                    <EditableText
+                        tag="p"
+                        field="subtitle"
+                        value={subtitle}
+                        placeholder="Add subtitle…"
+                        onInlineChange={onInlineChange}
+                        onFieldFocus={onFieldFocus}
+                        className={`text-lg ${data?.subtitleWeight ? `font-${data.subtitleWeight}` : 'font-medium'} leading-relaxed max-w-md m-0 opacity-80`}
+                        style={{ color: data?.subtitleColor || '#ffffff' }}
+                    />
                 )}
             </div>
 

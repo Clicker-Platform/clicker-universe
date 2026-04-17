@@ -18,6 +18,7 @@ import { NavigationProvider } from '@/components/layout/NavigationProvider';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { MobileBottomSheet } from './MobileBottomSheet';
 import { MobileStudioTabBar, type MobileActiveSheet } from './MobileStudioTabBar';
+import { InlineEditToolbar, type InlineFieldFocus } from './InlineEditToolbar';
 
 // Lazy-load sidebar panels — only needed when their respective panels are open
 const BlockFormRenderer = dynamic(() => import('./BlockFormRenderer').then(m => m.BlockFormRenderer));
@@ -79,6 +80,9 @@ export function CanvasStudio({
     // Mobile state
     const [mobileSheet, setMobileSheet] = useState<MobileActiveSheet>(null);
 
+    // Inline field toolbar state
+    const [inlineFocus, setInlineFocus] = useState<InlineFieldFocus | null>(null);
+
     const toggleLeftPanel = (panel: 'pages' | 'add' | 'navigator') => {
         setLeftPanel(prev => prev === panel ? null : panel);
         setSlideOverPanel(null);
@@ -101,6 +105,8 @@ export function CanvasStudio({
         } else {
             setActivePanel(prev => prev === null ? 'page' : prev);
         }
+        // Clear inline field toolbar when selection changes
+        setInlineFocus(null);
     }, [isMobile, selectedBlockId, activePageId]);
 
     // Auto-open props sheet on mobile when a block is selected/deselected
@@ -169,7 +175,7 @@ export function CanvasStudio({
     // ─── Shared canvas content ────────────────────────────────────────────────
     const canvasContent = (
         <div
-            className={`flex-1 flex justify-center relative overflow-y-auto [--canvas-bg:rgb(229_231_235)] [--canvas-dot:rgb(0_0_0_/_0.12)] dark:[--canvas-bg:rgb(10_10_10)] dark:[--canvas-dot:rgb(255_255_255_/_0.09)] ${isMobile ? 'pb-20' : ''}`}
+            className={`flex-1 flex justify-center relative overflow-y-auto overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [--canvas-bg:rgb(229_231_235)] [--canvas-dot:rgb(0_0_0_/_0.12)] dark:[--canvas-bg:rgb(10_10_10)] dark:[--canvas-dot:rgb(255_255_255_/_0.09)] ${isMobile ? 'pb-20' : ''}`}
             style={{
                 backgroundColor: 'var(--canvas-bg)',
                 backgroundImage: 'radial-gradient(circle, var(--canvas-dot) 1.5px, transparent 1.5px)',
@@ -186,7 +192,7 @@ export function CanvasStudio({
                 </div>
             )}
             {/* The actual canvas container */}
-            <div className={`w-full ${deviceView === 'tablet' ? 'max-w-lg' : deviceView === 'mobile' ? 'max-w-md' : ''} shadow-2xl ring-1 ring-black/10 dark:ring-white/10 overflow-hidden transition-all duration-300 my-8 self-start isolate`}>
+            <div className={`w-full min-w-[375px] ${deviceView === 'tablet' ? 'max-w-lg' : deviceView === 'mobile' ? 'max-w-md' : ''} shadow-2xl ring-1 ring-black/10 dark:ring-white/10 overflow-hidden transition-all duration-300 my-8 self-start isolate`}>
                 {/* WYSIWYG Renderer — providers are always mounted to prevent context loss during block reorder */}
                 <DeviceViewProvider deviceView={deviceView}>
                 <TemplateProvider
@@ -260,15 +266,40 @@ export function CanvasStudio({
                                                 <div
                                                     key={block.id}
                                                     className={`min-w-0 relative transition-all ${block.type === 'hero' ? '' : 'rounded-lg'} ${selectedBlockId === block.id
-                                                            ? 'ring-1 ring-blue-500/40 shadow-md z-20'
-                                                            : 'hover:ring-1 hover:ring-blue-400/30 cursor-pointer'
+                                                            ? 'shadow-md z-20'
+                                                            : 'cursor-pointer'
                                                         }`}
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         setSelectedBlockId?.(block.id);
                                                     }}
                                                 >
-                                                    <div className={block.type === 'social_embed' ? 'pointer-events-auto' : 'pointer-events-none'}>
+                                                    {/* Hover outline */}
+                                                    {selectedBlockId !== block.id && (
+                                                        <div className="absolute inset-0 pointer-events-none z-10 outline outline-1 outline-blue-400/40 outline-offset-0 hover:outline-blue-400/60" />
+                                                    )}
+                                                    {/* Selection chrome — sharp border + 8 square handles */}
+                                                    {selectedBlockId === block.id && (
+                                                        <div className="absolute pointer-events-none z-10" style={{ inset: -1 }}>
+                                                            {/* Full border — sharp corners, no border-radius */}
+                                                            <div className="absolute inset-0 border-2 border-blue-500" style={{ borderRadius: 0 }} />
+                                                            {/* 8 square handles — sharp, no rounding */}
+                                                            <div className="absolute -top-[4px] -left-[4px] w-[8px] h-[8px] bg-white border-[1.5px] border-blue-500" />
+                                                            <div className="absolute -top-[4px] left-1/2 -translate-x-1/2 w-[8px] h-[8px] bg-white border-[1.5px] border-blue-500" />
+                                                            <div className="absolute -top-[4px] -right-[4px] w-[8px] h-[8px] bg-white border-[1.5px] border-blue-500" />
+                                                            <div className="absolute top-1/2 -translate-y-1/2 -left-[4px] w-[8px] h-[8px] bg-white border-[1.5px] border-blue-500" />
+                                                            <div className="absolute top-1/2 -translate-y-1/2 -right-[4px] w-[8px] h-[8px] bg-white border-[1.5px] border-blue-500" />
+                                                            <div className="absolute -bottom-[4px] -left-[4px] w-[8px] h-[8px] bg-white border-[1.5px] border-blue-500" />
+                                                            <div className="absolute -bottom-[4px] left-1/2 -translate-x-1/2 w-[8px] h-[8px] bg-white border-[1.5px] border-blue-500" />
+                                                            <div className="absolute -bottom-[4px] -right-[4px] w-[8px] h-[8px] bg-white border-[1.5px] border-blue-500" />
+                                                        </div>
+                                                    )}
+                                                    <div className={
+                                                        block.type === 'social_embed' ? 'pointer-events-auto' :
+                                                        // Hero selected: allow pointer events so contentEditable fields are clickable
+                                                        (block.type === 'hero' && selectedBlockId === block.id) ? 'pointer-events-auto' :
+                                                        'pointer-events-none'
+                                                    }>
                                                         <BlockRenderer
                                                             block={block}
                                                             templateId={templateId}
@@ -289,6 +320,16 @@ export function CanvasStudio({
                                                             businessHours={globalSettings?.businessHours}
                                                             businessSchedule={globalSettings?.businessSchedule}
                                                             profile={globalSettings?.profile}
+                                                            onInlineChange={
+                                                                block.type === 'hero' && selectedBlockId === block.id
+                                                                    ? (field, value) => updateBlockData(block.id, { [field]: value })
+                                                                    : undefined
+                                                            }
+                                                            onFieldFocus={
+                                                                block.type === 'hero' && selectedBlockId === block.id
+                                                                    ? (field, rect) => setInlineFocus({ blockId: block.id, field, rect, currentData: block.data })
+                                                                    : undefined
+                                                            }
                                                         />
                                                     </div>
                                                 </div>
@@ -341,6 +382,18 @@ export function CanvasStudio({
                 </DeviceViewProvider>
             </div>
         </div>
+    );
+
+    // ─── Inline field toolbar (portal — renders above focused field) ──────────
+    const inlineToolbar = (
+        <InlineEditToolbar
+            focus={inlineFocus}
+            onAction={(blockId, patch) => {
+                updateBlockData(blockId, patch);
+                // Keep rect in sync after data change so toolbar doesn't jump
+                setInlineFocus(prev => prev ? { ...prev, currentData: { ...prev.currentData, ...patch } } : null);
+            }}
+        />
     );
 
     // ─── Right sidebar content (shared between desktop sidebar + mobile sheet) ─
@@ -533,6 +586,7 @@ export function CanvasStudio({
             <div className="flex flex-col flex-1 overflow-hidden bg-gray-200 dark:bg-neutral-950 relative">
                 {/* Full-width canvas */}
                 {canvasContent}
+                {inlineToolbar}
 
                 {/* Properties sheet header tabs — only shown inside props sheet */}
                 <MobileBottomSheet
@@ -862,6 +916,7 @@ export function CanvasStudio({
                     </div>
                 )
             )}
+            {inlineToolbar}
         </div>
     );
 }

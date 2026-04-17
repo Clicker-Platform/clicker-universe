@@ -38,6 +38,8 @@ export const BlockRenderer = ({
     tenantSlug,
     templateId,
     previewMode,
+    onInlineChange,
+    onFieldFocus,
     // Additional data for system blocks
     links,
     contact,
@@ -61,6 +63,8 @@ export const BlockRenderer = ({
     tenantSlug?: string,
     templateId?: string,
     previewMode?: boolean,
+    onInlineChange?: (field: string, value: string) => void,
+    onFieldFocus?: (field: string, rect: DOMRect) => void,
     links?: any[],
     contact?: any,
     branches?: any[],
@@ -83,8 +87,8 @@ export const BlockRenderer = ({
         switch (block.type) {
             case 'hero':
                 return customBlocks?.Hero ?
-                    React.createElement(customBlocks.Hero, { profile, theme, data: block.data, previewMode }) :
-                    <HeroBlock data={block.data} theme={theme} />;
+                    React.createElement(customBlocks.Hero, { profile, theme, data: block.data, previewMode, onInlineChange, onFieldFocus }) :
+                    <HeroBlock data={block.data} theme={theme} onInlineChange={onInlineChange} onFieldFocus={onFieldFocus} />;
             case 'text': 
                 return customBlocks?.Text ? 
                     React.createElement(customBlocks.Text, { data: block.data }) : 

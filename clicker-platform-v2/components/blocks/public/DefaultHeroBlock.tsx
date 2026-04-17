@@ -1,8 +1,94 @@
 'use client';
 
 import Image from 'next/image';
+import { useRef, useState } from 'react';
 import { useTemplate } from '@/components/TemplateProvider';
 import { useDeviceView, dv, type DeviceView } from '@/components/DeviceViewContext';
+import { toolbarMouseDownRef } from '@/components/admin/blocks/InlineEditToolbar';
+
+// Selection chrome overlay — 8 square handles + border, shown on focused editable fields
+function FieldSelectionChrome() {
+    return (
+        <div className="absolute pointer-events-none z-10" style={{ inset: -2 }}>
+            <div className="absolute inset-0 border-[1.5px] border-blue-500" style={{ borderRadius: 0 }} />
+            <div className="absolute -top-[3.5px] -left-[3.5px] w-[7px] h-[7px] bg-white border-[1.5px] border-blue-500" />
+            <div className="absolute -top-[3.5px] left-1/2 -translate-x-1/2 w-[7px] h-[7px] bg-white border-[1.5px] border-blue-500" />
+            <div className="absolute -top-[3.5px] -right-[3.5px] w-[7px] h-[7px] bg-white border-[1.5px] border-blue-500" />
+            <div className="absolute top-1/2 -translate-y-1/2 -left-[3.5px] w-[7px] h-[7px] bg-white border-[1.5px] border-blue-500" />
+            <div className="absolute top-1/2 -translate-y-1/2 -right-[3.5px] w-[7px] h-[7px] bg-white border-[1.5px] border-blue-500" />
+            <div className="absolute -bottom-[3.5px] -left-[3.5px] w-[7px] h-[7px] bg-white border-[1.5px] border-blue-500" />
+            <div className="absolute -bottom-[3.5px] left-1/2 -translate-x-1/2 w-[7px] h-[7px] bg-white border-[1.5px] border-blue-500" />
+            <div className="absolute -bottom-[3.5px] -right-[3.5px] w-[7px] h-[7px] bg-white border-[1.5px] border-blue-500" />
+        </div>
+    );
+}
+
+// Inline-editable text primitive — only activates when onInlineChange is provided (canvas preview)
+function EditableText({
+    value,
+    field,
+    tag: Tag = 'span',
+    className,
+    style,
+    placeholder,
+    onInlineChange,
+    onFieldFocus,
+}: {
+    value?: string;
+    field: string;
+    tag?: keyof JSX.IntrinsicElements;
+    className?: string;
+    style?: React.CSSProperties;
+    placeholder?: string;
+    onInlineChange?: (field: string, value: string) => void;
+    onFieldFocus?: (field: string, rect: DOMRect) => void;
+}) {
+    const ref = useRef<HTMLElement>(null);
+    const [focused, setFocused] = useState(false);
+
+    if (!onInlineChange) {
+        const El = Tag as any;
+        return <El className={className} style={style}>{value}</El>;
+    }
+
+    const El = Tag as any;
+    return (
+        <div className="relative">
+            <El
+                ref={ref}
+                contentEditable
+                suppressContentEditableWarning
+                data-placeholder={placeholder}
+                className={`${className ?? ''} outline-none cursor-text relative
+                    before:content-[attr(data-placeholder)] before:absolute before:inset-0 before:opacity-40 before:pointer-events-none
+                    [&:not(:empty)]:before:hidden`}
+                style={style}
+                onFocus={() => {
+                    setFocused(true);
+                    if (onFieldFocus && ref.current) {
+                        onFieldFocus(field, ref.current.getBoundingClientRect());
+                    }
+                }}
+                onBlur={(e: React.FocusEvent<HTMLElement>) => {
+                    if (!toolbarMouseDownRef.current) {
+                        setFocused(false);
+                        onInlineChange(field, e.currentTarget.textContent || '');
+                    }
+                }}
+                onKeyDown={(e: React.KeyboardEvent<HTMLElement>) => {
+                    if (e.key === 'Enter') { e.preventDefault(); (e.target as HTMLElement).blur(); }
+                    if (e.key === 'v' && (e.metaKey || e.ctrlKey)) {
+                        e.preventDefault();
+                        const text = (e.nativeEvent as any).clipboardData?.getData('text/plain') ?? '';
+                        document.execCommand('insertText', false, text);
+                    }
+                }}
+                dangerouslySetInnerHTML={{ __html: value || '' }}
+            />
+            {focused && <FieldSelectionChrome />}
+        </div>
+    );
+}
 
 const TITLE_SIZES = (d: DeviceView): Record<string, string> => ({
     sm: dv(d, 'text-2xl', 'md:text-3xl'),
@@ -56,7 +142,12 @@ const CtaButtons = ({
     );
 };
 
-export const DefaultHeroBlock = ({ data, theme }: { data: any, theme?: any }) => {
+export const DefaultHeroBlock = ({ data, theme, onInlineChange, onFieldFocus }: {
+    data: any;
+    theme?: any;
+    onInlineChange?: (field: string, value: string) => void;
+    onFieldFocus?: (field: string, rect: DOMRect) => void;
+}) => {
     if (!data) return null;
 
     const deviceView = useDeviceView();
@@ -92,13 +183,6 @@ export const DefaultHeroBlock = ({ data, theme }: { data: any, theme?: any }) =>
     const textAlign: 'left' | 'center' | 'right' = data?.textAlign || defaultAlign;
     const textAlignClass = `text-${textAlign}`;
 
-    const Tagline = data?.tagline ? (
-        <p className={`text-xs font-bold uppercase tracking-[0.2em] text-theme-foreground/50 mb-2 ${textAlignClass}`}
-           style={data?.taglineColor ? { color: data.taglineColor } : undefined}>
-            {data.tagline}
-        </p>
-    ) : null;
-
     // ─── SPLIT ────────────────────────────────────────────────────────────────
     if (variant === 'split') {
         return (
@@ -107,16 +191,38 @@ export const DefaultHeroBlock = ({ data, theme }: { data: any, theme?: any }) =>
                 style={{ borderRadius: 'var(--theme-radius)' }}
             >
                 <div className={`flex-1 ${dv(d, 'p-8', 'md:p-12')} flex flex-col justify-center ${textAlignClass}`}>
-                    {Tagline}
-                    <h1 className={`${titleSizeClass} mb-4 ${isClean ? 'font-bold text-gray-900 tracking-tight' : isGlass ? 'font-bold text-theme-foreground' : 'font-extrabold text-theme-foreground'}`}
-                        style={data?.titleColor ? { color: data.titleColor } : undefined}>
-                        {data?.title}
-                    </h1>
-                    {data?.subtitle && (
-                        <p className={`text-xl ${data.subtitleWeight ? `font-${data.subtitleWeight}` : 'font-medium'} ${isGlass ? 'text-theme-foreground/70' : 'text-gray-600'}`}
-                           style={data?.subtitleColor ? { color: data.subtitleColor } : undefined}>
-                            {data.subtitle}
-                        </p>
+                    {(data?.tagline || onInlineChange) && (
+                        <EditableText
+                            tag="p"
+                            field="tagline"
+                            value={data?.tagline}
+                            placeholder="Add tagline…"
+                            onInlineChange={onInlineChange}
+                            onFieldFocus={onFieldFocus}
+                            className={`text-xs font-bold uppercase tracking-[0.2em] text-theme-foreground/50 mb-2 ${textAlignClass}`}
+                            style={data?.taglineColor ? { color: data.taglineColor } : undefined}
+                        />
+                    )}
+                    <EditableText
+                        tag="h1"
+                        field="title"
+                        value={data?.title}
+                        placeholder="Add title…"
+                        onInlineChange={onInlineChange}
+                        className={`${titleSizeClass} mb-4 ${isClean ? 'font-bold text-gray-900 tracking-tight' : isGlass ? 'font-bold text-theme-foreground' : 'font-extrabold text-theme-foreground'}`}
+                        style={data?.titleColor ? { color: data.titleColor } : undefined}
+                    />
+                    {(data?.subtitle || onInlineChange) && (
+                        <EditableText
+                            tag="p"
+                            field="subtitle"
+                            value={data?.subtitle}
+                            placeholder="Add subtitle…"
+                            onInlineChange={onInlineChange}
+                            onFieldFocus={onFieldFocus}
+                            className={`text-xl ${data?.subtitleWeight ? `font-${data.subtitleWeight}` : 'font-medium'} ${isGlass ? 'text-theme-foreground/70' : 'text-gray-600'}`}
+                            style={data?.subtitleColor ? { color: data.subtitleColor } : undefined}
+                        />
                     )}
                     <CtaButtons primary={primaryBtn} secondary={secondaryBtn} dark={false} align={textAlign} />
                 </div>
@@ -160,22 +266,38 @@ export const DefaultHeroBlock = ({ data, theme }: { data: any, theme?: any }) =>
                     <div className="absolute inset-0 z-0" style={{ backgroundColor: themeColors?.background || '#0E3B2E' }} />
                 )}
                 <div className={`relative z-10 p-6 max-w-4xl mx-auto w-full ${textAlignClass}`}>
-                    {data?.tagline && (
-                        <p className={`text-xs font-bold uppercase tracking-[0.2em] text-white/60 mb-2`}
-                           style={data?.taglineColor ? { color: data.taglineColor } : undefined}>
-                            {data.tagline}
-                        </p>
+                    {(data?.tagline || onInlineChange) && (
+                        <EditableText
+                            tag="p"
+                            field="tagline"
+                            value={data?.tagline}
+                            placeholder="Add tagline…"
+                            onInlineChange={onInlineChange}
+                            onFieldFocus={onFieldFocus}
+                            className="text-xs font-bold uppercase tracking-[0.2em] text-white/60 mb-2"
+                            style={data?.taglineColor ? { color: data.taglineColor } : undefined}
+                        />
                     )}
-                    <h1 className={`${titleSizeClass} mb-4 font-bold text-white tracking-tight text-shadow-sm`}
-                        style={data?.titleColor ? { color: data.titleColor } : undefined}>
-
-                        {data?.title}
-                    </h1>
-                    {data?.subtitle && (
-                        <p className={`${dv(d, 'text-xl', 'md:text-2xl')} ${data.subtitleWeight ? `font-${data.subtitleWeight}` : 'font-medium'} text-white/90 text-shadow-sm`}
-                           style={data?.subtitleColor ? { color: data.subtitleColor } : undefined}>
-                            {data.subtitle}
-                        </p>
+                    <EditableText
+                        tag="h1"
+                        field="title"
+                        value={data?.title}
+                        placeholder="Add title…"
+                        onInlineChange={onInlineChange}
+                        className={`${titleSizeClass} mb-4 font-bold text-white tracking-tight text-shadow-sm`}
+                        style={data?.titleColor ? { color: data.titleColor } : undefined}
+                    />
+                    {(data?.subtitle || onInlineChange) && (
+                        <EditableText
+                            tag="p"
+                            field="subtitle"
+                            value={data?.subtitle}
+                            placeholder="Add subtitle…"
+                            onInlineChange={onInlineChange}
+                            onFieldFocus={onFieldFocus}
+                            className={`${dv(d, 'text-xl', 'md:text-2xl')} ${data?.subtitleWeight ? `font-${data.subtitleWeight}` : 'font-medium'} text-white/90 text-shadow-sm`}
+                            style={data?.subtitleColor ? { color: data.subtitleColor } : undefined}
+                        />
                     )}
                     <CtaButtons primary={primaryBtn} secondary={secondaryBtn} dark={true} align={textAlign} />
                 </div>
@@ -210,19 +332,36 @@ export const DefaultHeroBlock = ({ data, theme }: { data: any, theme?: any }) =>
                 </div>
             )}
             <div className={`relative z-10 max-w-3xl mx-auto ${textAlignClass}`}>
-                {Tagline}
-                <h1 className={`
-                    ${titleSizeClass} mb-4
-                    ${isClean ? 'font-bold text-gray-900 tracking-tight' : isGlass ? 'font-bold text-theme-foreground' : 'font-extrabold text-theme-foreground transform -rotate-1'}
-                `}
-                    style={data?.titleColor ? { color: data.titleColor } : undefined}>
-                    {data?.title}
-                </h1>
-                {data?.subtitle && (
-                    <p className={`text-xl ${data.subtitleWeight ? `font-${data.subtitleWeight}` : 'font-medium'} ${isGlass ? 'text-theme-foreground/80' : 'text-gray-600'}`}
-                       style={data?.subtitleColor ? { color: data.subtitleColor } : undefined}>
-                        {data.subtitle}
-                    </p>
+                {(data?.tagline || onInlineChange) && (
+                    <EditableText
+                        tag="p"
+                        field="tagline"
+                        value={data?.tagline}
+                        placeholder="Add tagline…"
+                        onInlineChange={onInlineChange}
+                        className={`text-xs font-bold uppercase tracking-[0.2em] text-theme-foreground/50 mb-2 ${textAlignClass}`}
+                        style={data?.taglineColor ? { color: data.taglineColor } : undefined}
+                    />
+                )}
+                <EditableText
+                    tag="h1"
+                    field="title"
+                    value={data?.title}
+                    placeholder="Add title…"
+                    onInlineChange={onInlineChange}
+                    className={`${titleSizeClass} mb-4 ${isClean ? 'font-bold text-gray-900 tracking-tight' : isGlass ? 'font-bold text-theme-foreground' : 'font-extrabold text-theme-foreground transform -rotate-1'}`}
+                    style={data?.titleColor ? { color: data.titleColor } : undefined}
+                />
+                {(data?.subtitle || onInlineChange) && (
+                    <EditableText
+                        tag="p"
+                        field="subtitle"
+                        value={data?.subtitle}
+                        placeholder="Add subtitle…"
+                        onInlineChange={onInlineChange}
+                        className={`text-xl ${data?.subtitleWeight ? `font-${data.subtitleWeight}` : 'font-medium'} ${isGlass ? 'text-theme-foreground/80' : 'text-gray-600'}`}
+                        style={data?.subtitleColor ? { color: data.subtitleColor } : undefined}
+                    />
                 )}
                 <CtaButtons primary={primaryBtn} secondary={secondaryBtn} dark={false} align={textAlign} />
             </div>
