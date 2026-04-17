@@ -168,7 +168,7 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data }) => {
                     </h1>
                 )}
                 {subtitle && (
-                    <p className="text-lg font-medium leading-relaxed max-w-md m-0 opacity-80"
+                    <p className={`text-lg ${data?.subtitleWeight ? `font-${data.subtitleWeight}` : 'font-medium'} leading-relaxed max-w-md m-0 opacity-80`}
                         style={{ color: data?.subtitleColor || '#ffffff' }}>
                         {subtitle}
                     </p>

@@ -220,6 +220,18 @@ export const HeroForm = ({ data, onChange }: HeroFormProps) => {
                 <label className={labelClass}>Subtitle</label>
                 <input type="text" value={safeData.subtitle || ''} onChange={(e) => handleChange('subtitle', e.target.value)}
                     className={inputClass} placeholder="Brief description or tagline" />
+                <div className="flex gap-1 p-1 mt-2 bg-gray-50 dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800">
+                    {[{ value: 'normal', label: 'Normal' }, { value: 'medium', label: 'Medium' }, { value: 'semibold', label: 'Semibold' }, { value: 'bold', label: 'Bold' }].map(({ value, label }) => (
+                        <button key={value} type="button" onClick={() => handleChange('subtitleWeight', value)}
+                            className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                                (safeData.subtitleWeight || 'medium') === value
+                                    ? 'bg-blue-600 text-white shadow'
+                                    : 'text-neutral-400 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800'
+                            }`}>
+                            {label}
+                        </button>
+                    ))}
+                </div>
                 <div className="mt-1.5">
                     <label className="text-xs font-medium text-neutral-500 block mb-1">Subtitle Color</label>
                     <ColorInput value={safeData.subtitleColor} onChange={(hex) => handleChange('subtitleColor', hex)}

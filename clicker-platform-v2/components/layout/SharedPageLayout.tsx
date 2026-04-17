@@ -94,8 +94,8 @@ export function SharedPageLayout({
 
     // Build color overrides
     const colorOverrides = isLockedTemplate ? {
-        // Locked templates: only primary/accent + optional background/surface
-        ...(finalThemeColor ? { primary: finalThemeColor, accent: finalThemeColor } : {}),
+        // Locked templates: use template's native primary/accent. 
+        // Only respect explicit background/surface color DB overrides if set.
         ...(backgroundColor ? { background: backgroundColor } : {}),
         ...(surfaceColor ? { surface: surfaceColor } : {}),
     } : {
