@@ -6,15 +6,15 @@ import { httpsCallable } from 'firebase/functions';
 import { auth, functions } from '@/lib/firebase';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
-
-// ... (imports remain)
+import { clearSessionCookies } from '@/lib/session';
+import { resolvePlatformUrl } from '@/lib/resolve-platform-url';
 
 function AdminLoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [isChecking, setIsChecking] = useState(true); // New loading state
-  const [status, setStatus] = useState(''); // Status message during auto-handoff
+  const [isChecking, setIsChecking] = useState(true);
+  const [status, setStatus] = useState('');
 
   // Guard: prevent double performHandoff from onAuthStateChanged + handleLogin racing
   const handoffInProgress = useRef(false);
@@ -26,15 +26,12 @@ function AdminLoginForm() {
 
   // Shared Handoff Logic — guarded against double-invocation
   const performHandoff = async () => {
-    // Prevent race condition: onAuthStateChanged + handleLogin both calling performHandoff
     if (handoffInProgress.current) {
-      console.log('[Auth Gateway] performHandoff already in progress, skipping duplicate call.');
       return;
     }
 
     // Loop detection: if performHandoff is called too many times in one session,
     // it indicates a redirect loop (gateway → callback → middleware → gateway).
-    // Break the cycle, sign out, and show a clear error.
     const LOOP_KEY = 'handoff_loop_count';
     const loopCount = parseInt(sessionStorage.getItem(LOOP_KEY) || '0');
     if (loopCount >= 3) {
@@ -43,11 +40,7 @@ function AdminLoginForm() {
       try {
         await auth.signOut();
       } catch { /* ignore */ }
-      const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN;
-      document.cookie = `__session=; path=/; max-age=0; SameSite=Lax; Secure`;
-      if (baseDomain) {
-        document.cookie = `__session=; path=/; max-age=0; Domain=.${baseDomain}; SameSite=Lax; Secure`;
-      }
+      clearSessionCookies();
       setError('⚠️ Login loop terdeteksi. Session telah di-reset. Silakan login ulang dari awal.');
       setIsChecking(false);
       return;
@@ -68,68 +61,15 @@ function AdminLoginForm() {
         )
       ]);
 
-      // @ts-ignore
-      if (!result.data || !result.data.token) {
+      const handoffData = result.data as { token?: string };
+      if (!handoffData?.token) {
         throw new Error('No token received.');
       }
-
-      // @ts-ignore
-      const handoffToken = result.data.token;
+      const handoffToken = handoffData.token;
 
       setStatus('Redirecting to dashboard...');
 
-      // Determine the platform URL - prefer masked domains
-      let platformUrl: string = '';
-
-      // 1. Try to get domain from redirect param
-      if (redirectTo && redirectTo.startsWith('http')) {
-        try {
-          platformUrl = new URL(redirectTo).origin;
-        } catch {
-          // Invalid URL in redirect param
-        }
-      }
-
-      // 2. If no valid redirect domain, try to infer from tenant cookie
-      if (!platformUrl) {
-        // Check for tenant cookie set during login
-        const tenantMatch = document.cookie.match(/__tenant=([^;]+)/);
-        const tenantSlug = tenantMatch ? tenantMatch[1] : null;
-
-        const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'clicker.id';
-
-        if (tenantSlug) {
-          // Construct domain from tenant
-          if (baseDomain.includes('.web.app')) {
-            // Path-based for default Firebase domains (sub-subdomains like tenant.stg-clicker-core.web.app don't work)
-            platformUrl = `https://${baseDomain}/${tenantSlug}`;
-          } else {
-            // Subdomain-based for custom domains (e.g., tenant.clicker.id)
-            platformUrl = `https://${tenantSlug}.${baseDomain}`;
-          }
-        } else if (window.location.hostname === 'localhost') {
-          // Fallback for local development to main platform port
-          platformUrl = 'http://localhost:3000';
-        } else {
-          // No redirect param and no tenant cookie — auto-detect from Firebase Auth claims
-          const currentUser = auth.currentUser;
-          if (currentUser) {
-            const idTokenResult = await currentUser.getIdTokenResult();
-            const claimedSiteId = idTokenResult.claims?.siteId as string | undefined;
-            if (claimedSiteId) {
-              const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'clicker.id';
-              platformUrl = `https://${claimedSiteId}.${baseDomain}`;
-              // Remember for next time
-              document.cookie = `__tenant=${claimedSiteId}; path=/; max-age=${60 * 60 * 24 * 30}; SameSite=Lax`;
-            } else {
-              throw new Error('Akun ini belum memiliki situs yang terhubung. Hubungi administrator untuk mengatur akses.');
-            }
-          } else {
-            throw new Error('Sesi login tidak ditemukan. Silakan login ulang.');
-          }
-        }
-      }
-
+      const platformUrl = await resolvePlatformUrl({ redirectTo, currentUser: auth.currentUser });
 
       const nextPath = (redirectTo && redirectTo !== '/')
         ? (redirectTo.startsWith('http') ? new URL(redirectTo).pathname : redirectTo)
@@ -137,18 +77,16 @@ function AdminLoginForm() {
       // Token in fragment (#) — never sent to server, not in logs, not in referrer headers
       const finalUrl = `${platformUrl}/admin/auth/callback?next=${encodeURIComponent(nextPath)}#token=${encodeURIComponent(handoffToken)}`;
 
-
       // Handoff successful — clear loop counter before redirecting
       sessionStorage.removeItem('handoff_loop_count');
 
-      // console.log(`🚀 Handing off to: ${finalUrl}`); // SECURE: Don't log token
       window.location.href = finalUrl;
 
     } catch (err: any) {
       console.error('Handoff Error:', err);
       sessionStorage.removeItem('handoff_loop_count');
-      setError(`Auto-login failed: ${err.message}. Please login manually.`);
-      setIsChecking(false); // Show form on error
+      setError(`Gagal login otomatis: ${err.message}. Silakan login ulang.`);
+      setIsChecking(false);
     } finally {
       handoffInProgress.current = false;
     }
@@ -159,18 +97,14 @@ function AdminLoginForm() {
     // Check if redirected back due to an error (e.g., no site membership)
     const errorParam = searchParams.get('error');
     if (errorParam) {
-      // Clean the error param from URL first (sync)
       if (typeof window !== 'undefined') {
         const url = new URL(window.location.href);
         url.searchParams.delete('error');
         window.history.replaceState(null, '', url.toString());
       }
-      // User was redirected back with an error — clear stale auth session, then show error
+      // Clear stale auth session, then show error
       auth.signOut().then(() => {
-        // Clear any stale cookies AFTER signOut completes (prevents auto-handoff re-trigger)
-        document.cookie = '__session=; path=/; max-age=0; SameSite=Lax; Secure';
-        document.cookie = '__session=; path=/; max-age=0; Domain=.clicker.id; SameSite=Lax; Secure';
-
+        clearSessionCookies();
         const errorMessages: Record<string, string> = {
           'no_membership': '⚠️ Akun ini tidak memiliki akses ke situs manapun. Silakan login dengan akun lain.',
           'auth_failed': '⚠️ Autentikasi gagal. Silakan coba lagi.',
@@ -181,16 +115,15 @@ function AdminLoginForm() {
         setError('⚠️ Akun tidak memiliki akses. Silakan login dengan akun lain.');
         setIsChecking(false);
       });
-      return () => { }; // No-op cleanup
+      return () => { };
     }
 
-    // Check if user is already logged in
+    // Check if user is already logged in — onAuthStateChanged handles handoff
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
-        console.log("User found, attempting auto-handoff...");
         await performHandoff();
       } else {
-        setIsChecking(false); // No user, show form
+        setIsChecking(false);
       }
     });
     return () => unsubscribe();
@@ -203,30 +136,17 @@ function AdminLoginForm() {
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      // Auth state change will trigger useEffect? 
-      // Actually, onAuthStateChanged might fire, but let's call handoff directly to be sure/faster
-      // OR rely on the listener. 
-      // Relying on listener is safer to avoid double-firing, but let's just wait for listener or call it if we want instant feedback.
-      // Better: The listener handles it. But we need to ensure 'isChecking' puts us in a loading state.
       setIsChecking(true);
-
-      // Manual trigger if listener implies we are already authed? 
-      // signInWithEmailAndPassword authenticates the client. 
-      // The listener WILL fire. Let's rely on the listener or manual call.
-      // To prevent races, let's just call performHandoff() directly here too, but ensuring we don't double dip is tricky.
-      // Actually, standard pattern: 
-      // 1. signIn
-      // 2. performHandoff
-      await performHandoff();
+      // onAuthStateChanged listener will fire and call performHandoff
 
     } catch (err: any) {
-      let errorMessage = 'Invalid email or password.';
+      let errorMessage = 'Email atau password salah.';
       if (err.code === 'auth/too-many-requests') {
-        errorMessage = 'Too many failed attempts. Please try again later.';
+        errorMessage = 'Terlalu banyak percobaan gagal. Silakan coba lagi nanti.';
       } else if (err.code && err.code !== 'auth/invalid-credential' && err.code !== 'auth/user-not-found' && err.code !== 'auth/wrong-password') {
         errorMessage = err.message;
       }
-      setError(`⚠️ Login Failed: ${errorMessage}`);
+      setError(`⚠️ Login Gagal: ${errorMessage}`);
       setStatus('');
       setIsChecking(false);
     }

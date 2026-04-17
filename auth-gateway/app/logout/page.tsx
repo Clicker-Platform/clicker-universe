@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
+import { clearSessionCookies } from '@/lib/session';
 
 export default function LogoutPage() {
     const router = useRouter();
@@ -15,19 +16,11 @@ export default function LogoutPage() {
             try {
                 // Sign out of Firebase Auth on this domain
                 await signOut(auth);
-                console.log('Logged out of Gateway');
 
-                // Clear __session cookie at all domain levels to prevent stale auth
-                const isSecure = window.location.protocol === 'https:';
-                const secureFlag = isSecure ? '; Secure' : '';
-                const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'clicker.id';
-                document.cookie = `__session=; path=/; max-age=0; SameSite=Lax${secureFlag}`;
-                if (isSecure) {
-                    document.cookie = `__session=; path=/; max-age=0; Domain=.${baseDomain}; SameSite=Lax; Secure`;
-                }
+                clearSessionCookies();
 
-                // Clear any local storage if needed
-                localStorage.clear();
+                localStorage.removeItem('__auth_session');
+                localStorage.removeItem('__tenant_cache');
 
                 // Redirect to login page
                 // We restart the flow, so 'page.tsx' will show the login form since auth is null
