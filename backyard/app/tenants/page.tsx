@@ -5,7 +5,7 @@ import { httpsCallable } from 'firebase/functions';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { functions, db, auth } from '@/lib/firebase';
 import { toast } from 'sonner';
-import { Store, Power, PowerOff, Loader2, RefreshCw, Database, ExternalLink, Grid, Users, UserPlus, UserX, Trash2, Pencil } from 'lucide-react';
+import { Store, Power, PowerOff, Loader2, RefreshCw, Database, ExternalLink, Grid, Users, UserPlus, UserX, Trash2, Pencil, Search } from 'lucide-react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
 import Sidebar from '../../components/Sidebar';
@@ -32,12 +32,28 @@ export default function TenantsPage() {
     const [modules, setModules] = useState<Record<string, boolean>>(initialModules);
     const [seedSampleData, setSeedSampleData] = useState(true); // Default to on
     const [createLoading, setCreateLoading] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
 
     // Action State
     const [selectedTenant, setSelectedTenant] = useState<any>(null);
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [actionType, setActionType] = useState<'suspend' | 'activate'>('suspend');
     const [actionLoading, setActionLoading] = useState(false);
+
+    // Seed Dialog State
+    const [seedDialogOpen, setSeedDialogOpen] = useState(false);
+    const [seedTarget, setSeedTarget] = useState<any>(null);
+
+    // Remove Member Dialog State
+    const [removeMemberDialogOpen, setRemoveMemberDialogOpen] = useState(false);
+    const [removeMemberTarget, setRemoveMemberTarget] = useState<string | null>(null);
+
+    const filteredTenants = useMemo(() =>
+        tenants.filter(t =>
+            t.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            t.slug?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            t.ownerEmail?.toLowerCase().includes(searchQuery.toLowerCase())
+        ), [tenants, searchQuery]);
 
     // 1. Fetch Tenants (Classic Request-Response)
     const fetchTenants = async (): Promise<any[]> => {
@@ -97,7 +113,6 @@ export default function TenantsPage() {
             setOwnerEmail('');
             setPassword('');
             setSubdomain('');
-            setSubdomain('');
             setHostingId('quattro');
             setModules(initialModules); // Reset to all OFF
             setSeedSampleData(true);
@@ -136,24 +151,21 @@ export default function TenantsPage() {
         }
     };
 
-    const handleSeed = async (tenant: any) => {
-        if (!confirm(`WARNING: Reset data for "${tenant.name}" (${tenant.id})? This cannot be undone.`)) return;
+    const handleSeed = (tenant: any) => {
+        setSeedTarget(tenant);
+        setSeedDialogOpen(true);
+    };
 
-        const toastId = toast.loading('Seeding data...', { description: `Target: ${tenant.name}` });
-
+    const confirmSeed = async () => {
+        if (!seedTarget) return;
+        setSeedDialogOpen(false);
+        const toastId = toast.loading('Seeding data...', { description: `Target: ${seedTarget.name}` });
         try {
             const seedFn = httpsCallable(functions, 'seedSiteData');
-            await seedFn({ siteId: tenant.id });
-            toast.success('Seeding Complete', {
-                id: toastId,
-                description: `Data for ${tenant.name} has been reset.`
-            });
+            await seedFn({ siteId: seedTarget.id });
+            toast.success('Seeding Complete', { id: toastId, description: `Data for ${seedTarget.name} has been reset.` });
         } catch (error: any) {
-            console.error(error);
-            toast.error('Seeding Failed', {
-                id: toastId,
-                description: error.message
-            });
+            toast.error('Seeding Failed', { id: toastId, description: error.message });
         }
     };
 
@@ -166,9 +178,6 @@ export default function TenantsPage() {
         const defaultModules: Record<string, boolean> = {};
         SYSTEM_MODULES.forEach((mod: any) => { defaultModules[mod.id] = false; });
         const currentModules = { ...defaultModules, ...(tenant.modules || {}) };
-        console.log('[openModuleDialog] tenant.id:', tenant.id);
-        console.log('[openModuleDialog] tenant.modules:', JSON.stringify(tenant.modules));
-        console.log('[openModuleDialog] merged:', JSON.stringify(currentModules));
         setManagingModules(currentModules);
         setModuleDialogOpen(true);
     };
@@ -213,12 +222,12 @@ export default function TenantsPage() {
         try {
             const hardDeleteFn = httpsCallable(functions, 'hardDeleteTenant');
             await hardDeleteFn({ siteId: selectedTenant.id });
-            toast.success('Tenant Obliterated', {
-                description: `${selectedTenant.name} and all its data have been permanently deleted.`
+            toast.success('Tenant Deleted', {
+                description: `${selectedTenant.name} has been removed.`
             });
             setDeleteDialogOpen(false);
+            setTenants(prev => prev.filter(t => t.id !== selectedTenant.id));
             setSelectedTenant(null);
-            fetchTenants();
         } catch (error: any) {
             toast.error('Hard Delete Failed', { description: error.message });
         } finally {
@@ -247,8 +256,10 @@ export default function TenantsPage() {
             await updateSlugFn({ siteId: selectedTenant.id, newSlug: sanitized });
             toast.success('URL Updated', { description: `New URL: /${sanitized}` });
             setUpdateUrlDialogOpen(false);
+            setTenants(prev => prev.map(t =>
+                t.id === selectedTenant.id ? { ...t, slug: sanitized } : t
+            ));
             setSelectedTenant(null);
-            fetchTenants();
         } catch (error: any) {
             toast.error('URL Update Failed', { description: error.message });
         } finally {
@@ -274,15 +285,12 @@ export default function TenantsPage() {
         if (!teamDialogOpen || !selectedTenant?.id) return;
 
         setTeamLoading(true);
-        console.log("🔍 Fetching Firestore team for Site ID:", selectedTenant.id);
-
         const unsubscribe = onSnapshot(collection(db, 'sites', selectedTenant.id, 'members'),
             (snapshot) => {
                 const members: any[] = [];
                 snapshot.forEach((doc) => {
                     members.push({ uid: doc.id, ...doc.data() });
                 });
-                console.log("🏁 Firestore Team Members:", members.length);
                 setTeamMembers(members);
                 setTeamLoading(false);
             },
@@ -338,23 +346,24 @@ export default function TenantsPage() {
         }
     };
 
-    const handleRemoveMember = async (uid: string) => {
-        if (!confirm('Are you sure you want to remove this member?')) return;
+    const handleRemoveMember = (uid: string) => {
+        setRemoveMemberTarget(uid);
+        setRemoveMemberDialogOpen(true);
+    };
 
+    const confirmRemoveMember = async () => {
+        if (!removeMemberTarget) return;
+        setRemoveMemberDialogOpen(false);
         setTeamLoading(true);
         try {
-            // New function that handles both Firestore and Claims
             const removeUserFn = httpsCallable(functions, 'removeUserFromSite');
-            await removeUserFn({
-                uid,
-                siteId: selectedTenant.id
-            });
-
+            await removeUserFn({ uid: removeMemberTarget, siteId: selectedTenant.id });
             toast.success('Member removed successfully');
         } catch (error: any) {
             toast.error('Failed to remove member', { description: error.message });
         } finally {
             setTeamLoading(false);
+            setRemoveMemberTarget(null);
         }
     };
 
@@ -365,18 +374,18 @@ export default function TenantsPage() {
                 <header className="mb-4">
                     <h1 className="text-3xl font-black text-brand-dark flex items-center gap-3">
                         <Store className="w-8 h-8" />
-                        Backyard Forge
+                        Tenants
                     </h1>
-                    <p className="text-gray-400 font-medium">Manifesting New Civilizations & Managed Realities</p>
+                    <p className="text-gray-400 font-medium">Create & manage tenants</p>
                 </header>
 
                 <div className="flex flex-col gap-8">
                     {/* FORGE PANEL */}
-                    <div className="bg-white rounded-[32px] border-[3px] border-brand-dark overflow-hidden flex flex-col">
+                    <div className="bg-white rounded-2xl border-[3px] border-brand-dark overflow-hidden flex flex-col">
                         <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/30">
                             <div>
-                                <h2 className="text-xl font-bold text-brand-dark">Tenant Forge</h2>
-                                <p className="text-xs text-gray-400 font-medium">Deploy a new instance into the universe</p>
+                                <h2 className="text-xl font-bold text-brand-dark">Create Tenant</h2>
+                                <p className="text-xs text-gray-400 font-medium">Add a new tenant to the platform</p>
                             </div>
                             <div className="flex gap-2">
                                 <button onClick={() => fetchTenants()} className="p-2 hover:bg-white rounded-lg transition-all border border-transparent hover:border-gray-100">
@@ -401,7 +410,7 @@ export default function TenantsPage() {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-xs font-bold text-brand-dark uppercase tracking-wider pl-1">Target Hosting (Tenant)</label>
+                                        <label className="text-xs font-bold text-brand-dark uppercase tracking-wider pl-1">Hosting Platform</label>
                                         <div className="grid grid-cols-2 gap-3">
                                             <button
                                                 type="button"
@@ -433,14 +442,14 @@ export default function TenantsPage() {
                                             value={subdomain}
                                             onChange={e => setSubdomain(e.target.value)}
                                             className="w-full px-4 py-3 rounded-lg border-[3px] border-gray-100 focus:border-brand-dark outline-none font-bold text-sm bg-gray-50/30 transition-all"
-                                            placeholder="cafe-quattro"
+                                            placeholder="my-business (lowercase, dashes only)"
                                         />
                                     </div>
                                 </div>
 
                                 {/* Modules Selector (Span 2) */}
                                 <div className="space-y-4 md:col-span-2">
-                                    <label className="text-xs font-bold text-brand-dark uppercase tracking-wider pl-1">Active Modules & Provisions</label>
+                                    <label className="text-xs font-bold text-brand-dark uppercase tracking-wider pl-1">Modules</label>
                                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                                         {SYSTEM_MODULES.map((mod: any) => (
                                             <label key={mod.id} className={`flex items-center gap-3 p-3 rounded-lg border-[3px] cursor-pointer transition-all ${modules[mod.id]
@@ -490,9 +499,9 @@ export default function TenantsPage() {
                                             <button
                                                 type="submit"
                                                 disabled={createLoading}
-                                                className="w-full py-3 bg-brand-dark text-white rounded-[20px] font-black uppercase text-xs tracking-widest hover:bg-gray-800 transition-all active:scale-95 shadow-xl flex items-center justify-center gap-2"
+                                                className="w-full py-3 bg-brand-dark text-white rounded-xl font-black uppercase text-xs tracking-widest hover:bg-gray-800 transition-all active:scale-95 shadow-xl flex items-center justify-center gap-2"
                                             >
-                                                {createLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><UserPlus className="w-4 h-4" /> Forge Instance</>}
+                                                {createLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><UserPlus className="w-4 h-4" /> Create Tenant</>}
                                             </button>
                                         </div>
                                     </div>
@@ -502,14 +511,23 @@ export default function TenantsPage() {
                     </div>
 
                     {/* LIST PANEL */}
-                    <div className="bg-white rounded-[32px] border-[3px] border-brand-dark overflow-hidden flex flex-col">
-                        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/30">
-                            <div>
-                                <h2 className="text-xl font-bold text-brand-dark">Active Contexts</h2>
-                                <p className="text-xs text-gray-400 font-medium">Manifested tenants currently in operation</p>
+                    <div className="bg-white rounded-2xl border-[3px] border-brand-dark overflow-hidden flex flex-col">
+                        <div className="p-6 border-b border-gray-100 bg-gray-50/30">
+                            <div className="flex justify-between items-center mb-4">
+                                <h2 className="text-xl font-bold text-brand-dark">Tenant List</h2>
+                                <div className="bg-brand-dark px-4 py-2 rounded-lg text-[10px] font-black text-white shadow-md uppercase tracking-widest">
+                                    {tenants.length} tenants
+                                </div>
                             </div>
-                            <div className="bg-brand-dark px-4 py-2 rounded-lg text-[10px] font-black text-white shadow-md uppercase tracking-widest">
-                                Manifestations: {tenants.length}
+                            <div className="relative">
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                <input
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={e => setSearchQuery(e.target.value)}
+                                    className="w-full pl-10 pr-4 py-2 rounded-lg border-2 border-gray-200 focus:border-brand-dark outline-none font-medium text-sm transition-colors"
+                                    placeholder="Search by name, slug, or email..."
+                                />
                             </div>
                         </div>
 
@@ -517,22 +535,26 @@ export default function TenantsPage() {
                             {loading ? (
                                 <div className="p-12 text-center text-gray-400 uppercase font-black text-xs tracking-widest flex items-center justify-center gap-3">
                                     <Loader2 className="w-5 h-5 animate-spin" />
-                                    Synchronizing Multiverse...
+                                    Loading tenants...
                                 </div>
                             ) : tenants.length === 0 ? (
-                                <div className="p-12 text-center text-gray-400 font-bold">No tenants manifested in this sector.</div>
+                                <div className="p-12 text-center">
+                                    <Store className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                                    <h3 className="font-bold text-gray-600 mb-2">No tenants yet</h3>
+                                    <p className="text-sm text-gray-400">Create your first tenant using the form above.</p>
+                                </div>
                             ) : (
                                 <table className="w-full text-left">
                                     <thead className="bg-gray-50/50 border-b border-gray-100 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
                                         <tr>
-                                            <th className="p-6">Context Identity</th>
-                                            <th className="p-6">Originator</th>
-                                            <th className="p-6">Vital Status</th>
-                                            <th className="p-6 text-right">Manipulation</th>
+                                            <th className="p-6">Tenant</th>
+                                            <th className="p-6">Owner</th>
+                                            <th className="p-6">Status</th>
+                                            <th className="p-6 text-right">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-50">
-                                        {tenants.map((tenant) => (
+                                        {filteredTenants.map((tenant) => (
                                             <tr key={tenant.id} className="hover:bg-gray-50/50 transition-colors">
                                                 <td className="p-4 pl-6">
                                                     <div className="flex flex-col gap-1">
@@ -646,6 +668,24 @@ export default function TenantsPage() {
                             : `Reactivate access for "${selectedTenant?.name}"? Services will be restored immediately.`
                     }
                     variant={actionType === 'suspend' ? 'danger' : 'primary'}
+                />
+
+                <ConfirmationDialog
+                    isOpen={seedDialogOpen}
+                    onCancel={() => setSeedDialogOpen(false)}
+                    onConfirm={confirmSeed}
+                    title="Reset Site Data"
+                    description={`WARNING: This will reset all data for "${seedTarget?.name}" (${seedTarget?.id}). This cannot be undone.`}
+                    variant="danger"
+                />
+
+                <ConfirmationDialog
+                    isOpen={removeMemberDialogOpen}
+                    onCancel={() => { setRemoveMemberDialogOpen(false); setRemoveMemberTarget(null); }}
+                    onConfirm={confirmRemoveMember}
+                    title="Remove Member"
+                    description="Are you sure you want to remove this member from the team?"
+                    variant="danger"
                 />
 
                 {/* MODULE MANAGEMENT DIALOG */}
@@ -835,7 +875,7 @@ export default function TenantsPage() {
                 {/* TEAM MANAGEMENT DIALOG */}
                 {teamDialogOpen && selectedTenant && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
-                        <div className="bg-white rounded-[32px] border-[3px] border-brand-dark shadow-2xl w-full max-w-5xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[92vh]">
+                        <div className="bg-white rounded-2xl border-[3px] border-brand-dark shadow-2xl w-full max-w-5xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[92vh]">
                             <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                                 <h3 className="font-bold text-lg text-brand-dark flex items-center gap-2">
                                     <Users className="w-5 h-5 text-indigo-600" />

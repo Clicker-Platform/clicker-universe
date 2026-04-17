@@ -18,6 +18,9 @@ export default function Home() {
     const [loginError, setLoginError] = useState('');
     const [actionLoading, setActionLoading] = useState(false);
 
+    // Dashboard Stats
+    const [stats, setStats] = useState({ tenants: 0, users: 0 });
+
     // Auth Listener
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -26,6 +29,24 @@ export default function Home() {
         });
         return () => unsubscribe();
     }, []);
+
+    // Fetch real stats when logged in
+    useEffect(() => {
+        if (!user) return;
+        const fetchStats = async () => {
+            try {
+                const [tenantsRes, usersRes] = await Promise.all([
+                    httpsCallable(functions, 'getTenants')(),
+                    httpsCallable(functions, 'listUsers')()
+                ]);
+                setStats({
+                    tenants: (tenantsRes.data as any)?.list?.length || 0,
+                    users: ((usersRes.data as any)?.users || []).filter((u: any) => u.email).length || 0
+                });
+            } catch { /* silent — stats are non-critical */ }
+        };
+        fetchStats();
+    }, [user]);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -38,9 +59,9 @@ export default function Home() {
         setLoginError('');
         try {
             await signInWithEmailAndPassword(auth, loginEmail, loginPassword);
-            toast.success('Welcome Back, Commander', { description: 'Access granted to God Mode.' });
+            toast.success('Welcome back', { description: 'Signed in successfully.' });
         } catch (error: any) {
-            setLoginError('Invalid credentials. Access denied.');
+            setLoginError('Invalid credentials.');
         } finally {
             setActionLoading(false);
         }
@@ -48,8 +69,9 @@ export default function Home() {
 
     const handleLogout = async () => {
         await signOut(auth);
-        toast.info('Session Terminated', { description: 'See you later.' });
+        toast.info('Signed out');
     };
+
 
     if (loading) return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -64,13 +86,13 @@ export default function Home() {
     if (!user) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50/50 p-6 font-sans">
-                <div className="w-full max-w-md bg-white rounded-3xl border-[3px] border-brand-dark shadow-[8px_8px_0px_0px_rgba(34,34,34,1)] overflow-hidden">
+                <div className="w-full max-w-md bg-white rounded-3xl border-[3px] border-brand-dark shadow-sticker overflow-hidden">
                     <div className="p-8 border-b-[3px] border-brand-dark bg-gray-50/50">
                         <h1 className="text-2xl font-black text-brand-dark flex items-center gap-2">
                             <ShieldAlert className="w-8 h-8" />
-                            ACCESS RELAY
+                            Admin Login
                         </h1>
-                        <p className="text-gray-500 font-medium mt-1">Superadmin Authentication</p>
+                        <p className="text-gray-500 font-medium mt-1">Sign in to manage your platform</p>
                     </div>
 
                     {/* LOGIN FORM */}
@@ -89,7 +111,7 @@ export default function Home() {
                                 value={loginEmail}
                                 onChange={e => setLoginEmail(e.target.value)}
                                 className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-brand-dark outline-none font-medium transition-colors text-gray-900 bg-white"
-                                placeholder="officer@clicker.com"
+                                placeholder="admin@clicker.com"
                             />
                         </div>
 
@@ -113,43 +135,13 @@ export default function Home() {
                             disabled={actionLoading}
                             className="w-full py-4 bg-brand-dark text-white rounded-lg font-bold text-lg hover:bg-gray-800 hover:shadow-lg hover:-translate-y-0.5 transition-all disabled:opacity-50"
                         >
-                            {actionLoading ? 'Verifying Credentials...' : 'Authenticate'}
+                            {actionLoading ? 'Signing in...' : 'Sign In'}
                         </button>
 
-                        <div className="text-center pt-2 space-y-4">
+                        <div className="text-center pt-2">
                             <p className="text-xs text-gray-400 font-medium">
-                                Authorized Personnel Only. <br />
-                                Access attempts are logged.
+                                Clicker Platform Admin
                             </p>
-                            {process.env.NODE_ENV === 'development' && (
-                                <button
-                                    type="button"
-                                    onClick={async () => {
-                                        if (!loginEmail || !loginPassword) {
-                                            toast.warning('Input Required', { description: 'Enter email and password to create the superadmin.' });
-                                            return;
-                                        }
-                                        setActionLoading(true);
-                                        try {
-                                            const createUser = httpsCallable(functions, 'createUser');
-                                            await createUser({
-                                                email: loginEmail,
-                                                password: loginPassword,
-                                                displayName: 'Super Admin',
-                                                role: 'superadmin'
-                                            });
-                                            toast.success('System Initialized', { description: 'Superadmin account created. You may now login.' });
-                                        } catch (error: any) {
-                                            toast.error('Bootstrap Failed', { description: error.message });
-                                        } finally {
-                                            setActionLoading(false);
-                                        }
-                                    }}
-                                    className="text-xs text-gray-300 hover:text-brand-dark underline decoration-dotted transition-colors"
-                                >
-                                    Initialize System (Dev Only)
-                                </button>
-                            )}
                         </div>
                     </form>
                 </div>
@@ -157,7 +149,7 @@ export default function Home() {
         );
     }
 
-    // --- GOD MODE DASHBOARD ---
+    // --- DASHBOARD ---
     return (
         <div className="min-h-screen bg-gray-50/50 flex font-sans">
             <Sidebar />
@@ -169,9 +161,9 @@ export default function Home() {
                         <div>
                             <h1 className="text-3xl font-black tracking-tight text-brand-dark flex items-center gap-3">
                                 <LayoutDashboard className="w-8 h-8" />
-                                DASHBOARD OVERVIEW
+                                Dashboard
                             </h1>
-                            <p className="text-gray-500 font-medium">Platform Health & Status</p>
+                            <p className="text-gray-500 font-medium">Platform overview</p>
                         </div>
                         <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-gray-200">
                             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
@@ -181,45 +173,43 @@ export default function Home() {
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         {/* STAT CARD: TENANTS */}
-                        <div className="bg-white rounded-3xl border border-gray-100 p-8 hover:shadow-lg transition-all relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
+                        <div className="bg-white rounded-2xl border border-gray-100 p-8 hover:shadow-lg transition-all relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-brand-green/10 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
                             <div className="relative">
-                                <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center mb-4">
+                                <div className="w-12 h-12 bg-brand-green/10 text-brand-dark rounded-lg flex items-center justify-center mb-4">
                                     <Store className="w-6 h-6" />
                                 </div>
-                                <h2 className="text-4xl font-black text-brand-dark mb-1">--</h2>
+                                <h2 className="text-4xl font-black text-brand-dark mb-1">{stats.tenants || '--'}</h2>
                                 <p className="text-gray-400 font-bold uppercase text-xs tracking-wider">Active Tenants</p>
                             </div>
                         </div>
 
                         {/* STAT CARD: USERS */}
-                        <div className="bg-white rounded-3xl border border-gray-100 p-8 hover:shadow-lg transition-all relative overflow-hidden group">
+                        <div className="bg-white rounded-2xl border border-gray-100 p-8 hover:shadow-lg transition-all relative overflow-hidden group">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-purple-50 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
                             <div className="relative">
                                 <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-lg flex items-center justify-center mb-4">
                                     <Users className="w-6 h-6" />
                                 </div>
-                                <h2 className="text-4xl font-black text-brand-dark mb-1">--</h2>
-                                <p className="text-gray-400 font-bold uppercase text-xs tracking-wider">Total Identities</p>
+                                <h2 className="text-4xl font-black text-brand-dark mb-1">{stats.users || '--'}</h2>
+                                <p className="text-gray-400 font-bold uppercase text-xs tracking-wider">Total Users</p>
                             </div>
                         </div>
 
-                        {/* STAT CARD: HEALTH */}
-                        <div className="bg-white rounded-3xl border border-gray-100 p-8 hover:shadow-lg transition-all relative overflow-hidden group">
+                        {/* STAT CARD: STATUS */}
+                        <div className="bg-white rounded-2xl border border-gray-100 p-8 hover:shadow-lg transition-all relative overflow-hidden group">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-green-50 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
                             <div className="relative">
                                 <div className="w-12 h-12 bg-green-50 text-green-600 rounded-lg flex items-center justify-center mb-4">
                                     <Activity className="w-6 h-6" />
                                 </div>
-                                <h2 className="text-4xl font-black text-brand-dark mb-1">99.9%</h2>
-                                <p className="text-gray-400 font-bold uppercase text-xs tracking-wider">System Uptime</p>
+                                <h2 className="text-4xl font-black text-brand-dark mb-1">Online</h2>
+                                <p className="text-gray-400 font-bold uppercase text-xs tracking-wider">System Status</p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
     );
 }
-
