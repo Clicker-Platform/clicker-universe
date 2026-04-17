@@ -561,13 +561,39 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
 
         setSaving(true);
 
-        const trimmedTitle = formData.title.trim();
-        const trimmedSlug = formData.slug.trim().toLowerCase();
+        let trimmedTitle = formData.title.trim();
+        let trimmedSlug = formData.slug.trim().toLowerCase();
 
         if (!trimmedTitle || !trimmedSlug) {
-            toast.error('Title and Slug are required');
-            setSaving(false);
-            return;
+            if (!trimmedTitle && !trimmedSlug) {
+                // Auto-generate title and slug for entirely empty state
+                let counter = 1;
+                let candidateTitle = 'Untitled';
+                let candidateSlug = 'untitled';
+                
+                while (true) {
+                    const q = query(collection(db, 'sites', siteId, 'pages'), where('slug', '==', candidateSlug));
+                    const querySnapshot = await getDocs(q);
+                    const duplicateExists = querySnapshot.docs.some(d => d.id !== activePageId);
+                    
+                    if (!duplicateExists) {
+                        break;
+                    }
+                    candidateTitle = `Untitled (${counter})`;
+                    candidateSlug = `untitled-${counter}`;
+                    counter++;
+                }
+
+                trimmedTitle = candidateTitle;
+                trimmedSlug = candidateSlug;
+                
+                // Update local form state so UI reflects the auto-name immediately
+                setFormData(prev => ({ ...prev, title: candidateTitle, slug: candidateSlug }));
+            } else {
+                toast.error('Both Title and Slug are required if one is set');
+                setSaving(false);
+                return;
+            }
         }
 
         const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;

@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 const menuItems = [
     { name: 'Overview', icon: LayoutDashboard, href: '/' },
     { name: 'Tenants', icon: Store, href: '/tenants' },
-    { name: 'Identities', icon: Users, href: '/users' },
+    { name: 'Users', icon: Users, href: '/users' },
     { name: 'Monitoring', icon: ShieldAlert, href: '/monitoring' },
     { name: 'Settings', icon: Settings, href: '/settings' },
 ];
@@ -36,10 +36,10 @@ export default function Sidebar() {
             {/* Header */}
             <div className="h-20 flex items-center px-6 border-b border-slate-200">
                 <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-md shadow-blue-200">
-                        <span className="text-white font-bold text-lg">B</span>
+                    <div className="w-8 h-8 bg-brand-dark rounded-lg flex items-center justify-center">
+                        <span className="text-brand-green font-bold text-lg">C</span>
                     </div>
-                    <span className="font-bold text-slate-800 tracking-tight text-lg">Backyard</span>
+                    <span className="font-bold text-brand-dark tracking-tight text-lg">Backyard</span>
                 </div>
             </div>
 
@@ -53,11 +53,11 @@ export default function Sidebar() {
                             href={item.href}
                             className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all font-medium text-sm border border-transparent
                                 ${isActive
-                                    ? 'bg-blue-50 text-blue-700 border-blue-100'
+                                    ? 'bg-brand-green/10 text-brand-dark border-brand-dark/10'
                                     : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                                 }`}
                         >
-                            <item.icon className={`w-5 h-5 ${isActive ? 'text-blue-600' : 'text-slate-400'}`} />
+                            <item.icon className={`w-5 h-5 ${isActive ? 'text-brand-dark' : 'text-slate-400'}`} />
                             {item.name}
                         </Link>
                     );

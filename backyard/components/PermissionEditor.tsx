@@ -45,6 +45,12 @@ export function PermissionEditor({ value, onChange, siteModules }: PermissionEdi
     const [modules, setModules] = useState<ModuleDefinition[]>([]);
     const [expandedModules, setExpandedModules] = useState<Record<string, boolean>>({});
 
+    const siteModulesKey = Object.entries(siteModules || {})
+        .filter(([, v]) => v)
+        .map(([k]) => k)
+        .sort()
+        .join(',');
+
     useEffect(() => {
         // Filter SYSTEM_MODULES to show only those enabled for this site
         const active = SYSTEM_MODULES.filter(m => siteModules && siteModules[m.id]);
@@ -54,7 +60,7 @@ export function PermissionEditor({ value, onChange, siteModules }: PermissionEdi
         const initialExpanded: Record<string, boolean> = {};
         active.forEach(m => initialExpanded[m.id] = true);
         setExpandedModules(initialExpanded);
-    }, [JSON.stringify(siteModules)]); // Re-run when siteModules changes
+    }, [siteModulesKey]);
 
     const toggleModule = (moduleId: string, checked: boolean) => {
         const newPermissions = checked

@@ -113,7 +113,7 @@ export const DefaultHeroBlock = ({ data, theme }: { data: any, theme?: any }) =>
                         {data?.title}
                     </h1>
                     {data?.subtitle && (
-                        <p className={`text-xl ${isGlass ? 'text-theme-foreground/70 font-medium' : 'text-gray-600 font-medium'}`}
+                        <p className={`text-xl ${data.subtitleWeight ? `font-${data.subtitleWeight}` : 'font-medium'} ${isGlass ? 'text-theme-foreground/70' : 'text-gray-600'}`}
                            style={data?.subtitleColor ? { color: data.subtitleColor } : undefined}>
                             {data.subtitle}
                         </p>
@@ -172,7 +172,7 @@ export const DefaultHeroBlock = ({ data, theme }: { data: any, theme?: any }) =>
                         {data?.title}
                     </h1>
                     {data?.subtitle && (
-                        <p className={`${dv(d, 'text-xl', 'md:text-2xl')} text-white/90 font-medium text-shadow-sm`}
+                        <p className={`${dv(d, 'text-xl', 'md:text-2xl')} ${data.subtitleWeight ? `font-${data.subtitleWeight}` : 'font-medium'} text-white/90 text-shadow-sm`}
                            style={data?.subtitleColor ? { color: data.subtitleColor } : undefined}>
                             {data.subtitle}
                         </p>
@@ -219,7 +219,7 @@ export const DefaultHeroBlock = ({ data, theme }: { data: any, theme?: any }) =>
                     {data?.title}
                 </h1>
                 {data?.subtitle && (
-                    <p className={`text-xl font-medium ${isGlass ? 'text-theme-foreground/80' : 'text-gray-600'}`}
+                    <p className={`text-xl ${data.subtitleWeight ? `font-${data.subtitleWeight}` : 'font-medium'} ${isGlass ? 'text-theme-foreground/80' : 'text-gray-600'}`}
                        style={data?.subtitleColor ? { color: data.subtitleColor } : undefined}>
                         {data.subtitle}
                     </p>

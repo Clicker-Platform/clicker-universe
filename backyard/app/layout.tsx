@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 
 
-const inter = Inter({ subsets: ["latin"] });
+const jakarta = Plus_Jakarta_Sans({ subsets: ["latin"], variable: '--font-jakarta' });
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -19,7 +19,7 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="id" className="notranslate" translate="no" suppressHydrationWarning>
-            <body className={`${inter.className} antialiased`} suppressHydrationWarning>
+            <body className={`${jakarta.variable} ${jakarta.className} antialiased`} suppressHydrationWarning>
                 {children}
                 <Toaster richColors position="top-right" theme="light" />
             </body>

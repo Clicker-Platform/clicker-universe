@@ -46,6 +46,7 @@ export function AdminSidebar() {
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
     const settingsRef = useRef<HTMLDivElement>(null);
+    const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const pathname = usePathname();
     const router = useRouter();
     const { siteId, tenantSlug, isSubdomain } = useSite();
@@ -318,7 +319,7 @@ export function AdminSidebar() {
 
             {/* Sidebar */}
             <aside className={`
-                fixed inset-y-0 left-0 z-50 bg-white dark:bg-neutral-900 border-r border-gray-200 dark:border-neutral-800 flex flex-col transition-all duration-300 ease-in-out
+                fixed inset-y-0 left-0 z-[60] bg-white dark:bg-neutral-900 border-r border-gray-200 dark:border-neutral-800 flex flex-col transition-all duration-300 ease-in-out
                 w-full md:sticky md:top-0 md:h-screen
                 ${sidebarOpen ? 'translate-x-0 shadow-xl' : '-translate-x-full shadow-none'}
                 ${isCollapsed ? 'md:w-14' : 'md:w-56'}
@@ -420,16 +421,21 @@ export function AdminSidebar() {
                                     {isFirstModule && <div className="h-px bg-gray-100 dark:bg-neutral-800 my-2 mx-1" />}
                                     <div className="relative">
                                         <button
-                                            className={`w-full flex items-center justify-center p-2 rounded-lg transition-colors ${
+                                            className={`w-full cursor-pointer flex items-center justify-center p-2 rounded-lg transition-colors ${
                                                 hasActiveItem
                                                     ? 'bg-studio-blue/10 text-studio-blue dark:text-studio-blue-muted'
                                                     : 'text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:text-gray-900 dark:hover:text-neutral-100'
                                             }`}
                                             onMouseEnter={(e) => {
+                                                if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
                                                 const rect = e.currentTarget.getBoundingClientRect();
                                                 setHoveredModule({ group, top: rect.top });
                                             }}
-                                            onMouseLeave={() => setHoveredModule(null)}
+                                            onMouseLeave={() => {
+                                                hoverTimeoutRef.current = setTimeout(() => {
+                                                    setHoveredModule(null);
+                                                }, 150);
+                                            }}
                                         >
                                             <ModuleIcon size={18} className="shrink-0" />
                                         </button>
@@ -487,8 +493,14 @@ export function AdminSidebar() {
                         <div
                             className="fixed left-14 z-[60] bg-neutral-900 border border-neutral-700 rounded-lg shadow-2xl p-1.5 min-w-[160px] animate-in fade-in duration-150"
                             style={{ top: hoveredModule.top }}
-                            onMouseEnter={() => {/* keep open */}}
-                            onMouseLeave={() => setHoveredModule(null)}
+                            onMouseEnter={() => {
+                                if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+                            }}
+                            onMouseLeave={() => {
+                                hoverTimeoutRef.current = setTimeout(() => {
+                                    setHoveredModule(null);
+                                }, 150);
+                            }}
                         >
                             <p className="px-3 py-1 text-[10px] font-bold text-neutral-500 uppercase tracking-wider">
                                 {hoveredModule.group.title}
@@ -563,7 +575,10 @@ export function AdminSidebar() {
 
                         {/* Inbox */}
                         <button
-                            onClick={() => openInboxPanel()}
+                            onClick={() => {
+                                setSidebarOpen(false);
+                                openInboxPanel();
+                            }}
                             title="Inbox"
                             className={`relative flex items-center justify-center px-3 py-2 rounded-lg font-semibold text-gray-500 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800 hover:text-brand-dark dark:hover:text-neutral-200 transition-colors shrink-0 ${(isCollapsed && !sidebarOpen) ? 'w-full' : ''}`}
                         >

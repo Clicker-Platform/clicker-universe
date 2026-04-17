@@ -16,6 +16,7 @@ export function StudioTopBar() {
         savePage,
         setHomepage,
         unsetHomepage,
+        setTitle,
     } = usePageStudio();
 
     const { deviceView, setDeviceView } = useEditor();
@@ -38,9 +39,13 @@ export function StudioTopBar() {
             {/* Left — Current page name */}
             <div className="flex-1 flex items-center gap-2 min-w-0">
                 <FileText size={13} className="text-neutral-400 dark:text-neutral-500 flex-shrink-0" />
-                <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300 truncate">
-                    {formData.title || 'Untitled'}
-                </span>
+                <input
+                    type="text"
+                    value={formData.title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Untitled"
+                    className="text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-transparent border-none outline-none focus:ring-1 focus:ring-blue-500/50 rounded px-1 -ml-1 w-32 focus:w-48 sm:w-48 sm:focus:w-64 transition-all placeholder:text-neutral-400 dark:placeholder:text-neutral-600 truncate focus:truncate-none"
+                />
                 {formData.slug && (
                     <span className="text-xs text-neutral-400 dark:text-neutral-600 truncate hidden sm:block">
                         /{formData.slug}
