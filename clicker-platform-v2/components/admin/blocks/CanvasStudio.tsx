@@ -6,7 +6,7 @@ import { Settings, Layers, Box, FileText, BarChart2, CheckSquare, Square, X, Plu
 import { useSite } from '@/lib/site-context';
 import { TemplateProvider } from '@/components/TemplateProvider';
 import { BlockRenderer } from '@/components/blocks/BlockRenderer';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { getTemplate } from '@/lib/templates/registry';
 import { ResponsiveNavBar } from '@/components/layout/ResponsiveNavBar';
@@ -68,6 +68,7 @@ export function CanvasStudio({
     } = usePageStudio();
 
     const isMobile = useIsMobile();
+    const canvasScrollRef = useRef<HTMLDivElement>(null);
 
     // Desktop state
     const [activePanel, setActivePanel] = useState<'page' | 'seo' | null>('page');
@@ -125,6 +126,19 @@ export function CanvasStudio({
         }
     }, [isMobile, selectedBlockId]);
 
+    // Scroll canvas to selected block
+    useEffect(() => {
+        if (!selectedBlockId) return;
+        const scrollEl = canvasScrollRef.current;
+        if (!scrollEl) return;
+        const target = scrollEl.querySelector<HTMLElement>(`[data-block-id="${selectedBlockId}"]`);
+        if (!target) return;
+        const containerRect = scrollEl.getBoundingClientRect();
+        const targetRect = target.getBoundingClientRect();
+        const offset = targetRect.top - containerRect.top + scrollEl.scrollTop - 80;
+        scrollEl.scrollTo({ top: offset, behavior: 'smooth' });
+    }, [selectedBlockId]);
+
     // Keyboard shortcuts: P = Pages, A = Add, Z = Navigator, L = Links (desktop only)
     useEffect(() => {
         if (isMobile) return;
@@ -175,6 +189,7 @@ export function CanvasStudio({
     // ─── Shared canvas content ────────────────────────────────────────────────
     const canvasContent = (
         <div
+            ref={canvasScrollRef}
             className={`flex-1 flex justify-center relative overflow-y-auto overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [--canvas-bg:rgb(229_231_235)] [--canvas-dot:rgb(0_0_0_/_0.12)] dark:[--canvas-bg:rgb(10_10_10)] dark:[--canvas-dot:rgb(255_255_255_/_0.09)] ${isMobile ? 'pb-20' : ''}`}
             style={{
                 backgroundColor: 'var(--canvas-bg)',
@@ -213,6 +228,7 @@ export function CanvasStudio({
                         <div className="flex flex-col h-full bg-white relative">
                             {/* Top Navbar Slot */}
                             <div
+                                data-block-id="chrome:header"
                                 className={`z-50 w-full cursor-pointer transition-all flex-shrink-0 ${selectedBlockId === 'chrome:header'
                                         ? 'ring-4 ring-blue-500 ring-offset-[-4px]'
                                         : 'hover:ring-2 hover:ring-blue-300'
@@ -265,6 +281,7 @@ export function CanvasStudio({
                                             {blocks.map((block) => (
                                                 <div
                                                     key={block.id}
+                                                    data-block-id={block.id}
                                                     className={`min-w-0 relative transition-all ${block.type === 'hero' ? '' : 'rounded-lg'} ${selectedBlockId === block.id
                                                             ? 'shadow-md z-20'
                                                             : 'cursor-pointer'
@@ -339,6 +356,7 @@ export function CanvasStudio({
 
                                     {/* Site Footer */}
                                     <div
+                                        data-block-id="chrome:footer"
                                         className={`relative z-10 w-full cursor-pointer transition-all ${selectedBlockId === 'chrome:footer'
                                                 ? 'ring-4 ring-blue-500 ring-offset-[-4px]'
                                                 : 'hover:ring-2 hover:ring-blue-300'
@@ -362,6 +380,7 @@ export function CanvasStudio({
 
                             {/* Bottom Nav Slot — only rendered when template enables showBottomNav */}
                             <div
+                                data-block-id="chrome:bottomnav"
                                 className={`relative z-50 w-full flex-shrink-0 cursor-pointer transition-all ${selectedBlockId === 'chrome:bottomnav'
                                         ? 'ring-4 ring-blue-500 ring-offset-[-4px]'
                                         : 'hover:ring-2 hover:ring-blue-300'

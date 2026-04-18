@@ -11,7 +11,7 @@ import { useSite } from '@/lib/site-context';
 import { useTemplate } from '@/components/TemplateProvider';
 import { ThemeConfig } from '@/lib/templates/types';
 
-export function OrderTracker() {
+export function OrderTracker({ hidden = false }: { hidden?: boolean }) {
     const { siteId } = useSite();
     const { theme } = useTemplate();
     const { orders, dismissOrder, clearCompletedOrders, isTrackerOpen, setIsTrackerOpen } = useOrderTracker();
@@ -33,7 +33,7 @@ export function OrderTracker() {
     return (
         <>
             {/* Floating Tracker Button */}
-            <div className="fixed bottom-24 md:bottom-6 left-4 md:left-6 z-50 transition-all duration-300">
+            <div className={`fixed bottom-24 md:bottom-6 left-4 md:left-6 z-50 transition-all duration-300 ${hidden ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
                 <button
                     onClick={() => setIsTrackerOpen(true)}
                     className="shadow-lg rounded-2xl p-4 flex items-center gap-3 hover:scale-105 transition-transform active:scale-95 border"
@@ -166,10 +166,27 @@ export function OrderTracker() {
                                         <button
                                             onClick={async () => {
                                                 if (!siteId) return;
-                                                const promises = payableOrders.map(o => requestPayment(siteId, o.id));
                                                 try {
-                                                    await Promise.all(promises);
-                                                    toast.success("Payment Amount Requested");
+                                                    const results = await Promise.allSettled(
+                                                        payableOrders.map(o => requestPayment(siteId, o.id))
+                                                    );
+                                                    let anyCancelled = false;
+                                                    results.forEach((r, i) => {
+                                                        if (r.status === 'rejected') {
+                                                            const msg = (r.reason as Error)?.message;
+                                                            if (msg === 'cancelled') {
+                                                                anyCancelled = true;
+                                                                dismissOrder(payableOrders[i].id);
+                                                            }
+                                                        }
+                                                    });
+                                                    const succeeded = results.filter(r => r.status === 'fulfilled').length;
+                                                    if (anyCancelled) {
+                                                        toast.error("Order was cancelled", { description: "The order was cancelled before payment could be requested." });
+                                                    }
+                                                    if (succeeded > 0) {
+                                                        toast.success("Payment Requested");
+                                                    }
                                                 } catch (e) {
                                                     toast.error("Failed to request payment");
                                                 }

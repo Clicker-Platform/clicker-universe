@@ -24,9 +24,10 @@ interface POSWidgetProps {
     initialItems?: any[];
     initialInventoryMap?: Record<string, any>;
     settings?: POSSettings;
+    onCartOpenChange?: (open: boolean) => void;
 }
 
-export function POSWidget({ initialItems, initialInventoryMap, settings: propSettings }: POSWidgetProps) {
+export function POSWidget({ initialItems, initialInventoryMap, settings: propSettings, onCartOpenChange }: POSWidgetProps) {
     const { siteId } = useSite();
     const { theme } = useTemplate();
     const { items, total, itemCount, removeFromCart, updateQuantity, clearCart, taxBreakdown } = useCart();
@@ -43,7 +44,8 @@ export function POSWidget({ initialItems, initialInventoryMap, settings: propSet
     const [successOrder, setSuccessOrder] = useState<any | null>(null);
 
     const [mounted, setMounted] = useState(false);
-    const [isCartOpen, setIsCartOpen] = useState(false);
+    const [isCartOpen, setIsCartOpenRaw] = useState(false);
+    const setIsCartOpen = (open: boolean) => { setIsCartOpenRaw(open); onCartOpenChange?.(open); };
     const [isCheckingOut, setIsCheckingOut] = useState(false);
     const [member, setMember] = useState<Member | null>(null);
     const [settings, setSettings] = useState<POSSettings | null>(propSettings || null); // Use prop if available
@@ -71,26 +73,6 @@ export function POSWidget({ initialItems, initialInventoryMap, settings: propSet
         }
     }, [siteId, propSettings]);
 
-    // Order Cancellation Listener
-    useEffect(() => {
-        if (orders.length > 0) {
-            const cancelledOrder = orders.find(o => o.status === 'cancelled' && o.paymentStatus !== 'paid');
-            if (cancelledOrder) {
-                // Alert user
-                toast.error("Order Cancelled", {
-                    description: `Order #${cancelledOrder.id.slice(-4)} was cancelled by the kitchen/admin.`,
-                    duration: 5000
-                });
-                // Clear it from view? 
-                // clearCompletedOrders() currently removes cancelled ones. 
-                // We might want to remove it after showing the toast to avoid loop?
-                // But clearCompletedOrders depends on user action or automatic?
-                // logic in clearCompletedOrders: orders.filter(o => o.paymentStatus !== 'paid' && o.status !== 'cancelled')
-                // So calling it will remove this cancelled order.
-                clearCompletedOrders();
-            }
-        }
-    }, [orders, clearCompletedOrders]);
 
     // activeOrder detection: Any order that is NOT paid and NOT cancelled is an active open bill.
     const activeOrderDetection = activeOrderIds.find(id => {
@@ -420,6 +402,7 @@ export function POSWidget({ initialItems, initialInventoryMap, settings: propSet
 }
 
 import { OrderTrackerProvider } from '../order-tracker-context';
+import { OrderTracker } from './OrderTracker';
 
 export function POSBlock(props: POSWidgetProps) {
     const { siteId } = useSite();
@@ -431,8 +414,20 @@ export function POSBlock(props: POSWidgetProps) {
     return (
         <OrderTrackerProvider siteId={siteId}>
             <CartProvider>
-                <POSWidget {...props} />
+                <POSWidgetWithTracker {...props} />
             </CartProvider>
         </OrderTrackerProvider>
+    );
+}
+
+// Renders POSWidget + OrderTracker together so tracker can be hidden when cart is open
+function POSWidgetWithTracker(props: POSWidgetProps) {
+    const [isCartOpen, setIsCartOpenState] = useState(false);
+
+    return (
+        <>
+            <POSWidget {...props} onCartOpenChange={setIsCartOpenState} />
+            <OrderTracker hidden={isCartOpen} />
+        </>
     );
 }
