@@ -1,0 +1,119 @@
+// POST /api/admin/modules/ai-marketing/generate
+// Core generation endpoint — handles single skills and multi-skill flows
+
+import { NextRequest, NextResponse } from 'next/server';
+import { adminAuth, adminDb, Timestamp } from '@/lib/firebase-admin';
+import { runSkill, runFlow } from '@/lib/modules/ai-marketing/orchestrator/runner';
+import { getMarketingSettings } from '@/lib/modules/ai-marketing/api-server';
+import { COLLECTION_GENERATIONS } from '@/lib/modules/ai-marketing/constants';
+import { DEFAULT_BRAND_VOICE } from '@/lib/modules/ai-marketing/constants';
+
+export const dynamic = 'force-dynamic';
+
+export async function POST(req: NextRequest) {
+  const siteId = req.headers.get('x-site-id');
+  const authHeader = req.headers.get('authorization');
+  if (!siteId || !authHeader?.startsWith('Bearer ')) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  let uid: string;
+  try {
+    const decoded = await adminAuth.verifyIdToken(authHeader.split('Bearer ')[1]);
+    uid = decoded.uid;
+  } catch {
+    return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+  }
+
+  const body = await req.json();
+  const { skillId, flowId, formData } = body;
+
+  if (!skillId && !flowId) {
+    return NextResponse.json({ error: 'skillId or flowId is required' }, { status: 400 });
+  }
+
+  // Load brand voice settings
+  const settings = await getMarketingSettings(siteId);
+  const brandVoice = settings?.brandVoice ?? DEFAULT_BRAND_VOICE;
+
+  try {
+    if (flowId) {
+      // Multi-skill flow
+      const { stepOutputs, totalCreditsUsed } = await runFlow(flowId, {
+        siteId,
+        uid,
+        formData: formData ?? {},
+        brandVoice,
+      });
+
+      // Save flow generation record
+      const docRef = adminDb.collection(`sites/${siteId}/${COLLECTION_GENERATIONS}`).doc();
+      await docRef.set({
+        skillId: flowId,
+        agentId: 'orchestrator',
+        flowId,
+        input: { formData: formData ?? {} },
+        output: {
+          content: Object.entries(stepOutputs)
+            .map(([k, v]) => `## ${k}\n${v.content}`)
+            .join('\n\n'),
+          structured: Object.fromEntries(
+            Object.entries(stepOutputs).map(([k, v]) => [k, v.structured ?? v.content])
+          ),
+        },
+        model: 'multi',
+        creditsUsed: totalCreditsUsed,
+        status: 'complete',
+        createdAt: Timestamp.now(),
+        createdBy: uid,
+      });
+
+      return NextResponse.json({ ok: true, generationId: docRef.id, stepOutputs, totalCreditsUsed });
+    } else {
+      // Single skill
+      const result = await runSkill({
+        siteId,
+        uid,
+        skillId,
+        formData: formData ?? {},
+        brandVoice,
+      });
+
+      // Save generation record
+      const docRef = adminDb.collection(`sites/${siteId}/${COLLECTION_GENERATIONS}`).doc();
+      await docRef.set({
+        skillId,
+        agentId: getAgentForSkill(skillId),
+        input: { formData: formData ?? {} },
+        output: {
+          content: result.content,
+          structured: result.structured,
+        },
+        model: result.model,
+        creditsUsed: result.creditsUsed,
+        status: 'complete',
+        createdAt: Timestamp.now(),
+        createdBy: uid,
+      });
+
+      return NextResponse.json({ ok: true, generationId: docRef.id, ...result });
+    }
+  } catch (err: any) {
+    if (err.message?.startsWith('insufficient_credits:')) {
+      const [, balance, required] = err.message.split(':');
+      return NextResponse.json(
+        { error: 'insufficient_credits', balance: Number(balance), required: Number(required) },
+        { status: 402 }
+      );
+    }
+    console.error('[generate] error:', err.message);
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
+
+function getAgentForSkill(skillId: string): string {
+  if (['analyze_model_photo','analyze_background','analyze_product','generate_visual_prompt','extract_brand_colors'].includes(skillId)) return 'visual_analyst';
+  if (['generate_ad_copy','generate_caption','generate_headline','generate_cta','adapt_tone','generate_hashtags','translate_content'].includes(skillId)) return 'creative_director';
+  if (['plan_campaign','define_target_audience','suggest_platforms','create_content_calendar','suggest_budget_allocation','competitive_analysis','ab_test_ideas'].includes(skillId)) return 'strategist';
+  return 'data_analyst';
+}

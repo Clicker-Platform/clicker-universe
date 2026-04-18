@@ -6,8 +6,9 @@ import { SYSTEM_MODULES } from '@/lib/modules/definitions'; // Direct import in 
 import {
     ChevronDown, ChevronRight, Shield,
     CreditCard, MonitorDot, ClipboardList, Utensils, Settings,
-    User, Box, Calendar, List, LayoutDashboard, Bot,
-    FileText, BarChart3, Users, Trophy, Car, Wrench, Bell, Plus
+    User, Box, Calendar, List, LayoutDashboard, Monitor, Smartphone,
+    FileText, PieChart, Users, Menu, ShoppingBag, Bot, ImageIcon,
+    BarChart3, Trophy, Car, Wrench, Bell, Plus,
 } from 'lucide-react';
 
 interface PermissionEditorProps {
@@ -32,13 +33,18 @@ const ICON_MAP: Record<string, any> = {
     'list': List,
     'layout-dashboard': LayoutDashboard,
     'file-text': FileText,
+    'pie-chart': PieChart,
+    'menu': Menu,
+    'shopping-bag': ShoppingBag,
+    'bot': Bot,
+    'image': ImageIcon,
     'bar-chart-3': BarChart3,
     'trophy': Trophy,
     'car': Car,
     'wrench': Wrench,
     'bell': Bell,
     'plus': Plus,
-    'bot': Bot,
+    'dashboard': LayoutDashboard,
 };
 
 export function PermissionEditor({ value, onChange, siteModules }: PermissionEditorProps) {
@@ -163,7 +169,8 @@ export function PermissionEditor({ value, onChange, siteModules }: PermissionEdi
     const CATEGORIES: Record<string, string[]> = {
         'Operations': ['byod_pos'],
         'Management': ['inventory', 'reservation', 'membership', 'sales_pipeline', 'service_records'],
-        'AI & Sales': ['ai_sales'],
+        'AI & Sales': ['ai_sales', 'ai_marketing'],
+        'System': ['settings', 'developer', 'web-builder'],
     };
 
     const groupedModules = modules.reduce((acc, module) => {
