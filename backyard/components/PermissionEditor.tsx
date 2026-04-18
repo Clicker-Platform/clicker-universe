@@ -7,7 +7,8 @@ import {
     ChevronDown, ChevronRight, Shield,
     CreditCard, MonitorDot, ClipboardList, Utensils, Settings,
     User, Box, Calendar, List, LayoutDashboard, Monitor, Smartphone,
-    FileText, PieChart, Users, Menu, ShoppingBag
+    FileText, PieChart, Users, Menu, ShoppingBag, Bot, ImageIcon,
+    BarChart3, Trophy, Car, Wrench, Bell, Plus,
 } from 'lucide-react';
 
 interface PermissionEditorProps {
@@ -36,7 +37,16 @@ const ICON_MAP: Record<string, any> = {
     'pie-chart': PieChart,
     'users': Users,
     'menu': Menu,
-    'shopping-bag': ShoppingBag
+    'shopping-bag': ShoppingBag,
+    'bot': Bot,
+    'image': ImageIcon,
+    'bar-chart-3': BarChart3,
+    'trophy': Trophy,
+    'car': Car,
+    'wrench': Wrench,
+    'bell': Bell,
+    'plus': Plus,
+    'dashboard': LayoutDashboard,
 };
 
 export function PermissionEditor({ value, onChange, siteModules }: PermissionEditorProps) {
@@ -153,10 +163,10 @@ export function PermissionEditor({ value, onChange, siteModules }: PermissionEdi
 
     // Custom Categories for UI Grouping
     const CATEGORIES: Record<string, string[]> = {
-        'Operations': ['byod_pos', 'kitchen-display', 'kiosk'],
-        'Management': ['inventory', 'reservation', 'membership', 'sales-pipeline'],
-        'Finance & Reports': ['finance'],
-        'System': ['settings', 'developer', 'web-builder']
+        'Operations': ['byod_pos'],
+        'Management': ['inventory', 'reservation', 'membership', 'sales_pipeline', 'service_records'],
+        'AI & Sales': ['ai_sales', 'ai_marketing'],
+        'System': ['settings', 'developer', 'web-builder'],
     };
 
     const groupedModules = modules.reduce((acc, module) => {

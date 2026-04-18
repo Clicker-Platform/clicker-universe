@@ -66,6 +66,18 @@ export const STATIC_MODULE_DEFINITIONS: Record<string, Partial<ModuleDefinition>
             { path: '/admin/service-records/settings',      label: 'Settings',        icon: 'settings',       componentKey: 'service_records:SettingsPage',     permission: 'settings' },
         ]
     },
+    'ai_marketing': {
+        displayName: 'AI Marketing Workspace',
+        description: 'Multi-agent AI content generation for marketing teams.',
+        adminRoutes: [
+            { path: '/admin/marketing/dashboard',        label: 'Dashboard',       icon: 'dashboard',      componentKey: 'ai_marketing:Dashboard' },
+            { path: '/admin/marketing/generate',         label: 'Generate',        icon: 'bot',            componentKey: 'ai_marketing:Generate' },
+            { path: '/admin/marketing/assets',           label: 'Assets',          icon: 'image',          componentKey: 'ai_marketing:Assets' },
+            { path: '/admin/marketing/campaigns',        label: 'Campaigns',       icon: 'clipboard-list', componentKey: 'ai_marketing:Campaigns' },
+            { path: '/admin/marketing/analytics',        label: 'Analytics',       icon: 'bar-chart-3',    componentKey: 'ai_marketing:Analytics' },
+            { path: '/admin/marketing/settings',         label: 'Settings',        icon: 'settings',       componentKey: 'ai_marketing:Settings',       permission: 'settings' },
+        ]
+    },
 };
 
 // Helper for UI iterators (Backyard)
