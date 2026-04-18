@@ -16,7 +16,15 @@ export async function GET(req: Request) {
     return new Response('Bad Request', { status: 400 });
   }
 
-  // Look up siteId by verifyToken — tokens are unique per tenant
+  // Verify token against env var (simple shared secret) or Firestore lookup
+  const globalVerifyToken = process.env.WA_WEBHOOK_VERIFY_TOKEN;
+
+  // Fast path: match against global env token
+  if (globalVerifyToken && token === globalVerifyToken) {
+    return new Response(challenge, { status: 200 });
+  }
+
+  // Fallback: look up per-tenant token in Firestore
   try {
     const snap = await adminDb
       .collectionGroup('config')
@@ -32,7 +40,7 @@ export async function GET(req: Request) {
     return new Response(challenge, { status: 200 });
   } catch (err) {
     console.error('[WA webhook] GET error:', err);
-    return new Response('Internal Server Error', { status: 500 });
+    return new Response('Forbidden', { status: 403 });
   }
 }
 
