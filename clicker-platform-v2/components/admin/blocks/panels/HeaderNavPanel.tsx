@@ -32,6 +32,7 @@ function SortableNavItem({
     onOpenIconPicker,
     forms,
     pages,
+    homepageSlug,
 }: {
     item: any;
     onRemove: () => void;
@@ -39,6 +40,7 @@ function SortableNavItem({
     onOpenIconPicker: (currentIcon: string, onSelect: (icon: string) => void) => void;
     forms: any[];
     pages: any[];
+    homepageSlug: string;
 }) {
     const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: item.id });
     const style = { transform: CSS.Transform.toString(transform), transition };
@@ -103,13 +105,13 @@ function SortableNavItem({
                     <div>
                         <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-1">Link Type</label>
                         <div className="flex gap-1">
-                            {(['url', 'form', 'page'] as const).map(t => (
+                            {(['page', 'form', 'url'] as const).map(t => (
                                 <button
                                     key={t}
                                     type="button"
                                     onClick={() => onUpdate('type', t)}
                                     className={`flex-1 px-2 py-1.5 text-[10px] font-bold uppercase rounded transition-all ${
-                                        (item.type === t) || (!item.type && t === 'url')
+                                        (item.type === t) || (!item.type && t === 'page')
                                             ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
                                             : 'bg-gray-100 dark:bg-neutral-800 text-neutral-500 border border-gray-300 dark:border-neutral-700 hover:text-neutral-700 dark:hover:text-neutral-300'
                                     }`}
@@ -130,13 +132,19 @@ function SortableNavItem({
                                 <option value="">— Select Form —</option>
                                 {forms.map(f => <option key={f.id} value={f.id}>{f.title}</option>)}
                             </select>
-                        ) : item.type === 'page' ? (
+                        ) : item.type === 'page' || !item.type ? (
                             <select
                                 value={item.pageId || ''}
                                 onChange={(e) => {
                                     const page = pages.find(p => p.id === e.target.value);
                                     onUpdate('pageId', e.target.value);
-                                    if (page) onUpdate('value', `/${page.slug}`);
+                                    if (page) {
+                                        const resolvedValue = page.slug === homepageSlug ? 'action:homepage' : `/${page.slug}`;
+                                        onUpdate('value', resolvedValue);
+                                        if (!item.label || item.label === 'New Link') {
+                                            onUpdate('label', page.title);
+                                        }
+                                    }
                                 }}
                                 className="w-full px-3 py-1.5 text-sm bg-gray-50 dark:bg-neutral-900 border border-gray-300 dark:border-neutral-700 rounded-md text-neutral-900 dark:text-neutral-200 focus:border-blue-500/50 focus:outline-none"
                             >
@@ -205,6 +213,7 @@ export function HeaderNavPanel() {
     const [navigation, setNavigation] = useState<any>({ topNav: [], topNavActions: {}, headerStyle: {} });
     const [forms, setForms] = useState<any[]>([]);
     const [pages, setPages] = useState<any[]>([]);
+    const [homepageSlug, setHomepageSlug] = useState<string>('home');
     const [loading, setLoading] = useState(true);
     const [status, setStatus] = useState<'idle' | 'pending' | 'saving' | 'saved' | 'error'>('idle');
     const [panelView, setPanelView] = useState<PanelView>({ type: 'properties' });
@@ -234,6 +243,7 @@ export function HeaderNavPanel() {
             if (settingsSnap.exists()) {
                 const data = settingsSnap.data();
                 if (data.navigation) setNavigation(data.navigation);
+                if (data.homepageSlug) setHomepageSlug(data.homepageSlug);
             }
         } catch (err) {
             console.error('Failed to load navigation:', err);
@@ -278,7 +288,7 @@ export function HeaderNavPanel() {
     const handleAddItem = () => {
         setNavigation((prev: any) => ({
             ...prev,
-            topNav: [...(prev.topNav || []), { id: generateId(), label: 'New Link', type: 'url', value: '#', icon: 'Link' }],
+            topNav: [...(prev.topNav || []), { id: generateId(), label: 'New Link', type: 'page', value: '', icon: 'Link' }],
         }));
     };
 
@@ -387,6 +397,7 @@ export function HeaderNavPanel() {
                                     item={item}
                                     forms={forms}
                                     pages={pages}
+                                    homepageSlug={homepageSlug}
                                     onRemove={() => handleRemoveItem(item.id)}
                                     onUpdate={(field, val) => handleUpdateItem(item.id, field, val)}
                                     onOpenIconPicker={openIconPicker}
@@ -521,7 +532,8 @@ export function HeaderNavPanel() {
                                     value={cta?.pageId || ''}
                                     onChange={(e) => {
                                         const p = pages.find(pg => pg.id === e.target.value);
-                                        setCta(prev => ({ ...prev, pageId: e.target.value, linkValue: p ? `/${p.slug}` : '' }));
+                                        const resolvedValue = p ? (p.slug === homepageSlug ? 'action:homepage' : `/${p.slug}`) : '';
+                                        setCta(prev => ({ ...prev, pageId: e.target.value, linkValue: resolvedValue }));
                                     }}
                                     className="w-full px-3 py-2 text-sm bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-lg text-neutral-900 dark:text-neutral-200 focus:border-blue-500/50 focus:outline-none"
                                 >

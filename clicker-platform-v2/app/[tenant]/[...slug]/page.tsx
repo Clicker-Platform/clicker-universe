@@ -6,6 +6,7 @@ import { SharedPageLayout } from '@/components/layout/SharedPageLayout';
 import { getTemplate } from '@/lib/templates/registry';
 import { findModuleForRoute } from '@/lib/modules/registry';
 import { ModuleLoader } from '@/components/modules/ModuleLoader';
+import { TemplateProvider } from '@/components/TemplateProvider';
 import { getBlockSpan } from '@/lib/templates/layoutUtils';
 import { headers } from 'next/headers';
 
@@ -90,14 +91,20 @@ export default async function TenantCatchAllPage({ params, searchParams }: Props
             }
         }
 
+        const modulePublicData = await fetchLightweightPublicData(siteId);
+        const overrideTemplate = typeof t === 'string' ? t : undefined;
+        const moduleTemplateId = overrideTemplate || modulePublicData.templateId || 'classic';
+
         return (
-            <ModuleLoader
-                componentKey={moduleMatch.route.componentKey}
-                params={{ tenant, slug }}
-                searchParams={resolvedSearchParams}
-                siteId={siteId}
-                {...initialData}
-            />
+            <TemplateProvider templateId={moduleTemplateId}>
+                <ModuleLoader
+                    componentKey={moduleMatch.route.componentKey}
+                    params={{ tenant, slug }}
+                    searchParams={resolvedSearchParams}
+                    siteId={siteId}
+                    {...initialData}
+                />
+            </TemplateProvider>
         );
     }
 

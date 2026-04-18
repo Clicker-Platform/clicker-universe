@@ -9,6 +9,7 @@ import { FormModal } from '@/components/FormModal';
 import { ICON_MAP } from '@/data/icons';
 import { Home, PlusCircle } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
+import { resolveNavHref } from '@/lib/resolveNavHref';
 import { useDeviceView, dv } from '@/components/DeviceViewContext';
 import { useNavigation } from '@/components/layout/NavigationProvider';
 import { BottomNavSkeleton } from '@/components/layout/NavSkeleton';
@@ -20,7 +21,7 @@ interface BottomNavBarProps {
 export const BottomNavBar: React.FC<BottomNavBarProps> = ({ previewMode = false }) => {
     const { theme } = useTemplate();
     const deviceView = useDeviceView();
-    const { siteId } = useSite();
+    const { siteId, tenantSlug, isSubdomain } = useSite();
     const { layout } = theme;
 
     const { bottomNav, fab, bottomNavStyle, loading, formCache } = useNavigation();
@@ -30,11 +31,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({ previewMode = false 
 
     const getIcon = (name: string) => ICON_MAP[name as keyof typeof ICON_MAP] || Home;
 
-    const getHref = (val: string) => {
-        if (val === 'action:home' || val === 'action:homepage') return '/';
-        if (val?.startsWith('action:')) return '#';
-        return val || '#';
-    };
+    const getHref = (val: string) => resolveNavHref(val, tenantSlug, isSubdomain);
 
     const openChat = () => {
         if (typeof window !== 'undefined') {

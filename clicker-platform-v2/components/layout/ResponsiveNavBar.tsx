@@ -10,6 +10,8 @@ import { FormModal } from '@/components/FormModal';
 import { Menu, ArrowLeft, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTemplate } from '@/components/TemplateProvider';
+import { useSite } from '@/lib/site-context';
+import { resolveNavHref } from '@/lib/resolveNavHref';
 import { useNavigation } from '@/components/layout/NavigationProvider';
 import { useDeviceView } from '@/components/DeviceViewContext';
 import { TopNavSkeleton } from '@/components/layout/NavSkeleton';
@@ -31,6 +33,7 @@ export const ResponsiveNavBar: React.FC<ResponsiveNavBarProps> = ({
     pageTitle,
 }) => {
     const router = useRouter();
+    const { tenantSlug, isSubdomain } = useSite();
     const { theme, templateId } = useTemplate();
     const deviceView = useDeviceView();
     const isPreview = deviceView !== 'responsive';
@@ -80,11 +83,7 @@ export const ResponsiveNavBar: React.FC<ResponsiveNavBarProps> = ({
         }
     }, [formCache, siteId, openChat]);
 
-    const getHref = useCallback((val: string) => {
-        if (val === 'action:home' || val === 'action:homepage') return '/';
-        if (val?.startsWith('action:')) return '#';
-        return val || '#';
-    }, []);
+    const getHref = useCallback((val: string) => resolveNavHref(val, tenantSlug, isSubdomain), [tenantSlug, isSubdomain]);
 
     const isMobileOnly = layout?.navMode === 'mobile-only';
 

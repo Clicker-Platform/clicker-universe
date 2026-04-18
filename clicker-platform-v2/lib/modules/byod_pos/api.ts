@@ -405,6 +405,11 @@ export async function addToOrder(siteId: string, orderId: string, newItems: POSO
 
 export async function requestPayment(siteId: string, orderId: string): Promise<void> {
     const orderRef = doc(db, 'sites', siteId, ORDERS_COLLECTION, orderId);
+    const snap = await getDoc(orderRef);
+    if (!snap.exists()) throw new Error('Order not found');
+    const data = snap.data() as POSOrder;
+    if (data.status === 'cancelled') throw new Error('cancelled');
+    if (data.paymentStatus === 'paid') throw new Error('already_paid');
     await updateDoc(orderRef, {
         paymentStatus: 'pending_confirmation'
     });

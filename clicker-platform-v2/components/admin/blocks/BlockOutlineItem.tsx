@@ -63,10 +63,10 @@ export const BlockOutlineItem = memo(({ block, isSelected, onClick, onDelete }: 
             <div
                 {...attributes}
                 {...listeners}
-                className="p-0.5 rounded cursor-grab active:cursor-grabbing text-neutral-400 dark:text-neutral-600 hover:text-neutral-500 dark:hover:text-neutral-400 transition-colors flex-shrink-0"
+                className="p-2 -m-1 rounded cursor-grab active:cursor-grabbing text-neutral-400 dark:text-neutral-600 hover:text-neutral-500 dark:hover:text-neutral-400 transition-colors flex-shrink-0 touch-none"
                 onClick={(e) => e.stopPropagation()}
             >
-                <GripVertical size={13} />
+                <GripVertical size={15} />
             </div>
 
             <Box size={13} className={`flex-shrink-0 ${isSelected ? 'text-blue-400' : 'text-neutral-400 dark:text-neutral-500'}`} />
