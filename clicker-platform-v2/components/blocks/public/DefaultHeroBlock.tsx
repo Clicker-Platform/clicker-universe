@@ -36,7 +36,7 @@ function EditableText({
 }: {
     value?: string;
     field: string;
-    tag?: keyof JSX.IntrinsicElements;
+    tag?: keyof React.JSX.IntrinsicElements;
     className?: string;
     style?: React.CSSProperties;
     placeholder?: string;

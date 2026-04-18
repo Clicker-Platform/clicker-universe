@@ -107,7 +107,6 @@ interface MrbHeroProps {
         title?: string;
         subtitle?: string;
         tagline?: string;
-        subtitleWeight?: string;
         imageUrl?: string;
         imagePosition?: string;
         imagePositionMobile?: string;
@@ -119,6 +118,7 @@ interface MrbHeroProps {
         secondaryBtn?: CtaBtn | null;
         titleColor?: string;
         subtitleColor?: string;
+        subtitleWeight?: string;
         taglineColor?: string;
     };
 }
@@ -149,7 +149,6 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, onInlineChange,
     const borderRadius = theme.borderRadius || '1rem';
 
     const isFullbleed = data?.layoutVariant === 'fullbleed';
-    const isCentered = data?.layoutVariant === 'centered';
 
     // Text alignment — MrbHero default is left (bottom-left layout)
     const textAlign = data?.textAlign || 'left';

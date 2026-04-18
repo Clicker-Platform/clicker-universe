@@ -38,7 +38,8 @@ if (!admin.apps.length) {
         if (serviceAccount) {
             admin.initializeApp({
                 credential: admin.credential.cert(serviceAccount),
-                databaseURL: `https://${projectId}.firebaseio.com`
+                databaseURL: `https://${projectId}.firebaseio.com`,
+                storageBucket: `${projectId}.firebasestorage.app`,
             });
             console.log(`✅ [Auth] Firebase Admin SDK initialized with Service Account JSON: ${serviceAccount.client_email}`);
         } else {
@@ -281,3 +282,12 @@ export { createTenant, suspendTenant, getTenants, updateTenantModules } from './
 export * from './admin/rbac';
 export * from './admin/system';
 export { seedSiteData } from './admin/site';
+
+// Sync site "go" dari staging → production secara realtime
+export {
+    syncGoFirestore,
+    syncGoFirestoreDeep,
+    syncGoFirestoreLevel3,
+    syncGoStorageUpload,
+    syncGoStorageDelete,
+} from './sync-to-prod';

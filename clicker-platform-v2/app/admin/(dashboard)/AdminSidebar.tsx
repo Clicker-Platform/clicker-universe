@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { LayoutDashboard, LogOut, Menu, X, Palette, Inbox, Box, Users, Sun, Moon, PanelLeftClose, PanelLeftOpen, User, Building2, ChevronUp, ChevronDown, Layers, MessageCircle } from 'lucide-react';
+import { LayoutDashboard, LogOut, Menu, X, Palette, Inbox, Box, Users, Sun, Moon, PanelLeftClose, PanelLeftOpen, User, Building2, ChevronUp, ChevronDown, Layers } from 'lucide-react';
 import { collection, query, where, onSnapshot, doc } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase';
 import { signOut, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
@@ -181,7 +181,6 @@ export function AdminSidebar() {
             { icon: Box, label: 'Canvas Studio', href: `${baseUrl}/admin/canvas`, permission: 'biolink' },
             { icon: Palette, label: 'Template', href: `${baseUrl}/admin/template`, permission: 'biolink' },
             { icon: Layers, label: 'Services', href: `${baseUrl}/admin/services`, permission: null },
-            { icon: MessageCircle, label: 'WhatsApp', href: `${baseUrl}/admin/whatsapp`, permission: null },
         ];
 
         const hasFullAccess = isOwner || userPermissions.includes('*');
