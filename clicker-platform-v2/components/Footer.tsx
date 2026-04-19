@@ -95,7 +95,7 @@ export const Footer: React.FC<FooterProps> = ({ socialLinks, footerText, contact
                 </div>
             )}
 
-            <p className={`font-bold text-sm ${isGlass ? 'text-white/40' : 'opacity-60'}`} style={!isGlass ? { color: theme.colors.foreground } : {}}>
+            <p className={`font-normal text-sm ${isGlass ? 'text-white/40' : 'opacity-60'}`} style={!isGlass ? { color: theme.colors.foreground } : {}}>
                 {footerText || '© 2024 SunnySide'}
             </p>
         </footer>

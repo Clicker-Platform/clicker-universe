@@ -4,9 +4,14 @@ import React from 'react';
 import { LinkItem, BusinessContact, LinkSettings } from '@/data/mockData';
 import { LinkCard } from './LinkCard';
 import { useTemplate } from '@/components/TemplateProvider';
+import { useAnalytics } from '@/hooks/useAnalytics';
+import { useSite } from '@/lib/site-context';
+import { FormModal } from '@/components/FormModal';
 import { ICON_MAP } from '@/data/icons';
 import { ShoppingBag } from 'lucide-react';
 import { getWhatsappUrl } from '@/components/common/WhatsappButton';
+import { resolveNavHref } from '@/lib/resolveNavHref';
+import { getContrastColor } from '@/lib/utils/color';
 
 interface QuickActionsProps {
     links: LinkItem[];
@@ -14,101 +19,162 @@ interface QuickActionsProps {
     settings?: LinkSettings;
     siteId?: string;
     tenantSlug?: string;
-    blockData?: { hiddenLinkIds?: string[]; layout?: 'list' | 'grid' };
+    blockData?: { hiddenLinkIds?: string[]; layout?: 'list' | 'grid'; cardBgColor?: string; cardBorderColor?: string };
+    defaultLayout?: 'list' | 'grid';
 }
 
-export const QuickActions: React.FC<QuickActionsProps> = ({ links, contact, settings, siteId, tenantSlug, blockData }) => {
+export const QuickActions: React.FC<QuickActionsProps> = ({
+    links, contact, settings, siteId, tenantSlug, blockData, defaultLayout = 'list'
+}) => {
     const { theme } = useTemplate();
-    const isClean = theme.cardStyle === 'clean';
-    const isGlass = theme.cardStyle === 'glass';
+    const { track } = useAnalytics();
+    const { siteId: contextSiteId, tenantSlug: contextTenantSlug, isSubdomain } = useSite();
+    const effectiveSiteId = siteId || contextSiteId;
+    const effectiveTenantSlug = tenantSlug || contextTenantSlug || '';
 
-    const sectionTitle = settings?.sectionTitle || "Quick Actions";
+    const [isModalOpen, setIsModalOpen] = React.useState(false);
+    const [formData, setFormData] = React.useState<any>(null);
+    const [isLoadingForm, setIsLoadingForm] = React.useState(false);
+
+    const isGlass = theme.cardStyle === 'glass';
+    const sectionTitle = settings?.sectionTitle || 'Quick Actions';
     const showOnHome = settings?.showOnHome !== false;
     const hiddenLinkIds: string[] = blockData?.hiddenLinkIds || [];
-    const layout: 'list' | 'grid' = blockData?.layout || 'list';
+    const layout: 'list' | 'grid' = blockData?.layout || defaultLayout;
+
+    // Block-level color overrides
+    const cardBgColor = blockData?.cardBgColor;
+    const cardBorderColor = blockData?.cardBorderColor;
+    // Derive contrast foreground from bg override; fall back to theme foreground
+    const cardFgColor = cardBgColor
+        ? getContrastColor(cardBgColor, '#ffffff', theme.colors.foreground || '#1a1a1a')
+        : undefined;
 
     const processedLinks = links
         .filter(link => !link.hideOnHome && !hiddenLinkIds.includes(link.id))
         .map(link => {
             if (contact?.whatsapp && link.url === '#' && (link.title.toLowerCase().includes('whatsapp') || link.title.toLowerCase().includes('order'))) {
-                return { ...link, url: getWhatsappUrl(contact.whatsapp, "Hi SunnySide! I'd like to order...") };
+                return { ...link, url: getWhatsappUrl(contact.whatsapp, "Hi! I'd like to reach out...") };
             }
             return link;
         });
 
-    const containerStyle = isClean
-        ? {}
-        : { borderColor: theme.colors.foreground, boxShadow: `4px 4px 0px ${theme.colors.foreground}` };
+    const getTenantAwareUrl = (url: string): string =>
+        resolveNavHref(url, effectiveTenantSlug, isSubdomain);
 
-    const textStyle = { color: theme.colors.foreground };
+    const handleClick = async (e: React.MouseEvent, item: LinkItem) => {
+        track({ type: 'link_click', id: item.id, siteId: effectiveSiteId });
+        if (item.type === 'form' && item.formId) {
+            e.preventDefault();
+            if (!formData) {
+                setIsLoadingForm(true);
+                try {
+                    const res = await fetch(`/api/forms?id=${item.formId}&siteId=${effectiveSiteId}`);
+                    if (res.ok) { setFormData(await res.json()); setIsModalOpen(true); }
+                } catch (err) { console.error('Error loading form:', err); }
+                setIsLoadingForm(false);
+            } else {
+                setIsModalOpen(true);
+            }
+        }
+    };
+
+    // Resolved card colors: block override → theme token → glass fallback
+    const resolvedBg = isGlass
+        ? `${theme.colors.surfaceElevated || theme.colors.surface}99`
+        : (cardBgColor || theme.colors.surface || '#ffffff');
+    const resolvedBorder = isGlass
+        ? 'rgba(255,255,255,0.1)'
+        : (cardBorderColor || theme.colors.border || '#e5e7eb');
+    const resolvedFg = isGlass
+        ? 'rgba(255,255,255,0.95)'
+        : (cardFgColor || theme.colors.foreground);
+    const resolvedMuted = isGlass
+        ? 'rgba(255,255,255,0.6)'
+        : (cardFgColor ? `${cardFgColor}99` : (theme.colors.textSubtle || theme.colors.textMuted || theme.colors.foreground));
+
+    const cardStyle: React.CSSProperties = {
+        borderRadius: 'var(--theme-radius)',
+        boxShadow: 'var(--theme-card-shadow)',
+        background: resolvedBg,
+        backdropFilter: isGlass ? 'blur(12px)' : undefined,
+        border: `1px solid ${resolvedBorder}`,
+    };
+
+    const iconStyle = (isHighlight: boolean): React.CSSProperties => ({
+        borderRadius: '9999px',
+        backgroundColor: isHighlight
+            ? `${theme.colors.primary}20`
+            : isGlass ? 'rgba(255,255,255,0.10)' : `${resolvedFg}15`,
+        color: isHighlight ? theme.colors.primary : resolvedFg,
+    });
 
     return (
-        <div className="space-y-4">
-            {/* Section Label */}
+        <section className="w-full space-y-4">
             {showOnHome && !theme.custom?.hideQuickActionsTitle && (
-                <div className="flex justify-center mb-6">
-                    <div
-                        className={`px-8 py-3 rounded-full transition-transform ${
-                            isClean
-                                ? 'bg-white shadow-sm border border-gray-200'
-                                : 'bg-brand-white border-[3px] rotate-1 hover:rotate-0'
-                        }`}
-                        style={!isClean ? containerStyle : {}}
-                    >
-                        <h2
-                            className={`font-extrabold uppercase tracking-wider text-base ${isClean ? 'text-gray-600' : ''}`}
-                            style={!isClean ? textStyle : {}}
-                        >
-                            {sectionTitle}
-                        </h2>
-                    </div>
-                </div>
+                <h2
+                    className="text-xs font-bold uppercase tracking-[0.2em]"
+                    style={{ color: theme.colors.textMuted || theme.colors.foreground }}
+                >
+                    {sectionTitle}
+                </h2>
             )}
 
             {layout === 'grid' ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {processedLinks.map(link => {
                         const Icon = link.iconName && ICON_MAP[link.iconName] ? ICON_MAP[link.iconName] : ShoppingBag;
-                        const isHighlight = link.highlight;
+                        const Wrapper = link.type === 'form' ? 'button' : 'a';
+                        const wrapperProps: any = link.type === 'form'
+                            ? { onClick: (e: any) => handleClick(e, link), type: 'button' }
+                            : { href: getTenantAwareUrl(link.url), target: link.openInNewTab ? '_blank' : undefined, rel: link.openInNewTab ? 'noopener noreferrer' : undefined, onClick: (e: any) => handleClick(e, link) };
+
                         return (
-                            <a
+                            <Wrapper
                                 key={link.id}
-                                href={link.url}
-                                target={link.openInNewTab ? '_blank' : undefined}
-                                rel={link.openInNewTab ? 'noopener noreferrer' : undefined}
-                                className={`flex flex-col items-center justify-center gap-3 p-4 rounded-2xl text-center transition-all ${
-                                    isGlass
-                                        ? 'bg-black/20 backdrop-blur-md border border-white/10 hover:bg-white/10'
-                                        : isClean
-                                        ? 'bg-white border border-gray-200 shadow-sm hover:shadow-md hover:border-brand-green/30'
-                                        : 'bg-white border-[3px] border-brand-dark shadow-sticker hover:-translate-y-1 hover:shadow-sticker-hover'
-                                }`}
+                                {...wrapperProps}
+                                className="group relative flex flex-col items-center justify-center gap-3 p-4 text-center w-full hover:opacity-80 transition-opacity"
+                                style={cardStyle}
                             >
-                                <div className={`p-2.5 rounded-xl border-2 ${
-                                    isGlass
-                                        ? (isHighlight ? 'bg-[var(--theme-primary)]/20 border-[var(--theme-primary)]/40 text-[var(--theme-primary)]' : 'bg-white/10 border-white/20 text-white/80')
-                                        : isClean
-                                        ? (isHighlight ? 'bg-brand-green/10 border-brand-green text-brand-green' : 'bg-gray-50 border-gray-200 text-gray-600')
-                                        : (isHighlight ? 'bg-brand-green border-brand-green text-brand-dark' : 'bg-brand-green border-brand-dark text-brand-dark')
-                                }`}>
+                                <div className="p-2.5 flex items-center justify-center" style={iconStyle(!!link.highlight)}>
                                     <Icon size={22} strokeWidth={2} />
                                 </div>
-                                <span className={`text-sm font-bold leading-tight ${
-                                    isGlass ? 'text-white' : isClean ? 'text-gray-900' : 'text-brand-dark'
-                                }`}>
+                                <span className="text-sm font-bold leading-tight" style={{ color: resolvedFg }}>
                                     {link.title}
                                 </span>
-                            </a>
+                                {link.subtitle && (
+                                    <span className="text-xs" style={{ color: resolvedMuted }}>
+                                        {link.subtitle}
+                                    </span>
+                                )}
+                                {isLoadingForm && link.type === 'form' && (
+                                    <div className="absolute inset-0 flex items-center justify-center" style={{ backgroundColor: `${theme.colors.background}80`, borderRadius: 'var(--theme-radius)' }}>
+                                        <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: theme.colors.primary }} />
+                                    </div>
+                                )}
+                            </Wrapper>
                         );
                     })}
                 </div>
             ) : (
-                <div className="space-y-4">
+                <div className="space-y-3">
                     {processedLinks.map(link => (
-                        <LinkCard key={link.id} item={link} siteId={siteId} tenantSlug={tenantSlug} />
+                        <LinkCard
+                            key={link.id}
+                            item={link}
+                            siteId={siteId}
+                            tenantSlug={tenantSlug}
+                            cardBgColor={cardBgColor}
+                            cardBorderColor={cardBorderColor}
+                            cardFgColor={cardFgColor}
+                        />
                     ))}
                 </div>
             )}
-        </div>
+
+            {isModalOpen && formData && (
+                <FormModal form={formData} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} siteId={effectiveSiteId} />
+            )}
+        </section>
     );
 };

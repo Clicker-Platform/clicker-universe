@@ -3,8 +3,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, setDoc, getDoc } from 'firebase/firestore';
-import { Plus, Trash2, ArrowLeft, Save, Star, Eye, EyeOff, Settings, ShoppingBag, Loader2 } from 'lucide-react';
+import { Plus, Trash2, ArrowLeft, Save, Star, Eye, EyeOff, Settings, ShoppingBag, Loader2, ExternalLink, MessageCircle } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
+import { usePageStudio } from '@/components/admin/blocks/PageStudioContext';
 import { MultiImageUpload } from '@/components/admin/MultiImageUpload';
 import Image from 'next/image';
 
@@ -26,6 +27,8 @@ interface Product {
     isActive?: boolean;
     showPrice?: boolean;
     showLabel?: boolean;
+    ctaMode?: 'whatsapp' | 'url' | 'both' | 'none';
+    ctaUrl?: string;
 }
 
 interface ProductSettings {
@@ -35,6 +38,9 @@ interface ProductSettings {
     featuredTitle?: string;
     showFeaturedTitle?: boolean;
     featuredBtnText?: string;
+    ctaMode?: 'whatsapp' | 'url' | 'both';
+    ctaUrl?: string;
+    ctaUrlLabel?: string;
     whatsappBtnLabel?: string;
     whatsappMessageTemplate?: string;
     whatsappBtnColor?: string;
@@ -139,6 +145,7 @@ function ProductListItem({ product, isFeatured, onEdit, onDelete, onToggleVisibi
 
 export function ProductsPanel() {
     const { siteId } = useSite();
+    const { refreshHydratedData } = usePageStudio();
     const [products, setProducts] = useState<Product[]>([]);
     const [featuredId, setFeaturedId] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
@@ -151,6 +158,8 @@ export function ProductsPanel() {
     const [formData, setFormData] = useState({
         title: '', price: '', showPrice: true, category: '', showLabel: true,
         description: '', images: [] as string[], isActive: true,
+        ctaMode: undefined as 'whatsapp' | 'url' | 'both' | 'none' | undefined,
+        ctaUrl: '',
     });
     const [saving, setSaving] = useState(false);
 
@@ -215,12 +224,15 @@ export function ProductsPanel() {
                 description: product.description || '',
                 images: product.images || (product.image ? [product.image] : []),
                 isActive: product.isActive !== false,
+                ctaMode: product.ctaMode,
+                ctaUrl: product.ctaUrl || '',
             });
         } else {
             setEditingId(null);
             setFormData({
                 title: '', price: '', showPrice: true, category: '', showLabel: true,
                 description: '', images: [], isActive: true,
+                ctaMode: undefined, ctaUrl: '',
             });
         }
         setView('editor');
@@ -242,6 +254,8 @@ export function ProductsPanel() {
                 showLabel: formData.showLabel,
                 description: formData.description,
                 isActive: formData.isActive,
+                ...(formData.ctaMode ? { ctaMode: formData.ctaMode } : {}),
+                ...(formData.ctaUrl ? { ctaUrl: formData.ctaUrl } : {}),
             };
 
             if (editingId) {
@@ -253,6 +267,7 @@ export function ProductsPanel() {
             }
             setView('list');
             setEditingId(null);
+            refreshHydratedData();
         } catch (error) {
             console.error('Error saving product:', error);
         } finally {
@@ -379,34 +394,75 @@ export function ProductsPanel() {
 
                         <div className="border-t border-gray-200 dark:border-neutral-800" />
 
-                        {/* WhatsApp Button Settings */}
+                        {/* CTA Settings */}
                         <div className="space-y-3">
-                            <h3 className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">WhatsApp Button</h3>
+                            <h3 className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">CTA Button</h3>
+
+                            {/* Mode selector */}
                             <div>
-                                <label className={labelClass}>Button Label</label>
-                                <input type="text" value={settings.whatsappBtnLabel || ''} onChange={e => setSettings({ ...settings, whatsappBtnLabel: e.target.value })} className={inputClass} placeholder="e.g. Order on WhatsApp" />
-                            </div>
-                            <div>
-                                <label className={labelClass}>Message Template</label>
-                                <textarea value={settings.whatsappMessageTemplate || ''} onChange={e => setSettings({ ...settings, whatsappMessageTemplate: e.target.value })} className={`${inputClass} min-h-[80px] resize-none`} placeholder="Use ${productName} and ${productPrice}" />
-                                <p className="text-[10px] text-neutral-400 dark:text-neutral-600 mt-1">Placeholders: {'${productName}'}, {'${productPrice}'}</p>
-                            </div>
-                            <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label className={labelClass}>Button Color</label>
-                                    <div className="flex items-center gap-2">
-                                        <input type="color" value={settings.whatsappBtnColor || '#25D366'} onChange={e => setSettings({ ...settings, whatsappBtnColor: e.target.value })} className="h-8 w-8 rounded cursor-pointer border-0 p-0 bg-transparent" />
-                                        <input type="text" value={settings.whatsappBtnColor || '#25D366'} onChange={e => setSettings({ ...settings, whatsappBtnColor: e.target.value })} className={`${inputClass} uppercase`} />
-                                    </div>
-                                </div>
-                                <div>
-                                    <label className={labelClass}>Text Color</label>
-                                    <div className="flex items-center gap-2">
-                                        <input type="color" value={settings.whatsappBtnTextColor || '#FFFFFF'} onChange={e => setSettings({ ...settings, whatsappBtnTextColor: e.target.value })} className="h-8 w-8 rounded cursor-pointer border-0 p-0 bg-transparent" />
-                                        <input type="text" value={settings.whatsappBtnTextColor || '#FFFFFF'} onChange={e => setSettings({ ...settings, whatsappBtnTextColor: e.target.value })} className={`${inputClass} uppercase`} />
-                                    </div>
+                                <label className={labelClass}>Action</label>
+                                <div className="grid grid-cols-3 gap-1">
+                                    {([
+                                        { value: 'whatsapp', label: 'WhatsApp', icon: <MessageCircle size={11} /> },
+                                        { value: 'url', label: 'Open URL', icon: <ExternalLink size={11} /> },
+                                        { value: 'both', label: 'Both', icon: null },
+                                    ] as const).map(opt => (
+                                        <button
+                                            key={opt.value}
+                                            type="button"
+                                            onClick={() => setSettings({ ...settings, ctaMode: opt.value })}
+                                            className={`flex items-center justify-center gap-1 py-2 rounded-lg text-xs font-bold transition-colors ${(settings.ctaMode || 'whatsapp') === opt.value ? 'bg-blue-500 text-white' : 'bg-gray-100 dark:bg-neutral-800 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
+                                        >
+                                            {opt.icon}{opt.label}
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
+
+                            {/* URL fields */}
+                            {(settings.ctaMode === 'url' || settings.ctaMode === 'both') && (
+                                <>
+                                    <div>
+                                        <label className={labelClass}>URL</label>
+                                        <input type="url" value={settings.ctaUrl || ''} onChange={e => setSettings({ ...settings, ctaUrl: e.target.value })} className={inputClass} placeholder="https://..." />
+                                    </div>
+                                    <div>
+                                        <label className={labelClass}>URL Button Label</label>
+                                        <input type="text" value={settings.ctaUrlLabel || ''} onChange={e => setSettings({ ...settings, ctaUrlLabel: e.target.value })} className={inputClass} placeholder="e.g. View Product" />
+                                    </div>
+                                </>
+                            )}
+
+                            {/* WhatsApp fields */}
+                            {(settings.ctaMode !== 'url') && (
+                                <>
+                                    <div>
+                                        <label className={labelClass}>WhatsApp Button Label</label>
+                                        <input type="text" value={settings.whatsappBtnLabel || ''} onChange={e => setSettings({ ...settings, whatsappBtnLabel: e.target.value })} className={inputClass} placeholder="e.g. Order on WhatsApp" />
+                                    </div>
+                                    <div>
+                                        <label className={labelClass}>Message Template</label>
+                                        <textarea value={settings.whatsappMessageTemplate || ''} onChange={e => setSettings({ ...settings, whatsappMessageTemplate: e.target.value })} className={`${inputClass} min-h-[80px] resize-none`} placeholder="Use ${productName} and ${productPrice}" />
+                                        <p className="text-[10px] text-neutral-400 dark:text-neutral-600 mt-1">Placeholders: {'${productName}'}, {'${productPrice}'}</p>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label className={labelClass}>Button Color</label>
+                                            <div className="flex items-center gap-2">
+                                                <input type="color" value={settings.whatsappBtnColor || '#25D366'} onChange={e => setSettings({ ...settings, whatsappBtnColor: e.target.value })} className="h-8 w-8 rounded cursor-pointer border-0 p-0 bg-transparent" />
+                                                <input type="text" value={settings.whatsappBtnColor || '#25D366'} onChange={e => setSettings({ ...settings, whatsappBtnColor: e.target.value })} className={`${inputClass} uppercase`} />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className={labelClass}>Text Color</label>
+                                            <div className="flex items-center gap-2">
+                                                <input type="color" value={settings.whatsappBtnTextColor || '#FFFFFF'} onChange={e => setSettings({ ...settings, whatsappBtnTextColor: e.target.value })} className="h-8 w-8 rounded cursor-pointer border-0 p-0 bg-transparent" />
+                                                <input type="text" value={settings.whatsappBtnTextColor || '#FFFFFF'} onChange={e => setSettings({ ...settings, whatsappBtnTextColor: e.target.value })} className={`${inputClass} uppercase`} />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -478,6 +534,39 @@ export function ProductsPanel() {
                         <div>
                             <label className={labelClass}>Description (optional)</label>
                             <textarea value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} className={`${inputClass} min-h-[80px] resize-none`} placeholder="Product description..." />
+                        </div>
+
+                        <div className="border-t border-gray-200 dark:border-neutral-800" />
+
+                        {/* CTA Override */}
+                        <div className="space-y-2">
+                            <label className={labelClass}>CTA Override <span className="text-neutral-500">(overrides block settings)</span></label>
+                            <div className="grid grid-cols-4 gap-1">
+                                {([
+                                    { value: undefined, label: 'Default' },
+                                    { value: 'whatsapp', label: 'WhatsApp' },
+                                    { value: 'url', label: 'URL' },
+                                    { value: 'both', label: 'Both' },
+                                ] as const).map(opt => (
+                                    <button
+                                        key={String(opt.value)}
+                                        type="button"
+                                        onClick={() => setFormData(p => ({ ...p, ctaMode: opt.value }))}
+                                        className={`py-1.5 rounded-lg text-[10px] font-bold transition-colors ${formData.ctaMode === opt.value ? 'bg-blue-500 text-white' : 'bg-gray-100 dark:bg-neutral-800 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
+                                    >
+                                        {opt.label}
+                                    </button>
+                                ))}
+                            </div>
+                            {(formData.ctaMode === 'url' || formData.ctaMode === 'both') && (
+                                <input
+                                    type="url"
+                                    value={formData.ctaUrl}
+                                    onChange={e => setFormData(p => ({ ...p, ctaUrl: e.target.value }))}
+                                    className={inputClass}
+                                    placeholder="https://..."
+                                />
+                            )}
                         </div>
 
                         <div className="border-t border-gray-200 dark:border-neutral-800" />

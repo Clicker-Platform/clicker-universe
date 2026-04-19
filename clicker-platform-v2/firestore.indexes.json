@@ -1,11 +1,39 @@
 {
     "indexes": [
         {
-            "collectionGroup": "transactions",
+            "collectionGroup": "analytics_shards",
             "queryScope": "COLLECTION",
             "fields": [
                 {
-                    "fieldPath": "memberId",
+                    "fieldPath": "pageViews",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "totalClicks",
+                    "order": "ASCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "menu_items",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "category",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "name",
+                    "order": "ASCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "orders",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "status",
                     "order": "ASCENDING"
                 },
                 {
@@ -59,12 +87,322 @@
             "queryScope": "COLLECTION",
             "fields": [
                 {
+                    "fieldPath": "createdAt",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "status",
+                    "order": "ASCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "orders",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "createdAt",
+                    "order": "DESCENDING"
+                },
+                {
+                    "fieldPath": "status",
+                    "order": "ASCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "bookings",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
                     "fieldPath": "status",
                     "order": "ASCENDING"
                 },
                 {
                     "fieldPath": "createdAt",
                     "order": "DESCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "bookings",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "customerPhone",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "startAt",
+                    "order": "ASCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "records",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "vehiclePlate",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "createdAt",
+                    "order": "DESCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "records",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "outletId",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "createdAt",
+                    "order": "ASCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "records",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "outletId",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "createdAt",
+                    "order": "DESCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "records",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "outletId",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "updatedAt",
+                    "order": "ASCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "records",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "outletId",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "status",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "updatedAt",
+                    "order": "DESCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "records",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "outletId",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "memberId",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "updatedAt",
+                    "order": "DESCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "records",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "outletId",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "memberPhone",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "updatedAt",
+                    "order": "DESCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "warrantyCards",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "ownerPhone",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "status",
+                    "order": "ASCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "transactions",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "memberId",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "createdAt",
+                    "order": "DESCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "transactions",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "itemId",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "timestamp",
+                    "order": "DESCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "reminderQueue",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "outletId",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "scheduledAt",
+                    "order": "ASCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "reminderQueue",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "status",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "scheduledAt",
+                    "order": "ASCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "serviceRecords",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "outletId",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "updatedAt",
+                    "order": "ASCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "serviceRecords",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "outletId",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "updatedAt",
+                    "order": "DESCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "serviceRecords",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "outletId",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "status",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "updatedAt",
+                    "order": "DESCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "serviceRecords",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "outletId",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "createdAt",
+                    "order": "ASCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "serviceRecords",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "outletId",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "createdAt",
+                    "order": "DESCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "vehicles",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "outletId",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "plateNumber",
+                    "order": "ASCENDING"
                 }
             ]
         }

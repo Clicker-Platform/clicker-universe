@@ -52,6 +52,7 @@ export default function DetailsStep({
         backgroundColor: isGlass ? 'rgba(255,255,255,0.05)' : (theme.colors.surfaceElevated || '#ffffff'),
         borderColor,
         color: theme.colors.foreground,
+        borderRadius: 'calc(var(--theme-radius) * 0.75)',
     };
     const labelStyle: React.CSSProperties = { color: subtleText };
 
@@ -87,8 +88,8 @@ export default function DetailsStep({
     return (
         <div className="space-y-4">
             {/* Booking summary */}
-            <div className="p-4 rounded-xl mb-4 text-sm"
-                style={{ backgroundColor: surfaceBg, border: `1px solid ${borderColor}` }}>
+            <div className="p-4 mb-4 text-sm"
+                style={{ backgroundColor: surfaceBg, border: `1px solid ${borderColor}`, borderRadius: 'var(--theme-radius)' }}>
                 <div className="flex justify-between gap-3 mb-1">
                     <span className="shrink-0" style={{ color: subtleText }}>Service:</span>
                     <span className="font-bold text-right" style={{ color: theme.colors.foreground }}>{selectedService.name}</span>
@@ -125,8 +126,8 @@ export default function DetailsStep({
                     <button
                         onClick={(e) => { e.preventDefault(); checkMember(); }}
                         disabled={loading || !memberSearchPhone}
-                        className="w-full py-2 rounded-lg text-sm font-bold disabled:opacity-50 hover:opacity-90 transition-opacity"
-                        style={{ backgroundColor: theme.colors.primary, color: theme.colors.accentForeground || '#ffffff' }}
+                        className="w-full py-2 text-sm font-bold disabled:opacity-50 hover:opacity-90 transition-opacity"
+                        style={{ backgroundColor: theme.colors.primary, color: theme.colors.accentForeground || '#ffffff', borderRadius: 'calc(var(--theme-radius) * 0.75)' }}
                     >
                         Check
                     </button>
@@ -234,8 +235,8 @@ export default function DetailsStep({
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-3 font-bold rounded-xl mt-4 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
-                    style={{ backgroundColor: theme.colors.primary, color: theme.colors.accentForeground || '#ffffff' }}
+                    className="w-full py-3 font-bold mt-4 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
+                    style={{ backgroundColor: theme.colors.primary, color: theme.colors.accentForeground || '#ffffff', borderRadius: 'calc(var(--theme-radius) * 0.75)' }}
                 >
                     {loading && <Loader2 size={18} className="animate-spin" />}
                     {loading ? 'Confirming...' : 'Confirm Booking'}

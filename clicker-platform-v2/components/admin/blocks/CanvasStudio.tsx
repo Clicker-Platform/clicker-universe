@@ -43,7 +43,7 @@ export function CanvasStudio({
     pageSlug?: string;
     pageTitle?: string;
 }) {
-    const { blocks, setBlocks, selectedBlockId, setSelectedBlockId, updateBlockData, deviceView } = useEditor();
+    const { blocks, setBlocks, selectedBlockId, setSelectedBlockId, updateBlockData, deviceView, showGuides } = useEditor();
     const { tenantSlug, siteId } = useSite();
     const {
         activePageId,
@@ -163,12 +163,15 @@ export function CanvasStudio({
 
     const templateId = globalSettings?.templateId || 'classic';
     const themeColor = globalSettings?.themeColor;
+    const accentColor = globalSettings?.accentColor;
     const borderRadius = globalSettings?.borderRadius || 'large';
     const getRadiusValue = (size: string) => {
         switch (size) {
+            case 'none': return '0px';
             case 'small': return '12px';
             case 'medium': return '16px';
             case 'large': return '24px';
+            case 'custom': return globalSettings?.customBorderRadius || '24px';
             default: return '24px';
         }
     };
@@ -212,12 +215,27 @@ export function CanvasStudio({
                 <DeviceViewProvider deviceView={deviceView}>
                 <TemplateProvider
                     templateId={templateId}
-                    themeOverrides={{
-                        borderRadius: radiusValue,
-                        ...(themeColor && template.config.allowThemeColorOverride !== false ? {
-                            colors: { background: themeColor, primary: themeColor }
-                        } : {})
-                    }}
+                    themeOverrides={(() => {
+                        const isLocked = template.config.allowThemeColorOverride === false;
+                        const colorOverrides: Record<string, string> = {};
+                        if (themeColor) {
+                            if (isLocked) {
+                                colorOverrides.primary = themeColor;
+                                colorOverrides.accent = themeColor;
+                            } else {
+                                colorOverrides.background = themeColor;
+                                colorOverrides.primary = themeColor;
+                            }
+                        }
+                        if (accentColor) colorOverrides.foreground = accentColor;
+                        if (globalSettings?.backgroundColor) colorOverrides.background = globalSettings.backgroundColor;
+                        if (globalSettings?.surfaceColor) colorOverrides.surface = globalSettings.surfaceColor;
+                        return {
+                            borderRadius: radiusValue,
+                            ...(globalSettings?.cardVariant ? { cardVariant: globalSettings.cardVariant } : {}),
+                            ...(Object.keys(colorOverrides).length > 0 ? { colors: colorOverrides } : {}),
+                        };
+                    })()}
                 >
                 <NavigationProvider siteId={siteId!}>
                     {blocks.length === 0 ? (
@@ -231,7 +249,7 @@ export function CanvasStudio({
                                 data-block-id="chrome:header"
                                 className={`z-50 w-full cursor-pointer transition-all flex-shrink-0 ${selectedBlockId === 'chrome:header'
                                         ? 'ring-4 ring-blue-500 ring-offset-[-4px]'
-                                        : 'hover:ring-2 hover:ring-blue-300'
+                                        : showGuides ? 'hover:ring-2 hover:ring-blue-300' : ''
                                     }`}
                                 onClick={(e) => {
                                     e.stopPropagation();
@@ -282,17 +300,14 @@ export function CanvasStudio({
                                                 <div
                                                     key={block.id}
                                                     data-block-id={block.id}
-                                                    className={`min-w-0 relative transition-all ${block.type === 'hero' ? '' : 'rounded-lg'} ${selectedBlockId === block.id
-                                                            ? 'shadow-md z-20'
-                                                            : 'cursor-pointer'
-                                                        }`}
+                                                    className={`min-w-0 relative ${selectedBlockId === block.id ? 'z-20' : 'cursor-pointer'}`}
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         setSelectedBlockId?.(block.id);
                                                     }}
                                                 >
                                                     {/* Hover outline */}
-                                                    {selectedBlockId !== block.id && (
+                                                    {showGuides && selectedBlockId !== block.id && (
                                                         <div className="absolute inset-0 pointer-events-none z-10 outline outline-1 outline-blue-400/40 outline-offset-0 hover:outline-blue-400/60" />
                                                     )}
                                                     {/* Selection chrome — sharp border + 8 square handles */}
@@ -359,7 +374,7 @@ export function CanvasStudio({
                                         data-block-id="chrome:footer"
                                         className={`relative z-10 w-full cursor-pointer transition-all ${selectedBlockId === 'chrome:footer'
                                                 ? 'ring-4 ring-blue-500 ring-offset-[-4px]'
-                                                : 'hover:ring-2 hover:ring-blue-300'
+                                                : showGuides ? 'hover:ring-2 hover:ring-blue-300' : ''
                                             }`}
                                         onClick={(e) => {
                                             e.stopPropagation();
@@ -383,7 +398,7 @@ export function CanvasStudio({
                                 data-block-id="chrome:bottomnav"
                                 className={`relative z-50 w-full flex-shrink-0 cursor-pointer transition-all ${selectedBlockId === 'chrome:bottomnav'
                                         ? 'ring-4 ring-blue-500 ring-offset-[-4px]'
-                                        : 'hover:ring-2 hover:ring-blue-300'
+                                        : showGuides ? 'hover:ring-2 hover:ring-blue-300' : ''
                                     }`}
                                 onClick={(e) => {
                                     e.stopPropagation();
@@ -565,6 +580,7 @@ export function CanvasStudio({
                         block={blocks.find(b => b.id === selectedBlockId)!}
                         onChange={updateBlockData}
                         templateId={templateId}
+                        onOpenSlideOver={toggleSlideOverPanel}
                     />
                 ) : (
                     <div className="flex flex-col items-center justify-center h-full text-center text-neutral-400 dark:text-neutral-500 gap-3">

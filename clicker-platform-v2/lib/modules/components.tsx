@@ -45,6 +45,16 @@ const SR_MemberServiceHistoryWidget = dynamic(() => import('@/lib/modules/servic
 const SalesPipelinePage = dynamic(() => import('@/lib/modules/sales-pipeline/admin/PipelinePage'));
 const SalesPipelineSettingsPage = dynamic(() => import('@/lib/modules/sales-pipeline/admin/SettingsPage'));
 
+// Admin Pages (AI Marketing)
+const MktDashboard = dynamic(() => import('@/lib/modules/ai-marketing/admin/DashboardPage'));
+const MktGenerate = dynamic(() => import('@/lib/modules/ai-marketing/admin/GeneratePage'));
+const MktAssets = dynamic(() => import('@/lib/modules/ai-marketing/admin/AssetsPage'));
+const MktAssetDetail = dynamic(() => import('@/lib/modules/ai-marketing/admin/AssetDetailPage'));
+const MktCampaigns = dynamic(() => import('@/lib/modules/ai-marketing/admin/CampaignsPage'));
+const MktCampaignDetail = dynamic(() => import('@/lib/modules/ai-marketing/admin/CampaignDetailPage'));
+const MktAnalytics = dynamic(() => import('@/lib/modules/ai-marketing/admin/AnalyticsPage'));
+const MktSettings = dynamic(() => import('@/lib/modules/ai-marketing/admin/SettingsPage'));
+
 // Admin Pages (Membership)
 const MemberListPage = dynamic(() => import('@/lib/modules/membership/admin/MemberListPage'));
 const MembershipSettingsPage = dynamic(() => import('@/lib/modules/membership/admin/SettingsPage'));
@@ -114,4 +124,14 @@ export const MODULE_COMPONENTS: Record<string, any> = {
     ),
     'ai_sales:AdminSettings': dynamic(() => import('@/lib/modules/ai-sales-agent/admin/AgentSettingsPage')),
     'ai_sales:Dashboard': dynamic(() => import('@/lib/modules/ai-sales-agent/admin/AgentDashboard')),
+
+    // AI Marketing Module
+    'ai_marketing:Dashboard': MktDashboard,
+    'ai_marketing:Generate': MktGenerate,
+    'ai_marketing:Assets': MktAssets,
+    'ai_marketing:AssetDetail': MktAssetDetail,
+    'ai_marketing:Campaigns': MktCampaigns,
+    'ai_marketing:CampaignDetail': MktCampaignDetail,
+    'ai_marketing:Analytics': MktAnalytics,
+    'ai_marketing:Settings': MktSettings,
 };

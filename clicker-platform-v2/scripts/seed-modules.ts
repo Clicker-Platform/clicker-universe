@@ -56,7 +56,7 @@ const MODULES = [
             { path: '/book', componentKey: 'reservation:BookPage' }
         ],
         blocks: [
-            { type: 'reservation_cta', label: 'Book Now Button', componentKey: 'reservation:BookNowWaitlist' }
+            { type: 'reservation_cta', label: 'Reservation', componentKey: 'reservation:BookNowWaitlist' }
         ]
     },
     {
@@ -90,7 +90,7 @@ const MODULES = [
         ],
         requires: ['inventory'],
         blocks: [
-            { type: 'pos_menu_grid', label: 'POS Menu Grid', componentKey: 'byod_pos:MenuGrid' }
+            { type: 'pos_menu_grid', label: 'POS Menu', componentKey: 'byod_pos:MenuGrid' }
         ]
     },
     {
@@ -178,6 +178,35 @@ const MODULES = [
             'modules/service_records/reminderQueue',
             'modules/service_records/serviceConfig',
         ]
+    },
+    {
+        id: 'ai_marketing',
+        displayName: 'AI Marketing Workspace',
+        description: 'Multi-agent AI system for marketing content generation.',
+        icon: 'bot',
+        version: '1.0.0',
+        enabled: true,
+        adminRoutes: [
+            { path: '/admin/marketing/dashboard',        label: 'Dashboard',       icon: 'dashboard',      componentKey: 'ai_marketing:Dashboard' },
+            { path: '/admin/marketing/generate',         label: 'Generate',        icon: 'bot',            componentKey: 'ai_marketing:Generate' },
+            { path: '/admin/marketing/assets',           label: 'Assets',          icon: 'image',          componentKey: 'ai_marketing:Assets' },
+            { path: '/admin/marketing/assets/detail',    label: 'Asset Detail',    icon: 'image',          componentKey: 'ai_marketing:AssetDetail',    hidden: true },
+            { path: '/admin/marketing/campaigns',        label: 'Campaigns',       icon: 'clipboard-list', componentKey: 'ai_marketing:Campaigns' },
+            { path: '/admin/marketing/campaigns/detail', label: 'Campaign Detail', icon: 'clipboard-list', componentKey: 'ai_marketing:CampaignDetail', hidden: true },
+            { path: '/admin/marketing/analytics',        label: 'Analytics',       icon: 'bar-chart-3',    componentKey: 'ai_marketing:Analytics' },
+            { path: '/admin/marketing/settings',         label: 'Settings',        icon: 'settings',       componentKey: 'ai_marketing:Settings',       permission: 'settings' },
+        ],
+        publicRoutes: [],
+        blocks: [],
+        dashboardWidgets: [],
+        collections: [
+            'modules/ai_marketing/settings',
+            'modules/ai_marketing/assets',
+            'modules/ai_marketing/generations',
+            'modules/ai_marketing/saved_content',
+            'modules/ai_marketing/campaigns',
+        ],
+        settings: {}
     }
 ];
 

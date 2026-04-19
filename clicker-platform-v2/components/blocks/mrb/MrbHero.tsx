@@ -107,7 +107,6 @@ interface MrbHeroProps {
         title?: string;
         subtitle?: string;
         tagline?: string;
-        subtitleWeight?: string;
         imageUrl?: string;
         imagePosition?: string;
         imagePositionMobile?: string;

@@ -22,6 +22,13 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const functions = getFunctions(app);
 
+// Email Link sign-in settings (2FA step)
+const BACKYARD_URL = process.env.NEXT_PUBLIC_BACKYARD_URL || 'http://localhost:3013';
+export const emailLinkSettings = {
+    url: `${BACKYARD_URL}/?finishSignIn=true`,
+    handleCodeInApp: true,
+};
+
 // Connect to Emulators in Development
 // WARNING: This must match the ports defined in firebase.json
 // if (process.env.NODE_ENV === 'development') {

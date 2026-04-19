@@ -36,9 +36,10 @@ interface BlockFormRendererProps {
     block: PageBlock;
     onChange: (id: string, data: any) => void;
     templateId?: string;
+    onOpenSlideOver?: (panel: 'links' | 'forms' | 'products' | 'siteinfo' | 'branding') => void;
 }
 
-export const BlockFormRenderer = memo(({ block, onChange, templateId = 'classic' }: BlockFormRendererProps) => {
+export const BlockFormRenderer = memo(({ block, onChange, templateId = 'classic', onOpenSlideOver }: BlockFormRendererProps) => {
     const [moduleInfo, setModuleInfo] = useState<{ name: string; description?: string; manageUrl?: string; componentKey?: string } | null>(null);
 
     // Subscribe to registry for module info
@@ -117,7 +118,7 @@ export const BlockFormRenderer = memo(({ block, onChange, templateId = 'classic'
         case 'text': return renderWithLayoutPicker(<TextForm data={block.data} onChange={handleDataChange} />);
         case 'image': return renderWithLayoutPicker(<ImageForm data={block.data} onChange={handleDataChange} />);
         case 'button': return renderWithLayoutPicker(<ButtonForm data={block.data} onChange={handleDataChange} />);
-        case 'products': return renderWithLayoutPicker(<ProductsForm data={block.data} onChange={handleDataChange} />);
+        case 'products': return renderWithLayoutPicker(<ProductsForm data={block.data} onChange={handleDataChange} onOpenProducts={onOpenSlideOver ? () => onOpenSlideOver('products') : undefined} />);
         case 'faq': return renderWithLayoutPicker(<FAQForm data={block.data} onChange={handleDataChange} />);
         case 'link': return renderWithLayoutPicker(<LinkBlockForm data={block.data} onChange={handleDataChange} />);
         case 'map': return renderWithLayoutPicker(<MapForm data={block.data} onChange={handleDataChange} />);
@@ -125,7 +126,7 @@ export const BlockFormRenderer = memo(({ block, onChange, templateId = 'classic'
         case 'social_embed': return <SocialEmbedForm data={block.data} onChange={handleDataChange} />;
 
         case 'quick_actions':
-            return <QuickActionsBlockForm data={block.data} onChange={handleDataChange} />;
+            return <QuickActionsBlockForm data={block.data} onChange={handleDataChange} onOpenLinks={onOpenSlideOver ? () => onOpenSlideOver('links') : undefined} />;
 
         // System blocks (configured elsewhere, with minimal title override)
         case 'hours':

@@ -27,7 +27,8 @@ export interface SharedLayoutProps {
     data: any; // Using any to avoid complex type duplication until centralized types file is verified.
     children: React.ReactNode;
     pageOverrides?: {
-        borderRadius?: 'small' | 'medium' | 'large';
+        borderRadius?: 'small' | 'medium' | 'large' | 'none' | 'custom';
+        customBorderRadius?: string;
         themeColor?: string;
         customConfig?: any;
     };
@@ -77,9 +78,11 @@ export function SharedPageLayout({
     const radiusSize = pageOverrides?.borderRadius || borderRadius || 'large';
     const getRadiusValue = (size: string) => {
         switch (size) {
+            case 'none': return '0px';
             case 'small': return '12px';
             case 'medium': return '16px';
             case 'large': return '24px';
+            case 'custom': return pageOverrides?.customBorderRadius || data?.customBorderRadius || '24px';
             default: return '24px';
         }
     };
@@ -94,8 +97,11 @@ export function SharedPageLayout({
 
     // Build color overrides
     const colorOverrides = isLockedTemplate ? {
-        // Locked templates: use template's native primary/accent. 
-        // Only respect explicit background/surface color DB overrides if set.
+        // Locked templates: lock background/surface to template defaults, but
+        // still allow the user-selected accent (themeColor) to drive primary/accent
+        // so CTA buttons and brand highlights reflect the Appearance panel choice.
+        ...(finalThemeColor ? { primary: finalThemeColor, accent: finalThemeColor } : {}),
+        ...(data.accentColor ? { foreground: data.accentColor } : {}),
         ...(backgroundColor ? { background: backgroundColor } : {}),
         ...(surfaceColor ? { surface: surfaceColor } : {}),
     } : {
@@ -111,6 +117,7 @@ export function SharedPageLayout({
             templateId={activeTemplateId}
             themeOverrides={{
                 borderRadius: radiusValue,
+                ...(data?.cardVariant ? { cardVariant: data.cardVariant } : {}),
                 ...(Object.keys(colorOverrides).length > 0 ? { colors: colorOverrides } : {}),
                 ...pageOverrides?.customConfig
             }}

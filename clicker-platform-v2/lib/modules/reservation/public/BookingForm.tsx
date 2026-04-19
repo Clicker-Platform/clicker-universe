@@ -166,12 +166,13 @@ export default function BookingForm({
     if (step === 5) {
         return (
             <div
-                className="text-center p-8 rounded-2xl animate-in fade-in"
+                className="text-center p-8 animate-in fade-in"
                 style={{
                     background: isGlass ? 'rgba(0,0,0,0.2)' : surfaceBg,
                     backdropFilter: isGlass ? 'blur(12px)' : undefined,
                     border: `1px solid ${surfaceBorder}`,
                     color: theme.colors.foreground,
+                    borderRadius: 'var(--theme-radius)',
                 }}
             >
                 <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
@@ -182,8 +183,8 @@ export default function BookingForm({
                 <p className="mb-6" style={{ color: theme.colors.textMuted || theme.colors.foreground }}>
                     Your appointment for <span className="font-bold">{selectedService?.name}</span> has been received.
                 </p>
-                <div className="p-4 rounded-xl border border-dashed inline-block text-left text-sm mb-6"
-                    style={{ backgroundColor: `${theme.colors.primary}08`, borderColor: `${theme.colors.primary}30`, color: theme.colors.textMuted || theme.colors.foreground }}>
+                <div className="p-4 border border-dashed inline-block text-left text-sm mb-6"
+                    style={{ backgroundColor: `${theme.colors.primary}08`, borderColor: `${theme.colors.primary}30`, color: theme.colors.textMuted || theme.colors.foreground, borderRadius: 'var(--theme-radius)' }}>
                     <p>Reference: <span className="font-mono font-bold" style={{ color: theme.colors.foreground }}>{bookingRef}</span></p>
                     {selectedService?.bookingType === 'request'
                         ? <p>We will contact you to confirm the schedule.</p>
@@ -192,8 +193,8 @@ export default function BookingForm({
                 </div>
                 <button
                     onClick={() => window.location.reload()}
-                    className="block w-full py-3 font-bold rounded-xl hover:opacity-90 transition-opacity"
-                    style={{ backgroundColor: theme.colors.primary, color: theme.colors.accentForeground || '#ffffff' }}
+                    className="block w-full py-3 font-bold hover:opacity-90 transition-opacity"
+                    style={{ backgroundColor: theme.colors.primary, color: theme.colors.accentForeground || '#ffffff', borderRadius: 'calc(var(--theme-radius) * 0.75)' }}
                 >
                     Book Another
                 </button>
@@ -203,19 +204,22 @@ export default function BookingForm({
 
     return (
         <div
-            className="overflow-hidden w-full transition-all duration-200 rounded-2xl"
+            className="overflow-hidden w-full transition-all duration-200"
             style={{
                 background: isGlass ? 'rgba(0,0,0,0.2)' : surfaceBg,
                 backdropFilter: isGlass ? 'blur(12px)' : undefined,
                 border: `1px solid ${surfaceBorder}`,
+                borderRadius: 'var(--theme-radius)',
             }}
         >
             {/* Header */}
             <div
-                className="p-4 sm:p-6 rounded-t-2xl border-b"
+                className="p-4 sm:p-6 border-b"
                 style={{
                     backgroundColor: isGlass ? 'rgba(255,255,255,0.05)' : theme.colors.foreground,
                     borderColor: isGlass ? 'rgba(255,255,255,0.1)' : 'transparent',
+                    borderTopLeftRadius: 'var(--theme-radius)',
+                    borderTopRightRadius: 'var(--theme-radius)',
                 }}
             >
                 <div className="flex items-center justify-between mb-2">

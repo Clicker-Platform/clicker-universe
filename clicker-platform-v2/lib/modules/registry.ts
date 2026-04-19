@@ -23,6 +23,8 @@ import {
     Users,
     Plus,
     BarChart3,
+    Bot,
+    ImageIcon,
 } from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { collection, query, where, onSnapshot, Unsubscribe } from 'firebase/firestore';
@@ -125,6 +127,8 @@ export const MODULE_ICONS: Record<string, any> = {
     'users': Users,
     'plus': Plus,
     'bar-chart-3': BarChart3,
+    'bot': Bot,
+    'image': ImageIcon,
 };
 
 /**

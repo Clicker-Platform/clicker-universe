@@ -26,8 +26,8 @@ export default function StaffStep({ staffList, onSelect, theme, staffLabel = 'St
         <div className="space-y-3">
             <button
                 onClick={() => onSelect(null)}
-                className="w-full text-left p-4 rounded-xl border transition-all flex items-center gap-4 hover:shadow-md"
-                style={rowStyle}
+                className="w-full text-left p-4 border transition-all flex items-center gap-4 hover:shadow-md"
+                style={{ ...rowStyle, borderRadius: 'calc(var(--theme-radius) * 0.75)' }}
             >
                 <div className="w-10 h-10 rounded-full flex items-center justify-center"
                     style={{ backgroundColor: isGlass ? 'rgba(255,255,255,0.1)' : (theme.colors.surface || '#f3f4f6'), color: mutedText }}>
@@ -43,8 +43,8 @@ export default function StaffStep({ staffList, onSelect, theme, staffLabel = 'St
                 <button
                     key={staff.id}
                     onClick={() => onSelect(staff)}
-                    className="w-full text-left p-4 rounded-xl border transition-all flex items-center gap-4 hover:shadow-md"
-                    style={rowStyle}
+                    className="w-full text-left p-4 border transition-all flex items-center gap-4 hover:shadow-md"
+                    style={{ ...rowStyle, borderRadius: 'calc(var(--theme-radius) * 0.75)' }}
                 >
                     <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold"
                         style={{ backgroundColor: `${theme.colors.primary}20`, color: theme.colors.primary }}>

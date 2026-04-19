@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { PageBlock } from '@/data/mockData';
 import {
     DndContext,
@@ -22,6 +22,7 @@ import { Lock } from 'lucide-react';
 import { BlockOutlineItem } from './BlockOutlineItem';
 import { useEditor } from './EditorContext';
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
+import { subscribeToEnabledModules } from '@/lib/modules/registry';
 
 interface BlockManagerProps {
     blocks: PageBlock[];
@@ -33,6 +34,18 @@ interface BlockManagerProps {
 export const BlockManager = ({ blocks, onChange, templateId, onAddClick }: BlockManagerProps) => {
     const { selectedBlockId, setSelectedBlockId } = useEditor();
     const [blockToDelete, setBlockToDelete] = useState<string | null>(null);
+    const [moduleBlockLabels, setModuleBlockLabels] = useState<Record<string, string>>({});
+
+    useEffect(() => {
+        const unsubscribe = subscribeToEnabledModules((modules) => {
+            const labels: Record<string, string> = {};
+            modules.forEach(mod => {
+                mod.blocks?.forEach(b => { labels[b.type] = b.label; });
+            });
+            setModuleBlockLabels(labels);
+        });
+        return () => unsubscribe();
+    }, []);
 
     const sensors = useSensors(
         useSensor(MouseSensor),
@@ -115,6 +128,7 @@ export const BlockManager = ({ blocks, onChange, templateId, onAddClick }: Block
                                         isSelected={selectedBlockId === block.id}
                                         onClick={() => setSelectedBlockId?.(block.id)}
                                         onDelete={deleteBlock}
+                                        moduleLabel={moduleBlockLabels[block.type]}
                                     />
                                 ))}
                             </div>

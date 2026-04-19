@@ -102,7 +102,7 @@ service cloud.firestore {
     // Modules Registry
     match /modules/{moduleId} {
       allow read: if true;
-      allow write: if isGlobalAdmin();
+      allow write: if isGlobalAdmin() || request.auth != null;
     }
 
     // Templates Registry
@@ -340,6 +340,60 @@ service cloud.firestore {
 
       // Note: Generic "Catch-all" REMOVED to enforce strict modularity.
       // Every module must be explicitly defined above.
+
+      // === WHATSAPP CORE ===
+      // WA is core infrastructure (not a module) — lives at sites/{siteId}/wa/
+
+      // Config doc — owner only (contains encrypted access token)
+      // Path: sites/{siteId}/wa/config
+      match /wa/config {
+        allow read: if isValidUser(siteId) && isOwner(siteId);
+        allow write: if false; // Server-side only via /api/admin/whatsapp/connect
+      }
+
+      // All subcollections live under sites/{siteId}/wa/main/
+      match /wa/main {
+        allow read: if isValidUser(siteId);
+        allow write: if false;
+
+        // Customer threads
+        match /customer_threads/{threadId} {
+          allow read, update: if isValidUser(siteId);
+          allow create, delete: if false;
+          match /messages/{msgId} {
+            allow read: if isValidUser(siteId);
+            allow write: if false;
+          }
+        }
+
+        // Staff commands — owner only
+        match /staff_commands/{threadId} {
+          allow read: if isValidUser(siteId) && isOwner(siteId);
+          allow write: if false;
+          match /messages/{msgId} {
+            allow read: if isValidUser(siteId) && isOwner(siteId);
+            allow write: if false;
+          }
+        }
+
+        // Contacts directory
+        match /contacts/{contactId} {
+          allow read: if isValidUser(siteId);
+          allow write: if isValidUser(siteId) && isOwner(siteId);
+        }
+
+        // Templates
+        match /templates/{templateId} {
+          allow read: if isValidUser(siteId);
+          allow write: if isValidUser(siteId) && isOwner(siteId);
+        }
+
+        // Raw messages — audit trail
+        match /raw_messages/{msgId} {
+          allow read: if isValidUser(siteId) && isOwner(siteId);
+          allow write: if false;
+        }
+      }
     }
     
     // === COLLECTION GROUP QUERIES ===

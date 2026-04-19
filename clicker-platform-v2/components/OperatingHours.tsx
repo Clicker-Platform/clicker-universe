@@ -4,7 +4,7 @@ import React from 'react';
 import { BusinessHours } from '@/data/mockData';
 import { useTemplate } from '@/components/TemplateProvider';
 import { DaySchedule } from '@/lib/core/types';
-import { isBusinessOpen, getOperatingWindows } from '@/lib/core/businessHours/utils';
+import { isBusinessOpen } from '@/lib/core/businessHours/utils';
 
 interface OperatingHoursProps {
     data: BusinessHours;
@@ -59,13 +59,13 @@ export const OperatingHours: React.FC<OperatingHoursProps> = ({ data, schedule }
     }
 
     return (
-        <div className={`
-            bg-white p-6 rounded-3xl mb-12 relative
-            ${isClean
+        <div
+            className={`bg-white p-6 mb-12 relative ${isClean
                 ? 'border border-gray-200 shadow-sm'
                 : 'border-[3px] border-brand-dark shadow-sticker transform -rotate-1'
-            }
-        `}>
+            }`}
+            style={{ borderRadius: 'var(--theme-radius)' }}
+        >
             {statusText && isMounted && (
                 <div className={`
                     absolute  px-3 py-1 text-xs font-black uppercase rounded-lg

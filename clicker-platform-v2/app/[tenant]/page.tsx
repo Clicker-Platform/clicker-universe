@@ -128,7 +128,10 @@ export default async function TenantPage({ params, searchParams }: TenantPagePro
                                     label: productSettings?.whatsappBtnLabel,
                                     messageTemplate: productSettings?.whatsappMessageTemplate,
                                     bgColor: productSettings?.whatsappBtnColor,
-                                    textColor: productSettings?.whatsappBtnTextColor
+                                    textColor: productSettings?.whatsappBtnTextColor,
+                                    ctaMode: productSettings?.ctaMode,
+                                    ctaUrl: productSettings?.ctaUrl,
+                                    ctaUrlLabel: productSettings?.ctaUrlLabel,
                                 }}
                                 siteId={siteId}
                                 tenantSlug={siteId}

@@ -33,9 +33,10 @@ interface BlockOutlineItemProps {
     isSelected: boolean;
     onClick: () => void;
     onDelete: (id: string) => void;
+    moduleLabel?: string;
 }
 
-export const BlockOutlineItem = memo(({ block, isSelected, onClick, onDelete }: BlockOutlineItemProps) => {
+export const BlockOutlineItem = memo(({ block, isSelected, onClick, onDelete, moduleLabel }: BlockOutlineItemProps) => {
     const {
         attributes,
         listeners,
@@ -71,7 +72,7 @@ export const BlockOutlineItem = memo(({ block, isSelected, onClick, onDelete }: 
 
             <Box size={13} className={`flex-shrink-0 ${isSelected ? 'text-blue-400' : 'text-neutral-400 dark:text-neutral-500'}`} />
 
-            <span className="flex-1 text-xs font-medium truncate">{getBlockLabel(block.type)}</span>
+            <span className="flex-1 text-xs font-medium truncate">{getBlockLabel(block.type, moduleLabel)}</span>
 
             <button
                 type="button"

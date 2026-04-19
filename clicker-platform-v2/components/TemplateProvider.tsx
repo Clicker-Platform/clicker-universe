@@ -51,6 +51,8 @@ export const TemplateProvider: React.FC<TemplateProviderProps> = ({ templateId, 
                         config: {
                             ...staticDef.config,
                             ...doc.config,
+                            // Always fall back to static borderRadius — DB docs may omit it
+                            borderRadius: doc.config.borderRadius || staticDef.config.borderRadius,
                             // If the template locks its colors, always use static definition colors —
                             // never let saved DB values overwrite background, surface, border, etc.
                             colors: lockedColors
@@ -121,6 +123,14 @@ export const TemplateProvider: React.FC<TemplateProviderProps> = ({ templateId, 
 
         // Inject border radius
         if (theme.borderRadius) vars['--theme-radius'] = theme.borderRadius;
+
+        // Inject card shadow based on cardVariant
+        const shadowMap: Record<string, string> = {
+            shadow: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
+            outlined: 'none',
+            flat: 'none',
+        };
+        vars['--theme-card-shadow'] = shadowMap[theme.cardVariant] ?? 'none';
 
         // Inject Fonts
         if (theme.fonts?.heading) vars['--font-heading'] = theme.fonts.heading;

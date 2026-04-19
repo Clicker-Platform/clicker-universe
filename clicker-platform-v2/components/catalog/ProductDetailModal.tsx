@@ -9,12 +9,15 @@ interface ProductDetailModalProps {
     product: Product | null;
     isOpen: boolean;
     onClose: () => void;
-    phoneNumber?: string; // Optional phone number for WhatsApp
+    phoneNumber?: string;
     whatsappSettings?: {
         label?: string;
         messageTemplate?: string;
         bgColor?: string;
         textColor?: string;
+        ctaMode?: 'whatsapp' | 'url' | 'both';
+        ctaUrl?: string;
+        ctaUrlLabel?: string;
     };
 }
 
@@ -236,22 +239,49 @@ export function ProductDetailModal({ product, isOpen, onClose, phoneNumber = '15
                     </div>
 
                     {/* CTA */}
-                    <WhatsappButton
-                        phoneNumber={phoneNumber || '15551234567'}
-                        message={
-                            whatsappSettings?.messageTemplate
-                                ? whatsappSettings.messageTemplate
-                                    .replace('${productName}', product.name)
-                                    .replace('${productPrice}', product.price)
-                                : `Hi! I'd like to order the ${product.name} for ${product.price}.`
-                        }
-                        label={whatsappSettings?.label || "Order on WhatsApp"}
-                        style={{
-                            backgroundColor: whatsappSettings?.bgColor || '#25D366',
-                            color: whatsappSettings?.textColor || '#FFFFFF'
-                        }}
-                        className="mt-auto"
-                    />
+                    {(() => {
+                        const productAny = product as any;
+                        const effectiveMode = productAny.ctaMode || whatsappSettings?.ctaMode || 'whatsapp';
+                        const effectiveUrl = productAny.ctaUrl || whatsappSettings?.ctaUrl || '';
+                        const waMessage = whatsappSettings?.messageTemplate
+                            ? whatsappSettings.messageTemplate
+                                .replace('${productName}', product.name)
+                                .replace('${productPrice}', product.price)
+                            : `Hi! I'd like to order the ${product.name} for ${product.price}.`;
+
+                        const urlBtn = effectiveUrl ? (
+                            <a
+                                href={effectiveUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center justify-center gap-2 w-full py-4 font-bold text-lg hover:opacity-90 transition-opacity hover:-translate-y-0.5 transform duration-200"
+                                style={{
+                                    backgroundColor: 'var(--theme-primary)',
+                                    color: theme.colors.accentForeground || '#ffffff',
+                                    borderRadius: 'var(--theme-radius)',
+                                    boxShadow: 'var(--theme-card-shadow)',
+                                }}
+                            >
+                                {whatsappSettings?.ctaUrlLabel || 'View Product'}
+                            </a>
+                        ) : null;
+
+                        const waBtn = (
+                            <WhatsappButton
+                                phoneNumber={phoneNumber || '15551234567'}
+                                message={waMessage}
+                                label={whatsappSettings?.label || 'Order on WhatsApp'}
+                                style={{
+                                    backgroundColor: whatsappSettings?.bgColor || '#25D366',
+                                    color: whatsappSettings?.textColor || '#FFFFFF',
+                                }}
+                            />
+                        );
+
+                        if (effectiveMode === 'url') return urlBtn;
+                        if (effectiveMode === 'both') return <div className="flex flex-col gap-2">{urlBtn}{waBtn}</div>;
+                        return waBtn;
+                    })()}
                 </div>
             </div>
         </div>,
