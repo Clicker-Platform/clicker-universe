@@ -8,6 +8,7 @@ import { Trash2, Plus, GripVertical, Pencil, X, Search, FileText, Link as LinkIc
 import { IconSelector } from '@/components/admin/IconSelector';
 import { ICON_MAP } from '@/data/icons';
 import { useSite } from '@/lib/site-context';
+import { usePageStudio } from '@/components/admin/blocks/PageStudioContext';
 import {
     DndContext,
     closestCenter,
@@ -94,6 +95,7 @@ function SortableLinkItem({ link, onEdit, onDelete }: { link: AdminLinkItem; onE
 
 export function LinksPanel() {
     const { siteId } = useSite();
+    const { refreshHydratedData, linksVersion, bumpLinksVersion } = usePageStudio();
     const [links, setLinks] = useState<AdminLinkItem[]>([]);
     const [forms, setForms] = useState<Form[]>([]);
     const [pages, setPages] = useState<Page[]>([]);
@@ -152,6 +154,12 @@ export function LinksPanel() {
         load();
     }, [siteId]);
 
+    // Re-fetch links when another panel bumps linksVersion (e.g. QuickActions reorder)
+    useEffect(() => {
+        if (!siteId || linksVersion === 0) return;
+        fetchLinks();
+    }, [linksVersion]); // eslint-disable-line react-hooks/exhaustive-deps
+
     const fetchLinks = useCallback(async () => {
         if (!siteId) return;
         const snap = await getDocs(collection(db, 'sites', siteId, 'links'));
@@ -191,6 +199,8 @@ export function LinksPanel() {
             }
             resetForm();
             fetchLinks();
+            refreshHydratedData();
+            bumpLinksVersion();
         } catch (error) {
             console.error(error);
         } finally {
@@ -223,6 +233,8 @@ export function LinksPanel() {
             await deleteDoc(doc(db, 'sites', siteId, 'links', id));
             setLinks(prev => prev.filter(l => l.id !== id));
             if (editingId === id) resetForm();
+            refreshHydratedData();
+            bumpLinksVersion();
         } catch (error) {
             console.error('Error deleting link:', error);
         } finally {
@@ -240,7 +252,7 @@ export function LinksPanel() {
             const oldIndex = items.findIndex(i => i.id === active.id);
             const newIndex = items.findIndex(i => i.id === over.id);
             const reordered = arrayMove(items, oldIndex, newIndex);
-            updateOrder(reordered);
+            updateOrder(reordered).then(() => { refreshHydratedData(); bumpLinksVersion(); });
             return reordered;
         });
     };

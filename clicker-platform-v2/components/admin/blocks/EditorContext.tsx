@@ -12,6 +12,8 @@ interface EditorContextType {
     setHoveredBlockId: (id: string | null) => void;
     deviceView: 'desktop' | 'tablet' | 'mobile';
     setDeviceView: (view: 'desktop' | 'tablet' | 'mobile') => void;
+    showGuides: boolean;
+    setShowGuides: (v: boolean) => void;
     updateBlockData: (id: string, data: any) => void;
     addBlock: (block: PageBlock) => void;
     removeBlock: (id: string) => void;
@@ -23,6 +25,7 @@ const EditorContext = createContext<EditorContextType | undefined>(undefined);
 export function EditorProvider({ children, blocks, onChange }: { children: ReactNode, blocks: PageBlock[], onChange: (blocks: PageBlock[] | ((prev: PageBlock[]) => PageBlock[])) => void }) {
     const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
     const [hoveredBlockId, setHoveredBlockId] = useState<string | null>(null);
+    const [showGuides, setShowGuides] = useState(true);
     const [deviceView, setDeviceView] = useState<'desktop' | 'tablet' | 'mobile'>(() => {
         if (typeof window === 'undefined') return 'desktop';
         const saved = localStorage.getItem('canvas_studio_device_view');
@@ -67,6 +70,8 @@ export function EditorProvider({ children, blocks, onChange }: { children: React
             setHoveredBlockId,
             deviceView,
             setDeviceView,
+            showGuides,
+            setShowGuides,
             updateBlockData,
             addBlock,
             removeBlock,

@@ -1,6 +1,6 @@
 'use client';
 
-import { Monitor, Tablet, Smartphone, Home, Loader2, Save, FileText } from 'lucide-react';
+import { Monitor, Tablet, Smartphone, Home, Loader2, Save, FileText, Frame } from 'lucide-react';
 import { usePageStudio } from './PageStudioContext';
 import { useEditor } from './EditorContext';
 import { useState } from 'react';
@@ -19,7 +19,7 @@ export function StudioTopBar() {
         setTitle,
     } = usePageStudio();
 
-    const { deviceView, setDeviceView } = useEditor();
+    const { deviceView, setDeviceView, showGuides, setShowGuides } = useEditor();
     const [tooltip, setTooltip] = useState<{ label: string; top: number; left: number } | null>(null);
     const isMobile = useIsMobile();
 
@@ -53,32 +53,52 @@ export function StudioTopBar() {
                 )}
             </div>
 
-            {/* Center — Device toggle (hidden on mobile — no space) */}
+            {/* Center — Device toggle + guides toggle (hidden on mobile) */}
             {!isMobile && (
-                <div className="flex items-center gap-1 bg-gray-100 dark:bg-neutral-800 rounded-lg p-1">
-                    {([
-                        { view: 'desktop', icon: Monitor, label: 'Desktop' },
-                        { view: 'tablet', icon: Tablet, label: 'Tablet' },
-                        { view: 'mobile', icon: Smartphone, label: 'Mobile' },
-                    ] as const).map(({ view, icon: Icon, label }) => (
-                        <button
-                            key={view}
-                            type="button"
-                            onClick={() => setDeviceView(view)}
-                            onMouseEnter={(e) => {
-                                const rect = e.currentTarget.getBoundingClientRect();
-                                setTooltip({ label, top: rect.bottom + 6, left: rect.left + rect.width / 2 });
-                            }}
-                            onMouseLeave={() => setTooltip(null)}
-                            className={`p-1.5 rounded-md transition-colors ${
-                                deviceView === view
-                                    ? 'bg-gray-200 dark:bg-neutral-700 text-neutral-900 dark:text-white'
-                                    : 'text-neutral-400 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200'
-                            }`}
-                        >
-                            <Icon size={16} />
-                        </button>
-                    ))}
+                <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 bg-gray-100 dark:bg-neutral-800 rounded-lg p-1">
+                        {([
+                            { view: 'desktop', icon: Monitor, label: 'Desktop' },
+                            { view: 'tablet', icon: Tablet, label: 'Tablet' },
+                            { view: 'mobile', icon: Smartphone, label: 'Mobile' },
+                        ] as const).map(({ view, icon: Icon, label }) => (
+                            <button
+                                key={view}
+                                type="button"
+                                onClick={() => setDeviceView(view)}
+                                onMouseEnter={(e) => {
+                                    const rect = e.currentTarget.getBoundingClientRect();
+                                    setTooltip({ label, top: rect.bottom + 6, left: rect.left + rect.width / 2 });
+                                }}
+                                onMouseLeave={() => setTooltip(null)}
+                                className={`p-1.5 rounded-md transition-colors ${
+                                    deviceView === view
+                                        ? 'bg-gray-200 dark:bg-neutral-700 text-neutral-900 dark:text-white'
+                                        : 'text-neutral-400 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200'
+                                }`}
+                            >
+                                <Icon size={16} />
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Guides toggle */}
+                    <button
+                        type="button"
+                        onClick={() => setShowGuides(!showGuides)}
+                        onMouseEnter={(e) => {
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            setTooltip({ label: showGuides ? 'Hide Guides' : 'Show Guides', top: rect.bottom + 6, left: rect.left + rect.width / 2 });
+                        }}
+                        onMouseLeave={() => setTooltip(null)}
+                        className={`p-1.5 rounded-lg border transition-colors ${
+                            showGuides
+                                ? 'bg-blue-500/10 border-blue-500/30 text-blue-500 dark:text-blue-400'
+                                : 'bg-gray-100 dark:bg-neutral-800 border-gray-200 dark:border-neutral-700 text-neutral-400 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-200'
+                        }`}
+                    >
+                        <Frame size={16} />
+                    </button>
                 </div>
             )}
 

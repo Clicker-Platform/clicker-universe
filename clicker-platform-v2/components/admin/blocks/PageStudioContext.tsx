@@ -119,6 +119,10 @@ interface PageStudioContextType {
     updateGlobalSettings: (partial: Record<string, any>) => void;
     refreshHydratedData: () => Promise<void>;
 
+    // Links sync — increment to signal LinksPanel to re-fetch
+    linksVersion: number;
+    bumpLinksVersion: () => void;
+
     // Trash
     trashedPages: TrashedPageListItem[];
     trashedPagesLoading: boolean;
@@ -175,6 +179,10 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
 
     // Hydrated data (lifted from CanvasStudio for caching)
     const [hydratedData, setHydratedData] = useState<Record<string, any>>({});
+
+    // Links sync
+    const [linksVersion, setLinksVersion] = useState(0);
+    const bumpLinksVersion = useCallback(() => setLinksVersion(v => v + 1), []);
 
     // ── Page Cache ──────────────────────────────────────────────────────────
 
@@ -1002,6 +1010,8 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
             refreshGlobalSettings,
             updateGlobalSettings,
             refreshHydratedData,
+            linksVersion,
+            bumpLinksVersion,
             trashedPages,
             trashedPagesLoading,
             trashPage,

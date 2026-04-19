@@ -11,6 +11,7 @@ import { ICON_MAP } from '@/data/icons';
 import { ShoppingBag } from 'lucide-react';
 import { getWhatsappUrl } from '@/components/common/WhatsappButton';
 import { resolveNavHref } from '@/lib/resolveNavHref';
+import { getContrastColor } from '@/lib/utils/color';
 
 interface QuickActionsProps {
     links: LinkItem[];
@@ -18,7 +19,7 @@ interface QuickActionsProps {
     settings?: LinkSettings;
     siteId?: string;
     tenantSlug?: string;
-    blockData?: { hiddenLinkIds?: string[]; layout?: 'list' | 'grid' };
+    blockData?: { hiddenLinkIds?: string[]; layout?: 'list' | 'grid'; cardBgColor?: string; cardBorderColor?: string };
     defaultLayout?: 'list' | 'grid';
 }
 
@@ -40,6 +41,14 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
     const showOnHome = settings?.showOnHome !== false;
     const hiddenLinkIds: string[] = blockData?.hiddenLinkIds || [];
     const layout: 'list' | 'grid' = blockData?.layout || defaultLayout;
+
+    // Block-level color overrides
+    const cardBgColor = blockData?.cardBgColor;
+    const cardBorderColor = blockData?.cardBorderColor;
+    // Derive contrast foreground from bg override; fall back to theme foreground
+    const cardFgColor = cardBgColor
+        ? getContrastColor(cardBgColor, '#ffffff', theme.colors.foreground || '#1a1a1a')
+        : undefined;
 
     const processedLinks = links
         .filter(link => !link.hideOnHome && !hiddenLinkIds.includes(link.id))
@@ -70,22 +79,34 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
         }
     };
 
+    // Resolved card colors: block override → theme token → glass fallback
+    const resolvedBg = isGlass
+        ? `${theme.colors.surfaceElevated || theme.colors.surface}99`
+        : (cardBgColor || theme.colors.surface || '#ffffff');
+    const resolvedBorder = isGlass
+        ? 'rgba(255,255,255,0.1)'
+        : (cardBorderColor || theme.colors.border || '#e5e7eb');
+    const resolvedFg = isGlass
+        ? 'rgba(255,255,255,0.95)'
+        : (cardFgColor || theme.colors.foreground);
+    const resolvedMuted = isGlass
+        ? 'rgba(255,255,255,0.6)'
+        : (cardFgColor ? `${cardFgColor}99` : (theme.colors.textSubtle || theme.colors.textMuted || theme.colors.foreground));
+
     const cardStyle: React.CSSProperties = {
         borderRadius: 'var(--theme-radius)',
         boxShadow: 'var(--theme-card-shadow)',
-        background: isGlass
-            ? `${theme.colors.surfaceElevated || theme.colors.surface}99`
-            : (theme.colors.surface || '#ffffff'),
+        background: resolvedBg,
         backdropFilter: isGlass ? 'blur(12px)' : undefined,
-        border: `1px solid ${theme.colors.border || (isGlass ? 'rgba(255,255,255,0.1)' : '#e5e7eb')}`,
+        border: `1px solid ${resolvedBorder}`,
     };
 
     const iconStyle = (isHighlight: boolean): React.CSSProperties => ({
         borderRadius: '9999px',
         backgroundColor: isHighlight
             ? `${theme.colors.primary}20`
-            : isGlass ? 'rgba(255,255,255,0.10)' : `${theme.colors.primary}15`,
-        color: isHighlight ? theme.colors.primary : theme.colors.foreground,
+            : isGlass ? 'rgba(255,255,255,0.10)' : `${resolvedFg}15`,
+        color: isHighlight ? theme.colors.primary : resolvedFg,
     });
 
     return (
@@ -118,11 +139,11 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
                                 <div className="p-2.5 flex items-center justify-center" style={iconStyle(!!link.highlight)}>
                                     <Icon size={22} strokeWidth={2} />
                                 </div>
-                                <span className="text-sm font-bold leading-tight" style={{ color: theme.colors.foreground }}>
+                                <span className="text-sm font-bold leading-tight" style={{ color: resolvedFg }}>
                                     {link.title}
                                 </span>
                                 {link.subtitle && (
-                                    <span className="text-xs" style={{ color: theme.colors.textSubtle || theme.colors.textMuted || theme.colors.foreground }}>
+                                    <span className="text-xs" style={{ color: resolvedMuted }}>
                                         {link.subtitle}
                                     </span>
                                 )}
@@ -138,7 +159,15 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
             ) : (
                 <div className="space-y-3">
                     {processedLinks.map(link => (
-                        <LinkCard key={link.id} item={link} siteId={siteId} tenantSlug={tenantSlug} />
+                        <LinkCard
+                            key={link.id}
+                            item={link}
+                            siteId={siteId}
+                            tenantSlug={tenantSlug}
+                            cardBgColor={cardBgColor}
+                            cardBorderColor={cardBorderColor}
+                            cardFgColor={cardFgColor}
+                        />
                     ))}
                 </div>
             )}

@@ -126,7 +126,7 @@ export const BlockFormRenderer = memo(({ block, onChange, templateId = 'classic'
         case 'social_embed': return <SocialEmbedForm data={block.data} onChange={handleDataChange} />;
 
         case 'quick_actions':
-            return <QuickActionsBlockForm data={block.data} onChange={handleDataChange} />;
+            return <QuickActionsBlockForm data={block.data} onChange={handleDataChange} onOpenLinks={onOpenSlideOver ? () => onOpenSlideOver('links') : undefined} />;
 
         // System blocks (configured elsewhere, with minimal title override)
         case 'hours':

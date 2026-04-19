@@ -1,47 +1,139 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+import React, { useEffect, useState, useCallback } from 'react';
+import { collection, getDocs, query, orderBy, writeBatch, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { LinkItem } from '@/data/mockData';
 import { useSite } from '@/lib/site-context';
-import { Loader2, Eye, EyeOff, List, LayoutGrid, Type, ExternalLink } from 'lucide-react';
-import Link from 'next/link';
+import { usePageStudio } from '@/components/admin/blocks/PageStudioContext';
+import { TemplateContext } from '@/components/TemplateProvider';
+import { Loader2, Eye, EyeOff, List, LayoutGrid, Type, Link2, GripVertical, Palette, RotateCcw } from 'lucide-react';
 import { ICON_MAP } from '@/data/icons';
 import { ShoppingBag } from 'lucide-react';
+import {
+    DndContext,
+    closestCenter,
+    PointerSensor,
+    KeyboardSensor,
+    useSensor,
+    useSensors,
+    DragEndEvent,
+} from '@dnd-kit/core';
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    verticalListSortingStrategy,
+    useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface QuickActionsBlockFormProps {
     data: any;
     onChange: (data: any) => void;
+    onOpenLinks?: () => void;
 }
 
 const inputClass = "w-full px-4 py-2 bg-gray-50 dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-lg text-sm font-bold text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-600 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none";
 const labelClass = "flex items-center gap-2 text-xs font-medium text-neutral-400 dark:text-neutral-500 mb-2";
 
-export function QuickActionsBlockForm({ data, onChange }: QuickActionsBlockFormProps) {
+// ── Sortable row ────────────────────────────────────────────────────────────
+
+function SortableLinkRow({
+    link,
+    isHidden,
+    onToggle,
+}: {
+    link: LinkItem;
+    isHidden: boolean;
+    onToggle: (id: string) => void;
+}) {
+    const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: link.id });
+    const style = { transform: CSS.Transform.toString(transform), transition };
+    const Icon = link.iconName && ICON_MAP[link.iconName] ? ICON_MAP[link.iconName] : ShoppingBag;
+
+    return (
+        <div
+            ref={setNodeRef}
+            style={style}
+            className={`flex items-center gap-2 px-2 py-2 rounded-lg border transition-all ${
+                isHidden
+                    ? 'bg-gray-100/30 dark:bg-neutral-900/30 border-gray-200/50 dark:border-neutral-800/50 opacity-50'
+                    : 'bg-gray-50 dark:bg-neutral-900 border-gray-200 dark:border-neutral-800'
+            }`}
+        >
+            {/* Drag handle */}
+            <div
+                {...attributes}
+                {...listeners}
+                className="p-1 text-neutral-300 dark:text-neutral-600 cursor-grab active:cursor-grabbing hover:text-neutral-500 dark:hover:text-neutral-400 flex-shrink-0"
+            >
+                <GripVertical size={13} />
+            </div>
+
+            <Icon size={15} className={isHidden ? 'text-neutral-400 dark:text-neutral-600 shrink-0' : 'text-neutral-500 dark:text-neutral-400 shrink-0'} />
+
+            <span className={`flex-1 text-sm font-bold truncate ${isHidden ? 'text-neutral-400 dark:text-neutral-600' : 'text-neutral-900 dark:text-neutral-200'}`}>
+                {link.title}
+            </span>
+
+            {/* Visibility toggle */}
+            <button
+                type="button"
+                onClick={() => onToggle(link.id)}
+                className="p-1 rounded-md hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors flex-shrink-0"
+                title={isHidden ? 'Show' : 'Hide'}
+            >
+                {isHidden
+                    ? <EyeOff size={14} className="text-neutral-400 dark:text-neutral-600" />
+                    : <Eye size={14} className="text-neutral-500 dark:text-neutral-400" />
+                }
+            </button>
+        </div>
+    );
+}
+
+// ── Main form ───────────────────────────────────────────────────────────────
+
+export function QuickActionsBlockForm({ data, onChange, onOpenLinks }: QuickActionsBlockFormProps) {
     const safeData = data || {};
     const { siteId } = useSite();
+    const { refreshHydratedData, bumpLinksVersion, linksVersion } = usePageStudio();
+    const templateCtx = React.useContext(TemplateContext);
+    const theme = templateCtx?.theme;
     const [links, setLinks] = useState<LinkItem[]>([]);
     const [loading, setLoading] = useState(true);
 
     const hiddenLinkIds: string[] = safeData.hiddenLinkIds || [];
     const layout: 'list' | 'grid' = safeData.layout || 'list';
 
-    useEffect(() => {
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+    );
+
+    const fetchLinks = useCallback(async () => {
         if (!siteId) return;
-        const fetchLinks = async () => {
-            try {
-                const q = query(collection(db, 'sites', siteId, 'links'), orderBy('order', 'asc'));
-                const snapshot = await getDocs(q);
-                setLinks(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as LinkItem));
-            } catch (err) {
-                console.error('Error fetching links:', err);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchLinks();
+        try {
+            const q = query(collection(db, 'sites', siteId, 'links'), orderBy('order', 'asc'));
+            const snapshot = await getDocs(q);
+            setLinks(snapshot.docs.map(d => ({ id: d.id, ...d.data() }) as LinkItem));
+        } catch (err) {
+            console.error('Error fetching links:', err);
+        } finally {
+            setLoading(false);
+        }
     }, [siteId]);
+
+    useEffect(() => {
+        fetchLinks();
+    }, [fetchLinks]);
+
+    // Re-fetch when LinksPanel makes changes (add/delete/reorder)
+    useEffect(() => {
+        if (linksVersion === 0) return;
+        fetchLinks();
+    }, [linksVersion]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const toggleLink = (id: string) => {
         const next = hiddenLinkIds.includes(id)
@@ -50,20 +142,33 @@ export function QuickActionsBlockForm({ data, onChange }: QuickActionsBlockFormP
         onChange({ ...safeData, hiddenLinkIds: next });
     };
 
-    const setLayout = (val: 'list' | 'grid') => {
-        onChange({ ...safeData, layout: val });
+    const persistOrder = useCallback(async (ordered: LinkItem[]) => {
+        if (!siteId) return;
+        try {
+            const batch = writeBatch(db);
+            ordered.forEach((item, index) => {
+                batch.update(doc(db, 'sites', siteId, 'links', item.id), { order: index });
+            });
+            await batch.commit();
+        } catch (err) {
+            console.error('Error persisting link order:', err);
+        }
+    }, [siteId]);
+
+    const handleDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
+        if (!over || active.id === over.id) return;
+        setLinks(items => {
+            const oldIndex = items.findIndex(i => i.id === active.id);
+            const newIndex = items.findIndex(i => i.id === over.id);
+            const reordered = arrayMove(items, oldIndex, newIndex);
+            persistOrder(reordered).then(() => { refreshHydratedData(); bumpLinksVersion(); });
+            return reordered;
+        });
     };
 
     return (
         <div className="space-y-6 animate-fade-in">
-            {/* System block notice */}
-            <div className="bg-blue-500/5 rounded-lg p-5 border border-blue-500/10">
-                <h4 className="font-black text-blue-400 text-xs uppercase tracking-widest mb-2">Dynamic System Block</h4>
-                <p className="text-sm text-neutral-400 leading-relaxed">
-                    Content is sourced from your Links. Configure visibility and layout below.
-                </p>
-            </div>
-
             {/* Section Title Override */}
             <div>
                 <label className={labelClass}>
@@ -89,39 +194,31 @@ export function QuickActionsBlockForm({ data, onChange }: QuickActionsBlockFormP
                     Layout
                 </label>
                 <div className="flex gap-2">
-                    <button
-                        onClick={() => setLayout('list')}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border text-sm font-bold transition-all ${
-                            layout === 'list'
-                                ? 'bg-blue-500/10 border-blue-500/40 text-blue-400'
-                                : 'bg-gray-50 dark:bg-neutral-900 border-gray-200 dark:border-neutral-800 text-neutral-400 dark:text-neutral-500 hover:border-gray-300 dark:hover:border-neutral-700'
-                        }`}
-                    >
-                        <List size={15} />
-                        List
-                    </button>
-                    <button
-                        onClick={() => setLayout('grid')}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border text-sm font-bold transition-all ${
-                            layout === 'grid'
-                                ? 'bg-blue-500/10 border-blue-500/40 text-blue-400'
-                                : 'bg-gray-50 dark:bg-neutral-900 border-gray-200 dark:border-neutral-800 text-neutral-400 dark:text-neutral-500 hover:border-gray-300 dark:hover:border-neutral-700'
-                        }`}
-                    >
-                        <LayoutGrid size={15} />
-                        Grid
-                    </button>
+                    {(['list', 'grid'] as const).map(val => (
+                        <button
+                            key={val}
+                            onClick={() => onChange({ ...safeData, layout: val })}
+                            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border text-sm font-bold transition-all ${
+                                layout === val
+                                    ? 'bg-blue-500/10 border-blue-500/40 text-blue-400'
+                                    : 'bg-gray-50 dark:bg-neutral-900 border-gray-200 dark:border-neutral-800 text-neutral-400 dark:text-neutral-500 hover:border-gray-300 dark:hover:border-neutral-700'
+                            }`}
+                        >
+                            {val === 'list' ? <List size={15} /> : <LayoutGrid size={15} />}
+                            {val.charAt(0).toUpperCase() + val.slice(1)}
+                        </button>
+                    ))}
                 </div>
             </div>
 
-            {/* Link Visibility */}
+            {/* Link list — visibility + reorder */}
             <div>
                 <label className={labelClass}>
                     <Eye size={14} />
-                    Link Visibility
+                    Links
                 </label>
                 <p className="text-xs text-neutral-400 dark:text-neutral-500 mb-3 leading-relaxed">
-                    Toggle which links appear in this block.
+                    Drag to reorder. Toggle eye to show/hide in this block.
                 </p>
 
                 {loading ? (
@@ -131,49 +228,92 @@ export function QuickActionsBlockForm({ data, onChange }: QuickActionsBlockFormP
                 ) : links.length === 0 ? (
                     <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
                         <p className="text-xs font-bold text-red-400 leading-relaxed">
-                            No links found. Create links in the Links menu first.
+                            No links found. Add links using the button below.
                         </p>
                     </div>
                 ) : (
-                    <div className="space-y-1.5">
-                        {links.map(link => {
-                            const Icon = link.iconName && ICON_MAP[link.iconName] ? ICON_MAP[link.iconName] : ShoppingBag;
-                            const isHidden = hiddenLinkIds.includes(link.id);
-                            return (
-                                <button
-                                    key={link.id}
-                                    onClick={() => toggleLink(link.id)}
-                                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg border transition-all text-left ${
-                                        isHidden
-                                            ? 'bg-gray-100/30 dark:bg-neutral-900/30 border-gray-200/50 dark:border-neutral-800/50 opacity-50'
-                                            : 'bg-gray-50 dark:bg-neutral-900 border-gray-200 dark:border-neutral-800 hover:border-gray-300 dark:hover:border-neutral-700'
-                                    }`}
-                                >
-                                    <Icon size={16} className={isHidden ? 'text-neutral-400 dark:text-neutral-600' : 'text-neutral-500 dark:text-neutral-400'} />
-                                    <span className={`flex-1 text-sm font-bold truncate ${isHidden ? 'text-neutral-400 dark:text-neutral-600' : 'text-neutral-900 dark:text-neutral-200'}`}>
-                                        {link.title}
-                                    </span>
-                                    {isHidden
-                                        ? <EyeOff size={15} className="text-neutral-400 dark:text-neutral-600 shrink-0" />
-                                        : <Eye size={15} className="text-neutral-500 dark:text-neutral-400 shrink-0" />
-                                    }
-                                </button>
-                            );
-                        })}
-                    </div>
+                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                        <SortableContext items={links.map(l => l.id)} strategy={verticalListSortingStrategy}>
+                            <div className="space-y-1.5">
+                                {links.map(link => (
+                                    <SortableLinkRow
+                                        key={link.id}
+                                        link={link}
+                                        isHidden={hiddenLinkIds.includes(link.id)}
+                                        onToggle={toggleLink}
+                                    />
+                                ))}
+                            </div>
+                        </SortableContext>
+                    </DndContext>
                 )}
             </div>
 
-            {/* Manage Content link */}
+            {/* Card Colors */}
+            <div>
+                <label className={labelClass}>
+                    <Palette size={14} />
+                    Card Colors
+                </label>
+                <p className="text-xs text-neutral-400 dark:text-neutral-500 mb-3 leading-relaxed">
+                    Overrides template defaults. Text and icons auto-adjust for contrast.
+                </p>
+                <div className="space-y-2">
+                    {/* Background */}
+                    <div className="flex items-center gap-3 px-3 py-2.5 bg-gray-50 dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-lg">
+                        <label className="text-xs font-medium text-neutral-500 dark:text-neutral-400 flex-1">Background</label>
+                        <input
+                            type="color"
+                            value={safeData.cardBgColor || theme?.colors.surface || '#ffffff'}
+                            onChange={e => onChange({ ...safeData, cardBgColor: e.target.value })}
+                            className="w-8 h-8 rounded cursor-pointer border border-gray-200 dark:border-neutral-700 bg-transparent p-0.5"
+                        />
+                        {safeData.cardBgColor && (
+                            <button
+                                type="button"
+                                onClick={() => { const { cardBgColor, ...rest } = safeData; onChange(rest); }}
+                                className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+                                title="Reset to template default"
+                            >
+                                <RotateCcw size={13} />
+                            </button>
+                        )}
+                    </div>
+                    {/* Border */}
+                    <div className="flex items-center gap-3 px-3 py-2.5 bg-gray-50 dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-lg">
+                        <label className="text-xs font-medium text-neutral-500 dark:text-neutral-400 flex-1">Border</label>
+                        <input
+                            type="color"
+                            value={safeData.cardBorderColor || theme?.colors.border || '#e5e7eb'}
+                            onChange={e => onChange({ ...safeData, cardBorderColor: e.target.value })}
+                            className="w-8 h-8 rounded cursor-pointer border border-gray-200 dark:border-neutral-700 bg-transparent p-0.5"
+                        />
+                        {safeData.cardBorderColor && (
+                            <button
+                                type="button"
+                                onClick={() => { const { cardBorderColor, ...rest } = safeData; onChange(rest); }}
+                                className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+                                title="Reset to template default"
+                            >
+                                <RotateCcw size={13} />
+                            </button>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Manage Content */}
             <div className="pt-4 border-t border-gray-200 dark:border-neutral-800">
                 <h5 className="font-bold text-neutral-900 dark:text-neutral-200 text-xs uppercase tracking-wider mb-4">Manage Content</h5>
-                <Link
-                    href="/admin/links"
-                    className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 text-neutral-900 dark:text-neutral-200 rounded-lg font-bold hover:bg-gray-200 dark:hover:bg-neutral-700 transition-all active:scale-[0.98]"
+                <button
+                    type="button"
+                    onClick={onOpenLinks}
+                    disabled={!onOpenLinks}
+                    className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 text-neutral-900 dark:text-neutral-200 rounded-lg font-bold hover:bg-gray-200 dark:hover:bg-neutral-700 transition-all active:scale-[0.98] disabled:opacity-40"
                 >
+                    <Link2 size={16} />
                     Edit Links
-                    <ExternalLink size={16} />
-                </Link>
+                </button>
             </div>
         </div>
     );

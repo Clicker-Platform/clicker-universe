@@ -43,7 +43,7 @@ export function CanvasStudio({
     pageSlug?: string;
     pageTitle?: string;
 }) {
-    const { blocks, setBlocks, selectedBlockId, setSelectedBlockId, updateBlockData, deviceView } = useEditor();
+    const { blocks, setBlocks, selectedBlockId, setSelectedBlockId, updateBlockData, deviceView, showGuides } = useEditor();
     const { tenantSlug, siteId } = useSite();
     const {
         activePageId,
@@ -228,8 +228,11 @@ export function CanvasStudio({
                             }
                         }
                         if (accentColor) colorOverrides.foreground = accentColor;
+                        if (globalSettings?.backgroundColor) colorOverrides.background = globalSettings.backgroundColor;
+                        if (globalSettings?.surfaceColor) colorOverrides.surface = globalSettings.surfaceColor;
                         return {
                             borderRadius: radiusValue,
+                            ...(globalSettings?.cardVariant ? { cardVariant: globalSettings.cardVariant } : {}),
                             ...(Object.keys(colorOverrides).length > 0 ? { colors: colorOverrides } : {}),
                         };
                     })()}
@@ -246,7 +249,7 @@ export function CanvasStudio({
                                 data-block-id="chrome:header"
                                 className={`z-50 w-full cursor-pointer transition-all flex-shrink-0 ${selectedBlockId === 'chrome:header'
                                         ? 'ring-4 ring-blue-500 ring-offset-[-4px]'
-                                        : 'hover:ring-2 hover:ring-blue-300'
+                                        : showGuides ? 'hover:ring-2 hover:ring-blue-300' : ''
                                     }`}
                                 onClick={(e) => {
                                     e.stopPropagation();
@@ -304,7 +307,7 @@ export function CanvasStudio({
                                                     }}
                                                 >
                                                     {/* Hover outline */}
-                                                    {selectedBlockId !== block.id && (
+                                                    {showGuides && selectedBlockId !== block.id && (
                                                         <div className="absolute inset-0 pointer-events-none z-10 outline outline-1 outline-blue-400/40 outline-offset-0 hover:outline-blue-400/60" />
                                                     )}
                                                     {/* Selection chrome — sharp border + 8 square handles */}
@@ -371,7 +374,7 @@ export function CanvasStudio({
                                         data-block-id="chrome:footer"
                                         className={`relative z-10 w-full cursor-pointer transition-all ${selectedBlockId === 'chrome:footer'
                                                 ? 'ring-4 ring-blue-500 ring-offset-[-4px]'
-                                                : 'hover:ring-2 hover:ring-blue-300'
+                                                : showGuides ? 'hover:ring-2 hover:ring-blue-300' : ''
                                             }`}
                                         onClick={(e) => {
                                             e.stopPropagation();
@@ -395,7 +398,7 @@ export function CanvasStudio({
                                 data-block-id="chrome:bottomnav"
                                 className={`relative z-50 w-full flex-shrink-0 cursor-pointer transition-all ${selectedBlockId === 'chrome:bottomnav'
                                         ? 'ring-4 ring-blue-500 ring-offset-[-4px]'
-                                        : 'hover:ring-2 hover:ring-blue-300'
+                                        : showGuides ? 'hover:ring-2 hover:ring-blue-300' : ''
                                     }`}
                                 onClick={(e) => {
                                     e.stopPropagation();
