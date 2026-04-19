@@ -21,7 +21,7 @@ export default function ThemeRegistry({ initialSettings }: { initialSettings: Si
                 {isCustomFont && (
                     <>
                         <link href={fontUrl} rel="stylesheet" media="print" data-font-swap />
-                        <script dangerouslySetInnerHTML={{ __html: `document.querySelector('link[data-font-swap]').media='all'` }} />
+                        <script dangerouslySetInnerHTML={{ __html: `(function(){var l=document.querySelector('link[data-font-swap]');if(l)l.media='all';})()` }} />
                         <noscript><link href={fontUrl} rel="stylesheet" /></noscript>
                     </>
                 )}
