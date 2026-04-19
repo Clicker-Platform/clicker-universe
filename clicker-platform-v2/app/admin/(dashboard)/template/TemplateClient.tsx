@@ -32,6 +32,7 @@ export default function TemplateClient() {
         hiddenBlockIds: [],
         galleryTitle: '',
         borderRadius: 'large',
+        cardVariant: undefined,
         navigation: { topNav: [], bottomNav: [] }
     });
     const [loading, setLoading] = useState(true);
@@ -67,6 +68,8 @@ export default function TemplateClient() {
                     hiddenBlockIds: data.hiddenBlockIds || [],
                     galleryTitle: data.galleryTitle || '',
                     borderRadius: data.borderRadius || 'large',
+                    customBorderRadius: data.customBorderRadius || '',
+                    cardVariant: data.cardVariant || undefined,
                     navigation: data.navigation || { topNav: [], bottomNav: [] }
                 });
             } else {
@@ -452,7 +455,7 @@ export default function TemplateClient() {
                                 <div>
                                     <label className="block text-brand-dark font-bold mb-2">Corner Radius</label>
                                     <div className="flex bg-gray-100 dark:bg-neutral-800 p-1 rounded-lg">
-                                        {(['small', 'medium', 'large'] as const).map((size) => (
+                                        {(['none', 'small', 'medium', 'large', 'custom'] as const).map((size) => (
                                             <button
                                                 key={size}
                                                 type="button"
@@ -466,6 +469,40 @@ export default function TemplateClient() {
                                             `}
                                             >
                                                 {size}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    {settings.borderRadius === 'custom' && (
+                                        <div className="mt-2 flex items-center gap-2">
+                                            <input
+                                                type="text"
+                                                value={settings.customBorderRadius || ''}
+                                                onChange={(e) => setSettings({ ...settings, customBorderRadius: e.target.value })}
+                                                placeholder="e.g. 8px, 1rem, 50%"
+                                                className="flex-1 px-3 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 text-sm focus:border-gray-400 outline-none font-mono"
+                                            />
+                                            <span className="text-xs text-gray-400 dark:text-neutral-500 whitespace-nowrap">any CSS value</span>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <label className="block text-brand-dark font-bold mb-2">Card Shadow</label>
+                                    <div className="flex bg-gray-100 dark:bg-neutral-800 p-1 rounded-lg">
+                                        {(['outlined', 'shadow', 'flat'] as const).map((variant) => (
+                                            <button
+                                                key={variant}
+                                                type="button"
+                                                onClick={() => setSettings({ ...settings, cardVariant: variant })}
+                                                className={`
+                                                flex-1 py-2 rounded-lg font-bold text-sm capitalize transition-all
+                                                ${(settings.cardVariant || 'outlined') === variant
+                                                        ? 'bg-white dark:bg-neutral-900 text-brand-dark'
+                                                        : 'text-gray-500 dark:text-neutral-500 hover:text-gray-700 dark:hover:text-neutral-200'
+                                                    }
+                                            `}
+                                            >
+                                                {variant}
                                             </button>
                                         ))}
                                     </div>

@@ -148,8 +148,8 @@ export default function TimeStep({
     return (
         <div>
             {/* Date Navigation */}
-            <div className="flex items-center justify-between mb-6 p-2 rounded-xl"
-                style={{ backgroundColor: surfaceBg }}>
+            <div className="flex items-center justify-between mb-6 p-2"
+                style={{ backgroundColor: surfaceBg, borderRadius: 'var(--theme-radius)' }}>
                 <button
                     onClick={() => { const d = new Date(date); d.setDate(d.getDate() - 1); handleDateChange(d); }}
                     disabled={isToday}
@@ -227,8 +227,8 @@ export default function TimeStep({
                                 key={time}
                                 disabled={isDisabled}
                                 onClick={() => { if (!isDisabled) setSelectedTime(time); }}
-                                className="py-3 rounded-xl text-sm font-bold border transition-all"
-                                style={slotStyle}
+                                className="py-3 text-sm font-bold border transition-all"
+                                style={{ ...slotStyle, borderRadius: 'calc(var(--theme-radius) * 0.75)' }}
                             >
                                 <span className={isPast ? 'line-through decoration-2' : ''}>{time}</span>
                                 {!available && !isPast && (
@@ -244,8 +244,8 @@ export default function TimeStep({
                 <button
                     disabled={!selectedTime}
                     onClick={() => selectedTime && onSelectTime(selectedTime)}
-                    className="w-full py-3 font-bold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-opacity hover:opacity-90"
-                    style={{ backgroundColor: theme.colors.primary, color: theme.colors.accentForeground || '#ffffff' }}
+                    className="w-full py-3 font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-opacity hover:opacity-90"
+                    style={{ backgroundColor: theme.colors.primary, color: theme.colors.accentForeground || '#ffffff', borderRadius: 'calc(var(--theme-radius) * 0.75)' }}
                 >
                     Continue
                 </button>

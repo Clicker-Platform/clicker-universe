@@ -163,12 +163,15 @@ export function CanvasStudio({
 
     const templateId = globalSettings?.templateId || 'classic';
     const themeColor = globalSettings?.themeColor;
+    const accentColor = globalSettings?.accentColor;
     const borderRadius = globalSettings?.borderRadius || 'large';
     const getRadiusValue = (size: string) => {
         switch (size) {
+            case 'none': return '0px';
             case 'small': return '12px';
             case 'medium': return '16px';
             case 'large': return '24px';
+            case 'custom': return globalSettings?.customBorderRadius || '24px';
             default: return '24px';
         }
     };
@@ -212,12 +215,24 @@ export function CanvasStudio({
                 <DeviceViewProvider deviceView={deviceView}>
                 <TemplateProvider
                     templateId={templateId}
-                    themeOverrides={{
-                        borderRadius: radiusValue,
-                        ...(themeColor && template.config.allowThemeColorOverride !== false ? {
-                            colors: { background: themeColor, primary: themeColor }
-                        } : {})
-                    }}
+                    themeOverrides={(() => {
+                        const isLocked = template.config.allowThemeColorOverride === false;
+                        const colorOverrides: Record<string, string> = {};
+                        if (themeColor) {
+                            if (isLocked) {
+                                colorOverrides.primary = themeColor;
+                                colorOverrides.accent = themeColor;
+                            } else {
+                                colorOverrides.background = themeColor;
+                                colorOverrides.primary = themeColor;
+                            }
+                        }
+                        if (accentColor) colorOverrides.foreground = accentColor;
+                        return {
+                            borderRadius: radiusValue,
+                            ...(Object.keys(colorOverrides).length > 0 ? { colors: colorOverrides } : {}),
+                        };
+                    })()}
                 >
                 <NavigationProvider siteId={siteId!}>
                     {blocks.length === 0 ? (
@@ -282,10 +297,7 @@ export function CanvasStudio({
                                                 <div
                                                     key={block.id}
                                                     data-block-id={block.id}
-                                                    className={`min-w-0 relative transition-all ${block.type === 'hero' ? '' : 'rounded-lg'} ${selectedBlockId === block.id
-                                                            ? 'shadow-md z-20'
-                                                            : 'cursor-pointer'
-                                                        }`}
+                                                    className={`min-w-0 relative ${selectedBlockId === block.id ? 'z-20' : 'cursor-pointer'}`}
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         setSelectedBlockId?.(block.id);
@@ -565,6 +577,7 @@ export function CanvasStudio({
                         block={blocks.find(b => b.id === selectedBlockId)!}
                         onChange={updateBlockData}
                         templateId={templateId}
+                        onOpenSlideOver={toggleSlideOverPanel}
                     />
                 ) : (
                     <div className="flex flex-col items-center justify-center h-full text-center text-neutral-400 dark:text-neutral-500 gap-3">

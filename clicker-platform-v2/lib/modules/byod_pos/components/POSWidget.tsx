@@ -266,8 +266,8 @@ export function POSWidget({ initialItems, initialInventoryMap, settings: propSet
                             {/* New Items */}
                             {items.map((item, idx) => (
                                 <div key={`${item.productId}-${item.variantId || 'base'}-${idx}`} className="flex gap-4 items-center">
-                                    <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0"
-                                        style={{ backgroundColor: isGlass ? 'rgba(255,255,255,0.08)' : (theme.colors.surface || '#f3f4f6') }}>
+                                    <div className="w-16 h-16 overflow-hidden flex-shrink-0"
+                                        style={{ backgroundColor: isGlass ? 'rgba(255,255,255,0.08)' : (theme.colors.surface || '#f3f4f6'), borderRadius: 'calc(var(--theme-radius) * 0.65)' }}>
                                         {item.image && <img src={item.image} className="w-full h-full object-cover" />}
                                     </div>
                                     <div className="flex-1">
@@ -279,8 +279,8 @@ export function POSWidget({ initialItems, initialInventoryMap, settings: propSet
                                             {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(item.price)}
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-3 rounded-lg p-1"
-                                        style={{ backgroundColor: isGlass ? 'rgba(255,255,255,0.08)' : (theme.colors.surface || '#f3f4f6') }}>
+                                    <div className="flex items-center gap-3 p-1"
+                                        style={{ backgroundColor: isGlass ? 'rgba(255,255,255,0.08)' : (theme.colors.surface || '#f3f4f6'), borderRadius: 'calc(var(--theme-radius) * 0.5)' }}>
                                         <button onClick={() => updateQuantity(item.productId, -1, item.variantId)}
                                             className="w-8 h-8 flex items-center justify-center font-bold rounded hover:opacity-70 transition-opacity"
                                             style={{ color: subtleText }}>
@@ -315,8 +315,8 @@ export function POSWidget({ initialItems, initialInventoryMap, settings: propSet
                                         placeholder="Enter Table Number"
                                         value={manualTableNumber}
                                         onChange={(e) => setManualTableNumber(e.target.value)}
-                                        className="w-full p-3 rounded-xl border font-bold focus:outline-none transition-all"
-                                        style={{ backgroundColor: surfaceElevated, borderColor, color: theme.colors.foreground }}
+                                        className="w-full p-3 border font-bold focus:outline-none transition-all"
+                                        style={{ backgroundColor: surfaceElevated, borderColor, color: theme.colors.foreground, borderRadius: 'calc(var(--theme-radius) * 0.75)' }}
                                     />
                                 </div>
                             )}
@@ -349,8 +349,8 @@ export function POSWidget({ initialItems, initialInventoryMap, settings: propSet
                             <button
                                 onClick={handleAction}
                                 disabled={isCheckingOut || loadingSettings}
-                                className="w-full py-4 rounded-xl font-bold text-lg disabled:opacity-50 flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
-                                style={{ backgroundColor: primaryColor, color: accentFg }}
+                                className="w-full py-4 font-bold text-lg disabled:opacity-50 flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+                                style={{ backgroundColor: primaryColor, color: accentFg, borderRadius: 'calc(var(--theme-radius) * 0.75)' }}
                             >
                                 {isCheckingOut || loadingSettings ? 'Processing...' : (
                                     <>
@@ -367,8 +367,8 @@ export function POSWidget({ initialItems, initialInventoryMap, settings: propSet
             {/* Success Modal — portaled to escape <main> stacking context */}
             {mounted && successOrder && createPortal(
                 <div className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
-                    <div className="rounded-3xl shadow-xl w-full max-w-sm p-6 text-center"
-                        style={{ backgroundColor: surfaceBg }}>
+                    <div className="shadow-xl w-full max-w-sm p-6 text-center"
+                        style={{ backgroundColor: surfaceBg, borderRadius: 'var(--theme-radius)' }}>
                         <div className="mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4"
                             style={{ backgroundColor: `${primaryColor}20`, color: primaryColor }}>
                             <ShoppingBag size={32} />
@@ -381,15 +381,15 @@ export function POSWidget({ initialItems, initialInventoryMap, settings: propSet
                         <div className="space-y-3">
                             <button
                                 onClick={() => printReceipt(successOrder, settings || undefined)}
-                                className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
-                                style={{ backgroundColor: primaryColor, color: accentFg }}
+                                className="w-full py-3 font-bold text-sm flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+                                style={{ backgroundColor: primaryColor, color: accentFg, borderRadius: 'calc(var(--theme-radius) * 0.75)' }}
                             >
                                 Print Receipt
                             </button>
                             <button
                                 onClick={() => setSuccessOrder(null)}
-                                className="w-full py-3 rounded-xl font-bold text-sm border hover:opacity-70 transition-opacity"
-                                style={{ backgroundColor: 'transparent', borderColor, color: theme.colors.foreground }}
+                                className="w-full py-3 font-bold text-sm border hover:opacity-70 transition-opacity"
+                                style={{ backgroundColor: 'transparent', borderColor, color: theme.colors.foreground, borderRadius: 'calc(var(--theme-radius) * 0.75)' }}
                             >
                                 New Order
                             </button>

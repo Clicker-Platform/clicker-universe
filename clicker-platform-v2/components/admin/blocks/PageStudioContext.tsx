@@ -117,6 +117,7 @@ interface PageStudioContextType {
     updateFooterText: (val: string) => Promise<void>;
     refreshGlobalSettings: () => Promise<void>;
     updateGlobalSettings: (partial: Record<string, any>) => void;
+    refreshHydratedData: () => Promise<void>;
 
     // Trash
     trashedPages: TrashedPageListItem[];
@@ -941,6 +942,17 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
         setGlobalSettings((prev: any) => prev ? { ...prev, ...partial } : partial);
     }, []);
 
+    const refreshHydratedData = useCallback(async () => {
+        if (!siteId || !formData.blocks.length) return;
+        const data = await hydratePageBlocks(siteId, formData.blocks);
+        setHydratedData(data);
+        const pageId = activePageIdRef.current;
+        if (pageId) {
+            const cached = pageCacheRef.current.get(pageId);
+            if (cached) cached.hydratedData = { ...data };
+        }
+    }, [siteId, formData.blocks]);
+
     const updateFooterText = useCallback(async (val: string) => {
         if (!siteId) return;
         try {
@@ -989,6 +1001,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
             updateFooterText,
             refreshGlobalSettings,
             updateGlobalSettings,
+            refreshHydratedData,
             trashedPages,
             trashedPagesLoading,
             trashPage,

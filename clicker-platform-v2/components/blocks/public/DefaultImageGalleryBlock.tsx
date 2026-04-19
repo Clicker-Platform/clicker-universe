@@ -49,6 +49,7 @@ function GalleryTile({
         <div
             onClick={onClick}
             className={`relative overflow-hidden cursor-pointer group aspect-square ${cardClass}`}
+            style={{ borderRadius: 'var(--theme-radius)' }}
         >
             {/* Shimmer while loading */}
             {!loaded && (
@@ -99,10 +100,10 @@ export const DefaultImageGalleryBlock = ({ data }: ImageGalleryBlockProps) => {
 
     // Card border style shared across tiles
     const cardClass = isClean
-        ? 'rounded-xl border border-gray-200 hover:shadow-md'
+        ? 'border border-gray-200 hover:shadow-md'
         : isGlass
-        ? 'rounded-2xl border border-white/10 hover:border-white/20'
-        : 'rounded-2xl border-[3px] border-theme-border shadow-sticker hover:shadow-none hover:translate-y-[2px] hover:translate-x-[2px]';
+        ? 'border border-white/10 hover:border-white/20'
+        : 'border-[3px] border-theme-border shadow-sticker hover:shadow-none hover:translate-y-[2px] hover:translate-x-[2px]';
 
     const photoBadge = (
         <div className="absolute bottom-3 right-3 bg-black/70 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 z-20 shadow-sm border border-white/10">

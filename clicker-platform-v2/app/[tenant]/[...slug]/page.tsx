@@ -185,7 +185,10 @@ export default async function TenantCatchAllPage({ params, searchParams }: Props
                                         label: hydratedData.productSettings?.whatsappBtnLabel || productSettings?.whatsappBtnLabel,
                                         messageTemplate: hydratedData.productSettings?.whatsappMessageTemplate || productSettings?.whatsappMessageTemplate,
                                         bgColor: hydratedData.productSettings?.whatsappBtnColor || productSettings?.whatsappBtnColor,
-                                        textColor: hydratedData.productSettings?.whatsappBtnTextColor || productSettings?.whatsappBtnTextColor
+                                        textColor: hydratedData.productSettings?.whatsappBtnTextColor || productSettings?.whatsappBtnTextColor,
+                                        ctaMode: hydratedData.productSettings?.ctaMode || productSettings?.ctaMode,
+                                        ctaUrl: hydratedData.productSettings?.ctaUrl || productSettings?.ctaUrl,
+                                        ctaUrlLabel: hydratedData.productSettings?.ctaUrlLabel || productSettings?.ctaUrlLabel,
                                     }}
                                     theme={template.config}
                                     siteId={siteId}

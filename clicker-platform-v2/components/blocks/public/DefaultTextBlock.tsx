@@ -3,6 +3,7 @@
 import React from 'react';
 import { useTemplate } from '@/components/TemplateProvider';
 import { useDeviceView, dv } from '@/components/DeviceViewContext';
+import { getCardClasses } from './cardStyles';
 
 export const DefaultTextBlock = ({ data }: { data: any }) => {
     if (!data) return null;
@@ -10,14 +11,9 @@ export const DefaultTextBlock = ({ data }: { data: any }) => {
     const d = useDeviceView();
     const cardStyle = theme.cardStyle || 'brutalist';
 
-    const isClean = cardStyle === 'clean';
     const isGlass = cardStyle === 'glass';
 
-    const cardClasses = isClean
-        ? 'bg-white border border-gray-200 shadow-sm'
-        : isGlass
-        ? 'bg-white/5 backdrop-blur-md border border-white/10 shadow-xl'
-        : 'bg-white border-[3px] border-theme-border shadow-sticker'; // brutalist
+    const cardClasses = getCardClasses(cardStyle);
 
     const textClass = isGlass ? 'text-theme-foreground/90' : 'text-theme-foreground';
 
@@ -75,7 +71,7 @@ export const DefaultTextBlock = ({ data }: { data: any }) => {
     // Default: 'prose'
     return (
         <section
-            className={`${dv(d, 'p-6', 'md:p-10')} ${isGlass ? '' : 'max-w-4xl mx-auto'} ${cardClasses}`}
+            className={`${dv(d, 'p-6', 'md:p-10')} ${cardClasses}`}
             style={{ borderRadius: 'var(--theme-radius)' }}
             suppressHydrationWarning
         >

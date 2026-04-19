@@ -89,8 +89,8 @@ export default function ServiceStep({ services, onSelect, theme, pricingDisplay 
             {/* List */}
             <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-3 -mr-3 pb-4">
                 {filteredServices.length === 0 ? (
-                    <div className="text-center py-12 rounded-2xl border border-dashed"
-                        style={{ backgroundColor: surfaceBg, borderColor, color: subtleText }}>
+                    <div className="text-center py-12 border border-dashed"
+                        style={{ backgroundColor: surfaceBg, borderColor, color: subtleText, borderRadius: 'var(--theme-radius)' }}>
                         <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"
                             style={{ backgroundColor: isGlass ? 'rgba(255,255,255,0.1)' : (theme.colors.surface || '#f3f4f6'), color: subtleText }}>
                             <Search size={24} />
@@ -112,8 +112,8 @@ export default function ServiceStep({ services, onSelect, theme, pricingDisplay 
                         <button
                             key={service.id}
                             onClick={() => onSelect(service)}
-                            className="w-full text-left p-4 rounded-xl border transition-all group hover:shadow-md"
-                            style={{ backgroundColor: surfaceBg, borderColor, color: theme.colors.foreground }}
+                            className="w-full text-left p-4 border transition-all group hover:shadow-md"
+                            style={{ backgroundColor: surfaceBg, borderColor, color: theme.colors.foreground, borderRadius: 'calc(var(--theme-radius) * 0.75)' }}
                         >
                             <div className="flex justify-between items-start gap-4 mb-1">
                                 <h3 className="font-bold transition-colors" style={{ color: theme.colors.foreground }}>

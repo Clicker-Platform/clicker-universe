@@ -36,8 +36,8 @@ export const WhatsappButton: React.FC<WhatsappButtonProps> = ({
             href={url}
             target="_blank"
             rel="noopener noreferrer"
-            className={`flex items-center justify-center gap-2 w-full text-white py-4 rounded-xl font-bold text-lg hover:opacity-90 transition-opacity shadow-lg hover:shadow-xl hover:-translate-y-1 transform duration-200 ${className}`}
-            style={{ backgroundColor: '#25D366', ...style }}
+            className={`flex items-center justify-center gap-2 w-full text-white py-4 font-bold text-lg hover:opacity-90 transition-opacity hover:-translate-y-0.5 transform duration-200 ${className}`}
+            style={{ backgroundColor: '#25D366', borderRadius: 'var(--theme-radius)', boxShadow: 'var(--theme-card-shadow)', ...style }}
             {...props}
         >
             {showIcon && <MessageCircle size={24} fill="white" />}

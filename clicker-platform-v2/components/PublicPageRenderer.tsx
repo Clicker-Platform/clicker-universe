@@ -212,7 +212,10 @@ function PublicContentContent({ data }: { data: any }) {
                                         label: prodSettings.whatsappBtnLabel,
                                         messageTemplate: prodSettings.whatsappMessageTemplate,
                                         bgColor: prodSettings.whatsappBtnColor,
-                                        textColor: prodSettings.whatsappBtnTextColor
+                                        textColor: prodSettings.whatsappBtnTextColor,
+                                        ctaMode: prodSettings.ctaMode,
+                                        ctaUrl: prodSettings.ctaUrl,
+                                        ctaUrlLabel: prodSettings.ctaUrlLabel,
                                     }}
                                 />
                             );

@@ -244,9 +244,9 @@ export function MenuGrid({ initialItems, initialInventoryMap }: MenuGridProps) {
     };
 
     return (
-        <div className={`p-2 ${itemCount > 0 ? 'pb-24' : 'pb-2'} space-y-6`}>
+        <div className={`${itemCount > 0 ? 'pb-24' : ''} space-y-6`}>
             {/* Search & Filter Header */}
-            <div className="space-y-4 px-2">
+            <div className="space-y-4">
                 {/* Search Bar — tokens match reservation ServiceStep */}
                 <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2" size={18}
@@ -300,8 +300,8 @@ export function MenuGrid({ initialItems, initialInventoryMap }: MenuGridProps) {
                         return (
                             <div
                                 key={item.id}
-                                className={`rounded-2xl border overflow-hidden flex flex-col hover:-translate-y-1 hover:shadow-md transition-all duration-300 ${isOutOfStock ? 'opacity-60 grayscale' : ''}`}
-                                style={{ backgroundColor: surfaceBg, borderColor }}
+                                className={`border overflow-hidden flex flex-col hover:-translate-y-1 hover:shadow-md transition-all duration-300 ${isOutOfStock ? 'opacity-60 grayscale' : ''}`}
+                                style={{ backgroundColor: surfaceBg, borderColor, borderRadius: 'var(--theme-radius)' }}
                             >
                                 <div className="aspect-square relative" style={{ backgroundColor: isGlass ? 'rgba(255,255,255,0.05)' : (theme.colors.surface || '#f3f4f6') }}>
                                     {item.imageUrl ? (

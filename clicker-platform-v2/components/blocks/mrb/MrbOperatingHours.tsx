@@ -53,13 +53,14 @@ export const MrbOperatingHours: React.FC<OperatingHoursProps> = ({ data, schedul
     }
 
     return (
-        <section className="py-8">
+        <section>
             <div
-                className="relative overflow-hidden rounded-2xl p-8"
+                className="relative overflow-hidden p-8"
                 style={{
-                    background: `linear-gradient(to right, ${surfaceFrom}, ${surfaceTo})`,
+                    background: surfaceFrom,
                     backdropFilter: isGlass ? 'blur(12px)' : undefined,
                     border: `1px solid ${theme.colors.border || `${theme.colors.foreground}10`}`,
+                    borderRadius: 'var(--theme-radius)',
                 }}
             >
                 <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">

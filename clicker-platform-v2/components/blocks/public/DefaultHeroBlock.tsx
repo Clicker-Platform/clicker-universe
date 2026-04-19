@@ -117,11 +117,12 @@ const CtaButtons = ({
             {primary?.label && (
                 <a
                     href={primary.url || '#'}
-                    className={`inline-flex items-center px-6 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-[0.98] shadow-sm ${
+                    className={`inline-flex items-center px-6 py-2.5 text-sm font-bold transition-all active:scale-[0.98] shadow-sm ${
                         dark
                             ? 'bg-white text-gray-900 hover:bg-white/90'
                             : 'bg-theme-primary text-white hover:opacity-90'
                     }`}
+                    style={{ borderRadius: 'var(--theme-radius)' }}
                 >
                     {primary.label}
                 </a>
@@ -129,11 +130,12 @@ const CtaButtons = ({
             {secondary?.label && (
                 <a
                     href={secondary.url || '#'}
-                    className={`inline-flex items-center px-6 py-2.5 rounded-xl text-sm font-bold border-2 transition-all active:scale-[0.98] ${
+                    className={`inline-flex items-center px-6 py-2.5 text-sm font-bold border-2 transition-all active:scale-[0.98] ${
                         dark
                             ? 'border-white/50 text-white hover:bg-white/10'
                             : 'border-theme-border text-theme-foreground hover:bg-black/5'
                     }`}
+                    style={{ borderRadius: 'var(--theme-radius)' }}
                 >
                     {secondary.label}
                 </a>

@@ -102,10 +102,10 @@ export function DefaultSocialEmbedBlock({ data, previewMode }: DefaultSocialEmbe
     if (validItems.length === 0) return null;
 
     const baseCardClass = isClean
-        ? 'rounded-xl overflow-hidden'
+        ? 'overflow-hidden'
         : isGlass
-        ? 'rounded-2xl overflow-hidden'
-        : 'rounded-2xl shadow-sticker overflow-hidden';
+        ? 'overflow-hidden'
+        : 'shadow-sticker overflow-hidden';
 
     const cardClass = `${baseCardClass} w-[80%] max-w-[280px] sm:w-[320px] shrink-0`;
 
@@ -119,7 +119,7 @@ export function DefaultSocialEmbedBlock({ data, previewMode }: DefaultSocialEmbe
 
             <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 pt-2 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
                 {validItems.map((item, idx) => (
-                    <div key={idx} className={`${cardClass} snap-start`}>
+                    <div key={idx} className={`${cardClass} snap-start`} style={{ borderRadius: 'var(--theme-radius)' }}>
                         <EmbedTile item={item} previewMode={previewMode} />
                     </div>
                 ))}

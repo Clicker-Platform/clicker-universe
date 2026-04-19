@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import Image from 'next/image';
 import { useTemplate } from '@/components/TemplateProvider';
 import { getCardClasses } from './cardStyles';
@@ -11,6 +10,7 @@ export const DefaultImageBlock = ({ data }: { data: any }) => {
     const d = useDeviceView();
     const cardStyle = theme.cardStyle;
     const isGlass = cardStyle === 'glass';
+    const radius = theme.borderRadius || 'var(--theme-radius)';
 
     if (!data.url) return null;
     const variant = data.layoutVariant || 'standard';
@@ -41,7 +41,7 @@ export const DefaultImageBlock = ({ data }: { data: any }) => {
     if (variant === 'rounded-card') {
         return (
             <section className={`w-full ${dv(d, 'p-4', 'md:p-8')} flex justify-center`}>
-                <div className={`overflow-hidden max-w-4xl w-full ${getCardClasses(cardStyle)}`} style={{ borderRadius: 'var(--theme-radius)' }}>
+                <div className={`overflow-hidden max-w-4xl w-full ${getCardClasses(cardStyle)}`} style={{ borderRadius: radius }}>
                     <Image
                         src={data.url}
                         alt={data.caption || "Image"}
@@ -66,7 +66,7 @@ export const DefaultImageBlock = ({ data }: { data: any }) => {
     if (variant === 'side-caption') {
         return (
             <section className={`w-full ${dv(d, 'p-6', 'md:p-12')} max-w-6xl mx-auto flex ${dv(d, 'flex-col', 'md:flex-row')} items-center gap-8`}>
-                <div className={`flex-1 overflow-hidden shadow-lg ${getCardClasses(cardStyle)}`} style={{ borderRadius: 'var(--theme-radius)' }}>
+                <div className={`flex-1 overflow-hidden shadow-lg ${getCardClasses(cardStyle)}`} style={{ borderRadius: radius }}>
                     <Image
                         src={data.url}
                         alt={data.caption || "Image"}
@@ -93,7 +93,7 @@ export const DefaultImageBlock = ({ data }: { data: any }) => {
     // Default: 'standard'
     return (
         <section className={`w-full ${dv(d, 'px-4', 'md:px-8')} py-6 max-w-5xl mx-auto`}>
-            <div className={`overflow-hidden rounded-xl shadow-md ${getCardClasses(cardStyle)}`} style={{ borderRadius: 'var(--theme-radius)' }}>
+            <div className={`overflow-hidden shadow-md ${getCardClasses(cardStyle)}`} style={{ borderRadius: radius }}>
                 <Image
                     src={data.url}
                     alt={data.caption || "Image"}

@@ -24,7 +24,8 @@ export const DefaultFAQBlock = ({ data }: { data: any }) => {
                     {items.map((item: any, i: number) => (
                         <div
                             key={i}
-                            className={`p-6 rounded-xl border ${isGlass ? 'bg-white/10 border-white/10' : 'bg-transparent border-gray-100'}`}
+                            className={`p-6 border ${isGlass ? 'bg-white/10 border-white/10' : 'bg-transparent border-gray-100'}`}
+                            style={{ borderRadius: 'var(--theme-radius)' }}
                         >
                             <h3 className={`font-bold text-base mb-3 leading-snug ${getTextColor(cardStyle)}`}>
                                 {item.question}

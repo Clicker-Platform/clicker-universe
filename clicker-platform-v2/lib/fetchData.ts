@@ -198,6 +198,8 @@ export const fetchPublicData = cache(async function fetchPublicData(siteId: stri
         hiddenBlockIds: settings?.hiddenBlockIds || [],
         galleryTitle: settings?.galleryTitle,
         borderRadius: settings?.borderRadius || 'large',
+        customBorderRadius: settings?.customBorderRadius,
+        cardVariant: settings?.cardVariant,
         globalSeo: settings?.seo,
         globalPixels: settings?.pixels,
         linkSettings: linkSettings,
@@ -332,6 +334,8 @@ export const fetchLightweightPublicData = cache(async function fetchLightweightP
         hiddenBlockIds: settings?.hiddenBlockIds || [],
         galleryTitle: settings?.galleryTitle,
         borderRadius: settings?.borderRadius || 'large',
+        customBorderRadius: settings?.customBorderRadius,
+        cardVariant: settings?.cardVariant,
         globalSeo: settings?.seo,
         globalPixels: settings?.pixels,
         linkSettings: { sectionTitle: '', showOnHome: false }, // Placeholder

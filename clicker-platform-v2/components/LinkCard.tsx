@@ -9,6 +9,7 @@ import { ICON_MAP } from '@/data/icons';
 import { FormModal } from '@/components/FormModal';
 import { TemplateContext } from '@/components/TemplateProvider';
 import { useSite } from '@/lib/site-context';
+import { resolveNavHref } from '@/lib/resolveNavHref';
 
 interface LinkCardProps {
     item: LinkItem;
@@ -40,23 +41,12 @@ export const LinkCard: React.FC<LinkCardProps> = ({ item, siteId, tenantSlug }) 
     const [formData, setFormData] = React.useState<any>(null);
     const [isLoadingForm, setIsLoadingForm] = React.useState(false);
 
-    // Construct tenant-aware URL
-    const getTenantAwareUrl = (url: string): string => {
-        // If URL is external (starts with http/https) or is a hash/anchor, return as-is
-        if (url.startsWith('http') || url.startsWith('#') || url.startsWith('mailto:') || url.startsWith('tel:')) {
-            return url;
-        }
+    const getTenantAwareUrl = (url: string): string =>
+        resolveNavHref(url, effectiveTenantSlug, isSubdomain);
 
-        // If internal relative URL and we have tenantSlug, prepend it
-        if (tenantSlug && url.startsWith('/')) {
-            return `/${tenantSlug}${url}`;
-        }
-
-        return url;
-    };
-
-    const { siteId: contextSiteId } = useSite();
+    const { siteId: contextSiteId, tenantSlug: contextTenantSlug, isSubdomain } = useSite();
     const effectiveSiteId = siteId || contextSiteId;
+    const effectiveTenantSlug = tenantSlug || contextTenantSlug || '';
 
     const handleClick = async (e: React.MouseEvent) => {
         track({ type: 'link_click', id: item.id, siteId: effectiveSiteId });
@@ -126,48 +116,45 @@ export const LinkCard: React.FC<LinkCardProps> = ({ item, siteId, tenantSlug }) 
             <Wrapper
                 {...wrapperProps}
                 className={`
-                    group flex items-center p-4 w-full relative overflow-hidden
+                    group flex items-center p-4 w-full relative overflow-hidden transition-all duration-200 hover:opacity-80
                     ${isGlass
-                        ? 'bg-black/20 backdrop-blur-md rounded-2xl border border-white/10 transition-all duration-200 hover:bg-white/10 hover:border-white/20'
-                        : renderClean
-                        ? 'bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-brand-green/30 transition-all duration-200'
-                        : 'rounded-2xl bg-white border-[3px] border-brand-dark shadow-sticker transition-all duration-200 hover:-translate-y-1 hover:shadow-sticker-hover active:translate-y-0 active:shadow-sticker'
+                        ? 'bg-black/20 backdrop-blur-md border border-white/10 hover:bg-white/10 hover:border-white/20'
+                        : 'bg-white border border-gray-200'
                     }
-                    ${item.highlight ? (isGlass ? 'ring-2 ring-[var(--theme-primary)]/40' : renderClean ? 'ring-2 ring-brand-green/20' : 'ring-4 ring-brand-dark/20 animate-wiggle') : ''}
+                    ${item.highlight ? 'ring-2 ring-[var(--theme-primary)]/40' : ''}
                 `}
+                style={{ borderRadius: 'var(--theme-radius)', boxShadow: 'var(--theme-card-shadow)' }}
             >
                 <div className="flex items-center gap-4 flex-1">
-                    <div className={`
-                        p-2 rounded-xl border-[2px] shrink-0
-                        ${isGlass
-                            ? (isHighlight ? 'bg-[var(--theme-primary)]/20 border-[var(--theme-primary)]/40 text-[var(--theme-primary)]' : 'bg-white/10 border-white/20 text-white/80')
-                            : renderClean
-                            ? (isHighlight ? 'bg-brand-green/10 border-brand-green text-brand-green' : 'bg-gray-50 border-gray-200 text-gray-600')
-                            : (isHighlight ? 'bg-brand-green border-brand-green text-brand-dark' : 'bg-brand-green border-brand-dark text-brand-dark')
-                        }
-                    `}>
-                        <Icon size={24} strokeWidth={renderClean ? 2 : 2.5} />
+                    <div
+                        className={`p-2 shrink-0 ${
+                            isHighlight
+                                ? 'bg-[var(--theme-primary)]/20 border-[var(--theme-primary)]/40 text-[var(--theme-primary)]'
+                                : isGlass
+                                ? 'bg-white/10 border-white/20 text-white/80'
+                                : 'bg-gray-50 border-gray-200 text-gray-600'
+                        }`}
+                        style={{ borderRadius: '9999px' }}
+                    >
+                        <Icon size={24} strokeWidth={2} />
                     </div>
                     <div className="text-left">
-                        <h3 className={`leading-tight ${isGlass ? 'font-bold text-white text-base' : renderClean ? 'font-bold text-gray-900 text-base' : 'font-extrabold text-lg'}`}>
+                        <h3 className={`font-bold text-base leading-tight ${isGlass ? 'text-white' : 'text-gray-900'}`}>
                             {item.title}
                         </h3>
                         {item.subtitle && (
-                            <p className={`text-sm ${isGlass ? 'font-medium text-white/60' : renderClean ? 'font-medium text-gray-500' : 'font-bold'} ${!isGlass && isHighlight ? (renderClean ? 'text-brand-green' : 'text-brand-green/80') : isGlass && isHighlight ? 'text-[var(--theme-primary)]' : isGlass ? '' : 'text-brand-dark/60'}`}>
+                            <p className={`text-sm font-medium ${isHighlight ? 'text-[var(--theme-primary)]' : isGlass ? 'text-white/60' : 'text-gray-500'}`}>
                                 {item.subtitle}
                             </p>
                         )}
                     </div>
                 </div>
 
-                <div className={`
-                    transform transition-transform duration-200
-                    group-hover:translate-x-1 ${isGlass ? 'text-white/40' : renderClean ? 'text-gray-400' : ''}
-                `}>
+                <div className={`transform transition-transform duration-200 group-hover:translate-x-1 ${isGlass ? 'text-white/40' : 'text-gray-400'}`}>
                     {isLoadingForm ? (
-                        <div className={`w-6 h-6 border-2 border-t-transparent rounded-full animate-spin ${renderClean ? 'border-brand-green' : 'border-brand-dark'}`}></div>
+                        <div className="w-6 h-6 border-2 border-t-transparent border-[var(--theme-primary)] rounded-full animate-spin" />
                     ) : (
-                        isHighlight ? <ArrowRight size={24} strokeWidth={renderClean ? 2 : 3} /> : <ExternalLink size={24} strokeWidth={renderClean ? 2 : 3} />
+                        isHighlight ? <ArrowRight size={24} strokeWidth={2} /> : <ExternalLink size={24} strokeWidth={2} />
                     )}
                 </div>
             </Wrapper>

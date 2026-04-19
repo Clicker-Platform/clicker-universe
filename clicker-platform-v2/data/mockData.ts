@@ -138,7 +138,9 @@ export interface SiteSettings {
     homeBlockOrder?: string[];
     hiddenBlockIds?: string[]; // IDs of blocks to hide from the public page
     galleryTitle?: string;
-    borderRadius?: 'small' | 'medium' | 'large';
+    borderRadius?: 'small' | 'medium' | 'large' | 'none' | 'custom';
+    customBorderRadius?: string;
+    cardVariant?: 'shadow' | 'outlined' | 'flat';
     seo?: {
         title?: string;
         description?: string;

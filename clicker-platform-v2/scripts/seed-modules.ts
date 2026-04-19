@@ -56,7 +56,7 @@ const MODULES = [
             { path: '/book', componentKey: 'reservation:BookPage' }
         ],
         blocks: [
-            { type: 'reservation_cta', label: 'Book Now Button', componentKey: 'reservation:BookNowWaitlist' }
+            { type: 'reservation_cta', label: 'Reservation', componentKey: 'reservation:BookNowWaitlist' }
         ]
     },
     {
@@ -90,7 +90,7 @@ const MODULES = [
         ],
         requires: ['inventory'],
         blocks: [
-            { type: 'pos_menu_grid', label: 'POS Menu Grid', componentKey: 'byod_pos:MenuGrid' }
+            { type: 'pos_menu_grid', label: 'POS Menu', componentKey: 'byod_pos:MenuGrid' }
         ]
     },
     {
