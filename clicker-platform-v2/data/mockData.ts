@@ -333,6 +333,9 @@ export interface ProductSettings {
     whatsappMessageTemplate?: string;
     whatsappBtnColor?: string;
     whatsappBtnTextColor?: string;
+    ctaMode?: 'whatsapp' | 'url';
+    ctaUrl?: string;
+    ctaUrlLabel?: string;
     // Featured Product Settings
     featuredBtnText?: string;
 }

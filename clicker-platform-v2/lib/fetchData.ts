@@ -346,8 +346,11 @@ export const fetchLightweightPublicData = cache(async function fetchLightweightP
             whatsappBtnLabel: '',
             whatsappMessageTemplate: '',
             whatsappBtnColor: '',
-            whatsappBtnTextColor: ''
-        }, // Placeholder
+            whatsappBtnTextColor: '',
+            ctaMode: undefined,
+            ctaUrl: undefined,
+            ctaUrlLabel: undefined,
+        } as ProductSettings, // Placeholder
         homepageSlug: settings?.homepageSlug,
         businessSchedule: businessHours.schedule
     };

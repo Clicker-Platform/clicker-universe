@@ -62,7 +62,7 @@ export interface PublicPageProps {
         surfaceColor?: string;
         hiddenBlockIds?: string[];
         galleryTitle?: string;
-        borderRadius?: 'small' | 'medium' | 'large';
+        borderRadius?: 'small' | 'medium' | 'large' | 'none' | 'custom';
         linkSettings?: any;
         productSettings?: any;
         homepageSlug?: string;
@@ -99,7 +99,7 @@ export function PublicPageRenderer({ data, forceMobile = false, siteId }: Public
 
 
     // Map border radius to CSS values
-    const getRadiusValue = (size: 'small' | 'medium' | 'large' = 'large') => {
+    const getRadiusValue = (size: 'small' | 'medium' | 'large' | 'none' | 'custom' = 'large') => {
         switch (size) {
             case 'small': return '12px'; // rounded-xl
             case 'medium': return '16px'; // rounded-2xl
