@@ -58,14 +58,14 @@ export const STATIC_MODULE_DEFINITIONS: Record<string, Partial<ModuleDefinition>
     },
     'ai_marketing': {
         adminRoutes: [
-            { label: 'Dashboard',        path: '/admin/marketing/dashboard',          icon: 'dashboard',      componentKey: 'ai_marketing:Dashboard' },
-            { label: 'Generate',         path: '/admin/marketing/generate',           icon: 'bot',            componentKey: 'ai_marketing:Generate' },
-            { label: 'Assets',           path: '/admin/marketing/assets',             icon: 'image',          componentKey: 'ai_marketing:Assets' },
+            { label: 'Dashboard',        path: '/admin/marketing/dashboard',          icon: 'dashboard',      componentKey: 'ai_marketing:Dashboard',      hidden: true },
+            { label: 'Generate',         path: '/admin/marketing/generate',           icon: 'bot',            componentKey: 'ai_marketing:Generate',       hidden: true },
+            { label: 'Assets',           path: '/admin/marketing/assets',             icon: 'image',          componentKey: 'ai_marketing:Assets',         hidden: true },
             { label: 'Asset Detail',     path: '/admin/marketing/assets/detail',      icon: 'image',          componentKey: 'ai_marketing:AssetDetail',    hidden: true },
-            { label: 'Campaigns',        path: '/admin/marketing/campaigns',          icon: 'clipboard-list', componentKey: 'ai_marketing:Campaigns' },
+            { label: 'Campaigns',        path: '/admin/marketing/campaigns',          icon: 'clipboard-list', componentKey: 'ai_marketing:Campaigns',      hidden: true },
             { label: 'Campaign Detail',  path: '/admin/marketing/campaigns/detail',   icon: 'clipboard-list', componentKey: 'ai_marketing:CampaignDetail', hidden: true },
-            { label: 'Analytics',        path: '/admin/marketing/analytics',          icon: 'bar-chart-3',    componentKey: 'ai_marketing:Analytics' },
-            { label: 'Settings',         path: '/admin/marketing/settings',           icon: 'settings',       componentKey: 'ai_marketing:Settings',       permission: 'settings' },
+            { label: 'Analytics',        path: '/admin/marketing/analytics',          icon: 'bar-chart-3',    componentKey: 'ai_marketing:Analytics',      hidden: true },
+            { label: 'Settings',         path: '/admin/marketing/settings',           icon: 'settings',       componentKey: 'ai_marketing:Settings',       hidden: true },
         ]
     }
 };
