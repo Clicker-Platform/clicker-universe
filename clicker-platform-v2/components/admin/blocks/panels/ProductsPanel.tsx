@@ -39,7 +39,6 @@ interface ProductSettings {
     showFeaturedTitle?: boolean;
     featuredBtnText?: string;
     ctaMode?: 'whatsapp' | 'url' | 'both';
-    ctaUrl?: string;
     ctaUrlLabel?: string;
     whatsappBtnLabel?: string;
     whatsappMessageTemplate?: string;
@@ -158,7 +157,7 @@ export function ProductsPanel() {
     const [formData, setFormData] = useState({
         title: '', price: '', showPrice: true, category: '', showLabel: true,
         description: '', images: [] as string[], isActive: true,
-        ctaMode: undefined as 'whatsapp' | 'url' | 'both' | 'none' | undefined,
+        ctaMode: 'whatsapp' as 'whatsapp' | 'url' | 'both' | 'none',
         ctaUrl: '',
     });
     const [saving, setSaving] = useState(false);
@@ -191,6 +190,8 @@ export function ProductsPanel() {
                     isActive: data.isActive,
                     showPrice: data.showPrice,
                     showLabel: data.showLabel,
+                    ctaMode: data.ctaMode,
+                    ctaUrl: data.ctaUrl || '',
                 } as Product;
             });
             setProducts(fetched);
@@ -224,7 +225,7 @@ export function ProductsPanel() {
                 description: product.description || '',
                 images: product.images || (product.image ? [product.image] : []),
                 isActive: product.isActive !== false,
-                ctaMode: product.ctaMode,
+                ctaMode: product.ctaMode || 'whatsapp',
                 ctaUrl: product.ctaUrl || '',
             });
         } else {
@@ -232,7 +233,7 @@ export function ProductsPanel() {
             setFormData({
                 title: '', price: '', showPrice: true, category: '', showLabel: true,
                 description: '', images: [], isActive: true,
-                ctaMode: undefined, ctaUrl: '',
+                ctaMode: 'whatsapp', ctaUrl: '',
             });
         }
         setView('editor');
@@ -254,8 +255,8 @@ export function ProductsPanel() {
                 showLabel: formData.showLabel,
                 description: formData.description,
                 isActive: formData.isActive,
-                ...(formData.ctaMode ? { ctaMode: formData.ctaMode } : {}),
-                ...(formData.ctaUrl ? { ctaUrl: formData.ctaUrl } : {}),
+                ctaMode: formData.ctaMode,
+                ctaUrl: (formData.ctaMode === 'url' || formData.ctaMode === 'both') ? formData.ctaUrl : '',
             };
 
             if (editingId) {
@@ -419,18 +420,13 @@ export function ProductsPanel() {
                                 </div>
                             </div>
 
-                            {/* URL fields */}
+                            {/* URL button label (URL itself is set per-product) */}
                             {(settings.ctaMode === 'url' || settings.ctaMode === 'both') && (
-                                <>
-                                    <div>
-                                        <label className={labelClass}>URL</label>
-                                        <input type="url" value={settings.ctaUrl || ''} onChange={e => setSettings({ ...settings, ctaUrl: e.target.value })} className={inputClass} placeholder="https://..." />
-                                    </div>
-                                    <div>
-                                        <label className={labelClass}>URL Button Label</label>
-                                        <input type="text" value={settings.ctaUrlLabel || ''} onChange={e => setSettings({ ...settings, ctaUrlLabel: e.target.value })} className={inputClass} placeholder="e.g. View Product" />
-                                    </div>
-                                </>
+                                <div>
+                                    <label className={labelClass}>URL Button Label</label>
+                                    <input type="text" value={settings.ctaUrlLabel || ''} onChange={e => setSettings({ ...settings, ctaUrlLabel: e.target.value })} className={inputClass} placeholder="e.g. View Product" />
+                                    <p className="text-[10px] text-neutral-400 dark:text-neutral-600 mt-1">The destination URL is set on each product individually.</p>
+                                </div>
                             )}
 
                             {/* WhatsApp fields */}
@@ -538,18 +534,18 @@ export function ProductsPanel() {
 
                         <div className="border-t border-gray-200 dark:border-neutral-800" />
 
-                        {/* CTA Override */}
+                        {/* CTA Button */}
                         <div className="space-y-2">
-                            <label className={labelClass}>CTA Override <span className="text-neutral-500">(overrides block settings)</span></label>
+                            <label className={labelClass}>CTA Button</label>
                             <div className="grid grid-cols-4 gap-1">
                                 {([
-                                    { value: undefined, label: 'Default' },
                                     { value: 'whatsapp', label: 'WhatsApp' },
                                     { value: 'url', label: 'URL' },
                                     { value: 'both', label: 'Both' },
+                                    { value: 'none', label: 'None' },
                                 ] as const).map(opt => (
                                     <button
-                                        key={String(opt.value)}
+                                        key={opt.value}
                                         type="button"
                                         onClick={() => setFormData(p => ({ ...p, ctaMode: opt.value }))}
                                         className={`py-1.5 rounded-lg text-[10px] font-bold transition-colors ${formData.ctaMode === opt.value ? 'bg-blue-500 text-white' : 'bg-gray-100 dark:bg-neutral-800 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
@@ -558,14 +554,20 @@ export function ProductsPanel() {
                                     </button>
                                 ))}
                             </div>
-                            {(formData.ctaMode === 'url' || formData.ctaMode === 'both') && (
-                                <input
-                                    type="url"
-                                    value={formData.ctaUrl}
-                                    onChange={e => setFormData(p => ({ ...p, ctaUrl: e.target.value }))}
-                                    className={inputClass}
-                                    placeholder="https://..."
-                                />
+                            {formData.ctaMode === 'url' && (
+                                <div>
+                                    <label className={labelClass}>Product URL</label>
+                                    <input
+                                        type="url"
+                                        value={formData.ctaUrl}
+                                        onChange={e => setFormData(p => ({ ...p, ctaUrl: e.target.value }))}
+                                        className={inputClass}
+                                        placeholder="https://..."
+                                    />
+                                </div>
+                            )}
+                            {formData.ctaMode === 'none' && (
+                                <p className="text-[10px] text-neutral-400 dark:text-neutral-600">No CTA button will be shown for this product.</p>
                             )}
                         </div>
 

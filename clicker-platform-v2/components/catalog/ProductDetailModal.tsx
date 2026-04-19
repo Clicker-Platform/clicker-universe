@@ -242,7 +242,7 @@ export function ProductDetailModal({ product, isOpen, onClose, phoneNumber = '15
                     {(() => {
                         const productAny = product as any;
                         const effectiveMode = productAny.ctaMode || whatsappSettings?.ctaMode || 'whatsapp';
-                        const effectiveUrl = productAny.ctaUrl || whatsappSettings?.ctaUrl || '';
+                        const effectiveUrl = productAny.ctaUrl || '';
                         const waMessage = whatsappSettings?.messageTemplate
                             ? whatsappSettings.messageTemplate
                                 .replace('${productName}', product.name)
@@ -278,6 +278,7 @@ export function ProductDetailModal({ product, isOpen, onClose, phoneNumber = '15
                             />
                         );
 
+                        if (effectiveMode === 'none') return null;
                         if (effectiveMode === 'url') return urlBtn;
                         if (effectiveMode === 'both') return <div className="flex flex-col gap-2">{urlBtn}{waBtn}</div>;
                         return waBtn;

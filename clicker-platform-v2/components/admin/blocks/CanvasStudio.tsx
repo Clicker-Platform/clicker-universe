@@ -662,14 +662,14 @@ export function CanvasStudio({
                                         setMobileSheet(null);
                                         toggleSlideOverPanel(id);
                                     }}
-                                    className="w-full flex items-center gap-3 px-4 py-3 bg-neutral-800/60 hover:bg-neutral-800 rounded-lg transition-colors text-left"
+                                    className="w-full flex items-center gap-3 px-4 py-3 bg-gray-100 dark:bg-neutral-800/60 hover:bg-gray-200 dark:hover:bg-neutral-800 rounded-lg transition-colors text-left"
                                 >
-                                    <div className="w-9 h-9 flex items-center justify-center rounded-lg bg-neutral-700/60 text-neutral-300 flex-shrink-0">
+                                    <div className="w-9 h-9 flex items-center justify-center rounded-lg bg-gray-200 dark:bg-neutral-700/60 text-neutral-600 dark:text-neutral-300 flex-shrink-0">
                                         <Icon size={18} />
                                     </div>
                                     <div>
-                                        <div className="text-sm font-semibold text-neutral-200">{label}</div>
-                                        <div className="text-xs text-neutral-500">{description}</div>
+                                        <div className="text-sm font-semibold text-neutral-900 dark:text-neutral-200">{label}</div>
+                                        <div className="text-xs text-neutral-500 dark:text-neutral-500">{description}</div>
                                     </div>
                                 </button>
                             ))}
@@ -731,6 +731,21 @@ export function CanvasStudio({
                     saving={saving}
                     onSave={savePage}
                 />
+
+                {/* Slide-over panels (Links / Forms / Products / Site Info / Branding) — mobile */}
+                <MobileBottomSheet
+                    isOpen={!!slideOverPanel}
+                    onClose={() => setSlideOverPanel(null)}
+                    title={slideOverPanel === 'links' ? 'Links' : slideOverPanel === 'forms' ? 'Forms' : slideOverPanel === 'products' ? 'Products' : slideOverPanel === 'siteinfo' ? 'Site Info' : slideOverPanel === 'branding' ? 'Branding' : ''}
+                    icon={slideOverPanel === 'links' ? Link2 : slideOverPanel === 'forms' ? FileInput : slideOverPanel === 'products' ? ShoppingBag : slideOverPanel === 'siteinfo' ? Globe : slideOverPanel === 'branding' ? Palette : undefined}
+                    height="80vh"
+                >
+                    {slideOverPanel === 'links' && <LinksPanel />}
+                    {slideOverPanel === 'forms' && <FormsPanel />}
+                    {slideOverPanel === 'products' && <ProductsPanel />}
+                    {slideOverPanel === 'siteinfo' && <SiteInfoPanel />}
+                    {slideOverPanel === 'branding' && <BrandingPanel />}
+                </MobileBottomSheet>
             </div>
         );
     }
