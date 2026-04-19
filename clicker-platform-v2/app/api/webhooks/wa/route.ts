@@ -1,6 +1,4 @@
 import { NextResponse } from 'next/server';
-import { adminDb } from '@/lib/firebase-admin';
-import { processIncomingMessage } from '@/lib/whatsapp/webhook-processor';
 import type { MetaWebhookPayload } from '@/lib/whatsapp/types';
 
 export const dynamic = 'force-dynamic';
@@ -16,16 +14,15 @@ export async function GET(req: Request) {
     return new Response('Bad Request', { status: 400 });
   }
 
-  // Verify token against env var (simple shared secret) or Firestore lookup
-  const globalVerifyToken = process.env.WA_WEBHOOK_VERIFY_TOKEN;
-
   // Fast path: match against global env token
+  const globalVerifyToken = process.env.WA_WEBHOOK_VERIFY_TOKEN;
   if (globalVerifyToken && token === globalVerifyToken) {
     return new Response(challenge, { status: 200 });
   }
 
   // Fallback: look up per-tenant token in Firestore
   try {
+    const { adminDb } = await import('@/lib/firebase-admin');
     const snap = await adminDb
       .collectionGroup('config')
       .where('webhookVerifyToken', '==', token)
@@ -76,8 +73,10 @@ export async function POST(req: Request) {
     }
 
     // Process async — don't block the 200 response
-    processIncomingMessage(siteId, payload).catch(err =>
-      console.error('[WA webhook] processIncomingMessage error:', err)
+    import('@/lib/whatsapp/webhook-processor').then(({ processIncomingMessage }) =>
+      processIncomingMessage(siteId, payload).catch(err =>
+        console.error('[WA webhook] processIncomingMessage error:', err)
+      )
     );
 
     return NextResponse.json({ ok: true });
@@ -89,6 +88,7 @@ export async function POST(req: Request) {
 
 async function resolveSiteId(phoneNumberId: string): Promise<string | null> {
   try {
+    const { adminDb } = await import('@/lib/firebase-admin');
     const snap = await adminDb
       .collectionGroup('config')
       .where('phoneNumberId', '==', phoneNumberId)
