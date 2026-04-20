@@ -35,7 +35,7 @@ export default function TimeStep({
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
 
     const isGlass = theme.decorations?.surfaceStyle === 'glass' || theme.cardStyle === 'glass';
-    const surfaceBg = isGlass ? 'rgba(255,255,255,0.05)' : (theme.colors.surface || '#f9fafb');
+    const surfaceBg = theme.colors.surface || '#f9fafb';
     const borderColor = isGlass ? 'rgba(255,255,255,0.1)' : (theme.colors.border || '#e5e7eb');
     const mutedText = theme.colors.textMuted || theme.colors.foreground;
     const subtleText = theme.colors.textSubtle || theme.colors.muted || theme.colors.foreground;

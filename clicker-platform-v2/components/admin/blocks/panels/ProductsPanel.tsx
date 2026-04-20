@@ -7,6 +7,7 @@ import { Plus, Trash2, ArrowLeft, Save, Star, Eye, EyeOff, Settings, ShoppingBag
 import { useSite } from '@/lib/site-context';
 import { usePageStudio } from '@/components/admin/blocks/PageStudioContext';
 import { MultiImageUpload } from '@/components/admin/MultiImageUpload';
+import { purgeTenantCache } from '@/lib/admin/purgeCache';
 import Image from 'next/image';
 
 // ── Shared styles ────────────────────────────────────────────────────────
@@ -269,6 +270,7 @@ export function ProductsPanel() {
             setView('list');
             setEditingId(null);
             refreshHydratedData();
+            purgeTenantCache(siteId);
         } catch (error) {
             console.error('Error saving product:', error);
         } finally {
@@ -284,6 +286,7 @@ export function ProductsPanel() {
             await deleteDoc(doc(db, 'sites', siteId, 'products', id));
             setProducts(prev => prev.filter(p => p.id !== id));
             if (featuredId === id) setFeaturedId(null);
+            purgeTenantCache(siteId);
         } catch (error) {
             console.error('Error deleting product:', error);
         }
@@ -295,6 +298,7 @@ export function ProductsPanel() {
         try {
             await updateDoc(doc(db, 'sites', siteId, 'products', product.id), { isActive: newStatus });
             setProducts(prev => prev.map(p => p.id === product.id ? { ...p, isActive: newStatus } : p));
+            purgeTenantCache(siteId);
         } catch (error) {
             console.error('Error toggling visibility:', error);
         }
@@ -308,6 +312,7 @@ export function ProductsPanel() {
                 originalId: product.id,
             });
             setFeaturedId(product.id);
+            purgeTenantCache(siteId);
         } catch (error) {
             console.error('Error setting featured:', error);
         }
@@ -320,6 +325,7 @@ export function ProductsPanel() {
         setSavingSettings(true);
         try {
             await setDoc(doc(db, 'sites', siteId, 'content', 'productSettings'), settings);
+            purgeTenantCache(siteId);
             setView('list');
         } catch (error) {
             console.error('Error saving settings:', error);

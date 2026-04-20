@@ -14,6 +14,7 @@ import { TemplateDocument } from '@/lib/templates/types';
 import { IconSelector } from '@/components/admin/IconSelector';
 import { ICON_MAP } from '@/data/icons';
 import { useSite } from '@/lib/site-context';
+import { purgeTenantCache } from '@/lib/admin/purgeCache';
 
 export default function TemplateClient() {
     const { siteId } = useSite();
@@ -107,6 +108,7 @@ export default function TemplateClient() {
 
         try {
             await setDoc(doc(db, 'sites', siteId, 'content', 'siteSettings'), settings);
+            purgeTenantCache(siteId);
             setMessage('Template saved successfully!');
             setTimeout(() => setMessage(''), 3000);
         } catch (error) {

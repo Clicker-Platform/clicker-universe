@@ -12,6 +12,7 @@ import { useSite } from '@/lib/site-context';
 import { useUser } from '@/lib/user-context';
 import { usePageStudio } from '@/components/admin/blocks/PageStudioContext';
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
+import { purgeTenantCache } from '@/lib/admin/purgeCache';
 import {
     DndContext,
     closestCenter,
@@ -267,6 +268,7 @@ export function LinksPanel() {
             fetchLinks();
             refreshHydratedData();
             bumpLinksVersion();
+            purgeTenantCache(siteId);
         } catch (error) {
             console.error(error);
         } finally {
@@ -303,6 +305,7 @@ export function LinksPanel() {
             if (editingId === id) resetForm();
             refreshHydratedData();
             bumpLinksVersion();
+            purgeTenantCache(siteId);
             if (trashOpen) fetchTrashedLinks();
         } catch (error) {
             console.error('Error trashing link:', error);
@@ -321,6 +324,7 @@ export function LinksPanel() {
             fetchLinks();
             refreshHydratedData();
             bumpLinksVersion();
+            purgeTenantCache(siteId);
         } catch (error) {
             console.error('Error restoring link:', error);
         } finally {
@@ -336,6 +340,7 @@ export function LinksPanel() {
         try {
             await deleteDoc(doc(db, 'sites', siteId, 'links', pendingPermDeleteId));
             setTrashedLinks(prev => prev.filter(l => l.id !== pendingPermDeleteId));
+            purgeTenantCache(siteId);
         } catch (error) {
             console.error('Error permanently deleting link:', error);
         } finally {
@@ -407,6 +412,7 @@ export function LinksPanel() {
         setIsSavingSettings(true);
         try {
             await setDoc(doc(db, 'sites', siteId, 'content', 'linkSettings'), settings);
+            purgeTenantCache(siteId);
         } catch (error) {
             console.error(error);
         } finally {

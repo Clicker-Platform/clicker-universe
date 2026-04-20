@@ -8,6 +8,7 @@ import { usePageStudio } from '@/components/admin/blocks/PageStudioContext';
 import { SiteSettings, SocialLinkItem } from '@/data/mockData';
 import { CompactImageUpload } from '@/components/admin/CompactImageUpload';
 import { SubmitButton } from '@/components/admin/SubmitButton';
+import { purgeTenantCache } from '@/lib/admin/purgeCache';
 import {
     Globe, Search, ImageIcon, Instagram, Facebook, Linkedin, Twitter,
     Youtube, Video, Plus, Trash2, ChevronDown, ChevronRight, Loader2, Check
@@ -135,6 +136,7 @@ export function SiteInfoPanel() {
         setSaving(true);
         try {
             await setDoc(doc(db, 'sites', siteId, 'content', 'siteSettings'), settings);
+            purgeTenantCache(siteId);
             await refreshGlobalSettings();
             setSaved(true);
             setTimeout(() => setSaved(false), 2000);

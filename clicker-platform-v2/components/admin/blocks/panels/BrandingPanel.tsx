@@ -7,6 +7,7 @@ import { useSite } from '@/lib/site-context';
 import { usePageStudio } from '@/components/admin/blocks/PageStudioContext';
 import { BusinessProfile } from '@/data/mockData';
 import { AvatarUpload } from '@/components/common/AvatarUpload';
+import { purgeTenantCache } from '@/lib/admin/purgeCache';
 import { Loader2, Check } from 'lucide-react';
 
 // ── Shared styles ─────────────────────────────────────────────────────────
@@ -43,6 +44,7 @@ export function BrandingPanel() {
         setSaving(true);
         try {
             await setDoc(doc(db, 'sites', siteId, 'content', 'profile'), profile, { merge: true });
+            purgeTenantCache(siteId);
             await refreshGlobalSettings();
             setSaved(true);
             setTimeout(() => setSaved(false), 2000);

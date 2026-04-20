@@ -6,6 +6,7 @@ import { Service, Staff } from '@/lib/modules/reservation/types';
 import { Check, ChevronLeft } from 'lucide-react';
 import { AlertDialog } from '@/components/common/AlertDialog';
 import { useTemplate } from '@/components/TemplateProvider';
+import { getGlassStyle } from '@/components/blocks/public/cardStyles';
 import ServiceStep from './steps/ServiceStep';
 import StaffStep from './steps/StaffStep';
 import TimeStep from './steps/TimeStep';
@@ -41,7 +42,7 @@ export default function BookingForm({
 
     const { theme } = useTemplate();
     const isGlass = theme.decorations?.surfaceStyle === 'glass' || theme.cardStyle === 'glass';
-    const surfaceBg = isGlass ? 'rgba(0,0,0,0.2)' : (theme.colors.surfaceElevated || theme.colors.surface || '#ffffff');
+    const surfaceBg = theme.colors.surfaceElevated || theme.colors.surface || '#ffffff';
     const surfaceBorder = isGlass ? 'rgba(255,255,255,0.1)' : (theme.colors.border || '#e5e7eb');
 
     const [step, setStep] = useState(1);
@@ -168,8 +169,7 @@ export default function BookingForm({
             <div
                 className="text-center p-8 animate-in fade-in"
                 style={{
-                    background: isGlass ? 'rgba(0,0,0,0.2)' : surfaceBg,
-                    backdropFilter: isGlass ? 'blur(12px)' : undefined,
+                    ...(isGlass ? getGlassStyle(theme.colors.surface) : { background: surfaceBg }),
                     border: `1px solid ${surfaceBorder}`,
                     color: theme.colors.foreground,
                     borderRadius: 'var(--theme-radius)',
@@ -206,8 +206,7 @@ export default function BookingForm({
         <div
             className="overflow-hidden w-full transition-all duration-200"
             style={{
-                background: isGlass ? 'rgba(0,0,0,0.2)' : surfaceBg,
-                backdropFilter: isGlass ? 'blur(12px)' : undefined,
+                ...(isGlass ? getGlassStyle(theme.colors.surface) : { background: surfaceBg }),
                 border: `1px solid ${surfaceBorder}`,
                 borderRadius: 'var(--theme-radius)',
             }}
@@ -216,8 +215,8 @@ export default function BookingForm({
             <div
                 className="p-4 sm:p-6 border-b"
                 style={{
-                    backgroundColor: isGlass ? 'rgba(255,255,255,0.05)' : theme.colors.foreground,
-                    borderColor: isGlass ? 'rgba(255,255,255,0.1)' : 'transparent',
+                    backgroundColor: theme.colors.primary,
+                    borderColor: 'transparent',
                     borderTopLeftRadius: 'var(--theme-radius)',
                     borderTopRightRadius: 'var(--theme-radius)',
                 }}
@@ -233,11 +232,11 @@ export default function BookingForm({
                                 setStep(step - 1);
                             }
                         }} className="p-1 rounded-lg hover:opacity-70 transition-opacity"
-                            style={{ color: theme.colors.background }}>
+                            style={{ color: theme.colors.accentForeground || '#ffffff' }}>
                             <ChevronLeft size={20} />
                         </button>
                     )}
-                    <span className="font-bold text-sm opacity-70" style={{ color: theme.colors.background }}>
+                    <span className="font-bold text-sm opacity-70" style={{ color: theme.colors.accentForeground || '#ffffff' }}>
                         Step {step} of {
                             selectedService?.bookingType === 'request'
                                 ? (settings.allowStaffSelection ? 3 : 2)
@@ -246,7 +245,7 @@ export default function BookingForm({
                     </span>
                     <div className="w-6" />
                 </div>
-                <h2 className="text-2xl font-black" style={{ color: theme.colors.background }}>
+                <h2 className="text-2xl font-black" style={{ color: theme.colors.accentForeground || '#ffffff' }}>
                     {step === 1 && (settings.bookingTitle || "Select Service")}
                     {step === 2 && `Select ${settings.staffLabel || 'Staff'}`}
                     {step === 3 && "Select Time"}

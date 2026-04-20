@@ -11,7 +11,7 @@ interface StaffStepProps {
 
 export default function StaffStep({ staffList, onSelect, theme, staffLabel = 'Staff' }: StaffStepProps) {
     const isGlass = theme.decorations?.surfaceStyle === 'glass' || theme.cardStyle === 'glass';
-    const surfaceBg = isGlass ? 'rgba(255,255,255,0.05)' : (theme.colors.surfaceElevated || theme.colors.surface || '#ffffff');
+    const surfaceBg = theme.colors.surfaceElevated || theme.colors.surface || '#ffffff';
     const borderColor = isGlass ? 'rgba(255,255,255,0.1)' : (theme.colors.border || '#e5e7eb');
     const mutedText = theme.colors.textMuted || theme.colors.foreground;
     const subtleText = theme.colors.textSubtle || theme.colors.muted || theme.colors.foreground;
@@ -30,7 +30,7 @@ export default function StaffStep({ staffList, onSelect, theme, staffLabel = 'St
                 style={{ ...rowStyle, borderRadius: 'calc(var(--theme-radius) * 0.75)' }}
             >
                 <div className="w-10 h-10 rounded-full flex items-center justify-center"
-                    style={{ backgroundColor: isGlass ? 'rgba(255,255,255,0.1)' : (theme.colors.surface || '#f3f4f6'), color: mutedText }}>
+                    style={{ backgroundColor: surfaceBg, color: mutedText }}>
                     <User size={20} />
                 </div>
                 <div>

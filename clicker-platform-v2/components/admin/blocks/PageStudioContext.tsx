@@ -6,6 +6,7 @@ import { db } from '@/lib/firebase';
 import { collection, addDoc, doc, getDoc, updateDoc, deleteDoc, setDoc, getDocs, serverTimestamp, query, where, writeBatch } from 'firebase/firestore';
 import { Page, PageBlock } from '@/data/mockData';
 import { fetchLightweightPublicData, hydratePageBlocks } from '@/lib/fetchData';
+import { purgeTenantCache } from '@/lib/admin/purgeCache';
 import { useSite } from '@/lib/site-context';
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -678,6 +679,8 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
                 const existingHydrated = pageCacheRef.current.get(savedPageId)?.hydratedData || {};
                 cacheCurrentPage(savedPageId, formData, snapshot, existingHydrated);
             }
+
+            purgeTenantCache(siteId);
         } catch (err) {
             console.error('Error saving page:', err);
             toast.error('Failed to save page. Please try again.');

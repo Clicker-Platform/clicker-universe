@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { Calendar } from 'lucide-react';
 import { useTemplate } from '@/components/TemplateProvider';
+import { getGlassStyle } from './cardStyles';
 
 // Animated skeleton bar — uses CSS vars from TemplateProvider so it works across all themes.
 // Renders inside the dynamic() loading prop which shows while JS chunk downloads.
@@ -90,14 +91,20 @@ export const ReservationBlock = ({ data, siteId, initialServices, initialStaff, 
 
     // Embed Mode
     return (
-        <div className={`
-            container mx-auto px-4 sm:px-6
-            ${isGlass
-                ? 'bg-black/20 backdrop-blur-md border border-white/10 shadow-xl'
-                : isClean
-                ? ''
-                : 'bg-white border-[3px] border-theme-border shadow-sticker'}
-        `} style={{ borderRadius: isClean ? '0' : 'var(--theme-radius)' }}>
+        <div
+            className={`
+                container mx-auto px-4 sm:px-6
+                ${isGlass
+                    ? 'backdrop-blur-md border border-white/10 shadow-xl'
+                    : isClean
+                    ? ''
+                    : 'bg-white border-[3px] border-theme-border shadow-sticker'}
+            `}
+            style={{
+                borderRadius: isClean ? '0' : 'var(--theme-radius)',
+                ...(isGlass ? getGlassStyle(theme.colors.surface) : {}),
+            }}
+        >
             {data.title && (
                 <h2 className={`
                     text-3xl mb-8 text-center

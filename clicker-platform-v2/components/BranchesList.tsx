@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Branch, BusinessContact } from '@/data/mockData';
 import { MapPin, Phone, ChevronDown, ChevronUp, ExternalLink, Navigation } from 'lucide-react';
 import { useTemplate } from '@/components/TemplateProvider';
+import { getGlassStyle } from '@/components/blocks/public/cardStyles';
 
 interface BranchesListProps {
     contact: BusinessContact;
@@ -24,14 +25,17 @@ export const BranchesList: React.FC<BranchesListProps> = ({ contact, branches })
         <div className="w-full">
             {/* Main Location Card */}
             {contact.address && (
-                <div className={`
-                    p-4 mb-4 rounded-2xl
-                    ${isClean
-                        ? 'bg-white border border-gray-200 shadow-sm'
-                        : isGlass ? 'bg-black/20 backdrop-blur-md border border-white/10 shadow-xl'
-                        : 'bg-white border-[3px] border-theme-border shadow-sticker'
-                    }
-                `}>
+                <div
+                    className={`
+                        p-4 mb-4 rounded-2xl
+                        ${isClean
+                            ? 'bg-white border border-gray-200 shadow-sm'
+                            : isGlass ? 'backdrop-blur-md border border-white/10 shadow-xl'
+                            : 'bg-white border-[3px] border-theme-border shadow-sticker'
+                        }
+                    `}
+                    style={isGlass ? getGlassStyle(theme.colors.surface) : undefined}
+                >
                         <div className="flex items-start gap-4">
                             <div className={`
                                 p-3 rounded-xl shrink-0
@@ -72,15 +76,18 @@ export const BranchesList: React.FC<BranchesListProps> = ({ contact, branches })
 
             {/* Branches Accordion */}
             {branches.length > 0 && (
-                <div className={`
-                    rounded-3xl overflow-hidden
-                    ${isClean
-                        ? 'bg-white border border-gray-200'
-                        : isGlass
-                        ? 'bg-black/20 backdrop-blur-md border border-white/10'
-                        : 'bg-white border-[3px] border-theme-border shadow-sticker'
-                    }
-                `}>
+                <div
+                    className={`
+                        rounded-3xl overflow-hidden
+                        ${isClean
+                            ? 'bg-white border border-gray-200'
+                            : isGlass
+                            ? 'backdrop-blur-md border border-white/10'
+                            : 'bg-white border-[3px] border-theme-border shadow-sticker'
+                        }
+                    `}
+                    style={isGlass ? getGlassStyle(theme.colors.surface) : undefined}
+                >
                     <button
                         onClick={() => setIsExpanded(!isExpanded)}
                         className={`w-full flex items-center justify-between p-4 transition-colors ${
