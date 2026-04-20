@@ -2,6 +2,8 @@
 
 import Image from 'next/image';
 import { useRef, useState } from 'react';
+
+const BLUR_PLACEHOLDER = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxIiBoZWlnaHQ9IjEiPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNlNWU3ZWIiLz48L3N2Zz4=';
 import { useTemplate } from '@/components/TemplateProvider';
 import { useDeviceView, dv, type DeviceView } from '@/components/DeviceViewContext';
 import { toolbarMouseDownRef } from '@/components/admin/blocks/InlineEditToolbar';
@@ -237,6 +239,8 @@ export const DefaultHeroBlock = ({ data, theme, onInlineChange, onFieldFocus }: 
                             priority
                             fetchPriority="high"
                             sizes="(max-width: 768px) 100vw, 50vw"
+                            placeholder="blur"
+                            blurDataURL={BLUR_PLACEHOLDER}
                             className="object-cover"
                             style={{ objectPosition: imgPos }}
                         />
@@ -259,6 +263,8 @@ export const DefaultHeroBlock = ({ data, theme, onInlineChange, onFieldFocus }: 
                             priority
                             fetchPriority="high"
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
+                            placeholder="blur"
+                            blurDataURL={BLUR_PLACEHOLDER}
                             className="object-cover"
                             style={{ objectPosition: imgPos }}
                         />
@@ -327,6 +333,8 @@ export const DefaultHeroBlock = ({ data, theme, onInlineChange, onFieldFocus }: 
                         fill
                         priority
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
+                        placeholder="blur"
+                        blurDataURL={BLUR_PLACEHOLDER}
                         className="object-cover opacity-20"
                         style={{ objectPosition: imgPos }}
                     />

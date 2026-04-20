@@ -156,6 +156,16 @@ export default async function TenantCatchAllPage({ params, searchParams }: Props
 
     const heroFirst = (page.blocks?.[0]?.type === 'hero');
 
+    const navSettings = (publicData.navigation ?? {}) as any;
+    const initialNavData = {
+        topNav: navSettings.topNav ?? [],
+        topNavActions: navSettings.topNavActions ?? null,
+        bottomNav: navSettings.bottomNav ?? [],
+        fab: navSettings.fab ?? null,
+        headerStyle: navSettings.headerStyle ?? {},
+        bottomNavStyle: navSettings.bottomNavStyle ?? {},
+    };
+
     return (
         <SharedPageLayout
             templateId={safeTemplateId}
@@ -164,6 +174,7 @@ export default async function TenantCatchAllPage({ params, searchParams }: Props
             isSubPage={true}
             heroFirst={heroFirst}
             pageTitle={page.title}
+            initialNavData={initialNavData}
             pageOverrides={{
                 borderRadius: borderRadius,
                 themeColor: themeColor,

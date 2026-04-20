@@ -1,4 +1,5 @@
 import { cache } from 'react';
+import { cached, siteKey } from '@/lib/cache/redis';
 import { db } from "@/lib/firebase";
 import { doc, getDoc, collection, getDocs, query, where, orderBy } from "firebase/firestore";
 import { BusinessProfile, LinkItem, Product, SocialLink, SiteSettings, SocialLinkItem, initialBusinessHours, BusinessHours, Page, PageBlock, BusinessContact, Branch, initialBusinessContact, LinkSettings, ProductSettings } from "@/data/mockData";
@@ -53,8 +54,12 @@ export const fetchPublicData = cache(async function fetchPublicData(siteId: stri
             businessSchedule: initialBusinessHours.schedule
         } as any;
     }
+    const cacheKey = siteKey(siteId, `public:${options.includeProducts ? 'full' : 'light'}`);
+    return cached(cacheKey, 60, () => _fetchPublicDataInner(siteId, options));
+});
+
+async function _fetchPublicDataInner(siteId: string, options: { includeProducts?: boolean } = { includeProducts: true }) {
     logDebug(`Fetching public data for siteId: ${siteId}`);
-    // Execute all independent fetches in parallel with individual error handling
     const [
         profileSnap,
         linksSnap,
@@ -205,42 +210,37 @@ export const fetchPublicData = cache(async function fetchPublicData(siteId: stri
         linkSettings: linkSettings,
         productSettings: productSettings,
         homepageSlug: settings?.homepageSlug,
-        businessSchedule: businessHours.schedule
+        businessSchedule: businessHours.schedule,
+        navigation: settings?.navigation ?? null,
     };
-});
+}
 
 export const fetchSiteSettings = cache(async function fetchSiteSettings(siteId: string) {
     if (!siteId || siteId === 'default' || siteId === 'pending') return null;
-    try {
-        const snap = await getDoc(doc(db, "sites", siteId, "content", "siteSettings"));
-        if (snap.exists()) {
-            return snap.data() as SiteSettings;
+    return cached(siteKey(siteId, 'settings'), 300, async () => {
+        try {
+            const snap = await getDoc(doc(db, "sites", siteId, "content", "siteSettings"));
+            return snap.exists() ? (snap.data() as SiteSettings) : null;
+        } catch (e) {
+            logDebug(`fetchSiteSettings: Error ${e}`);
+            return null;
         }
-        return null;
-    } catch (e) {
-        logDebug(`fetchSiteSettings: Error ${e}`);
-        return null;
-    }
+    });
 });
 
 export async function fetchPageBySlug(siteId: string, slug: string) {
-    try {
-        const q = query(collection(db, "sites", siteId, "pages"), where("slug", "==", slug));
-        const querySnapshot = await getDocs(q);
-
-        if (querySnapshot.empty) {
+    return cached(siteKey(siteId, `page:${slug}`), 60, async () => {
+        try {
+            const q = query(collection(db, "sites", siteId, "pages"), where("slug", "==", slug));
+            const querySnapshot = await getDocs(q);
+            if (querySnapshot.empty) return null;
+            const pageDoc = querySnapshot.docs[0];
+            return { id: pageDoc.id, ...pageDoc.data() } as Page;
+        } catch (e) {
+            console.error(`Error fetching page with slug ${slug}:`, e);
             return null;
         }
-
-        const doc = querySnapshot.docs[0];
-        return {
-            id: doc.id,
-            ...doc.data()
-        } as Page;
-    } catch (e) {
-        console.error(`Error fetching page with slug ${slug}:`, e);
-        return null;
-    }
+    });
 }
 
 export async function fetchPages(siteId: string) {
@@ -257,27 +257,27 @@ export async function fetchPages(siteId: string) {
 }
 
 export async function fetchLinkSettings(siteId: string) {
-    try {
-        const snap = await getDoc(doc(db, "sites", siteId, "content", "linkSettings"));
-        if (snap.exists()) {
-            return snap.data() as LinkSettings;
+    return cached(siteKey(siteId, 'linkSettings'), 300, async () => {
+        try {
+            const snap = await getDoc(doc(db, "sites", siteId, "content", "linkSettings"));
+            if (snap.exists()) return snap.data() as LinkSettings;
+        } catch (e) {
+            logDebug(`fetchLinkSettings: Error ${e}`);
         }
-    } catch (e) {
-        logDebug(`fetchLinkSettings: Error ${e}`);
-    }
-    return { sectionTitle: "Quick Actions", showOnHome: true } as LinkSettings;
+        return { sectionTitle: "Quick Actions", showOnHome: true } as LinkSettings;
+    });
 }
 
 export async function fetchProductSettings(siteId: string) {
-    try {
-        const snap = await getDoc(doc(db, "sites", siteId, "content", "productSettings"));
-        if (snap.exists()) {
-            return snap.data() as ProductSettings;
+    return cached(siteKey(siteId, 'productSettings'), 300, async () => {
+        try {
+            const snap = await getDoc(doc(db, "sites", siteId, "content", "productSettings"));
+            if (snap.exists()) return snap.data() as ProductSettings;
+        } catch (e) {
+            logDebug(`fetchProductSettings: Error ${e}`);
         }
-    } catch (e) {
-        logDebug(`fetchProductSettings: Error ${e}`);
-    }
-    return { galleryTitle: "More Treats", showSectionTitle: true, itemsToShow: 6 } as ProductSettings;
+        return { galleryTitle: "More Treats", showSectionTitle: true, itemsToShow: 6 } as ProductSettings;
+    });
 }
 export const fetchLightweightPublicData = cache(async function fetchLightweightPublicData(siteId: string) {
     // Fetch only essential data for content pages (Profile, Settings, Contact)
@@ -352,7 +352,8 @@ export const fetchLightweightPublicData = cache(async function fetchLightweightP
             ctaUrlLabel: undefined,
         } as ProductSettings, // Placeholder
         homepageSlug: settings?.homepageSlug,
-        businessSchedule: businessHours.schedule
+        businessSchedule: businessHours.schedule,
+        navigation: settings?.navigation ?? null,
     };
 });
 
@@ -491,3 +492,35 @@ export async function hydratePageBlocks(siteId: string, blocks: PageBlock[]) {
     await Promise.all(promises);
     return data;
 }
+
+export const fetchNavigationData = cache(async function fetchNavigationData(
+    siteId: string,
+    navigationItems: any[]
+): Promise<Record<string, any>> {
+    const formIds = navigationItems
+        .flatMap((item: any) => {
+            const ids: string[] = [];
+            if (item.type === 'form' && item.id) ids.push(item.id);
+            if (item.formId) ids.push(item.formId);
+            return ids;
+        })
+        .filter(Boolean);
+
+    if (formIds.length === 0) return {};
+
+    const cacheKey = siteKey(siteId, `navforms:${formIds.sort().join(',')}`);
+    return cached(cacheKey, 300, async () => {
+        const snaps = await Promise.allSettled(
+            formIds.map((id) => getDoc(doc(db, 'sites', siteId, 'forms', id)))
+        );
+        return snaps.reduce<Record<string, any>>((acc, result, i) => {
+            if (result.status === 'fulfilled') {
+                const snap = result.value;
+                if (snap.exists() && snap.data().isPublished !== false) {
+                    acc[formIds[i]] = { id: snap.id, ...snap.data() };
+                }
+            }
+            return acc;
+        }, {});
+    });
+});
