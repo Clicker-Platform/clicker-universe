@@ -6,6 +6,7 @@ import { collection, getDocs, query, orderBy, addDoc, doc, updateDoc, deleteDoc,
 import { Form, FormField } from '@/data/mockData';
 import { Plus, Trash2, GripVertical, ArrowLeft, Save, FileText, Loader2, ChevronDown } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
+import { purgeTenantCache } from '@/lib/admin/purgeCache';
 
 // ── Shared styles ────────────────────────────────────────────────────────
 
@@ -25,6 +26,7 @@ function FormListItem({ form, siteId, onEdit, onDelete }: { form: Form; siteId: 
         try {
             await deleteDoc(doc(db, 'sites', siteId, 'forms', form.id));
             onDelete(form.id);
+            purgeTenantCache(siteId);
         } catch {
             setErrorMsg('Delete failed');
             setConfirmDelete(false);
@@ -274,6 +276,7 @@ export function FormsPanel() {
             setEditingForm({});
             setEditingId(null);
             fetchForms();
+            purgeTenantCache(siteId);
         } catch (error) {
             console.error('Error saving form:', error);
         } finally {

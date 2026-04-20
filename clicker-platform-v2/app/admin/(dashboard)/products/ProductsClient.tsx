@@ -7,7 +7,8 @@ import { Trash2, Plus, Pencil, Star, LayoutGrid, List, Eye, EyeOff, Settings } f
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
-import { useSite } from '@/lib/site-context'; // New import
+import { useSite } from '@/lib/site-context';
+import { purgeTenantCache } from '@/lib/admin/purgeCache';
 
 const ProductFormModal = dynamic(() => import('./ProductFormModal').then(mod => mod.ProductFormModal), {
     ssr: false,
@@ -74,6 +75,7 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
         setIsSavingSettings(true);
         try {
             await setDoc(doc(db, "sites", siteId, "content", "productSettings"), settings);
+            purgeTenantCache(siteId);
         } catch (error) {
             console.error(error);
         } finally {
@@ -136,6 +138,7 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
             setIsFormOpen(false); // Close modal
             setEditingId(null);
             setIsEditing(false);
+            purgeTenantCache(siteId);
         } catch (error) {
             console.error("Error saving product:", error);
             alert("Failed to save product. Please try again.");
@@ -153,6 +156,7 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
             setProducts(products.map(p =>
                 p.id === product.id ? { ...p, isActive: newStatus } : p
             ));
+            purgeTenantCache(siteId);
         } catch (error) {
             console.error("Error updating visibility:", error);
         }

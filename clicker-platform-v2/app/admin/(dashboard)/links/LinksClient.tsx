@@ -11,6 +11,7 @@ import { ICON_MAP } from '@/data/icons';
 import { SubmitButton } from '@/components/admin/SubmitButton';
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 import { useSite } from '@/lib/site-context';
+import { purgeTenantCache } from '@/lib/admin/purgeCache';
 import {
     DndContext,
     closestCenter,
@@ -246,6 +247,7 @@ export default function LinksManager({ initialLinks }: LinksClientProps) {
             }
             setNewLink({ title: '', subtitle: '', url: '', iconName: 'ShoppingBag', type: 'url', formId: '', pageId: '', hideOnHome: false, openInNewTab: false });
             fetchLinks();
+            purgeTenantCache(siteId);
         } catch (error) {
             console.error(error);
         } finally {
@@ -349,6 +351,7 @@ export default function LinksManager({ initialLinks }: LinksClientProps) {
         setIsSavingSettings(true);
         try {
             await setDoc(doc(db, "sites", siteId, "content", "linkSettings"), settings);
+            purgeTenantCache(siteId);
             // Optional toast here
         } catch (error) {
             console.error(error);

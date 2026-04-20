@@ -12,6 +12,7 @@ import { Map, Clock, Eye, EyeOff, Tag, Phone, Mail, MapPin, ExternalLink, Plus, 
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useSite } from '@/lib/site-context';
+import { purgeTenantCache } from '@/lib/admin/purgeCache';
 
 interface BusinessSettingsClientProps {
     initialHours: BusinessHours;
@@ -64,6 +65,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
             };
             if (!siteId) return;
             await setDoc(doc(db, 'sites', siteId, 'content', 'business'), mergedData);
+            purgeTenantCache(siteId);
             toast.success('Settings saved successfully!');
             router.refresh();
         } catch (error) {
@@ -79,6 +81,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
         if (!siteId) return;
         try {
             await setDoc(doc(db, 'sites', siteId, 'content', 'business'), { hasBranches: value }, { merge: true });
+            purgeTenantCache(siteId);
             toast.success(value ? 'Branches enabled.' : 'Branches hidden.');
         } catch {
             toast.error('Failed to update branch setting.');
