@@ -1,8 +1,6 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { db } from '@/lib/firebase';
-import { doc, onSnapshot } from 'firebase/firestore';
 import { NavigationItem } from '@/data/mockData';
 
 export interface TopNavActions {
@@ -33,56 +31,78 @@ export interface NavigationConfig {
     error: Error | null;
 }
 
-export function useNavigationConfig(siteId: string): NavigationConfig {
-    const [topNav, setTopNav] = useState<NavigationItem[]>([]);
-    const [topNavActions, setTopNavActions] = useState<TopNavActions | null>(null);
-    const [bottomNav, setBottomNav] = useState<NavigationItem[]>([]);
-    const [fab, setFab] = useState<NavigationItem | null>(null);
-    const [headerStyle, setHeaderStyle] = useState<NavBarStyle>({});
-    const [bottomNavStyle, setBottomNavStyle] = useState<NavBarStyle>({});
-    const [loading, setLoading] = useState(true);
+export interface InitialNavData {
+    topNav?: NavigationItem[];
+    topNavActions?: TopNavActions | null;
+    bottomNav?: NavigationItem[];
+    fab?: NavigationItem | null;
+    headerStyle?: NavBarStyle;
+    bottomNavStyle?: NavBarStyle;
+}
+
+export function useNavigationConfig(siteId: string, initialData?: InitialNavData): NavigationConfig {
+    const hasInitial = Boolean(initialData);
+
+    const [topNav, setTopNav] = useState<NavigationItem[]>(initialData?.topNav ?? []);
+    const [topNavActions, setTopNavActions] = useState<TopNavActions | null>(initialData?.topNavActions ?? null);
+    const [bottomNav, setBottomNav] = useState<NavigationItem[]>(initialData?.bottomNav ?? []);
+    const [fab, setFab] = useState<NavigationItem | null>(initialData?.fab ?? null);
+    const [headerStyle, setHeaderStyle] = useState<NavBarStyle>(initialData?.headerStyle ?? {});
+    const [bottomNavStyle, setBottomNavStyle] = useState<NavBarStyle>(initialData?.bottomNavStyle ?? {});
+    const [loading, setLoading] = useState(!hasInitial);
     const [error, setError] = useState<Error | null>(null);
 
     useEffect(() => {
-        if (!siteId) {
+        // If SSR data provided, skip Firestore listener — public page path
+        if (hasInitial || !siteId) {
             setLoading(false);
             return;
         }
 
-        const unsub = onSnapshot(
-            doc(db, 'sites', siteId, 'content', 'siteSettings'),
-            (snap) => {
-                if (snap.exists()) {
-                    const nav = snap.data().navigation ?? {};
-                    setTopNav(nav.topNav ?? []);
-                    setTopNavActions(nav.topNavActions ?? null);
-                    setBottomNav(nav.bottomNav ?? []);
-                    setFab(nav.fab ?? null);
-                    setHeaderStyle(nav.headerStyle ?? {});
-                    setBottomNavStyle(nav.bottomNavStyle ?? {});
-                } else {
-                    setTopNav([]);
-                    setTopNavActions(null);
-                    setBottomNav([]);
-                    setFab(null);
-                    setHeaderStyle({});
-                    setBottomNavStyle({});
-                }
-                setLoading(false);
-            },
-            (err: any) => {
-                if (err?.code === 'unavailable') {
-                    setLoading(false);
-                    return;
-                }
-                console.error('useNavigationConfig: Firestore error', err);
-                setError(err as Error);
-                setLoading(false);
-            }
-        );
+        // Admin/Canvas Studio path — keep realtime listener
+        const loadFirestore = async () => {
+            const { db } = await import('@/lib/firebase');
+            const { doc, onSnapshot } = await import('firebase/firestore');
 
-        return () => unsub();
-    }, [siteId]);
+            const unsub = onSnapshot(
+                doc(db, 'sites', siteId, 'content', 'siteSettings'),
+                (snap) => {
+                    if (snap.exists()) {
+                        const nav = snap.data().navigation ?? {};
+                        setTopNav(nav.topNav ?? []);
+                        setTopNavActions(nav.topNavActions ?? null);
+                        setBottomNav(nav.bottomNav ?? []);
+                        setFab(nav.fab ?? null);
+                        setHeaderStyle(nav.headerStyle ?? {});
+                        setBottomNavStyle(nav.bottomNavStyle ?? {});
+                    } else {
+                        setTopNav([]);
+                        setTopNavActions(null);
+                        setBottomNav([]);
+                        setFab(null);
+                        setHeaderStyle({});
+                        setBottomNavStyle({});
+                    }
+                    setLoading(false);
+                },
+                (err: any) => {
+                    if (err?.code === 'unavailable') {
+                        setLoading(false);
+                        return;
+                    }
+                    console.error('useNavigationConfig: Firestore error', err);
+                    setError(err as Error);
+                    setLoading(false);
+                }
+            );
+
+            return unsub;
+        };
+
+        let cleanup: (() => void) | undefined;
+        loadFirestore().then((unsub) => { cleanup = unsub; });
+        return () => { cleanup?.(); };
+    }, [siteId, hasInitial]);
 
     return useMemo(
         () => ({ topNav, topNavActions, bottomNav, fab, headerStyle, bottomNavStyle, loading, error }),

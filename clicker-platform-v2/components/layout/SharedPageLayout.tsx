@@ -4,22 +4,13 @@ import React from 'react';
 import { ResponsiveNavBar } from '@/components/layout/ResponsiveNavBar';
 import { BottomNavBar } from '@/components/layout/BottomNavBar';
 import { NavigationProvider } from '@/components/layout/NavigationProvider';
-import { MODULE_COMPONENTS } from '@/lib/modules/components';
-
+import { InitialNavData } from '@/lib/hooks/useNavigationConfig';
 // import { ResponsiveContainer } from '@/components/layout/ResponsiveContainer'; // Inlined to fix hydration issues
 import { TemplateProvider } from '@/components/TemplateProvider';
 import { getTemplate } from '@/lib/templates/registry';
 import { ClassicProfileHeader } from "@/components/headers/ClassicProfileHeader";
 import { BackgroundDecorations } from "@/components/BackgroundDecorations";
 import { Footer } from "@/components/Footer";
-import { PublicPageProps } from '@/components/PublicPageRenderer'; // Implied export, might need to export relevant types from definition file if not exported
-
-// We need a way to share the generic props.
-// Ideally, PublicData should be imported from types.
-// For now, let's mirror the structure or assume Any for data to decouple strictly.
-// But strict types are better. Let's try to import PublicPageProps's data shape if possible, 
-// OR define a shared interface.
-// Since PublicPageRenderer exports PublicPageProps (but not the inner data type separately), let's redefine minimally or assume strict adherence.
 
 export interface SharedLayoutProps {
     templateId: string;
@@ -38,6 +29,8 @@ export interface SharedLayoutProps {
     isSubPage?: boolean;
     pageTitle?: string;
     heroFirst?: boolean;
+    initialFormCache?: Record<string, any>;
+    initialNavData?: InitialNavData;
 }
 
 export function SharedPageLayout({
@@ -51,6 +44,8 @@ export function SharedPageLayout({
     isSubPage = false,
     pageTitle,
     heroFirst = false,
+    initialFormCache = {},
+    initialNavData,
 }: SharedLayoutProps) {
     const {
         profile,
@@ -122,7 +117,7 @@ export function SharedPageLayout({
                 ...pageOverrides?.customConfig
             }}
         >
-            <NavigationProvider siteId={siteId}>
+            <NavigationProvider siteId={siteId} initialFormCache={initialFormCache} initialNavData={initialNavData}>
             <div className="contents">
                 {/* Navigation */}
                 {profile && (

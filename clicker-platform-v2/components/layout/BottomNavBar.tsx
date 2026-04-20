@@ -3,8 +3,6 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { useTemplate } from '@/components/TemplateProvider';
 import Link from 'next/link';
-import { db } from '@/lib/firebase';
-import { doc, getDoc } from 'firebase/firestore';
 import { FormModal } from '@/components/FormModal';
 import { ICON_MAP } from '@/data/icons';
 import { Home, PlusCircle } from 'lucide-react';
@@ -52,8 +50,10 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({ previewMode = false 
                 setSelectedForm(cached);
                 setIsFormOpen(true);
             } else if (siteId) {
-                // Fallback: on-demand fetch for cache misses
+                // Fallback: on-demand fetch for cache misses (lazy-loaded to keep Firebase out of initial bundle)
                 try {
+                    const { getDoc, doc } = await import('firebase/firestore');
+                    const { db } = await import('@/lib/firebase');
                     const snap = await getDoc(doc(db, 'sites', siteId, 'forms', item.formId));
                     if (snap.exists() && snap.data().isPublished !== false) {
                         setSelectedForm({ id: snap.id, ...snap.data() });
@@ -121,6 +121,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({ previewMode = false 
                             onClick={(e) => handleItemClick(e, fab)}
                             className="w-14 h-14 rounded-full flex items-center justify-center text-white shadow-lg transform active:scale-95 transition-all"
                             style={{ backgroundColor: fabBg, boxShadow: `0 0 20px ${fabBg}60` }}
+                            aria-label={fab.label || 'Action button'}
                         >
                             <FabIcon size={24} />
                         </Link>

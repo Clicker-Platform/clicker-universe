@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
+
+const BLUR_PLACEHOLDER = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxIiBoZWlnaHQ9IjEiPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNlNWU3ZWIiLz48L3N2Zz4=';
 import { X, ChevronLeft, ChevronRight, Maximize } from 'lucide-react';
 import { Product } from '@/data/mockData';
 import { useTemplate } from '@/components/TemplateProvider';
@@ -148,10 +151,15 @@ export function ProductDetailModal({ product, isOpen, onClose, phoneNumber = '15
 
                 {/* Gallery / Hero Image */}
                 <div className="w-full aspect-square bg-gray-100 relative group shrink-0">
-                    <img
+                    <Image
                         src={images[currentImageIndex]}
                         alt={product.name}
-                        className="w-full h-full object-cover transition-opacity duration-300"
+                        fill
+                        sizes="(max-width: 768px) 100vw, 480px"
+                        placeholder="blur"
+                        blurDataURL={BLUR_PLACEHOLDER}
+                        className="object-cover transition-opacity duration-300"
+                        quality={85}
                     />
 
                     {/* Navigation Arrows */}
@@ -198,7 +206,7 @@ export function ProductDetailModal({ product, isOpen, onClose, phoneNumber = '15
                                         ${idx === currentImageIndex ? 'border-brand-dark opacity-100' : 'border-transparent opacity-60 hover:opacity-100'}
                                     `}
                             >
-                                <img src={img} alt="" className="w-full h-full object-cover" />
+                                <Image src={img} alt="" fill sizes="64px" placeholder="blur" blurDataURL={BLUR_PLACEHOLDER} className="object-cover" />
                             </button>
                         ))}
                     </div>

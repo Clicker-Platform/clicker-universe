@@ -1,4 +1,4 @@
-import { fetchPublicData, fetchPageBySlug, hydratePageBlocks } from "@/lib/fetchData";
+import { fetchPublicData, fetchPageBySlug, hydratePageBlocks, fetchNavigationData } from "@/lib/fetchData";
 import { headers } from "next/headers";
 import { findModuleForRoute } from '@/lib/modules/registry';
 import { ModuleLoader } from '@/components/modules/ModuleLoader';
@@ -57,8 +57,22 @@ export default async function TenantPage({ params, searchParams }: TenantPagePro
         ? homePage.blocks
         : generateSystemBlocks(homeBlockOrder || [], hiddenBlockIds || []);
 
-    // Hydrate block-specific data (reservation services, etc.) in parallel
-    const hydratedData = await hydratePageBlocks(siteId, blocksToRender);
+    // Build initialNavData from SSR siteSettings — eliminates onSnapshot on public pages
+    const navSettings = (publicData.navigation ?? {}) as any;
+    const initialNavData = {
+        topNav: navSettings.topNav ?? [],
+        topNavActions: navSettings.topNavActions ?? null,
+        bottomNav: navSettings.bottomNav ?? [],
+        fab: navSettings.fab ?? null,
+        headerStyle: navSettings.headerStyle ?? {},
+        bottomNavStyle: navSettings.bottomNavStyle ?? {},
+    };
+
+    // Hydrate block-specific data and nav form cache in parallel
+    const [hydratedData, navFormCache] = await Promise.all([
+        hydratePageBlocks(siteId, blocksToRender),
+        fetchNavigationData(siteId, navSettings.topNav || []),
+    ]);
 
     const {
         profile,
@@ -107,6 +121,8 @@ export default async function TenantPage({ params, searchParams }: TenantPagePro
             siteId={siteId}
             isSubPage={false}
             heroFirst={heroFirst}
+            initialFormCache={navFormCache}
+            initialNavData={initialNavData}
             pageOverrides={{
                 borderRadius: borderRadius,
                 themeColor: themeColor

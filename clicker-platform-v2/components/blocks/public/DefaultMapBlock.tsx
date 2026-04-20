@@ -42,6 +42,7 @@ const DefaultMapBlockInner = ({ data }: MapBlockProps) => {
                         allowFullScreen
                         referrerPolicy="no-referrer-when-downgrade"
                         src={mapsUrl}
+                        title="Google Maps location"
                     />
                 </div>
                 <div className={`absolute bottom-0 left-0 right-0 p-4 flex items-center gap-3 ${isGlass ? 'bg-black/50 backdrop-blur-md' : 'bg-white/90 backdrop-blur-sm border-t border-gray-200'}`}>
@@ -91,6 +92,7 @@ const DefaultMapBlockInner = ({ data }: MapBlockProps) => {
                     allowFullScreen
                     referrerPolicy="no-referrer-when-downgrade"
                     src={mapsUrl}
+                    title="Google Maps location"
                 />
             </div>
         </div>

@@ -6,7 +6,9 @@ node_modules
 .env
 .env.local
 .env.*.local
+.env.production
 service-account.json
+service-account*.json
 *.pem
 
 # Build

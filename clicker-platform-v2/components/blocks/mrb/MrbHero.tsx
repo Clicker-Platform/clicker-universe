@@ -2,6 +2,8 @@
 
 import React, { useRef, useState } from 'react';
 import Image from 'next/image';
+
+const BLUR_PLACEHOLDER = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxIiBoZWlnaHQ9IjEiPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNlNWU3ZWIiLz48L3N2Zz4=';
 import { BusinessProfile } from '@/data/mockData';
 import { useTemplate } from '@/components/TemplateProvider';
 import { useDeviceView, dv, type DeviceView } from '@/components/DeviceViewContext';
@@ -188,6 +190,8 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, onInlineChange,
                     priority
                     fetchPriority="high"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
+                    placeholder="blur"
+                    blurDataURL={BLUR_PLACEHOLDER}
                     className={`object-cover mrb-hero-bg ${imageUrlMobile ? dv(d, 'hidden', 'md:block') : ''}`}
                     style={{ objectPosition: imageUrlMobile ? imgPos : effectiveImgPos }}
                 />
@@ -208,6 +212,8 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, onInlineChange,
                         priority
                         fetchPriority="high"
                         sizes="100vw"
+                        placeholder="blur"
+                        blurDataURL={BLUR_PLACEHOLDER}
                         className={`object-cover ${dv(d, 'block', 'md:hidden')}`}
                         style={{ objectPosition: imgPosMobile }}
                     />
