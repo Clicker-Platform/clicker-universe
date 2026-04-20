@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+GCP_KEY=$(cat "$(dirname "$0")/../clicker-universe-stagging-firebase-adminsdk-fbsvc-e9c7e1b2e5.json" 2>/dev/null || cat "/Users/mac/Documents/AI Project/clicker-platform/clicker-universe-stagging-firebase-adminsdk-fbsvc-e9c7e1b2e5.json")
+GCP_KEY_INLINE=$(echo "$GCP_KEY" | python3 -c "import json,sys; print(json.dumps(json.load(sys.stdin)))")
+
 ENV_VARS="NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyDk_b_wMPuniEWxYebMB4aLfPb5kBDtLSA
 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=clicker-universe-stagging.firebaseapp.com
 NEXT_PUBLIC_FIREBASE_PROJECT_ID=clicker-universe-stagging
@@ -13,7 +16,8 @@ WA_WEBHOOK_VERIFY_TOKEN=clicker-wa-verify-2024"
 
 for app in backyard clicker-platform-v2; do
   echo "Building $app..."
-  echo "$ENV_VARS" > "$app/.env.production.local"
+  printf '%s\n' "$ENV_VARS" > "$app/.env.production.local"
+  printf 'GCP_SERVICE_ACCOUNT_KEY=%s\n' "$GCP_KEY_INLINE" >> "$app/.env.production.local"
   cd "$app"
   npm run build
   cd ..

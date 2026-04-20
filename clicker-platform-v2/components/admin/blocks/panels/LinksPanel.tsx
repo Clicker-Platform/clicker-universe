@@ -2,13 +2,16 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc, writeBatch, setDoc, getDoc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc, writeBatch, setDoc, getDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { LinkItem, Form, Page } from '@/data/mockData';
-import { Trash2, Plus, GripVertical, Pencil, X, Search, FileText, Link as LinkIcon, EyeOff, Settings, ChevronDown, Loader2, ExternalLink } from 'lucide-react';
+import { Trash2, Plus, GripVertical, Pencil, Search, FileText, Link as LinkIcon, EyeOff, Settings, Loader2, ExternalLink, RotateCcw, ChevronDown, ChevronRight } from 'lucide-react';
 import { IconSelector } from '@/components/admin/IconSelector';
 import { ICON_MAP } from '@/data/icons';
+import { toast } from 'sonner';
 import { useSite } from '@/lib/site-context';
+import { useUser } from '@/lib/user-context';
 import { usePageStudio } from '@/components/admin/blocks/PageStudioContext';
+import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 import {
     DndContext,
     closestCenter,
@@ -33,6 +36,7 @@ interface AdminLinkItem extends Omit<LinkItem, 'icon'> {
     iconName: string;
     order?: number;
     pageId?: string;
+    deletedAt?: Timestamp | null;
 }
 
 // ── Shared styles ────────────────────────────────────────────────────────
@@ -42,8 +46,9 @@ const labelClass = "block text-xs font-medium text-neutral-400 dark:text-neutral
 
 // ── Sortable Link Item ───────────────────────────────────────────────────
 
-function SortableLinkItem({ link, onEdit, onDelete }: { link: AdminLinkItem; onEdit: (l: AdminLinkItem) => void; onDelete: (id: string) => void }) {
+function SortableLinkItem({ link, onEdit, onDelete, canWrite }: { link: AdminLinkItem; onEdit: (l: AdminLinkItem) => void; onDelete: (id: string) => void; canWrite: boolean }) {
     const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: link.id });
+    const [confirmDelete, setConfirmDelete] = useState(false);
 
     const style = { transform: CSS.Transform.toString(transform), transition };
 
@@ -51,7 +56,10 @@ function SortableLinkItem({ link, onEdit, onDelete }: { link: AdminLinkItem; onE
 
     return (
         <div ref={setNodeRef} style={style} className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 dark:hover:bg-neutral-800/50 rounded-lg group transition-colors">
-            <div {...attributes} {...listeners} className="p-1 text-neutral-400 dark:text-neutral-600 cursor-grab active:cursor-grabbing hover:text-neutral-700 dark:hover:text-neutral-400 flex-shrink-0">
+            <div
+                {...(canWrite && !confirmDelete ? { ...attributes, ...listeners } : {})}
+                className={`p-1 text-neutral-400 dark:text-neutral-600 flex-shrink-0 ${canWrite ? 'cursor-grab active:cursor-grabbing hover:text-neutral-700 dark:hover:text-neutral-400' : 'cursor-not-allowed opacity-30'}`}
+            >
                 <GripVertical size={14} />
             </div>
 
@@ -79,14 +87,33 @@ function SortableLinkItem({ link, onEdit, onDelete }: { link: AdminLinkItem; onE
                 </div>
             </div>
 
-            <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-                <button onClick={() => onEdit(link)} className="p-1.5 text-neutral-400 dark:text-neutral-500 hover:text-blue-400 hover:bg-gray-200 dark:hover:bg-neutral-700 rounded-md transition-colors">
-                    <Pencil size={13} />
-                </button>
-                <button onClick={() => onDelete(link.id)} className="p-1.5 text-neutral-400 dark:text-neutral-500 hover:text-red-400 hover:bg-gray-200 dark:hover:bg-neutral-700 rounded-md transition-colors">
-                    <Trash2 size={13} />
-                </button>
-            </div>
+            {canWrite && (
+                confirmDelete ? (
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                        <button
+                            onClick={() => { setConfirmDelete(false); onDelete(link.id); }}
+                            className="px-2 py-1 text-[10px] font-bold text-red-400 bg-red-500/10 border border-red-500/30 rounded-md hover:bg-red-500/20 transition-colors"
+                        >
+                            Confirm
+                        </button>
+                        <button
+                            onClick={() => setConfirmDelete(false)}
+                            className="px-2 py-1 text-[10px] font-bold text-neutral-500 dark:text-neutral-400 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-md hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                ) : (
+                    <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                        <button onClick={() => onEdit(link)} className="p-1.5 text-neutral-400 dark:text-neutral-500 hover:text-blue-400 hover:bg-gray-200 dark:hover:bg-neutral-700 rounded-md transition-colors">
+                            <Pencil size={13} />
+                        </button>
+                        <button onClick={() => setConfirmDelete(true)} className="p-1.5 text-neutral-400 dark:text-neutral-500 hover:text-red-400 hover:bg-gray-200 dark:hover:bg-neutral-700 rounded-md transition-colors">
+                            <Trash2 size={13} />
+                        </button>
+                    </div>
+                )
+            )}
         </div>
     );
 }
@@ -95,6 +122,8 @@ function SortableLinkItem({ link, onEdit, onDelete }: { link: AdminLinkItem; onE
 
 export function LinksPanel() {
     const { siteId } = useSite();
+    const { canEdit } = useUser();
+    const canWrite = canEdit('content', 'links');
     const { refreshHydratedData, linksVersion, bumpLinksVersion } = usePageStudio();
     const [links, setLinks] = useState<AdminLinkItem[]>([]);
     const [forms, setForms] = useState<Form[]>([]);
@@ -110,15 +139,26 @@ export function LinksPanel() {
     const [showIconSelector, setShowIconSelector] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Delete state
-    const [deletingId, setDeletingId] = useState<string | null>(null);
-
     // Settings state
     const [showSettings, setShowSettings] = useState(false);
     const [settings, setSettings] = useState<{ sectionTitle: string; showOnHome: boolean }>({ sectionTitle: 'Quick Actions', showOnHome: true });
     const [isSavingSettings, setIsSavingSettings] = useState(false);
 
+    // Trash state
+    const [trashOpen, setTrashOpen] = useState(false);
+    const [trashedLinks, setTrashedLinks] = useState<AdminLinkItem[]>([]);
+    const [trashedLinksLoading, setTrashedLinksLoading] = useState(false);
+
+    const [isTrashingId, setIsTrashingId] = useState<string | null>(null);
+    const [isRestoringId, setIsRestoringId] = useState<string | null>(null);
+    const [pendingPermDeleteId, setPendingPermDeleteId] = useState<string | null>(null);
+    const [isDeletingPermId, setIsDeletingPermId] = useState<string | null>(null);
+    const [pendingEmptyTrash, setPendingEmptyTrash] = useState(false);
+    const [isEmptyingTrash, setIsEmptyingTrash] = useState(false);
+
     const formRef = useRef<HTMLDivElement>(null);
+    const siteIdRef = useRef(siteId);
+    useEffect(() => { siteIdRef.current = siteId; }, [siteId]);
 
     const sensors = useSensors(
         useSensor(PointerSensor),
@@ -126,6 +166,37 @@ export function LinksPanel() {
     );
 
     // ── Data fetching ─────────────────────────────────────────────────
+
+    const fetchLinks = useCallback(async () => {
+        if (!siteId) return;
+        const snap = await getDocs(collection(db, 'sites', siteId, 'links'));
+        const fetched = snap.docs
+            .map(d => ({ id: d.id, ...d.data() } as AdminLinkItem))
+            .filter(l => !l.deletedAt);
+        fetched.sort((a, b) => (a.order || 0) - (b.order || 0));
+        setLinks(fetched);
+    }, [siteId]);
+
+    const fetchTrashedLinks = useCallback(async () => {
+        if (!siteId) return;
+        setTrashedLinksLoading(true);
+        try {
+            const snap = await getDocs(collection(db, 'sites', siteId, 'links'));
+            const fetched = snap.docs
+                .map(d => ({ id: d.id, ...d.data() } as AdminLinkItem))
+                .filter(l => !!l.deletedAt);
+            fetched.sort((a, b) => {
+                const aTime = a.deletedAt instanceof Timestamp ? a.deletedAt.toMillis() : 0;
+                const bTime = b.deletedAt instanceof Timestamp ? b.deletedAt.toMillis() : 0;
+                return bTime - aTime;
+            });
+            setTrashedLinks(fetched);
+        } catch (error) {
+            console.error('Error fetching trashed links:', error);
+        } finally {
+            setTrashedLinksLoading(false);
+        }
+    }, [siteId]);
 
     useEffect(() => {
         if (!siteId) return;
@@ -139,7 +210,9 @@ export function LinksPanel() {
                     getDoc(doc(db, 'sites', siteId, 'content', 'linkSettings')),
                 ]);
 
-                const fetchedLinks = linksSnap.docs.map(d => ({ id: d.id, ...d.data() } as AdminLinkItem));
+                const fetchedLinks = linksSnap.docs
+                    .map(d => ({ id: d.id, ...d.data() } as AdminLinkItem))
+                    .filter(l => !l.deletedAt);
                 fetchedLinks.sort((a, b) => (a.order || 0) - (b.order || 0));
                 setLinks(fetchedLinks);
                 setForms(formsSnap.docs.map(d => ({ id: d.id, ...d.data() } as Form)));
@@ -158,20 +231,13 @@ export function LinksPanel() {
     useEffect(() => {
         if (!siteId || linksVersion === 0) return;
         fetchLinks();
-    }, [linksVersion]); // eslint-disable-line react-hooks/exhaustive-deps
-
-    const fetchLinks = useCallback(async () => {
-        if (!siteId) return;
-        const snap = await getDocs(collection(db, 'sites', siteId, 'links'));
-        const fetched = snap.docs.map(d => ({ id: d.id, ...d.data() } as AdminLinkItem));
-        fetched.sort((a, b) => (a.order || 0) - (b.order || 0));
-        setLinks(fetched);
-    }, [siteId]);
+    }, [linksVersion, fetchLinks]);
 
     // ── CRUD ──────────────────────────────────────────────────────────
 
     const handleSaveLink = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!canWrite) { toast.error('View-only access', { description: 'You do not have permission to edit links.' }); return; }
         if (!siteId || !newLink.title) return;
         if (newLink.type === 'url' && !newLink.url) return;
         if (newLink.type === 'form' && !newLink.formId) return;
@@ -192,10 +258,10 @@ export function LinksPanel() {
 
         try {
             if (editingId) {
-                await updateDoc(doc(db, 'sites', siteId, 'links', editingId), linkData);
+                await updateDoc(doc(db, 'sites', siteId, 'links', editingId), { ...linkData, updatedAt: serverTimestamp() });
             } else {
                 const maxOrder = links.length > 0 ? Math.max(...links.map(l => l.order || 0)) : 0;
-                await addDoc(collection(db, 'sites', siteId, 'links'), { ...linkData, order: maxOrder + 1 });
+                await addDoc(collection(db, 'sites', siteId, 'links'), { ...linkData, order: maxOrder + 1, deletedAt: null, updatedAt: serverTimestamp() });
             }
             resetForm();
             fetchLinks();
@@ -226,43 +292,107 @@ export function LinksPanel() {
         setShowIconSelector(false);
     };
 
-    const handleDelete = async (id: string) => {
+    // Soft delete — moves to trash (called after inline row confirmation)
+    const handleDeleteClick = async (id: string) => {
+        if (!canWrite) { toast.error('View-only access', { description: 'You do not have permission to delete links.' }); return; }
         if (!siteId) return;
-        setDeletingId(id);
+        setIsTrashingId(id);
         try {
-            await deleteDoc(doc(db, 'sites', siteId, 'links', id));
+            await updateDoc(doc(db, 'sites', siteId, 'links', id), { deletedAt: serverTimestamp() });
             setLinks(prev => prev.filter(l => l.id !== id));
             if (editingId === id) resetForm();
             refreshHydratedData();
             bumpLinksVersion();
+            if (trashOpen) fetchTrashedLinks();
         } catch (error) {
-            console.error('Error deleting link:', error);
+            console.error('Error trashing link:', error);
         } finally {
-            setDeletingId(null);
+            setIsTrashingId(null);
         }
+    };
+
+    // Restore from trash
+    const handleRestore = async (id: string) => {
+        if (!siteId) return;
+        setIsRestoringId(id);
+        try {
+            await updateDoc(doc(db, 'sites', siteId, 'links', id), { deletedAt: null });
+            setTrashedLinks(prev => prev.filter(l => l.id !== id));
+            fetchLinks();
+            refreshHydratedData();
+            bumpLinksVersion();
+        } catch (error) {
+            console.error('Error restoring link:', error);
+        } finally {
+            setIsRestoringId(null);
+        }
+    };
+
+    // Permanently delete single trashed link
+    const confirmPermDelete = async () => {
+        if (!pendingPermDeleteId || !siteId) return;
+        setIsDeletingPermId(pendingPermDeleteId);
+        setPendingPermDeleteId(null);
+        try {
+            await deleteDoc(doc(db, 'sites', siteId, 'links', pendingPermDeleteId));
+            setTrashedLinks(prev => prev.filter(l => l.id !== pendingPermDeleteId));
+        } catch (error) {
+            console.error('Error permanently deleting link:', error);
+        } finally {
+            setIsDeletingPermId(null);
+        }
+    };
+
+    // Empty trash
+    const confirmEmptyTrash = async () => {
+        if (!siteId) return;
+        setPendingEmptyTrash(false);
+        setIsEmptyingTrash(true);
+        try {
+            const batch = writeBatch(db);
+            trashedLinks.forEach(l => batch.delete(doc(db, 'sites', siteId, 'links', l.id)));
+            await batch.commit();
+            setTrashedLinks([]);
+        } catch (error) {
+            console.error('Error emptying trash:', error);
+        } finally {
+            setIsEmptyingTrash(false);
+        }
+    };
+
+    const handleToggleTrash = () => {
+        if (!trashOpen) fetchTrashedLinks();
+        setTrashOpen(prev => !prev);
     };
 
     // ── Drag & Drop ───────────────────────────────────────────────────
 
     const handleDragEnd = async (event: DragEndEvent) => {
         const { active, over } = event;
+        if (!canWrite) { toast.error('View-only access', { description: 'You do not have permission to reorder links.' }); return; }
         if (!over || active.id === over.id) return;
+
+        const dragSiteId = siteIdRef.current;
 
         setLinks(items => {
             const oldIndex = items.findIndex(i => i.id === active.id);
             const newIndex = items.findIndex(i => i.id === over.id);
             const reordered = arrayMove(items, oldIndex, newIndex);
-            updateOrder(reordered).then(() => { refreshHydratedData(); bumpLinksVersion(); });
+            updateOrder(reordered, dragSiteId).then(() => { refreshHydratedData(); bumpLinksVersion(); });
             return reordered;
         });
     };
 
-    const updateOrder = async (items: AdminLinkItem[]) => {
-        if (!siteId) return;
+    const updateOrder = async (items: AdminLinkItem[], targetSiteId: string | undefined) => {
+        if (!targetSiteId) return;
+        if (targetSiteId !== siteIdRef.current) {
+            console.warn('[LinksPanel] siteId changed mid-drag — aborting reorder write');
+            return;
+        }
         try {
             const batch = writeBatch(db);
             items.forEach((item, index) => {
-                batch.update(doc(db, 'sites', siteId, 'links', item.id), { order: index });
+                batch.update(doc(db, 'sites', targetSiteId, 'links', item.id), { order: index, updatedAt: serverTimestamp() });
             });
             await batch.commit();
         } catch (error) {
@@ -285,6 +415,16 @@ export function LinksPanel() {
         }
     };
 
+    const formatDeletedAt = (deletedAt: any) => {
+        if (!deletedAt) return '';
+        const date = deletedAt instanceof Timestamp ? deletedAt.toDate() : new Date(deletedAt);
+        const diff = Date.now() - date.getTime();
+        const days = Math.floor(diff / 86400000);
+        if (days === 0) return 'Today';
+        if (days === 1) return 'Yesterday';
+        return `${days}d ago`;
+    };
+
     // ── Render ────────────────────────────────────────────────────────
 
     if (loading) {
@@ -301,7 +441,8 @@ export function LinksPanel() {
             <div className="px-3 py-2 border-b border-gray-200 dark:border-neutral-800 flex items-center gap-2 flex-shrink-0">
                 <button
                     onClick={() => { setShowForm(!showForm); if (showForm) resetForm(); }}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+                    disabled={!canWrite}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
                         showForm
                             ? 'bg-blue-500/15 text-blue-400 border border-blue-500/30'
                             : 'bg-gray-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-gray-300 dark:border-neutral-700 hover:bg-gray-200 dark:hover:bg-neutral-700'
@@ -311,7 +452,8 @@ export function LinksPanel() {
                 </button>
                 <button
                     onClick={() => setShowSettings(!showSettings)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+                    disabled={!canWrite}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
                         showSettings
                             ? 'bg-blue-500/15 text-blue-400 border border-blue-500/30'
                             : 'bg-gray-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-gray-300 dark:border-neutral-700 hover:bg-gray-200 dark:hover:bg-neutral-700'
@@ -511,11 +653,7 @@ export function LinksPanel() {
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className={`flex-1 flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-bold rounded-lg transition-colors disabled:opacity-50 ${
-                                        editingId
-                                            ? 'bg-blue-600 text-white hover:bg-blue-700'
-                                            : 'bg-blue-600 text-white hover:bg-blue-700'
-                                    }`}
+                                    className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-bold rounded-lg transition-colors disabled:opacity-50 bg-blue-600 text-white hover:bg-blue-700"
                                 >
                                     {isSubmitting ? <Loader2 size={13} className="animate-spin" /> : null}
                                     {editingId ? 'Update Link' : 'Add Link'}
@@ -553,7 +691,8 @@ export function LinksPanel() {
                                         key={link.id}
                                         link={link}
                                         onEdit={handleEdit}
-                                        onDelete={handleDelete}
+                                        onDelete={handleDeleteClick}
+                                        canWrite={canWrite}
                                     />
                                 ))}
                             </SortableContext>
@@ -561,6 +700,99 @@ export function LinksPanel() {
                     )}
                 </div>
             </div>
+
+            {/* Trash section — pinned to bottom */}
+            <div className="border-t border-gray-200 dark:border-neutral-800 flex-shrink-0">
+                    <button
+                        onClick={handleToggleTrash}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-xs text-neutral-400 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
+                    >
+                        {trashOpen ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                        <Trash2 size={12} />
+                        <span className="flex-1 text-left font-medium">Trash</span>
+                        {trashedLinks.length > 0 && (
+                            <span className="bg-gray-200 dark:bg-neutral-700 text-neutral-500 dark:text-neutral-400 text-[10px] px-1.5 py-0.5 rounded-full">
+                                {trashedLinks.length}
+                            </span>
+                        )}
+                    </button>
+
+                    {trashOpen && (
+                        <div className="pb-2">
+                            {trashedLinksLoading ? (
+                                <div className="px-3 py-2 text-xs text-neutral-400 dark:text-neutral-600">Loading...</div>
+                            ) : trashedLinks.length === 0 ? (
+                                <div className="px-3 py-2 text-xs text-neutral-400 dark:text-neutral-600">Trash is empty</div>
+                            ) : (
+                                <>
+                                    {/* Bulk actions */}
+                                    <div className="flex gap-2 px-3 py-1.5">
+                                        <button
+                                            onClick={() => setPendingEmptyTrash(true)}
+                                            disabled={isEmptyingTrash}
+                                            className="flex-1 flex items-center justify-center gap-1 px-2 py-1 rounded text-[10px] font-medium text-red-500/70 hover:text-red-400 bg-gray-100 dark:bg-neutral-800 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors disabled:opacity-50"
+                                        >
+                                            <Trash2 size={10} />
+                                            {isEmptyingTrash ? 'Emptying...' : 'Empty Trash'}
+                                        </button>
+                                    </div>
+
+                                    {/* Trashed link list */}
+                                    {trashedLinks.map(link => (
+                                        <div key={link.id} className="group/trash px-3 py-1.5 flex items-center gap-2">
+                                            <div className="flex-1 min-w-0">
+                                                <div className="text-xs text-neutral-400 dark:text-neutral-500 truncate font-medium">{link.title || 'Untitled'}</div>
+                                                <div className="text-[10px] text-neutral-500 dark:text-neutral-700 truncate">
+                                                    {link.url || link.formId || '—'} · {formatDeletedAt(link.deletedAt)}
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-0.5 opacity-0 group-hover/trash:opacity-100 transition-opacity">
+                                                <button
+                                                    onClick={() => handleRestore(link.id)}
+                                                    disabled={isRestoringId === link.id}
+                                                    className="p-1 rounded text-neutral-400 dark:text-neutral-500 hover:text-green-400 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors disabled:opacity-50"
+                                                    title="Restore"
+                                                >
+                                                    {isRestoringId === link.id ? <Loader2 size={11} className="animate-spin" /> : <RotateCcw size={11} />}
+                                                </button>
+                                                <button
+                                                    onClick={() => setPendingPermDeleteId(link.id)}
+                                                    disabled={isDeletingPermId === link.id}
+                                                    className="p-1 rounded text-neutral-400 dark:text-neutral-500 hover:text-red-400 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors disabled:opacity-50"
+                                                    title="Delete permanently"
+                                                >
+                                                    <Trash2 size={11} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </>
+                            )}
+                        </div>
+                    )}
+            </div>
+
+            {/* Confirm: permanently delete single */}
+            <ConfirmationDialog
+                isOpen={pendingPermDeleteId !== null}
+                title="Delete Permanently?"
+                message={`"${trashedLinks.find(l => l.id === pendingPermDeleteId)?.title || 'This link'}" will be permanently deleted. This cannot be undone.`}
+                confirmLabel="Delete Forever"
+                isLoading={isDeletingPermId !== null}
+                onConfirm={confirmPermDelete}
+                onCancel={() => setPendingPermDeleteId(null)}
+            />
+
+            {/* Confirm: empty trash */}
+            <ConfirmationDialog
+                isOpen={pendingEmptyTrash}
+                title="Empty Trash?"
+                message={`Permanently delete all ${trashedLinks.length} link${trashedLinks.length !== 1 ? 's' : ''} in Trash? This cannot be undone.`}
+                confirmLabel="Empty Trash"
+                isLoading={isEmptyingTrash}
+                onConfirm={confirmEmptyTrash}
+                onCancel={() => setPendingEmptyTrash(false)}
+            />
         </div>
     );
 }

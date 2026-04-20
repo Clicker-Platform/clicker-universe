@@ -64,7 +64,7 @@ function FormListItem({ form, siteId, onEdit, onDelete }: { form: Form; siteId: 
                     </button>
                     <button
                         onClick={() => setConfirmDelete(false)}
-                        className="px-2 py-1 text-[10px] font-bold text-neutral-400 bg-neutral-800 rounded-md hover:bg-neutral-700 transition-colors"
+                        className="px-2 py-1 text-[10px] font-bold text-neutral-500 dark:text-neutral-400 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-md hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors"
                     >
                         Cancel
                     </button>

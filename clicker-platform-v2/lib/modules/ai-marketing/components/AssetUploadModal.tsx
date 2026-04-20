@@ -56,13 +56,13 @@ export default function AssetUploadModal({ onClose, onUploaded }: Props) {
       if (!token) throw new Error('Not authenticated');
 
       // 1. Upload to Firebase Storage (client-side, converts to WebP)
-      const fileName = `${file.name.replace(/\.[^.]+$/, '')}_${Date.now()}.webp`;
       const url = await uploadToStorage({
         file,
         folder: `${STORAGE_FOLDER}/${siteId}`,
         siteId,
         convertToWebP: true,
       });
+      const fileName = url.split('/').pop()?.split('?')[0] ?? file.name;
 
       const fileSizeMB = file.size / (1024 * 1024);
 
