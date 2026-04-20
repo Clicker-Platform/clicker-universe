@@ -22,8 +22,8 @@ export function PagesPanel() {
     } = usePageStudio();
     const homepageSlug = globalSettings?.homepageSlug || 'home';
 
-    // Delete confirmation
-    const [pendingTrashId, setPendingTrashId] = useState<string | null>(null);
+    // Inline trash confirmation
+    const [confirmTrashId, setConfirmTrashId] = useState<string | null>(null);
     const [isTrashingId, setIsTrashingId] = useState<string | null>(null);
 
     // Trash section
@@ -45,16 +45,14 @@ export function PagesPanel() {
 
     const handleTrashClick = (e: React.MouseEvent, pageId: string) => {
         e.stopPropagation();
-        setPendingTrashId(pageId);
+        setConfirmTrashId(pageId);
     };
 
-    const confirmTrash = async () => {
-        if (!pendingTrashId) return;
-        setIsTrashingId(pendingTrashId);
-        setPendingTrashId(null);
-        await trashPageById(pendingTrashId);
+    const confirmTrash = async (pageId: string) => {
+        setConfirmTrashId(null);
+        setIsTrashingId(pageId);
+        await trashPageById(pageId);
         setIsTrashingId(null);
-        // Reload trash list if open
         if (trashOpen) loadTrashedPages();
     };
 
@@ -133,40 +131,53 @@ export function PagesPanel() {
                             const isActive = page.id === activePageId;
                             const isHome = page.slug === homepageSlug;
                             const isTrashing = isTrashingId === page.id;
+                            const isConfirming = confirmTrashId === page.id;
                             const showDivider = isHome && idx < sorted.length - 1;
                             return (
-                                <div
-                                    key={page.id}
-                                    className="group relative"
-                                >
-                                    <button
-                                        onClick={() => switchPage(page.id)}
-                                        disabled={isTrashing}
-                                        className={`w-full flex items-center gap-2 px-3 py-2 pr-8 text-left transition-colors ${
-                                            isActive
-                                                ? 'bg-blue-500/10 text-blue-400'
-                                                : 'text-neutral-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-neutral-200'
-                                        } ${isTrashing ? 'opacity-50' : ''}`}
-                                    >
-                                        <FileText size={13} className="flex-shrink-0" />
-                                        <div className="flex-1 min-w-0">
-                                            <div className="text-xs font-medium truncate">
-                                                {page.title || 'Untitled'}
+                                <div key={page.id} className="group relative">
+                                    <div className={`flex items-center gap-2 px-3 py-2 transition-colors ${
+                                        isActive ? 'bg-blue-500/10' : 'hover:bg-gray-100 dark:hover:bg-neutral-800'
+                                    } ${isTrashing ? 'opacity-50' : ''}`}>
+                                        <button
+                                            onClick={() => !isConfirming && switchPage(page.id)}
+                                            disabled={isTrashing}
+                                            className={`flex-1 flex items-center gap-2 text-left min-w-0 ${
+                                                isActive ? 'text-blue-400' : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
+                                            }`}
+                                        >
+                                            <FileText size={13} className="flex-shrink-0" />
+                                            <div className="flex-1 min-w-0">
+                                                <div className="text-xs font-medium truncate">{page.title || 'Untitled'}</div>
+                                                <div className="text-xs text-neutral-400 dark:text-neutral-600 truncate">/{page.slug}</div>
                                             </div>
-                                            <div className="text-xs text-neutral-400 dark:text-neutral-600 truncate">
-                                                /{page.slug}
+                                            {isHome && <Home size={11} className="flex-shrink-0 text-neutral-400 dark:text-neutral-500" />}
+                                        </button>
+                                        {isConfirming ? (
+                                            <div className="flex items-center gap-1 flex-shrink-0">
+                                                <button
+                                                    onClick={() => confirmTrash(page.id)}
+                                                    className="px-2 py-1 text-[10px] font-bold text-red-400 bg-red-500/10 border border-red-500/30 rounded-md hover:bg-red-500/20 transition-colors"
+                                                >
+                                                    Confirm
+                                                </button>
+                                                <button
+                                                    onClick={() => setConfirmTrashId(null)}
+                                                    className="px-2 py-1 text-[10px] font-bold text-neutral-500 dark:text-neutral-400 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-md hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors"
+                                                >
+                                                    Cancel
+                                                </button>
                                             </div>
-                                        </div>
-                                        {isHome && <Home size={11} className="flex-shrink-0 text-neutral-400 dark:text-neutral-500" />}
-                                    </button>
-                                    <button
-                                        onClick={(e) => handleTrashClick(e, page.id)}
-                                        disabled={isTrashing}
-                                        className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 rounded text-neutral-400 dark:text-neutral-600 hover:text-red-400 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-all disabled:opacity-30"
-                                        title="Move to Trash"
-                                    >
-                                        <Trash2 size={12} />
-                                    </button>
+                                        ) : (
+                                            <button
+                                                onClick={(e) => handleTrashClick(e, page.id)}
+                                                disabled={isTrashing}
+                                                className="opacity-0 group-hover:opacity-100 p-1 rounded text-neutral-400 dark:text-neutral-600 hover:text-red-400 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-all disabled:opacity-30 flex-shrink-0"
+                                                title="Move to Trash"
+                                            >
+                                                <Trash2 size={12} />
+                                            </button>
+                                        )}
+                                    </div>
                                     {showDivider && <div className="mx-3 mt-1 border-b border-gray-200 dark:border-neutral-800" />}
                                 </div>
                             );
@@ -260,16 +271,6 @@ export function PagesPanel() {
                     )}
                 </div>
             </div>
-
-            {/* Confirm: move to trash */}
-            <ConfirmationDialog
-                isOpen={pendingTrashId !== null}
-                title="Move to Trash?"
-                message={`"${pages.find(p => p.id === pendingTrashId)?.title || 'This page'}" will be moved to Trash. You can restore it later.`}
-                confirmLabel="Move to Trash"
-                onConfirm={confirmTrash}
-                onCancel={() => setPendingTrashId(null)}
-            />
 
             {/* Confirm: permanently delete single */}
             <ConfirmationDialog

@@ -1,32 +1,15 @@
 'use client';
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { collection, getDocs, query, orderBy, writeBatch, doc } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { LinkItem } from '@/data/mockData';
 import { useSite } from '@/lib/site-context';
 import { usePageStudio } from '@/components/admin/blocks/PageStudioContext';
 import { TemplateContext } from '@/components/TemplateProvider';
-import { Loader2, Eye, EyeOff, List, LayoutGrid, Type, Link2, GripVertical, Palette, RotateCcw } from 'lucide-react';
+import { Loader2, Eye, EyeOff, List, LayoutGrid, Type, Link2, Palette, RotateCcw } from 'lucide-react';
 import { ICON_MAP } from '@/data/icons';
 import { ShoppingBag } from 'lucide-react';
-import {
-    DndContext,
-    closestCenter,
-    PointerSensor,
-    KeyboardSensor,
-    useSensor,
-    useSensors,
-    DragEndEvent,
-} from '@dnd-kit/core';
-import {
-    arrayMove,
-    SortableContext,
-    sortableKeyboardCoordinates,
-    verticalListSortingStrategy,
-    useSortable,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
 
 interface QuickActionsBlockFormProps {
     data: any;
@@ -37,47 +20,20 @@ interface QuickActionsBlockFormProps {
 const inputClass = "w-full px-4 py-2 bg-gray-50 dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-lg text-sm font-bold text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-600 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none";
 const labelClass = "flex items-center gap-2 text-xs font-medium text-neutral-400 dark:text-neutral-500 mb-2";
 
-// ── Sortable row ────────────────────────────────────────────────────────────
+// ── Read-only link row ───────────────────────────────────────────────────────
 
-function SortableLinkRow({
-    link,
-    isHidden,
-    onToggle,
-}: {
-    link: LinkItem;
-    isHidden: boolean;
-    onToggle: (id: string) => void;
-}) {
-    const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: link.id });
-    const style = { transform: CSS.Transform.toString(transform), transition };
+function LinkRow({ link, isHidden, onToggle }: { link: LinkItem; isHidden: boolean; onToggle: (id: string) => void }) {
     const Icon = link.iconName && ICON_MAP[link.iconName] ? ICON_MAP[link.iconName] : ShoppingBag;
-
     return (
-        <div
-            ref={setNodeRef}
-            style={style}
-            className={`flex items-center gap-2 px-2 py-2 rounded-lg border transition-all ${
-                isHidden
-                    ? 'bg-gray-100/30 dark:bg-neutral-900/30 border-gray-200/50 dark:border-neutral-800/50 opacity-50'
-                    : 'bg-gray-50 dark:bg-neutral-900 border-gray-200 dark:border-neutral-800'
-            }`}
-        >
-            {/* Drag handle */}
-            <div
-                {...attributes}
-                {...listeners}
-                className="p-1 text-neutral-300 dark:text-neutral-600 cursor-grab active:cursor-grabbing hover:text-neutral-500 dark:hover:text-neutral-400 flex-shrink-0"
-            >
-                <GripVertical size={13} />
-            </div>
-
+        <div className={`flex items-center gap-2 px-2 py-2 rounded-lg border transition-all ${
+            isHidden
+                ? 'bg-gray-100/30 dark:bg-neutral-900/30 border-gray-200/50 dark:border-neutral-800/50 opacity-50'
+                : 'bg-gray-50 dark:bg-neutral-900 border-gray-200 dark:border-neutral-800'
+        }`}>
             <Icon size={15} className={isHidden ? 'text-neutral-400 dark:text-neutral-600 shrink-0' : 'text-neutral-500 dark:text-neutral-400 shrink-0'} />
-
             <span className={`flex-1 text-sm font-bold truncate ${isHidden ? 'text-neutral-400 dark:text-neutral-600' : 'text-neutral-900 dark:text-neutral-200'}`}>
                 {link.title}
             </span>
-
-            {/* Visibility toggle */}
             <button
                 type="button"
                 onClick={() => onToggle(link.id)}
@@ -98,7 +54,7 @@ function SortableLinkRow({
 export function QuickActionsBlockForm({ data, onChange, onOpenLinks }: QuickActionsBlockFormProps) {
     const safeData = data || {};
     const { siteId } = useSite();
-    const { refreshHydratedData, bumpLinksVersion, linksVersion } = usePageStudio();
+    const { linksVersion } = usePageStudio();
     const templateCtx = React.useContext(TemplateContext);
     const theme = templateCtx?.theme;
     const [links, setLinks] = useState<LinkItem[]>([]);
@@ -107,17 +63,14 @@ export function QuickActionsBlockForm({ data, onChange, onOpenLinks }: QuickActi
     const hiddenLinkIds: string[] = safeData.hiddenLinkIds || [];
     const layout: 'list' | 'grid' = safeData.layout || 'list';
 
-    const sensors = useSensors(
-        useSensor(PointerSensor),
-        useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
-    );
-
     const fetchLinks = useCallback(async () => {
         if (!siteId) return;
         try {
             const q = query(collection(db, 'sites', siteId, 'links'), orderBy('order', 'asc'));
             const snapshot = await getDocs(q);
-            setLinks(snapshot.docs.map(d => ({ id: d.id, ...d.data() }) as LinkItem));
+            setLinks(snapshot.docs
+                .map(d => ({ id: d.id, ...d.data() }) as LinkItem & { deletedAt?: any })
+                .filter(l => !l.deletedAt));
         } catch (err) {
             console.error('Error fetching links:', err);
         } finally {
@@ -133,38 +86,13 @@ export function QuickActionsBlockForm({ data, onChange, onOpenLinks }: QuickActi
     useEffect(() => {
         if (linksVersion === 0) return;
         fetchLinks();
-    }, [linksVersion]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [linksVersion, fetchLinks]);
 
     const toggleLink = (id: string) => {
         const next = hiddenLinkIds.includes(id)
             ? hiddenLinkIds.filter(x => x !== id)
             : [...hiddenLinkIds, id];
         onChange({ ...safeData, hiddenLinkIds: next });
-    };
-
-    const persistOrder = useCallback(async (ordered: LinkItem[]) => {
-        if (!siteId) return;
-        try {
-            const batch = writeBatch(db);
-            ordered.forEach((item, index) => {
-                batch.update(doc(db, 'sites', siteId, 'links', item.id), { order: index });
-            });
-            await batch.commit();
-        } catch (err) {
-            console.error('Error persisting link order:', err);
-        }
-    }, [siteId]);
-
-    const handleDragEnd = (event: DragEndEvent) => {
-        const { active, over } = event;
-        if (!over || active.id === over.id) return;
-        setLinks(items => {
-            const oldIndex = items.findIndex(i => i.id === active.id);
-            const newIndex = items.findIndex(i => i.id === over.id);
-            const reordered = arrayMove(items, oldIndex, newIndex);
-            persistOrder(reordered).then(() => { refreshHydratedData(); bumpLinksVersion(); });
-            return reordered;
-        });
     };
 
     return (
@@ -211,14 +139,14 @@ export function QuickActionsBlockForm({ data, onChange, onOpenLinks }: QuickActi
                 </div>
             </div>
 
-            {/* Link list — visibility + reorder */}
+            {/* Link list — visibility only; reorder via LinksPanel */}
             <div>
                 <label className={labelClass}>
                     <Eye size={14} />
                     Links
                 </label>
                 <p className="text-xs text-neutral-400 dark:text-neutral-500 mb-3 leading-relaxed">
-                    Drag to reorder. Toggle eye to show/hide in this block.
+                    Toggle eye to show/hide in this block. To reorder, use the Links panel (L).
                 </p>
 
                 {loading ? (
@@ -232,20 +160,16 @@ export function QuickActionsBlockForm({ data, onChange, onOpenLinks }: QuickActi
                         </p>
                     </div>
                 ) : (
-                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                        <SortableContext items={links.map(l => l.id)} strategy={verticalListSortingStrategy}>
-                            <div className="space-y-1.5">
-                                {links.map(link => (
-                                    <SortableLinkRow
-                                        key={link.id}
-                                        link={link}
-                                        isHidden={hiddenLinkIds.includes(link.id)}
-                                        onToggle={toggleLink}
-                                    />
-                                ))}
-                            </div>
-                        </SortableContext>
-                    </DndContext>
+                    <div className="space-y-1.5">
+                        {links.map(link => (
+                            <LinkRow
+                                key={link.id}
+                                link={link}
+                                isHidden={hiddenLinkIds.includes(link.id)}
+                                onToggle={toggleLink}
+                            />
+                        ))}
+                    </div>
                 )}
             </div>
 

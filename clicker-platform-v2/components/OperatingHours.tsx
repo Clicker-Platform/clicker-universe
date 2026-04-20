@@ -5,10 +5,42 @@ import { BusinessHours } from '@/data/mockData';
 import { useTemplate } from '@/components/TemplateProvider';
 import { DaySchedule } from '@/lib/core/types';
 import { isBusinessOpen } from '@/lib/core/businessHours/utils';
+import { Clock } from 'lucide-react';
 
 interface OperatingHoursProps {
     data: BusinessHours;
     schedule?: DaySchedule[];
+}
+
+const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+function getHoursStr(dayConfig?: DaySchedule): string {
+    if (!dayConfig || !dayConfig.isOpen || !dayConfig.hours.length) return 'Closed';
+    return `${dayConfig.hours[0].start} – ${dayConfig.hours[0].end}`;
+}
+
+function buildRows(schedule: DaySchedule[]): { label: string; hours: string }[] {
+    const rows: { label: string; hours: string }[] = [];
+    // Group consecutive days with identical hours
+    const sorted = [...schedule].sort((a, b) => {
+        const order = [1, 2, 3, 4, 5, 6, 0];
+        return order.indexOf(a.dayOfWeek) - order.indexOf(b.dayOfWeek);
+    });
+
+    let i = 0;
+    while (i < sorted.length) {
+        const cur = sorted[i];
+        const curHours = getHoursStr(cur);
+        let j = i + 1;
+        while (j < sorted.length && getHoursStr(sorted[j]) === curHours) j++;
+        const span = sorted.slice(i, j);
+        const label = span.length === 1
+            ? DAY_LABELS[cur.dayOfWeek]
+            : `${DAY_LABELS[span[0].dayOfWeek]} – ${DAY_LABELS[span[span.length - 1].dayOfWeek]}`;
+        rows.push({ label, hours: curHours });
+        i = j;
+    }
+    return rows;
 }
 
 export const OperatingHours: React.FC<OperatingHoursProps> = ({ data, schedule }) => {
@@ -19,67 +51,62 @@ export const OperatingHours: React.FC<OperatingHoursProps> = ({ data, schedule }
 
     React.useEffect(() => {
         setIsMounted(true);
-        if (schedule) {
-            setIsOpen(isBusinessOpen(new Date(), schedule));
-        }
+        if (schedule) setIsOpen(isBusinessOpen(new Date(), schedule));
     }, [schedule]);
 
     if (!data.enabled) return null;
 
-    // Default tag text from data (e.g. "Opening Soon") if no schedule, 
-    // OR if schedule exists, determine Open/Closed.
-    // We only show Open/Closed status after mount to prevent hydration mismatch.
-    const statusText = schedule ? (isOpen ? "Open Now" : "Closed") : data.tagText;
-
-    // Determine Hours Text
-    let monFriText = data.monFri;
-    let satSunText = data.satSun;
-
-    if (schedule && schedule.length > 0) {
-        // Format logic: Group Mon-Fri and Sat-Sun if possible, or just simplistic
-        // For MVP, simply extracting M-F (day 1-5) and S-S (day 6,0) commonality
-        // This is a simplified formatter.
-        const getHoursStr = (dayConfig?: DaySchedule) => {
-            if (!dayConfig || !dayConfig.isOpen || !dayConfig.hours.length) return "Closed";
-            return `${dayConfig.hours[0].start} - ${dayConfig.hours[0].end}`;
-        };
-
-        const mon = schedule.find(d => d.dayOfWeek === 1);
-        const sat = schedule.find(d => d.dayOfWeek === 6);
-        const sun = schedule.find(d => d.dayOfWeek === 0);
-
-        // Assume M-F match for now (MVP) or just take Mon
-        monFriText = getHoursStr(mon);
-        satSunText = `${getHoursStr(sat)} / ${getHoursStr(sun)}`;
-
-        // Refined formatting for Sat/Sun equality
-        if (getHoursStr(sat) === getHoursStr(sun)) {
-            satSunText = getHoursStr(sat);
-        }
-    }
+    const statusText = schedule ? (isOpen ? 'Open Now' : 'Closed') : data.tagText;
+    const rows = schedule && schedule.length > 0 ? buildRows(schedule) : [
+        { label: 'Mon – Fri', hours: data.monFri || '' },
+        { label: 'Sat – Sun', hours: data.satSun || '' },
+    ];
 
     return (
         <div
-            className={`bg-white p-6 mb-12 relative ${isClean
-                ? 'border border-gray-200 shadow-sm'
-                : 'border-[3px] border-brand-dark shadow-sticker transform -rotate-1'
+            className={`px-5 py-4 ${isClean
+                ? 'border border-gray-200 shadow-sm bg-white'
+                : 'border-[3px] border-brand-dark shadow-sticker bg-white transform -rotate-1'
             }`}
             style={{ borderRadius: 'var(--theme-radius)' }}
         >
-            {statusText && isMounted && (
-                <div className={`
-                    absolute  px-3 py-1 text-xs font-black uppercase rounded-lg
-                    ${isClean
-                        ? (isOpen ? 'top-4 right-4 bg-green-100 text-green-700' : 'top-4 right-4 bg-red-100 text-red-700')
-                        : '-top-4 -right-2 bg-brand-dark text-brand-green rotate-6'}
-                `}>
-                    {statusText}
+            {/* Header row */}
+            <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                    <Clock size={14} className={isClean ? 'text-gray-400' : 'text-brand-dark'} />
+                    <h3 className={`text-sm font-black uppercase tracking-wide ${isClean ? 'text-gray-900' : 'text-brand-dark'}`}>
+                        {data.label}
+                    </h3>
                 </div>
-            )}
-            <h3 className={`mb-4 text-center uppercase ${isClean ? 'font-bold text-lg text-gray-900' : 'font-black text-xl'}`}>{data.label}</h3>
-            <div className={`space-y-2 text-center ${isClean ? 'text-gray-600 font-medium' : 'font-bold text-brand-dark/90'}`}>
-                <p>Mon - Fri: {monFriText}</p>
-                <p>Sat - Sun: {satSunText}</p>
+                {statusText && isMounted && (
+                    <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${
+                        isClean
+                            ? isOpen
+                                ? 'bg-green-100 text-green-700'
+                                : 'bg-red-100 text-red-700'
+                            : 'bg-brand-dark text-brand-green'
+                    }`}>
+                        {statusText}
+                    </span>
+                )}
+            </div>
+
+            {/* Hours table */}
+            <div className="space-y-1">
+                {rows.map(({ label, hours }) => (
+                    <div key={label} className="flex items-baseline justify-between gap-4">
+                        <span className={`text-xs ${isClean ? 'text-gray-500' : 'font-bold text-brand-dark/70'}`}>
+                            {label}
+                        </span>
+                        <span className={`text-xs font-bold tabular-nums ${
+                            hours === 'Closed'
+                                ? isClean ? 'text-red-400' : 'text-brand-dark/50'
+                                : isClean ? 'text-gray-900' : 'text-brand-dark'
+                        }`}>
+                            {hours}
+                        </span>
+                    </div>
+                ))}
             </div>
         </div>
     );
