@@ -43,13 +43,12 @@ export default function DetailsStep({
     const [memberSearchPhone, setMemberSearchPhone] = useState('');
 
     const isGlass = theme.decorations?.surfaceStyle === 'glass' || theme.cardStyle === 'glass';
-    const surfaceBg = isGlass ? 'rgba(255,255,255,0.05)' : (theme.colors.surface || '#f9fafb');
+    const surfaceBg = theme.colors.surface || '#f9fafb';
     const borderColor = isGlass ? 'rgba(255,255,255,0.1)' : (theme.colors.border || '#e5e7eb');
-    const mutedText = theme.colors.textMuted || theme.colors.foreground;
     const subtleText = theme.colors.textSubtle || theme.colors.muted || theme.colors.foreground;
 
     const inputStyle: React.CSSProperties = {
-        backgroundColor: isGlass ? 'rgba(255,255,255,0.05)' : (theme.colors.surfaceElevated || '#ffffff'),
+        backgroundColor: theme.colors.surfaceElevated || surfaceBg,
         borderColor,
         color: theme.colors.foreground,
         borderRadius: 'calc(var(--theme-radius) * 0.75)',

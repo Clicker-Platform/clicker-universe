@@ -18,7 +18,7 @@ export default function ServiceStep({ services, onSelect, theme, pricingDisplay 
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
     const isGlass = theme.decorations?.surfaceStyle === 'glass' || theme.cardStyle === 'glass';
-    const surfaceBg = isGlass ? 'rgba(255,255,255,0.05)' : (theme.colors.surfaceElevated || theme.colors.surface || '#ffffff');
+    const surfaceBg = theme.colors.surfaceElevated || theme.colors.surface || '#ffffff';
     const borderColor = isGlass ? 'rgba(255,255,255,0.1)' : (theme.colors.border || '#e5e7eb');
     const mutedText = theme.colors.textMuted || theme.colors.foreground;
     const subtleText = theme.colors.textSubtle || theme.colors.muted || theme.colors.foreground;
@@ -36,7 +36,7 @@ export default function ServiceStep({ services, onSelect, theme, pricingDisplay 
             {/* Sticky Header */}
             <div
                 className="sticky top-0 z-10 pb-2 border-b -mx-4 px-4 sm:-mx-6 sm:px-6 pt-2"
-                style={{ backgroundColor: isGlass ? 'rgba(0,0,0,0.4)' : surfaceBg, borderColor }}
+                style={{ backgroundColor: surfaceBg, borderColor }}
             >
                 <div className="space-y-3">
                     <div className="relative">
@@ -49,7 +49,7 @@ export default function ServiceStep({ services, onSelect, theme, pricingDisplay 
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full pl-10 pr-4 py-3 rounded-xl border focus:outline-none"
                             style={{
-                                backgroundColor: isGlass ? 'rgba(255,255,255,0.05)' : (theme.colors.surface || '#f9fafb'),
+                                backgroundColor: surfaceBg,
                                 borderColor,
                                 color: theme.colors.foreground,
                             }}
@@ -63,7 +63,7 @@ export default function ServiceStep({ services, onSelect, theme, pricingDisplay 
                                 className="whitespace-nowrap px-4 py-2 rounded-full text-xs font-bold transition-all"
                                 style={!selectedCategory
                                     ? { backgroundColor: theme.colors.primary, color: theme.colors.accentForeground || '#ffffff' }
-                                    : { backgroundColor: isGlass ? 'rgba(255,255,255,0.1)' : (theme.colors.surface || '#f3f4f6'), color: mutedText }
+                                    : { backgroundColor: surfaceBg, color: mutedText }
                                 }
                             >
                                 All
@@ -75,7 +75,7 @@ export default function ServiceStep({ services, onSelect, theme, pricingDisplay 
                                     className="whitespace-nowrap px-4 py-2 rounded-full text-xs font-bold transition-all"
                                     style={selectedCategory === cat
                                         ? { backgroundColor: theme.colors.primary, color: theme.colors.accentForeground || '#ffffff' }
-                                        : { backgroundColor: isGlass ? 'rgba(255,255,255,0.1)' : (theme.colors.surface || '#f3f4f6'), color: mutedText }
+                                        : { backgroundColor: surfaceBg, color: mutedText }
                                     }
                                 >
                                     {cat}
@@ -92,7 +92,7 @@ export default function ServiceStep({ services, onSelect, theme, pricingDisplay 
                     <div className="text-center py-12 border border-dashed"
                         style={{ backgroundColor: surfaceBg, borderColor, color: subtleText, borderRadius: 'var(--theme-radius)' }}>
                         <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"
-                            style={{ backgroundColor: isGlass ? 'rgba(255,255,255,0.1)' : (theme.colors.surface || '#f3f4f6'), color: subtleText }}>
+                            style={{ backgroundColor: surfaceBg, color: subtleText }}>
                             <Search size={24} />
                         </div>
                         <p className="font-bold" style={{ color: mutedText }}>No services found</p>

@@ -12,6 +12,7 @@ interface ProductCardProps {
 }
 
 import { useTemplate } from '@/components/TemplateProvider';
+import { getGlassStyle } from '@/components/blocks/public/cardStyles';
 
 function ProductCardComponent({ product, onClick, className = '' }: ProductCardProps) {
     const { theme, templateId } = useTemplate(); // Use context
@@ -53,12 +54,12 @@ function ProductCardComponent({ product, onClick, className = '' }: ProductCardP
                 ${isClean
                     ? 'bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow'
                     : isGlass
-                    ? 'bg-black/20 backdrop-blur-md rounded-2xl border border-white/10 shadow-xl transform transition-all duration-200 hover:-translate-y-1'
+                    ? 'backdrop-blur-md rounded-2xl border border-white/10 shadow-xl transform transition-all duration-200 hover:-translate-y-1'
                     : 'bg-white p-3 rounded-2xl border-[3px] transform transition-all duration-200 hover:-translate-y-1'
                 }
                 ${className}
             `}
-            style={isBrutalist ? cardStyle : {}}
+            style={isGlass ? { ...getGlassStyle(theme.colors.surface) } : isBrutalist ? cardStyle : {}}
         >
             {/* Price Tag */}
             {(product as any).showPrice !== false && (
