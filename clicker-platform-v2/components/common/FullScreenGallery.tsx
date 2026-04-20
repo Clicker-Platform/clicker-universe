@@ -16,6 +16,8 @@ interface FullScreenGalleryProps {
     onClose: () => void;
 }
 
+const IMAGE_QUALITY = 85;
+
 export const FullScreenGallery = ({ isOpen, images, initialIndex = 0, onClose }: FullScreenGalleryProps) => {
     const [currentIndex, setCurrentIndex] = useState(initialIndex);
     const [mounted, setMounted] = useState(false);
@@ -25,6 +27,34 @@ export const FullScreenGallery = ({ isOpen, images, initialIndex = 0, onClose }:
         setMounted(true);
         return () => setMounted(false);
     }, []);
+
+    // Preload every fullscreen image as soon as the block mounts so tapping the
+    // gallery opens instantly instead of kicking off a Firebase fetch. Each image
+    // is rendered full-size but kept off-screen — sizes="100vw" + matching quality
+    // means the URL is identical to what the visible <Image> will request, so the
+    // browser serves it straight from HTTP cache.
+    const preloadPortal = mounted
+        ? createPortal(
+              <div
+                  aria-hidden="true"
+                  className="fixed top-0 left-0 w-screen h-screen opacity-0 pointer-events-none -z-10 overflow-hidden"
+                  style={{ contain: 'strict' }}
+              >
+                  {images.map((src, idx) => (
+                      <Image
+                          key={`preload-${idx}-${src}`}
+                          src={src}
+                          alt=""
+                          fill
+                          sizes="100vw"
+                          quality={IMAGE_QUALITY}
+                          priority
+                      />
+                  ))}
+              </div>,
+              document.body
+          )
+        : null;
 
     useEffect(() => {
         if (isOpen) {
@@ -60,12 +90,10 @@ export const FullScreenGallery = ({ isOpen, images, initialIndex = 0, onClose }:
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [isOpen, onClose]);
 
-    if (!mounted || !isOpen) return null;
+    if (!mounted) return null;
+    if (!isOpen) return preloadPortal;
 
-    const prevIndex = (currentIndex - 1 + images.length) % images.length;
-    const nextIndex = (currentIndex + 1) % images.length;
-
-    return createPortal(
+    return (<>{preloadPortal}{createPortal(
         <div className="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center touch-none">
             {/* Header / Controls */}
             <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-10 bg-gradient-to-b from-black/60 to-transparent">
@@ -95,7 +123,7 @@ export const FullScreenGallery = ({ isOpen, images, initialIndex = 0, onClose }:
                         className={`object-contain select-none transition-opacity duration-300 ${mainLoaded ? 'opacity-100' : 'opacity-0'}`}
                         fill
                         sizes="100vw"
-                        quality={85}
+                        quality={IMAGE_QUALITY}
                         placeholder="blur"
                         blurDataURL={BLUR_PLACEHOLDER}
                         draggable={false}
@@ -103,34 +131,6 @@ export const FullScreenGallery = ({ isOpen, images, initialIndex = 0, onClose }:
                         onLoad={() => setMainLoaded(true)}
                     />
                 </div>
-
-                {/* Preload adjacent images so next/prev are instant */}
-                {images.length > 1 && (
-                    <>
-                        <Image
-                            src={images[nextIndex]}
-                            alt=""
-                            aria-hidden="true"
-                            fill
-                            sizes="1px"
-                            quality={75}
-                            className="opacity-0 pointer-events-none"
-                            priority
-                        />
-                        {prevIndex !== nextIndex && (
-                            <Image
-                                src={images[prevIndex]}
-                                alt=""
-                                aria-hidden="true"
-                                fill
-                                sizes="1px"
-                                quality={75}
-                                className="opacity-0 pointer-events-none"
-                                priority
-                            />
-                        )}
-                    </>
-                )}
 
                 {/* Navigation Arrows */}
                 <button
@@ -169,7 +169,6 @@ export const FullScreenGallery = ({ isOpen, images, initialIndex = 0, onClose }:
                                 sizes="80px"
                                 quality={40}
                                 className="object-cover"
-                                loading="lazy"
                                 placeholder="blur"
                                 blurDataURL={BLUR_PLACEHOLDER}
                             />
@@ -179,5 +178,5 @@ export const FullScreenGallery = ({ isOpen, images, initialIndex = 0, onClose }:
             </div>
         </div>,
         document.body
-    );
+    )}</>);
 };
