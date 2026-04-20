@@ -31,7 +31,7 @@ function logDebug(msg: string) {
 }
 
 export const fetchPublicData = cache(async function fetchPublicData(siteId: string, options: { includeProducts?: boolean } = { includeProducts: true }) {
-    if (!siteId || siteId === 'default' || siteId === 'pending') {
+    if (!siteId || siteId === 'default' || siteId === 'pending' || siteId.startsWith('.')) {
         logDebug(`Skipping fetchPublicData for invalid siteId: ${siteId}`);
         return {
             profile: null,
@@ -216,7 +216,7 @@ async function _fetchPublicDataInner(siteId: string, options: { includeProducts?
 }
 
 export const fetchSiteSettings = cache(async function fetchSiteSettings(siteId: string) {
-    if (!siteId || siteId === 'default' || siteId === 'pending') return null;
+    if (!siteId || siteId === 'default' || siteId === 'pending' || siteId.startsWith('.')) return null;
     return cached(siteKey(siteId, 'settings'), 300, async () => {
         try {
             const snap = await getDoc(doc(db, "sites", siteId, "content", "siteSettings"));

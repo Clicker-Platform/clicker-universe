@@ -2,6 +2,7 @@
 
 import { Play } from 'lucide-react';
 import { useTemplate } from '@/components/TemplateProvider';
+import { useRef, useState, useEffect } from 'react';
 
 type Platform = 'tiktok' | 'instagram' | 'youtube';
 
@@ -131,11 +132,25 @@ export function DefaultSocialEmbedBlock({ data, previewMode }: DefaultSocialEmbe
 function EmbedTile({ item, previewMode }: { item: SocialEmbedItem; previewMode?: boolean }) {
     const embedUrl = getEmbedUrl(item);
     const platform = resolvePlatform(item);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [isVisible, setIsVisible] = useState(false);
+
+    useEffect(() => {
+        if (previewMode) { setIsVisible(true); return; }
+        const el = containerRef.current;
+        if (!el || !embedUrl) return;
+        const observer = new IntersectionObserver(
+            ([entry]) => { if (entry.isIntersecting) { setIsVisible(true); observer.disconnect(); } },
+            { rootMargin: '200px' }
+        );
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, [embedUrl, previewMode]);
 
     return (
         <div>
             {/* Dynamic aspect ratio container based on content */}
-            <div className="relative w-full overflow-hidden" style={{ aspectRatio: getAspectRatio(item) }}>
+            <div ref={containerRef} className="relative w-full overflow-hidden" style={{ aspectRatio: getAspectRatio(item) }}>
                 {!embedUrl ? (
                     // Placeholder shown when there is no valid embed URL
                     <div className="absolute inset-0 bg-neutral-100 dark:bg-neutral-800 flex flex-col items-center justify-center gap-2 text-neutral-400">
@@ -149,6 +164,11 @@ function EmbedTile({ item, previewMode }: { item: SocialEmbedItem; previewMode?:
                             <p className="text-[10px] text-center px-3 opacity-60 line-clamp-2">{item.url}</p>
                         )}
                     </div>
+                ) : !isVisible ? (
+                    // Skeleton placeholder sebelum visible
+                    <div className="absolute inset-0 bg-neutral-900 flex items-center justify-center">
+                        <Play size={32} className="opacity-20 text-white" />
+                    </div>
                 ) : (
                     <>
                         <iframe
@@ -157,7 +177,7 @@ function EmbedTile({ item, previewMode }: { item: SocialEmbedItem; previewMode?:
                             allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture; accelerometer; gyroscope; web-share"
                             allowFullScreen
                             loading="lazy"
-                            title={item.caption || `${item.platform} embed`}
+                            title={item.caption || (platform ? `${platformLabel[platform]} video` : 'Video embed')}
                             style={{ border: 0 }}
                         />
                         {/* Transparent overlay in preview mode to prevent iframe from trapping clicks */}

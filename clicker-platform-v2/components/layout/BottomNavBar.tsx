@@ -121,6 +121,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({ previewMode = false 
                             onClick={(e) => handleItemClick(e, fab)}
                             className="w-14 h-14 rounded-full flex items-center justify-center text-white shadow-lg transform active:scale-95 transition-all"
                             style={{ backgroundColor: fabBg, boxShadow: `0 0 20px ${fabBg}60` }}
+                            aria-label={fab.label || 'Action button'}
                         >
                             <FabIcon size={24} />
                         </Link>
