@@ -107,7 +107,10 @@ export default function TemplateClient() {
         setMessage('');
 
         try {
-            await setDoc(doc(db, 'sites', siteId, 'content', 'siteSettings'), settings);
+            const payload = Object.fromEntries(
+                Object.entries(settings).filter(([, v]) => v !== undefined)
+            );
+            await setDoc(doc(db, 'sites', siteId, 'content', 'siteSettings'), payload);
             purgeTenantCache(siteId);
             setMessage('Template saved successfully!');
             setTimeout(() => setMessage(''), 3000);

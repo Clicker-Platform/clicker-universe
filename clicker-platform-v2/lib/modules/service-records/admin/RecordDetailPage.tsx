@@ -11,7 +11,12 @@ import {
     cancelRecord,
     voidWarrantyCard,
     generateWarrantyCardForRecord,
+    updateServiceRecord,
+    updateVehicle,
+    getCarCatalog,
+    getVehicle,
 } from '../api';
+import type { CarCatalogEntry, Vehicle } from '../types';
 import { RecordStatusBadge } from './components/RecordStatusBadge';
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 import BillModal from './components/BillModal';
@@ -42,6 +47,12 @@ function RecordDetailContent() {
     const [showVoidDialog, setShowVoidDialog] = useState(false);
     const [voidConfirmText, setVoidConfirmText] = useState('');
     const [justCompleted, setJustCompleted] = useState(false);
+    const [carCatalog, setCarCatalog] = useState<CarCatalogEntry[]>([]);
+    const [vehicle, setVehicle] = useState<Vehicle | null>(null);
+    const [showCarTypeForm, setShowCarTypeForm] = useState(false);
+    const [selectedCatalogId, setSelectedCatalogId] = useState('');
+    const [vehicleColor, setVehicleColor] = useState('');
+    const [savingCarType, setSavingCarType] = useState(false);
 
     useEffect(() => {
         if (!siteId || !recordId) return;
@@ -55,9 +66,62 @@ function RecordDetailContent() {
                     setWarrantyCard(card);
                 } catch { /* ignore */ }
             }
+            // Auto-link member if phone matches but memberId not yet set
+            if (rec && !rec.memberId && rec.memberPhone && rec.status !== 'COMPLETED' && rec.status !== 'CANCELLED') {
+                try {
+                    const { isModuleEnabled } = await import('@/lib/modules/registry');
+                    if (await isModuleEnabled('membership')) {
+                        const { findMemberByPhone } = await import('@/lib/modules/membership/api');
+                        const member = await findMemberByPhone(siteId, rec.memberPhone);
+                        if (member) {
+                            await updateServiceRecord(siteId, recordId, {
+                                memberId: member.id,
+                                memberName: member.fullName,
+                                memberPhone: member.phoneNumber,
+                                memberEmail: member.email,
+                            });
+                        }
+                    }
+                } catch { /* non-blocking */ }
+            }
         });
         return () => unsub();
     }, [siteId, recordId]);
+
+    useEffect(() => {
+        if (!siteId) return;
+        getCarCatalog(siteId).then(setCarCatalog).catch(() => {});
+    }, [siteId]);
+
+    useEffect(() => {
+        if (!siteId || !record?.vehicleId) return;
+        getVehicle(siteId, record.vehicleId).then(v => {
+            setVehicle(v);
+            if (v?.carCatalogId) setSelectedCatalogId(v.carCatalogId);
+            if (v?.color) setVehicleColor(v.color);
+        }).catch(() => {});
+    }, [siteId, record?.vehicleId]);
+
+    async function handleSaveCarType() {
+        if (!record || !siteId) return;
+        setSavingCarType(true);
+        try {
+            const updates: Record<string, string | undefined> = {};
+            if (selectedCatalogId) updates.carCatalogId = selectedCatalogId;
+            if (vehicleColor.trim()) updates.color = vehicleColor.trim();
+            if (Object.keys(updates).length > 0) {
+                await updateVehicle(siteId, record.vehicleId, updates);
+                const updated = await getVehicle(siteId, record.vehicleId);
+                setVehicle(updated);
+            }
+            setShowCarTypeForm(false);
+            showToast('success', 'Vehicle details updated');
+        } catch {
+            showToast('error', 'Failed to update vehicle');
+        } finally {
+            setSavingCarType(false);
+        }
+    }
 
     function showToast(type: 'success' | 'error', message: string) {
         setToast({ type, message });
@@ -194,6 +258,59 @@ function RecordDetailContent() {
                     <p className="text-xs font-medium text-gray-500 dark:text-neutral-500 mb-3">VEHICLE</p>
                     <p className="text-xl font-mono font-bold text-gray-900 dark:text-neutral-100">{record.vehiclePlate}</p>
                     <p className="text-sm text-gray-600 dark:text-neutral-400 mt-1">{record.memberName || '—'}</p>
+                    {vehicle && (vehicle.carCatalogId || vehicle.color) ? (
+                        <div className="mt-2 space-y-0.5">
+                            {vehicle.carCatalogId && carCatalog.length > 0 && (() => {
+                                const cat = carCatalog.find(c => c.id === vehicle.carCatalogId);
+                                return cat ? <p className="text-xs text-gray-500 dark:text-neutral-400">{cat.make} {cat.model} · {cat.type}</p> : null;
+                            })()}
+                            {vehicle.color && <p className="text-xs text-gray-500 dark:text-neutral-400">{vehicle.color}</p>}
+                        </div>
+                    ) : null}
+                    {record.status !== 'COMPLETED' && record.status !== 'CANCELLED' && !showCarTypeForm && (
+                        <button
+                            onClick={() => setShowCarTypeForm(true)}
+                            className="mt-3 text-xs flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-300 dark:border-neutral-600 text-gray-500 dark:text-neutral-400 font-medium hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors"
+                        >
+                            + {vehicle?.carCatalogId ? 'Edit car type' : 'Add car type'}
+                        </button>
+                    )}
+                    {showCarTypeForm && (
+                        <div className="mt-3 space-y-2">
+                            <select
+                                value={selectedCatalogId}
+                                onChange={e => setSelectedCatalogId(e.target.value)}
+                                className="w-full rounded-lg border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-gray-900 dark:text-neutral-100 px-3 py-2 text-sm focus:outline-none focus:border-brand-dark"
+                            >
+                                <option value="">— Select car type —</option>
+                                {carCatalog.map(c => (
+                                    <option key={c.id} value={c.id}>{c.make} {c.model} ({c.type})</option>
+                                ))}
+                            </select>
+                            <input
+                                type="text"
+                                value={vehicleColor}
+                                onChange={e => setVehicleColor(e.target.value)}
+                                placeholder="Color (optional)"
+                                className="w-full rounded-lg border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-gray-900 dark:text-neutral-100 px-3 py-2 text-sm focus:outline-none focus:border-brand-dark"
+                            />
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={handleSaveCarType}
+                                    disabled={savingCarType}
+                                    className="flex-1 py-1.5 rounded-lg bg-brand-dark text-white text-xs font-semibold hover:opacity-90 disabled:opacity-50"
+                                >
+                                    {savingCarType ? 'Saving…' : 'Save'}
+                                </button>
+                                <button
+                                    onClick={() => setShowCarTypeForm(false)}
+                                    className="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-neutral-700 text-xs text-gray-500 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
                 <div className="bg-white dark:bg-neutral-900 p-5 rounded-lg border border-gray-200 dark:border-neutral-800">
                     <p className="text-xs font-medium text-gray-500 dark:text-neutral-500 mb-3">CUSTOMER</p>
