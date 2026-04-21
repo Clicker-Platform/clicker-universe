@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { invalidate } from '@/lib/cache/redis';
 
 export const dynamic = 'force-dynamic';
@@ -26,6 +27,8 @@ export async function POST(req: NextRequest) {
         }
 
         const deleted = await invalidate(`site:${siteId}:*`);
+        revalidatePath(`/${siteId}`);
+        revalidatePath(`/${siteId}`, 'layout');
         return NextResponse.json({ ok: true, deleted });
     } catch (err) {
         console.error('[purge] error:', err);

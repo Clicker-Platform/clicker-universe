@@ -243,10 +243,31 @@ export function AdminSidebar() {
         }, null as NavItem | null);
     }, [pathname, groupedNavItems]);
 
-    // Auto-expand the group that contains the active route
+    // Map of hidden route path prefix -> group title, rebuilt when modules/groupedNavItems change
+    const hiddenRouteGroupMap = useMemo(() => {
+        const baseUrl = (tenantSlug && !isSubdomain) ? `/${tenantSlug}` : '';
+        const map: Array<{ prefix: string; groupTitle: string }> = [];
+        for (const m of modules) {
+            const staticDef = STATIC_MODULE_DEFINITIONS[m.id];
+            const routes = staticDef?.adminRoutes || m.adminRoutes || [];
+            let groupTitle = m.displayName || m.id;
+            if (groupTitle === 'Self Order' || groupTitle === 'BYOD POS') groupTitle = 'POS';
+            for (const r of routes) {
+                if (r.hidden) map.push({ prefix: `${baseUrl}${r.path}`, groupTitle });
+            }
+        }
+        return map;
+    }, [modules, tenantSlug, isSubdomain]);
+
+    // Auto-expand the group that contains the active route (including hidden routes)
     useEffect(() => {
-        if (!activeRoute) return;
-        const activeGroup = groupedNavItems.find(g => g.isModule && g.items.some(i => i.href === activeRoute.href));
+        if (!pathname) return;
+
+        // First try visible routes
+        const activeGroup = groupedNavItems.find(g => g.isModule && g.items.some(i =>
+            pathname === i.href || (pathname.startsWith(i.href) && i.href !== '/admin')
+        ));
+
         if (activeGroup) {
             setExpandedGroups(prev => {
                 if (prev.has(activeGroup.title)) return prev;
@@ -254,8 +275,22 @@ export function AdminSidebar() {
                 next.add(activeGroup.title);
                 return next;
             });
+            return;
         }
-    }, [activeRoute, groupedNavItems]);
+
+        // Fall back to hidden routes
+        const match = hiddenRouteGroupMap.find(({ prefix }) =>
+            pathname === prefix || pathname.startsWith(prefix)
+        );
+        if (match) {
+            setExpandedGroups(prev => {
+                if (prev.has(match.groupTitle)) return prev;
+                const next = new Set(prev);
+                next.add(match.groupTitle);
+                return next;
+            });
+        }
+    }, [pathname, groupedNavItems, hiddenRouteGroupMap]);
 
     // The module group the user is currently navigating within (for mobile tab bar)
     const activeModuleGroup = useMemo(() => {

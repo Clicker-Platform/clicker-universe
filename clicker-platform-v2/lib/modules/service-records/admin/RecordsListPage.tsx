@@ -183,7 +183,12 @@ export default function RecordsListPage() {
                                         >
                                             <td className="px-4 py-3 font-mono font-semibold text-gray-900 dark:text-neutral-100">{record.vehiclePlate}</td>
                                             <td className="px-4 py-3 text-gray-700 dark:text-neutral-300">
-                                                {record.memberName || <span className="text-gray-400 dark:text-neutral-500 italic">Walk-in</span>}
+                                                <span className="flex items-center gap-1.5 flex-wrap">
+                                                    {record.memberName || <span className="text-gray-400 dark:text-neutral-500 italic">Walk-in</span>}
+                                                    {record.memberId && (
+                                                        <span className="text-xs bg-blue-100 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded-full font-medium">Member</span>
+                                                    )}
+                                                </span>
                                                 {record.memberPhone && (
                                                     <p className="text-xs text-gray-400 dark:text-neutral-500">{record.memberPhone}</p>
                                                 )}

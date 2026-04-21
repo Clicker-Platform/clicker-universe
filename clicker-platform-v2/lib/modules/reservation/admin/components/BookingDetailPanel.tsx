@@ -44,6 +44,7 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
     const [carCatalog, setCarCatalog] = useState<CarCatalogEntry[]>([]);
     const [selectedCatalogId, setSelectedCatalogId] = useState('');
     const [newVehicleColor, setNewVehicleColor] = useState('');
+    const [showVehicleDetails, setShowVehicleDetails] = useState(false);
     const plateDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // Cancel Dialog State
@@ -74,11 +75,6 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
 
     const handleStartServiceRecord = async () => {
         if (!booking || !siteId) return;
-        // If new vehicle, require a catalog selection
-        if (vehicleLookup.status === 'not_found' && !selectedCatalogId) {
-            alert('Please select the car type before creating the record.');
-            return;
-        }
         setCreatingSR(true);
         try {
             const { createServiceRecord, createVehicle } = await import('@/lib/modules/service-records/api');
@@ -367,9 +363,9 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
                                             <button
                                                 onClick={handleEnrollClick}
                                                 disabled={enrolling}
-                                                className="text-xs flex items-center gap-1 text-indigo-600 font-bold hover:underline disabled:opacity-50"
+                                                className="text-xs flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-indigo-500 text-indigo-600 font-semibold hover:bg-indigo-50 dark:hover:bg-indigo-950 dark:border-indigo-400 dark:text-indigo-400 transition-colors disabled:opacity-50"
                                             >
-                                                {enrolling ? 'Enrolling...' : '+ Enroll as Member'}
+                                                {enrolling ? 'Registering...' : '+ Register as Member'}
                                             </button>
                                         )}
                                     </div>
@@ -574,6 +570,7 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
                                                 }
                                                 setSelectedCatalogId('');
                                                 setNewVehicleColor('');
+                                                setShowVehicleDetails(false);
                                                 try {
                                                     const { getCarCatalog } = await import('@/lib/modules/service-records/api');
                                                     const catalog = await getCarCatalog(siteId);
@@ -614,7 +611,7 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
                     <div className="bg-white dark:bg-neutral-900 rounded-lg w-full max-w-sm shadow-2xl p-6 animate-in fade-in zoom-in-95 duration-200">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-lg font-bold text-brand-dark">Start Service Record</h3>
-                            <button onClick={() => { setShowPlateModal(false); setPlateInput(''); setVehicleLookup({ status: 'idle' }); setSelectedCatalogId(''); setNewVehicleColor(''); }} className="p-2 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-full">
+                            <button onClick={() => { setShowPlateModal(false); setPlateInput(''); setVehicleLookup({ status: 'idle' }); setSelectedCatalogId(''); setNewVehicleColor(''); setShowVehicleDetails(false); }} className="p-2 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-full">
                                 <X size={18} />
                             </button>
                         </div>
@@ -648,38 +645,50 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
                             )}
                             {vehicleLookup.status === 'not_found' && plateInput.trim().length >= 4 && (
                                 <div className="mt-3 space-y-3 p-3 rounded-lg bg-gray-50 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700">
-                                    <p className="text-xs font-medium text-gray-600 dark:text-neutral-400">New vehicle — select car type to register</p>
-                                    <div>
-                                        <label className="text-xs text-gray-500 dark:text-neutral-500 block mb-1">Car Type <span className="text-red-500">*</span></label>
-                                        <select
-                                            value={selectedCatalogId}
-                                            onChange={e => setSelectedCatalogId(e.target.value)}
-                                            className="w-full rounded-lg border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 dark:text-neutral-200 focus:outline-none focus:border-brand-dark px-3 py-2 text-sm"
-                                        >
-                                            <option value="">— Select car type —</option>
-                                            {carCatalog.map(car => (
-                                                <option key={car.id} value={car.id}>
-                                                    {car.make} {car.model} ({car.type})
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="text-xs text-gray-500 dark:text-neutral-500 block mb-1">Color (optional)</label>
+                                    <label className="flex items-center gap-2 cursor-pointer">
                                         <input
-                                            type="text"
-                                            value={newVehicleColor}
-                                            onChange={e => setNewVehicleColor(e.target.value)}
-                                            placeholder="e.g. Black, White"
-                                            className="w-full rounded-lg border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 dark:text-neutral-200 focus:outline-none focus:border-brand-dark px-3 py-2 text-sm"
+                                            type="checkbox"
+                                            checked={showVehicleDetails}
+                                            onChange={e => setShowVehicleDetails(e.target.checked)}
+                                            className="rounded border-gray-300 dark:border-neutral-600 text-brand-dark"
                                         />
-                                    </div>
+                                        <span className="text-xs font-medium text-gray-600 dark:text-neutral-400">Add car details (optional)</span>
+                                    </label>
+                                    {showVehicleDetails && (
+                                        <>
+                                            <div>
+                                                <label className="text-xs text-gray-500 dark:text-neutral-500 block mb-1">Car Type</label>
+                                                <select
+                                                    value={selectedCatalogId}
+                                                    onChange={e => setSelectedCatalogId(e.target.value)}
+                                                    className="w-full rounded-lg border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 dark:text-neutral-200 focus:outline-none focus:border-brand-dark px-3 py-2 text-sm"
+                                                >
+                                                    <option value="">— Select car type —</option>
+                                                    {carCatalog.map(car => (
+                                                        <option key={car.id} value={car.id}>
+                                                            {car.make} {car.model} ({car.type})
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="text-xs text-gray-500 dark:text-neutral-500 block mb-1">Color</label>
+                                                <input
+                                                    type="text"
+                                                    value={newVehicleColor}
+                                                    onChange={e => setNewVehicleColor(e.target.value)}
+                                                    placeholder="e.g. Black, White"
+                                                    className="w-full rounded-lg border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 dark:text-neutral-200 focus:outline-none focus:border-brand-dark px-3 py-2 text-sm"
+                                                />
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
                             )}
                         </div>
                         <div className="flex gap-3">
                             <button
-                                onClick={() => { setShowPlateModal(false); setPlateInput(''); setVehicleLookup({ status: 'idle' }); setSelectedCatalogId(''); setNewVehicleColor(''); }}
+                                onClick={() => { setShowPlateModal(false); setPlateInput(''); setVehicleLookup({ status: 'idle' }); setSelectedCatalogId(''); setNewVehicleColor(''); setShowVehicleDetails(false); }}
                                 className="flex-1 py-2.5 rounded-lg font-bold bg-gray-100 dark:bg-neutral-800 text-gray-600 dark:text-neutral-400 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors"
                             >
                                 Cancel
@@ -700,12 +709,12 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
             {/* Enrollment Confirmation */}
             <ConfirmationDialog
                 isOpen={showEnrollDialog}
-                title={isMissingEmail ? "Email Required" : "Enroll Member"}
+                title={isMissingEmail ? "Email Required" : "Register Member"}
                 message={isMissingEmail
                     ? `This customer does not have an email address. Please enter one to continue enrollment.`
                     : `Are you sure you want to register ${booking.customerName} as a member? They will start earning loyalty points immediately.`
                 }
-                confirmLabel="Enroll Member"
+                confirmLabel="Register Member"
                 onConfirm={confirmEnroll}
                 onCancel={() => setShowEnrollDialog(false)}
                 isLoading={enrolling}
