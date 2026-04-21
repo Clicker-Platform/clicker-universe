@@ -55,7 +55,11 @@ export const fetchPublicData = cache(async function fetchPublicData(siteId: stri
         } as any;
     }
     const cacheKey = siteKey(siteId, `public:${options.includeProducts ? 'full' : 'light'}`);
-    return cached(cacheKey, 60, () => _fetchPublicDataInner(siteId, options));
+    const [cachedData, freshTheme] = await Promise.all([
+        cached(cacheKey, 40, () => _fetchPublicDataInner(siteId, options)),
+        fetchThemeSettings(siteId),
+    ]);
+    return freshTheme ? { ...cachedData, ...freshTheme } : cachedData;
 });
 
 async function _fetchPublicDataInner(siteId: string, options: { includeProducts?: boolean } = { includeProducts: true }) {
@@ -217,7 +221,7 @@ async function _fetchPublicDataInner(siteId: string, options: { includeProducts?
 
 export const fetchSiteSettings = cache(async function fetchSiteSettings(siteId: string) {
     if (!siteId || siteId === 'default' || siteId === 'pending' || siteId.startsWith('.')) return null;
-    return cached(siteKey(siteId, 'settings'), 300, async () => {
+    return cached(siteKey(siteId, 'settings'), 40, async () => {
         try {
             const snap = await getDoc(doc(db, "sites", siteId, "content", "siteSettings"));
             return snap.exists() ? (snap.data() as SiteSettings) : null;
@@ -228,8 +232,32 @@ export const fetchSiteSettings = cache(async function fetchSiteSettings(siteId: 
     });
 });
 
+// Theme fields are fetched fresh on every request — no Redis cache.
+// Active template development requires instant visibility of color/radius/template changes.
+export const fetchThemeSettings = cache(async function fetchThemeSettings(siteId: string) {
+    if (!siteId || siteId === 'default' || siteId === 'pending' || siteId.startsWith('.')) return null;
+    try {
+        const snap = await getDoc(doc(db, "sites", siteId, "content", "siteSettings"));
+        if (!snap.exists()) return null;
+        const data = snap.data() as SiteSettings;
+        return {
+            templateId: (data.templateId || (data as any).layoutStyle || 'classic') as TemplateId,
+            themeColor: data.themeColor,
+            accentColor: (data as any).accentColor,
+            backgroundColor: (data as any).backgroundColor,
+            surfaceColor: (data as any).surfaceColor,
+            borderRadius: data.borderRadius || 'large',
+            customBorderRadius: (data as any).customBorderRadius,
+            cardVariant: (data as any).cardVariant,
+        };
+    } catch (e) {
+        logDebug(`fetchThemeSettings: Error ${e}`);
+        return null;
+    }
+});
+
 export async function fetchPageBySlug(siteId: string, slug: string) {
-    return cached(siteKey(siteId, `page:${slug}`), 60, async () => {
+    return cached(siteKey(siteId, `page:${slug}`), 30, async () => {
         try {
             const q = query(collection(db, "sites", siteId, "pages"), where("slug", "==", slug));
             const querySnapshot = await getDocs(q);
@@ -257,7 +285,7 @@ export async function fetchPages(siteId: string) {
 }
 
 export async function fetchLinkSettings(siteId: string) {
-    return cached(siteKey(siteId, 'linkSettings'), 300, async () => {
+    return cached(siteKey(siteId, 'linkSettings'), 40, async () => {
         try {
             const snap = await getDoc(doc(db, "sites", siteId, "content", "linkSettings"));
             if (snap.exists()) return snap.data() as LinkSettings;
@@ -269,7 +297,7 @@ export async function fetchLinkSettings(siteId: string) {
 }
 
 export async function fetchProductSettings(siteId: string) {
-    return cached(siteKey(siteId, 'productSettings'), 300, async () => {
+    return cached(siteKey(siteId, 'productSettings'), 40, async () => {
         try {
             const snap = await getDoc(doc(db, "sites", siteId, "content", "productSettings"));
             if (snap.exists()) return snap.data() as ProductSettings;
@@ -285,11 +313,13 @@ export const fetchLightweightPublicData = cache(async function fetchLightweightP
     const [
         profileSnap,
         settings,
-        businessSnap
+        businessSnap,
+        freshTheme,
     ] = await Promise.all([
         getDoc(doc(db, "sites", siteId, "content", "profile")).catch(e => { logDebug(`fetchLightweightPublicData profile: Error ${e}`); return nullSnap; }),
         fetchSiteSettings(siteId),
         getDoc(doc(db, "sites", siteId, "content", "business")).catch(e => { logDebug(`fetchLightweightPublicData business: Error ${e}`); return nullSnap; }),
+        fetchThemeSettings(siteId),
     ]);
 
     // Process Profile
@@ -322,20 +352,20 @@ export const fetchLightweightPublicData = cache(async function fetchLightweightP
         businessHours,
         contact,
         branches: [], // Not fetched
-        templateId: (settings?.templateId || settings?.layoutStyle || 'classic') as TemplateId,
+        templateId: (freshTheme?.templateId || settings?.templateId || settings?.layoutStyle || 'classic') as TemplateId,
         footerText: settings?.footerText || '© 2024 SunnySide',
         hideFooterContact: settings?.hideFooterContact || false,
         showHeaderAddress: settings?.showHeaderAddress || false,
         homeBlockOrder: settings?.homeBlockOrder || [],
-        themeColor: settings?.themeColor,
-        accentColor: settings?.accentColor,
-        backgroundColor: settings?.backgroundColor,
-        surfaceColor: settings?.surfaceColor,
+        themeColor: freshTheme?.themeColor ?? settings?.themeColor,
+        accentColor: freshTheme?.accentColor ?? settings?.accentColor,
+        backgroundColor: freshTheme?.backgroundColor ?? settings?.backgroundColor,
+        surfaceColor: freshTheme?.surfaceColor ?? settings?.surfaceColor,
         hiddenBlockIds: settings?.hiddenBlockIds || [],
         galleryTitle: settings?.galleryTitle,
-        borderRadius: settings?.borderRadius || 'large',
-        customBorderRadius: settings?.customBorderRadius,
-        cardVariant: settings?.cardVariant,
+        borderRadius: freshTheme?.borderRadius || settings?.borderRadius || 'large',
+        customBorderRadius: freshTheme?.customBorderRadius ?? settings?.customBorderRadius,
+        cardVariant: freshTheme?.cardVariant ?? settings?.cardVariant,
         globalSeo: settings?.seo,
         globalPixels: settings?.pixels,
         linkSettings: { sectionTitle: '', showOnHome: false }, // Placeholder
@@ -351,6 +381,81 @@ export const fetchLightweightPublicData = cache(async function fetchLightweightP
             ctaUrl: undefined,
             ctaUrlLabel: undefined,
         } as ProductSettings, // Placeholder
+        homepageSlug: settings?.homepageSlug,
+        businessSchedule: businessHours.schedule,
+        navigation: settings?.navigation ?? null,
+    };
+});
+
+// Canvas editor always fetches fresh — no Redis cache. Admin-only endpoint,
+// consistency with Firestore source of truth matters more than cache savings.
+export const fetchCanvasData = cache(async function fetchCanvasData(siteId: string) {
+    const nullSnap = { exists: () => false, data: () => null } as any;
+    const [
+        profileSnap,
+        settingsSnap,
+        businessSnap,
+    ] = await Promise.all([
+        getDoc(doc(db, "sites", siteId, "content", "profile")).catch(e => { logDebug(`fetchCanvasData profile: Error ${e}`); return nullSnap; }),
+        getDoc(doc(db, "sites", siteId, "content", "siteSettings")).catch(e => { logDebug(`fetchCanvasData settings: Error ${e}`); return nullSnap; }),
+        getDoc(doc(db, "sites", siteId, "content", "business")).catch(e => { logDebug(`fetchCanvasData business: Error ${e}`); return nullSnap; }),
+    ]);
+
+    const profile = profileSnap.exists() ? profileSnap.data() as BusinessProfile : null;
+    const settings = settingsSnap.exists() ? (settingsSnap.data() as SiteSettings) : null;
+
+    let businessHours = initialBusinessHours;
+    let contact = initialBusinessContact;
+
+    if (businessSnap.exists()) {
+        const data = businessSnap.data();
+        businessHours = data as BusinessHours;
+        contact = {
+            whatsapp: data.whatsapp || "",
+            email: data.email || "",
+            address: data.address || "",
+            mapUrl: data.mapUrl || ""
+        };
+    }
+
+    return {
+        profile,
+        links: [],
+        socialLinks: settings?.socialLinkItems || [],
+        products: [],
+        featuredProduct: null,
+        businessHours,
+        contact,
+        branches: [],
+        templateId: (settings?.templateId || (settings as any)?.layoutStyle || 'classic') as TemplateId,
+        footerText: settings?.footerText || '© 2024 SunnySide',
+        hideFooterContact: settings?.hideFooterContact || false,
+        showHeaderAddress: settings?.showHeaderAddress || false,
+        homeBlockOrder: settings?.homeBlockOrder || [],
+        themeColor: settings?.themeColor,
+        accentColor: (settings as any)?.accentColor,
+        backgroundColor: (settings as any)?.backgroundColor,
+        surfaceColor: (settings as any)?.surfaceColor,
+        hiddenBlockIds: settings?.hiddenBlockIds || [],
+        galleryTitle: settings?.galleryTitle,
+        borderRadius: settings?.borderRadius || 'large',
+        customBorderRadius: (settings as any)?.customBorderRadius,
+        cardVariant: (settings as any)?.cardVariant,
+        globalSeo: settings?.seo,
+        globalPixels: settings?.pixels,
+        linkSettings: { sectionTitle: '', showOnHome: false },
+        productSettings: {
+            galleryTitle: '',
+            showSectionTitle: false,
+            itemsToShow: 0,
+            whatsappBtnLabel: '',
+            whatsappMessageTemplate: '',
+            whatsappBtnColor: '',
+            whatsappBtnTextColor: '',
+            ctaMode: undefined,
+            ctaUrl: undefined,
+            ctaUrlLabel: undefined,
+        } as ProductSettings,
         homepageSlug: settings?.homepageSlug,
         businessSchedule: businessHours.schedule,
         navigation: settings?.navigation ?? null,
@@ -509,7 +614,7 @@ export const fetchNavigationData = cache(async function fetchNavigationData(
     if (formIds.length === 0) return {};
 
     const cacheKey = siteKey(siteId, `navforms:${formIds.sort().join(',')}`);
-    return cached(cacheKey, 300, async () => {
+    return cached(cacheKey, 40, async () => {
         const snaps = await Promise.allSettled(
             formIds.map((id) => getDoc(doc(db, 'sites', siteId, 'forms', id)))
         );

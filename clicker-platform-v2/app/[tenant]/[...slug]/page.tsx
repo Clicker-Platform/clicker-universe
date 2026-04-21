@@ -15,7 +15,7 @@ type Props = {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
-export const revalidate = 60; // ISR: revalidate every 60 seconds
+export const revalidate = 30;
 
 // Helper: Resolve path from slug array
 const getPath = (slug: string[]) => `/${slug.join('/')}`;

@@ -9,7 +9,7 @@ import { PixelTracker } from "@/components/PixelTracker";
 import { generateSystemBlocks } from '@/lib/systemBlocks';
 import { notFound } from 'next/navigation';
 
-export const revalidate = 60; // ISR: revalidate every 60 seconds
+export const revalidate = 30;
 
 interface TenantPageProps {
     params: Promise<{ tenant: string }>;

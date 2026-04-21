@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, doc, getDoc, updateDoc, deleteDoc, setDoc, getDocs, serverTimestamp, query, where, writeBatch } from 'firebase/firestore';
 import { Page, PageBlock } from '@/data/mockData';
-import { fetchLightweightPublicData, hydratePageBlocks } from '@/lib/fetchData';
+import { fetchCanvasData, hydratePageBlocks } from '@/lib/fetchData';
 import { purgeTenantCache } from '@/lib/admin/purgeCache';
 import { useSite } from '@/lib/site-context';
 
@@ -342,7 +342,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
             try {
                 const [pagesSnap, settings] = await Promise.all([
                     getDocs(collection(db, 'sites', siteId, 'pages')),
-                    fetchLightweightPublicData(siteId),
+                    fetchCanvasData(siteId),
                 ]);
 
                 if (!isMounted) return;
@@ -918,6 +918,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
             }, { merge: true });
 
             setGlobalSettings((prev: any) => prev ? { ...prev, homepageSlug: formData.slug } : { homepageSlug: formData.slug });
+            purgeTenantCache(siteId);
         } catch (err) {
             console.error('Error setting homepage:', err);
             toast.error('Failed to set homepage. Please try again.');
@@ -933,6 +934,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
             }, { merge: true });
 
             setGlobalSettings((prev: any) => prev ? { ...prev, homepageSlug: 'home' } : { homepageSlug: 'home' });
+            purgeTenantCache(siteId);
         } catch (err) {
             console.error('Error unsetting homepage:', err);
             toast.error('Failed to unset homepage. Please try again.');
@@ -942,7 +944,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
     const refreshGlobalSettings = useCallback(async () => {
         if (!siteId) return;
         try {
-            const settings = await fetchLightweightPublicData(siteId);
+            const settings = await fetchCanvasData(siteId);
             setGlobalSettings(settings);
         } catch (err) {
             console.error('Error refreshing global settings:', err);
@@ -971,6 +973,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
                 footerText: val,
             }, { merge: true });
             setGlobalSettings((prev: any) => prev ? { ...prev, footerText: val } : { footerText: val });
+            purgeTenantCache(siteId);
         } catch (err) {
             console.error('Error updating footer text:', err);
         }
