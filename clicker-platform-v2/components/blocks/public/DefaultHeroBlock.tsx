@@ -284,7 +284,7 @@ export const DefaultHeroBlock = ({ data, theme, onInlineChange, onFieldFocus, on
                 }}
             >
                 <div className={`flex-1 ${dv(d, 'p-8', 'md:p-12')} flex flex-col justify-center`}>
-                    {(data?.tagline || onInlineChange) && (
+                    {(data?.tagline != null && data.tagline !== '' && (data.tagline || onInlineChange)) && (
                         <EditableText
                             tag="p"
                             field="tagline"
@@ -312,7 +312,7 @@ export const DefaultHeroBlock = ({ data, theme, onInlineChange, onFieldFocus, on
                         className={`${titleSizeClass} mb-4 ${tiC} ${isClean ? 'font-bold tracking-tight' : isGlass ? 'font-bold' : 'font-extrabold'}`}
                         style={{ color: data?.titleColor || defaultTitleColor }}
                     />
-                    {(data?.subtitle || onInlineChange) && (
+                    {(data?.subtitle != null && data.subtitle !== '' && (data.subtitle || onInlineChange)) && (
                         <EditableText
                             tag="p"
                             field="subtitle"
@@ -378,7 +378,7 @@ export const DefaultHeroBlock = ({ data, theme, onInlineChange, onFieldFocus, on
                 )}
 
                 <div className="relative z-10 p-6 max-w-4xl mx-auto w-full">
-                    {(data?.tagline || onInlineChange) && (
+                    {(data?.tagline != null && data.tagline !== '' && (data.tagline || onInlineChange)) && (
                         <EditableText
                             tag="p"
                             field="tagline"
@@ -404,7 +404,7 @@ export const DefaultHeroBlock = ({ data, theme, onInlineChange, onFieldFocus, on
                         className={`${titleSizeClass} mb-4 ${tiC} font-bold tracking-tight`}
                         style={{ color: data?.titleColor || defaultTitleColor }}
                     />
-                    {(data?.subtitle || onInlineChange) && (
+                    {(data?.subtitle != null && data.subtitle !== '' && (data.subtitle || onInlineChange)) && (
                         <EditableText
                             tag="p"
                             field="subtitle"

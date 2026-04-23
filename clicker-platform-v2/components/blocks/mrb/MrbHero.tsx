@@ -226,8 +226,8 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, onInlineChange,
     const firstName = nameParts[0] || '';
     const restName = nameParts.slice(1).join(' ');
 
-    const tagline = data?.tagline ?? profile.tagline;
-    const subtitle = data?.subtitle ?? profile.description;
+    const tagline = data?.tagline !== null ? (data?.tagline ?? profile.tagline) : null;
+    const subtitle = data?.subtitle !== null ? (data?.subtitle ?? profile.description) : null;
     const primaryBtn: CtaBtn | null = data?.primaryBtn || null;
     const secondaryBtn: CtaBtn | null = data?.secondaryBtn || null;
 
@@ -323,7 +323,7 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, onInlineChange,
             {/* Text Content */}
             <div className="flex flex-col gap-4 relative z-10 w-full">
                 {/* Tagline Bubble */}
-                {(tagline || onInlineChange) && (
+                {(tagline != null && tagline !== '' && (tagline || onInlineChange)) && (
                     <div className={`flex ${taglineJustify} ${taC}`}>
                         <EditableText
                             tag="span"
@@ -345,7 +345,7 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, onInlineChange,
                 )}
 
                 {/* Title */}
-                {(titleText || onInlineChange) ? (
+                {(titleText != null && titleText !== '') || onInlineChange ? (
                     <EditableText
                         tag="h1"
                         field="title"
@@ -356,17 +356,10 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, onInlineChange,
                         className={`${titleSizeClass} ${tiC} font-extrabold leading-[0.95] tracking-tighter m-0`}
                         style={{ color: data?.titleColor || defaultTextColor }}
                     />
-                ) : (
-                    <h1
-                        className={`${titleSizeClass} ${tiC} font-extrabold leading-[0.95] tracking-tighter m-0`}
-                        style={{ color: data?.titleColor || defaultTextColor }}
-                    >
-                        {firstName}{restName && <><br /><span style={{ color: data?.titleColor || theme.colors.primary }}>{restName}</span></>}
-                    </h1>
-                )}
+                ) : null}
 
                 {/* Subtitle */}
-                {(subtitle || onInlineChange) && (
+                {(subtitle != null && subtitle !== '' && (subtitle || onInlineChange)) && (
                     <EditableText
                         tag="p"
                         field="subtitle"

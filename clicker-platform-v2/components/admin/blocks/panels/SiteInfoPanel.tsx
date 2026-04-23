@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
+import { writeSiteSettings } from '@/lib/admin/siteSettings';
 import { useSite } from '@/lib/site-context';
 import { usePageStudio } from '@/components/admin/blocks/PageStudioContext';
 import { SiteSettings, SocialLinkItem } from '@/data/mockData';
@@ -135,7 +136,7 @@ export function SiteInfoPanel() {
         if (!siteId) return;
         setSaving(true);
         try {
-            await setDoc(doc(db, 'sites', siteId, 'content', 'siteSettings'), settings);
+            await writeSiteSettings(siteId, settings);
             purgeTenantCache(siteId);
             await refreshGlobalSettings();
             setSaved(true);

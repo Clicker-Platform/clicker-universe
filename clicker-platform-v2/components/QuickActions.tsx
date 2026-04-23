@@ -19,7 +19,7 @@ interface QuickActionsProps {
     settings?: LinkSettings;
     siteId?: string;
     tenantSlug?: string;
-    blockData?: { hiddenLinkIds?: string[]; layout?: 'list' | 'grid'; cardBgColor?: string; cardBorderColor?: string };
+    blockData?: { hiddenLinkIds?: string[]; layout?: 'list' | 'grid'; cardBgColor?: string; cardBorderColor?: string; title?: string };
     defaultLayout?: 'list' | 'grid';
 }
 
@@ -37,7 +37,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
     const [isLoadingForm, setIsLoadingForm] = React.useState(false);
 
     const isGlass = theme.cardStyle === 'glass';
-    const sectionTitle = settings?.sectionTitle || 'Quick Actions';
+    const sectionTitle = blockData?.title || settings?.sectionTitle || 'Quick Actions';
     const showOnHome = settings?.showOnHome !== false;
     const hiddenLinkIds: string[] = blockData?.hiddenLinkIds || [];
     const layout: 'list' | 'grid' = blockData?.layout || defaultLayout;

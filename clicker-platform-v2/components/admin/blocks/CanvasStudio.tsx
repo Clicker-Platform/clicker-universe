@@ -278,7 +278,21 @@ export function CanvasStudio({
                 <NavigationProvider siteId={siteId!}>
                     {blocks.length === 0 ? (
                         <div className="h-96 flex items-center justify-center text-neutral-400 dark:text-neutral-500 p-12 text-center text-sm font-medium bg-gray-50 dark:bg-neutral-900">
-                            Start adding blocks from the {isMobile ? 'Add tab below' : 'left panel'} to build your page.
+                            Start{' '}
+                            {isMobile ? (
+                                'adding blocks from the Add tab below to build your page.'
+                            ) : (
+                                <>
+                                    <button
+                                        type="button"
+                                        onClick={() => setLeftPanel('add')}
+                                        className="text-studio-blue dark:text-studio-blue-muted underline underline-offset-2 hover:opacity-80 transition-opacity mx-1"
+                                    >
+                                        adding blocks
+                                    </button>
+                                    from the left panel to build your page.
+                                </>
+                            )}
                         </div>
                     ) : (
                         <div className="flex flex-col h-full relative">

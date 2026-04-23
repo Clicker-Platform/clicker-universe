@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
 // @ts-ignore
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
+import { writeSiteSettings } from '@/lib/admin/siteSettings';
 import { SiteSettings, NavigationItem } from '@/data/mockData';
 import { Save, Search, Globe, ImageIcon, Palette, GripVertical, DownloadCloud, ChevronDown, ChevronUp, Trash2, Link as LinkIcon, Plus } from 'lucide-react';
 import { FormSkeleton } from '@/components/skeletons/FormSkeleton';
@@ -110,7 +111,7 @@ export default function TemplateClient() {
             const payload = Object.fromEntries(
                 Object.entries(settings).filter(([, v]) => v !== undefined)
             );
-            await setDoc(doc(db, 'sites', siteId, 'content', 'siteSettings'), payload);
+            await writeSiteSettings(siteId, payload);
             purgeTenantCache(siteId);
             setMessage('Template saved successfully!');
             setTimeout(() => setMessage(''), 3000);

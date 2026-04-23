@@ -77,7 +77,7 @@ export const ThemeMockup: React.FC<ThemeMockupProps> = ({ template, settings: cu
         templateId: template.id as any,
         businessHours: realData?.contact?.businessHours || initialBusinessHours,
         footerText: displaySettings.footerText || '',
-        hideFooterContact: displaySettings.hideFooterContact || false,
+        hideFooterContact: displaySettings.hideFooterContact ?? true,
         showHeaderAddress: displaySettings.showHeaderAddress || false,
         contact: realData?.contact || initialBusinessContact,
         branches: (realData?.branches?.length > 0 ? realData.branches : []),

@@ -341,68 +341,116 @@ export const HeroForm = ({ data, onChange }: HeroFormProps) => {
 
             {/* Tagline */}
             <div data-field="tagline">
-                <label className={labelClass}>Tagline</label>
-                <input type="text" value={safeData.tagline || ''} onChange={(e) => handleChange('tagline', e.target.value)}
-                    className={inputClass} placeholder="e.g. Your quality brand" />
-                <div className="flex items-center gap-2 mt-1.5">
-                    <div className="flex-1">
-                        <ColorInput value={safeData.taglineColor} resolvedValue={resolvedTaglineColor} onChange={(hex) => handleChange('taglineColor', hex)}
-                            onClear={() => handleChange('taglineColor', null)} label="Tagline Color" />
-                    </div>
-                    {alignBtns('taglineAlign')}
-                </div>
+                {safeData.tagline !== null && safeData.tagline !== undefined ? (
+                    <>
+                        <div className="flex items-center justify-between mb-1">
+                            <label className={labelClass}>Tagline</label>
+                            <button type="button" onClick={() => handleChange('tagline', null)}
+                                className="text-neutral-400 dark:text-neutral-500 hover:text-red-400 transition-colors">
+                                <Trash2 size={13} />
+                            </button>
+                        </div>
+                        <input type="text" value={safeData.tagline || ''} onChange={(e) => handleChange('tagline', e.target.value)}
+                            className={inputClass} placeholder="e.g. Your quality brand" />
+                        <div className="flex items-center gap-2 mt-1.5">
+                            <div className="flex-1">
+                                <ColorInput value={safeData.taglineColor} resolvedValue={resolvedTaglineColor} onChange={(hex) => handleChange('taglineColor', hex)}
+                                    onClear={() => handleChange('taglineColor', null)} label="Tagline Color" />
+                            </div>
+                            {alignBtns('taglineAlign')}
+                        </div>
+                    </>
+                ) : (
+                    <button type="button" onClick={() => handleChange('tagline', '')}
+                        className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-dashed border-gray-300 dark:border-neutral-700 text-xs font-bold text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300 hover:border-gray-400 dark:hover:border-neutral-500 transition-colors">
+                        <Plus size={13} />
+                        Add Tagline
+                    </button>
+                )}
             </div>
 
             {/* Title + size */}
             <div data-field="title">
-                <label className={labelClass}>Title</label>
-                <input type="text" value={safeData.title || ''} onChange={(e) => handleChange('title', e.target.value)}
-                    className={inputClass} placeholder="Welcome to our page" />
-                <div className="flex gap-1 p-1 mt-2 bg-gray-50 dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800">
-                    {TITLE_SIZES.map(({ value, label }) => (
-                        <button key={value} type="button" onClick={() => handleChange('titleSize', value)}
-                            className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                                (safeData.titleSize || 'md') === value
-                                    ? 'bg-blue-600 text-white shadow'
-                                    : 'text-neutral-400 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800'
-                            }`}>
-                            {label}
-                        </button>
-                    ))}
-                </div>
-                <div className="flex items-center gap-2 mt-2">
-                    <div className="flex-1">
-                        <ColorInput value={safeData.titleColor} resolvedValue={resolvedTitleColor} onChange={(hex) => handleChange('titleColor', hex)}
-                            onClear={() => handleChange('titleColor', null)} label="Title Color" />
-                    </div>
-                    {alignBtns('titleAlign')}
-                </div>
+                {safeData.title !== null && safeData.title !== undefined ? (
+                    <>
+                        <div className="flex items-center justify-between mb-1">
+                            <label className={labelClass}>Title</label>
+                            <button type="button" onClick={() => handleChange('title', null)}
+                                className="text-neutral-400 dark:text-neutral-500 hover:text-red-400 transition-colors">
+                                <Trash2 size={13} />
+                            </button>
+                        </div>
+                        <input type="text" value={safeData.title || ''} onChange={(e) => handleChange('title', e.target.value)}
+                            className={inputClass} placeholder="Welcome to our page" />
+                        <div className="flex gap-1 p-1 mt-2 bg-gray-50 dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800">
+                            {TITLE_SIZES.map(({ value, label }) => (
+                                <button key={value} type="button" onClick={() => handleChange('titleSize', value)}
+                                    className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                                        (safeData.titleSize || 'md') === value
+                                            ? 'bg-blue-600 text-white shadow'
+                                            : 'text-neutral-400 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800'
+                                    }`}>
+                                    {label}
+                                </button>
+                            ))}
+                        </div>
+                        <div className="flex items-center gap-2 mt-2">
+                            <div className="flex-1">
+                                <ColorInput value={safeData.titleColor} resolvedValue={resolvedTitleColor} onChange={(hex) => handleChange('titleColor', hex)}
+                                    onClear={() => handleChange('titleColor', null)} label="Title Color" />
+                            </div>
+                            {alignBtns('titleAlign')}
+                        </div>
+                    </>
+                ) : (
+                    <button type="button" onClick={() => handleChange('title', '')}
+                        className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-dashed border-gray-300 dark:border-neutral-700 text-xs font-bold text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300 hover:border-gray-400 dark:hover:border-neutral-500 transition-colors">
+                        <Plus size={13} />
+                        Add Title
+                    </button>
+                )}
             </div>
 
             {/* Subtitle */}
             <div data-field="subtitle">
-                <label className={labelClass}>Subtitle</label>
-                <input type="text" value={safeData.subtitle || ''} onChange={(e) => handleChange('subtitle', e.target.value)}
-                    className={inputClass} placeholder="Brief description or tagline" />
-                <div className="flex gap-1 p-1 mt-2 bg-gray-50 dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800">
-                    {[{ value: 'normal', label: 'Normal' }, { value: 'medium', label: 'Medium' }, { value: 'semibold', label: 'Semibold' }, { value: 'bold', label: 'Bold' }].map(({ value, label }) => (
-                        <button key={value} type="button" onClick={() => handleChange('subtitleWeight', value)}
-                            className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                                (safeData.subtitleWeight || 'medium') === value
-                                    ? 'bg-blue-600 text-white shadow'
-                                    : 'text-neutral-400 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800'
-                            }`}>
-                            {label}
-                        </button>
-                    ))}
-                </div>
-                <div className="flex items-center gap-2 mt-1.5">
-                    <div className="flex-1">
-                        <ColorInput value={safeData.subtitleColor} resolvedValue={resolvedSubtitleColor} onChange={(hex) => handleChange('subtitleColor', hex)}
-                            onClear={() => handleChange('subtitleColor', null)} label="Subtitle Color" />
-                    </div>
-                    {alignBtns('subtitleAlign')}
-                </div>
+                {safeData.subtitle !== null && safeData.subtitle !== undefined ? (
+                    <>
+                        <div className="flex items-center justify-between mb-1">
+                            <label className={labelClass}>Subtitle</label>
+                            <button type="button" onClick={() => handleChange('subtitle', null)}
+                                className="text-neutral-400 dark:text-neutral-500 hover:text-red-400 transition-colors">
+                                <Trash2 size={13} />
+                            </button>
+                        </div>
+                        <input type="text" value={safeData.subtitle || ''} onChange={(e) => handleChange('subtitle', e.target.value)}
+                            className={inputClass} placeholder="Brief description or tagline" />
+                        <div className="flex gap-1 p-1 mt-2 bg-gray-50 dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800">
+                            {[{ value: 'normal', label: 'Normal' }, { value: 'medium', label: 'Medium' }, { value: 'semibold', label: 'Semibold' }, { value: 'bold', label: 'Bold' }].map(({ value, label }) => (
+                                <button key={value} type="button" onClick={() => handleChange('subtitleWeight', value)}
+                                    className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                                        (safeData.subtitleWeight || 'medium') === value
+                                            ? 'bg-blue-600 text-white shadow'
+                                            : 'text-neutral-400 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800'
+                                    }`}>
+                                    {label}
+                                </button>
+                            ))}
+                        </div>
+                        <div className="flex items-center gap-2 mt-1.5">
+                            <div className="flex-1">
+                                <ColorInput value={safeData.subtitleColor} resolvedValue={resolvedSubtitleColor} onChange={(hex) => handleChange('subtitleColor', hex)}
+                                    onClear={() => handleChange('subtitleColor', null)} label="Subtitle Color" />
+                            </div>
+                            {alignBtns('subtitleAlign')}
+                        </div>
+                    </>
+                ) : (
+                    <button type="button" onClick={() => handleChange('subtitle', '')}
+                        className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-dashed border-gray-300 dark:border-neutral-700 text-xs font-bold text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300 hover:border-gray-400 dark:hover:border-neutral-500 transition-colors">
+                        <Plus size={13} />
+                        Add Subtitle
+                    </button>
+                )}
             </div>
 
             {/* CTA Buttons */}

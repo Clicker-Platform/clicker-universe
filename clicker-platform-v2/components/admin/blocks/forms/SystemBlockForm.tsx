@@ -20,7 +20,7 @@ export function SystemBlockForm({ data, onChange, blockType }: SystemBlockFormPr
                 return { url: '/admin/canvas', label: 'Canvas Studio (Header Navigation)' };
             case 'hours':
             case 'branches':
-                return { url: '/admin/profile', label: 'Business Profile' };
+                return { url: '/admin/settings/business', label: 'Business Profile' };
             case 'featured_product':
                 return { url: '/admin/products', label: 'Products Sandbox' };
             default:

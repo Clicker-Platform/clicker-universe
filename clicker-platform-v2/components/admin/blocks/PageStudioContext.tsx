@@ -4,6 +4,7 @@ import { createContext, useContext, useState, useEffect, useCallback, useRef, us
 import { toast } from 'sonner';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, doc, getDoc, updateDoc, deleteDoc, setDoc, getDocs, serverTimestamp, query, where, writeBatch } from 'firebase/firestore';
+import { writeSiteSettings } from '@/lib/admin/siteSettings';
 import { Page, PageBlock } from '@/data/mockData';
 import { fetchCanvasData, hydratePageBlocks } from '@/lib/fetchData';
 import { purgeTenantCache } from '@/lib/admin/purgeCache';
@@ -920,9 +921,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
         if (!siteId || !formData.slug || activePageId === null) return;
 
         try {
-            await setDoc(doc(db, 'sites', siteId, 'content', 'siteSettings'), {
-                homepageSlug: formData.slug,
-            }, { merge: true });
+            await writeSiteSettings(siteId, { homepageSlug: formData.slug });
 
             setGlobalSettings((prev: any) => prev ? { ...prev, homepageSlug: formData.slug } : { homepageSlug: formData.slug });
             purgeTenantCache(siteId);
@@ -936,9 +935,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
         if (!siteId) return;
 
         try {
-            await setDoc(doc(db, 'sites', siteId, 'content', 'siteSettings'), {
-                homepageSlug: 'home',
-            }, { merge: true });
+            await writeSiteSettings(siteId, { homepageSlug: 'home' });
 
             setGlobalSettings((prev: any) => prev ? { ...prev, homepageSlug: 'home' } : { homepageSlug: 'home' });
             purgeTenantCache(siteId);
@@ -976,9 +973,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
     const updateFooterText = useCallback(async (val: string) => {
         if (!siteId) return;
         try {
-            await setDoc(doc(db, 'sites', siteId, 'content', 'siteSettings'), {
-                footerText: val,
-            }, { merge: true });
+            await writeSiteSettings(siteId, { footerText: val });
             setGlobalSettings((prev: any) => prev ? { ...prev, footerText: val } : { footerText: val });
             purgeTenantCache(siteId);
         } catch (err) {
