@@ -41,8 +41,8 @@ export async function POST(req: Request) {
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      console.error('[WA send] Meta error:', err);
-      return NextResponse.json({ error: 'Gagal mengirim pesan.' }, { status: 502 });
+      console.error('[WA send] Meta error:', JSON.stringify(err));
+      return NextResponse.json({ error: err?.error?.message ?? 'Gagal mengirim pesan.', detail: err }, { status: 502 });
     }
 
     const metaData = await res.json();

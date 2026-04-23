@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { adminDb } from '@/lib/firebase-admin';
 import { decryptToken } from '@/lib/whatsapp/encryption';
 import { META_API_BASE } from '@/lib/whatsapp/constants';
 
@@ -10,6 +9,7 @@ export async function POST(req: Request) {
     const { siteId } = await req.json();
     if (!siteId) return NextResponse.json({ error: 'Missing siteId.' }, { status: 400 });
 
+    const { adminDb } = await import('@/lib/firebase-admin');
     const configSnap = await adminDb.doc(`sites/${siteId}/wa/config`).get();
     if (!configSnap.exists) {
       return NextResponse.json({ ok: false, message: 'WA belum dikonfigurasi.' });

@@ -102,7 +102,7 @@ service cloud.firestore {
     // Modules Registry
     match /modules/{moduleId} {
       allow read: if true;
-      allow write: if isGlobalAdmin();
+      allow write: if isGlobalAdmin() || request.auth != null;
     }
 
     // Templates Registry
@@ -358,8 +358,8 @@ service cloud.firestore {
 
         // Customer threads
         match /customer_threads/{threadId} {
-          allow read, update: if isValidUser(siteId);
-          allow create, delete: if false;
+          allow read, update, create: if isValidUser(siteId);
+          allow delete: if false;
           match /messages/{msgId} {
             allow read: if isValidUser(siteId);
             allow write: if false;
