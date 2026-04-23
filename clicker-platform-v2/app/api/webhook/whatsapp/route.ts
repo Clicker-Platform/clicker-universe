@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createHmac, timingSafeEqual } from 'crypto';
-import { adminDb } from '@/lib/firebase-admin';
-import { processIncomingMessage } from '@/lib/whatsapp/webhook-processor';
 import type { MetaWebhookPayload } from '@/lib/whatsapp/types';
 
 export const dynamic = 'force-dynamic';
@@ -29,6 +27,7 @@ export async function GET(req: NextRequest) {
 
   // Per-tenant: find site with matching webhookVerifyToken
   try {
+    const { adminDb } = await import('@/lib/firebase-admin');
     const snap = await adminDb
       .collectionGroup('config')
       .where('webhookVerifyToken', '==', verifyToken)
@@ -81,8 +80,10 @@ export async function POST(req: NextRequest) {
     }
 
     // Process async — respond 200 immediately so Meta doesn't retry
-    processIncomingMessage(siteId, payload).catch(err =>
-      console.error('[WA webhook] processIncomingMessage error:', err)
+    import('@/lib/whatsapp/webhook-processor').then(({ processIncomingMessage }) =>
+      processIncomingMessage(siteId, payload).catch(err =>
+        console.error('[WA webhook] processIncomingMessage error:', err)
+      )
     );
 
     return NextResponse.json({ ok: true });
@@ -103,6 +104,7 @@ function validateSignature(body: string, signature: string, appSecret: string): 
 
 async function resolveSiteId(phoneNumberId: string): Promise<string | null> {
   try {
+    const { adminDb } = await import('@/lib/firebase-admin');
     const snap = await adminDb
       .collectionGroup('config')
       .where('phoneNumberId', '==', phoneNumberId)
