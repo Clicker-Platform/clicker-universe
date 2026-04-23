@@ -1,6 +1,7 @@
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { WA_ROOT, WA_MAIN_DOC, WA_CONFIG_DOC, WA_CONTACTS } from './constants';
+import { normalizePhone } from './phone';
 import type { WAClassificationResult, WAConfig } from './types';
 
 export async function classifyActor(
@@ -43,10 +44,6 @@ export async function classifyActor(
     };
   }
 
-  // 3. Unknown — will be treated as new customer
+  // 3. Unknown — treated as new customer
   return { type: 'unknown' };
-}
-
-function normalizePhone(phone: string): string {
-  return phone.replace(/\D/g, '');
 }

@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
-import { adminDb } from '@/lib/firebase-admin';
-import { FieldValue } from 'firebase-admin/firestore';
-import { createDecipheriv, createHash } from 'crypto';
-import { META_MESSAGES_ENDPOINT } from '@/lib/whatsapp/constants';
+import { decryptToken } from '@/lib/whatsapp/encryption';
+import { META_MESSAGES_ENDPOINT, WA_ROOT, WA_MAIN_DOC, WA_CUSTOMER_THREADS } from '@/lib/whatsapp/constants';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,7 +12,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing required fields.' }, { status: 400 });
     }
 
-    // Load config server-side (access token decrypted here only)
+    const { adminDb } = await import('@/lib/firebase-admin');
+    const { FieldValue } = await import('firebase-admin/firestore');
     const configSnap = await adminDb.doc(`sites/${siteId}/wa/config`).get();
     if (!configSnap.exists) {
       return NextResponse.json({ error: 'WA not connected.' }, { status: 400 });
@@ -26,9 +25,7 @@ export async function POST(req: Request) {
 
     const accessToken = decryptToken(config.accessToken);
 
-    // Send via Meta API
-    const url = META_MESSAGES_ENDPOINT(config.phoneNumberId);
-    const res = await fetch(url, {
+    const res = await fetch(META_MESSAGES_ENDPOINT(config.phoneNumberId), {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -49,21 +46,18 @@ export async function POST(req: Request) {
     }
 
     const metaData = await res.json();
+    const threadPath = `sites/${siteId}/${WA_ROOT}/${WA_MAIN_DOC}/${WA_CUSTOMER_THREADS}/${threadId}`;
 
-    // Save outbound message to Firestore
-    await adminDb
-      .collection(`sites/${siteId}/wa/customer_threads/${threadId}/messages`)
-      .add({
-        direction: 'outbound',
-        content,
-        type: 'text',
-        sentAt: FieldValue.serverTimestamp(),
-        sentBy: staffUserId ? `staff:${staffUserId}` : 'staff',
-        waMessageId: metaData.messages?.[0]?.id ?? null,
-      });
+    await adminDb.collection(`${threadPath}/messages`).add({
+      direction: 'outbound',
+      content,
+      type: 'text',
+      sentAt: FieldValue.serverTimestamp(),
+      sentBy: staffUserId ? `staff:${staffUserId}` : 'staff',
+      waMessageId: metaData.messages?.[0]?.id ?? null,
+    });
 
-    // Update thread lastMessage
-    await adminDb.doc(`sites/${siteId}/wa/customer_threads/${threadId}`).update({
+    await adminDb.doc(threadPath).update({
       lastMessage: content,
       lastMessageAt: FieldValue.serverTimestamp(),
     });
@@ -73,13 +67,4 @@ export async function POST(req: Request) {
     console.error('[WA send]', err);
     return NextResponse.json({ error: 'Internal server error.' }, { status: 500 });
   }
-}
-
-function decryptToken(encrypted: string): string {
-  const secret = process.env.WA_ENCRYPTION_KEY ?? process.env.NEXTAUTH_SECRET ?? 'fallback-dev-key-change-in-prod';
-  const key = createHash('sha256').update(secret).digest();
-  const [ivHex, dataHex] = encrypted.split(':');
-  const iv = Buffer.from(ivHex, 'hex');
-  const decipher = createDecipheriv('aes-256-cbc', key, iv);
-  return Buffer.concat([decipher.update(Buffer.from(dataHex, 'hex')), decipher.final()]).toString('utf8');
 }

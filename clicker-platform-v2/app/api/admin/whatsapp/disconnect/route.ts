@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { adminDb } from '@/lib/firebase-admin';
 
 export const dynamic = 'force-dynamic';
 
@@ -8,6 +7,7 @@ export async function POST(req: Request) {
     const { siteId } = await req.json();
     if (!siteId) return NextResponse.json({ error: 'Missing siteId.' }, { status: 400 });
 
+    const { adminDb } = await import('@/lib/firebase-admin');
     await adminDb.doc(`sites/${siteId}/wa/config`).update({
       status: 'disconnected',
       accessToken: '',

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { adminDb } from '@/lib/firebase-admin';
-import { randomBytes, createCipheriv, createHash } from 'crypto';
+import { randomBytes } from 'crypto';
+import { encryptToken } from '@/lib/whatsapp/encryption';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,7 +12,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Semua field wajib diisi.' }, { status: 400 });
     }
 
-    // Encrypt accessToken before storing
+    const { adminDb } = await import('@/lib/firebase-admin');
     const encryptedToken = encryptToken(accessToken);
     const webhookVerifyToken = randomBytes(32).toString('hex');
 
@@ -32,13 +32,4 @@ export async function POST(req: Request) {
     console.error('[WA connect]', err);
     return NextResponse.json({ error: 'Gagal menyimpan konfigurasi.' }, { status: 500 });
   }
-}
-
-function encryptToken(token: string): string {
-  const secret = process.env.WA_ENCRYPTION_KEY ?? process.env.NEXTAUTH_SECRET ?? 'fallback-dev-key-change-in-prod';
-  const key = createHash('sha256').update(secret).digest();
-  const iv = randomBytes(16);
-  const cipher = createCipheriv('aes-256-cbc', key, iv);
-  const encrypted = Buffer.concat([cipher.update(token, 'utf8'), cipher.final()]);
-  return iv.toString('hex') + ':' + encrypted.toString('hex');
 }

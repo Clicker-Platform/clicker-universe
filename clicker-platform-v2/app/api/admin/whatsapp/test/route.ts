@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
-import { createDecipheriv, createHash } from 'crypto';
+import { decryptToken } from '@/lib/whatsapp/encryption';
 import { META_API_BASE } from '@/lib/whatsapp/constants';
 
 export const dynamic = 'force-dynamic';
@@ -18,7 +18,6 @@ export async function POST(req: Request) {
     const config = configSnap.data()!;
     const accessToken = decryptToken(config.accessToken);
 
-    // Test: fetch phone number info from Meta
     const res = await fetch(`${META_API_BASE}/${config.phoneNumberId}`, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
@@ -40,13 +39,4 @@ export async function POST(req: Request) {
     console.error('[WA test]', err);
     return NextResponse.json({ ok: false, message: 'Tidak dapat menghubungi Meta API.' });
   }
-}
-
-function decryptToken(encrypted: string): string {
-  const secret = process.env.WA_ENCRYPTION_KEY ?? process.env.NEXTAUTH_SECRET ?? 'fallback-dev-key-change-in-prod';
-  const key = createHash('sha256').update(secret).digest();
-  const [ivHex, dataHex] = encrypted.split(':');
-  const iv = Buffer.from(ivHex, 'hex');
-  const decipher = createDecipheriv('aes-256-cbc', key, iv);
-  return Buffer.concat([decipher.update(Buffer.from(dataHex, 'hex')), decipher.final()]).toString('utf8');
 }
