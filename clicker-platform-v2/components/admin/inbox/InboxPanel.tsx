@@ -12,7 +12,7 @@ import { InboxPanelDetail } from './InboxPanelDetail';
 
 const BATCH_SIZE = 50;
 
-export function InboxPanel({ sidebarCollapsed }: { sidebarCollapsed?: boolean }) {
+export function InboxPanel() {
     const { siteId } = useSite();
     const { isOpen, close, filterStatus, setFilter, selectedSubmissionId, selectSubmission } = useInboxPanel();
 
@@ -114,7 +114,8 @@ export function InboxPanel({ sidebarCollapsed }: { sidebarCollapsed?: boolean })
         : null;
 
     const newCount = submissions.filter(s => s.status === 'new').length;
-    const leftOffset = sidebarCollapsed ? 'md:left-14' : 'md:left-56';
+    // Sidebar is gone on desktop — panel always starts from the left edge
+    const leftOffset = 'md:left-0';
 
     return (
         <>

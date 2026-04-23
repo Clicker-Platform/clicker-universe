@@ -14,8 +14,6 @@ import { ModuleDefinition } from '@/lib/modules/types';
 import { useSite } from '@/lib/site-context';
 import { useUser } from '@/lib/user-context';
 import { useAdminTheme } from '@/lib/use-admin-theme';
-import { InboxPanel } from '@/components/admin/inbox/InboxPanel';
-import { useInboxPanel } from '@/lib/inbox-panel-context';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { MobileModuleTabBar } from '@/components/admin/MobileModuleTabBar';
 
@@ -36,13 +34,10 @@ const CORE_GROUPS = ['Core'];
 
 export function AdminSidebar() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [unreadCount, setUnreadCount] = useState(0);
     const [newBookingCount, setNewBookingCount] = useState(0);
     const [modules, setModules] = useState<ModuleDefinition[]>([]);
-    const [isCollapsed, setIsCollapsed] = useState(false);
     const [hoveredItem, setHoveredItem] = useState<{ label: string, top: number } | null>(null);
     const [hoveredModule, setHoveredModule] = useState<{ group: SidebarGroup, top: number } | null>(null);
-    const [logoHovered, setLogoHovered] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
     const settingsRef = useRef<HTMLDivElement>(null);
@@ -50,7 +45,6 @@ export function AdminSidebar() {
     const pathname = usePathname();
     const router = useRouter();
     const { siteId, tenantSlug, isSubdomain } = useSite();
-    const { open: openInboxPanel } = useInboxPanel();
 
     const handleLogout = async () => {
         try {
@@ -73,18 +67,8 @@ export function AdminSidebar() {
         }
     };
 
-    useEffect(() => {
-        const savedCollapsed = localStorage.getItem('sidebar_collapsed');
-        if (savedCollapsed !== null) {
-            setIsCollapsed(JSON.parse(savedCollapsed));
-        }
-    }, []);
-
-    const toggleSidebarCollapse = () => {
-        const newValue = !isCollapsed;
-        setIsCollapsed(newValue);
-        localStorage.setItem('sidebar_collapsed', JSON.stringify(newValue));
-    };
+    // Sidebar is always collapsed on desktop — derived from mobile drawer state
+    const isCollapsed = !sidebarOpen;
 
     const toggleGroup = (title: string) => {
         setExpandedGroups(prev => {
@@ -105,7 +89,6 @@ export function AdminSidebar() {
 
     useEffect(() => {
         let unsubscribeSite: (() => void) | null = null;
-        let unsubscribeSnapshot: (() => void) | null = null;
         let unsubscribeBookingSnapshot: (() => void) | null = null;
 
         if (!siteId || siteId === 'default' || siteId === 'pending') return;
@@ -124,16 +107,10 @@ export function AdminSidebar() {
         }
 
         const unsubscribeAuth = onAuthStateChanged(auth, (user: FirebaseUser | null) => {
-            if (unsubscribeSnapshot) { unsubscribeSnapshot(); unsubscribeSnapshot = null; }
             if (unsubscribeBookingSnapshot) { unsubscribeBookingSnapshot(); unsubscribeBookingSnapshot = null; }
 
             if (user) {
                 try {
-                    const q = query(collection(db, 'sites', siteId, 'inbox'), where('status', '==', 'new'));
-                    unsubscribeSnapshot = onSnapshot(q, (snapshot) => {
-                        setUnreadCount(snapshot.size);
-                    }, (error) => { console.error("Inbox listener error:", error); });
-
                     const qBookings = query(collection(db, 'sites', siteId, 'modules/reservation/bookings'), where('status', '==', 'pending'));
                     unsubscribeBookingSnapshot = onSnapshot(qBookings, (snapshot) => {
                         setNewBookingCount(snapshot.size);
@@ -142,14 +119,12 @@ export function AdminSidebar() {
                     console.error("Error setting up listeners:", e);
                 }
             } else {
-                setUnreadCount(0);
                 setNewBookingCount(0);
             }
         });
 
         return () => {
             unsubscribeAuth();
-            if (unsubscribeSnapshot) unsubscribeSnapshot();
             if (unsubscribeBookingSnapshot) unsubscribeBookingSnapshot();
             if (unsubscribeSite) unsubscribeSite();
         };
@@ -353,46 +328,29 @@ export function AdminSidebar() {
                 <div className="fixed inset-0 bg-black/50 z-40 md:hidden backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
             )}
 
-            {/* Sidebar */}
+            {/* Sidebar — mobile drawer only, hidden on desktop */}
             <aside className={`
                 fixed inset-y-0 left-0 z-[60] bg-white dark:bg-neutral-900 border-r border-gray-200 dark:border-neutral-800 flex flex-col transition-all duration-300 ease-in-out
-                w-full md:sticky md:top-0 md:h-screen
+                w-full md:hidden
                 ${sidebarOpen ? 'translate-x-0 shadow-xl' : '-translate-x-full shadow-none'}
-                ${isCollapsed ? 'md:w-14' : 'md:w-56'}
-                md:translate-x-0
             `}>
-                {/* Header */}
-                <div className={`py-3.5 flex items-center shrink-0 ${(!isCollapsed || sidebarOpen) ? 'px-4 justify-between' : 'px-4'}`}>
-                    <button
-                        onClick={isCollapsed ? toggleSidebarCollapse : undefined}
-                        onMouseEnter={() => isCollapsed && setLogoHovered(true)}
-                        onMouseLeave={() => setLogoHovered(false)}
-                        className={`relative w-6 h-6 flex items-center justify-center shrink-0 rounded-full transition-colors duration-200 ${isCollapsed ? 'cursor-pointer hover:bg-gray-100 dark:hover:bg-neutral-800' : 'cursor-default'}`}
-                        title={isCollapsed ? 'Expand sidebar' : undefined}
-                        tabIndex={isCollapsed ? 0 : -1}
-                    >
+                {/* Header — icon-only on desktop, full on mobile drawer */}
+                <div className="py-3.5 px-4 flex items-center shrink-0">
+                    {/* Logo — always visible */}
+                    <div className="relative w-6 h-6 flex items-center justify-center shrink-0">
                         <Image
                             src="/clicker_brand_logo.png"
                             alt="Clicker Logo"
                             fill
-                            className={`object-contain rounded-full transition-opacity duration-200 ${(isCollapsed && logoHovered) ? 'opacity-0' : 'opacity-100'}`}
+                            className="object-contain rounded-full"
                         />
-                        {isCollapsed && (
-                            <PanelLeftOpen size={16} className={`absolute transition-opacity duration-200 text-brand-dark dark:text-neutral-200 ${logoHovered ? 'opacity-100' : 'opacity-0'}`} />
-                        )}
-                    </button>
+                    </div>
 
-                    {(!isCollapsed || sidebarOpen) && (
+                    {/* Label + close — mobile drawer only */}
+                    {sidebarOpen && (
                         <>
                             <span className="font-bold text-sm text-brand-dark dark:text-neutral-200 ml-2 flex-1">Clicker</span>
-                            <button
-                                onClick={toggleSidebarCollapse}
-                                title="Collapse sidebar"
-                                className="hidden md:flex p-1.5 rounded-lg text-gray-400 dark:text-neutral-500 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:text-brand-dark dark:hover:text-neutral-200 transition-colors"
-                            >
-                                <PanelLeftClose size={16} />
-                            </button>
-                            <button onClick={() => setSidebarOpen(false)} className="md:hidden p-2 text-gray-400 hover:text-gray-600">
+                            <button onClick={() => setSidebarOpen(false)} className="p-2 text-gray-400 hover:text-gray-600">
                                 <X size={20} />
                             </button>
                         </>
@@ -489,22 +447,25 @@ export function AdminSidebar() {
                                     </p>
                                 )}
                                 <button
-                                    onClick={() => toggleGroup(group.title)}
+                                    onClick={() => !hasActiveItem && toggleGroup(group.title)}
                                     className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg font-semibold transition-colors text-sm ${
-                                        hasActiveItem && !isExpanded
-                                            ? 'text-studio-blue dark:text-studio-blue-muted'
+                                        hasActiveItem
+                                            ? 'bg-studio-blue/10 text-studio-blue dark:text-studio-blue-muted cursor-default'
                                             : 'text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:text-gray-900 dark:hover:text-neutral-100'
                                     }`}
                                 >
                                     <ModuleIcon size={18} className="shrink-0" />
                                     <span className="flex-1 text-left truncate">{group.title}</span>
-                                    <ChevronDown
-                                        size={14}
-                                        className={`shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
-                                    />
+                                    {!hasActiveItem && (
+                                        <ChevronDown
+                                            size={14}
+                                            className={`shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                                        />
+                                    )}
                                 </button>
 
-                                {isExpanded && (
+                                {/* Sub-items only shown when module is not active — TopBar owns sub-nav when active */}
+                                {isExpanded && !hasActiveItem && (
                                     <div className="ml-3 pl-3 border-l border-gray-200 dark:border-neutral-800 mt-0.5 mb-1 space-y-0.5">
                                         {group.items.map(item => renderNavItem(item))}
                                     </div>
@@ -609,26 +570,12 @@ export function AdminSidebar() {
                             </button>
                         </div>
 
-                        {/* Inbox */}
-                        <button
-                            onClick={() => {
-                                setSidebarOpen(false);
-                                openInboxPanel();
-                            }}
-                            title="Inbox"
-                            className={`relative flex items-center justify-center px-3 py-2 rounded-lg font-semibold text-gray-500 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800 hover:text-brand-dark dark:hover:text-neutral-200 transition-colors shrink-0 ${(isCollapsed && !sidebarOpen) ? 'w-full' : ''}`}
-                        >
-                            <Inbox size={18} />
-                            {unreadCount > 0 && (
-                                <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-neutral-900" />
-                            )}
-                        </button>
+                        {/* Inbox moved to AdminTopBar */}
                     </div>
                 </div>
             </aside>
 
             {/* Inbox panel */}
-            <InboxPanel sidebarCollapsed={isCollapsed} />
         </>
     );
 }

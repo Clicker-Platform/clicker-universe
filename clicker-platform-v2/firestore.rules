@@ -206,10 +206,10 @@ service cloud.firestore {
         allow read, write: if isValidUser(siteId) && isModuleEnabled(siteId, 'sales_pipeline') && hasRole(siteId, ['owner', 'staff']);
       }
 
-      // Sales Pipeline Config (Deep Match) — API uses 'sales-pipeline' (dash) as MODULE_ID
-      match /modules/sales-pipeline/{document=**} {
-         allow read: if isValidUser(siteId);
-         allow write: if isValidUser(siteId) && hasRole(siteId, ['owner']);
+      // Sales Pipeline — API uses MODULE_ID = 'sales_pipeline' (underscore)
+      match /modules/sales_pipeline/{document=**} {
+         allow read: if isValidUser(siteId) && isModuleEnabled(siteId, 'sales_pipeline') && hasRole(siteId, ['owner', 'staff']);
+         allow write: if isValidUser(siteId) && isModuleEnabled(siteId, 'sales_pipeline') && hasRole(siteId, ['owner', 'staff']);
       }
 
       // === STRICT NESTED MODULES ===

@@ -23,10 +23,11 @@ export function SiteProvider({ siteId, tenantSlug = '', isSubdomain = false, chi
     );
 }
 
+const SITE_FALLBACK: SiteContextType = { siteId: '', tenantSlug: '', isPending: true, isSubdomain: false };
+
 export function useSite() {
     const context = useContext(SiteContext);
-    if (context === undefined) {
-        throw new Error('useSite must be used within a SiteProvider');
-    }
-    return context;
+    // Return a safe fallback during HMR/SSR edge cases instead of crashing.
+    // All callers already guard on isPending/siteId being empty.
+    return context ?? SITE_FALLBACK;
 }

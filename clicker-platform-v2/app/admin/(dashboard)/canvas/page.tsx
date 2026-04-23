@@ -4,7 +4,7 @@ import { Loader2 } from 'lucide-react';
 import { PageStudioProvider, usePageStudio } from '@/components/admin/blocks/PageStudioContext';
 import { EditorProvider } from '@/components/admin/blocks/EditorContext';
 import { CanvasStudio } from '@/components/admin/blocks/CanvasStudio';
-import { StudioTopBar } from '@/components/admin/blocks/StudioTopBar';
+import { StudioTopBarSlot } from '@/components/admin/blocks/StudioTopBarSlot';
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 import { useState } from 'react';
 
@@ -36,9 +36,9 @@ function PageStudioInner() {
     }
 
     // h-[calc(100dvh-57px)] accounts for the md:hidden mobile admin header on small screens.
-    // On md+ the header is gone so we use h-screen.
+    // On md+ we subtract the shared AdminTopBar height (h-12 = 48px).
     return (
-        <div className="-m-4 md:-m-8 flex flex-col overflow-hidden h-[calc(100dvh-57px)] md:h-screen">
+        <div className="-m-4 md:-m-8 flex flex-col overflow-hidden h-[calc(100dvh-57px)] md:h-[calc(100dvh-48px)]">
             {/* Legacy HTML warning */}
             {activePageId && formData.content && formData.blocks.length === 0 && (
                 <div className="mx-4 md:mx-8 mt-4 md:mt-8 bg-amber-50 p-4 rounded-lg border border-amber-200">
@@ -52,7 +52,7 @@ function PageStudioInner() {
 
             <EditorProvider blocks={formData.blocks} onChange={setBlocks}>
                 <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
-                    <StudioTopBar />
+                    <StudioTopBarSlot />
                     <div className="flex-1 min-h-0 flex">
                         <CanvasStudio
                             globalSettings={globalSettings}
