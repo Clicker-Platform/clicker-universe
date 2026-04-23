@@ -5,8 +5,9 @@ import { db } from '@/lib/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { useSite } from '@/lib/site-context';
 import { usePageStudio } from '@/components/admin/blocks/PageStudioContext';
-import { BusinessProfile } from '@/data/mockData';
+import { BusinessProfile, BackgroundMedia } from '@/data/mockData';
 import { AvatarUpload } from '@/components/common/AvatarUpload';
+import { BackgroundMediaEditor } from '@/components/admin/blocks/BackgroundMediaEditor';
 import { purgeTenantCache } from '@/lib/admin/purgeCache';
 import { Loader2, Check } from 'lucide-react';
 
@@ -27,14 +28,27 @@ export function BrandingPanel() {
         description: '',
         avatarUrl: '',
     });
+    const [globalBackground, setGlobalBackground] = useState<BackgroundMedia>({ mode: 'color', color: '#ffffff' });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
 
     useEffect(() => {
         if (!siteId) return;
-        getDoc(doc(db, 'sites', siteId, 'content', 'profile')).then(snap => {
-            if (snap.exists()) setProfile(snap.data() as BusinessProfile);
+        Promise.all([
+            getDoc(doc(db, 'sites', siteId, 'content', 'profile')),
+            getDoc(doc(db, 'sites', siteId, 'content', 'siteSettings'))
+        ]).then(([profileSnap, settingsSnap]) => {
+            if (profileSnap.exists()) setProfile(profileSnap.data() as BusinessProfile);
+            if (settingsSnap.exists()) {
+                const settings = settingsSnap.data() as any;
+                if (settings.globalBackground) {
+                    setGlobalBackground(settings.globalBackground);
+                } else if (settings.backgroundImageUrl) {
+                    // migration
+                    setGlobalBackground({ mode: 'image', url: settings.backgroundImageUrl, displaySize: 'cover' });
+                }
+            }
         }).finally(() => setLoading(false));
     }, [siteId]);
 
@@ -44,6 +58,7 @@ export function BrandingPanel() {
         setSaving(true);
         try {
             await setDoc(doc(db, 'sites', siteId, 'content', 'profile'), profile, { merge: true });
+            await setDoc(doc(db, 'sites', siteId, 'content', 'siteSettings'), { globalBackground }, { merge: true });
             purgeTenantCache(siteId);
             await refreshGlobalSettings();
             setSaved(true);
@@ -108,6 +123,16 @@ export function BrandingPanel() {
                 <AvatarUpload
                     currentAvatarUrl={profile.avatarUrl}
                     onUploadComplete={(url) => setProfile(p => ({ ...p, avatarUrl: url }))}
+                />
+            </div>
+
+            {/* ── Global Background ─────────────────────────────────────── */}
+            <div className={sectionClass}>
+                <div className="text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">Global Background</div>
+                <BackgroundMediaEditor
+                    value={globalBackground}
+                    onChange={setGlobalBackground}
+                    allowInherit={false}
                 />
             </div>
 

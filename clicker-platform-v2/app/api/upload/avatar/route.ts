@@ -29,9 +29,9 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Invalid file type' }, { status: 400 });
         }
 
-        if (file.size > 5 * 1024 * 1024) {
+        if (file.size > 10 * 1024 * 1024) {
             console.warn('[Upload Avatar] File size too large:', file.size);
-            return NextResponse.json({ error: 'File size too large (max 5MB)' }, { status: 400 });
+            return NextResponse.json({ error: 'File size too large (max 10MB)' }, { status: 400 });
         }
 
         const buffer = Buffer.from(await file.arrayBuffer());

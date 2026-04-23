@@ -83,7 +83,7 @@ export default async function RootLayout({
       </head>
       <body
         suppressHydrationWarning
-        className={`${figtree.variable} ${spaceMono.variable} antialiased font-sans selection:bg-brand-dark selection:text-brand-green`}
+        className={`${figtree.variable} ${spaceMono.variable} antialiased font-sans`}
       >
         <SiteProvider siteId={siteId} tenantSlug={tenantSlug} isSubdomain={isSubdomain}>
           <ThemeRegistry initialSettings={settings} />

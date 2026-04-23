@@ -14,6 +14,7 @@ export interface InlineFieldFocus {
 interface Props {
     focus: InlineFieldFocus | null;
     onAction: (blockId: string, patch: Record<string, any>) => void;
+    onDismiss?: () => void;
 }
 
 const TITLE_SIZES = ['sm', 'md', 'lg', 'xl'] as const;
@@ -22,7 +23,7 @@ const TITLE_SIZES = ['sm', 'md', 'lg', 'xl'] as const;
 // by keeping a ref that EditableText can also read. We export it so EditableText can check it.
 export const toolbarMouseDownRef = { current: false };
 
-export function InlineEditToolbar({ focus, onAction }: Props) {
+export function InlineEditToolbar({ focus, onAction, onDismiss }: Props) {
     const [mounted, setMounted] = useState(false);
     const [pos, setPos] = useState({ top: 0, left: 0 });
     const toolbarRef = useRef<HTMLDivElement>(null);
@@ -40,12 +41,30 @@ export function InlineEditToolbar({ focus, onAction }: Props) {
         setPos({ top, left });
     }, [focus]);
 
+    // Dismiss whenever the click target is not inside the toolbar AND not on a contentEditable
+    useEffect(() => {
+        if (!focus || !onDismiss) return;
+        const handler = (e: MouseEvent) => {
+            const target = e.target as HTMLElement | null;
+            if (!target) return;
+            // Click inside toolbar — keep open
+            if (toolbarRef.current?.contains(target)) return;
+            // Click on a contentEditable text element — keep open (focus will switch to it)
+            if (target.closest('[contenteditable="true"]')) return;
+            onDismiss();
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, [focus, onDismiss]);
+
     if (!mounted || !focus) return null;
 
     const { blockId, field, currentData } = focus;
     const isTitle = field === 'title';
-    const textAlign = currentData.textAlign || 'left';
     const titleSize = currentData.titleSize || 'md';
+    const alignKey = field === 'tagline' ? 'taglineAlign' : field === 'title' ? 'titleAlign' : 'subtitleAlign';
+    const fallbackAlign = currentData.textAlign || 'left';
+    const textAlign = currentData[alignKey] ?? fallbackAlign;
 
     const btn = (onClick: () => void, children: React.ReactNode, active = false, danger = false) => (
         <button
@@ -103,9 +122,9 @@ export function InlineEditToolbar({ focus, onAction }: Props) {
                 {divider}
 
                 {/* Text alignment */}
-                {btn(() => onAction(blockId, { textAlign: 'left' }),  <AlignLeft  size={14} />, textAlign === 'left')}
-                {btn(() => onAction(blockId, { textAlign: 'center' }), <AlignCenter size={14} />, textAlign === 'center')}
-                {btn(() => onAction(blockId, { textAlign: 'right' }), <AlignRight size={14} />, textAlign === 'right')}
+                {btn(() => onAction(blockId, { [alignKey]: 'left' }),   <AlignLeft   size={14} />, textAlign === 'left')}
+                {btn(() => onAction(blockId, { [alignKey]: 'center' }), <AlignCenter size={14} />, textAlign === 'center')}
+                {btn(() => onAction(blockId, { [alignKey]: 'right' }),  <AlignRight  size={14} />, textAlign === 'right')}
 
                 {divider}
 

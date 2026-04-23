@@ -45,8 +45,8 @@ export function MultiImageUpload({ images, onImagesChange, maxImages = 10 }: Mul
                     continue;
                 }
 
-                if (file.size > 5 * 1024 * 1024) {
-                    errors.push(`${file.name}: Max size 5MB`);
+                if (file.size > 10 * 1024 * 1024) {
+                    errors.push(`${file.name}: Max size 10MB`);
                     continue;
                 }
 
@@ -131,7 +131,7 @@ export function MultiImageUpload({ images, onImagesChange, maxImages = 10 }: Mul
                                 <Upload className="text-gray-400 dark:text-neutral-500 group-hover:text-brand-green transition-colors" size={24} />
                             </div>
                             <h3 className="text-brand-dark dark:text-neutral-200 font-bold text-base mb-1">Click to upload or drag and drop</h3>
-                            <p className="text-gray-400 dark:text-neutral-500 text-sm mb-1">SVG, PNG, JPG or WEBP (max. 5MB)</p>
+                            <p className="text-gray-400 dark:text-neutral-500 text-sm mb-1">SVG, PNG, JPG or WEBP (max. 10MB)</p>
                             <p className="text-xs font-bold text-gray-300 dark:text-neutral-600">
                                 {images.length}/{maxImages} images used
                             </p>

@@ -308,8 +308,8 @@ export function AddBlocksPanel({ templateId = 'classic', onAfterAdd }: AddBlocks
     const { addBlock, setSelectedBlockId } = useEditor();
     const [moduleBlocks, setModuleBlocks] = useState<{ type: BlockType; label: string; icon: React.ElementType }[]>([]);
     const [viewMode, setViewMode] = useState<'list' | 'grid'>(() => {
-        if (typeof window === 'undefined') return 'list';
-        return (localStorage.getItem('canvas_studio_add_block_view') as 'list' | 'grid') || 'list';
+        if (typeof window === 'undefined') return 'grid';
+        return (localStorage.getItem('canvas_studio_add_block_view') as 'list' | 'grid') || 'grid';
     });
 
     useEffect(() => {

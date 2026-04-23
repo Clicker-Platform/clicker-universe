@@ -35,12 +35,24 @@ export interface PageBlock {
     data: any;
 }
 
+export interface BackgroundMedia {
+    mode: 'inherit' | 'color' | 'image' | 'video';
+    url?: string;
+    color?: string;
+    displaySize?: 'cover' | 'contain' | 'pattern';
+    backgroundPosition?: string;
+    scrollEffect?: 'scroll' | 'fixed';
+    overlayColor?: string;
+    overlayOpacity?: number;
+}
+
 export interface Page {
     id: string;
     title: string;
     slug: string;
     content: string; // Legacy support
     blocks?: PageBlock[]; // New block-based content
+    background?: BackgroundMedia;
     createdAt?: any;
     updatedAt?: any;
     seo?: {
@@ -141,6 +153,7 @@ export interface SiteSettings {
     borderRadius?: 'small' | 'medium' | 'large' | 'none' | 'custom';
     customBorderRadius?: string;
     cardVariant?: 'shadow' | 'outlined' | 'flat';
+    globalBackground?: BackgroundMedia;
     seo?: {
         title?: string;
         description?: string;

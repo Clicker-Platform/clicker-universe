@@ -47,8 +47,8 @@ export function AvatarUpload({ currentAvatarUrl, onUploadComplete }: AvatarUploa
             return;
         }
 
-        if (file.size > 5 * 1024 * 1024) {
-            setError('File size must be less than 5MB.');
+        if (file.size > 10 * 1024 * 1024) {
+            setError('File size must be less than 10MB.');
             return;
         }
 
@@ -107,7 +107,7 @@ export function AvatarUpload({ currentAvatarUrl, onUploadComplete }: AvatarUploa
                                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 dark:bg-neutral-900/80 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl">
                                     <Upload size={32} className="text-brand-dark mb-2" />
                                     <span className="font-bold text-brand-dark">Change Avatar</span>
-                                    <span className="text-sm text-gray-500">Max 5MB</span>
+                                    <span className="text-sm text-gray-500">Max 10MB</span>
                                 </div>
                             </div>
                         ) : (
@@ -115,7 +115,7 @@ export function AvatarUpload({ currentAvatarUrl, onUploadComplete }: AvatarUploa
                                 <Upload size={48} className="mb-3 text-gray-300 dark:text-neutral-600" />
                                 <span className="font-bold text-lg mb-1">Upload Avatar</span>
                                 <span className="text-sm">Drag & drop or click to upload</span>
-                                <span className="text-xs mt-2 text-gray-400 dark:text-neutral-600">Max 5MB</span>
+                                <span className="text-xs mt-2 text-gray-400 dark:text-neutral-600">Max 10MB</span>
                             </div>
                         )}
                     </>

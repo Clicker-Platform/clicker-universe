@@ -2,11 +2,11 @@
 
 import { useEditor } from './EditorContext';
 import { BlockManager } from './BlockManager';
-import { Settings, Layers, Box, FileText, BarChart2, CheckSquare, Square, X, Plus, Link2, FileInput, ShoppingBag, Globe, Loader2, Palette, MoreHorizontal as MoreHorizontalIcon } from 'lucide-react';
+import { Settings, Layers, Box, FileText, BarChart2, CheckSquare, Square, X, Plus, Link2, FileInput, ShoppingBag, Globe, Loader2, Palette, MoreHorizontal as MoreHorizontalIcon, Image as ImageIcon } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
 import { TemplateProvider } from '@/components/TemplateProvider';
 import { BlockRenderer } from '@/components/blocks/BlockRenderer';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { getTemplate } from '@/lib/templates/registry';
 import { ResponsiveNavBar } from '@/components/layout/ResponsiveNavBar';
@@ -19,6 +19,8 @@ import { useIsMobile } from '@/hooks/useIsMobile';
 import { MobileBottomSheet } from './MobileBottomSheet';
 import { MobileStudioTabBar, type MobileActiveSheet } from './MobileStudioTabBar';
 import { InlineEditToolbar, type InlineFieldFocus } from './InlineEditToolbar';
+import { BackgroundMediaEditor } from './BackgroundMediaEditor';
+import { PageBackground } from '@/components/blocks/PageBackground';
 
 // Lazy-load sidebar panels — only needed when their respective panels are open
 const BlockFormRenderer = dynamic(() => import('./BlockFormRenderer').then(m => m.BlockFormRenderer));
@@ -59,6 +61,7 @@ export function CanvasStudio({
         setPixelTiktok,
         setOverrideSeo,
         setOverridePixels,
+        setBackground,
         updateFooterText,
         pageLoading,
         hydratedData,
@@ -69,9 +72,10 @@ export function CanvasStudio({
 
     const isMobile = useIsMobile();
     const canvasScrollRef = useRef<HTMLDivElement>(null);
+    const rightSidebarRef = useRef<HTMLDivElement>(null);
 
     // Desktop state
-    const [activePanel, setActivePanel] = useState<'page' | 'seo' | null>('page');
+    const [activePanel, setActivePanel] = useState<'page' | 'seo' | 'background' | null>('page');
     const [rightPanelOpen, setRightPanelOpen] = useState(true);
     const [host] = useState(() => typeof window !== 'undefined' ? window.location.host : '');
     const [tooltip, setTooltip] = useState<{ label: string; top: number; left: number; side?: boolean; sideLeft?: boolean } | null>(null);
@@ -83,6 +87,32 @@ export function CanvasStudio({
 
     // Inline field toolbar state
     const [inlineFocus, setInlineFocus] = useState<InlineFieldFocus | null>(null);
+
+    // Scroll right sidebar to focused field and briefly flash it
+    useEffect(() => {
+        if (!inlineFocus?.field || isMobile) return;
+        const sidebar = rightSidebarRef.current;
+        if (!sidebar) return;
+        const target = sidebar.querySelector<HTMLElement>(`[data-field="${inlineFocus.field}"]`);
+        if (!target) return;
+        const containerRect = sidebar.getBoundingClientRect();
+        const targetRect = target.getBoundingClientRect();
+        const offset = targetRect.top - containerRect.top + sidebar.scrollTop - 16;
+        sidebar.scrollTo({ top: offset, behavior: 'smooth' });
+        target.style.transition = 'background-color 0s';
+        target.style.backgroundColor = 'rgba(147, 197, 253, 0.35)'; // blue-300/35
+        target.style.borderRadius = '8px';
+        requestAnimationFrame(() => {
+            target.style.transition = 'background-color 1.2s ease-out';
+            target.style.backgroundColor = 'transparent';
+        });
+        const t = setTimeout(() => {
+            target.style.transition = '';
+            target.style.backgroundColor = '';
+            target.style.borderRadius = '';
+        }, 1400);
+        return () => clearTimeout(t);
+    }, [inlineFocus?.field, isMobile]);
 
     const toggleLeftPanel = (panel: 'pages' | 'add' | 'navigator') => {
         setLeftPanel(prev => prev === panel ? null : panel);
@@ -109,6 +139,14 @@ export function CanvasStudio({
         // Clear inline field toolbar when selection changes
         setInlineFocus(null);
     }, [isMobile, selectedBlockId, activePageId]);
+
+    // Calculate active background config
+    const activeBackgroundConfig = useMemo(() => {
+        if (formData.background && formData.background.mode !== 'inherit') {
+            return formData.background;
+        }
+        return globalSettings?.globalBackground;
+    }, [formData.background, globalSettings?.globalBackground]);
 
     // Auto-open props sheet on mobile when a block is selected/deselected
     useEffect(() => {
@@ -243,7 +281,7 @@ export function CanvasStudio({
                             Start adding blocks from the {isMobile ? 'Add tab below' : 'left panel'} to build your page.
                         </div>
                     ) : (
-                        <div className="flex flex-col h-full bg-white relative">
+                        <div className="flex flex-col h-full relative">
                             {/* Top Navbar Slot */}
                             <div
                                 data-block-id="chrome:header"
@@ -269,13 +307,18 @@ export function CanvasStudio({
 
                             <div
                                 className="w-full flex-1 relative overflow-x-clip"
-                                style={{ backgroundColor: pageBackgroundColor }}
                                 onClick={() => setSelectedBlockId?.(null)}
                             >
                                 <div className="relative">
+                                    {/* Base Background Fallback */}
+                                    <div className="absolute inset-0 -z-20 pointer-events-none" style={{ backgroundColor: pageBackgroundColor }} />
+
+                                    {/* User Custom Background (Page or Global) */}
+                                    <PageBackground config={activeBackgroundConfig} previewMode={true} />
+
                                     {/* Template Background Decorations */}
                                     {BackgroundComponent && (
-                                        <div className="absolute inset-0 z-0 pointer-events-none">
+                                        <div className="absolute inset-0 -z-10 pointer-events-none">
                                             <BackgroundComponent />
                                         </div>
                                     )}
@@ -362,6 +405,11 @@ export function CanvasStudio({
                                                                     ? (field, rect) => setInlineFocus({ blockId: block.id, field, rect, currentData: block.data })
                                                                     : undefined
                                                             }
+                                                            onFieldBlur={
+                                                                block.type === 'hero' && selectedBlockId === block.id
+                                                                    ? () => setInlineFocus(null)
+                                                                    : undefined
+                                                            }
                                                         />
                                                     </div>
                                                 </div>
@@ -427,12 +475,13 @@ export function CanvasStudio({
                 // Keep rect in sync after data change so toolbar doesn't jump
                 setInlineFocus(prev => prev ? { ...prev, currentData: { ...prev.currentData, ...patch } } : null);
             }}
+            onDismiss={() => setInlineFocus(null)}
         />
     );
 
     // ─── Right sidebar content (shared between desktop sidebar + mobile sheet) ─
     const rightSidebarContent = (
-        <div className="p-4 overflow-y-auto flex-1 custom-scrollbar bg-gray-50 dark:bg-neutral-900">
+        <div ref={rightSidebarRef} className="p-4 overflow-y-auto flex-1 custom-scrollbar bg-gray-50 dark:bg-neutral-900">
             {activePanel === 'page' ? (
                 <div className="space-y-4">
                     <div>
@@ -562,6 +611,15 @@ export function CanvasStudio({
                             </div>
                         </div>
                     </div>
+                </div>
+            ) : activePanel === 'background' ? (
+                <div className="space-y-4">
+                    <div className="text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">Page Background</div>
+                    <BackgroundMediaEditor
+                        value={formData.background}
+                        onChange={setBackground}
+                        allowInherit={true}
+                    />
                 </div>
             ) : selectedBlockId?.startsWith('chrome:') ? (
                 selectedBlockId === 'chrome:header' ? (
@@ -700,6 +758,17 @@ export function CanvasStudio({
                                 >
                                     <BarChart2 size={12} />
                                     SEO
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setActivePanel(activePanel === 'background' ? null : 'background')}
+                                    className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold transition-colors ${activePanel === 'background'
+                                            ? 'bg-blue-500/20 text-blue-400'
+                                            : 'text-neutral-400 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800'
+                                        }`}
+                                >
+                                    <ImageIcon size={12} />
+                                    Background
                                 </button>
                                 {activePanel && (
                                     <button
@@ -863,7 +932,7 @@ export function CanvasStudio({
                 <div className="w-80 bg-gray-50 dark:bg-neutral-900 border-l border-gray-200 dark:border-neutral-800 flex flex-col z-10 flex-shrink-0">
                     <div className="px-4 h-10 border-b border-gray-200 dark:border-neutral-800 font-bold text-sm text-neutral-900 dark:text-neutral-200 flex items-center gap-2 flex-shrink-0">
                         <span className="flex-1">
-                            {activePanel === 'page' ? 'Title & Slug' : activePanel === 'seo' ? 'SEO & Analytics' : 'Properties'}
+                            {activePanel === 'page' ? 'Title & Slug' : activePanel === 'seo' ? 'SEO & Analytics' : activePanel === 'background' ? 'Page Background' : 'Properties'}
                         </span>
                         <div className="flex items-center gap-1">
                             <button
@@ -898,6 +967,21 @@ export function CanvasStudio({
                             </button>
                             <button
                                 type="button"
+                                onClick={() => {
+                                    if (activePanel === 'background') { setRightPanelOpen(false); setActivePanel(null); }
+                                    else { setActivePanel('background'); }
+                                }}
+                                onMouseEnter={(e) => { const r = e.currentTarget.getBoundingClientRect(); setTooltip({ label: 'Page Background', top: r.bottom + 6, left: r.left + r.width / 2 }); }}
+                                onMouseLeave={() => setTooltip(null)}
+                                className={`p-1.5 rounded-md transition-colors ${activePanel === 'background'
+                                        ? 'bg-blue-500/20 text-blue-400'
+                                        : 'text-neutral-400 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800'
+                                    }`}
+                            >
+                                <ImageIcon size={14} />
+                            </button>
+                            <button
+                                type="button"
                                 onClick={() => { setRightPanelOpen(false); setActivePanel(null); }}
                                 onMouseEnter={(e) => { const r = e.currentTarget.getBoundingClientRect(); setTooltip({ label: 'Close panel', top: r.bottom + 6, left: r.left + r.width / 2 }); }}
                                 onMouseLeave={() => setTooltip(null)}
@@ -927,6 +1011,14 @@ export function CanvasStudio({
                         className="w-9 h-9 flex items-center justify-center rounded-lg text-neutral-400 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
                     >
                         <BarChart2 size={17} />
+                    </button>
+                    <button
+                        onClick={() => { setRightPanelOpen(true); setActivePanel('background'); }}
+                        onMouseEnter={(e) => { const r = e.currentTarget.getBoundingClientRect(); setTooltip({ label: 'Page Background', top: r.top + r.height / 2, left: r.left - 8, sideLeft: true }); }}
+                        onMouseLeave={() => setTooltip(null)}
+                        className="w-9 h-9 flex items-center justify-center rounded-lg text-neutral-400 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
+                    >
+                        <ImageIcon size={17} />
                     </button>
                     <button
                         onClick={() => { setRightPanelOpen(true); setActivePanel(null); }}

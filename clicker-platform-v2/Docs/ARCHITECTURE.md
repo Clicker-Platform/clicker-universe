@@ -1,7 +1,7 @@
 # Clicker Platform — Global Architecture Reference
 
 > **Purpose:** Single source of truth for the Clicker Platform architecture. Read this before adding any feature, module, or template.
-> **Last updated:** 2026-04-08
+> **Last updated:** 2026-04-21
 
 ---
 
@@ -30,7 +30,7 @@ The Clicker Platform is a **multi-tenant SaaS platform** where each tenant (busi
 
 - A public biolink/website at `/{tenantSlug}` or `{tenantSlug}.clicker.id`
 - An admin dashboard at `/admin` (subdomain-enforced in production)
-- Optional add-on **modules** (POS, Inventory, Membership, Reservations, AI Agent)
+- Optional add-on **modules** (POS, Inventory, Membership, Reservations, AI Sales Agent, AI Marketing)
 - A **template** (theme) chosen from 5 prebuilt designs
 
 **Tech Stack:**
@@ -126,7 +126,7 @@ This is the **most important architectural rule**.
 │  lib/modules/{module_id}/                               │
 │    byod_pos/ | membership/ | inventory/                 │
 │    reservation/ | ai_sales/ | service_records/          │
-│    sales_pipeline/                                      │
+│    sales_pipeline/ | ai_marketing/                      │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -160,24 +160,30 @@ lib/modules/{module_id}/
 ├── public/         ← Public-facing pages/widgets
 ├── components/     ← Shared UI within this module
 ├── api.ts          ← Client-side Firestore operations
-├── api-admin.ts    ← Admin-specific operations
+├── api-admin.ts    ← Admin-specific operations (not all modules)
 ├── api-server.ts   ← Server-side operations (uses firebase-admin)
+├── api-reports.ts  ← Reporting queries (byod_pos, service_records only)
 ├── constants.ts    ← DB path strings (NEVER hardcode paths inline)
 ├── types.ts        ← TypeScript types for this module
 └── utils.ts        ← Helpers
 ```
 
+> **Note:** The above is the full aspirational structure. Not all files are present in every module — only `byod_pos` implements all of them. At minimum, each module must have `types.ts` and at least one of `api.ts` or `api-server.ts`.
+
 ### Registered Modules
 
 | Module ID | Display Name | Admin Routes |
 |---|---|---|
-| `byod_pos` | Self-Order POS | Cashier, KDS, Transactions, Menu Manager, Settings, Reports |
-| `membership` | Membership & Loyalty | Members, Member Details (hidden), Settings |
+| `byod_pos` | Self-Order POS | Cashier, KDS, Transactions, Menu Manager, Settings, Orders |
+| `membership` | Membership & Loyalty | Members, Settings |
 | `inventory` | Inventory | Items |
 | `reservation` | Reservations | Bookings, Services, Staff (hidden), Settings |
 | `ai_sales` | AI Sales Agent | Overview, Settings |
-| `service_records` | Service Records | Records, Reports, New Record, Record Detail (hidden), Vehicles, Vehicle Detail (hidden), Service Types, Reminders, Settings |
+| `service_records` | Service Records | Records, Reports, New Record (hidden), Record Detail (hidden), Vehicles, Vehicle Detail (hidden), Service Types, Reminders, Settings |
 | `sales_pipeline` | Sales Pipeline | Pipeline Board, Settings |
+| `ai_marketing` | AI Marketing | Dashboard, Generate, Assets, Asset Detail (hidden), Campaigns, Campaign Detail (hidden), Analytics, Settings |
+
+> **Module directory naming:** Module IDs use underscores (e.g. `ai_sales`) but filesystem directories use hyphens (e.g. `lib/modules/ai-sales-agent/`). The `id` key in `definitions.ts` is the canonical identifier used in Firestore and RBAC.
 
 ### How Module Routes Are Served
 
@@ -217,7 +223,7 @@ interface ModuleDefinition {
 
 ## 6. Template & Theme System
 
-### 5 Built-in Templates
+### 6 Built-in Templates
 
 | Template ID | Name | Style | Card Style | Layout |
 |---|---|---|---|---|
@@ -226,6 +232,7 @@ interface ModuleDefinition {
 | `sojourner` | Sojourner | Green, professional | clean + outlined | full-width, adaptive nav |
 | `shuvo` | Shuvo Real Estate | Black/orange minimal | clean + flat | tablet, adaptive + bottom nav |
 | `mrb` | Mr Brightside | Dark + neon orange glass | glass + outlined | tablet, adaptive + bottom nav |
+| `mrb-light` | Mr Brightside Light | Warm cream, terracotta accent | clean + shadow | boxed, adaptive + bottom nav |
 
 ### Template Files
 
@@ -458,18 +465,24 @@ Pattern: `sites/{siteId}/modules/{module_id}/{collection}`
 ```
 app/api/
 ├── admin/
+│   ├── ai/credits/             ← AI credit balance
+│   ├── cache/purge/            ← Tenant cache invalidation
 │   ├── knowledge/sync/         ← AI knowledge base sync
 │   ├── knowledge/verify/       ← AI knowledge verification
-│   ├── modules/ai-sales-agent/ ← AI agent config
+│   ├── modules/
+│   │   ├── ai-marketing/       ← Marketing asset/campaign generation
+│   │   └── ai-sales-agent/     ← AI agent config
 │   ├── seed-templates/         ← Seed template data
-│   └── team/add|remove/        ← Team management
-├── ai-sales-agent/chat/        ← AI chat endpoint
+│   ├── team/add|remove/        ← Team management
+│   └── whatsapp/connect|disconnect|send|test/  ← WhatsApp Cloud API management
+├── ai-sales-agent/chat/        ← AI chat endpoint (public)
 ├── analytics/track/            ← Analytics events
 ├── auth/check-access/          ← Auth verification
 ├── forms/create|delete|submit|update/  ← Form CRUD
 ├── submissions/update/         ← Submission status
 ├── upload/avatar|image/        ← File uploads
-└── warranty/[warrantyCode]/pdf/ ← Service record warranty PDF generation
+├── warranty/[warrantyCode]/pdf/ ← Service record warranty PDF generation
+└── webhooks/wa/                ← WhatsApp incoming webhook
 ```
 
 ### Server Component vs Client Component Rules
@@ -530,7 +543,7 @@ app/api/
 | `lib/rbac.ts` | Role definitions |
 | `lib/firebase.ts` | Firebase client SDK config |
 | `lib/firebase-admin.ts` | Firebase Admin SDK config |
-| `lib/modules/definitions.ts` | Static module admin routes |
+| `lib/modules/definitions.ts` | Static module admin routes (8 modules) |
 | `lib/modules/components.tsx` | Dynamic component registry |
 | `lib/modules/registry.ts` | Runtime module routing (Firestore) |
 | `lib/modules/types.ts` | ModuleDefinition, AdminRoute types |

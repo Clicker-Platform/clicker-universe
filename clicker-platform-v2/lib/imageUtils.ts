@@ -38,7 +38,7 @@ export const convertToWebP = async (file: File, quality = 0.8): Promise<Blob> =>
 /**
  * Validates file size and type.
  */
-export const validateImageFile = (file: File, maxSizeMB = 5): string | null => {
+export const validateImageFile = (file: File, maxSizeMB = 10): string | null => {
     if (file.size > maxSizeMB * 1024 * 1024) {
         return `File size must be less than ${maxSizeMB}MB`;
     }

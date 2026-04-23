@@ -125,7 +125,8 @@ export default async function TenantPage({ params, searchParams }: TenantPagePro
             initialNavData={initialNavData}
             pageOverrides={{
                 borderRadius: borderRadius,
-                themeColor: themeColor
+                themeColor: themeColor,
+                backgroundConfig: homePage?.background?.mode !== 'inherit' ? homePage?.background : undefined,
             }}
         >
             <PixelTracker pixels={effectivePixels} />

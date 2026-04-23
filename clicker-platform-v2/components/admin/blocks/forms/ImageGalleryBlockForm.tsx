@@ -148,7 +148,7 @@ export const ImageGalleryBlockForm = ({ data, onChange }: ImageGalleryBlockFormP
                 >
                     <ImageIcon size={32} className="mb-3 opacity-30 group-hover:opacity-100 group-hover:text-blue-500 transition-all" />
                     <p className="text-sm font-bold text-neutral-400">Click to upload images</p>
-                    <p className="text-xs mt-1 font-medium opacity-60">PNG, JPG, WebP (Max 5MB)</p>
+                    <p className="text-xs mt-1 font-medium opacity-60">PNG, JPG, WebP (Max 10MB)</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">

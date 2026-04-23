@@ -40,6 +40,7 @@ export const BlockRenderer = ({
     previewMode,
     onInlineChange,
     onFieldFocus,
+    onFieldBlur,
     // Additional data for system blocks
     links,
     contact,
@@ -65,6 +66,7 @@ export const BlockRenderer = ({
     previewMode?: boolean,
     onInlineChange?: (field: string, value: string) => void,
     onFieldFocus?: (field: string, rect: DOMRect) => void,
+    onFieldBlur?: () => void,
     links?: any[],
     contact?: any,
     branches?: any[],
@@ -87,8 +89,8 @@ export const BlockRenderer = ({
         switch (block.type) {
             case 'hero':
                 return customBlocks?.Hero ?
-                    React.createElement(customBlocks.Hero, { profile, theme, data: block.data, previewMode, onInlineChange, onFieldFocus }) :
-                    <HeroBlock data={block.data} theme={theme} onInlineChange={onInlineChange} onFieldFocus={onFieldFocus} />;
+                    React.createElement(customBlocks.Hero, { profile, theme, data: block.data, previewMode, onInlineChange, onFieldFocus, onFieldBlur }) :
+                    <HeroBlock data={block.data} theme={theme} onInlineChange={onInlineChange} onFieldFocus={onFieldFocus} onFieldBlur={onFieldBlur} />;
             case 'text': 
                 return customBlocks?.Text ? 
                     React.createElement(customBlocks.Text, { data: block.data }) : 

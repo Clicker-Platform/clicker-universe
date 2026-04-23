@@ -39,6 +39,7 @@ interface PageFormData {
     pixelTiktok: string;
     overrideSeo: boolean;
     overridePixels: boolean;
+    background?: import('@/data/mockData').BackgroundMedia;
 }
 
 const emptyFormData: PageFormData = {
@@ -55,6 +56,7 @@ const emptyFormData: PageFormData = {
     pixelTiktok: '',
     overrideSeo: false,
     overridePixels: false,
+    background: { mode: 'inherit' },
 };
 
 // ── Page Cache ──────────────────────────────────────────────────────────
@@ -108,6 +110,7 @@ interface PageStudioContextType {
     setOverridePixels: (v: boolean) => void;
     setShowSeoSettings: (v: boolean) => void;
     showSeoSettings: boolean;
+    setBackground: (v: import('@/data/mockData').BackgroundMedia) => void;
 
     // Actions
     switchPage: (pageId: string | 'create') => Promise<boolean>;
@@ -211,6 +214,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
             pixelTiktok: data.pixelTiktok,
             overrideSeo: data.overrideSeo,
             overridePixels: data.overridePixels,
+            background: data.background,
         });
     }, []);
 
@@ -263,6 +267,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
     const setPixelTiktok = useCallback((v: string) => updateField('pixelTiktok', v), [updateField]);
     const setOverrideSeo = useCallback((v: boolean) => updateField('overrideSeo', v), [updateField]);
     const setOverridePixels = useCallback((v: boolean) => updateField('overridePixels', v), [updateField]);
+    const setBackground = useCallback((v: import('@/data/mockData').BackgroundMedia) => updateField('background', v), [updateField]);
 
     // ── Cache helpers ─────────────────────────────────────────────────────
 
@@ -412,6 +417,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
             pixelTiktok: data.pixels?.tiktokPixelId || '',
             overrideSeo: !!(data.seo?.title || data.seo?.description || data.seo?.image),
             overridePixels: !!(data.pixels?.facebookPixelId || data.pixels?.googleAnalyticsId || data.pixels?.tiktokPixelId),
+            background: data.background || { mode: 'inherit' },
         };
     }, [globalSettings]);
 
@@ -641,6 +647,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
                     googleAnalyticsId: formData.pixelGa,
                     tiktokPixelId: formData.pixelTiktok,
                 } : null,
+                background: formData.background,
                 updatedAt: serverTimestamp(),
             };
 
@@ -1007,6 +1014,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
             setOverridePixels,
             setShowSeoSettings,
             showSeoSettings,
+            setBackground,
             switchPage,
             savePage,
             deletePage,

@@ -178,7 +178,8 @@ export default async function TenantCatchAllPage({ params, searchParams }: Props
             pageOverrides={{
                 borderRadius: borderRadius,
                 themeColor: themeColor,
-                customConfig: page.templateConfig?.customConfig
+                customConfig: page.templateConfig?.customConfig,
+                backgroundConfig: page.background?.mode !== 'inherit' ? page.background : undefined,
             }}
         >
             {page.blocks && Array.isArray(page.blocks) && page.blocks.length > 0 ? (

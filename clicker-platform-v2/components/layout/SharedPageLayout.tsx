@@ -11,6 +11,7 @@ import { getTemplate } from '@/lib/templates/registry';
 import { ClassicProfileHeader } from "@/components/headers/ClassicProfileHeader";
 import { BackgroundDecorations } from "@/components/BackgroundDecorations";
 import { Footer } from "@/components/Footer";
+import { PageBackground } from '@/components/blocks/PageBackground';
 
 export interface SharedLayoutProps {
     templateId: string;
@@ -22,6 +23,7 @@ export interface SharedLayoutProps {
         customBorderRadius?: string;
         themeColor?: string;
         customConfig?: any;
+        backgroundConfig?: any;
     };
     showFooter?: boolean;
     siteId: string;
@@ -134,12 +136,16 @@ export function SharedPageLayout({
 
                 <main
                     className={`
-                        min-h-screen ${heroFirst ? 'pt-0 pb-12' : 'py-12'} relative transition-colors duration-300 overflow-x-clip
+                        min-h-screen ${heroFirst ? 'pt-0 pb-12' : 'py-12'} relative transition-colors duration-300 overflow-x-clip selection:bg-brand-dark selection:text-brand-green
                         ${template.config.layout?.navMode === 'adaptive' ? 'pt-16' : ''}
                     `}
-                    style={{ backgroundColor: pageBackgroundColor }}
                     suppressHydrationWarning // Prevent mismatches on dynamic styles
                 >
+                    {/* Base Background Fallback */}
+                    <div className="absolute inset-0 -z-20 pointer-events-none" style={{ backgroundColor: pageBackgroundColor }} />
+                    {/* User Custom Background (Page or Global) */}
+                    <PageBackground config={pageOverrides?.backgroundConfig || data.globalBackground} />
+
                     {/* Background — use absolute instead of fixed to avoid iPadOS WebKit layout quirks */}
                     <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
                         <Background />

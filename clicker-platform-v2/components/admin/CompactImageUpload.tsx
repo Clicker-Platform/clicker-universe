@@ -31,8 +31,8 @@ export function CompactImageUpload({ currentUrl, onUpload, onRemove, label = "Up
             return;
         }
 
-        if (file.size > 5 * 1024 * 1024) {
-            setError('Max size 5MB.');
+        if (file.size > 10 * 1024 * 1024) {
+            setError('Max size 10MB.');
             return;
         }
 

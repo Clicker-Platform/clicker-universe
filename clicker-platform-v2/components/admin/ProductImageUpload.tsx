@@ -30,8 +30,8 @@ export function ProductImageUpload({ currentImageUrl, onUpload, onRemove }: Prod
             return;
         }
 
-        if (file.size > 5 * 1024 * 1024) {
-            setError('Max size 5MB.');
+        if (file.size > 10 * 1024 * 1024) {
+            setError('Max size 10MB.');
             return;
         }
 
@@ -104,7 +104,7 @@ export function ProductImageUpload({ currentImageUrl, onUpload, onRemove }: Prod
                     <div className="flex flex-col items-center text-gray-400 dark:text-neutral-500 p-4 text-center">
                         <ImageIcon size={32} className="mb-2" />
                         <span className="text-xs font-bold text-gray-500 dark:text-neutral-400">Upload Image</span>
-                        <span className="text-[10px] mt-1">Max 5MB (WebP)</span>
+                        <span className="text-[10px] mt-1">Max 10MB (WebP)</span>
                     </div>
                 )}
             </div>

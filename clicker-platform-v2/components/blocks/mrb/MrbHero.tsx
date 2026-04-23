@@ -2,12 +2,56 @@
 
 import React, { useRef, useState } from 'react';
 import Image from 'next/image';
+import { ImageIcon } from 'lucide-react';
 
 const BLUR_PLACEHOLDER = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxIiBoZWlnaHQ9IjEiPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNlNWU3ZWIiLz48L3N2Zz4=';
+const ALIGN_CLASS = { left: 'text-left', center: 'text-center', right: 'text-right' } as const;
 import { BusinessProfile } from '@/data/mockData';
 import { useTemplate } from '@/components/TemplateProvider';
 import { useDeviceView, dv, type DeviceView } from '@/components/DeviceViewContext';
 import { toolbarMouseDownRef } from '@/components/admin/blocks/InlineEditToolbar';
+
+// ─── Colour helpers ───────────────────────────────────────────────────────────
+
+/** Return 0‥1 relative luminance from a hex colour string. */
+function hexLuminance(hex: string): number {
+    const clean = hex.replace('#', '');
+    const full = clean.length === 3
+        ? clean.split('').map(c => c + c).join('')
+        : clean;
+    const r = parseInt(full.slice(0, 2), 16) / 255;
+    const g = parseInt(full.slice(2, 4), 16) / 255;
+    const b = parseInt(full.slice(4, 6), 16) / 255;
+    const toLinear = (c: number) => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    return 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
+}
+
+function isColorDark(hex: string): boolean {
+    try { return hexLuminance(hex) < 0.179; } catch { return true; }
+}
+
+/**
+ * Resolve whether text should be light or dark based on the background mode,
+ * bg colour, and optional user override.
+ */
+function resolveTextOnBg(
+    bgMode: string,
+    bgColor?: string,
+    textColorMode?: string,
+    imageUrl?: string,
+): 'light' | 'dark' {
+    if (textColorMode === 'light') return 'light';
+    if (textColorMode === 'dark') return 'dark';
+    if (bgMode === 'image' && imageUrl) return 'light';
+    if (bgMode === 'image' && !imageUrl) {
+        return bgColor && isColorDark(bgColor) ? 'light' : 'dark';
+    }
+    if (bgMode === 'transparent') return 'dark';
+    if (bgMode === 'color' && bgColor) return isColorDark(bgColor) ? 'light' : 'dark';
+    return 'dark';
+}
+
+// ─── Internal primitives ─────────────────────────────────────────────────────
 
 function FieldSelectionChrome() {
     return (
@@ -34,6 +78,7 @@ function EditableText({
     placeholder,
     onInlineChange,
     onFieldFocus,
+    onFieldBlur,
 }: {
     value?: string;
     field: string;
@@ -43,6 +88,7 @@ function EditableText({
     placeholder?: string;
     onInlineChange?: (field: string, value: string) => void;
     onFieldFocus?: (field: string, rect: DOMRect) => void;
+    onFieldBlur?: () => void;
 }) {
     const ref = useRef<HTMLElement>(null);
     const [focused, setFocused] = useState(false);
@@ -53,7 +99,7 @@ function EditableText({
     }
 
     return (
-        <div className="relative">
+        <div className="relative w-full">
             <El
                 ref={ref}
                 contentEditable
@@ -73,6 +119,7 @@ function EditableText({
                     if (!toolbarMouseDownRef.current) {
                         setFocused(false);
                         onInlineChange(field, e.currentTarget.textContent || '');
+                        onFieldBlur?.();
                     }
                 }}
                 onKeyDown={(e: React.KeyboardEvent<HTMLElement>) => {
@@ -105,6 +152,7 @@ interface MrbHeroProps {
     previewMode?: boolean;
     onInlineChange?: (field: string, value: string) => void;
     onFieldFocus?: (field: string, rect: DOMRect) => void;
+    onFieldBlur?: () => void;
     data?: {
         title?: string;
         subtitle?: string;
@@ -122,43 +170,57 @@ interface MrbHeroProps {
         subtitleColor?: string;
         subtitleWeight?: string;
         taglineColor?: string;
+        taglineAlign?: string;
+        titleAlign?: string;
+        subtitleAlign?: string;
+        ctaAlign?: string;
+        /** 'image' | 'color' | 'transparent' — how to fill the hero background */
+        bgMode?: string;
+        /** Solid background colour, used when bgMode === 'color' */
+        bgColor?: string;
+        /** 'auto' | 'light' | 'dark' — override automatic text contrast detection */
+        textColorMode?: string;
     };
 }
 
-export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, onInlineChange, onFieldFocus }) => {
+export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, onInlineChange, onFieldFocus, onFieldBlur }) => {
     const { theme } = useTemplate();
     const d = useDeviceView();
 
-    const defaultHero = "https://lh3.googleusercontent.com/aida-public/AB6AXuAHd7B70Bcb1uWEcIBcn_xhhy47_DyI5SXZVEiUzf-tKxj1KFRwGS5Ud_8q_bwMYgtCRfnYaEZHQgdSmWqgw8gvdjBDjpg0DUSN_LDBYpX_1THYO_73OY2hcgMVUVrx75mGZdmaBdiL78ZPKz9UV9yIiSvcwhTkNfJ7F-Wa6nQyo0gmJUQ7nFq2lN3GGAK3YciJGqEhihA8mzcKu9FvF0jopfHK4M99Lp1sqL_7vhXIAAqgQG51V3b89V-ffqXoCGn5rQt2EvC68ayw";
+    // ── Background mode ───────────────────────────────────────────────────────
+    // Default: 'image' when an imageUrl is saved, 'color' for brand-new blocks
+    const bgMode = data?.bgMode ?? (data?.imageUrl ? 'image' : 'color');
+    const bgColor = data?.bgColor || theme.colors.background || '#1a1a2e';
 
-    const imageUrl = data?.imageUrl || defaultHero;
-    // Desktop focal point
+    // ── Image focal point helpers ─────────────────────────────────────────────
+    const imageUrl = data?.imageUrl || '';
     const imgPos = data?.imagePosition || 'center';
-    // Mobile: use dedicated focal point if set, otherwise fall back to desktop (Option B default)
     const imgPosMobile = data?.imagePositionMobile || imgPos;
-    // Optional separate mobile image (Option A escape hatch)
     const imageUrlMobile = data?.imageUrlMobile || null;
-
-    // For Canvas Studio preview: d is 'mobile' | 'tablet' | 'desktop' | 'responsive'.
-    // On real public pages d = 'responsive', so the CSS @media style tag handles mobile.
-    // In Canvas Studio mobile/tablet preview we apply the mobile focal point directly via inline style.
     const isMobilePreview = d === 'mobile' || d === 'tablet';
-    // If a separate mobile image exists, effectiveImgPos controls ITS position in Canvas preview.
-    // Otherwise it controls the single shared image's focal point.
     const effectiveImgPos = isMobilePreview ? imgPosMobile : imgPos;
 
-    const titleSizeClass = TITLE_SIZES(d)[data?.titleSize || 'lg']; // MrbHero default is bigger
-    const borderRadius = theme.borderRadius || '1rem';
+    // ── Text colour ───────────────────────────────────────────────────────────
+    const textOnBg = resolveTextOnBg(bgMode, bgColor, data?.textColorMode, imageUrl);
+    const defaultTextColor = textOnBg === 'light' ? '#ffffff' : '#111111';
+    const defaultSubtitleOpacity = textOnBg === 'light' ? 'rgba(255,255,255,0.82)' : 'rgba(17,17,17,0.65)';
 
+    // ── Layout ────────────────────────────────────────────────────────────────
+    const titleSizeClass = TITLE_SIZES(d)[data?.titleSize || 'lg'];
+    const borderRadius = theme.borderRadius || '1rem';
     const isFullbleed = data?.layoutVariant === 'fullbleed';
 
-    // Text alignment — MrbHero default is left (bottom-left layout)
-    const textAlign = data?.textAlign || 'left';
-    const textAlignClass = `text-${textAlign}`;
-    const flexAlignClass = textAlign === 'right' ? 'items-end' : textAlign === 'center' ? 'items-center' : 'items-start';
-    const justifyClass = textAlign === 'right' ? 'justify-end' : textAlign === 'center' ? 'justify-center' : 'justify-start';
+    const fallbackAlign = data?.textAlign || 'left';
+    const taglineAlign = data?.taglineAlign ?? fallbackAlign;
+    const titleAlign = data?.titleAlign ?? fallbackAlign;
+    const subtitleAlign = data?.subtitleAlign ?? fallbackAlign;
+    const ctaAlign = data?.ctaAlign ?? fallbackAlign;
+    const taC = ALIGN_CLASS[taglineAlign as 'left' | 'center' | 'right'] ?? 'text-left';
+    const tiC = ALIGN_CLASS[titleAlign as 'left' | 'center' | 'right'] ?? 'text-left';
+    const suC = ALIGN_CLASS[subtitleAlign as 'left' | 'center' | 'right'] ?? 'text-left';
+    const taglineJustify = taglineAlign === 'right' ? 'justify-end' : taglineAlign === 'center' ? 'justify-center' : 'justify-start';
+    const ctaJustify = ctaAlign === 'right' ? 'justify-end' : ctaAlign === 'center' ? 'justify-center' : 'justify-start';
 
-    // Title: use block data title, fall back to split profile name with two-tone styling
     const titleText = data?.title;
     const nameParts = profile.name.split(' ');
     const firstName = nameParts[0] || '';
@@ -169,20 +231,32 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, onInlineChange,
     const primaryBtn: CtaBtn | null = data?.primaryBtn || null;
     const secondaryBtn: CtaBtn | null = data?.secondaryBtn || null;
 
-    return (
-        <div
-            className={`relative flex h-[560px] flex-col gap-6 justify-end ${dv(d, 'px-6', 'md:px-12')} pb-16 overflow-hidden ${flexAlignClass} ${
-                isFullbleed
-                    ? 'rounded-none w-screen'
-                    : 'w-full'
-            }`}
-            style={isFullbleed
-                ? { border: 'none', borderRadius: '0', position: 'relative', left: '50%', transform: 'translateX(-50%)' }
-                : { borderRadius }}
-        >
-            {/* Background image */}
+    // ── Render background layer ───────────────────────────────────────────────
+    const renderBackground = () => {
+        if (bgMode === 'transparent') return null;
+
+        if (bgMode === 'color') {
+            return (
+                <div
+                    className="absolute inset-0 z-0"
+                    style={{ backgroundColor: bgColor }}
+                />
+            );
+        }
+
+        // bgMode === 'image' but no image yet — keep previous appearance (fallback to color)
+        if (!imageUrl) {
+            return (
+                <div
+                    className="absolute inset-0 z-0"
+                    style={{ backgroundColor: bgColor }}
+                />
+            );
+        }
+
+        return (
             <div className="absolute inset-0 z-0">
-                {/* Desktop image — hidden on mobile only when a separate mobile image is provided */}
+                {/* Desktop image */}
                 <Image
                     src={imageUrl}
                     alt=""
@@ -195,7 +269,7 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, onInlineChange,
                     className={`object-cover mrb-hero-bg ${imageUrlMobile ? dv(d, 'hidden', 'md:block') : ''}`}
                     style={{ objectPosition: imageUrlMobile ? imgPos : effectiveImgPos }}
                 />
-                {/* Option B: CSS @media overrides objectPosition for real mobile browsers (d='responsive') */}
+                {/* Option B: CSS @media overrides objectPosition for real mobile browsers */}
                 {!imageUrlMobile && imgPosMobile !== imgPos && (
                     <style>{`
                         @media (max-width: 767px) {
@@ -203,7 +277,7 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, onInlineChange,
                         }
                     `}</style>
                 )}
-                {/* Option A escape hatch: separate mobile image, shown only on small screens */}
+                {/* Option A: separate mobile image */}
                 {imageUrlMobile && (
                     <Image
                         src={imageUrlMobile}
@@ -218,23 +292,39 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, onInlineChange,
                         style={{ objectPosition: imgPosMobile }}
                     />
                 )}
+                {/* Gradient scrim for readability */}
                 <div
                     className="absolute inset-0"
                     style={{
                         background: theme.decorations?.accentGlow === false
-                            // Light theme: subtle dark scrim so text is readable, no heavy color wash
                             ? `linear-gradient(to top, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0) 100%)`
-                            // Dark theme: fade to background color
                             : `linear-gradient(to top, ${theme.colors.background} 0%, ${theme.colors.background}cc 40%, ${theme.colors.background}00 100%)`
                     }}
                 />
             </div>
+        );
+    };
+
+    return (
+        <div
+            className={`relative flex h-[560px] flex-col gap-6 justify-end ${dv(d, 'px-6', 'md:px-12')} pb-16 overflow-hidden ${
+                fallbackAlign === 'center' ? 'items-center' : fallbackAlign === 'right' ? 'items-end' : 'items-start'
+            } ${
+                isFullbleed
+                    ? 'rounded-none w-screen'
+                    : 'w-full'
+            }`}
+            style={isFullbleed
+                ? { border: 'none', borderRadius: '0', position: 'relative', left: '50%', transform: 'translateX(-50%)' }
+                : { borderRadius }}
+        >
+            {renderBackground()}
 
             {/* Text Content */}
-            <div className={`flex flex-col gap-4 max-w-2xl relative z-10 w-full ${textAlignClass} ${flexAlignClass}`}>
-                {/* Tagline Bubble — in flow so it aligns with title/subtitle */}
+            <div className="flex flex-col gap-4 relative z-10 w-full">
+                {/* Tagline Bubble */}
                 {(tagline || onInlineChange) && (
-                    <div className={`flex ${justifyClass}`}>
+                    <div className={`flex ${taglineJustify} ${taC}`}>
                         <EditableText
                             tag="span"
                             field="tagline"
@@ -242,6 +332,7 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, onInlineChange,
                             placeholder="Add tagline…"
                             onInlineChange={onInlineChange}
                             onFieldFocus={onFieldFocus}
+                            onFieldBlur={onFieldBlur}
                             className="inline-flex items-center rounded-full px-4 py-1.5 text-[10px] font-bold uppercase border"
                             style={{
                                 backgroundColor: `${theme.colors.primary}15`,
@@ -252,8 +343,8 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, onInlineChange,
                         />
                     </div>
                 )}
-                {/* When onInlineChange is active always show an editable title field;
-                    otherwise fall back to the split profile name when no data.title set */}
+
+                {/* Title */}
                 {(titleText || onInlineChange) ? (
                     <EditableText
                         tag="h1"
@@ -262,15 +353,19 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, onInlineChange,
                         placeholder="Add title…"
                         onInlineChange={onInlineChange}
                         onFieldFocus={onFieldFocus}
-                        className={`${titleSizeClass} font-extrabold leading-[0.95] tracking-tighter m-0`}
-                        style={{ color: data?.titleColor || '#ffffff' }}
+                        className={`${titleSizeClass} ${tiC} font-extrabold leading-[0.95] tracking-tighter m-0`}
+                        style={{ color: data?.titleColor || defaultTextColor }}
                     />
                 ) : (
-                    <h1 className={`${titleSizeClass} font-extrabold leading-[0.95] tracking-tighter m-0`}
-                        style={{ color: data?.titleColor || '#ffffff' }}>
+                    <h1
+                        className={`${titleSizeClass} ${tiC} font-extrabold leading-[0.95] tracking-tighter m-0`}
+                        style={{ color: data?.titleColor || defaultTextColor }}
+                    >
                         {firstName}{restName && <><br /><span style={{ color: data?.titleColor || theme.colors.primary }}>{restName}</span></>}
                     </h1>
                 )}
+
+                {/* Subtitle */}
                 {(subtitle || onInlineChange) && (
                     <EditableText
                         tag="p"
@@ -279,15 +374,15 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, onInlineChange,
                         placeholder="Add subtitle…"
                         onInlineChange={onInlineChange}
                         onFieldFocus={onFieldFocus}
-                        className={`text-lg ${data?.subtitleWeight ? `font-${data.subtitleWeight}` : 'font-medium'} leading-relaxed max-w-md m-0 opacity-80`}
-                        style={{ color: data?.subtitleColor || '#ffffff' }}
+                        className={`text-lg ${suC} ${data?.subtitleWeight ? `font-${data.subtitleWeight}` : 'font-medium'} leading-relaxed m-0 opacity-80`}
+                        style={{ color: data?.subtitleColor || defaultSubtitleOpacity }}
                     />
                 )}
             </div>
 
             {/* CTA Buttons */}
             {(primaryBtn?.label || secondaryBtn?.label) && (
-                <div className={`flex flex-wrap gap-4 relative z-10 w-full ${justifyClass}`}>
+                <div className={`flex flex-wrap gap-4 relative z-10 w-full ${ctaJustify}`}>
                     {primaryBtn?.label && (
                         <a href={primaryBtn.url || '#'}
                             className="inline-flex items-center px-6 py-3 rounded-xl text-sm font-bold uppercase tracking-wide transition-all active:scale-[0.98] shadow-lg"
@@ -298,7 +393,7 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, onInlineChange,
                     {secondaryBtn?.label && (
                         <a href={secondaryBtn.url || '#'}
                             className="inline-flex items-center px-6 py-3 rounded-xl text-sm font-bold uppercase tracking-wide border-2 transition-all active:scale-[0.98]"
-                            style={{ borderColor: `${theme.colors.primary}66`, color: theme.colors.foreground }}>
+                            style={{ borderColor: `${theme.colors.primary}66`, color: data?.titleColor || defaultTextColor }}>
                             {secondaryBtn.label}
                         </a>
                     )}
