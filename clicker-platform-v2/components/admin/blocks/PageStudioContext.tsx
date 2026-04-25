@@ -148,6 +148,8 @@ interface PageStudioContextType {
 
 const PageStudioContext = createContext<PageStudioContextType | undefined>(undefined);
 
+const lastPageKey = (siteId: string) => `canvas_last_page_${siteId}`;
+
 // ── Provider ───────────────────────────────────────────────────────────────
 
 export function PageStudioProvider({ children, initialPageId }: { children: ReactNode; initialPageId?: string | null }) {
@@ -364,8 +366,11 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
 
                 // Determine initial page to load
                 const paramId = initialPageId;
+                const savedId = siteId ? localStorage.getItem(lastPageKey(siteId)) : null;
                 if (paramId && paramId !== 'create' && fetchedPages.some(p => p.id === paramId)) {
                     await loadPage(paramId, settings);
+                } else if (savedId && fetchedPages.some(p => p.id === savedId)) {
+                    await loadPage(savedId, settings);
                 } else if (fetchedPages.length > 0) {
                     // Auto-select homepage first, fallback to first page
                     const homeSlug = settings?.homepageSlug || 'home';
@@ -531,8 +536,9 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
         }
 
         await loadPage(pageId);
+        if (siteId) localStorage.setItem(lastPageKey(siteId), pageId);
         return true;
-    }, [loadPage, getSnapshot]);
+    }, [loadPage, getSnapshot, siteId]);
 
     const switchPage = useCallback(async (pageId: string | 'create'): Promise<boolean> => {
         // If switching to same page, no-op

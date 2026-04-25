@@ -23,7 +23,8 @@ export const getBlockLabel = (type: string, moduleInfoName?: string) => {
         'hours': 'Operating Hours',
         'featured_product': 'Featured Product',
         'branches': 'Branches',
-        'social_embed': 'Social Embeds'
+        'social_embed': 'Social Embeds',
+        'content_showcase': 'Content Showcase'
     };
     return coreLabels[type] || `Module (${type})`;
 };

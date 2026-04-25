@@ -21,6 +21,7 @@ const FormSkeleton = () => (
 // Dynamic Imports
 const HeroForm = dynamic(() => import('./forms/HeroForm').then(mod => mod.HeroForm), { loading: () => <FormSkeleton /> });
 const TextForm = dynamic(() => import('./forms/TextForm').then(mod => mod.TextForm), { loading: () => <FormSkeleton /> });
+const ContentShowcaseForm = dynamic(() => import('./forms/ContentShowcaseForm').then(mod => mod.ContentShowcaseForm), { loading: () => <FormSkeleton /> });
 const ImageForm = dynamic(() => import('./forms/ImageForm').then(mod => mod.ImageForm), { loading: () => <FormSkeleton /> });
 const ButtonForm = dynamic(() => import('./forms/ButtonForm').then(mod => mod.ButtonForm), { loading: () => <FormSkeleton /> });
 const ProductsForm = dynamic(() => import('./forms/ProductsForm').then(mod => mod.ProductsForm), { loading: () => <FormSkeleton /> });
@@ -49,7 +50,8 @@ export const BlockFormRenderer = memo(({ block, onChange, templateId = 'classic'
             'hero': 'Hero', 'text': 'Text', 'image': 'Image', 'button': 'Button',
             'products': 'Products', 'faq': 'FAQ', 'link': 'Link', 'map': 'Map', 'image_gallery': 'Gallery',
             'quick_actions': 'Quick Actions', 'hours': 'Operating Hours', 'featured_product': 'Featured Product', 'branches': 'Branches',
-            'social_embed': 'Social Embeds'
+            'social_embed': 'Social Embeds',
+            'content_showcase': 'Content Showcase'
         };
 
         if (coreLabels[block.type]) {
@@ -116,6 +118,7 @@ export const BlockFormRenderer = memo(({ block, onChange, templateId = 'classic'
     switch (block.type) {
         case 'hero': return renderWithLayoutPicker(<HeroForm data={block.data} onChange={handleDataChange} />);
         case 'text': return renderWithLayoutPicker(<TextForm data={block.data} onChange={handleDataChange} />);
+        case 'content_showcase': return <ContentShowcaseForm data={block.data} onChange={handleDataChange} />;
         case 'image': return renderWithLayoutPicker(<ImageForm data={block.data} onChange={handleDataChange} />);
         case 'button': return renderWithLayoutPicker(<ButtonForm data={block.data} onChange={handleDataChange} />);
         case 'products': return renderWithLayoutPicker(<ProductsForm data={block.data} onChange={handleDataChange} onOpenProducts={onOpenSlideOver ? () => onOpenSlideOver('products') : undefined} />);

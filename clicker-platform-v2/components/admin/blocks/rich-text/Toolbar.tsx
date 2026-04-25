@@ -17,6 +17,7 @@ import {
     AlignRight,
     Link2,
     Image as ImageIcon,
+    Film,
     Undo,
     Redo,
     Loader2
@@ -231,6 +232,20 @@ export const Toolbar = ({ editor }: ToolbarProps) => {
                     `}
                 >
                     {uploading ? <Loader2 size={16} className="animate-spin text-blue-500" /> : <ImageIcon size={16} />}
+                </button>
+
+                <button
+                    type="button"
+                    onClick={() => {
+                        const url = window.prompt('Paste a YouTube, Vimeo, or direct .mp4 URL');
+                        if (!url) return;
+                        const ok = (editor.chain().focus() as any).setVideoEmbed({ src: url }).run();
+                        if (!ok) alert('Unrecognized video URL. Use YouTube, Vimeo, or a direct .mp4/.webm link.');
+                    }}
+                    title="Embed Video"
+                    className="p-2 rounded-lg transition-all active:scale-95 text-neutral-400 dark:text-neutral-500 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-neutral-200"
+                >
+                    <Film size={16} />
                 </button>
             </div>
         </div>

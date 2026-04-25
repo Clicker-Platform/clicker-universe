@@ -1,10 +1,12 @@
 import { BlockType } from '@/data/mockData';
-import { Type, Image as ImageIcon, Layout, Box, HelpCircle, AlignCenter, Link, Map, List, Clock, Star, MapPin, Play } from 'lucide-react';
+import { Type, Image as ImageIcon, Layout, Box, HelpCircle, AlignCenter, Link, Map, List, Clock, Star, MapPin, Play, Columns2 } from 'lucide-react';
 import { getTemplate } from '@/lib/templates/registry';
+import { DEFAULT_SHOWCASE_DATA, newRow } from '@/components/blocks/content-showcase/types';
 
 export const BLOCK_OPTIONS: { type: BlockType; label: string; icon: React.ElementType }[] = [
     { type: 'hero', label: 'Hero Section', icon: Layout },
     { type: 'text', label: 'Text Content', icon: Type },
+    { type: 'content_showcase', label: 'Content Showcase', icon: Columns2 },
     { type: 'image', label: 'Image', icon: ImageIcon },
     { type: 'button', label: 'Button', icon: Box },
     { type: 'products', label: 'Product List', icon: AlignCenter },
@@ -33,6 +35,8 @@ export function getDefaultData(type: BlockType, templateId = 'classic'): any {
             return { ...baseData, title: 'Your Headline', subtitle: 'Your subtitle goes here' };
         case 'text':
             return { ...baseData, content: '<p>Start writing your content here...</p>' };
+        case 'content_showcase':
+            return { ...baseData, ...DEFAULT_SHOWCASE_DATA, rows: [newRow()] };
         case 'image':
             return { ...baseData, alt: 'Image description', caption: '' };
         case 'button':

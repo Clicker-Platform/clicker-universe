@@ -25,6 +25,7 @@ const FormSkeleton = () => (
 // Dynamic Imports
 const HeroForm = dynamic(() => import('./forms/HeroForm').then(mod => mod.HeroForm), { loading: () => <FormSkeleton /> });
 const TextForm = dynamic(() => import('./forms/TextForm').then(mod => mod.TextForm), { loading: () => <FormSkeleton /> });
+const ContentShowcaseForm = dynamic(() => import('./forms/ContentShowcaseForm').then(mod => mod.ContentShowcaseForm), { loading: () => <FormSkeleton /> });
 const ImageForm = dynamic(() => import('./forms/ImageForm').then(mod => mod.ImageForm), { loading: () => <FormSkeleton /> });
 const ButtonForm = dynamic(() => import('./forms/ButtonForm').then(mod => mod.ButtonForm), { loading: () => <FormSkeleton /> });
 const ProductsForm = dynamic(() => import('./forms/ProductsForm').then(mod => mod.ProductsForm), { loading: () => <FormSkeleton /> });
@@ -134,6 +135,7 @@ export const BlockEditor = memo(({ block, onChange, onDelete }: BlockEditorProps
         switch (block.type) {
             case 'hero': return <HeroForm data={block.data} onChange={handleDataChange} />;
             case 'text': return <TextForm data={block.data} onChange={handleDataChange} />;
+            case 'content_showcase': return <ContentShowcaseForm data={block.data} onChange={handleDataChange} />;
             case 'image': return <ImageForm data={block.data} onChange={handleDataChange} />;
             case 'button': return <ButtonForm data={block.data} onChange={handleDataChange} />;
             case 'products': return <ProductsForm data={block.data} onChange={handleDataChange} />;

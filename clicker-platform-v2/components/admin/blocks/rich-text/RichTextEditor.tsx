@@ -5,6 +5,7 @@ import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
+import { VideoEmbed } from './VideoEmbedExtension';
 import { Toolbar } from './Toolbar';
 import { useEffect } from 'react';
 
@@ -37,7 +38,8 @@ export const RichTextEditor = ({ value, onChange, placeholder = 'Write something
             }),
             Placeholder.configure({
                 placeholder,
-            })
+            }),
+            VideoEmbed as any,
         ],
         content: value,
         editorProps: {

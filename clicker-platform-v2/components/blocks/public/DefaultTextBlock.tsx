@@ -1,22 +1,22 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useTemplate } from '@/components/TemplateProvider';
 import { useDeviceView, dv } from '@/components/DeviceViewContext';
 import { getCardClasses } from './cardStyles';
+import { sanitizeRichText } from '@/lib/sanitizeHtml';
 
-export const DefaultTextBlock = ({ data }: { data: any }) => {
-    if (!data) return null;
+export const DefaultTextBlock = ({ data }: { data: { content?: string; layoutVariant?: string } | null | undefined }) => {
     const { theme } = useTemplate();
     const d = useDeviceView();
+    const safeHtml = useMemo(() => sanitizeRichText(data?.content), [data?.content]);
+
+    if (!data) return null;
+
     const cardStyle = theme.cardStyle || 'brutalist';
-
     const isGlass = cardStyle === 'glass';
-
     const cardClasses = getCardClasses(cardStyle);
-
     const textClass = isGlass ? 'text-theme-foreground/90' : 'text-theme-foreground';
-
     const variant = data?.layoutVariant || 'prose';
     
     // Custom Prose & Typography configuration
@@ -39,7 +39,7 @@ export const DefaultTextBlock = ({ data }: { data: any }) => {
             >
                 <div
                     className={`${proseClasses} ${dv(d, '', 'md:columns-2 md:gap-8 lg:gap-12')}`}
-                    dangerouslySetInnerHTML={{ __html: data?.content || '' }}
+                    dangerouslySetInnerHTML={{ __html: safeHtml }}
                     suppressHydrationWarning
                 />
             </section>
@@ -60,7 +60,7 @@ export const DefaultTextBlock = ({ data }: { data: any }) => {
                     <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--theme-primary)] opacity-5 rounded-bl-full transform translate-x-10 -translate-y-10" />
                     <div
                         className={`${proseClasses} relative z-10`}
-                        dangerouslySetInnerHTML={{ __html: data?.content || '' }}
+                        dangerouslySetInnerHTML={{ __html: safeHtml }}
                         suppressHydrationWarning
                     />
                 </div>
@@ -77,7 +77,7 @@ export const DefaultTextBlock = ({ data }: { data: any }) => {
         >
             <div
                 className={proseClasses}
-                dangerouslySetInnerHTML={{ __html: data?.content || '' }}
+                dangerouslySetInnerHTML={{ __html: safeHtml }}
                 suppressHydrationWarning
             />
         </section>

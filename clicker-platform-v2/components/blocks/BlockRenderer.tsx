@@ -8,6 +8,7 @@ import { DefaultImageGalleryBlock as ImageGalleryBlock } from './public/DefaultI
 
 // Dynamically import remaining blocks to reduce initial bundle size
 const TextBlock = dynamic(() => import('./public/DefaultTextBlock').then(mod => mod.DefaultTextBlock));
+const ContentShowcaseBlock = dynamic(() => import('./public/DefaultContentShowcaseBlock').then(mod => mod.DefaultContentShowcaseBlock));
 const ImageBlock = dynamic(() => import('./public/DefaultImageBlock').then(mod => mod.DefaultImageBlock));
 const ButtonBlock = dynamic(() => import('./public/DefaultButtonBlock').then(mod => mod.DefaultButtonBlock));
 const ProductsBlock = dynamic(() => import('./public/DefaultProductsBlock').then(mod => mod.DefaultProductsBlock));
@@ -91,10 +92,12 @@ export const BlockRenderer = ({
                 return customBlocks?.Hero ?
                     React.createElement(customBlocks.Hero, { profile, theme, data: block.data, previewMode, onInlineChange, onFieldFocus, onFieldBlur }) :
                     <HeroBlock data={block.data} theme={theme} onInlineChange={onInlineChange} onFieldFocus={onFieldFocus} onFieldBlur={onFieldBlur} />;
-            case 'text': 
-                return customBlocks?.Text ? 
-                    React.createElement(customBlocks.Text, { data: block.data }) : 
+            case 'text':
+                return customBlocks?.Text ?
+                    React.createElement(customBlocks.Text, { data: block.data }) :
                     <TextBlock data={block.data} />;
+            case 'content_showcase':
+                return <ContentShowcaseBlock data={block.data} />;
             case 'image': 
                 return customBlocks?.Image ? 
                     React.createElement(customBlocks.Image, { data: block.data }) : 
