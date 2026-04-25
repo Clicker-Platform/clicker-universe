@@ -1,4 +1,5 @@
 import { Redis } from '@upstash/redis';
+import { logger } from '@/lib/logger';
 
 const URL = process.env.UPSTASH_REDIS_REST_URL;
 const TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
@@ -19,20 +20,18 @@ export async function cached<T>(
     try {
         const hit = await redis.get<T>(key);
         if (hit !== null) {
-            console.log(`[cache HIT] ${key} (${Date.now() - start}ms)`);
             return hit;
         }
     } catch (err) {
-        console.warn(`[cache] Redis GET error for ${key}:`, err);
+        logger.warn('cache.get.failed', { siteId: 'platform', error: err });
     }
 
     const fresh = await fetcher();
 
     try {
         await redis!.set(key, fresh, { ex: ttl });
-        console.log(`[cache MISS→SET] ${key}`);
     } catch (err) {
-        console.warn(`[cache] Redis SET error for ${key}:`, err);
+        logger.warn('cache.set.failed', { siteId: 'platform', error: err });
     }
 
     return fresh;
@@ -55,7 +54,7 @@ export async function invalidate(pattern: string): Promise<number> {
             }
         } while (cursor !== 0);
     } catch (err) {
-        console.warn(`[cache] Redis invalidate error for ${pattern}:`, err);
+        logger.warn('cache.invalidate.failed', { siteId: 'platform', error: err });
     }
     return deleted;
 }
