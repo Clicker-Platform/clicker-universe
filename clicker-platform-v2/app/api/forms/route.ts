@@ -1,5 +1,6 @@
 import { adminDb } from '@/lib/firebase-admin';
 import { NextResponse } from 'next/server';
+import { logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,7 +20,7 @@ export async function GET(request: Request) {
         }
         return NextResponse.json({ id: doc.id, ...doc.data() });
     } catch (error) {
-        console.error('Error fetching form:', error);
+        logger.error('form.fetch.failed', { siteId: siteId ?? 'platform', error });
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }
