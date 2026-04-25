@@ -40,7 +40,7 @@ export default function Sidebar() {
             setUnreadCount(newCount);
         }, (err) => {
             if (err.code === 'failed-precondition') return; // index still building
-            console.error('[Sidebar] platform_logs snapshot error:', err.message);
+            // Non-critical: monitoring badge silently fails
         });
         return unsub;
     }, [lastSeenAt]);

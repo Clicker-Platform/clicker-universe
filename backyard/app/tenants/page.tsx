@@ -77,7 +77,6 @@ export default function TenantsPage() {
             });
             return unique;
         } catch (error: any) {
-            console.error("Fetch Tenants Error:", error);
             if (error.code !== 'permission-denied') {
                 toast.error("Failed to fetch tenants", { description: error.message });
             }
@@ -295,7 +294,6 @@ export default function TenantsPage() {
                 setTeamLoading(false);
             },
             (error) => {
-                console.error("❌ Fetch Team Error:", error);
                 toast.error('Failed to load team', { description: error.message });
                 setTeamLoading(false);
             }

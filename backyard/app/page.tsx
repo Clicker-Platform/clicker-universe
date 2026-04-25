@@ -99,7 +99,6 @@ export default function Home() {
             toast.success('Check your email', { description: `A verification link was sent to ${loginEmail}` });
             setStep('check-email');
         } catch (error: any) {
-            console.error('[Backyard] Login error:', error.code, error.message);
             if (error.code === 'auth/unauthorized-domain') {
                 setLoginError('Unauthorized domain. Add this domain to Firebase Auth authorized domains.');
             } else {
