@@ -419,10 +419,10 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    // platform_meta — quota guard counter
+    // platform_meta — seed history and future meta docs
     match /platform_meta/{docId} {
       allow read: if isGlobalAdmin();
-      allow write: if false;
+      allow write: if isGlobalAdmin();
     }
 
     // Default Deny
