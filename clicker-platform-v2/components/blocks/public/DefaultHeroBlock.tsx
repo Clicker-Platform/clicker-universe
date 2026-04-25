@@ -251,9 +251,11 @@ export const DefaultHeroBlock = ({ data, theme, onInlineChange, onFieldFocus, on
     const suC = ALIGN_CLASS[subtitleAlign];
 
     // Resolved default text colours (used when no per-field override is set)
-    const defaultTitleColor = isDark ? '#ffffff' : '#111111';
-    const defaultSubtitleColor = isDark ? 'rgba(255,255,255,0.80)' : '#4b5563';
-    const defaultTaglineColor = isDark ? 'rgba(255,255,255,0.55)' : undefined; // undefined = Tailwind class handles it
+    // Transparent+auto: inherit from theme CSS vars so page background (dark/light) drives the color
+    const isTransparentAuto = bgMode === 'transparent' && !textColorMode;
+    const defaultTitleColor = isTransparentAuto ? 'var(--theme-foreground)' : isDark ? '#ffffff' : '#111111';
+    const defaultSubtitleColor = isTransparentAuto ? 'var(--theme-foreground)' : isDark ? 'rgba(255,255,255,0.80)' : '#4b5563';
+    const defaultTaglineColor = isTransparentAuto ? 'var(--theme-foreground)' : isDark ? 'rgba(255,255,255,0.55)' : undefined;
 
     // ─── SPLIT ────────────────────────────────────────────────────────────────
     if (variant === 'split') {
@@ -390,7 +392,7 @@ export const DefaultHeroBlock = ({ data, theme, onInlineChange, onFieldFocus, on
                             className={`text-xs font-bold uppercase tracking-[0.2em] mb-2 ${taC}`}
                             style={data?.taglineColor
                                 ? { color: data.taglineColor }
-                                : { color: isDark ? 'rgba(255,255,255,0.60)' : 'rgba(0,0,0,0.50)' }}
+                                : { color: isTransparentAuto ? 'var(--theme-foreground)' : isDark ? 'rgba(255,255,255,0.60)' : 'rgba(0,0,0,0.50)' }}
                         />
                     )}
                     <EditableText
@@ -478,7 +480,7 @@ export const DefaultHeroBlock = ({ data, theme, onInlineChange, onFieldFocus, on
                         className={`text-xs font-bold uppercase tracking-[0.2em] mb-2 ${taC}`}
                         style={data?.taglineColor
                             ? { color: data.taglineColor }
-                            : { color: isDark ? 'rgba(255,255,255,0.55)' : undefined }}
+                            : { color: isTransparentAuto ? 'var(--theme-foreground)' : isDark ? 'rgba(255,255,255,0.55)' : undefined }}
                     />
                 )}
                 <EditableText

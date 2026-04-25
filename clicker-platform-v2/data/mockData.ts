@@ -35,7 +35,7 @@ export interface PageBlock {
     data: any;
 }
 
-export interface BackgroundMedia {
+export interface BackgroundMediaBase {
     mode: 'inherit' | 'color' | 'image' | 'video';
     url?: string;
     color?: string;
@@ -44,6 +44,12 @@ export interface BackgroundMedia {
     scrollEffect?: 'scroll' | 'fixed';
     overlayColor?: string;
     overlayOpacity?: number;
+}
+
+export interface BackgroundMedia extends BackgroundMediaBase {
+    // When set, overrides all desktop fields for screens below md breakpoint.
+    // mode: 'inherit' means "same as desktop" (no override).
+    mobile?: BackgroundMediaBase;
 }
 
 export interface Page {

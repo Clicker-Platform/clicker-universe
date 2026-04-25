@@ -222,7 +222,7 @@ export function CanvasStudio({
 
     const pageBackgroundColor = template.config.allowThemeColorOverride === false
         ? template.config.colors.background
-        : (themeColor || template.config.colors.background);
+        : (globalSettings?.backgroundColor || themeColor || template.config.colors.background);
 
     const isHomepage = pageSlug === (globalSettings?.homepageSlug || 'home');
     const isSubPage = !isHomepage;
@@ -248,7 +248,7 @@ export function CanvasStudio({
                 </div>
             )}
             {/* The actual canvas container */}
-            <div className={`w-full min-w-[375px] ${deviceView === 'tablet' ? 'max-w-lg' : deviceView === 'mobile' ? 'max-w-md' : ''} shadow-2xl ring-1 ring-black/10 dark:ring-white/10 overflow-hidden transition-all duration-300 my-8 self-start isolate`}>
+            <div className={`w-full min-w-[375px] ${deviceView === 'tablet' ? 'max-w-lg' : deviceView === 'mobile' ? 'max-w-[390px]' : ''} shadow-2xl ring-1 ring-black/10 dark:ring-white/10 overflow-hidden transition-all duration-300 my-8 self-start isolate`}>
                 {/* WYSIWYG Renderer — providers are always mounted to prevent context loss during block reorder */}
                 <DeviceViewProvider deviceView={deviceView}>
                 <TemplateProvider
@@ -275,9 +275,11 @@ export function CanvasStudio({
                         };
                     })()}
                 >
+                {/* Background wrapper inside TemplateProvider so var(--theme-background) is resolved */}
+                <div>
                 <NavigationProvider siteId={siteId!}>
                     {blocks.length === 0 ? (
-                        <div className="h-96 flex items-center justify-center text-neutral-400 dark:text-neutral-500 p-12 text-center text-sm font-medium bg-gray-50 dark:bg-neutral-900">
+                        <div className="h-96 flex items-center justify-center text-neutral-400 dark:text-neutral-500 p-12 text-center text-sm font-medium">
                             Start{' '}
                             {isMobile ? (
                                 'adding blocks from the Add tab below to build your page.'
@@ -474,6 +476,7 @@ export function CanvasStudio({
                         </div>
                     )}
                 </NavigationProvider>
+                </div>
                 </TemplateProvider>
                 </DeviceViewProvider>
             </div>

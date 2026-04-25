@@ -125,12 +125,14 @@ function LottieView({ media, wrapperClass, style }: { media: MediaFieldValue; wr
 
     return (
         <div className={wrapperClass} style={style}>
-            <Lottie
-                animationData={state.data}
-                loop={media.loop !== false}
-                autoplay={media.autoplay !== false}
-                className="w-full h-full"
-            />
+            <div className="absolute inset-0 overflow-hidden">
+                <Lottie
+                    animationData={state.data}
+                    loop={media.loop !== false}
+                    autoplay={media.autoplay !== false}
+                    style={{ width: '100%', height: '100%' }}
+                />
+            </div>
         </div>
     );
 }
