@@ -66,6 +66,14 @@ export default function UsersTab() {
         fetchTenants();
     }, []);
 
+    const stats = useMemo(() => {
+        const total = users.length;
+        const active = users.filter(u => !u.disabled).length;
+        const assigned = users.filter(u => u.customClaims?.siteId).length;
+        const noRole = users.filter(u => !u.customClaims?.role).length;
+        return { total, active, assigned, noRole };
+    }, [users]);
+
     const filtered = useMemo(() =>
         users.filter(u =>
             (u.email || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -123,6 +131,26 @@ export default function UsersTab() {
 
     return (
         <>
+            {/* Stats */}
+            <div className="grid grid-cols-4 gap-4 mb-6">
+                <div className="bg-white rounded-2xl border border-gray-200 p-5">
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Users</p>
+                    <p className="text-2xl font-black text-brand-dark mt-1">{loading ? '—' : stats.total}</p>
+                </div>
+                <div className="bg-white rounded-2xl border border-gray-200 p-5">
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Active</p>
+                    <p className="text-2xl font-black text-green-600 mt-1">{loading ? '—' : stats.active}</p>
+                </div>
+                <div className="bg-white rounded-2xl border border-gray-200 p-5">
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Assigned to Tenant</p>
+                    <p className="text-2xl font-black text-brand-dark mt-1">{loading ? '—' : stats.assigned}</p>
+                </div>
+                <div className="bg-white rounded-2xl border border-gray-200 p-5">
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">No Role</p>
+                    <p className="text-2xl font-black text-amber-600 mt-1">{loading ? '—' : stats.noRole}</p>
+                </div>
+            </div>
+
             {/* Search */}
             <div className="relative mb-4">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />

@@ -18,7 +18,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
     { label: 'Overview', href: '/' },
     { label: '—' as any, href: '' },
-    { label: 'Tenants & Users', href: '/tenants' },
+    { label: 'Tenants', href: '/tenants' },
     { label: 'Access Control', href: '/access', isNew: true },
     { label: '—' as any, href: '' },
     { label: 'Monitoring', href: '/monitoring' },
