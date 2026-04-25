@@ -1,5 +1,6 @@
 import { db } from "@/lib/firebase";
 import { collection, query, where, getDocs, collectionGroup, doc, getDoc } from "firebase/firestore";
+import { logger } from '@/lib/logger';
 
 export interface UserSite {
     siteId: string;
@@ -97,10 +98,10 @@ export async function getUserSites(userId: string, email?: string | null): Promi
                                     } as UserSite;
                                 }
                             } catch (err) {
-                                console.error("Failed to fetch site details for member match:", siteRef.id, err);
+                                logger.error('auth.sites.fetch.failed', { siteId: siteRef.id, error: err });
                             }
                         } catch (err) {
-                            console.error("Failed to fetch site details for member match:", siteRef.id, err);
+                            logger.error('auth.sites.fetch.failed', { siteId: siteRef.id, error: err });
                         }
                     }
                     return null;
@@ -115,15 +116,12 @@ export async function getUserSites(userId: string, email?: string | null): Promi
             }
 
         } catch (e: any) {
-            console.warn("Membership lookup failed. This is likely due to a missing Collection Group Index on 'members' -> 'email'.");
-            console.warn("Please create this index in Firebase Console: Firestore -> Indexes -> Collection Group");
-            console.error(e);
+            logger.warn('auth.membership.index.missing', { siteId: 'platform', error: 'Missing Collection Group Index on members.email' });
         }
 
     } catch (e) {
-        console.error("[getUserSites] Error fetching user sites for user:", userId, e);
+        logger.error('auth.getUserSites.failed', { siteId: 'platform', error: e });
     }
 
-    console.log("[getUserSites] Returning sites:", sites);
     return sites;
 }

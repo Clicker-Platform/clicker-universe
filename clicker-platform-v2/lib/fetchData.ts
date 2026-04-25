@@ -1,6 +1,7 @@
 import { cache } from 'react';
 import { cached, siteKey } from '@/lib/cache/redis';
 import { db } from "@/lib/firebase";
+import { logger } from '@/lib/logger';
 import { doc, getDoc, collection, getDocs, query, where, orderBy } from "firebase/firestore";
 import { BusinessProfile, LinkItem, Product, SocialLink, SiteSettings, SocialLinkItem, initialBusinessHours, BusinessHours, Page, PageBlock, BusinessContact, Branch, initialBusinessContact, LinkSettings, ProductSettings } from "@/data/mockData";
 import { TemplateId } from "@/lib/templates/types";
@@ -24,10 +25,8 @@ function stripFirestoreTypes(obj: any): any {
     return obj;
 }
 
-function logDebug(msg: string) {
-    if (process.env.NODE_ENV === 'development') {
-        console.log(`[DEBUG] ${msg}`);
-    }
+function logDebug(_msg: string) {
+    // debug-only traces removed; use structured logger for errors
 }
 
 export const fetchPublicData = cache(async function fetchPublicData(siteId: string, options: { includeProducts?: boolean } = { includeProducts: true }) {
@@ -173,7 +172,7 @@ async function _fetchPublicDataInner(siteId: string, options: { includeProducts?
             mapUrl: data.mapUrl || ""
         };
     } else if (!businessResult.success) {
-        console.error("Error fetching business settings:", businessResult.error);
+        logger.error('fetch.business.settings.failed', { siteId, error: businessResult.error });
     }
 
     // Process Branches
@@ -183,7 +182,7 @@ async function _fetchPublicDataInner(siteId: string, options: { includeProducts?
             stripFirestoreTypes({ id: doc.id, ...doc.data() }) as Branch
         );
     } else if (!branchesResult.success) {
-        console.error("Error fetching branches:", branchesResult.error);
+        logger.error('fetch.branches.failed', { siteId, error: branchesResult.error });
     }
 
     return {
@@ -265,7 +264,7 @@ export async function fetchPageBySlug(siteId: string, slug: string) {
             const pageDoc = querySnapshot.docs[0];
             return { id: pageDoc.id, ...pageDoc.data() } as Page;
         } catch (e) {
-            console.error(`Error fetching page with slug ${slug}:`, e);
+            logger.error('fetch.page.failed', { siteId, error: e });
             return null;
         }
     });
@@ -500,10 +499,10 @@ export async function hydratePageBlocks(siteId: string, blocks: PageBlock[]) {
                     links.sort((a, b) => (a.order || 0) - (b.order || 0));
                     data.links = links;
                 })
-                .catch(e => { console.error("Error fetching links", e); data.links = []; }),
+                .catch(e => { logger.error('fetch.links.failed', { siteId, error: e }); data.links = []; }),
             fetchLinkSettings(siteId)
                 .then(res => { if (res) data.linkSettings = res; })
-                .catch(e => console.error("Error fetching link settings", e))
+                .catch(e => logger.error('fetch.link.settings.failed', { siteId, error: e }))
         );
     }
 
@@ -541,10 +540,10 @@ export async function hydratePageBlocks(siteId: string, blocks: PageBlock[]) {
                         }
                     }
                 })
-                .catch(e => { console.error("Error fetching products", e); data.products = []; data.featuredProduct = null; }),
+                .catch(e => { logger.error('fetch.products.failed', { siteId, error: e }); data.products = []; data.featuredProduct = null; }),
             fetchProductSettings(siteId)
                 .then(res => { if (res) data.productSettings = res; })
-                .catch(e => console.error("Error fetching product settings", e))
+                .catch(e => logger.error('fetch.product.settings.failed', { siteId, error: e }))
         );
     }
 
@@ -554,7 +553,7 @@ export async function hydratePageBlocks(siteId: string, blocks: PageBlock[]) {
                 .then(snap => {
                     data.branches = snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Branch));
                 })
-                .catch(e => { console.error("Error fetching branches", e); data.branches = []; })
+                .catch(e => { logger.error('fetch.branches.failed', { siteId, error: e }); data.branches = []; })
         );
     }
 
@@ -586,7 +585,7 @@ export async function hydratePageBlocks(siteId: string, blocks: PageBlock[]) {
                     data.reservationSettings = stripTimestamps(settings);
                 })
                 .catch(e => {
-                    console.error("Error fetching reservation data", e);
+                    logger.error('fetch.reservation.data.failed', { siteId, error: e });
                     data.reservationServices = [];
                     data.reservationStaff = [];
                     data.reservationSettings = {};
