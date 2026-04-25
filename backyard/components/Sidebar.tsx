@@ -1,27 +1,42 @@
-
 'use client';
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Users, Store, Settings, LogOut, ShieldAlert } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import { signOut } from 'firebase/auth';
 import { collection, query, where, orderBy, limit, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { toast } from 'sonner';
 
-const menuItems = [
-    { name: 'Overview', icon: LayoutDashboard, href: '/' },
-    { name: 'Tenants', icon: Store, href: '/tenants' },
-    { name: 'Users', icon: Users, href: '/users' },
-    { name: 'Monitoring', icon: ShieldAlert, href: '/monitoring' },
-    { name: 'Settings', icon: Settings, href: '/settings' },
+interface NavItem {
+    label: string;
+    href: string;
+    isNew?: boolean;
+}
+
+const NAV_ITEMS: NavItem[] = [
+    { label: 'Overview', href: '/' },
+    { label: '—' as any, href: '' },
+    { label: 'Tenants', href: '/tenants' },
+    { label: 'Module Control', href: '/modules', isNew: true },
+    { label: 'Slug & Domain', href: '/domains', isNew: true },
+    { label: '—' as any, href: '' },
+    { label: 'Users', href: '/users' },
+    { label: 'Claims & Roles', href: '/claims', isNew: true },
+    { label: 'RBAC Settings', href: '/rbac', isNew: true },
+    { label: '—' as any, href: '' },
+    { label: 'Monitoring', href: '/monitoring' },
+    { label: 'Sync Control', href: '/sync', isNew: true },
+    { label: 'Seed Tools', href: '/seed', isNew: true },
+    { label: '—' as any, href: '' },
+    { label: 'WhatsApp', href: '/whatsapp', isNew: true },
+    { label: 'Settings', href: '/settings' },
 ];
 
 export default function Sidebar() {
     const pathname = usePathname();
     const router = useRouter();
-
     const [unreadCount, setUnreadCount] = useState(0);
     const [lastSeenAt, setLastSeenAt] = useState<Date>(() => {
         if (typeof window === 'undefined') return new Date(0);
@@ -39,8 +54,7 @@ export default function Sidebar() {
             }).length;
             setUnreadCount(newCount);
         }, (err) => {
-            if (err.code === 'failed-precondition') return; // index still building
-            // Non-critical: monitoring badge silently fails
+            if (err.code === 'failed-precondition') return;
         });
         return unsub;
     }, [lastSeenAt]);
@@ -67,36 +81,45 @@ export default function Sidebar() {
         <aside className="w-64 bg-white border-r border-gray-200 fixed inset-y-0 flex flex-col z-50">
             {/* Header */}
             <div className="h-20 flex items-center px-6 border-b border-slate-200">
-                <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-brand-dark rounded-lg flex items-center justify-center">
-                        <span className="text-brand-green font-bold text-lg">C</span>
-                    </div>
-                    <span className="font-bold text-brand-dark tracking-tight text-lg">Backyard</span>
+                <div className="flex flex-col gap-1">
+                    <span className="font-black text-brand-dark tracking-tight text-lg">Backyard</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest bg-brand-green text-brand-dark px-2 py-0.5 rounded-full w-fit">God Mode</span>
                 </div>
             </div>
 
-            {/* Menu */}
-            <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-                {menuItems.map((item) => {
-                    const isActive = pathname === item.href;
+            {/* Nav */}
+            <nav className="flex-1 py-3 overflow-y-auto">
+                {NAV_ITEMS.map((item, i) => {
+                    if (item.label === '—') {
+                        return <div key={i} className="h-px bg-gray-100 mx-4 my-1.5" />;
+                    }
+                    const isActive = item.href === '/'
+                        ? pathname === '/'
+                        : pathname.startsWith(item.href);
+                    const isMonitoring = item.href === '/monitoring';
+
                     return (
                         <Link
                             key={item.href}
                             href={item.href}
-                            onClick={item.href === '/monitoring' ? handleMonitoringClick : undefined}
-                            className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all font-medium text-sm border border-transparent
-                                ${isActive
-                                    ? 'bg-brand-green/10 text-brand-dark border-brand-dark/10'
-                                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                                }`}
+                            onClick={isMonitoring ? handleMonitoringClick : undefined}
+                            className={`flex items-center justify-between px-6 py-2.5 text-sm font-semibold transition-all border-l-[3px] ${
+                                isActive
+                                    ? 'border-brand-green bg-brand-green/5 text-brand-dark font-black'
+                                    : 'border-transparent text-slate-400 hover:text-slate-700 hover:bg-slate-50'
+                            }`}
                         >
-                            <item.icon className={`w-5 h-5 ${isActive ? 'text-brand-dark' : 'text-slate-400'}`} />
-                            <span className="flex-1">{item.name}</span>
-                            {item.href === '/monitoring' && unreadCount > 0 && (
-                                <span className="bg-red-500 text-white text-xs font-bold rounded-full px-1.5 py-0.5 min-w-[20px] text-center">
-                                    {unreadCount > 99 ? '99+' : unreadCount}
-                                </span>
-                            )}
+                            <span>{item.label}</span>
+                            <span className="flex items-center gap-1.5">
+                                {isMonitoring && unreadCount > 0 && (
+                                    <span className="bg-red-500 text-white text-[10px] font-black rounded-full px-1.5 py-0.5 min-w-[18px] text-center">
+                                        {unreadCount > 99 ? '99+' : unreadCount}
+                                    </span>
+                                )}
+                                {item.isNew && !isActive && (
+                                    <span className="w-1.5 h-1.5 rounded-full bg-brand-green" />
+                                )}
+                            </span>
                         </Link>
                     );
                 })}
@@ -106,9 +129,9 @@ export default function Sidebar() {
             <div className="p-4 border-t border-gray-100">
                 <button
                     onClick={handleLogout}
-                    className="flex items-center gap-3 w-full px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors font-medium text-sm"
+                    className="flex items-center gap-3 w-full px-4 py-3 text-red-500 hover:bg-red-50 rounded-lg transition-colors font-semibold text-sm"
                 >
-                    <LogOut className="w-5 h-5" />
+                    <LogOut className="w-4 h-4" />
                     Sign Out
                 </button>
             </div>
