@@ -31,10 +31,6 @@ if (
 }
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-console.log('[Firebase] Initialized with config:', {
-    projectId: firebaseConfig.projectId,
-    authDomain: firebaseConfig.authDomain
-});
 const db = initializeFirestore(app, { localCache: memoryLocalCache() });
 const auth = getAuth(app);
 const storage = getStorage(app);
