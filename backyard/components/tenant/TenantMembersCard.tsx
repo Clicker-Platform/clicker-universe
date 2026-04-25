@@ -67,16 +67,30 @@ export default function TenantMembersCard({ siteId, siteModules }: Props) {
         setAdding(true);
         try {
             const fn = httpsCallable(functions, 'createUser');
-            await fn({
+            const result: any = await fn({
                 email,
                 password: password || undefined,
                 displayName: name,
                 role,
                 siteId,
             });
-            toast.success('Member added');
+            toast.success('Member added', {
+                description: role === 'owner' ? 'Owner has full access automatically' : 'Set custom permissions next',
+            });
+
+            const newUid = result.data?.userId;
+            const addedRole = role;
+            const addedEmail = email;
+            const addedName = name;
+
             setEmail(''); setPassword(''); setName(''); setRole('staff');
             setShowAdd(false);
+
+            // Auto-open permissions modal for non-owner roles
+            if (newUid && addedRole !== 'owner') {
+                setPermTarget({ uid: newUid, email: addedEmail, displayName: addedName, role: addedRole });
+                setPermValue({ permissions: [], moduleAccess: {} });
+            }
         } catch (err: any) {
             toast.error('Add failed', { description: err.message });
         } finally {
