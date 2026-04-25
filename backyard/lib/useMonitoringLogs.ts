@@ -32,14 +32,14 @@ export function useMonitoringLogs(options: UseMonitoringLogsOptions = {}) {
 
   useEffect(() => {
     const col = collection(db, 'platform_logs');
-    const constraints: QueryConstraint[] = [
-      orderBy('ts', 'desc'),
-      limit(maxItems),
-    ];
+    const constraints: QueryConstraint[] = [];
 
     if (siteId) constraints.push(where('siteId', '==', siteId));
     if (level) constraints.push(where('level', '==', level));
     if (event) constraints.push(where('event', '==', event));
+
+    constraints.push(orderBy('ts', 'desc'));
+    constraints.push(limit(maxItems));
 
     const q = query(col, ...constraints);
 
@@ -60,10 +60,4 @@ export function useMonitoringLogs(options: UseMonitoringLogsOptions = {}) {
   }, [siteId, level, event, maxItems]);
 
   return { logs, loading, error };
-}
-
-export function useUnreadLogCount(lastSeenAt: Date | null): number {
-  const { logs } = useMonitoringLogs({ level: 'error', maxItems: 100 });
-  if (!lastSeenAt) return logs.length;
-  return logs.filter((l) => l.ts.toDate() > lastSeenAt).length;
 }
