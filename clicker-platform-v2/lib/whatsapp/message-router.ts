@@ -2,6 +2,7 @@ import { updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { WA_ROOT, WA_MAIN_DOC, WA_STAFF_COMMANDS } from './constants';
 import { getWAConfig, WhatsAppGateway } from './gateway';
+import { logger } from '@/lib/logger';
 
 type CommandHandler = (siteId: string, rawCommand: string) => Promise<string>;
 
@@ -26,7 +27,7 @@ export async function routeCommand(
       ? await matched.handler(siteId, command)
       : buildHelpMessage();
   } catch (err) {
-    console.error('[WA] Command handler error:', err);
+    logger.error('wa.command.handler.failed', { siteId: siteId ?? 'platform', error: err });
     response = 'Maaf, terjadi kesalahan saat memproses perintah. Silakan coba lagi.';
   }
 

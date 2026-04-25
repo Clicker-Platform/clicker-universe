@@ -18,6 +18,7 @@ import {
 } from './constants';
 import { classifyActor } from './contact-classifier';
 import type { MetaInboundMessage, MetaWebhookPayload, MetaContact } from './types';
+import { logger } from '@/lib/logger';
 
 export async function processIncomingMessage(
   siteId: string,
@@ -161,7 +162,7 @@ async function routeToStaffCommands(
 
   // Trigger command processing (async — non-blocking)
   routeOwnerCommand(siteId, msg.from, content, threadId).catch(err =>
-    console.error('[WA] Owner command routing failed:', err)
+    logger.error('wa.command.routing.failed', { siteId: siteId ?? 'platform', error: err })
   );
 }
 
