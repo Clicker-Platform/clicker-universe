@@ -96,8 +96,8 @@ export default function MonitoringPage() {
             <p className="text-gray-500 font-medium">Platform Health & Telemetry — Live</p>
           </div>
           <div className="flex items-center gap-2 text-xs text-gray-400">
-            <RefreshCw className="w-3 h-3 animate-spin" />
-            Real-time
+            <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
+            {loading ? 'Loading...' : 'Live'}
           </div>
         </header>
 
@@ -137,7 +137,7 @@ export default function MonitoringPage() {
           </select>
           <input
             type="text"
-            placeholder="Filter by event..."
+            placeholder="Exact event name (e.g. upload.image.failed)"
             value={filterEvent}
             onChange={(e) => setFilterEvent(e.target.value)}
             className="border border-gray-200 rounded-xl px-3 py-2 text-sm flex-1 focus:outline-none focus:ring-2 focus:ring-brand-dark/20"
