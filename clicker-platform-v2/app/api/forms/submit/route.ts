@@ -30,6 +30,7 @@ export async function POST(request: Request) {
 
         // Email notification — fetch form to get emailNotificationTo
         try {
+            if (!formId) throw new Error('formId missing');
             const formDoc = await getDoc(doc(db, 'sites', siteId, 'forms', formId));
             if (formDoc.exists()) {
                 const emailTo = formDoc.data()?.emailNotificationTo;
@@ -48,7 +49,7 @@ export async function POST(request: Request) {
         // Sales Pipeline Integration (modular — fails silently if not configured)
         try {
             const { handleNewSubmission } = await import('@/lib/modules/sales-pipeline/server-integration');
-            await handleNewSubmission(siteId, formId, data);
+            await handleNewSubmission(siteId, formId ?? '', data);
         } catch {
             // Module not installed or not configured — ignore
         }

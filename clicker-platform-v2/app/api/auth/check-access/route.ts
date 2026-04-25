@@ -5,9 +5,11 @@ import { logger } from '@/lib/logger';
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
+    let siteId: string | undefined;
     try {
         const body = await req.json();
-        const { uid, email, siteId } = body;
+        const { uid, email, siteId: sid } = body;
+        siteId = sid;
 
         if (!uid || !email || !siteId) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
