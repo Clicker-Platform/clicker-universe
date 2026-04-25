@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { collection, query, where, orderBy, limit, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import {
@@ -14,7 +14,6 @@ import {
     Upload,
     ShieldCheck,
     Server,
-    ChevronRight,
 } from 'lucide-react';
 
 interface ServiceCard {
@@ -75,7 +74,11 @@ interface ErrorEntry {
     count: number;
 }
 
-export default function HealthTab() {
+interface Props {
+    onSelectService?: (eventPrefix: string) => void;
+}
+
+export default function HealthTab({ onSelectService }: Props) {
     const [errors, setErrors] = useState<ErrorEntry[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -128,9 +131,10 @@ export default function HealthTab() {
         return { label: 'ALL HEALTHY', color: 'green' };
     }, [serviceStats]);
 
-    const linkToLogs = (prefixes: string[]) => {
-        const firstPrefix = prefixes[0];
-        return `/monitoring?event=${encodeURIComponent(firstPrefix)}`;
+    const handleClickService = (prefixes: string[]) => {
+        if (onSelectService) {
+            onSelectService(prefixes[0]);
+        }
     };
 
     return (
@@ -157,10 +161,10 @@ export default function HealthTab() {
                 {serviceStats.map(svc => {
                     const Icon = svc.icon;
                     return (
-                        <a
+                        <button
                             key={svc.id}
-                            href={linkToLogs(svc.eventPrefixes)}
-                            className="bg-white rounded-2xl border-2 border-gray-200 p-5 hover:border-brand-dark transition-colors block group"
+                            onClick={() => handleClickService(svc.eventPrefixes)}
+                            className="bg-white rounded-2xl border-2 border-gray-200 p-5 hover:border-brand-dark transition-colors block group text-left w-full"
                         >
                             <div className="flex items-start justify-between mb-3">
                                 <div className="w-9 h-9 rounded-lg bg-slate-50 border border-gray-200 flex items-center justify-center text-gray-500 group-hover:text-brand-dark transition-colors">
@@ -191,7 +195,7 @@ export default function HealthTab() {
                                     </span>
                                 )}
                             </div>
-                        </a>
+                        </button>
                     );
                 })}
             </div>

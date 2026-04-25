@@ -12,20 +12,19 @@ import { toast } from 'sonner';
 interface NavItem {
     label: string;
     href: string;
-    isNew?: boolean;
 }
 
 const NAV_ITEMS: NavItem[] = [
     { label: 'Overview', href: '/' },
     { label: '—' as any, href: '' },
     { label: 'Tenants', href: '/tenants' },
-    { label: 'WhatsApp', href: '/whatsapp', isNew: true },
+    { label: 'WhatsApp', href: '/whatsapp' },
     { label: '—' as any, href: '' },
-    { label: 'Audit & Roles', href: '/access', isNew: true },
+    { label: 'Audit & Roles', href: '/access' },
     { label: '—' as any, href: '' },
     { label: 'Monitoring', href: '/monitoring' },
-    { label: 'Sync Control', href: '/sync', isNew: true },
-    { label: 'Seed Tools', href: '/seed', isNew: true },
+    { label: 'Sync Control', href: '/sync' },
+    { label: 'Seed Tools', href: '/seed' },
     { label: '—' as any, href: '' },
     { label: 'Settings', href: '/settings' },
 ];
@@ -106,16 +105,11 @@ export default function Sidebar() {
                             }`}
                         >
                             <span>{item.label}</span>
-                            <span className="flex items-center gap-1.5">
-                                {isMonitoring && unreadCount > 0 && (
-                                    <span className="bg-red-500 text-white text-[10px] font-black rounded-full px-1.5 py-0.5 min-w-[18px] text-center">
-                                        {unreadCount > 99 ? '99+' : unreadCount}
-                                    </span>
-                                )}
-                                {item.isNew && !isActive && (
-                                    <span className="w-1.5 h-1.5 rounded-full bg-brand-green" />
-                                )}
-                            </span>
+                            {isMonitoring && unreadCount > 0 && (
+                                <span className="bg-red-500 text-white text-[10px] font-black rounded-full px-1.5 py-0.5 min-w-[18px] text-center">
+                                    {unreadCount > 99 ? '99+' : unreadCount}
+                                </span>
+                            )}
                         </Link>
                     );
                 })}

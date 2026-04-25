@@ -69,11 +69,16 @@ function LogCard({ log }: { log: PlatformLog }) {
     );
 }
 
-export default function LogsTab() {
+interface Props {
+    initialEvent?: string;
+    initialSiteId?: string;
+}
+
+export default function LogsTab({ initialEvent = '', initialSiteId = '' }: Props) {
     const searchParams = useSearchParams();
-    const [filterSiteId, setFilterSiteId] = useState('');
+    const [filterSiteId, setFilterSiteId] = useState(initialSiteId);
     const [filterLevel, setFilterLevel] = useState<'error' | 'warn' | ''>('');
-    const [filterEvent, setFilterEvent] = useState('');
+    const [filterEvent, setFilterEvent] = useState(initialEvent);
 
     // Pre-fill filter from URL params (e.g. /monitoring?event=wa.)
     useEffect(() => {
@@ -82,6 +87,15 @@ export default function LogsTab() {
         const siteParam = searchParams.get('siteId');
         if (siteParam) setFilterSiteId(siteParam);
     }, [searchParams]);
+
+    // Update when initialEvent prop changes (from parent tab switch)
+    useEffect(() => {
+        if (initialEvent) setFilterEvent(initialEvent);
+    }, [initialEvent]);
+
+    useEffect(() => {
+        if (initialSiteId) setFilterSiteId(initialSiteId);
+    }, [initialSiteId]);
 
     const { logs, loading, error } = useMonitoringLogs({
         siteId: filterSiteId || undefined,

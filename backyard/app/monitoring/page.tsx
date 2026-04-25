@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { Suspense, useState } from 'react';
 import PageShell from '@/components/PageShell';
 import HealthTab from '@/components/monitoring/HealthTab';
 import LogsTab from '@/components/monitoring/LogsTab';
@@ -9,6 +9,12 @@ type Tab = 'health' | 'logs';
 
 export default function MonitoringPage() {
     const [activeTab, setActiveTab] = useState<Tab>('health');
+    const [logsInitialEvent, setLogsInitialEvent] = useState('');
+
+    const handleSelectService = (eventPrefix: string) => {
+        setLogsInitialEvent(eventPrefix);
+        setActiveTab('logs');
+    };
 
     return (
         <PageShell
@@ -39,10 +45,10 @@ export default function MonitoringPage() {
             </div>
 
             {activeTab === 'health' ? (
-                <HealthTab />
+                <HealthTab onSelectService={handleSelectService} />
             ) : (
                 <Suspense fallback={<div className="text-center py-12 text-gray-400">Loading...</div>}>
-                    <LogsTab />
+                    <LogsTab initialEvent={logsInitialEvent} />
                 </Suspense>
             )}
         </PageShell>
