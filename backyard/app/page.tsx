@@ -10,8 +10,9 @@ import {
     isSignInWithEmailLink,
     signInWithEmailLink,
 } from 'firebase/auth';
-import { ShieldAlert, Activity, LayoutDashboard, Users, Store, Mail, Loader2 } from 'lucide-react';
+import { ShieldAlert, Mail, Loader2 } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
+import DashboardContent from '@/components/DashboardContent';
 import { toast } from 'sonner';
 
 type Step = 'login' | 'check-email';
@@ -25,9 +26,6 @@ export default function Home() {
     const [loginEmail, setLoginEmail] = useState('');
     const [loginError, setLoginError] = useState('');
     const [actionLoading, setActionLoading] = useState(false);
-
-    // Dashboard Stats
-    const [stats, setStats] = useState({ tenants: 0, users: 0 });
 
     // Handle email link sign-in callback (when admin clicks link in email)
     useEffect(() => {
@@ -65,24 +63,6 @@ export default function Home() {
         });
         return () => unsubscribe();
     }, []);
-
-    // Fetch real stats when logged in
-    useEffect(() => {
-        if (!user) return;
-        const fetchStats = async () => {
-            try {
-                const [tenantsRes, usersRes] = await Promise.all([
-                    httpsCallable(functions, 'getTenants')(),
-                    httpsCallable(functions, 'listUsers')()
-                ]);
-                setStats({
-                    tenants: (tenantsRes.data as any)?.list?.length || 0,
-                    users: ((usersRes.data as any)?.users || []).filter((u: any) => u.email).length || 0
-                });
-            } catch { /* silent — stats are non-critical */ }
-        };
-        fetchStats();
-    }, [user]);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -244,60 +224,8 @@ export default function Home() {
         <div className="min-h-screen bg-gray-50/50 flex font-sans">
             <Sidebar />
             <div className="flex-1 ml-64 p-8">
-                <div className="max-w-6xl mx-auto space-y-8">
-
-                    {/* Header */}
-                    <div className="flex items-center justify-between mb-8">
-                        <div>
-                            <h1 className="text-3xl font-black tracking-tight text-brand-dark flex items-center gap-3">
-                                <LayoutDashboard className="w-8 h-8" />
-                                Dashboard
-                            </h1>
-                            <p className="text-gray-500 font-medium">Platform overview</p>
-                        </div>
-                        <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-gray-200">
-                            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                            <span className="text-xs font-bold text-gray-600">SYSTEM ONLINE</span>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        {/* STAT CARD: TENANTS */}
-                        <div className="bg-white rounded-2xl border border-gray-100 p-8 hover:shadow-lg transition-all relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-brand-green/10 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
-                            <div className="relative">
-                                <div className="w-12 h-12 bg-brand-green/10 text-brand-dark rounded-lg flex items-center justify-center mb-4">
-                                    <Store className="w-6 h-6" />
-                                </div>
-                                <h2 className="text-4xl font-black text-brand-dark mb-1">{stats.tenants || '--'}</h2>
-                                <p className="text-gray-400 font-bold uppercase text-xs tracking-wider">Active Tenants</p>
-                            </div>
-                        </div>
-
-                        {/* STAT CARD: USERS */}
-                        <div className="bg-white rounded-2xl border border-gray-100 p-8 hover:shadow-lg transition-all relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-purple-50 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
-                            <div className="relative">
-                                <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-lg flex items-center justify-center mb-4">
-                                    <Users className="w-6 h-6" />
-                                </div>
-                                <h2 className="text-4xl font-black text-brand-dark mb-1">{stats.users || '--'}</h2>
-                                <p className="text-gray-400 font-bold uppercase text-xs tracking-wider">Total Users</p>
-                            </div>
-                        </div>
-
-                        {/* STAT CARD: STATUS */}
-                        <div className="bg-white rounded-2xl border border-gray-100 p-8 hover:shadow-lg transition-all relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-green-50 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
-                            <div className="relative">
-                                <div className="w-12 h-12 bg-green-50 text-green-600 rounded-lg flex items-center justify-center mb-4">
-                                    <Activity className="w-6 h-6" />
-                                </div>
-                                <h2 className="text-4xl font-black text-brand-dark mb-1">Online</h2>
-                                <p className="text-gray-400 font-bold uppercase text-xs tracking-wider">System Status</p>
-                            </div>
-                        </div>
-                    </div>
+                <div className="max-w-6xl mx-auto">
+                    <DashboardContent />
                 </div>
             </div>
         </div>

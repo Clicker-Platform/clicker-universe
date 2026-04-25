@@ -19,13 +19,14 @@ const NAV_ITEMS: NavItem[] = [
     { label: 'Overview', href: '/' },
     { label: '—' as any, href: '' },
     { label: 'Tenants', href: '/tenants' },
+    { label: 'WhatsApp', href: '/whatsapp', isNew: true },
+    { label: '—' as any, href: '' },
     { label: 'Audit & Roles', href: '/access', isNew: true },
     { label: '—' as any, href: '' },
     { label: 'Monitoring', href: '/monitoring' },
     { label: 'Sync Control', href: '/sync', isNew: true },
     { label: 'Seed Tools', href: '/seed', isNew: true },
     { label: '—' as any, href: '' },
-    { label: 'WhatsApp', href: '/whatsapp', isNew: true },
     { label: 'Settings', href: '/settings' },
 ];
 
