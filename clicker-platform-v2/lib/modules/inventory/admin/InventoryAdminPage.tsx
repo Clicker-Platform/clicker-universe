@@ -10,6 +10,7 @@ import { collection, getDocs, query, orderBy, deleteDoc, doc, updateDoc, where }
 import { toast } from 'sonner';
 import { useSite } from '@/lib/site-context'; // New import
 import { usePermission } from '@/components/admin/PermissionGuard'; // Import
+import { logger } from '@/lib/logger';
 
 import { InventorySkeleton } from './InventorySkeleton';
 import { InventoryItemForm } from './InventoryItemForm';
@@ -71,7 +72,7 @@ export default function InventoryPage() {
             setItems(inventoryData);
             setPosItems(posItemsData);
         } catch (error) {
-            console.error("Failed to fetch data", error);
+            logger.error('inventory.history.fetch.failed', { siteId, error });
             toast.error("Failed to load inventory data");
         } finally {
             setLoading(false);
@@ -105,7 +106,7 @@ export default function InventoryPage() {
             setEditingItem(undefined);
             fetchData();
         } catch (error) {
-            console.error(error);
+            logger.error('inventory.adjust.failed', { siteId, error });
             const isPermissionError = (error as any)?.code === 'permission-denied' || (error as any)?.message?.includes('Missing or insufficient permissions');
             if (isPermissionError) {
                 toast.info("View Only Mode", {
@@ -172,7 +173,7 @@ export default function InventoryPage() {
             toast.success("Item deleted successfully");
             fetchData();
         } catch (error) {
-            console.error(error);
+            logger.error('inventory.adjust.failed', { siteId, error });
             toast.error("Failed to delete item");
         } finally {
             setIsDeleting(false);

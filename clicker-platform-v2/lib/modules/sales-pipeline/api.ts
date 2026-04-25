@@ -1,4 +1,5 @@
 import { db } from '@/lib/firebase';
+import { logger } from '@/lib/logger';
 import {
     collection,
     doc,
@@ -30,7 +31,7 @@ export async function getPipelineConfig(siteId: string): Promise<PipelineConfig>
             return data;
         }
     } catch (error) {
-        console.error("Error fetching pipeline config, using default:", error);
+        logger.error('pipeline.board.fetch.failed', { siteId, error });
     }
     return { stages: DEFAULT_PIPELINE_STAGES };
 }
@@ -59,7 +60,7 @@ export async function getAvailableForms(siteId: string): Promise<{ id: string, t
             };
         });
     } catch (error) {
-        console.error("Error fetching forms list:", error);
+        logger.error('pipeline.board.fetch.failed', { siteId, error });
         return [];
     }
 }
@@ -84,7 +85,7 @@ export function subscribeToLeads(siteId: string, callback: (leads: Lead[]) => vo
         })) as Lead[];
         callback(leads);
     }, (error) => {
-        console.error("Error subscribing to leads:", error);
+        logger.error('pipeline.lead.create.failed', { siteId, error });
         callback([]);
     });
 }

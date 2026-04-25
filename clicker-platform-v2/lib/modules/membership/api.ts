@@ -20,6 +20,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Member, LoyaltyTransaction, MembershipSettings, MembershipStaffMember } from './types';
+import { logger } from '@/lib/logger';
 
 // Collection References
 export const MEMBERS_COLLECTION = 'modules/membership/members';
@@ -437,14 +438,14 @@ export async function getMembershipStaff(siteId: string): Promise<MembershipStaf
  * @deprecated Use Global Team Management (/admin/settings/team)
  */
 export async function assignMembershipRole(siteId: string, email: string, role: string): Promise<void> {
-    console.warn("assignMembershipRole is deprecated. Use Global Team Management.");
+    logger.warn('membership.role.deprecated', { siteId });
 }
 
 /**
  * @deprecated Use Global Team Management (/admin/settings/team)
  */
 export async function removeMembershipRole(siteId: string, userId: string): Promise<void> {
-    console.warn("removeMembershipRole is deprecated. Use Global Team Management.");
+    logger.warn('membership.role.deprecated', { siteId });
 }
 
 export async function getMembershipRole(siteId: string, userId: string): Promise<string | null> {

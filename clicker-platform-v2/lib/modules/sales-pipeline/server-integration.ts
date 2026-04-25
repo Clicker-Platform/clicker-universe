@@ -1,9 +1,9 @@
 import { adminDb } from '@/lib/firebase-admin';
 import { FormIntegration, PipelineConfig } from './types';
 import { MODULE_ID, COLLECTION_LEADS } from './constants';
+import { logger } from '@/lib/logger';
 
 export async function handleNewSubmission(siteId: string, formId: string, submissionData: any) {
-    console.log(`[SalesPipeline] Checking integrations for form ${formId}`);
 
     try {
         // 1. Fetch Pipeline Configuration (per-tenant path)
@@ -25,7 +25,6 @@ export async function handleNewSubmission(siteId: string, formId: string, submis
         const integration = config.formIntegrations.find(i => i.formId === formId);
         if (!integration) return;
 
-        console.log(`[SalesPipeline] Found integration for form ${formId}, creating lead...`);
 
         // 3. Extract Data using Mapping
         const mapping = integration.fieldMapping;
@@ -78,9 +77,7 @@ export async function handleNewSubmission(siteId: string, formId: string, submis
             updatedAt: now
         });
 
-        console.log(`[SalesPipeline] Lead created successfully for form ${formId}`);
-
     } catch (error) {
-        console.error('[SalesPipeline] Error handling form submission:', error);
+        logger.error('pipeline.lead.create.failed', { siteId, error });
     }
 }

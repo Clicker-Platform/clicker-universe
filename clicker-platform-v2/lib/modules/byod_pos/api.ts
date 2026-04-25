@@ -21,6 +21,7 @@ import {
 import { db } from '@/lib/firebase';
 import { POSOrder, POSSettings, POSItem, POSStaffMember } from './types';
 import { isModuleEnabled } from '@/lib/modules/registry';
+import { logger } from '@/lib/logger';
 
 import { ORDERS_COLLECTION, SETTINGS_DOC } from './constants';
 
@@ -48,10 +49,10 @@ export function subscribeToRecentOrders(siteId: string, callback: (orders: POSOr
         callback(orders);
     }, (error) => {
         if (error.code === 'permission-denied') {
-            console.warn("Cashier/Admin subscription permission denied. Ensure you are logged in as an admin or staff.");
+            logger.warn('pos.order.subscription.denied', { siteId });
             // Optionally callback with empty list or handle gracefully
         } else {
-            console.error("Error subscribing to recent orders:", error);
+            logger.error('pos.order.failed', { siteId, error });
         }
     });
 }
@@ -297,7 +298,7 @@ export async function updateOrderStatus(
             }
 
         } catch (error) {
-            console.error("Failed to process loyalty points:", error);
+            logger.warn('pos.loyalty.failed', { siteId, error });
             // Don't block the order completion flow, just log the error
         }
     }
@@ -359,7 +360,7 @@ export async function cancelOrder(siteId: string, orderId: string): Promise<void
                         );
                     }
                 } catch (e) {
-                    console.error("Failed to refund item", item.name, e);
+                    logger.warn('pos.refund.failed', { siteId, error: `${item.name}: ${e}` });
                 }
             }
         }
@@ -431,7 +432,7 @@ export async function confirmPayment(siteId: string, orderId: string, method: PO
 
 export async function getPOSSettings(siteId: string): Promise<POSSettings> {
     if (!siteId || siteId === 'default' || siteId === 'pending') {
-        console.warn("getPOSSettings called without valid siteId");
+        logger.warn('pos.settings.no.siteId', { siteId });
         return {
             mode: 'fast-checkout',
             paymentMethods: { cash: true, card: true, qris: true },
@@ -497,7 +498,7 @@ export async function getPOSSettings(siteId: string): Promise<POSSettings> {
             businessLogo: undefined
         };
     } catch (e) {
-        console.error("Error in getPOSSettings", e);
+        logger.warn('pos.settings.no.siteId', { siteId, error: e });
         return {
             mode: 'fast-checkout',
             paymentMethods: { cash: true, card: true, qris: true },
@@ -665,14 +666,14 @@ export async function getPOSStaff(siteId: string): Promise<POSStaffMember[]> {
  * @deprecated Use Global Team Management (/admin/settings/team)
  */
 export async function assignPOSRole(siteId: string, email: string, role: string): Promise<void> {
-    console.warn("assignPOSRole is deprecated. Use Global Team Management.");
+    logger.warn('pos.role.deprecated', { siteId });
 }
 
 /**
  * @deprecated Use Global Team Management (/admin/settings/team)
  */
 export async function removePOSRole(siteId: string, userId: string): Promise<void> {
-    console.warn("removePOSRole is deprecated. Use Global Team Management.");
+    logger.warn('pos.role.deprecated', { siteId });
 }
 
 export async function getPOSRole(siteId: string, userId: string): Promise<string | null> {

@@ -20,6 +20,7 @@ import {
 import { db } from '@/lib/firebase';
 import { Booking, Service, ReservationSettings } from './types';
 import { isModuleEnabled } from '../registry';
+import { logger } from '@/lib/logger';
 import { getStaffMembers } from './staff';
 import { DaySchedule } from '@/lib/core/types';
 import {
@@ -158,7 +159,7 @@ export async function getBookingCounts(siteId: string): Promise<{ all: number; n
             done: doneSnap.data().count
         };
     } catch (error) {
-        console.error("Error fetching counts:", error);
+        logger.error('reservation.create.failed', { siteId, error });
         return { all: 0, new: 0, confirmed: 0, done: 0 };
     }
 }
@@ -222,7 +223,6 @@ export async function updateBookingStatus(siteId: string, bookingId: string, sta
                 isModuleEnabled('service_records'),
             ]);
             if (srEnabled && booking.serviceRecordId) {
-                console.log(`[Loyalty] Skipping points for booking ${bookingId} — handled by Service Records approval`);
                 return;
             }
             if (loyaltyEnabled && booking.customerPhone) {
@@ -244,12 +244,11 @@ export async function updateBookingStatus(siteId: string, bookingId: string, sta
                             bookingId,
                             booking.serviceName
                         );
-                        console.log(`[Loyalty] Awarded ${points} points (Spend: ${bookingTotal}) to ${booking.customerPhone}`);
                     }
                 }
             }
         } catch (error) {
-            console.error('[Loyalty] Failed to award points:', error);
+            logger.warn('reservation.loyalty.skipped', { siteId, error });
             // Don't block the status update even if points fail
         }
     }

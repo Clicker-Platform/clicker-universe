@@ -46,6 +46,7 @@ import type {
     ServiceConfig,
     ServiceRecordFilters,
 } from './types';
+import { logger } from '@/lib/logger';
 
 // ─── Utility ──────────────────────────────────────────────────────────────────
 
@@ -224,7 +225,7 @@ export async function updateServiceRecord(
                 }
             }
         } catch (err) {
-            console.error('[ServiceRecords] Loyalty points award failed:', err);
+            logger.error('service.loyalty.award.failed', { siteId, error: err });
         }
     }
 }
@@ -412,17 +413,15 @@ export async function approveRecord(
                     );
                 }
                 await updateDoc(recordRef, { inventoryDeducted: true });
-                console.log(`[ServiceRecords] Deducted ${record2.consumedItems.length} item(s) via consumedItems`);
 
             // Path B: legacy single inventoryItemId (deprecated — kept for old records)
             } else if (record2.inventoryItemId && !record2.inventoryDeducted) {
                 await updateStock(siteId, record2.inventoryItemId, -1, 'sale', recordId, record2.serviceTypeName);
                 await updateDoc(recordRef, { inventoryDeducted: true });
-                console.log(`[ServiceRecords] Deducted 1 unit via legacy inventoryItemId ${record2.inventoryItemId}`);
             }
         }
     } catch (err) {
-        console.error('[ServiceRecords] Inventory deduction failed (not rolling back COMPLETED):', err);
+        logger.error('service.inventory.deduct.failed', { siteId, error: err });
     }
 
     // Step 7 — Auto-complete linked reservation booking (non-blocking)
@@ -431,9 +430,8 @@ export async function approveRecord(
             const { updateBookingStatus, updateBookingDetails } = await import('@/lib/modules/reservation/api');
             await updateBookingDetails(siteId, record2.bookingId, { serviceRecordId: recordId });
             await updateBookingStatus(siteId, record2.bookingId, 'completed');
-            console.log(`[ServiceRecords] Auto-completed booking ${record2.bookingId}`);
         } catch (err) {
-            console.error('[ServiceRecords] Auto-complete booking failed (not rolling back COMPLETED):', err);
+            logger.error('service.booking.complete.failed', { siteId, error: err });
         }
     }
 
@@ -450,12 +448,11 @@ export async function approveRecord(
                     if (points > 0) {
                         await awardPointsWithSpend(siteId, record2.memberId, points, amountPaid, 'SERVICE_RECORDS', recordId, record2.serviceTypeName);
                         await updateDoc(doc(db, 'sites', siteId, SR_RECORDS, recordId), { loyaltyPointsAwarded: points });
-                        console.log(`[ServiceRecords] Awarded ${points} loyalty points to member ${record2.memberId}`);
                     }
                 }
             }
         } catch (err) {
-            console.error('[ServiceRecords] Loyalty points award failed (not rolling back COMPLETED):', err);
+            logger.error('service.loyalty.award.failed', { siteId, error: err });
         }
     }
 }
