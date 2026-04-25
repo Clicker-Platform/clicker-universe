@@ -216,7 +216,6 @@ export default function UsersTab() {
                                     <option value="owner">Owner</option>
                                     <option value="manager">Manager</option>
                                     <option value="staff">Staff</option>
-                                    <option value="superadmin">Superadmin</option>
                                 </select>
                             </div>
                             <div>

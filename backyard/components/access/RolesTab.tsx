@@ -14,7 +14,6 @@ interface Role {
 }
 
 const DEFAULT_ROLES: Role[] = [
-    { id: 'superadmin', label: 'Superadmin', description: 'Full platform access (Backyard god mode)', builtIn: true },
     { id: 'owner', label: 'Owner', description: 'Tenant owner with full access to their tenant', builtIn: true },
     { id: 'manager', label: 'Manager', description: 'Manage staff and most tenant features', builtIn: true },
     { id: 'staff', label: 'Staff', description: 'Daily operations access (limited write)', builtIn: true },
