@@ -1,10 +1,12 @@
 import { adminDb, FieldValue } from '@/lib/firebase-admin';
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
+    let siteId: string | undefined;
     try {
         // const session = (await cookies()).get('session')?.value;
         // if (!session) {
@@ -12,7 +14,8 @@ export async function POST(request: Request) {
         // }
 
         const form = await request.json();
-        const { id, siteId, ...data } = form;
+        const { id, ...data } = form;
+        siteId = form.siteId;
 
         if (!id) {
             return NextResponse.json({ error: 'Missing Form ID' }, { status: 400 });
@@ -27,7 +30,7 @@ export async function POST(request: Request) {
 
         return NextResponse.json({ success: true, id });
     } catch (error) {
-        console.error('Error updating form:', error);
+        logger.error('form.update.failed', { siteId, error });
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }

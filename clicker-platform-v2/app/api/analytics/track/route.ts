@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/firebase';
 import { doc, writeBatch, increment } from 'firebase/firestore';
 import { randomShardId, analyticsShardRef } from '@/lib/analytics/counters';
+import { logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,7 +20,6 @@ export async function POST(request: Request) {
             }
             if (!body) return NextResponse.json({ error: 'Empty body' }, { status: 400 });
         } catch (e: any) {
-            console.error('Body parse failed:', e.message);
             return NextResponse.json({ error: 'Invalid JSON body', details: e.message }, { status: 400 });
         }
 
@@ -27,12 +27,12 @@ export async function POST(request: Request) {
         const siteId = bodySiteId || request.headers.get('x-site-id');
 
         if (!siteId || siteId === 'default' || siteId === 'pending') {
-            console.warn('[Analytics] Skipped tracking: Invalid siteId', siteId);
+            logger.warn('analytics.invalid.siteId', { siteId: 'platform' });
             return NextResponse.json({ error: 'Invalid site context' }, { status: 400 });
         }
 
         if (!db) {
-            console.error('[Analytics] db is not initialized');
+            logger.error('analytics.db.missing', { siteId: siteId ?? 'platform', error: 'Firebase db not initialized' });
             return NextResponse.json({ error: 'Database not initialized' }, { status: 500 });
         }
 
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
         try {
             batch = writeBatch(db);
         } catch (dbError: any) {
-            console.error('[Analytics] Failed to create batch:', dbError);
+            logger.error('analytics.batch.failed', { siteId: siteId ?? 'platform', error: dbError });
             return NextResponse.json({ error: 'Database connection failed', details: dbError.message }, { status: 500 });
         }
 
@@ -68,7 +68,7 @@ export async function POST(request: Request) {
             await batch.commit();
             return NextResponse.json({ success: true });
         } catch (commitError: any) {
-            console.error('[Analytics] Failed to commit batch:', commitError);
+            logger.error('analytics.batch.failed', { siteId: siteId ?? 'platform', error: commitError });
             return NextResponse.json({ error: 'Database write failed', details: commitError.message }, { status: 500 });
         }
 
@@ -80,11 +80,11 @@ export async function POST(request: Request) {
             error?.code === 'permission-denied' ||
             errorMessage.includes('Missing or insufficient permissions')
         ) {
-            console.warn('[Analytics] Skipped tracking: Firestore rules denied access.');
+            logger.warn('analytics.permission.denied', { siteId: 'platform', error });
             return NextResponse.json({ success: true, warning: 'Tracking skipped (permission denied by rules)' });
         }
 
-        console.error('Analytics Error:', JSON.stringify(error, null, 2), error);
+        logger.error('analytics.batch.failed', { siteId: 'platform', error });
         return NextResponse.json({
             error: 'Internal Server Error',
             details: error?.message || 'Unknown error',

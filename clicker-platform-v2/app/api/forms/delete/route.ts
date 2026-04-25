@@ -1,6 +1,7 @@
 import { adminDb } from '@/lib/firebase-admin';
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -46,7 +47,9 @@ export async function DELETE(request: Request) {
 
         return NextResponse.json({ success: true });
     } catch (error) {
-        console.error('Error deleting form:', error);
+        const { searchParams } = new URL(request.url);
+        const siteId = searchParams.get('siteId') ?? undefined;
+        logger.error('form.delete.failed', { siteId, error });
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }
