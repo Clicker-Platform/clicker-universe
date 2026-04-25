@@ -19,9 +19,7 @@ const NAV_ITEMS: NavItem[] = [
     { label: 'Overview', href: '/' },
     { label: '—' as any, href: '' },
     { label: 'Tenants & Users', href: '/tenants' },
-    { label: '—' as any, href: '' },
-    { label: 'Claims & Roles', href: '/claims', isNew: true },
-    { label: 'RBAC Settings', href: '/rbac', isNew: true },
+    { label: 'Access Control', href: '/access', isNew: true },
     { label: '—' as any, href: '' },
     { label: 'Monitoring', href: '/monitoring' },
     { label: 'Sync Control', href: '/sync', isNew: true },
@@ -75,11 +73,11 @@ export default function Sidebar() {
     };
 
     return (
-        <aside className="w-64 bg-white border-r border-gray-200 fixed inset-y-0 flex flex-col z-50">
+        <aside className="w-64 bg-brand-dark fixed inset-y-0 flex flex-col z-50">
             {/* Header */}
-            <div className="h-20 flex items-center px-6 border-b border-slate-200">
+            <div className="h-20 flex items-center px-6 border-b border-white/5">
                 <div className="flex flex-col gap-1">
-                    <span className="font-black text-brand-dark tracking-tight text-lg">Backyard</span>
+                    <span className="font-black text-white tracking-tight text-lg">Backyard</span>
                     <span className="text-[10px] font-black uppercase tracking-widest bg-brand-green text-brand-dark px-2 py-0.5 rounded-full w-fit">God Mode</span>
                 </div>
             </div>
@@ -88,7 +86,7 @@ export default function Sidebar() {
             <nav className="flex-1 py-3 overflow-y-auto">
                 {NAV_ITEMS.map((item, i) => {
                     if (item.label === '—') {
-                        return <div key={i} className="h-px bg-gray-100 mx-4 my-1.5" />;
+                        return <div key={i} className="h-px bg-white/5 mx-4 my-1.5" />;
                     }
                     const isActive = item.href === '/'
                         ? pathname === '/'
@@ -102,8 +100,8 @@ export default function Sidebar() {
                             onClick={isMonitoring ? handleMonitoringClick : undefined}
                             className={`flex items-center justify-between px-6 py-2.5 text-sm font-semibold transition-all border-l-[3px] ${
                                 isActive
-                                    ? 'border-brand-green bg-brand-green/5 text-brand-dark font-black'
-                                    : 'border-transparent text-slate-400 hover:text-slate-700 hover:bg-slate-50'
+                                    ? 'border-brand-green bg-brand-green/10 text-brand-green font-black'
+                                    : 'border-transparent text-white/50 hover:text-white hover:bg-white/5'
                             }`}
                         >
                             <span>{item.label}</span>
@@ -123,10 +121,10 @@ export default function Sidebar() {
             </nav>
 
             {/* Footer */}
-            <div className="p-4 border-t border-gray-100">
+            <div className="p-4 border-t border-white/5">
                 <button
                     onClick={handleLogout}
-                    className="flex items-center gap-3 w-full px-4 py-3 text-red-500 hover:bg-red-50 rounded-lg transition-colors font-semibold text-sm"
+                    className="flex items-center gap-3 w-full px-4 py-3 text-red-300 hover:bg-red-500/10 hover:text-red-200 rounded-lg transition-colors font-semibold text-sm"
                 >
                     <LogOut className="w-4 h-4" />
                     Sign Out
