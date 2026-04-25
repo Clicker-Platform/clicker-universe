@@ -5,11 +5,10 @@ import { httpsCallable } from 'firebase/functions';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { functions, db, auth } from '@/lib/firebase';
 import { toast } from 'sonner';
-import { Store, Power, PowerOff, Loader2, RefreshCw, Database, ExternalLink, Grid, Users, UserPlus, UserX, Trash2, Pencil, Search } from 'lucide-react';
+import { Store, Power, PowerOff, Loader2, RefreshCw, Database, ExternalLink, Users, UserPlus, UserX, Trash2, Pencil, Search } from 'lucide-react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { ConfirmationDialog } from '../../components/ui/confirmation-dialog';
 import Sidebar from '../../components/Sidebar';
-import { SYSTEM_MODULES } from '@/lib/modules/definitions';
 import { PermissionEditor } from '@/components/PermissionEditor';
 import { ModuleAccess } from '@/lib/modules/types';
 
@@ -23,13 +22,6 @@ export default function TenantsPage() {
     const [password, setPassword] = useState('');
     const [subdomain, setSubdomain] = useState('');
     const [hostingId, setHostingId] = useState('quattro'); // Default to quattro
-    // Initialize all modules as OFF - Backyard controls everything
-    const initialModules = useMemo(() => {
-        const init: Record<string, boolean> = {};
-        SYSTEM_MODULES.forEach((mod: any) => init[mod.id] = false);
-        return init;
-    }, []);
-    const [modules, setModules] = useState<Record<string, boolean>>(initialModules);
     const [seedSampleData, setSeedSampleData] = useState(true); // Default to on
     const [createLoading, setCreateLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
@@ -104,7 +96,7 @@ export default function TenantsPage() {
         setCreateLoading(true);
         try {
             const createTenant = httpsCallable(functions, 'createTenant');
-            await createTenant({ name, ownerEmail, password, subdomain, hostingId, modules, seedSampleData });
+            await createTenant({ name, ownerEmail, password, subdomain, hostingId, modules: {}, seedSampleData });
             toast.success('Tenant Forged Successfully', {
                 description: `Site ID: ${subdomain.toLowerCase().replace(/[^a-z0-9]/g, '-')}`
             });
@@ -113,7 +105,6 @@ export default function TenantsPage() {
             setPassword('');
             setSubdomain('');
             setHostingId('quattro');
-            setModules(initialModules); // Reset to all OFF
             setSeedSampleData(true);
         } catch (error: any) {
             toast.error('Failed to Forge Tenant', { description: error.message });
@@ -168,39 +159,7 @@ export default function TenantsPage() {
         }
     };
 
-    // 4. Handle Module Management
-    const [moduleDialogOpen, setModuleDialogOpen] = useState(false);
-    const [managingModules, setManagingModules] = useState<any>(null);
-
-    const openModuleDialog = (tenant: any) => {
-        setSelectedTenant(tenant);
-        const defaultModules: Record<string, boolean> = {};
-        SYSTEM_MODULES.forEach((mod: any) => { defaultModules[mod.id] = false; });
-        const currentModules = { ...defaultModules, ...(tenant.modules || {}) };
-        setManagingModules(currentModules);
-        setModuleDialogOpen(true);
-    };
-
-    const saveModules = async () => {
-        if (!selectedTenant) return;
-        setActionLoading(true);
-        try {
-            const updateModulesFn = httpsCallable(functions, 'updateTenantModules');
-            await updateModulesFn({ siteId: selectedTenant.id, modules: managingModules });
-            // Update local tenant state immediately so re-opening dialog shows correct state
-            setTenants((prev: any[]) => prev.map(t =>
-                t.id === selectedTenant.id ? { ...t, modules: managingModules } : t
-            ));
-            toast.success('Modules updated successfully');
-            setModuleDialogOpen(false);
-        } catch (error: any) {
-            toast.error('Failed to update modules', { description: error.message });
-        } finally {
-            setActionLoading(false);
-        }
-    };
-
-    // 5. Handle Hard Delete Tenant
+    // 4. Handle Hard Delete Tenant
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [deleteConfirmText, setDeleteConfirmText] = useState('');
     const [deleteLoading, setDeleteLoading] = useState(false);
@@ -445,29 +404,9 @@ export default function TenantsPage() {
                                     </div>
                                 </div>
 
-                                {/* Modules Selector (Span 2) */}
+                                {/* Owner + Submit (Span 2) */}
                                 <div className="space-y-4 md:col-span-2">
-                                    <label className="text-xs font-bold text-brand-dark uppercase tracking-wider pl-1">Modules</label>
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                        {SYSTEM_MODULES.map((mod: any) => (
-                                            <label key={mod.id} className={`flex items-center gap-3 p-3 rounded-lg border-[3px] cursor-pointer transition-all ${modules[mod.id]
-                                                ? 'border-brand-dark bg-brand-dark text-white shadow-md'
-                                                : 'border-gray-100 bg-white text-gray-400 hover:border-gray-200'
-                                                }`}>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={modules[mod.id] || false}
-                                                    onChange={(e) => setModules({ ...modules, [mod.id]: e.target.checked })}
-                                                    className="w-4 h-4 rounded border-gray-300 transition-all"
-                                                />
-                                                <div className="flex flex-col">
-                                                    <span className="font-black text-[11px] uppercase truncate">{mod.displayName}</span>
-                                                </div>
-                                            </label>
-                                        ))}
-                                    </div>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-gray-100 pt-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         <div className="md:col-span-2 grid grid-cols-2 gap-4">
                                             <div className="space-y-2">
                                                 <label className="text-xs font-bold text-brand-dark uppercase tracking-wider pl-1">Owner Email</label>
@@ -600,13 +539,6 @@ export default function TenantsPage() {
                                                             >
                                                                 <Users className="w-4.5 h-4.5" />
                                                             </button>
-                                                            <button
-                                                                onClick={() => openModuleDialog(tenant)}
-                                                                className="p-2 rounded-lg text-blue-600 hover:bg-white hover:transition-all"
-                                                                title="Manage Modules"
-                                                            >
-                                                                <Grid className="w-4.5 h-4.5" />
-                                                            </button>
                                                         </div>
 
                                                         <div className="w-[1px] h-6 bg-gray-200 mx-1" />
@@ -685,76 +617,6 @@ export default function TenantsPage() {
                     description="Are you sure you want to remove this member from the team?"
                     variant="danger"
                 />
-
-                {/* MODULE MANAGEMENT DIALOG */}
-                {moduleDialogOpen && selectedTenant && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-                        <div className="bg-white rounded-3xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
-                            <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-white shrink-0">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-brand-light rounded-lg text-brand-dark">
-                                        <Grid className="w-5 h-5" />
-                                    </div>
-                                    <h3 className="font-bold text-lg text-brand-dark">Manage Modules</h3>
-                                </div>
-                                <button type="button" onClick={() => setModuleDialogOpen(false)} className="text-gray-400 hover:text-gray-600">
-                                    <span className="sr-only">Close</span>
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                                </button>
-                            </div>
-
-                            <div className="p-6 space-y-4 overflow-y-auto flex-1">
-                                <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 text-sm text-blue-800">
-                                    Configuring modules for <strong>{selectedTenant.name}</strong>.
-                                </div>
-
-                                <div className="grid grid-cols-1 gap-3">
-                                    {SYSTEM_MODULES.map((mod: any) => (
-                                        <div
-                                            key={mod.id}
-                                            onClick={() => setManagingModules((prev: any) => ({ ...prev, [mod.id]: !prev[mod.id] }))}
-                                            className={`flex items-center justify-between p-3 rounded-lg border-2 cursor-pointer transition-all ${managingModules?.[mod.id]
-                                                ? 'border-blue-500 bg-blue-50/30'
-                                                : 'border-gray-100 hover:border-gray-200'
-                                                }`}>
-                                            <div className="flex items-center gap-3">
-                                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${managingModules?.[mod.id] ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-400'
-                                                    }`}>
-                                                    <span className="capitalize font-bold text-xs">{mod.id.slice(0, 2)}</span>
-                                                </div>
-                                                <div>
-                                                    <span className="font-bold text-gray-700">{mod.displayName}</span>
-                                                    <p className="text-xs text-gray-400">{mod.description}</p>
-                                                </div>
-                                            </div>
-
-                                            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${managingModules?.[mod.id] ? 'bg-blue-500 border-blue-500' : 'border-gray-300 bg-white'
-                                                }`}>
-                                                {managingModules?.[mod.id] && <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div className="p-5 border-t border-gray-100 flex justify-end gap-3 bg-gray-50/50">
-                                <button
-                                    onClick={() => setModuleDialogOpen(false)}
-                                    className="px-4 py-2 rounded-lg text-sm font-bold text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={saveModules}
-                                    disabled={actionLoading}
-                                    className="px-5 py-2 rounded-lg text-sm font-bold text-white bg-brand-dark hover:bg-gray-800 shadow-md flex items-center gap-2 disabled:opacity-70"
-                                >
-                                    {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save Changes'}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
 
                 {/* UPDATE URL DIALOG */}
                 {updateUrlDialogOpen && selectedTenant && (
