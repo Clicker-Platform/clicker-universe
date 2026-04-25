@@ -97,6 +97,13 @@ describe('logger', () => {
       expect(key).not.toContain('/');
       expect(key).toMatch(/^site_with_slash_upload\.image\.failed_\d+$/);
     });
+
+    it('sanitizes event containing slashes', async () => {
+      const { buildDedupeKey } = await import('@/lib/logger');
+      const key = buildDedupeKey('platform', 'some/nested/event');
+      expect(key).not.toContain('/');
+      expect(key).toMatch(/^platform_some_nested_event_\d+$/);
+    });
   });
 
   describe('formatDev', () => {

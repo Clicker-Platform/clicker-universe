@@ -20,7 +20,8 @@ export function isFirestoreCritical(event: string): boolean {
 export function buildDedupeKey(siteId: string, event: string): string {
   const windowSlot = Math.floor(Date.now() / 300_000);
   const safeSiteId = siteId.replace(/\//g, '_');
-  return `${safeSiteId}_${event}_${windowSlot}`;
+  const safeEvent = event.replace(/\//g, '_');
+  return `${safeSiteId}_${safeEvent}_${windowSlot}`;
 }
 
 interface LogContext {
