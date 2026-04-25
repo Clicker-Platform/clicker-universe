@@ -409,7 +409,22 @@ service cloud.firestore {
         request.auth.uid == memberId
       );
     }
-    
+
+    // === PLATFORM MONITORING ===
+
+    // platform_logs — write only from server (admin SDK bypasses rules)
+    // read only by superadmin
+    match /platform_logs/{logId} {
+      allow read: if isGlobalAdmin();
+      allow write: if false;
+    }
+
+    // platform_meta — quota guard counter
+    match /platform_meta/{docId} {
+      allow read: if isGlobalAdmin();
+      allow write: if false;
+    }
+
     // Default Deny
     match /{document=**} {
       allow read, write: if false;
