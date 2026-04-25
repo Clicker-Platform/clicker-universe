@@ -53,6 +53,15 @@ function buildPayload(level: LogPayload['level'], event: string, ctx: LogContext
   };
 }
 
+export function formatDev(payload: LogPayload): string {
+  const level = `[${payload.level.toUpperCase()}]`.padEnd(7);
+  const metaEntries = Object.entries(payload.meta);
+  const metaPart = metaEntries.length > 0
+    ? ' | ' + metaEntries.map(([k, v]) => `${k}: ${String(v)}`).join(' | ')
+    : '';
+  return `${level} ${payload.event} | siteId: ${payload.siteId}${metaPart}`;
+}
+
 async function writeToFirestore(payload: LogPayload): Promise<void> {
   if (typeof window !== 'undefined') return;
 
@@ -103,9 +112,12 @@ function log(level: LogPayload['level'], event: string, ctx: LogContext = {}): v
   const payload = buildPayload(level, event, ctx);
   const json = JSON.stringify(payload);
 
-  if (level === 'error') console.error(json);
-  else if (level === 'warn') console.warn(json);
-  else console.log(json);
+  const isDev = typeof process !== 'undefined' && process.env.NODE_ENV === 'development';
+  const output = isDev ? formatDev(payload) : json;
+
+  if (level === 'error') console.error(output);
+  else if (level === 'warn') console.warn(output);
+  else console.log(output);
 
   if (level === 'error' && isFirestoreCritical(event)) {
     void writeToFirestore(payload);

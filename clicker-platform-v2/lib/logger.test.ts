@@ -91,4 +91,48 @@ describe('logger', () => {
       expect(k1).not.toBe(k2);
     });
   });
+
+  describe('formatDev', () => {
+    it('returns readable string with level, event, siteId', async () => {
+      const { formatDev } = await import('@/lib/logger');
+      const payload = {
+        level: 'error' as const,
+        event: 'upload.image.failed',
+        service: 'clicker-platform',
+        siteId: 'quattro',
+        ts: '2026-04-25T10:00:00.000Z',
+        meta: { error: 'permission-denied' },
+      };
+      const result = formatDev(payload);
+      expect(result).toBe('[ERROR] upload.image.failed | siteId: quattro | error: permission-denied');
+    });
+
+    it('includes all meta fields as key: value pairs', async () => {
+      const { formatDev } = await import('@/lib/logger');
+      const payload = {
+        level: 'warn' as const,
+        event: 'analytics.invalid.siteId',
+        service: 'clicker-platform',
+        siteId: 'platform',
+        ts: '2026-04-25T10:00:00.000Z',
+        meta: { endpoint: '/api/track', detail: 'missing' },
+      };
+      const result = formatDev(payload);
+      expect(result).toBe('[WARN]  analytics.invalid.siteId | siteId: platform | endpoint: /api/track | detail: missing');
+    });
+
+    it('omits meta section when meta is empty', async () => {
+      const { formatDev } = await import('@/lib/logger');
+      const payload = {
+        level: 'info' as const,
+        event: 'some.event',
+        service: 'clicker-platform',
+        siteId: 'platform',
+        ts: '2026-04-25T10:00:00.000Z',
+        meta: {},
+      };
+      const result = formatDev(payload);
+      expect(result).toBe('[INFO]  some.event | siteId: platform');
+    });
+  });
 });
