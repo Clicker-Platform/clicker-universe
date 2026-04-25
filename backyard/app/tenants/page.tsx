@@ -37,6 +37,10 @@ export default function TenantsPage() {
     const [actionType, setActionType] = useState<'suspend' | 'activate'>('suspend');
     const [actionLoading, setActionLoading] = useState(false);
 
+    const [deleteOpen, setDeleteOpen] = useState(false);
+    const [deleteTarget, setDeleteTarget] = useState<Tenant | null>(null);
+    const [deleteLoading, setDeleteLoading] = useState(false);
+
     const filteredTenants = useMemo(() =>
         tenants.filter(t =>
             t.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -102,19 +106,34 @@ export default function TenantsPage() {
         }
     };
 
-    const handleDelete = async (tenant: Tenant) => {
-        const typed = window.prompt(`Type "${tenant.id}" to permanently delete ${tenant.name}.\n\nThis cannot be undone.`);
-        if (typed !== tenant.id) {
-            if (typed !== null) toast.error('Confirmation text did not match');
+    const openDeleteDialog = (tenant: Tenant) => {
+        setDeleteTarget(tenant);
+        setDeleteOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!deleteTarget) return;
+        setDeleteOpen(false);
+        // Second verification: type the tenant ID
+        const typed = window.prompt(
+            `FINAL CONFIRMATION\n\nType "${deleteTarget.id}" exactly to permanently delete ${deleteTarget.name}.\n\nThis cannot be undone — all Firestore data, members, and configuration will be erased.`
+        );
+        if (typed !== deleteTarget.id) {
+            if (typed !== null) toast.error('Confirmation text did not match — deletion cancelled');
+            setDeleteTarget(null);
             return;
         }
+        setDeleteLoading(true);
         try {
             const fn = httpsCallable(functions, 'hardDeleteTenant');
-            await fn({ siteId: tenant.id });
-            setTenants(prev => prev.filter(t => t.id !== tenant.id));
-            toast.success('Tenant deleted', { description: `${tenant.name} has been removed.` });
+            await fn({ siteId: deleteTarget.id });
+            setTenants(prev => prev.filter(t => t.id !== deleteTarget.id));
+            toast.success('Tenant deleted', { description: `${deleteTarget.name} has been permanently removed.` });
         } catch (err: any) {
             toast.error('Delete failed', { description: err.message });
+        } finally {
+            setDeleteLoading(false);
+            setDeleteTarget(null);
         }
     };
 
@@ -248,7 +267,7 @@ export default function TenantsPage() {
                                                 title={tenant.status === 'active' ? 'Suspend' : 'Activate'}>
                                                 {tenant.status === 'active' ? <PowerOff className="w-4 h-4" /> : <Power className="w-4 h-4" />}
                                             </button>
-                                            <button onClick={() => handleDelete(tenant)}
+                                            <button onClick={() => openDeleteDialog(tenant)}
                                                 className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:border-red-300 hover:text-red-600 transition-colors"
                                                 title="Delete">
                                                 <Trash2 className="w-4 h-4" />
@@ -274,6 +293,16 @@ export default function TenantsPage() {
                 description={actionType === 'suspend' ? 'All services will be halted immediately.' : 'Services will be restored immediately.'}
                 variant={actionType === 'suspend' ? 'warning' : 'primary'}
                 loading={actionLoading}
+            />
+
+            <ConfirmationDialog
+                isOpen={deleteOpen}
+                onCancel={() => { setDeleteOpen(false); setDeleteTarget(null); }}
+                onConfirm={confirmDelete}
+                title={`Delete ${deleteTarget?.name}?`}
+                description={`This will permanently delete all Firestore data for "${deleteTarget?.id}". You will be asked to type the tenant ID to confirm.`}
+                variant="danger"
+                loading={deleteLoading}
             />
         </PageShell>
     );
