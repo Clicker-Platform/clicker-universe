@@ -2,6 +2,7 @@ import { BlockType } from '@/data/mockData';
 import { Type, Image as ImageIcon, Layout, Box, HelpCircle, AlignCenter, Link, Map, List, Clock, Star, MapPin, Play, Columns2 } from 'lucide-react';
 import { getTemplate } from '@/lib/templates/registry';
 import { DEFAULT_SHOWCASE_DATA, newRow } from '@/components/blocks/content-showcase/types';
+import { DEFAULT_MEDIA } from '@/components/admin/blocks/media-field/types';
 
 export const BLOCK_OPTIONS: { type: BlockType; label: string; icon: React.ElementType }[] = [
     { type: 'hero', label: 'Hero Section', icon: Layout },
@@ -38,7 +39,7 @@ export function getDefaultData(type: BlockType, templateId = 'classic'): any {
         case 'content_showcase':
             return { ...baseData, ...DEFAULT_SHOWCASE_DATA, rows: [newRow()] };
         case 'image':
-            return { ...baseData, alt: 'Image description', caption: '' };
+            return { ...baseData, media: { ...DEFAULT_MEDIA, type: 'image' }, caption: '' };
         case 'button':
             return { ...baseData, label: 'Click Me', url: '#', style: 'primary' };
         case 'products':

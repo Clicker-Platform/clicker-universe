@@ -15,11 +15,12 @@ const RICH_TEXT_CONFIG = {
     ALLOWED_ATTR: [
         'href', 'target', 'rel', 'title',
         'src', 'alt', 'width', 'height', 'loading',
-        'class', 'style',
+        'class',
         'allow', 'allowfullscreen', 'frameborder',
         'controls', 'autoplay', 'muted', 'loop', 'playsinline', 'poster',
         'type',
         'colspan', 'rowspan',
+        'data-video-embed', 'data-src', 'data-provider',
     ],
     ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|tel):|[^a-z]|[a-z+.-]+(?:[^a-z+.-:]|$))/i,
     ADD_ATTR: ['target'],

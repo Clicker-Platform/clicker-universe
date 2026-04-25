@@ -25,6 +25,7 @@ function detectProvider(url: string): { provider: 'youtube' | 'vimeo' | 'mp4'; e
     if (vimeo) return { provider: 'vimeo', embedSrc: `https://player.vimeo.com/video/${vimeo[1]}` };
 
     if (/\.(mp4|webm|ogg)(\?.*)?$/i.test(trimmed)) {
+        if (!/^https?:\/\//i.test(trimmed)) return null;
         return { provider: 'mp4', embedSrc: trimmed };
     }
 
@@ -48,8 +49,16 @@ export const VideoEmbed = Node.create<VideoEmbedOptions>({
 
     addAttributes() {
         return {
-            src: { default: null },
-            provider: { default: null },
+            src: {
+                default: null,
+                parseHTML: (el) => el.getAttribute('data-src'),
+                renderHTML: (attrs) => ({ 'data-src': attrs.src ?? '' }),
+            },
+            provider: {
+                default: null,
+                parseHTML: (el) => el.getAttribute('data-provider'),
+                renderHTML: (attrs) => ({ 'data-provider': attrs.provider ?? '' }),
+            },
         };
     },
 
@@ -65,6 +74,7 @@ export const VideoEmbed = Node.create<VideoEmbedOptions>({
 
         const wrapperAttrs = mergeAttributes(this.options.HTMLAttributes, {
             'data-video-embed': '',
+            'data-src': src || '',
             'data-provider': provider || '',
         });
 

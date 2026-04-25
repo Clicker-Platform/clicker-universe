@@ -33,6 +33,11 @@ function resolveRowLayout(row: ShowcaseRow, rowIndex: number, defaultLayout: Con
     return rowIndex % 2 === 0 ? 'image-left' : 'image-right';
 }
 
+function isSafeHref(href: string | undefined | null): boolean {
+    if (!href) return false;
+    return /^(https?:\/\/|\/|#|mailto:|tel:)/i.test(href);
+}
+
 function ctaClasses(variant: string): string {
     switch (variant) {
         case 'primary':
@@ -93,7 +98,7 @@ function ShowcaseRowView({
     const contentWidth = 100 - mediaWidth;
 
     const bgEnabled = showcase.rowBackgrounds.enabled;
-    const isEven = index % 2 === 1;
+    const isEven = index % 2 === 0;
     const bgColor = bgEnabled ? (isEven ? showcase.rowBackgrounds.evenColor : showcase.rowBackgrounds.oddColor) : undefined;
 
     const safeContent = sanitizeRichText(row.content);
@@ -117,7 +122,7 @@ function ShowcaseRowView({
                 dangerouslySetInnerHTML={{ __html: safeContent }}
             />
             {row.cta?.enabled && row.cta.label && (
-                <a href={row.cta.href || '#'} className={ctaClasses(row.cta.variant)}>
+                <a href={isSafeHref(row.cta.href) ? row.cta.href : '#'} className={ctaClasses(row.cta.variant)}>
                     {row.cta.label}
                 </a>
             )}

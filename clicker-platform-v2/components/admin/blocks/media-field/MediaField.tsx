@@ -5,6 +5,7 @@ import { Image as ImageIcon, Film, Sparkles, Upload, X, Loader2 } from 'lucide-r
 import { uploadToStorage } from '@/lib/upload';
 import { useSite } from '@/lib/site-context';
 import { MediaFieldValue, MediaType, MediaAspectRatio, MediaObjectFit, DEFAULT_MEDIA } from './types';
+import { detectVideoProvider } from '@/components/admin/blocks/rich-text/VideoEmbedExtension';
 
 interface MediaFieldProps {
     value?: MediaFieldValue;
@@ -28,19 +29,19 @@ export function MediaField({ value, onChange }: MediaFieldProps) {
     const posterInputRef = useRef<HTMLInputElement>(null);
     const [uploading, setUploading] = useState<null | 'image' | 'lottie' | 'poster'>(null);
     const [error, setError] = useState('');
+    // Tab is local UI state only — does NOT write to block data until user provides new content
+    const [selectedTab, setSelectedTab] = useState<MediaType>(media.type);
+
+    const clean = (v: MediaFieldValue): MediaFieldValue =>
+        Object.fromEntries(Object.entries(v).filter(([, val]) => val !== undefined)) as MediaFieldValue;
 
     const update = (patch: Partial<MediaFieldValue>) => {
-        onChange({ ...media, ...patch });
+        onChange(clean({ ...media, ...patch }));
     };
 
-    const switchType = (type: MediaType) => {
-        onChange({
-            ...DEFAULT_MEDIA,
-            type,
-            aspectRatio: media.aspectRatio,
-            objectFit: media.objectFit,
-            alt: media.alt,
-        });
+    // Commits new content with the selected tab's type — called only on upload/link
+    const commit = (src: string, extraPatch?: Partial<MediaFieldValue>) => {
+        onChange(clean({ ...media, ...extraPatch, type: selectedTab, src }));
     };
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, target: 'image' | 'poster') => {
@@ -58,7 +59,7 @@ export function MediaField({ value, onChange }: MediaFieldProps) {
         setUploading(target);
         try {
             const url = await uploadToStorage({ file, folder: 'content-showcase', siteId });
-            if (target === 'image') update({ src: url });
+            if (target === 'image') commit(url);
             else update({ poster: url });
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Upload failed');
@@ -84,7 +85,7 @@ export function MediaField({ value, onChange }: MediaFieldProps) {
         setUploading('lottie');
         try {
             const url = await uploadToStorage({ file, folder: 'content-showcase-lottie', siteId, convertToWebP: false });
-            update({ src: url });
+            commit(url);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Upload failed');
         } finally {
@@ -99,12 +100,12 @@ export function MediaField({ value, onChange }: MediaFieldProps) {
             <div className="flex gap-1 p-1 bg-gray-100 dark:bg-neutral-800 rounded-lg">
                 {TYPE_TABS.map((t) => {
                     const Icon = t.icon;
-                    const active = media.type === t.id;
+                    const active = selectedTab === t.id;
                     return (
                         <button
                             key={t.id}
                             type="button"
-                            onClick={() => switchType(t.id)}
+                            onClick={() => { setSelectedTab(t.id); setError(''); }}
                             className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-bold rounded-md transition-all ${
                                 active
                                     ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 shadow-sm'
@@ -118,12 +119,12 @@ export function MediaField({ value, onChange }: MediaFieldProps) {
             </div>
 
             {/* Image */}
-            {media.type === 'image' && (
+            {selectedTab === 'image' && (
                 <div className="space-y-3">
                     <div>
                         <label className={labelClass}>Image</label>
                         <input type="file" ref={imageInputRef} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'image')} />
-                        {media.src ? (
+                        {media.type === 'image' && media.src ? (
                             <div className="relative group">
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img src={media.src} alt={media.alt || ''} className="w-full h-40 object-cover rounded-lg border border-gray-200 dark:border-neutral-800" />
@@ -161,14 +162,14 @@ export function MediaField({ value, onChange }: MediaFieldProps) {
             )}
 
             {/* Video */}
-            {media.type === 'video' && (
+            {selectedTab === 'video' && (
                 <div className="space-y-3">
                     <div>
                         <label className={labelClass}>Video URL</label>
                         <input
                             type="text"
-                            value={media.src || ''}
-                            onChange={(e) => update({ src: e.target.value })}
+                            value={selectedTab === media.type ? (media.src || '') : ''}
+                            onChange={(e) => commit(e.target.value)}
                             placeholder="https://youtube.com/... or .mp4"
                             className={inputClass}
                         />
@@ -179,31 +180,33 @@ export function MediaField({ value, onChange }: MediaFieldProps) {
                         <ToggleButton label="Muted" checked={!!media.muted} onChange={(v) => update({ muted: v })} />
                         <ToggleButton label="Loop" checked={!!media.loop} onChange={(v) => update({ loop: v })} />
                     </div>
-                    <div>
-                        <label className={labelClass}>Poster image (optional)</label>
-                        <input type="file" ref={posterInputRef} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'poster')} />
-                        {media.poster ? (
-                            <div className="flex items-center gap-2">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src={media.poster} alt="Poster" className="h-12 w-20 object-cover rounded border border-gray-200 dark:border-neutral-800" />
-                                <button type="button" onClick={() => update({ poster: '' })} className="text-xs text-neutral-500 hover:text-red-500">Remove</button>
-                            </div>
-                        ) : (
-                            <button
-                                type="button"
-                                onClick={() => posterInputRef.current?.click()}
-                                disabled={uploading === 'poster'}
-                                className="text-xs font-bold text-blue-500 hover:underline disabled:opacity-50"
-                            >
-                                {uploading === 'poster' ? 'Uploading…' : 'Upload poster'}
-                            </button>
-                        )}
-                    </div>
+                    {detectVideoProvider(media.src || '')?.provider === 'mp4' && (
+                        <div>
+                            <label className={labelClass}>Poster image (optional)</label>
+                            <input type="file" ref={posterInputRef} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'poster')} />
+                            {media.poster ? (
+                                <div className="flex items-center gap-2">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img src={media.poster} alt="Poster" className="h-12 w-20 object-cover rounded border border-gray-200 dark:border-neutral-800" />
+                                    <button type="button" onClick={() => update({ poster: '' })} className="text-xs text-neutral-500 hover:text-red-500">Remove</button>
+                                </div>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={() => posterInputRef.current?.click()}
+                                    disabled={uploading === 'poster'}
+                                    className="text-xs font-bold text-blue-500 hover:underline disabled:opacity-50"
+                                >
+                                    {uploading === 'poster' ? 'Uploading…' : 'Upload poster'}
+                                </button>
+                            )}
+                        </div>
+                    )}
                 </div>
             )}
 
             {/* Lottie */}
-            {media.type === 'lottie' && (
+            {selectedTab === 'lottie' && (
                 <div className="space-y-3">
                     <div>
                         <label className={labelClass}>Lottie JSON</label>
@@ -220,8 +223,8 @@ export function MediaField({ value, onChange }: MediaFieldProps) {
                             <span className="text-neutral-400 text-xs">or</span>
                             <input
                                 type="text"
-                                value={media.src || ''}
-                                onChange={(e) => update({ src: e.target.value })}
+                                value={selectedTab === media.type ? (media.src || '') : ''}
+                                onChange={(e) => commit(e.target.value)}
                                 placeholder="Paste Lottie JSON URL"
                                 className={`${inputClass} flex-1`}
                             />

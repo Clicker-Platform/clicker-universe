@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { MediaFieldValue, ASPECT_RATIO_CLASS } from '@/components/admin/blocks/media-field/types';
 import { detectVideoProvider } from '@/components/admin/blocks/rich-text/VideoEmbedExtension';
@@ -10,9 +10,10 @@ const Lottie = dynamic(() => import('lottie-react'), { ssr: false });
 interface MediaViewProps {
     media?: MediaFieldValue;
     className?: string;
+    style?: React.CSSProperties;
 }
 
-export function MediaView({ media, className = '' }: MediaViewProps) {
+export function MediaView({ media, className = '', style }: MediaViewProps) {
     if (!media || !media.src) return null;
 
     const aspectClass = ASPECT_RATIO_CLASS[media.aspectRatio || '16:9'] || '';
@@ -21,7 +22,7 @@ export function MediaView({ media, className = '' }: MediaViewProps) {
 
     if (media.type === 'image') {
         return (
-            <div className={wrapperClass}>
+            <div className={wrapperClass} style={style}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                     src={media.src}
@@ -39,7 +40,7 @@ export function MediaView({ media, className = '' }: MediaViewProps) {
 
         if (detected.provider === 'mp4') {
             return (
-                <div className={wrapperClass}>
+                <div className={wrapperClass} style={style}>
                     <video
                         src={detected.embedSrc}
                         poster={media.poster || undefined}
@@ -64,7 +65,7 @@ export function MediaView({ media, className = '' }: MediaViewProps) {
         const embedUrl = `${detected.embedSrc}?${params.toString()}`;
 
         return (
-            <div className={wrapperClass}>
+            <div className={wrapperClass} style={style}>
                 <iframe
                     src={embedUrl}
                     className="absolute inset-0 w-full h-full border-0"
@@ -76,7 +77,7 @@ export function MediaView({ media, className = '' }: MediaViewProps) {
     }
 
     if (media.type === 'lottie') {
-        return <LottieView media={media} wrapperClass={wrapperClass} />;
+        return <LottieView media={media} wrapperClass={wrapperClass} style={style} />;
     }
 
     return null;
@@ -87,14 +88,26 @@ type LottieState =
     | { kind: 'ready'; data: unknown }
     | { kind: 'error' };
 
-function LottieView({ media, wrapperClass }: { media: MediaFieldValue; wrapperClass: string }) {
+function LottieView({ media, wrapperClass, style }: { media: MediaFieldValue; wrapperClass: string; style?: React.CSSProperties }) {
     const [state, setState] = useState<LottieState>({ kind: 'loading' });
 
     useEffect(() => {
         let cancelled = false;
-        fetch(media.src)
-            .then((r) => r.json())
+        if (!media.src.startsWith('https://')) {
+            setState({ kind: 'error' });
+            return;
+        }
+        const proxyUrl = `/api/proxy/lottie?url=${encodeURIComponent(media.src)}`;
+        fetch(proxyUrl)
+            .then((r) => {
+                if (!r.ok) throw new Error('proxy error');
+                return r.json();
+            })
             .then((data: unknown) => {
+                // Must be a Lottie object — has 'layers' or 'v' field
+                if (!data || typeof data !== 'object' || !('v' in data || 'layers' in data)) {
+                    throw new Error('not lottie');
+                }
                 if (!cancelled) setState({ kind: 'ready', data });
             })
             .catch(() => {
@@ -107,11 +120,11 @@ function LottieView({ media, wrapperClass }: { media: MediaFieldValue; wrapperCl
 
     if (!media.src || state.kind === 'error') return null;
     if (state.kind === 'loading') {
-        return <div className={`${wrapperClass} bg-gray-100 dark:bg-neutral-900 animate-pulse`} />;
+        return <div className={`${wrapperClass} bg-gray-100 dark:bg-neutral-900 animate-pulse`} style={style} />;
     }
 
     return (
-        <div className={wrapperClass}>
+        <div className={wrapperClass} style={style}>
             <Lottie
                 animationData={state.data}
                 loop={media.loop !== false}
