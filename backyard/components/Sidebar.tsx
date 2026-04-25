@@ -2,10 +2,12 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { LayoutDashboard, Users, Store, Settings, LogOut, ShieldAlert } from 'lucide-react';
 import { signOut } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { collection, query, where, orderBy, limit, onSnapshot } from 'firebase/firestore';
+import { auth, db } from '@/lib/firebase';
 import { toast } from 'sonner';
 
 const menuItems = [
@@ -19,6 +21,31 @@ const menuItems = [
 export default function Sidebar() {
     const pathname = usePathname();
     const router = useRouter();
+
+    const [unreadCount, setUnreadCount] = useState(0);
+    const [lastSeenAt] = useState<Date>(() => {
+        if (typeof window === 'undefined') return new Date(0);
+        const stored = localStorage.getItem('monitoring_last_seen');
+        return stored ? new Date(stored) : new Date(0);
+    });
+
+    useEffect(() => {
+        const col = collection(db, 'platform_logs');
+        const q = query(col, where('level', '==', 'error'), orderBy('ts', 'desc'), limit(50));
+        const unsub = onSnapshot(q, (snap) => {
+            const newCount = snap.docs.filter((d) => {
+                const ts = d.data().ts?.toDate?.();
+                return ts && ts > lastSeenAt;
+            }).length;
+            setUnreadCount(newCount);
+        });
+        return unsub;
+    }, [lastSeenAt]);
+
+    const handleMonitoringClick = () => {
+        localStorage.setItem('monitoring_last_seen', new Date().toISOString());
+        setUnreadCount(0);
+    };
 
     const handleLogout = async () => {
         try {
@@ -51,6 +78,7 @@ export default function Sidebar() {
                         <Link
                             key={item.href}
                             href={item.href}
+                            onClick={item.href === '/monitoring' ? handleMonitoringClick : undefined}
                             className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all font-medium text-sm border border-transparent
                                 ${isActive
                                     ? 'bg-brand-green/10 text-brand-dark border-brand-dark/10'
@@ -58,7 +86,12 @@ export default function Sidebar() {
                                 }`}
                         >
                             <item.icon className={`w-5 h-5 ${isActive ? 'text-brand-dark' : 'text-slate-400'}`} />
-                            {item.name}
+                            <span className="flex-1">{item.name}</span>
+                            {item.href === '/monitoring' && unreadCount > 0 && (
+                                <span className="bg-red-500 text-white text-xs font-bold rounded-full px-1.5 py-0.5 min-w-[20px] text-center">
+                                    {unreadCount > 99 ? '99+' : unreadCount}
+                                </span>
+                            )}
                         </Link>
                     );
                 })}
