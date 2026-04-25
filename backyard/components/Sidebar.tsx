@@ -38,6 +38,9 @@ export default function Sidebar() {
                 return ts && ts > lastSeenAt;
             }).length;
             setUnreadCount(newCount);
+        }, (err) => {
+            if (err.code === 'failed-precondition') return; // index still building
+            console.error('[Sidebar] platform_logs snapshot error:', err.message);
         });
         return unsub;
     }, [lastSeenAt]);
@@ -53,7 +56,7 @@ export default function Sidebar() {
             toast.success('Logged Out Successfully');
             router.push('/');
         } catch (error: any) {
-            console.error('Logout failed', error);
+            console.error('[backyard] logout.failed', { error: error instanceof Error ? error.message : String(error) });
             toast.error('Logout Failed', { description: error.message });
         }
     };
