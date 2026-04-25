@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Backyard Aesthetic Direction</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: #0a0a0a; color: #fff; padding: 32px; min-height: 100vh; }
+  h1 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; color: #555; margin-bottom: 8px; }
+  h2 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: #666; margin-bottom: 24px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; max-width: 1100px; }
+  .card {
+    border-radius: 16px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    border: 2px solid transparent;
+  }
+  .card:hover { transform: translateY(-4px); }
+  .card.selected { border-color: #B6FF2E; box-shadow: 0 0 0 4px rgba(182,255,46,0.2); }
+  .preview { height: 280px; position: relative; overflow: hidden; }
+  .label { padding: 16px 20px 20px; }
+  .label h3 { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
+  .label p { font-size: 12px; line-height: 1.6; opacity: 0.7; }
+
+  /* OPTION A — Dark Command Center */
+  .a .preview { background: #0D1117; }
+  .a-sidebar { position: absolute; left: 0; top: 0; bottom: 0; width: 52px; background: #161b22; border-right: 1px solid #30363d; display: flex; flex-direction: column; align-items: center; padding: 12px 0; gap: 8px; }
+  .a-icon { width: 32px; height: 32px; border-radius: 8px; background: #21262d; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .a-icon.active { background: #B6FF2E; }
+  .a-main { position: absolute; left: 52px; right: 0; top: 0; bottom: 0; padding: 16px; }
+  .a-header { font-size: 10px; font-weight: 700; color: #8b949e; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; }
+  .a-stat { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; }
+  .a-stat-num { font-size: 22px; font-weight: 900; color: #B6FF2E; font-family: monospace; }
+  .a-stat-label { font-size: 9px; color: #8b949e; text-transform: uppercase; letter-spacing: 0.1em; }
+  .a-row { display: flex; gap: 8px; margin-bottom: 8px; }
+  .a-badge { background: #1f2937; border: 1px solid #374151; border-radius: 4px; padding: 4px 8px; font-size: 9px; color: #9ca3af; font-family: monospace; }
+  .a-badge.red { border-color: #dc2626; color: #f87171; background: #1c0a0a; }
+  .a-badge.green { border-color: #16a34a; color: #4ade80; background: #0a1c0a; }
+  .a .label { background: #161b22; border-top: 1px solid #30363d; }
+
+  /* OPTION B — Clean Light Pro */
+  .b .preview { background: #f8fafc; }
+  .b-sidebar { position: absolute; left: 0; top: 0; bottom: 0; width: 160px; background: #fff; border-right: 1px solid #e2e8f0; padding: 16px 12px; }
+  .b-logo { font-size: 14px; font-weight: 900; color: #0E3B2E; margin-bottom: 20px; display: flex; align-items: center; gap: 6px; }
+  .b-logo-dot { width: 20px; height: 20px; background: #B6FF2E; border-radius: 6px; }
+  .b-nav { font-size: 10px; font-weight: 600; color: #64748b; padding: 6px 8px; border-radius: 6px; margin-bottom: 2px; }
+  .b-nav.active { background: #f0fdf4; color: #0E3B2E; font-weight: 800; }
+  .b-main { position: absolute; left: 160px; right: 0; top: 0; bottom: 0; padding: 16px; }
+  .b-title { font-size: 16px; font-weight: 900; color: #0E3B2E; margin-bottom: 12px; }
+  .b-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+  .b-num { font-size: 24px; font-weight: 900; color: #0E3B2E; }
+  .b-sub { font-size: 9px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; }
+  .b-row { display: flex; gap: 6px; }
+  .b-pill { background: #f1f5f9; border-radius: 100px; padding: 3px 8px; font-size: 9px; color: #475569; font-weight: 600; }
+  .b-pill.green { background: #dcfce7; color: #166534; }
+  .b .label { background: #fff; border-top: 1px solid #e2e8f0; color: #0f172a; }
+  .b .label p { color: #64748b; }
+
+  /* OPTION C — Dark + Brand Green Accent (current direction evolved) */
+  .c .preview { background: #0a0f0d; }
+  .c-sidebar { position: absolute; left: 0; top: 0; bottom: 0; width: 180px; background: #0E1A14; border-right: 1px solid #1a2e22; padding: 16px 12px; }
+  .c-logo { font-size: 13px; font-weight: 900; color: #B6FF2E; margin-bottom: 4px; }
+  .c-sub { font-size: 9px; color: #4a7a5a; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 20px; }
+  .c-nav { font-size: 10px; font-weight: 600; color: #4a7a5a; padding: 7px 10px; border-radius: 8px; margin-bottom: 2px; display: flex; align-items: center; gap: 6px; }
+  .c-nav.active { background: rgba(182,255,46,0.08); color: #B6FF2E; border: 1px solid rgba(182,255,46,0.15); }
+  .c-dot { width: 6px; height: 6px; border-radius: 2px; background: currentColor; opacity: 0.6; }
+  .c-main { position: absolute; left: 180px; right: 0; top: 0; bottom: 0; padding: 14px; }
+  .c-header { font-size: 14px; font-weight: 900; color: #fff; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+  .c-live { font-size: 9px; color: #B6FF2E; background: rgba(182,255,46,0.1); border: 1px solid rgba(182,255,46,0.2); padding: 3px 8px; border-radius: 100px; font-weight: 700; }
+  .c-stat { background: #0E1A14; border: 1px solid #1a2e22; border-radius: 10px; padding: 10px 12px; margin-bottom: 6px; }
+  .c-stat-num { font-size: 22px; font-weight: 900; color: #B6FF2E; font-family: monospace; }
+  .c-stat-label { font-size: 9px; color: #4a7a5a; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; }
+  .c-row { display: flex; gap: 6px; }
+  .c-tag { background: rgba(182,255,46,0.05); border: 1px solid rgba(182,255,46,0.1); border-radius: 4px; padding: 3px 7px; font-size: 9px; color: #B6FF2E; font-family: monospace; opacity: 0.8; }
+  .c-tag.red { background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.2); color: #f87171; }
+  .c .label { background: #0E1A14; border-top: 1px solid #1a2e22; }
+
+  .badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 100px; margin-bottom: 8px; }
+  .badge-rec { background: #B6FF2E; color: #0E3B2E; }
+  .badge-alt { background: #1a2e22; color: #B6FF2E; }
+
+  .instruction { font-size: 12px; color: #555; text-align: center; margin-bottom: 28px; }
+  .page-title { font-size: 28px; font-weight: 900; color: #fff; margin-bottom: 6px; }
+</style>
+</head>
+<body>
+<p style="font-size:11px;color:#444;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:8px;">Backyard — Design Direction</p>
+<h1 class="page-title">Pilih Aesthetic</h1>
+<p class="instruction">Klik salah satu untuk memilih arah desain Backyard dashboard</p>
+
+<div class="grid">
+
+  <!-- OPTION A -->
+  <div class="card a" onclick="select(this,'A')">
+    <div class="preview">
+      <div class="a-sidebar">
+        <div class="a-icon active">⚡</div>
+        <div class="a-icon">🏪</div>
+        <div class="a-icon">👥</div>
+        <div class="a-icon">📡</div>
+        <div class="a-icon">⚙️</div>
+      </div>
+      <div class="a-main">
+        <div class="a-header">God Mode — Command Center</div>
+        <div class="a-stat">
+          <div class="a-stat-num">247</div>
+          <div class="a-stat-label">Active Tenants</div>
+        </div>
+        <div class="a-row">
+          <div class="a-badge green">● ONLINE</div>
+          <div class="a-badge red">3 ERRORS</div>
+          <div class="a-badge">v2.4.1</div>
+        </div>
+        <div class="a-stat" style="margin-top:8px">
+          <div class="a-stat-num" style="font-size:14px;color:#fff">wa.send.failed</div>
+          <div class="a-stat-label" style="color:#f87171">2m ago · quattro</div>
+        </div>
+      </div>
+    </div>
+    <div class="label">
+      <span class="badge badge-alt">GitHub/VS Code Vibes</span>
+      <h3 style="color:#fff">Dark Command Center</h3>
+      <p>Terminal-inspired, dense, monospace data. Icon-only sidebar. Pure operator tool.</p>
+    </div>
+  </div>
+
+  <!-- OPTION B -->
+  <div class="card b" onclick="select(this,'B')">
+    <div class="preview">
+      <div class="b-sidebar">
+        <div class="b-logo"><div class="b-logo-dot"></div>Backyard</div>
+        <div class="b-nav active">Overview</div>
+        <div class="b-nav">Tenants</div>
+        <div class="b-nav">Users</div>
+        <div class="b-nav">Monitoring</div>
+        <div class="b-nav">Settings</div>
+      </div>
+      <div class="b-main">
+        <div class="b-title">Platform Overview</div>
+        <div class="b-row" style="margin-bottom:8px">
+          <div class="b-card" style="flex:1">
+            <div class="b-num">247</div>
+            <div class="b-sub">Tenants</div>
+          </div>
+          <div class="b-card" style="flex:1">
+            <div class="b-num">1.2k</div>
+            <div class="b-sub">Users</div>
+          </div>
+        </div>
+        <div class="b-card">
+          <div style="font-size:10px;font-weight:800;color:#0E3B2E;margin-bottom:6px;">Recent Activity</div>
+          <div style="font-size:9px;color:#64748b;margin-bottom:4px;">New tenant: quattro · 2m ago</div>
+          <div style="font-size:9px;color:#64748b;">Error: wa.send.failed · 5m ago</div>
+        </div>
+      </div>
+    </div>
+    <div class="label">
+      <span class="badge" style="background:#e2e8f0;color:#0f172a;">Notion / Linear Vibes</span>
+      <h3>Clean Light Pro</h3>
+      <p>Minimal, professional, airy. Easy to read. Familiar SaaS admin feel.</p>
+    </div>
+  </div>
+
+  <!-- OPTION C -->
+  <div class="card c" onclick="select(this,'C')">
+    <div class="preview">
+      <div class="c-sidebar">
+        <div class="c-logo">BACKYARD</div>
+        <div class="c-sub">God Mode Active</div>
+        <div class="c-nav active"><span class="c-dot"></span>Overview</div>
+        <div class="c-nav"><span class="c-dot"></span>Tenants</div>
+        <div class="c-nav"><span class="c-dot"></span>Users</div>
+        <div class="c-nav"><span class="c-dot"></span>Monitoring</div>
+        <div class="c-nav"><span class="c-dot"></span>Settings</div>
+      </div>
+      <div class="c-main">
+        <div class="c-header">
+          <span>SYSTEM PULSE</span>
+          <span class="c-live">● LIVE</span>
+        </div>
+        <div class="c-row" style="margin-bottom:6px;">
+          <div class="c-stat" style="flex:1">
+            <div class="c-stat-num">247</div>
+            <div class="c-stat-label">Tenants</div>
+          </div>
+          <div class="c-stat" style="flex:1">
+            <div class="c-stat-num">1.2k</div>
+            <div class="c-stat-label">Users</div>
+          </div>
+        </div>
+        <div class="c-stat">
+          <div style="font-size:10px;color:#B6FF2E;font-weight:800;margin-bottom:4px;">wa.send.failed</div>
+          <div class="c-row">
+            <span class="c-tag red">ERROR</span>
+            <span class="c-tag">quattro · 2m ago</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="label">
+      <span class="badge badge-rec">⭐ Rekomendasi</span>
+      <h3 style="color:#fff">Dark + Brand Green</h3>
+      <p style="color:#4a7a5a;">Deep forest dark, neon green accents. Existing brand colors elevated. Feels like a real ops tool.</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function select(el, val) {
+  document.querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  if (window.__companion_select) window.__companion_select(val);
+  // Fallback visual
+  el.style.borderColor = '#B6FF2E';
+  setTimeout(() => {
+    el.querySelector('.label h3').textContent += ' ✓';
+  }, 100);
+}
+</script>
+</body>
+</html>

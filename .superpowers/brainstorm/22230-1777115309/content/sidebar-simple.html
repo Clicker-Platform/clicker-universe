@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sidebar — Simple vs Now</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: #f8fafc; padding: 40px 32px; }
+
+  h1 { font-size: 20px; font-weight: 900; color: #0E3B2E; margin-bottom: 4px; }
+  .sub { font-size: 11px; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 36px; }
+
+  .cols { display: grid; grid-template-columns: repeat(3, 220px); gap: 40px; align-items: start; }
+  .col-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; color: #94a3b8; margin-bottom: 12px; }
+
+  /* SIDEBAR BASE */
+  .sidebar { background: #fff; border: 2px solid #0E3B2E; border-radius: 20px; overflow: hidden; box-shadow: 4px 4px 0 #0E3B2E; }
+  .sb-head { padding: 20px 20px 14px; border-bottom: 2px solid #f0fdf4; }
+  .sb-logo { font-size: 15px; font-weight: 900; color: #0E3B2E; }
+  .sb-tag { display: inline-block; font-size: 9px; font-weight: 800; background: #B6FF2E; color: #0E3B2E; padding: 2px 8px; border-radius: 100px; margin-top: 4px; letter-spacing: 0.06em; }
+
+  /* NAV ITEMS */
+  .nav { padding: 10px 0; }
+  .item { display: flex; align-items: center; padding: 9px 20px; font-size: 13px; font-weight: 600; color: #64748b; cursor: pointer; border-left: 3px solid transparent; transition: all 0.1s; }
+  .item:hover { background: #f8fafc; color: #0E3B2E; }
+  .item.active { color: #0E3B2E; background: #f0fdf4; border-left-color: #B6FF2E; font-weight: 800; }
+  .item.new { color: #0E3B2E; font-weight: 700; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: #B6FF2E; margin-left: auto; flex-shrink: 0; }
+  .badge-err { font-size: 10px; font-weight: 800; background: #fee2e2; color: #dc2626; padding: 1px 7px; border-radius: 100px; margin-left: auto; }
+
+  .divider { height: 1px; background: #f1f5f9; margin: 6px 16px; }
+
+  .sb-foot { padding: 12px 20px 16px; border-top: 1px solid #f1f5f9; }
+  .signout { font-size: 12px; font-weight: 700; color: #ef4444; cursor: pointer; }
+
+  /* OPTION LABELS */
+  .opt-a .col-label { color: #94a3b8; }
+  .opt-b .col-label { color: #0E3B2E; }
+  .opt-c .col-label { color: #6366f1; }
+  .recommended { display: inline-block; font-size: 9px; font-weight: 800; background: #B6FF2E; color: #0E3B2E; padding: 2px 8px; border-radius: 100px; margin-left: 8px; }
+</style>
+</head>
+<body>
+
+<h1>Sidebar — 3 Opsi Simplifikasi</h1>
+<p class="sub">Flat · Tidak ada section label · Tidak ada emoji · Langsung ke poin</p>
+
+<div class="cols">
+
+  <!-- OPTION A: Sekarang (5 items) -->
+  <div class="opt-a">
+    <div class="col-label">A — Sekarang (5 items)</div>
+    <div class="sidebar">
+      <div class="sb-head">
+        <div class="sb-logo">Backyard</div>
+        <div><span class="sb-tag">God Mode</span></div>
+      </div>
+      <div class="nav">
+        <div class="item active">Overview</div>
+        <div class="item">Tenants</div>
+        <div class="item">Users</div>
+        <div class="item">Monitoring <span class="badge-err">3</span></div>
+        <div class="item">Settings</div>
+      </div>
+      <div class="sb-foot"><div class="signout">Sign Out</div></div>
+    </div>
+  </div>
+
+  <!-- OPTION B: Flat expand (11 items, no groups) -->
+  <div class="opt-b">
+    <div class="col-label">B — Flat semua (11 items) <span class="recommended">Rekomendasi</span></div>
+    <div class="sidebar">
+      <div class="sb-head">
+        <div class="sb-logo">Backyard</div>
+        <div><span class="sb-tag">God Mode</span></div>
+      </div>
+      <div class="nav">
+        <div class="item active">Overview</div>
+        <div class="divider"></div>
+        <div class="item">Tenants</div>
+        <div class="item new">Module Control <span class="dot"></span></div>
+        <div class="item new">Slug & Domain <span class="dot"></span></div>
+        <div class="divider"></div>
+        <div class="item">Users</div>
+        <div class="item new">Claims & Roles <span class="dot"></span></div>
+        <div class="divider"></div>
+        <div class="item">Monitoring <span class="badge-err">3</span></div>
+        <div class="item new">Sync Control <span class="dot"></span></div>
+        <div class="item new">Seed Tools <span class="dot"></span></div>
+        <div class="divider"></div>
+        <div class="item new">WhatsApp <span class="dot"></span></div>
+        <div class="item">Settings</div>
+      </div>
+      <div class="sb-foot"><div class="signout">Sign Out</div></div>
+    </div>
+  </div>
+
+  <!-- OPTION C: Compact grouped with dividers only (8 items, merge similar) -->
+  <div class="opt-c">
+    <div class="col-label">C — Compact merged (8 items)</div>
+    <div class="sidebar">
+      <div class="sb-head">
+        <div class="sb-logo">Backyard</div>
+        <div><span class="sb-tag">God Mode</span></div>
+      </div>
+      <div class="nav">
+        <div class="item active">Overview</div>
+        <div class="divider"></div>
+        <div class="item">Tenants & Modules <span class="dot"></span></div>
+        <div class="item new">Slug & Domain <span class="dot"></span></div>
+        <div class="divider"></div>
+        <div class="item">Users & Claims <span class="dot"></span></div>
+        <div class="divider"></div>
+        <div class="item">Monitoring <span class="badge-err">3</span></div>
+        <div class="item new">WhatsApp <span class="dot"></span></div>
+        <div class="item new">Sync & Seed <span class="dot"></span></div>
+        <div class="divider"></div>
+        <div class="item">Settings</div>
+      </div>
+      <div class="sb-foot"><div class="signout">Sign Out</div></div>
+    </div>
+  </div>
+
+</div>
+
+<div style="margin-top:32px;background:#0E3B2E;border-radius:16px;padding:20px 24px;max-width:700px;">
+  <div style="font-size:13px;font-weight:900;color:#B6FF2E;margin-bottom:6px;">Rekomendasi: Opsi B</div>
+  <div style="font-size:12px;color:#86efac;line-height:1.7;">Flat list dengan divider tipis sebagai pemisah visual — tidak ada label section, tidak ada emoji. Item baru ditandai titik hijau kecil. Monitoring badge merah tetap ada karena itu fungsional, bukan dekorasi. Opsi C terlalu merge — "Users & Claims" dan "Sync & Seed" tidak intuitif untuk superadmin yang tahu bedanya.</div>
+</div>
+
+</body>
+</html>

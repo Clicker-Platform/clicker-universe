@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Backyard Sidebar Audit</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: #0a0f0d; color: #fff; padding: 32px; min-height: 100vh; }
+  h1 { font-size: 22px; font-weight: 900; color: #B6FF2E; margin-bottom: 6px; }
+  .sub { font-size: 12px; color: #4a7a5a; margin-bottom: 32px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; }
+
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; max-width: 960px; }
+  .col-title { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 16px; }
+  .col-title.now { color: #6b7280; }
+  .col-title.proposed { color: #B6FF2E; }
+
+  .sidebar-mock { background: #0E1A14; border: 1px solid #1a2e22; border-radius: 16px; overflow: hidden; }
+  .sidebar-header { padding: 16px 20px; border-bottom: 1px solid #1a2e22; }
+  .sidebar-logo { font-size: 14px; font-weight: 900; color: #B6FF2E; }
+  .sidebar-sub { font-size: 9px; color: #4a7a5a; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 2px; }
+
+  .section-label { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; color: #2d5a3d; padding: 12px 20px 4px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 20px; font-size: 12px; font-weight: 600; color: #4a7a5a; }
+  .nav-item.active { color: #B6FF2E; background: rgba(182,255,46,0.06); border-left: 2px solid #B6FF2E; }
+  .nav-item.missing { color: #374151; text-decoration: line-through; font-style: italic; }
+  .nav-item.new { color: #B6FF2E; background: rgba(182,255,46,0.04); }
+  .nav-icon { width: 16px; height: 16px; opacity: 0.7; flex-shrink: 0; font-size: 13px; }
+  .badge { font-size: 8px; font-weight: 800; padding: 2px 6px; border-radius: 100px; margin-left: auto; }
+  .badge-new { background: rgba(182,255,46,0.15); color: #B6FF2E; border: 1px solid rgba(182,255,46,0.3); }
+  .badge-miss { background: rgba(239,68,68,0.1); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
+  .badge-ok { background: rgba(74,122,90,0.2); color: #4a7a5a; border: 1px solid rgba(74,122,90,0.3); }
+  .badge-soon { background: rgba(251,191,36,0.1); color: #fbbf24; border: 1px solid rgba(251,191,36,0.2); }
+
+  .divider { height: 1px; background: #1a2e22; margin: 6px 0; }
+
+  .legend { display: flex; gap: 20px; margin-bottom: 24px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #6b7280; }
+  .legend-dot { width: 8px; height: 8px; border-radius: 2px; }
+
+  .notes { margin-top: 32px; max-width: 960px; }
+  .note { background: #0E1A14; border: 1px solid #1a2e22; border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; }
+  .note-title { font-size: 12px; font-weight: 800; color: #B6FF2E; margin-bottom: 4px; }
+  .note-body { font-size: 11px; color: #4a7a5a; line-height: 1.6; }
+  .highlight { color: #B6FF2E; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<h1>Backyard Sidebar Audit</h1>
+<p class="sub">Sekarang vs yang seharusnya ada — berdasarkan Cloud Functions & Platform capabilities</p>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#B6FF2E"></div> Baru / Missing</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#4a7a5a"></div> Sudah ada & OK</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#fbbf24"></div> Ada tapi perlu upgrade</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#374151"></div> Placeholder / Coming Soon</div>
+</div>
+
+<div class="cols">
+
+  <!-- SEKARANG -->
+  <div>
+    <div class="col-title now">Sidebar Sekarang (5 items)</div>
+    <div class="sidebar-mock">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">BACKYARD</div>
+        <div class="sidebar-sub">God Mode</div>
+      </div>
+      <div class="nav-item active"><span class="nav-icon">📊</span>Overview<span class="badge badge-ok">OK</span></div>
+      <div class="nav-item"><span class="nav-icon">🏪</span>Tenants<span class="badge badge-ok">OK</span></div>
+      <div class="nav-item"><span class="nav-icon">👥</span>Users<span class="badge badge-ok">OK</span></div>
+      <div class="nav-item"><span class="nav-icon">📡</span>Monitoring<span class="badge badge-ok">NEW</span></div>
+      <div class="nav-item missing"><span class="nav-icon">⚙️</span>Settings<span class="badge badge-miss">KOSONG</span></div>
+    </div>
+  </div>
+
+  <!-- PROPOSED -->
+  <div>
+    <div class="col-title proposed">Sidebar Yang Seharusnya Ada (14+ items)</div>
+    <div class="sidebar-mock">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">BACKYARD</div>
+        <div class="sidebar-sub">God Mode Active</div>
+      </div>
+
+      <div class="section-label">Platform</div>
+      <div class="nav-item active"><span class="nav-icon">📊</span>Overview<span class="badge badge-ok">ada</span></div>
+
+      <div class="section-label">Tenant Management</div>
+      <div class="nav-item"><span class="nav-icon">🏪</span>Tenants<span class="badge badge-ok">ada</span></div>
+      <div class="nav-item new"><span class="nav-icon">🔧</span>Module Control<span class="badge badge-new">missing</span></div>
+      <div class="nav-item new"><span class="nav-icon">🌐</span>Slug / Domain<span class="badge badge-new">missing</span></div>
+
+      <div class="divider"></div>
+      <div class="section-label">User & Access</div>
+      <div class="nav-item"><span class="nav-icon">👥</span>All Users<span class="badge badge-ok">ada</span></div>
+      <div class="nav-item new"><span class="nav-icon">🔑</span>Claims & Roles<span class="badge badge-new">missing</span></div>
+      <div class="nav-item new"><span class="nav-icon">✉️</span>Invitations<span class="badge badge-new">missing</span></div>
+
+      <div class="divider"></div>
+      <div class="section-label">System Health</div>
+      <div class="nav-item"><span class="nav-icon">📡</span>Monitoring<span class="badge badge-ok">ada</span></div>
+      <div class="nav-item new"><span class="nav-icon">🔄</span>Sync Staging→Prod<span class="badge badge-new">missing</span></div>
+      <div class="nav-item new"><span class="nav-icon">🌱</span>Seed Tools<span class="badge badge-new">ada di page, missing nav</span></div>
+
+      <div class="divider"></div>
+      <div class="section-label">God Mode Tools</div>
+      <div class="nav-item new"><span class="nav-icon">⚡</span>WhatsApp Tenants<span class="badge badge-new">missing</span></div>
+      <div class="nav-item new"><span class="nav-icon">🤖</span>AI Config<span class="badge badge-new">missing</span></div>
+      <div class="nav-item"><span class="nav-icon">⚙️</span>Settings<span class="badge badge-soon">kosong</span></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="notes">
+  <div class="note">
+    <div class="note-title">🔧 Module Control — Sudah ada fungsinya, belum ada di nav</div>
+    <div class="note-body">Cloud Function <span class="highlight">updateTenantModules</span> sudah ada dan dipanggil dari Tenants page, tapi tersembunyi di dalam detail tenant. Perlu jadi halaman tersendiri atau section di sidebar untuk quick access per-module toggle antar semua tenant.</div>
+  </div>
+  <div class="note">
+    <div class="note-title">🌐 Slug / Domain Manager — Function sudah ada</div>
+    <div class="note-body">Cloud Function <span class="highlight">updateTenantSlug</span> sudah ada. Tapi tidak ada UI dedicated untuk manage subdomain/custom domain per tenant. Saat ini tersembunyi di tenants page.</div>
+  </div>
+  <div class="note">
+    <div class="note-title">🔑 Claims & Roles — setCustomClaims ada, UI belum</div>
+    <div class="note-body">Function <span class="highlight">setCustomClaims</span> dan <span class="highlight">getUserByEmail</span> sudah ada di rbac.ts. Tapi tidak ada UI untuk inspect/edit custom claims user secara langsung dari Backyard.</div>
+  </div>
+  <div class="note">
+    <div class="note-title">🔄 Sync Staging → Prod — ada di functions, tidak ada di UI</div>
+    <div class="note-body">Functions <span class="highlight">syncGoFirestore</span>, <span class="highlight">syncGoStorage</span> sudah dideploy. Tapi tidak ada monitoring atau trigger UI di Backyard untuk melihat sync status antara staging dan production.</div>
+  </div>
+  <div class="note">
+    <div class="note-title">🌱 Seed Tools — ada di SeedTool.tsx tapi tidak di sidebar</div>
+    <div class="note-body">Komponen <span class="highlight">SeedTool.tsx</span> sudah ada tapi tidak ada link di sidebar. Hanya bisa diakses dari Tenants page per-tenant.</div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Backyard — Design Proposal</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: #f8fafc; color: #0E3B2E; padding: 40px 32px; }
+
+  h1 { font-size: 28px; font-weight: 900; color: #0E3B2E; margin-bottom: 4px; }
+  .sub { font-size: 12px; color: #6b7280; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 36px; }
+
+  /* SIDEBAR MOCKUP */
+  .layout { display: grid; grid-template-columns: 220px 1fr; gap: 32px; max-width: 1100px; margin-bottom: 48px; }
+  .sidebar { background: #fff; border: 2px solid #0E3B2E; border-radius: 20px; overflow: hidden; box-shadow: 4px 4px 0 #0E3B2E; }
+  .sb-header { padding: 20px 16px 14px; border-bottom: 2px solid #f0fdf4; }
+  .sb-logo { font-size: 15px; font-weight: 900; color: #0E3B2E; letter-spacing: -0.02em; }
+  .sb-tag { display: inline-block; font-size: 9px; font-weight: 800; background: #B6FF2E; color: #0E3B2E; padding: 2px 8px; border-radius: 100px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.08em; }
+
+  .sb-section { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; color: #94a3b8; padding: 12px 16px 4px; }
+  .sb-item { display: flex; align-items: center; gap-10px; padding: 8px 16px; font-size: 12px; font-weight: 600; color: #64748b; cursor: pointer; border-left: 3px solid transparent; gap: 8px; }
+  .sb-item:hover { background: #f8fafc; color: #0E3B2E; }
+  .sb-item.active { color: #0E3B2E; background: #f0fdf4; border-left-color: #B6FF2E; font-weight: 800; }
+  .sb-item.new { color: #0E3B2E; }
+  .sb-new-badge { font-size: 8px; font-weight: 800; background: #B6FF2E; color: #0E3B2E; padding: 1px 6px; border-radius: 100px; margin-left: auto; }
+  .sb-dot { width: 6px; height: 6px; border-radius: 2px; background: currentColor; opacity: 0.5; flex-shrink: 0; }
+  .sb-divider { height: 1px; background: #f1f5f9; margin: 6px 0; }
+  .sb-icon { font-size: 14px; width: 18px; text-align: center; flex-shrink: 0; }
+
+  /* MAIN CONTENT AREA */
+  .main { display: flex; flex-direction: column; gap: 16px; }
+  .feature-card { background: #fff; border: 2px solid #0E3B2E; border-radius: 20px; overflow: hidden; box-shadow: 3px 3px 0 #0E3B2E; }
+  .fc-header { padding: 16px 20px; border-bottom: 2px solid #f0fdf4; display: flex; align-items: center; justify-content: space-between; }
+  .fc-title { font-size: 14px; font-weight: 900; color: #0E3B2E; display: flex; align-items: center; gap: 8px; }
+  .fc-badge { font-size: 9px; font-weight: 800; padding: 3px 10px; border-radius: 100px; }
+  .badge-new { background: #B6FF2E; color: #0E3B2E; }
+  .badge-upgrade { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+  .badge-exists { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+  .fc-body { padding: 16px 20px; }
+  .fc-desc { font-size: 12px; color: #64748b; line-height: 1.7; margin-bottom: 12px; }
+  .fc-features { display: flex; flex-wrap: wrap; gap: 8px; }
+  .fc-feat { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 5px 10px; font-size: 11px; font-weight: 600; color: #374151; display: flex; align-items: center; gap: 5px; }
+  .fc-feat-icon { font-size: 12px; }
+  .fc-backend { font-size: 10px; color: #94a3b8; margin-top: 10px; font-family: monospace; background: #f8fafc; padding: 6px 10px; border-radius: 6px; border: 1px solid #e2e8f0; }
+
+  /* SECTION BELOW */
+  .section-title { font-size: 13px; font-weight: 900; color: #0E3B2E; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid #B6FF2E; display: inline-block; }
+  .nav-table { width: 100%; max-width: 700px; border-collapse: collapse; margin-bottom: 40px; }
+  .nav-table th { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; text-align: left; padding: 8px 12px; border-bottom: 2px solid #f1f5f9; }
+  .nav-table td { font-size: 12px; padding: 10px 12px; border-bottom: 1px solid #f1f5f9; color: #374151; vertical-align: top; }
+  .nav-table td:first-child { font-weight: 800; color: #0E3B2E; }
+  .nav-table tr:last-child td { border-bottom: none; }
+  .mono { font-family: monospace; font-size: 10px; color: #6366f1; background: #f5f3ff; padding: 1px 5px; border-radius: 3px; }
+
+  .approval { background: #0E3B2E; border-radius: 16px; padding: 20px 24px; color: #fff; max-width: 700px; margin-top: 16px; }
+  .approval h3 { font-size: 14px; font-weight: 900; color: #B6FF2E; margin-bottom: 8px; }
+  .approval p { font-size: 12px; color: #86efac; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<h1>Backyard — 5 Fitur Baru</h1>
+<p class="sub">Design proposal · Theme tidak berubah · Semua backend sudah ada</p>
+
+<!-- SIDEBAR + FEATURE CARDS -->
+<div class="layout">
+
+  <!-- SIDEBAR PROPOSED -->
+  <div>
+    <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:#94a3b8;margin-bottom:10px;">Sidebar Baru</div>
+    <div class="sidebar">
+      <div class="sb-header">
+        <div class="sb-logo">BACKYARD</div>
+        <div><span class="sb-tag">God Mode</span></div>
+      </div>
+
+      <div class="sb-section">Platform</div>
+      <div class="sb-item active"><span class="sb-icon">📊</span>Overview</div>
+
+      <div class="sb-section">Tenant</div>
+      <div class="sb-item"><span class="sb-icon">🏪</span>Tenants</div>
+      <div class="sb-item new"><span class="sb-icon">🔧</span>Module Control<span class="sb-new-badge">NEW</span></div>
+      <div class="sb-item new"><span class="sb-icon">🌐</span>Slug & Domain<span class="sb-new-badge">NEW</span></div>
+
+      <div class="sb-divider"></div>
+      <div class="sb-section">User & Access</div>
+      <div class="sb-item"><span class="sb-icon">👥</span>All Users</div>
+      <div class="sb-item new"><span class="sb-icon">🔑</span>Claims & Roles<span class="sb-new-badge">NEW</span></div>
+
+      <div class="sb-divider"></div>
+      <div class="sb-section">System</div>
+      <div class="sb-item"><span class="sb-icon">📡</span>Monitoring</div>
+      <div class="sb-item new"><span class="sb-icon">🔄</span>Sync Control<span class="sb-new-badge">NEW</span></div>
+      <div class="sb-item new"><span class="sb-icon">🌱</span>Seed Tools<span class="sb-new-badge">NEW</span></div>
+
+      <div class="sb-divider"></div>
+      <div class="sb-section">God Mode</div>
+      <div class="sb-item new"><span class="sb-icon">💬</span>WhatsApp Manager<span class="sb-new-badge">NEW</span></div>
+      <div class="sb-item"><span class="sb-icon">⚙️</span>Settings</div>
+    </div>
+  </div>
+
+  <!-- FEATURE CARDS -->
+  <div class="main">
+
+    <!-- F1: WhatsApp Manager -->
+    <div class="feature-card">
+      <div class="fc-header">
+        <div class="fc-title">💬 WhatsApp Manager</div>
+        <span class="fc-badge badge-new">NEW PAGE</span>
+      </div>
+      <div class="fc-body">
+        <div class="fc-desc">Superadmin bisa lihat status WA connection per tenant, lihat error log WA dari monitoring, dan debug tanpa harus masuk ke tenant dashboard.</div>
+        <div class="fc-features">
+          <div class="fc-feat"><span class="fc-feat-icon">📋</span>List semua tenant + WA status</div>
+          <div class="fc-feat"><span class="fc-feat-icon">🔴</span>Filter tenant yang ada WA error</div>
+          <div class="fc-feat"><span class="fc-feat-icon">📞</span>Lihat phone number per tenant</div>
+          <div class="fc-feat"><span class="fc-feat-icon">🔗</span>Link langsung ke tenant admin</div>
+        </div>
+        <div class="fc-backend">Data source: Firestore sites/{siteId}/settings · platform_logs (wa.* events)</div>
+      </div>
+    </div>
+
+    <!-- F2: Claims & Roles -->
+    <div class="feature-card">
+      <div class="fc-header">
+        <div class="fc-title">🔑 Claims & Roles Inspector</div>
+        <span class="fc-badge badge-new">NEW PAGE</span>
+      </div>
+      <div class="fc-body">
+        <div class="fc-desc">Search user by email, lihat custom claims aktif (role, siteId), dan fix langsung dari sini tanpa harus ke Firebase Console.</div>
+        <div class="fc-features">
+          <div class="fc-feat"><span class="fc-feat-icon">🔍</span>Search by email</div>
+          <div class="fc-feat"><span class="fc-feat-icon">👁️</span>Inspect current claims</div>
+          <div class="fc-feat"><span class="fc-feat-icon">✏️</span>Edit role & siteId</div>
+          <div class="fc-feat"><span class="fc-feat-icon">🗑️</span>Revoke access</div>
+        </div>
+        <div class="fc-backend">Cloud Functions: getUserByEmail · setCustomClaims · removeUserFromSite</div>
+      </div>
+    </div>
+
+    <!-- F3: Sync Control -->
+    <div class="feature-card">
+      <div class="fc-header">
+        <div class="fc-title">🔄 Sync Control (Staging → Prod)</div>
+        <span class="fc-badge badge-new">NEW PAGE</span>
+      </div>
+      <div class="fc-body">
+        <div class="fc-desc">Monitor status sync otomatis Firestore & Storage dari staging ke production. Trigger manual jika sync tidak berjalan. Lihat last sync timestamp per collection.</div>
+        <div class="fc-features">
+          <div class="fc-feat"><span class="fc-feat-icon">🟢</span>Status sync per collection</div>
+          <div class="fc-feat"><span class="fc-feat-icon">⚡</span>Manual trigger sync</div>
+          <div class="fc-feat"><span class="fc-feat-icon">🕐</span>Last synced timestamp</div>
+          <div class="fc-feat"><span class="fc-feat-icon">📦</span>Storage sync status</div>
+        </div>
+        <div class="fc-backend">Cloud Functions: syncGoFirestore · syncGoFirestoreDeep · syncGoStorage (manual trigger via callable wrapper)</div>
+      </div>
+    </div>
+
+    <!-- F4: Module Control -->
+    <div class="feature-card">
+      <div class="fc-header">
+        <div class="fc-title">🔧 Module Control</div>
+        <span class="fc-badge badge-upgrade">EXTRACT FROM TENANTS</span>
+      </div>
+      <div class="fc-body">
+        <div class="fc-desc">Dedicated page untuk toggle modules per tenant. Tampilkan semua tenant dalam satu tabel dengan toggle per modul — tidak perlu masuk ke detail tenant satu-satu.</div>
+        <div class="fc-features">
+          <div class="fc-feat"><span class="fc-feat-icon">📊</span>Tabel tenant × modul</div>
+          <div class="fc-feat"><span class="fc-feat-icon">🔄</span>Toggle langsung (inline)</div>
+          <div class="fc-feat"><span class="fc-feat-icon">🔍</span>Filter per modul</div>
+          <div class="fc-feat"><span class="fc-feat-icon">📋</span>Bulk enable/disable</div>
+        </div>
+        <div class="fc-backend">Cloud Functions: updateTenantModules · getTenants</div>
+      </div>
+    </div>
+
+    <!-- F5: Seed Tools -->
+    <div class="feature-card">
+      <div class="fc-header">
+        <div class="fc-title">🌱 Seed Tools</div>
+        <span class="fc-badge badge-upgrade">PROMOTE TO NAV</span>
+      </div>
+      <div class="fc-body">
+        <div class="fc-desc">SeedTool.tsx sudah ada tapi tersembunyi. Jadikan halaman dedicated — pilih tenant, pilih modul, seed sample data. Tambah log history terakhir di-seed.</div>
+        <div class="fc-features">
+          <div class="fc-feat"><span class="fc-feat-icon">🏪</span>Pilih tenant</div>
+          <div class="fc-feat"><span class="fc-feat-icon">📦</span>Pilih modul yang di-seed</div>
+          <div class="fc-feat"><span class="fc-feat-icon">⚡</span>Run seed</div>
+          <div class="fc-feat"><span class="fc-feat-icon">📝</span>Seed history log</div>
+        </div>
+        <div class="fc-backend">Cloud Functions: seedSiteData · Komponen SeedTool.tsx sudah ada</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- NAV STRUCTURE TABLE -->
+<div class="section-title">Struktur Sidebar Final</div>
+<table class="nav-table">
+  <thead>
+    <tr>
+      <th>Menu Item</th>
+      <th>Route</th>
+      <th>Status</th>
+      <th>Backend</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>📊 Overview</td><td><span class="mono">/</span></td><td>✅ Ada</td><td>Cloud Functions: getTenants, listUsers</td></tr>
+    <tr><td>🏪 Tenants</td><td><span class="mono">/tenants</span></td><td>✅ Ada</td><td>createTenant, suspendTenant, hardDeleteTenant</td></tr>
+    <tr><td>🔧 Module Control</td><td><span class="mono">/modules</span></td><td>🆕 Baru</td><td>updateTenantModules, getTenants</td></tr>
+    <tr><td>🌐 Slug & Domain</td><td><span class="mono">/domains</span></td><td>🆕 Baru (simple)</td><td>updateTenantSlug</td></tr>
+    <tr><td>👥 All Users</td><td><span class="mono">/users</span></td><td>✅ Ada</td><td>listUsers, createUser, deleteUser</td></tr>
+    <tr><td>🔑 Claims & Roles</td><td><span class="mono">/claims</span></td><td>🆕 Baru</td><td>getUserByEmail, setCustomClaims</td></tr>
+    <tr><td>📡 Monitoring</td><td><span class="mono">/monitoring</span></td><td>✅ Ada</td><td>platform_logs Firestore</td></tr>
+    <tr><td>🔄 Sync Control</td><td><span class="mono">/sync</span></td><td>🆕 Baru</td><td>syncGoFirestore (trigger wrapper)</td></tr>
+    <tr><td>🌱 Seed Tools</td><td><span class="mono">/seed</span></td><td>🆕 Promote</td><td>seedSiteData, SeedTool.tsx</td></tr>
+    <tr><td>💬 WhatsApp Manager</td><td><span class="mono">/whatsapp</span></td><td>🆕 Baru</td><td>Firestore sites + platform_logs</td></tr>
+    <tr><td>⚙️ Settings</td><td><span class="mono">/settings</span></td><td>⏳ Coming Soon</td><td>—</td></tr>
+  </tbody>
+</table>
+
+<div class="approval">
+  <h3>Apakah design ini sesuai?</h3>
+  <p>Jika setuju, saya akan tulis design doc lengkap lalu buat implementation plan. Theme tidak berubah — semua pakai brand-dark, brand-green, border-[3px], shadow-sticker yang sama seperti sekarang.</p>
+</div>
+
+</body>
+</html>

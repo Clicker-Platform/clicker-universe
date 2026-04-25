@@ -19,8 +19,6 @@ const NAV_ITEMS: NavItem[] = [
     { label: 'Overview', href: '/' },
     { label: '—' as any, href: '' },
     { label: 'Tenants', href: '/tenants' },
-    { label: 'Module Control', href: '/modules', isNew: true },
-    { label: 'Slug & Domain', href: '/domains', isNew: true },
     { label: '—' as any, href: '' },
     { label: 'Users', href: '/users' },
     { label: 'Claims & Roles', href: '/claims', isNew: true },

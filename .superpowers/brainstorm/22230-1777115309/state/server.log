@@ -1,0 +1,7 @@
+{"type":"server-started","port":61093,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:61093","screen_dir":"/Users/mac/Documents/AI Project/clicker-platform/dev/.worktrees/dev-logging/.superpowers/brainstorm/22230-1777115309/content","state_dir":"/Users/mac/Documents/AI Project/clicker-platform/dev/.worktrees/dev-logging/.superpowers/brainstorm/22230-1777115309/state"}
+{"type":"screen-added","file":"/Users/mac/Documents/AI Project/clicker-platform/dev/.worktrees/dev-logging/.superpowers/brainstorm/22230-1777115309/content/aesthetic.html"}
+{"type":"screen-added","file":"/Users/mac/Documents/AI Project/clicker-platform/dev/.worktrees/dev-logging/.superpowers/brainstorm/22230-1777115309/content/sidebar-audit.html"}
+{"type":"screen-added","file":"/Users/mac/Documents/AI Project/clicker-platform/dev/.worktrees/dev-logging/.superpowers/brainstorm/22230-1777115309/content/design-overview.html"}
+{"type":"screen-added","file":"/Users/mac/Documents/AI Project/clicker-platform/dev/.worktrees/dev-logging/.superpowers/brainstorm/22230-1777115309/content/sidebar-simple.html"}
+{"type":"screen-added","file":"/Users/mac/Documents/AI Project/clicker-platform/dev/.worktrees/dev-logging/.superpowers/brainstorm/22230-1777115309/content/pages-mockup.html"}
+{"type":"server-stopped","reason":"idle timeout"}
