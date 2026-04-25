@@ -12,8 +12,8 @@ export default function AccessControlPage() {
 
     return (
         <PageShell
-            title="Access Control"
-            subtitle={activeTab === 'users' ? 'Inspect and edit user claims' : 'Define roles available across platform'}
+            title="Audit & Roles"
+            subtitle={activeTab === 'users' ? 'User audit across all tenants' : 'Define roles available across platform'}
         >
             <div className="flex items-center gap-1 mb-6 border-b border-gray-200">
                 <button
@@ -24,7 +24,7 @@ export default function AccessControlPage() {
                             : 'border-transparent text-gray-400 hover:text-gray-700'
                     }`}
                 >
-                    Users (Claims)
+                    Audit Users
                 </button>
                 <button
                     onClick={() => setActiveTab('roles')}
@@ -34,7 +34,7 @@ export default function AccessControlPage() {
                             : 'border-transparent text-gray-400 hover:text-gray-700'
                     }`}
                 >
-                    Roles & Permissions
+                    Roles
                 </button>
             </div>
 

@@ -69,7 +69,7 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
                     tenant={tenant}
                     onModulesUpdate={(modules) => setTenant(prev => prev ? { ...prev, modules } : prev)}
                 />
-                <TenantMembersCard siteId={tenant.id} />
+                <TenantMembersCard siteId={tenant.id} siteModules={tenant.modules || {}} />
             </div>
         </PageShell>
     );

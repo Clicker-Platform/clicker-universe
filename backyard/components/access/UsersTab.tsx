@@ -4,8 +4,8 @@ import { useState, useEffect, useMemo } from 'react';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '@/lib/firebase';
 import { toast } from 'sonner';
-import { Search, Loader2, ShieldAlert, ShieldCheck, X, Pencil } from 'lucide-react';
-import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import Link from 'next/link';
+import { Search, Loader2, ShieldCheck, ChevronRight, AlertTriangle } from 'lucide-react';
 
 interface AuthUser {
     uid: string;
@@ -14,8 +14,6 @@ interface AuthUser {
     disabled?: boolean;
     customClaims?: { role?: string; siteId?: string };
 }
-
-interface Tenant { id: string; name: string; }
 
 const roleColor = (r?: string) => {
     if (r === 'superadmin') return 'bg-red-50 text-red-700 border-red-100';
@@ -28,18 +26,8 @@ const roleColor = (r?: string) => {
 export default function UsersTab() {
     const [users, setUsers] = useState<AuthUser[]>([]);
     const [loading, setLoading] = useState(true);
-    const [tenants, setTenants] = useState<Tenant[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
-
-    // Edit modal
-    const [editUser, setEditUser] = useState<AuthUser | null>(null);
-    const [editRole, setEditRole] = useState('staff');
-    const [editSiteId, setEditSiteId] = useState('');
-    const [saving, setSaving] = useState(false);
-
-    // Revoke
-    const [revokeUser, setRevokeUser] = useState<AuthUser | null>(null);
-    const [revokeOpen, setRevokeOpen] = useState(false);
+    const [filterStatus, setFilterStatus] = useState<'all' | 'no-role' | 'no-tenant'>('all');
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -53,17 +41,7 @@ export default function UsersTab() {
                 setLoading(false);
             }
         };
-
-        const fetchTenants = async () => {
-            try {
-                const fn = httpsCallable(functions, 'getTenants');
-                const res: any = await fn();
-                setTenants(res.data.list ?? []);
-            } catch { /* non-critical */ }
-        };
-
         fetchUsers();
-        fetchTenants();
     }, []);
 
     const stats = useMemo(() => {
@@ -74,69 +52,30 @@ export default function UsersTab() {
         return { total, active, assigned, noRole };
     }, [users]);
 
-    const filtered = useMemo(() =>
-        users.filter(u =>
+    const filtered = useMemo(() => {
+        let list = users;
+
+        if (filterStatus === 'no-role') list = list.filter(u => !u.customClaims?.role);
+        else if (filterStatus === 'no-tenant') list = list.filter(u => !u.customClaims?.siteId);
+
+        return list.filter(u =>
             (u.email || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
             (u.displayName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
             (u.customClaims?.siteId || '').toLowerCase().includes(searchQuery.toLowerCase())
-        ),
-        [users, searchQuery]
-    );
-
-    const openEdit = (user: AuthUser) => {
-        setEditUser(user);
-        setEditRole(user.customClaims?.role || 'staff');
-        setEditSiteId(user.customClaims?.siteId || '');
-    };
-
-    const handleSave = async () => {
-        if (!editUser) return;
-        setSaving(true);
-        try {
-            const fn = httpsCallable(functions, 'setCustomClaims');
-            await fn({
-                uid: editUser.uid,
-                claims: { role: editRole, siteId: editSiteId || null },
-            });
-            toast.success('Claims updated');
-            setUsers(prev => prev.map(u =>
-                u.uid === editUser.uid
-                    ? { ...u, customClaims: { role: editRole, siteId: editSiteId || undefined } }
-                    : u
-            ));
-            setEditUser(null);
-        } catch (err: any) {
-            toast.error('Update failed', { description: err.message });
-        } finally {
-            setSaving(false);
-        }
-    };
-
-    const handleRevoke = async () => {
-        if (!revokeUser) return;
-        try {
-            const fn = httpsCallable(functions, 'setCustomClaims');
-            await fn({ uid: revokeUser.uid, claims: { role: null, siteId: null } });
-            toast.success('Access revoked');
-            setUsers(prev => prev.map(u =>
-                u.uid === revokeUser.uid ? { ...u, customClaims: {} } : u
-            ));
-        } catch (err: any) {
-            toast.error('Revoke failed', { description: err.message });
-        } finally {
-            setRevokeOpen(false);
-            setRevokeUser(null);
-        }
-    };
+        );
+    }, [users, searchQuery, filterStatus]);
 
     return (
         <>
             {/* Stats */}
             <div className="grid grid-cols-4 gap-4 mb-6">
-                <div className="bg-white rounded-2xl border border-gray-200 p-5">
+                <button
+                    onClick={() => setFilterStatus('all')}
+                    className={`text-left bg-white rounded-2xl border p-5 transition-colors ${filterStatus === 'all' ? 'border-brand-dark' : 'border-gray-200 hover:border-gray-300'}`}
+                >
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Users</p>
                     <p className="text-2xl font-black text-brand-dark mt-1">{loading ? '—' : stats.total}</p>
-                </div>
+                </button>
                 <div className="bg-white rounded-2xl border border-gray-200 p-5">
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Active</p>
                     <p className="text-2xl font-black text-green-600 mt-1">{loading ? '—' : stats.active}</p>
@@ -145,24 +84,39 @@ export default function UsersTab() {
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Assigned to Tenant</p>
                     <p className="text-2xl font-black text-brand-dark mt-1">{loading ? '—' : stats.assigned}</p>
                 </div>
-                <div className="bg-white rounded-2xl border border-gray-200 p-5">
-                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">No Role</p>
+                <button
+                    onClick={() => setFilterStatus('no-role')}
+                    className={`text-left bg-white rounded-2xl border p-5 transition-colors ${filterStatus === 'no-role' ? 'border-amber-500' : 'border-gray-200 hover:border-amber-300'}`}
+                >
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1">
+                        No Role {stats.noRole > 0 && <AlertTriangle className="w-3 h-3 text-amber-500" />}
+                    </p>
                     <p className="text-2xl font-black text-amber-600 mt-1">{loading ? '—' : stats.noRole}</p>
+                </button>
+            </div>
+
+            {/* Search + Filter info */}
+            <div className="flex items-center gap-3 mb-4">
+                <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input
+                        value={searchQuery}
+                        onChange={e => setSearchQuery(e.target.value)}
+                        className="w-full pl-9 pr-4 py-2.5 border-2 border-gray-200 rounded-xl text-sm font-medium outline-none focus:border-brand-dark bg-white"
+                        placeholder="Filter by email, name, or tenant..."
+                    />
                 </div>
+                {filterStatus !== 'all' && (
+                    <button
+                        onClick={() => setFilterStatus('all')}
+                        className="px-3 py-2 border border-gray-200 rounded-xl text-xs font-bold text-gray-500 hover:border-brand-dark transition-colors"
+                    >
+                        Clear filter ({filterStatus === 'no-role' ? 'no role' : 'no tenant'})
+                    </button>
+                )}
             </div>
 
-            {/* Search */}
-            <div className="relative mb-4">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                    value={searchQuery}
-                    onChange={e => setSearchQuery(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2.5 border-2 border-gray-200 rounded-xl text-sm font-medium outline-none focus:border-brand-dark bg-white"
-                    placeholder="Filter by email, name, or tenant..."
-                />
-            </div>
-
-            {/* User list */}
+            {/* Audit table */}
             <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
                 {loading ? (
                     <div className="flex items-center justify-center py-16 text-gray-400 gap-2">
@@ -177,6 +131,7 @@ export default function UsersTab() {
                                 <th className="text-left px-5 py-3 text-xs font-black text-brand-dark uppercase tracking-wider">User</th>
                                 <th className="text-left px-5 py-3 text-xs font-black text-brand-dark uppercase tracking-wider">Tenant</th>
                                 <th className="text-left px-5 py-3 text-xs font-black text-brand-dark uppercase tracking-wider">Role</th>
+                                <th className="text-left px-5 py-3 text-xs font-black text-brand-dark uppercase tracking-wider">Status</th>
                                 <th className="px-5 py-3" />
                             </tr>
                         </thead>
@@ -200,20 +155,28 @@ export default function UsersTab() {
                                             {u.customClaims?.role || 'no role'}
                                         </span>
                                     </td>
+                                    <td className="px-5 py-3">
+                                        {u.disabled ? (
+                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-500 border border-gray-200">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-gray-400" /> Disabled
+                                            </span>
+                                        ) : (
+                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-green-50 text-green-700 border border-green-100">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-green-500" /> Active
+                                            </span>
+                                        )}
+                                    </td>
                                     <td className="px-5 py-3 text-right">
-                                        <div className="flex items-center justify-end gap-2">
-                                            <button onClick={() => openEdit(u)}
-                                                className="flex items-center gap-1 px-3 py-1.5 border border-gray-200 hover:border-brand-dark rounded-lg text-xs font-bold text-gray-600 transition-colors">
-                                                <Pencil className="w-3 h-3" /> Edit
-                                            </button>
-                                            {u.customClaims?.role && (
-                                                <button onClick={() => { setRevokeUser(u); setRevokeOpen(true); }}
-                                                    className="p-1.5 rounded-lg border border-gray-200 text-gray-400 hover:border-red-300 hover:text-red-500 transition-colors"
-                                                    title="Revoke access">
-                                                    <ShieldAlert className="w-4 h-4" />
-                                                </button>
-                                            )}
-                                        </div>
+                                        {u.customClaims?.siteId ? (
+                                            <Link
+                                                href={`/tenants/${u.customClaims.siteId}`}
+                                                className="flex items-center justify-end gap-1 text-xs font-bold text-gray-500 hover:text-brand-dark transition-colors"
+                                            >
+                                                Manage in tenant <ChevronRight className="w-3 h-3" />
+                                            </Link>
+                                        ) : (
+                                            <span className="text-xs text-gray-300">—</span>
+                                        )}
                                     </td>
                                 </tr>
                             ))}
@@ -222,60 +185,9 @@ export default function UsersTab() {
                 )}
             </div>
 
-            {/* Edit modal */}
-            {editUser && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-                    <div className="bg-white rounded-2xl border border-gray-200 shadow-xl w-full max-w-md p-6">
-                        <div className="flex items-start justify-between mb-4">
-                            <div>
-                                <h3 className="font-black text-brand-dark text-lg">Edit Claims</h3>
-                                <p className="text-sm text-gray-400 font-mono">{editUser.email}</p>
-                                <p className="text-xs text-gray-300 font-mono">UID: {editUser.uid}</p>
-                            </div>
-                            <button onClick={() => setEditUser(null)} className="p-1 text-gray-400 hover:text-gray-600">
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
-                        <div className="space-y-3">
-                            <div>
-                                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Role</label>
-                                <select value={editRole} onChange={e => setEditRole(e.target.value)}
-                                    className="w-full mt-1 px-3 py-2 border-2 border-gray-200 rounded-xl text-sm font-medium outline-none focus:border-brand-dark bg-white">
-                                    <option value="owner">Owner</option>
-                                    <option value="manager">Manager</option>
-                                    <option value="staff">Staff</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Tenant (Site ID)</label>
-                                <select value={editSiteId} onChange={e => setEditSiteId(e.target.value)}
-                                    className="w-full mt-1 px-3 py-2 border-2 border-gray-200 rounded-xl text-sm font-medium outline-none focus:border-brand-dark bg-white">
-                                    <option value="">— No tenant —</option>
-                                    {tenants.map(t => <option key={t.id} value={t.id}>{t.name} ({t.id})</option>)}
-                                </select>
-                            </div>
-                        </div>
-                        <div className="flex gap-2 justify-end mt-6">
-                            <button onClick={() => setEditUser(null)}
-                                className="px-4 py-2 border border-gray-200 rounded-xl text-sm font-bold text-gray-600">Cancel</button>
-                            <button onClick={handleSave} disabled={saving}
-                                className="flex items-center gap-2 px-5 py-2 bg-brand-dark text-white text-sm font-black rounded-xl hover:opacity-90 disabled:opacity-50">
-                                {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-                                Save Claims
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            <ConfirmationDialog
-                isOpen={revokeOpen}
-                onCancel={() => { setRevokeOpen(false); setRevokeUser(null); }}
-                onConfirm={handleRevoke}
-                title={`Revoke access for ${revokeUser?.email}?`}
-                description="This will clear the user's role and tenant assignment. They will lose access to admin pages."
-                variant="danger"
-            />
+            <div className="mt-6 p-4 bg-blue-50 border border-blue-100 rounded-xl text-xs text-blue-700 max-w-2xl">
+                <strong>Read-only audit view.</strong> To add, edit, or remove user access, open the relevant tenant via "Manage in tenant".
+            </div>
         </>
     );
 }

@@ -19,7 +19,7 @@ const NAV_ITEMS: NavItem[] = [
     { label: 'Overview', href: '/' },
     { label: '—' as any, href: '' },
     { label: 'Tenants', href: '/tenants' },
-    { label: 'Access Control', href: '/access', isNew: true },
+    { label: 'Audit & Roles', href: '/access', isNew: true },
     { label: '—' as any, href: '' },
     { label: 'Monitoring', href: '/monitoring' },
     { label: 'Sync Control', href: '/sync', isNew: true },
