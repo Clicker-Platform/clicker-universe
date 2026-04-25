@@ -36,19 +36,16 @@ function initializeAdminApp(): App {
 
     if (serviceAccountKey) {
         try {
-            console.log('[firebase-admin] Found GCP_SERVICE_ACCOUNT_KEY. Initializing...');
             let credential;
 
             // Check if it's a file path (starts with / or ./ or ends with .json)
             if (serviceAccountKey.endsWith('.json') || serviceAccountKey.startsWith('/') || serviceAccountKey.startsWith('./')) {
-                console.log('[firebase-admin] Reading credentials from file:', serviceAccountKey);
                 const fs = require('fs');
                 const path = require('path');
                 const keyPath = path.resolve(process.cwd(), serviceAccountKey);
                 const keyContent = fs.readFileSync(keyPath, 'utf-8');
                 credential = JSON.parse(keyContent);
             } else {
-                console.log('[firebase-admin] Parsing credentials from JSON string...');
                 credential = JSON.parse(serviceAccountKey);
             }
 
@@ -62,8 +59,6 @@ function initializeAdminApp(): App {
             // Fallthrough to ADC if key is invalid
         }
     }
-
-    console.log('[firebase-admin] Initializing with ADC (Production/Cloud Mode)...');
 
     // Initialize with minimal config - ADC handles the credentials automatically
     return initializeApp({
