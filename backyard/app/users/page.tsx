@@ -2,10 +2,9 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { httpsCallable } from 'firebase/functions';
-import { collection, onSnapshot } from 'firebase/firestore';
-import { functions, db } from '@/lib/firebase';
+import { functions } from '@/lib/firebase';
 import { toast } from 'sonner';
-import { Search, Loader2, UserX, Users, ShieldAlert } from 'lucide-react';
+import { Search, Loader2, Users, ShieldAlert } from 'lucide-react';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import PageShell from '@/components/PageShell';
 
@@ -21,12 +20,6 @@ interface Tenant {
     name: string;
 }
 
-interface TeamMember {
-    uid: string;
-    displayName?: string;
-    email?: string;
-    role?: string;
-}
 
 export default function UsersPage() {
     const [users, setUsers] = useState<AuthUser[]>([]);
@@ -52,13 +45,8 @@ export default function UsersPage() {
     const [revokeUser, setRevokeUser] = useState<AuthUser | null>(null);
     const [revokeOpen, setRevokeOpen] = useState(false);
 
-    // Team management
+    // Tenants (for create form only)
     const [tenants, setTenants] = useState<Tenant[]>([]);
-    const [selectedTenantId, setSelectedTenantId] = useState('');
-    const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
-    const [teamLoading, setTeamLoading] = useState(false);
-    const [removeMemberUid, setRemoveMemberUid] = useState<string | null>(null);
-    const [removeMemberOpen, setRemoveMemberOpen] = useState(false);
 
     const filteredUsers = useMemo(() =>
         users.filter(u =>
@@ -88,23 +76,9 @@ export default function UsersPage() {
             const res: any = await fn();
             const list = res.data.list ?? [];
             setTenants(list);
-            if (list.length > 0) setSelectedTenantId(list[0].id);
         } catch { /* non-critical */ }
     };
 
-    useEffect(() => {
-        if (!selectedTenantId) return;
-        setTeamLoading(true);
-        const unsub = onSnapshot(
-            collection(db, 'sites', selectedTenantId, 'members'),
-            snap => {
-                setTeamMembers(snap.docs.map(d => ({ uid: d.id, ...(d.data() as any) })));
-                setTeamLoading(false);
-            },
-            () => setTeamLoading(false)
-        );
-        return unsub;
-    }, [selectedTenantId]);
 
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -168,20 +142,6 @@ export default function UsersPage() {
         }
     };
 
-    const handleRemoveMember = async () => {
-        if (!removeMemberUid || !selectedTenantId) return;
-        try {
-            const fn = httpsCallable(functions, 'removeUserFromSite');
-            await fn({ uid: removeMemberUid, siteId: selectedTenantId });
-            toast.success('Member removed');
-        } catch (err: any) {
-            toast.error('Remove failed', { description: err.message });
-        } finally {
-            setRemoveMemberOpen(false);
-            setRemoveMemberUid(null);
-        }
-    };
-
     const roleColor = (role?: string) => {
         if (role === 'superadmin') return 'bg-red-50 text-red-700 border-red-100';
         if (role === 'owner') return 'bg-brand-dark text-white border-brand-dark';
@@ -192,7 +152,7 @@ export default function UsersPage() {
     return (
         <PageShell
             title="Users"
-            subtitle={`${users.length} users · ${tenants.length} tenants`}
+            subtitle={`${users.length} users`}
             action={
                 <button
                     onClick={() => setShowCreate(!showCreate)}
@@ -325,61 +285,6 @@ export default function UsersPage() {
                 )}
             </div>
 
-            {/* TEAM MANAGEMENT */}
-            <div>
-                <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-sm font-black text-brand-dark uppercase tracking-wider">Team Management</h2>
-                    <select
-                        value={selectedTenantId}
-                        onChange={e => setSelectedTenantId(e.target.value)}
-                        className="border-2 border-gray-200 rounded-xl px-3 py-1.5 text-sm font-medium outline-none focus:border-brand-dark bg-white"
-                    >
-                        {tenants.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-                    </select>
-                </div>
-                <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-                    {teamLoading ? (
-                        <div className="text-center py-8 text-gray-400 text-sm">Loading members...</div>
-                    ) : teamMembers.length === 0 ? (
-                        <div className="text-center py-8 text-gray-400 text-sm">No members for this tenant.</div>
-                    ) : (
-                        <table className="w-full text-sm">
-                            <thead className="border-b border-gray-100 bg-slate-50">
-                                <tr>
-                                    <th className="text-left px-5 py-3 text-xs font-black text-brand-dark uppercase tracking-wider">Member</th>
-                                    <th className="text-left px-5 py-3 text-xs font-black text-brand-dark uppercase tracking-wider">Role</th>
-                                    <th className="px-5 py-3" />
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {teamMembers.map(m => (
-                                    <tr key={m.uid} className="border-b border-gray-50 hover:bg-slate-50/50">
-                                        <td className="px-5 py-3">
-                                            <div className="font-semibold text-gray-800">{m.displayName || 'No Name'}</div>
-                                            <div className="text-xs text-gray-400">{m.email}</div>
-                                        </td>
-                                        <td className="px-5 py-3">
-                                            <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${roleColor(m.role)}`}>
-                                                {m.role || 'staff'}
-                                            </span>
-                                        </td>
-                                        <td className="px-5 py-3 text-right">
-                                            <button
-                                                onClick={() => { setRemoveMemberUid(m.uid); setRemoveMemberOpen(true); }}
-                                                className="p-1.5 rounded-lg border border-gray-200 text-gray-400 hover:border-red-300 hover:text-red-500 transition-colors"
-                                                title="Remove from team"
-                                            >
-                                                <UserX className="w-4 h-4" />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    )}
-                </div>
-            </div>
-
             {/* EDIT ROLE MODAL */}
             {editUser && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
@@ -426,14 +331,6 @@ export default function UsersPage() {
                 title={`Revoke access for ${revokeUser?.email}?`}
                 description="This will remove the user's role and tenant assignment. They will lose access to admin pages."
                 variant="warning"
-            />
-            <ConfirmationDialog
-                isOpen={removeMemberOpen}
-                onCancel={() => { setRemoveMemberOpen(false); setRemoveMemberUid(null); }}
-                onConfirm={handleRemoveMember}
-                title="Remove member?"
-                description="This will remove the member's access to this tenant."
-                variant="danger"
             />
         </PageShell>
     );
