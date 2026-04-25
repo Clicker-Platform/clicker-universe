@@ -23,7 +23,7 @@ export default function Sidebar() {
     const router = useRouter();
 
     const [unreadCount, setUnreadCount] = useState(0);
-    const [lastSeenAt] = useState<Date>(() => {
+    const [lastSeenAt, setLastSeenAt] = useState<Date>(() => {
         if (typeof window === 'undefined') return new Date(0);
         const stored = localStorage.getItem('monitoring_last_seen');
         return stored ? new Date(stored) : new Date(0);
@@ -46,7 +46,9 @@ export default function Sidebar() {
     }, [lastSeenAt]);
 
     const handleMonitoringClick = () => {
-        localStorage.setItem('monitoring_last_seen', new Date().toISOString());
+        const now = new Date();
+        localStorage.setItem('monitoring_last_seen', now.toISOString());
+        setLastSeenAt(now);
         setUnreadCount(0);
     };
 
