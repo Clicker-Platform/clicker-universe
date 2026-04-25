@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { Store, Loader2, Search, ExternalLink, PowerOff, Power, Trash2, ChevronRight } from 'lucide-react';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import PageShell from '@/components/PageShell';
+import AllUsersTable from '@/components/tenant/AllUsersTable';
 import Link from 'next/link';
 
 interface Tenant {
@@ -18,7 +19,10 @@ interface Tenant {
     modules: Record<string, boolean>;
 }
 
+type Tab = 'tenants' | 'users';
+
 export default function TenantsPage() {
+    const [activeTab, setActiveTab] = useState<Tab>('tenants');
     const [tenants, setTenants] = useState<Tenant[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
@@ -139,17 +143,47 @@ export default function TenantsPage() {
 
     return (
         <PageShell
-            title="Tenants"
-            subtitle={`${tenants.length} tenants`}
+            title="Tenants & Users"
+            subtitle={activeTab === 'tenants' ? `${tenants.length} tenants` : 'All registered users across tenants'}
             action={
-                <button
-                    onClick={() => setShowCreate(!showCreate)}
-                    className="px-4 py-2 bg-brand-dark text-white text-sm font-black rounded-xl hover:opacity-90 transition-opacity"
-                >
-                    {showCreate ? 'Cancel' : '+ New Tenant'}
-                </button>
+                activeTab === 'tenants' ? (
+                    <button
+                        onClick={() => setShowCreate(!showCreate)}
+                        className="px-4 py-2 bg-brand-dark text-white text-sm font-black rounded-xl hover:opacity-90 transition-opacity"
+                    >
+                        {showCreate ? 'Cancel' : '+ New Tenant'}
+                    </button>
+                ) : null
             }
         >
+            {/* Tabs */}
+            <div className="flex items-center gap-1 mb-6 border-b border-gray-200">
+                <button
+                    onClick={() => setActiveTab('tenants')}
+                    className={`px-4 py-2.5 text-sm font-bold transition-colors border-b-2 -mb-[2px] ${
+                        activeTab === 'tenants'
+                            ? 'border-brand-dark text-brand-dark'
+                            : 'border-transparent text-gray-400 hover:text-gray-700'
+                    }`}
+                >
+                    Tenants
+                </button>
+                <button
+                    onClick={() => setActiveTab('users')}
+                    className={`px-4 py-2.5 text-sm font-bold transition-colors border-b-2 -mb-[2px] ${
+                        activeTab === 'users'
+                            ? 'border-brand-dark text-brand-dark'
+                            : 'border-transparent text-gray-400 hover:text-gray-700'
+                    }`}
+                >
+                    All Users
+                </button>
+            </div>
+
+            {activeTab === 'users' ? (
+                <AllUsersTable />
+            ) : (
+            <>
             {showCreate && (
                 <div className="bg-white rounded-2xl border border-gray-200 p-6 mb-6">
                     <h2 className="text-sm font-black text-brand-dark uppercase tracking-wider mb-4">New Tenant</h2>
@@ -284,6 +318,8 @@ export default function TenantsPage() {
                     </table>
                 )}
             </div>
+            </>
+            )}
 
             <ConfirmationDialog
                 isOpen={confirmOpen}
