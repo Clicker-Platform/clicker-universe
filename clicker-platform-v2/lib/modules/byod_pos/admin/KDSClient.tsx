@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { POSOrderCard } from './components/POSOrderCard';
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 import { useSite } from '@/lib/site-context'; // New import
+import { logger } from '@/lib/logger';
 
 export default function KDSClient({ initialOrders = [] }: { initialOrders?: POSOrder[] }) {
     const { siteId } = useSite();
@@ -33,7 +34,7 @@ export default function KDSClient({ initialOrders = [] }: { initialOrders?: POSO
             await updateOrderStatus(siteId, order, newStatus);
             toast.success(`Order moved to ${newStatus}`);
         } catch (error: any) {
-            console.error("Status update failed:", error);
+            logger.error('pos.kds.status.update.failed', { siteId, error });
             if (error.message?.includes("Item does not exist")) {
                 toast.error("Inventory Item Deleted! Cannot process stock.");
             } else {
@@ -53,7 +54,7 @@ export default function KDSClient({ initialOrders = [] }: { initialOrders?: POSO
             toast.success("Order cancelled");
             setCancelConfig({ isOpen: false, orderId: null });
         } catch (error) {
-            console.error("Cancellation failed:", error);
+            logger.error('pos.kds.cancel.failed', { siteId, error });
             toast.error("Failed to cancel order");
         }
     };

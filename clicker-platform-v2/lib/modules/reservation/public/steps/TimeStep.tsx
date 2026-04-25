@@ -2,6 +2,7 @@ import { Service, Staff } from '../../types';
 import { ChevronLeft, ChevronRight, Loader2, Calendar as CalendarIcon } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { ThemeConfig } from '@/lib/templates/types';
+import { logger } from '@/lib/logger';
 
 interface TimeStepProps {
     siteId: string;
@@ -137,7 +138,7 @@ export default function TimeStep({
 
                 setGeneratedSlots(candidates);
             } catch (error) {
-                console.error("Error generating slots:", error);
+                logger.error('reservation.time-step.slots.failed', { siteId, error });
             } finally {
                 setLoadingSlots(false);
             }

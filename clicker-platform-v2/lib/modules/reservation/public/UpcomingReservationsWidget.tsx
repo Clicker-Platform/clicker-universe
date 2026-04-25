@@ -5,6 +5,7 @@ import { collection, query, where, getDocs, orderBy, Timestamp } from 'firebase/
 import { db } from '@/lib/firebase';
 import { Calendar, Clock, MapPin } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
+import { logger } from '@/lib/logger';
 
 // Define strict minimal interface for what we read
 interface WidgetBooking {
@@ -45,7 +46,7 @@ export default function UpcomingReservationsWidget({ memberPhone }: { memberPhon
 
                 setBookings(data);
             } catch (err) {
-                console.error("Error fetching widget bookings:", err);
+                logger.error('reservation.widget.bookings.fetch.failed', { siteId, error: err });
             } finally {
                 setLoading(false);
             }

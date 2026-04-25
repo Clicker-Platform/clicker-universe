@@ -12,6 +12,7 @@ import { SubmitButton } from '@/components/admin/SubmitButton';
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 import { useSite } from '@/lib/site-context';
 import { purgeTenantCache } from '@/lib/admin/purgeCache';
+import { logger } from '@/lib/logger';
 import {
     DndContext,
     closestCenter,
@@ -175,7 +176,7 @@ export default function LinksManager({ initialLinks }: LinksClientProps) {
             const fetchedForms = snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Form));
             setForms(fetchedForms);
         } catch (error) {
-            console.error("Error fetching forms:", error);
+            logger.error('admin.links.forms.fetch.failed', { siteId, error });
         }
     };
 
@@ -186,7 +187,7 @@ export default function LinksManager({ initialLinks }: LinksClientProps) {
             const fetchedPages = snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Page));
             setPages(fetchedPages);
         } catch (error) {
-            console.error("Error fetching pages:", error);
+            logger.error('admin.links.pages.fetch.failed', { siteId, error });
         }
     }
 
@@ -198,7 +199,7 @@ export default function LinksManager({ initialLinks }: LinksClientProps) {
             fetchedLinks.sort((a, b) => (a.order || 0) - (b.order || 0));
             setLinks(fetchedLinks);
         } catch (error) {
-            console.error("Error fetching links:", error);
+            logger.error('admin.links.fetch.failed', { siteId, error });
         } finally {
             setLoading(false);
         }
@@ -249,7 +250,7 @@ export default function LinksManager({ initialLinks }: LinksClientProps) {
             fetchLinks();
             purgeTenantCache(siteId);
         } catch (error) {
-            console.error(error);
+            logger.error('admin.links.save.failed', { siteId, error });
         } finally {
             setIsSubmitting(false);
         }
@@ -291,7 +292,7 @@ export default function LinksManager({ initialLinks }: LinksClientProps) {
             setLinks(links.filter(l => l.id !== linkToDelete));
             if (editingId === linkToDelete) handleCancel();
         } catch (error) {
-            console.error("Error deleting link:", error);
+            logger.error('admin.links.delete.failed', { siteId, error });
         } finally {
             setIsDeleting(false);
             setDeleteDialogOpen(false);
@@ -323,7 +324,7 @@ export default function LinksManager({ initialLinks }: LinksClientProps) {
             });
             await batch.commit();
         } catch (error) {
-            console.error("Error updating order:", error);
+            logger.error('admin.links.order.update.failed', { siteId, error });
         }
     };
 
@@ -354,7 +355,7 @@ export default function LinksManager({ initialLinks }: LinksClientProps) {
             purgeTenantCache(siteId);
             // Optional toast here
         } catch (error) {
-            console.error(error);
+            logger.error('admin.links.settings.save.failed', { siteId, error });
         } finally {
             setIsSavingSettings(false);
             setShowSettings(false);

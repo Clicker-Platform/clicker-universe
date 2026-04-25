@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 import { useSite } from '@/lib/site-context'; // New import
 import { useTemplate } from '@/components/TemplateProvider';
+import { logger } from '@/lib/logger';
 
 interface POSMemberLookupProps {
     onMemberSelect: (member: Member | null) => void;
@@ -58,7 +59,7 @@ export function POSMemberLookup({ onMemberSelect, selectedMember, submitLabel = 
                 setRegForm(prev => ({ ...prev, phoneNumber: phone }));
             }
         } catch (error) {
-            console.error(error);
+            logger.error('pos.member.search.failed', { siteId, error });
             toast.error("Error searching member");
         } finally {
             setLoading(false);
@@ -99,7 +100,7 @@ export function POSMemberLookup({ onMemberSelect, selectedMember, submitLabel = 
             toast.success("Member linked successfully!");
             setIsRegistering(false);
         } catch (error: any) {
-            console.error(error);
+            logger.error('pos.member.register.failed', { siteId, error });
             toast.error(error.message || "Failed to register member");
         } finally {
             if (!collisionMember) setLoading(false);

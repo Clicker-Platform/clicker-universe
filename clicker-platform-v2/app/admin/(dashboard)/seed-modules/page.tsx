@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { db } from '@/lib/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { ModuleDefinition } from '@/lib/modules/types';
+import { logger } from '@/lib/logger';
 
 export default function SeedModulesPage() {
     const [status, setStatus] = useState('Idle');
@@ -134,7 +135,7 @@ export default function SeedModulesPage() {
             await setDoc(doc(db, 'modules', 'sales_pipeline'), salesPipelineModule);
             setStatus('Success: Modules seeded!');
         } catch (e: any) {
-            console.error(e);
+            logger.error('admin.modules.seed.failed', { siteId: 'platform', error: e });
             setStatus('Error: ' + e.message);
         }
     };

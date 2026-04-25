@@ -5,6 +5,7 @@ import { MessageSquare, X, Send, Minus } from 'lucide-react';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { ChatMessage } from '../types';
+import { logger } from '@/lib/logger';
 
 interface ChatWidgetProps {
     siteId: string;
@@ -84,7 +85,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ siteId, moduleId, agentN
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                console.error("Chat API Error Details:", errorData);
+                logger.error('ai.agent.chat.api.error', { siteId, error: errorData });
                 throw new Error(errorData.details || errorData.error || "Failed to send message");
             }
 
@@ -99,7 +100,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ siteId, moduleId, agentN
             setMessages(prev => [...prev, botMsg]);
 
         } catch (error) {
-            console.error("Chat Error:", error);
+            logger.error('ai.agent.chat.send.failed', { siteId, error });
             // Optional: Add error message to chat
         } finally {
             setIsLoading(false);

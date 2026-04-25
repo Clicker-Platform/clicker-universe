@@ -4,6 +4,7 @@ import { User, Calendar, Clock, X, CheckCircle, ClipboardList, ExternalLink, Car
 import type { Vehicle, CarCatalogEntry } from '@/lib/modules/service-records/types';
 import { StatusBadge, getStatusLabel } from './StatusBadge';
 import { useSite } from '@/lib/site-context'; // New import
+import { logger } from '@/lib/logger';
 
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 
@@ -130,7 +131,7 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
             setShowPlateModal(false);
             window.location.href = `/admin/service-records/detail?id=${srId}`;
         } catch (e) {
-            console.error('Failed to create service record', e);
+            logger.error('reservation.booking.service-record.create.failed', { siteId, error: e });
             alert('Failed to create service record. Please try again.');
         } finally {
             setCreatingSR(false);
@@ -163,7 +164,7 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
                 setSrEnabled(srEnabledVal);
                 setIsMember(enabled && !!member);
             } catch (e) {
-                console.error("Loyalty Check Failed", e);
+                logger.error('reservation.booking.loyalty-check.failed', { siteId, error: e });
             } finally {
                 setCheckingMember(false);
             }
@@ -220,7 +221,7 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
             setIsMember(true);
             setShowEnrollDialog(false);
         } catch (e) {
-            console.error(e);
+            logger.error('reservation.booking.member-enroll.failed', { siteId, error: e });
             alert("Failed to enroll member.");
         } finally {
             setEnrolling(false);
@@ -258,7 +259,7 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
             await onUpdateDetails(booking.id, updates);
             setIsEditing(false);
         } catch (error) {
-            console.error("Failed to update", error);
+            logger.error('reservation.booking.update.failed', { siteId, error });
         } finally {
             setUpdating(false);
         }

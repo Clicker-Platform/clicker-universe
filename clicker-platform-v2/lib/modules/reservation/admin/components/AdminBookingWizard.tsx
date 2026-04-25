@@ -5,6 +5,7 @@ import { createBooking } from '@/lib/modules/reservation/api';
 import { Service, Staff } from '@/lib/modules/reservation/types';
 import { Clock, User, Check, ChevronLeft, ChevronRight, Loader2, Search } from 'lucide-react';
 import { useSite } from '@/lib/site-context'; // New import
+import { logger } from '@/lib/logger';
 
 interface AdminBookingWizardProps {
     initialServices: Service[];
@@ -64,7 +65,7 @@ export default function AdminBookingWizard({
             const results = await searchMembers(siteId, term);
             setSearchResults(results);
         } catch (error) {
-            console.error(error);
+            logger.error('reservation.wizard.member-search.failed', { siteId, error });
         } finally {
             setIsSearching(false);
         }
@@ -176,7 +177,7 @@ export default function AdminBookingWizard({
                 setGeneratedSlots(candidates);
 
             } catch (error) {
-                console.error("Error generating slots:", error);
+                logger.error('reservation.wizard.slots.failed', { siteId, error });
             } finally {
                 setLoadingSlots(false);
             }
@@ -254,7 +255,7 @@ export default function AdminBookingWizard({
             setBookingRef(id);
             setStep(5);
         } catch (error) {
-            console.error(error);
+            logger.error('reservation.wizard.booking.create.failed', { siteId, error });
             alert("Booking failed. Please try again.");
         } finally {
             setLoading(false);

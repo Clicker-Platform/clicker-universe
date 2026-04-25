@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Plus, Edit2, Car, Search, AlertTriangle, List } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useSite } from '@/lib/site-context';
+import { logger } from '@/lib/logger';
 import { getVehicles, createVehicle, updateVehicle, findVehicleByPlate, getCarCatalog, addCarCatalogEntry, updateCarCatalogEntry } from '../api';
 import type { Vehicle, CarCatalogEntry, VehicleType } from '../types';
 
@@ -56,7 +57,7 @@ export default function VehiclesPage() {
             setVehicles(v);
             setCarCatalog(c);
         } catch (err) {
-            console.error('[SR VehiclesPage] load error:', err);
+            logger.error('service-records.vehicles.load.failed', { siteId, error: err });
         } finally {
             setLoading(false);
         }
@@ -120,7 +121,7 @@ export default function VehiclesPage() {
             const [v] = await Promise.all([getVehicles(siteId)]);
             setVehicles(v);
         } catch (err) {
-            console.error('[SR VehiclesPage] vehicle save error:', err);
+            logger.error('service-records.vehicles.save.failed', { siteId, error: err });
             showToast('error', 'Failed to save vehicle');
         } finally {
             setVehicleSubmitting(false);
@@ -176,7 +177,7 @@ export default function VehiclesPage() {
             const updated = await getCarCatalog(siteId);
             setCarCatalog(updated);
         } catch (err) {
-            console.error('[SR VehiclesPage] car type save error:', err);
+            logger.error('service-records.vehicles.car-type.save.failed', { siteId, error: err });
             showToast('error', editingCarType ? 'Failed to update car type' : 'Failed to add car type');
         } finally {
             setCarTypeSubmitting(false);

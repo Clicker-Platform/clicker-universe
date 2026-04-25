@@ -13,6 +13,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useSite } from '@/lib/site-context';
 import { purgeTenantCache } from '@/lib/admin/purgeCache';
+import { logger } from '@/lib/logger';
 
 interface BusinessSettingsClientProps {
     initialHours: BusinessHours;
@@ -69,7 +70,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
             toast.success('Settings saved successfully!');
             router.refresh();
         } catch (error) {
-            console.error('Error updating business settings:', error);
+            logger.error('admin.business.settings.update.failed', { siteId, error });
             toast.error('Failed to update settings. Please try again.');
         } finally {
             setIsSubmitting(false);
@@ -144,7 +145,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
             setValidationErrors({});
             toast.success('Branch saved successfully!');
         } catch (error) {
-            console.error('Error saving branch:', error);
+            logger.error('admin.business.branch.save.failed', { siteId, error });
             toast.error('Failed to save branch.');
         } finally {
             setIsSubmitting(false);
@@ -166,7 +167,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
             toast.success('Branch deleted.');
             router.refresh();
         } catch (error) {
-            console.error('Error deleting branch:', error);
+            logger.error('admin.business.branch.delete.failed', { siteId, error });
             toast.error('Failed to delete branch.');
             router.refresh();
         } finally {

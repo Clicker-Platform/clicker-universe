@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Plus, Search, ClipboardList } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
+import { logger } from '@/lib/logger';
 import { getServiceRecords } from '../api';
 import { RecordStatusBadge } from './components/RecordStatusBadge';
 import { PaymentStatusBadge } from './components/PaymentStatusBadge';
@@ -56,7 +57,7 @@ export default function RecordsListPage() {
             setLastDoc(newLastDoc);
             setHasMore(newRecords.length === PAGE_SIZE);
         } catch (err) {
-            console.error('[SR RecordsListPage] load error:', err);
+            logger.error('service-records.records-list.load.failed', { siteId, error: err });
         } finally {
             setLoading(false);
             setLoadingMore(false);

@@ -31,6 +31,7 @@ import { collection, query, where, onSnapshot, Unsubscribe } from 'firebase/fire
 import { PublicRouteDefinition, ModuleDefinition, AdminRoute } from './types';
 import { getDoc, getDocs, doc } from 'firebase/firestore';
 import { STATIC_MODULE_DEFINITIONS } from './definitions';
+import { logger } from '@/lib/logger';
 
 export async function findModuleForRoute(path: string): Promise<{ module: ModuleDefinition, route: PublicRouteDefinition } | null> {
     try {
@@ -49,7 +50,7 @@ export async function findModuleForRoute(path: string): Promise<{ module: Module
         }
         return null;
     } catch (error) {
-        console.error('Error finding module for route:', error);
+        logger.error('registry.module.route.failed', { siteId: 'platform', error });
         return null; // Fallback to allow page to continue
     }
 }
@@ -93,7 +94,7 @@ export async function isModuleEnabled(moduleId: string): Promise<boolean> {
             return docSnap.data().enabled === true;
         }
     } catch (error) {
-        console.error(`Error checking module status for ${moduleId}:`, error);
+        logger.error('registry.module.status.failed', { siteId: 'platform', error, moduleId });
     }
     return false;
 }
@@ -149,7 +150,7 @@ export function subscribeToEnabledModules(callback: (modules: ModuleDefinition[]
         } as ModuleDefinition));
         callback(modules);
     }, (error) => {
-        console.error("Error fetching modules:", error);
+        logger.error('registry.modules.fetch.failed', { siteId: 'platform', error });
         callback([]); // Fallback to empty on error
     });
 }

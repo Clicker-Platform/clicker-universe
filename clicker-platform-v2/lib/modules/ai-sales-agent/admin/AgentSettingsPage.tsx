@@ -6,6 +6,7 @@ import { db } from '@/lib/firebase';
 import { toast } from 'sonner';
 import { Save, Bot, MessageSquare, Loader2, Sparkles, RefreshCw, Power, Brain, Settings2 } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
+import { logger } from '@/lib/logger';
 
 interface AgentConfig {
     enabled: boolean;
@@ -55,7 +56,7 @@ export default function AgentSettingsPage() {
             }
             setLoading(false);
         }, (error) => {
-            console.error("Error fetching agent config:", error);
+            logger.error('ai.agent.settings.fetch.failed', { siteId, error });
             toast.error("Failed to load agent settings");
             setLoading(false);
         });
@@ -71,7 +72,7 @@ export default function AgentSettingsPage() {
             await setDoc(doc(db, 'sites', siteId, 'modules', 'ai_sales'), config, { merge: true });
             toast.success('Agent settings saved successfully');
         } catch (error) {
-            console.error('Error saving settings:', error);
+            logger.error('ai.agent.settings.save.failed', { siteId, error });
             toast.error('Failed to save settings');
         } finally {
             setSaving(false);

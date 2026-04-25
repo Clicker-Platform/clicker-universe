@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { isSignInWithEmailLink, signInWithEmailLink, User } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { Loader2, CheckCircle2, AlertTriangle, ArrowRight } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 export default function VerifyPage() {
     const router = useRouter();
@@ -53,7 +54,7 @@ export default function VerifyPage() {
             }, 1500);
 
         } catch (error: any) {
-            console.error("Link verify error:", error);
+            logger.error('membership.verify.link.failed', { siteId: 'platform', error });
             setStatus('ERROR');
             setError(error.message || "Could not verify login. The link may be expired.");
         }

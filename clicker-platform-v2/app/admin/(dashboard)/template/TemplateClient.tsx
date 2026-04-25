@@ -16,6 +16,7 @@ import { IconSelector } from '@/components/admin/IconSelector';
 import { ICON_MAP } from '@/data/icons';
 import { useSite } from '@/lib/site-context';
 import { purgeTenantCache } from '@/lib/admin/purgeCache';
+import { logger } from '@/lib/logger';
 
 export default function TemplateClient() {
     const { siteId } = useSite();
@@ -95,7 +96,7 @@ export default function TemplateClient() {
                 });
             }
         } catch (error) {
-            console.error("Error fetching settings:", error);
+            logger.error('admin.template.settings.fetch.failed', { siteId, error });
         } finally {
             setLoading(false);
         }
@@ -116,7 +117,7 @@ export default function TemplateClient() {
             setMessage('Template saved successfully!');
             setTimeout(() => setMessage(''), 3000);
         } catch (error) {
-            console.error('Error saving template:', error);
+            logger.error('admin.template.save.failed', { siteId, error });
             setMessage('Error saving template');
         } finally {
             setSaving(false);
@@ -146,7 +147,7 @@ export default function TemplateClient() {
             setMessage('Templates seeded successfully!');
             fetchTemplates();
         } catch (error) {
-            console.error(error);
+            logger.error('admin.template.seed.failed', { siteId, error });
             setMessage('Error seeding templates');
         } finally {
             setSeeding(false);

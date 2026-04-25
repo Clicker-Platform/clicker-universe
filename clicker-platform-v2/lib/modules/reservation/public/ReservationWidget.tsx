@@ -6,6 +6,7 @@ import { getServices, getReservationSettings } from '../api';
 import { getStaffMembers } from '../staff';
 import { Service, Staff } from '../types';
 import { useSite } from '@/lib/site-context';
+import { logger } from '@/lib/logger';
 
 export default function ReservationWidget({
     siteId: propSiteId,
@@ -37,7 +38,7 @@ export default function ReservationWidget({
             if (hasInitialData) return;
 
             if (!siteId) {
-                console.error("ReservationWidget: siteId is missing");
+                logger.error('reservation.widget.siteId.missing', { siteId: 'platform' });
                 setLoading(false);
                 return;
             }
@@ -50,7 +51,7 @@ export default function ReservationWidget({
                 ]);
                 setData({ services, staff, settings });
             } catch (e) {
-                console.error("Failed to load reservation widget data", e);
+                logger.error('reservation.widget.load.failed', { siteId, error: e });
             } finally {
                 setLoading(false);
             }

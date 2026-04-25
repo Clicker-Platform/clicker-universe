@@ -1,6 +1,7 @@
 import { getServices, getReservationSettings } from '@/lib/modules/reservation/api';
 import { getStaffMembers } from '@/lib/modules/reservation/staff';
 import BookingForm from '@/lib/modules/reservation/public/BookingForm';
+import { logger } from '@/lib/logger';
 
 import { db } from '@/lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
@@ -29,7 +30,7 @@ interface BookPageProps {
 
 export default async function BookPage({ siteId }: BookPageProps) {
     if (!siteId) {
-        console.error("BookPage: siteId missing!");
+        logger.error('reservation.book-page.siteId.missing', { siteId: 'platform' });
     }
 
     const enabled = await isModuleEnabled('reservation');

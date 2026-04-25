@@ -13,6 +13,7 @@ import { getPOSSettings } from '@/lib/modules/byod_pos/api';
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 import { useSite } from '@/lib/site-context';
 import { usePermission } from '@/components/admin/PermissionGuard';
+import { logger } from '@/lib/logger';
 
 export default function CashierClient({ initialOrders = [] }: { initialOrders?: POSOrder[] }) {
     const { siteId } = useSite();
@@ -68,7 +69,7 @@ export default function CashierClient({ initialOrders = [] }: { initialOrders?: 
             setPostPaymentConfig({ isOpen: true, orders: paidOrders });
 
         } catch (error) {
-            console.error("Payment confirmation failed:", error);
+            logger.error('pos.cashier.payment.failed', { siteId, error });
             toast.error("Failed to confirm payment");
         }
     };

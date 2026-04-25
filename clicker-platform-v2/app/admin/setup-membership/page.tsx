@@ -4,6 +4,7 @@
 import React, { useState } from 'react';
 import { db } from '@/lib/firebase';
 import { doc, setDoc } from 'firebase/firestore';
+import { logger } from '@/lib/logger';
 
 const MODULE_DEF = {
     id: 'membership',
@@ -54,12 +55,10 @@ export default function SetupMembershipPage() {
         setStatus('registering');
         setError('');
         try {
-            console.log("Registering module...", MODULE_DEF);
             await setDoc(doc(db, 'modules', MODULE_DEF.id), MODULE_DEF);
             setStatus('success');
-            console.log("Success!");
         } catch (err: any) {
-            console.error("Error:", err);
+            logger.error('membership.module.register.failed', { siteId: 'platform', error: err });
             setError(err.message);
             setStatus('error');
         }

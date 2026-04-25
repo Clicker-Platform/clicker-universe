@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useSite } from '@/lib/site-context';
 import { db, auth } from '@/lib/firebase';
+import { logger } from '@/lib/logger';
 import { collection, onSnapshot, query, where, doc, getDoc } from 'firebase/firestore'; // Removed deleteDoc/setDoc as we use API
 import { Plus, Mail, Shield, Trash2, X, Loader2, User, Clock } from 'lucide-react';
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
@@ -72,7 +73,6 @@ export default function TeamPage() {
     useEffect(() => {
         if (!siteId) return;
 
-        console.log('TeamPage: Subscribing to members for site:', siteId);
 
         const unsubscribeMembers = onSnapshot(collection(db, 'sites', siteId, 'members'),
             (snapshot) => {
@@ -88,7 +88,7 @@ export default function TeamPage() {
                 setLoading(false);
             },
             (error) => {
-                console.error('TeamPage: Error fetching members:', error);
+                logger.error('admin.team.members.fetch.failed', { siteId, error });
                 toast.error('Failed to load members: ' + error.message);
                 setLoading(false);
             }
@@ -208,7 +208,7 @@ export default function TeamPage() {
     useEffect(() => {
         const timer = setTimeout(() => {
             if (loading) {
-                console.error('TeamPage: Loading timed out.');
+                logger.warn('admin.team.members.load.timeout', { siteId });
             }
         }, 8000);
         return () => clearTimeout(timer);

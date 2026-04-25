@@ -8,6 +8,7 @@ import { Plus, Trash2, User, CheckCircle, XCircle, Edit2, X, Save, Settings, Loa
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 import { toast } from 'sonner';
 import { useSite } from '@/lib/site-context';
+import { logger } from '@/lib/logger';
 
 interface StaffClientProps {
     initialStaff?: Staff[];
@@ -37,7 +38,7 @@ export default function StaffClient({ initialStaff }: StaffClientProps) {
                 setSettings(settingsData);
                 setStaffList(staffData);
             } catch (error) {
-                console.error("Failed to load data:", error);
+                logger.error('reservation.staff.load.failed', { siteId, error });
             } finally {
                 setLoadingSettings(false);
                 setIsLoading(false);
@@ -142,7 +143,7 @@ export default function StaffClient({ initialStaff }: StaffClientProps) {
             setIsModalOpen(false);
             resetForm();
         } catch (error) {
-            console.error(error);
+            logger.error('reservation.staff.save.failed', { siteId, error });
             toast.error('Operation failed');
         } finally {
             setIsSubmitting(false);
@@ -159,7 +160,7 @@ export default function StaffClient({ initialStaff }: StaffClientProps) {
             await updateStaffMember(siteId, member.id, { isActive: newStatus });
             toast.success(`Resource ${newStatus ? 'activated' : 'deactivated'}`);
         } catch (error) {
-            console.error(error);
+            logger.error('reservation.staff.status.failed', { siteId, error });
             toast.error('Failed to update status');
             // Revert
             setStaffList(prev => prev.map(s => s.id === member.id ? { ...s, isActive: !newStatus } : s));
@@ -182,7 +183,7 @@ export default function StaffClient({ initialStaff }: StaffClientProps) {
             setStaffToDelete(null);
             toast.success('Resource deleted');
         } catch (error) {
-            console.error(error);
+            logger.error('reservation.staff.delete.failed', { siteId, error });
             toast.error('Failed to delete resource');
         }
     };

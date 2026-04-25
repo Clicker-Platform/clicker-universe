@@ -5,6 +5,7 @@ import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { toast } from 'sonner';
 import { Loader2, Plus, Search, User, X } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
+import { logger } from '@/lib/logger';
 import { createMember, getMembershipSettings } from '../api';
 import { Member, MembershipSettings, getTier, TIER_COLORS, DEFAULT_TIER_THRESHOLDS } from '../types';
 import { usePermission } from '@/lib/hooks/use-permission';
@@ -79,7 +80,7 @@ export default function MemberListPage() {
     // Load settings once
     useEffect(() => {
         if (!siteId) return;
-        getMembershipSettings(siteId).then(setSettings).catch(console.error);
+        getMembershipSettings(siteId).then(setSettings).catch(e => logger.error('membership.settings.load.failed', { siteId, error: e }));
     }, [siteId]);
 
     // Unified Fetch Logic
@@ -107,7 +108,7 @@ export default function MemberListPage() {
                     }
                 }
             } catch (error) {
-                console.error("Error loading members:", error);
+                logger.error('membership.members.load.failed', { siteId, error });
             } finally {
                 if (!isCancelled) setLoading(false);
             }
@@ -127,7 +128,7 @@ export default function MemberListPage() {
             setLastDoc(lastVisible);
             setHasMore(!!lastVisible && newMembers.length === 20);
         } catch (error) {
-            console.error("Error loading more members:", error);
+            logger.error('membership.members.load-more.failed', { siteId, error });
             toast.error("Failed to load more members");
         } finally {
             setLoadingMore(false);
@@ -162,7 +163,7 @@ export default function MemberListPage() {
             }
             toast.success("Member registered successfully!");
         } catch (error) {
-            console.error(error);
+            logger.error('membership.member.register.failed', { siteId, error });
             toast.error("Failed to register member. Phone number might be duplicate.");
         } finally {
             setSubmitting(false);

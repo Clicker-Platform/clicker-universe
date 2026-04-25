@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Settings } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
+import { logger } from '@/lib/logger';
 import { getReservationSettings, updateReservationSettings } from '@/lib/modules/reservation/api';
 import { isModuleEnabled } from '@/lib/modules/registry';
 import type { ReservationSettings, PricingDisplay } from '@/lib/modules/reservation/types';
@@ -37,7 +38,7 @@ export default function ReservationSettingsPage() {
                 setSettings(s);
                 setServiceRecordsEnabled(srEnabled);
             })
-            .catch(console.error)
+            .catch(e => logger.error('reservation.settings.load.failed', { siteId, error: e }))
             .finally(() => setLoading(false));
     }, [siteId]);
 
@@ -59,7 +60,7 @@ export default function ReservationSettingsPage() {
             });
             showToast('success', 'Settings saved');
         } catch (err) {
-            console.error(err);
+            logger.error('reservation.settings.save.failed', { siteId, error: err });
             showToast('error', 'Failed to save settings');
         } finally {
             setSaving(false);

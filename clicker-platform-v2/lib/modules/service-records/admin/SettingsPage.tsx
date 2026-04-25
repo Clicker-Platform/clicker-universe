@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSite } from '@/lib/site-context';
+import { logger } from '@/lib/logger';
 import { useUser } from '@/lib/user-context';
 import { getServiceConfig, updateServiceConfig } from '../api';
 import type { ServiceConfig } from '../types';
@@ -31,7 +32,7 @@ export default function SettingsPage() {
             setWarrantyCardsEnabled(cfg.featuresEnabled.warrantyCards);
             setReminderEngineEnabled(cfg.featuresEnabled.reminderEngine);
         } catch (err) {
-            console.error('[SR SettingsPage] loadConfig error:', err);
+            logger.error('service-records.settings.load.failed', { siteId, error: err });
         } finally {
             setLoading(false);
         }
@@ -64,7 +65,7 @@ export default function SettingsPage() {
             setPrefix(cleanPrefix);
             showToast('success', 'Settings saved');
         } catch (err) {
-            console.error('[SR SettingsPage] save error:', err);
+            logger.error('service-records.settings.save.failed', { siteId, error: err });
             showToast('error', 'Failed to save settings');
         } finally {
             setSaving(false);

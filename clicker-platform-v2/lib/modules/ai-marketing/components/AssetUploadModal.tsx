@@ -5,6 +5,7 @@ import { X, Upload, Loader2, ImageIcon } from 'lucide-react';
 import { uploadToStorage } from '@/lib/upload';
 import { useSite } from '@/lib/site-context';
 import { auth } from '@/lib/firebase';
+import { logger } from '@/lib/logger';
 import { apiPost, apiGet } from '../api';
 import { API, STORAGE_FOLDER } from '../constants';
 import { AssetType } from '../types';
@@ -86,7 +87,7 @@ export default function AssetUploadModal({ onClose, onUploaded }: Props) {
       if (preview) {
         const base64 = preview.split(',')[1];
         apiPost(API.assets.analyze, { assetId, assetType, imageBase64: base64 }, token, siteId)
-          .catch(err => console.warn('[analyze] auto-analysis failed:', err.message));
+          .catch(err => logger.warn('ai.marketing.asset.analyze.failed', { siteId, error: err }));
       }
 
       onUploaded(assetId);

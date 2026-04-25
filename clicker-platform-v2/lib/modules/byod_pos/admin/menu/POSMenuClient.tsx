@@ -11,6 +11,7 @@ import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 import { POSMenuItemDialog } from './components/POSMenuItemDialog';
 import { POSCategoryManagerModal } from './components/POSCategoryManagerModal';
 import { useSite } from '@/lib/site-context';
+import { logger } from '@/lib/logger';
 
 interface POSItem {
     id: string;
@@ -119,7 +120,7 @@ export default function POSMenuClient({ initialItems = [] }: POSMenuClientProps)
             setIsEditing(false);
             setEditingId(null);
         } catch (error) {
-            console.error("Error saving item:", error);
+            logger.error('pos.menu.item.save.failed', { siteId, error });
             // Check for permission error (code usually 'permission-denied' or message 'Missing or insufficient permissions')
             const isPermissionError = (error as any)?.code === 'permission-denied' || (error as any)?.message?.includes('Missing or insufficient permissions');
 
@@ -146,7 +147,7 @@ export default function POSMenuClient({ initialItems = [] }: POSMenuClientProps)
                 i.id === item.id ? { ...i, isActive: newStatus } : i
             ));
         } catch (error) {
-            console.error("Error updating visibility:", error);
+            logger.error('pos.menu.item.visibility.failed', { siteId, error });
         }
     };
 
@@ -173,7 +174,7 @@ export default function POSMenuClient({ initialItems = [] }: POSMenuClientProps)
                 setIsEditing(false);
             }
         } catch (error) {
-            console.error(error);
+            logger.error('pos.menu.item.delete.failed', { siteId, error });
         } finally {
             setIsDeleting(false);
             setDeleteDialogOpen(false);

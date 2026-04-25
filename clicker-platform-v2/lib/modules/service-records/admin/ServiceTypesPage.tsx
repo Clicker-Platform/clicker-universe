@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { ExternalLink, Wrench } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
+import { logger } from '@/lib/logger';
 import { getServiceTypes, toggleServiceType } from '../api';
 import type { ServiceType } from '../types';
 import Link from 'next/link';
@@ -25,7 +26,7 @@ export default function ServiceTypesPage() {
     useEffect(() => {
         if (!siteId) return;
         loadTypes();
-        getServiceCategories(siteId).then(setCategories).catch(console.error);
+        getServiceCategories(siteId).then(setCategories).catch(e => logger.error('service-records.service-types.categories.failed', { siteId, error: e }));
     }, [siteId]);
 
     async function loadTypes() {
@@ -34,7 +35,7 @@ export default function ServiceTypesPage() {
             const types = await getServiceTypes(siteId);
             setServiceTypes(types);
         } catch (err) {
-            console.error('[SR ServiceTypesPage] load error:', err);
+            logger.error('service-records.service-types.load.failed', { siteId, error: err });
         } finally {
             setLoading(false);
         }
@@ -50,7 +51,7 @@ export default function ServiceTypesPage() {
             await toggleServiceType(siteId, type.id, !type.isActive);
             setServiceTypes(prev => prev.map(t => t.id === type.id ? { ...t, isActive: !t.isActive } : t));
         } catch (err) {
-            console.error('[SR ServiceTypesPage] toggle error:', err);
+            logger.error('service-records.service-types.toggle.failed', { siteId, error: err });
             showToast('error', 'Failed to update status');
         }
     }

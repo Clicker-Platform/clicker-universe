@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 
 import { HistorySidebar } from './components/HistorySidebar';
 import { useSite } from '@/lib/site-context';
+import { logger } from '@/lib/logger';
 
 export default function TransactionsClient({ initialOrders = [] }: { initialOrders?: POSOrder[] }) {
     const { siteId } = useSite();
@@ -38,7 +39,7 @@ export default function TransactionsClient({ initialOrders = [] }: { initialOrde
             setLastDoc(lastVisible);
             setHasMore(newOrders.length === 20);
         } catch (error: any) {
-            console.warn("Optimized history fetch failed (likely missing index), falling back to standard pagination.", error);
+            logger.warn('pos.transactions.history.optimized.failed', { siteId, error });
 
             // Fallback: Standard fetch
             try {
@@ -58,7 +59,7 @@ export default function TransactionsClient({ initialOrders = [] }: { initialOrde
                     // Silent failure or empty
                 }
             } catch (fallbackError) {
-                console.error("Fallback fetch failed", fallbackError);
+                logger.error('pos.transactions.history.fallback.failed', { siteId, error: fallbackError });
                 toast.error("Failed to load history");
             }
         } finally {

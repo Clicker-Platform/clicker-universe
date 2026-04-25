@@ -9,6 +9,7 @@ import { Calendar, CreditCard, ChevronRight } from 'lucide-react';
 import { POSOrder } from '@/lib/modules/byod_pos/types';
 import { FileText, X } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
+import { logger } from '@/lib/logger';
 
 interface MemberHistoryListProps {
     memberId: string;
@@ -52,7 +53,7 @@ export default function MemberHistoryList({ memberId }: MemberHistoryListProps) 
                 alert("Order not found");
             }
         } catch (e) {
-            console.error("Failed to load receipt", e);
+            logger.error('membership.receipt.load.failed', { siteId, error: e });
             alert("Failed to load receipt");
         }
     };

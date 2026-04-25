@@ -2,6 +2,7 @@ import { Service, Staff } from '../../types';
 import { User, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { useSite } from '@/lib/site-context';
+import { logger } from '@/lib/logger';
 import { ThemeConfig } from '@/lib/templates/types';
 
 interface DetailsStepProps {
@@ -70,7 +71,7 @@ export default function DetailsStep({
                 onShowDialog('Member Not Found', "We couldn't find a membership linked to this number. Please check the number or continue as a guest.", 'info');
             }
         } catch (error) {
-            console.error(error);
+            logger.error('reservation.details.member-verify.failed', { siteId, error });
             onShowDialog('Connection Error', "Unable to verify membership at this time.", 'error');
         } finally {
             setLoading(false);

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Form, FormField } from '@/data/mockData';
 import { Plus, Trash2, Save, ArrowLeft, GripVertical, Settings } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
+import { logger } from '@/lib/logger';
 
 interface FormBuilderClientProps {
     initialForm?: Form;
@@ -65,7 +66,7 @@ export function FormBuilderClient({ initialForm }: FormBuilderClientProps) {
                 alert('Error saving form');
             }
         } catch (error) {
-            console.error(error);
+            logger.error('admin.form.save.failed', { siteId, error });
             alert('Error saving form');
         }
         setLoading(false);

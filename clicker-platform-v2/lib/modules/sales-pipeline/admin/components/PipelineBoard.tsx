@@ -1,6 +1,7 @@
 'use client';
 
 import { useSite } from '@/lib/site-context';
+import { logger } from '@/lib/logger';
 
 import { useState, useMemo } from 'react';
 import {
@@ -88,7 +89,7 @@ export function PipelineBoard({ stages, leads }: PipelineBoardProps) {
                     toast.success("Lead moved");
                 } catch (error) {
                     attempt++;
-                    console.error(`Failed to move lead (Attempt ${attempt}/${MAX_RETRIES})`, error);
+                    logger.error('sales-pipeline.lead.move.failed', { siteId, attempt, error });
                     if (attempt === MAX_RETRIES) {
                         toast.error("Failed to move lead. Please check your connection.");
                     } else {

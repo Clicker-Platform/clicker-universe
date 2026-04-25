@@ -9,6 +9,7 @@ import { collection, query, where, onSnapshot, doc } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase';
 import { signOut, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { subscribeToEnabledModules, MODULE_ICONS, getRouteIdFromPath } from '@/lib/modules/registry';
+import { logger } from '@/lib/logger';
 import { STATIC_MODULE_DEFINITIONS } from '@/lib/modules/definitions';
 import { ModuleDefinition } from '@/lib/modules/types';
 import { useSite } from '@/lib/site-context';
@@ -63,7 +64,7 @@ export function AdminSidebar() {
                 router.push('/login');
             }
         } catch (error) {
-            console.error('Logout failed:', error);
+            logger.error('admin.auth.logout.failed', { siteId: 'platform', error });
         }
     };
 
@@ -103,7 +104,7 @@ export function AdminSidebar() {
                 }
             });
         } catch (e) {
-            console.error("Error fetching site modules", e);
+            logger.error('admin.sidebar.modules.fetch.failed', { siteId, error: e });
         }
 
         const unsubscribeAuth = onAuthStateChanged(auth, (user: FirebaseUser | null) => {
@@ -114,9 +115,9 @@ export function AdminSidebar() {
                     const qBookings = query(collection(db, 'sites', siteId, 'modules/reservation/bookings'), where('status', '==', 'pending'));
                     unsubscribeBookingSnapshot = onSnapshot(qBookings, (snapshot) => {
                         setNewBookingCount(snapshot.size);
-                    }, (error) => { console.error("Bookings listener error:", error); });
+                    }, (error) => { logger.error('admin.sidebar.bookings.subscribe.failed', { siteId, error }); });
                 } catch (e) {
-                    console.error("Error setting up listeners:", e);
+                    logger.error('admin.sidebar.listeners.setup.failed', { siteId, error: e });
                 }
             } else {
                 setNewBookingCount(0);

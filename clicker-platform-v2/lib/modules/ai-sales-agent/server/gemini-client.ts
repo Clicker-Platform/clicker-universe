@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI, SchemaType, Content, Tool } from "@google/generative-ai";
 import { adminDb } from "@/lib/firebase-admin";
+import { logger } from '@/lib/logger';
 
 // Key for the secure configuration document
 const CONFIG_DOC_PATH = "modules/ai-sales-agent/private/config";
@@ -24,7 +25,7 @@ export async function getGeminiApiKey(siteId: string): Promise<string | null> {
         // Fallback to Env if not in DB (for dev convenience)
         return process.env.GEMINI_API_KEY || null;
     } catch (error) {
-        console.error("Error fetching Gemini API Key:", error);
+        logger.error('ai.agent.apikey.fetch.failed', { siteId, error });
         return null;
     }
 }
@@ -121,7 +122,7 @@ export async function listAvailableModels(siteId: string) {
         const data = await response.json();
         return data.models || [];
     } catch (e) {
-        console.error("Failed to list models", e);
+        logger.error('ai.agent.models.list.failed', { siteId, error: e });
         return [];
     }
 }

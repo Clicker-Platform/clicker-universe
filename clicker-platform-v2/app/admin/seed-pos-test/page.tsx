@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase';
+import { logger } from '@/lib/logger';
 
 export default function SeedPOSTest() {
     const [status, setStatus] = useState('Idle');
@@ -34,7 +35,7 @@ export default function SeedPOSTest() {
 
             setStatus('Success: TEst Data Created (Stock: 10)');
         } catch (e: any) {
-            console.error(e);
+            logger.error('pos.seed.data.failed', { siteId: 'platform', error: e });
             setStatus('Error: ' + e.message);
         }
     };
@@ -52,7 +53,7 @@ export default function SeedPOSTest() {
             });
             setStatus('Success: Registered as Admin. Please refresh POS pages.');
         } catch (e: any) {
-            console.error(e);
+            logger.error('pos.admin.register.failed', { siteId: 'platform', error: e });
             setStatus('Error: ' + e.message);
         }
     };

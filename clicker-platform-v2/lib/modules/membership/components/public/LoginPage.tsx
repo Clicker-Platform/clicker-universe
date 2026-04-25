@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { sendSignInLinkToEmail } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { Loader2, Mail, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 export default function LoginPage() {
     const [step, setStep] = useState<'INPUT' | 'SENT'>('INPUT');
@@ -38,7 +39,7 @@ export default function LoginPage() {
             window.localStorage.setItem('emailForSignIn', email);
             setStep('SENT');
         } catch (error: any) {
-            console.error("Error sending email link", error);
+            logger.error('membership.login.email-link.failed', { siteId: 'platform', error });
             setError(error.message || "Failed to send login link. Please try again.");
         } finally {
             setIsLoading(false);

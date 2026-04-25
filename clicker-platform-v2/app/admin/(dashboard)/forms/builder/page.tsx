@@ -8,6 +8,7 @@ import { FormBuilderClient } from './FormBuilderClient';
 import { Form } from '@/data/mockData';
 import { Loader2 } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
+import { logger } from '@/lib/logger';
 
 export default function BuilderPage() {
     const searchParams = useSearchParams();
@@ -43,7 +44,7 @@ export default function BuilderPage() {
                     setInitialForm(form);
                 }
             } catch (error) {
-                console.error("Error fetching form:", error);
+                logger.error('admin.form.fetch.failed', { siteId, error });
             } finally {
                 setLoading(false);
             }

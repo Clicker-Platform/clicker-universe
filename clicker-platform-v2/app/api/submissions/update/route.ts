@@ -1,6 +1,7 @@
 import { adminDb } from '@/lib/firebase-admin';
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,7 +31,7 @@ export async function POST(request: Request) {
 
         return NextResponse.json({ success: true });
     } catch (error) {
-        console.error('Error updating submission:', error);
+        logger.error('crm.submission.update.failed', { siteId: 'platform', error });
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }

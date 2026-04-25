@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
+import { logger } from '@/lib/logger';
 import { InventoryItem, TransactionReason } from '@/lib/modules/inventory/types';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { MobileBottomSheet } from '@/components/admin/blocks/MobileBottomSheet';
@@ -38,7 +39,7 @@ export function AdjustStockDialog({ isOpen, onClose, item, onConfirm }: AdjustSt
             // Error handling should be done by the parent content often, 
             // but we can catch here if needed. 
             // For now, let's assume parent handles toast errors or we re-throw.
-            console.error(error);
+            logger.error('inventory.stock-adjust.failed', { siteId: 'platform', error });
         } finally {
             setIsSubmitting(false);
         }

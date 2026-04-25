@@ -5,6 +5,7 @@ import { Service } from '@/lib/modules/reservation/types';
 import { getServices } from '@/lib/modules/reservation/api';
 import { Search, Clock, LayoutGrid, List as ListIcon, ExternalLink } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
+import { logger } from '@/lib/logger';
 import Link from 'next/link';
 
 import { ReservationBreadcrumb } from '../components/ReservationBreadcrumb';
@@ -24,7 +25,7 @@ export default function ServicesClient({ initialServices = [] }: ServicesClientP
         if (!siteId || initialServices.length > 0) return;
         getServices(siteId)
             .then(setServices)
-            .catch(e => console.error('Failed to fetch services:', e));
+            .catch(e => logger.error('reservation.services.fetch.failed', { siteId, error: e }));
     }, [siteId]);
 
     const usedCategories = Array.from(new Set(services.map(s => s.category).filter((c): c is string => !!c)));

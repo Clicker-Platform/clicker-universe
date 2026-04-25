@@ -8,6 +8,7 @@ import { db } from '@/lib/firebase';
 import { toast } from 'sonner';
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 import { useSite } from '@/lib/site-context';
+import { logger } from '@/lib/logger';
 
 interface POSOrderCardProps {
     order: POSOrder;
@@ -55,7 +56,7 @@ export function POSOrderCard({ order, onUpdateStatus, onCancel, onProcessPayment
             toast.success("Member linked to order!");
             setIsLinkingMember(false);
         } catch (error) {
-            console.error(error);
+            logger.error('pos.order.link-member.failed', { siteId, error });
             toast.error("Failed to link member");
         }
     };

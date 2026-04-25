@@ -5,6 +5,7 @@ import { Save, AlertCircle, Lock, RefreshCw, CheckCircle2 } from 'lucide-react';
 import { getMembershipSettings, updateMembershipSettings, backfillMemberCodes } from '../api';
 import { MembershipSettings, Tier, DEFAULT_TIER_THRESHOLDS } from '../types';
 import { useSite } from '@/lib/site-context';
+import { logger } from '@/lib/logger';
 import { usePermission } from '@/lib/hooks/use-permission';
 
 export default function MembershipSettingsPage() {
@@ -32,7 +33,7 @@ export default function MembershipSettingsPage() {
             });
             setBackfillResult(result);
         } catch (err) {
-            console.error(err);
+            logger.error('membership.settings.backfill.failed', { siteId, error: err });
             setMessage({ type: 'error', text: 'Backfill failed. Check console for details.' });
         } finally {
             setBackfilling(false);
@@ -53,7 +54,7 @@ export default function MembershipSettingsPage() {
             const data = await getMembershipSettings(siteId);
             setSettings(data);
         } catch (error) {
-            console.error("Failed to load settings:", error);
+            logger.error('membership.settings.load.failed', { siteId, error });
             setMessage({ type: 'error', text: "Failed to load settings." });
         } finally {
             setLoading(false);
@@ -70,7 +71,7 @@ export default function MembershipSettingsPage() {
             await updateMembershipSettings(siteId, settings);
             setMessage({ type: 'success', text: "Settings saved successfully." });
         } catch (error) {
-            console.error("Failed to save settings:", error);
+            logger.error('membership.settings.save.failed', { siteId, error });
             setMessage({ type: 'error', text: "Failed to save settings." });
         } finally {
             setSaving(false);

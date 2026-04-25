@@ -8,6 +8,7 @@ import { CreditCard, Clock, User, Armchair, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 import { useSite } from '@/lib/site-context';
+import { logger } from '@/lib/logger';
 
 interface BillCardProps {
     group: {
@@ -40,7 +41,7 @@ export function BillCard({ group, onProcessPayment, disabled }: BillCardProps) {
             toast.success(`Cancelled ${cancelTarget.itemName}`);
             setCancelTarget(null);
         } catch (error) {
-            console.error("Failed to cancel item:", error);
+            logger.error('pos.bill.item.cancel.failed', { siteId, error });
             toast.error("Failed to cancel item");
         } finally {
             setIsCancelling(false);

@@ -8,6 +8,7 @@ import { Loader2, Trash2, X, Calendar, User } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useSite } from '@/lib/site-context';
+import { logger } from '@/lib/logger';
 
 interface LeadDetailSheetProps {
     lead: Lead | null;
@@ -49,7 +50,7 @@ export function LeadDetailSheet({ lead, stages, isOpen, onClose }: LeadDetailShe
             onClose();
         } catch (error) {
             toast.error("Failed to update lead");
-            console.error(error);
+            logger.error('sales-pipeline.lead.update.failed', { siteId, error });
         } finally {
             setIsSaving(false);
         }

@@ -1,5 +1,6 @@
 import { db } from '@/lib/firebase';
 import { doc, getDoc, collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
+import { logger } from '@/lib/logger';
 import { BusinessHours, BusinessContact, Branch, initialBusinessHours, initialBusinessContact } from '@/data/mockData';
 import BusinessSettingsClient from './BusinessSettingsClient';
 import { headers } from 'next/headers';
@@ -40,7 +41,7 @@ async function fetchBusinessData(siteId: string) {
         } as Branch));
 
     } catch (error) {
-        console.error('Error fetching business settings:', error);
+        logger.error('admin.business.settings.fetch.failed', { siteId: 'platform', error });
     }
 
     return { hours, contact, branches, hasBranches };

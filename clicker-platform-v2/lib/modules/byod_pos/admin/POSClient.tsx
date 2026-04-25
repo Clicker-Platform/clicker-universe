@@ -17,6 +17,7 @@ import { getPOSSettings } from '@/lib/modules/byod_pos/api';
 import { POSSettings } from '@/lib/modules/byod_pos/types';
 import { useSite } from '@/lib/site-context';
 import { usePermission } from '@/components/admin/PermissionGuard';
+import { logger } from '@/lib/logger';
 
 export default function POSClient({ initialOrders = [] }: { initialOrders?: POSOrder[] }) {
     const { siteId } = useSite();
@@ -51,7 +52,7 @@ export default function POSClient({ initialOrders = [] }: { initialOrders?: POSO
             await updateOrderStatus(siteId, order, newStatus);
             toast.success(`Order moved to ${newStatus}`);
         } catch (error: any) {
-            console.error("Status update failed:", error);
+            logger.error('pos.admin.status.failed', { siteId, error });
             if (error.message?.includes("Item does not exist")) {
                 toast.error("Inventory Item Deleted! Cannot process stock.");
             } else {
@@ -72,7 +73,7 @@ export default function POSClient({ initialOrders = [] }: { initialOrders?: POSO
             setCancelConfig({ isOpen: false, orderId: null });
             setSelectedOrder(null);
         } catch (error) {
-            console.error("Cancellation failed:", error);
+            logger.error('pos.admin.cancel.failed', { siteId, error });
             toast.error("Failed to cancel order");
         }
     };
@@ -130,7 +131,7 @@ export default function POSClient({ initialOrders = [] }: { initialOrders?: POSO
             setPostPaymentConfig({ isOpen: true, orders: paidOrders });
 
         } catch (error) {
-            console.error("Payment confirmation failed:", error);
+            logger.error('pos.admin.payment.failed', { siteId, error });
             toast.error("Failed to confirm payment");
         }
     };

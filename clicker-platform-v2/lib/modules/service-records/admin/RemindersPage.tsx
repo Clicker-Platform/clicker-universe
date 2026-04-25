@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Bell, Clock, Mail } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
+import { logger } from '@/lib/logger';
 import { useUser } from '@/lib/user-context';
 import { getServiceConfig, updateServiceConfig, getReminderQueue } from '../api';
 import type { ServiceConfig, ReminderQueueEntry } from '../types';
@@ -60,7 +61,7 @@ export default function RemindersPage() {
             setConfig(cfg);
             setQueue(queueItems);
         } catch (err) {
-            console.error('[SR RemindersPage] load error:', err);
+            logger.error('service-records.reminders.load.failed', { siteId, error: err });
         } finally {
             setLoading(false);
         }
@@ -103,7 +104,7 @@ export default function RemindersPage() {
             });
             showToast('success', 'Reminder settings saved');
         } catch (err) {
-            console.error('[SR RemindersPage] save error:', err);
+            logger.error('service-records.reminders.save.failed', { siteId, error: err });
             showToast('error', 'Failed to save settings');
         } finally {
             setSaving(false);

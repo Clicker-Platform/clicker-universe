@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Search, AlertTriangle, ChevronLeft } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
+import { logger } from '@/lib/logger';
 import { useUser } from '@/lib/user-context';
 import {
     createServiceRecord,
@@ -96,7 +97,7 @@ function RecordFormContent() {
                 }
             }
         } catch (err) {
-            console.error('[SR RecordFormPage] initPage error:', err);
+            logger.error('service-records.record-form.init.failed', { siteId, error: err });
         } finally {
             setLoading(false);
         }
@@ -143,7 +144,7 @@ function RecordFormContent() {
                 phone: m.phoneNumber || '',
             })));
         } catch (err) {
-            console.error('[SR RecordFormPage] member search error:', err);
+            logger.error('service-records.record-form.member-search.failed', { siteId, error: err });
         }
     }
 
@@ -204,7 +205,7 @@ function RecordFormContent() {
 
             router.push(`/admin/service-records/detail?id=${newId}`);
         } catch (err: any) {
-            console.error('[SR RecordFormPage] save error:', err);
+            logger.error('service-records.record-form.save.failed', { siteId, error: err });
             showToast('error', err.message || 'Failed to save record');
         } finally {
             setSubmitting(false);

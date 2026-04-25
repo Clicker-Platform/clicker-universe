@@ -13,6 +13,7 @@ import {
 } from '@/lib/modules/reservation/api';
 import { Booking, Service, Staff } from '@/lib/modules/reservation/types';
 import { useSite } from '@/lib/site-context';
+import { logger } from '@/lib/logger';
 
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -60,7 +61,7 @@ export default function ReservationDashboard() {
                 setAllStaff(staffData);
                 setCounts(_counts);
             } catch (error) {
-                console.error("Error fetching reservation setup:", error);
+                logger.error('reservation.admin.setup.fetch.failed', { siteId, error });
                 toast.error("Failed to load setup data");
             }
         }
@@ -104,7 +105,7 @@ export default function ReservationDashboard() {
             setLastDoc(newLastDoc);
             setHasMore(!!newLastDoc);
         } catch (error) {
-            console.error("Error fetching bookings:", error);
+            logger.error('reservation.admin.bookings.fetch.failed', { siteId, error });
             toast.error("Failed to load bookings");
         } finally {
             setLoading(false);
@@ -121,7 +122,7 @@ export default function ReservationDashboard() {
             setBookings(prev => prev.map(b =>
                 b.id === booking.id ? { ...b, isRead: true } : b
             ));
-            markBookingAsRead(siteId, booking.id).catch(console.error);
+            markBookingAsRead(siteId, booking.id).catch(e => logger.error('reservation.admin.mark-read.failed', { siteId, error: e }));
             // Update New count locally
             if (activeTab === 'new') {
                 // If we are in 'New' tab, marking as read doesn't remove it from 'pending' status, 
@@ -137,7 +138,7 @@ export default function ReservationDashboard() {
             loadBookings(false);
             refreshCounts();
         } catch (error) {
-            console.error(error);
+            logger.error('reservation.admin.booking.create.failed', { siteId, error });
             toast.error("Failed to create booking");
         }
     };
@@ -156,7 +157,7 @@ export default function ReservationDashboard() {
             toast.success(`Booking ${newStatus}`);
             refreshCounts(); // Update counts
         } catch (error) {
-            console.error("Status update failed:", error);
+            logger.error('reservation.admin.status.failed', { siteId, error });
             toast.error("Failed to update status");
             setBookings(previousBookings);
             if (selectedBooking && selectedBooking.id === id) {

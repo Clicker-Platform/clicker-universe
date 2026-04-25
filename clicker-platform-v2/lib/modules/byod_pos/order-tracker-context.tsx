@@ -6,6 +6,7 @@ import { doc, onSnapshot, Unsubscribe } from 'firebase/firestore';
 import { signInAnonymously, onAuthStateChanged, User } from 'firebase/auth';
 import { toast } from 'sonner';
 import { POSOrder } from './types';
+import { logger } from '@/lib/logger';
 
 interface OrderTrackerContextType {
     activeOrderIds: string[];
@@ -40,7 +41,7 @@ export function OrderTrackerProvider({ children, siteId }: { children: React.Rea
             const saved = localStorage.getItem('byod_active_orders');
             if (saved) setActiveOrderIds(JSON.parse(saved));
         } catch (e) {
-            console.error('Failed to load tracked orders', e);
+            logger.error('pos.order.tracker.load.failed', { siteId: 'platform', error: e });
         }
 
         const unsubAuth = onAuthStateChanged(auth, (currentUser) => {
@@ -48,7 +49,7 @@ export function OrderTrackerProvider({ children, siteId }: { children: React.Rea
                 setUser(currentUser);
             } else {
                 signInAnonymously(auth).catch((e) => {
-                    console.error('Anonymous Auth Failed:', e);
+                    logger.error('pos.auth.anonymous.failed', { siteId: 'platform', error: e });
                 });
             }
         });
@@ -127,9 +128,9 @@ export function OrderTrackerProvider({ children, siteId }: { children: React.Rea
                 },
                 (error) => {
                     if (error.code === 'permission-denied') {
-                        console.warn(`Permission denied for order ${orderId}.`);
+                        logger.warn('pos.order.tracker.permission.denied', { siteId, orderId });
                     } else {
-                        console.error('Order snapshot error:', error);
+                        logger.error('pos.order.tracker.snapshot.failed', { siteId, orderId, error });
                     }
                 }
             );

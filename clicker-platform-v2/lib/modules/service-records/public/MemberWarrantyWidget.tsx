@@ -6,6 +6,7 @@ import { db } from '@/lib/firebase';
 import { SR_WARRANTY_CARDS } from '../constants';
 import type { WarrantyCard } from '../types';
 import { ShieldCheck, ExternalLink, Clock } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 interface Props {
     siteId: string;
@@ -34,7 +35,7 @@ export default function MemberWarrantyWidget({ siteId, memberPhone, memberId }: 
                 const snap = await getDocs(q);
                 setCards(snap.docs.map(d => ({ id: d.id, ...d.data() } as WarrantyCard)));
             } catch (e) {
-                console.error('[MemberWarrantyWidget] fetch error', e);
+                logger.error('service-records.warranty.fetch.failed', { siteId, error: e });
             } finally {
                 setLoading(false);
             }

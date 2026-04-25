@@ -6,6 +6,7 @@ import { FileText, Calendar, Trash2 } from 'lucide-react';
 import { Form } from '@/data/mockData';
 import { useRouter } from 'next/navigation';
 import { useSite } from '@/lib/site-context';
+import { logger } from '@/lib/logger';
 
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 import { AlertDialog } from '@/components/common/AlertDialog';
@@ -44,7 +45,7 @@ export const FormCard: React.FC<FormCardProps> = ({ form }) => {
                 setIsDeleting(false);
             }
         } catch (error) {
-            console.error(error);
+            logger.error('admin.form.delete.failed', { siteId, error });
             setErrorMessage('An unexpected error occurred while deleting the form.');
             setShowErrorDialog(true);
             setIsDeleting(false);

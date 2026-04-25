@@ -4,6 +4,7 @@ import { InventoryItem, StockTransaction } from '@/lib/modules/inventory/types';
 import { getInventoryTransactions } from '@/lib/modules/inventory/api';
 import { toast } from 'sonner';
 import { useSite } from '@/lib/site-context'; // New import
+import { logger } from '@/lib/logger';
 
 interface StockHistoryDrawerProps {
     isOpen: boolean;
@@ -31,7 +32,7 @@ export function StockHistoryDrawer({ isOpen, onClose, item }: StockHistoryDrawer
             const data = await getInventoryTransactions(siteId, itemId);
             setTransactions(data);
         } catch (error) {
-            console.error(error);
+            logger.error('inventory.stock-history.load.failed', { siteId, error });
             toast.error("Failed to load history.");
         } finally {
             setLoading(false);

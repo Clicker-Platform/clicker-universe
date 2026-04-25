@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { Loader2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useSite } from '@/lib/site-context';
+import { logger } from '@/lib/logger';
 
 interface NewLeadDialogProps {
     defaultStageId: string;
@@ -47,7 +48,7 @@ export function NewLeadDialog({ defaultStageId, isOpen, onClose }: NewLeadDialog
             onClose();
         } catch (error) {
             toast.error("Failed to create lead");
-            console.error(error);
+            logger.error('sales-pipeline.lead.create.failed', { siteId, error });
         } finally {
             setIsSubmitting(false);
         }

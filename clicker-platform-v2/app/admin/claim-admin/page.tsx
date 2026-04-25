@@ -6,6 +6,7 @@ import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { ShieldCheck, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 export default function ClaimAdminPage() {
     const [user, setUser] = useState<any>(null);
@@ -35,7 +36,7 @@ export default function ClaimAdminPage() {
                 setStatus('idle');
             }
         } catch (e: any) {
-            console.error(e);
+            logger.error('pos.admin.claim.check.failed', { siteId: 'platform', error: e });
             setStatus('error');
             setMessage(e.message);
         }
@@ -55,7 +56,7 @@ export default function ClaimAdminPage() {
             setMessage('Successfully granted Admin access!');
             toast.success('Admin access granted');
         } catch (e: any) {
-            console.error(e);
+            logger.error('pos.admin.claim.failed', { siteId: 'platform', error: e });
             setStatus('error');
             setMessage('Failed: ' + e.message);
             toast.error('Failed to claim admin access');

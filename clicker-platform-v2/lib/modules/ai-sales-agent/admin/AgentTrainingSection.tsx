@@ -5,6 +5,7 @@ import { Globe, FileText, Upload, Database, RefreshCw, AlertCircle } from 'lucid
 import { db } from '@/lib/firebase';
 import { doc, setDoc, onSnapshot } from 'firebase/firestore';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 interface AgentTrainingSectionProps {
     siteId?: string;
@@ -36,7 +37,7 @@ export function AgentTrainingSection({ siteId }: AgentTrainingSectionProps) {
             }, { merge: true });
             toast.success("URLs saved");
         } catch (error) {
-            console.error(error);
+            logger.error('ai.agent.training.urls.save.failed', { siteId, error });
             toast.error("Failed to save URLs");
         }
     };

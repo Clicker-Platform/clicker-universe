@@ -18,6 +18,7 @@ import {
 import type { ServiceCatalogItem, ServiceCategoryConfig } from '@/lib/core/serviceCatalog/types';
 import { DEFAULT_SERVICE_CATEGORIES } from '@/lib/core/serviceCatalog/types';
 import { getReservationSettings } from '@/lib/modules/reservation/api';
+import { logger } from '@/lib/logger';
 import type { PricingDisplay } from '@/lib/modules/reservation/types';
 
 // ─── Color presets for category manager ────────────────────────────────────────
@@ -558,8 +559,8 @@ export default function ServiceCatalogClient({ initialItems = [] }: Props) {
     // Load categories and reservation settings on mount
     useEffect(() => {
         if (!siteId) return;
-        getServiceCategories(siteId).then(setCategories).catch(console.error);
-        getReservationSettings(siteId).then(s => setPricingDisplay(s.pricingDisplay || 'fixed')).catch(console.error);
+        getServiceCategories(siteId).then(setCategories).catch(err => logger.error('admin.services.categories.fetch.failed', { siteId, error: err }));
+        getReservationSettings(siteId).then(s => setPricingDisplay(s.pricingDisplay || 'fixed')).catch(err => logger.error('admin.services.reservation.settings.fetch.failed', { siteId, error: err }));
     }, [siteId]);
 
     const refresh = async () => {
@@ -612,7 +613,7 @@ export default function ServiceCatalogClient({ initialItems = [] }: Props) {
             await refresh();
             setIsModalOpen(false);
         } catch (err) {
-            console.error('Failed to save service:', err);
+            logger.error('admin.services.save.failed', { siteId, error: err });
             alert('Failed to save service. Please try again.');
         } finally {
             setIsSubmitting(false);
@@ -630,7 +631,7 @@ export default function ServiceCatalogClient({ initialItems = [] }: Props) {
             await deleteServiceCatalogItem(siteId, itemToDelete);
             setItems(prev => prev.filter(i => i.id !== itemToDelete));
         } catch (err) {
-            console.error('Failed to delete service:', err);
+            logger.error('admin.services.delete.failed', { siteId, error: err });
             alert('Failed to delete service.');
         } finally {
             setDeleteDialogOpen(false);

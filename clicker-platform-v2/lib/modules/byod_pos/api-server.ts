@@ -1,5 +1,6 @@
 import { adminDb as db } from '@/lib/firebase-admin';
 import { InventoryItem } from '@/lib/modules/inventory/types';
+import { logger } from '@/lib/logger';
 
 export async function getPOSDataServer(siteId: string) {
     try {
@@ -56,9 +57,9 @@ export async function getPOSDataServer(siteId: string) {
         // Log warning but don't crash. If credentials missing, client-side fetch will take over.
         // Returning undefined (instead of empty array) triggers the client-side useEffect fallback.
         if (e.message?.includes('credentials')) {
-            console.warn("[POSBlockServer] Server-side fetch skipped (no admin credentials). Falling back to client-side.");
+            logger.warn('pos.server.fetch.skipped', { siteId, error: e });
         } else {
-            console.error("[POSBlockServer] Error fetching POS data server-side:", e);
+            logger.error('pos.server.fetch.failed', { siteId, error: e });
         }
         return { initialItems: undefined, initialInventoryMap: undefined };
     }

@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 import { usePermission } from '@/lib/hooks/use-permission';
 import { useSite } from '@/lib/site-context';
+import { logger } from '@/lib/logger';
 import { SlideOverPanel } from '@/components/admin/blocks/SlideOverPanel';
 import { MobileBottomSheet } from '@/components/admin/blocks/MobileBottomSheet';
 
@@ -78,7 +79,7 @@ export function MemberDetailsPanel({ memberId, isOpen, onClose }: MemberDetailsP
                 setHistory(txs);
             }
         } catch (e) {
-            console.error(e);
+            logger.error('membership.member-detail.load.failed', { siteId, error: e });
             toast.error("Failed to load member data.");
         } finally {
             setLoading(false);
@@ -124,7 +125,7 @@ export function MemberDetailsPanel({ memberId, isOpen, onClose }: MemberDetailsP
             toast.success(`Successfully ${amount > 0 ? 'added' : 'deducted'} ${Math.abs(amount)} points.`);
             closeConfirm();
         } catch (err) {
-            console.error(err);
+            logger.error('membership.member-detail.points.failed', { siteId, error: err });
             toast.error('Failed to update points: ' + err);
         } finally {
             setAdjusting(false);
@@ -368,7 +369,7 @@ export function MemberDetailsPanel({ memberId, isOpen, onClose }: MemberDetailsP
                                     setIsEditModalOpen(false);
                                     toast.success("Profile updated successfully!");
                                 } catch (error) {
-                                    console.error(error);
+                                    logger.error('membership.member-detail.profile.update.failed', { siteId, error });
                                     toast.error("Failed to update profile.");
                                 } finally {
                                     setIsSavingProfile(false);

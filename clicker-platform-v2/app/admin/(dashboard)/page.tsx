@@ -8,6 +8,7 @@ import { Eye, MousePointer2, TrendingUp, Link as LinkIcon, ShoppingBag } from 'l
 import { DashboardSkeleton } from '@/components/skeletons/DashboardSkeleton';
 import { useSite } from '@/lib/site-context';
 import { getSiteStatsTotals } from '@/lib/analytics/counters';
+import { logger } from '@/lib/logger';
 
 interface DashboardLink {
     id: string;
@@ -51,7 +52,7 @@ export default function AdminDashboard() {
                 linksCount: linksCountSnap.data().count,
                 productsCount: productsCountSnap.data().count,
             }));
-        }).catch(err => console.error('Error fetching counts:', err));
+        }).catch(err => logger.error('admin.dashboard.counts.failed', { siteId, error: err }));
 
         // Aggregated totals from distributed counter shards — polled every 60s
         const fetchTotals = async () => {
@@ -59,7 +60,7 @@ export default function AdminDashboard() {
                 const totals = await getSiteStatsTotals(siteId);
                 setStats(prev => ({ ...prev, ...totals }));
             } catch (err) {
-                console.error('Error fetching analytics totals:', err);
+                logger.error('admin.dashboard.analytics.failed', { siteId, error: err });
             } finally {
                 setLoading(false);
             }
@@ -78,7 +79,7 @@ export default function AdminDashboard() {
                     clicks: d.data().clicks,
                 })));
             },
-            (err) => console.error('Error subscribing to top links:', err)
+            (err) => logger.error('admin.dashboard.links.subscribe.failed', { siteId, error: err })
         );
 
         // Real-time: top products by clicks
@@ -93,7 +94,7 @@ export default function AdminDashboard() {
                     clicks: d.data().clicks,
                 })));
             },
-            (err) => console.error('Error subscribing to top products:', err)
+            (err) => logger.error('admin.dashboard.products.subscribe.failed', { siteId, error: err })
         );
 
         return () => {

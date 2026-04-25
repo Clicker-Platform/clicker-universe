@@ -6,6 +6,7 @@ import { db } from '@/lib/firebase';
 import { SR_RECORDS, OUTLET_ID_V1 } from '../constants';
 import type { ServiceRecord } from '../types';
 import { Wrench } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 interface Props {
     siteId: string;
@@ -42,7 +43,7 @@ export default function MemberServiceHistoryWidget({ siteId, memberPhone, member
                 const snap = await getDocs(q);
                 setRecords(snap.docs.map(d => ({ id: d.id, ...d.data() } as ServiceRecord)));
             } catch (e) {
-                console.error('[MemberServiceHistoryWidget] fetch error', e);
+                logger.error('service-records.member-history.fetch.failed', { siteId, error: e });
             } finally {
                 setLoading(false);
             }

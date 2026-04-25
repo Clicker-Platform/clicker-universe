@@ -6,6 +6,7 @@ import { Service, Staff } from '@/lib/modules/reservation/types';
 import { Check, ChevronLeft } from 'lucide-react';
 import { AlertDialog } from '@/components/common/AlertDialog';
 import { useTemplate } from '@/components/TemplateProvider';
+import { logger } from '@/lib/logger';
 import { getGlassStyle } from '@/components/blocks/public/cardStyles';
 import ServiceStep from './steps/ServiceStep';
 import StaffStep from './steps/StaffStep';
@@ -159,7 +160,7 @@ export default function BookingForm({
             setBookingRef(id);
             setStep(5);
         } catch (error) {
-            console.error(error);
+            logger.error('reservation.booking.create.failed', { siteId, error });
             handleShowDialog('Booking Failed', 'Unable to create booking. Please try again.', 'error');
         }
     };

@@ -17,6 +17,7 @@ import { downloadAsCSV } from '@/lib/utils/export';
 import { getPOSSettings } from '@/lib/modules/byod_pos/api';
 import { Timestamp, QueryDocumentSnapshot } from 'firebase/firestore';
 import { useSite } from '@/lib/site-context';
+import { logger } from '@/lib/logger';
 
 export default function POSReportsPage() {
     const { siteId } = useSite();
@@ -116,7 +117,7 @@ export default function POSReportsPage() {
             }
 
         } catch (error) {
-            console.error("Failed to fetch report", error);
+            logger.error('pos.reports.fetch.failed', { siteId, error });
         } finally {
             setLoading(false);
         }
@@ -130,7 +131,7 @@ export default function POSReportsPage() {
             const itemsStats = calculateItemsSales(completedOrders);
             setItemsSummary(itemsStats);
         } catch (error) {
-            console.error("Failed to fetch items sales", error);
+            logger.error('pos.reports.items.fetch.failed', { siteId, error });
         } finally {
             setLoadingItems(false);
         }
@@ -181,7 +182,7 @@ export default function POSReportsPage() {
             }
             if (result) allOrders = result.orders;
         } catch (e) {
-            console.error("Export fetch failed", e);
+            logger.error('pos.reports.export.failed', { siteId, error: e });
             return;
         }
 

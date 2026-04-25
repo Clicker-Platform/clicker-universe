@@ -6,6 +6,7 @@ import { POSBlock } from './POSWidget';
 import { Loader2 } from 'lucide-react';
 
 import { useSite } from '@/lib/site-context';
+import { logger } from '@/lib/logger';
 
 export default function POSBlockClient() {
     const { siteId } = useSite();
@@ -18,7 +19,7 @@ export default function POSBlockClient() {
                 setItems(data);
                 setLoading(false);
             }).catch((err: any) => {
-                console.error("Failed to load POS items", err);
+                logger.error('pos.block.items.load.failed', { siteId, error: err });
                 setLoading(false);
             });
         }

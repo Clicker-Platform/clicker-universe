@@ -12,6 +12,7 @@ import { POSItem } from '@/lib/modules/byod_pos/types';
 import { VariantSelectionDialog } from './VariantSelectionDialog';
 import { useSite } from '@/lib/site-context';
 import { useTemplate } from '@/components/TemplateProvider';
+import { logger } from '@/lib/logger';
 
 function AddButton({ disabled, onClick, primaryColor, borderColor }: {
     disabled: boolean;
@@ -115,14 +116,14 @@ export function MenuGrid({ initialItems, initialInventoryMap }: MenuGridProps) {
                     } catch (inventoryError: any) {
                         // Gracefully handle permission errors for Public POS
                         if (inventoryError.code === 'permission-denied' || inventoryError.message?.includes('permission-denied') || inventoryError.message?.includes('Missing or insufficient permissions')) {
-                            console.warn("Inventory access restricted (Public POS). Stock levels will not be tracked.");
+                            logger.warn('pos.menu.inventory.access-restricted', { siteId });
                         } else {
                             throw inventoryError;
                         }
                     }
                 }
             } catch (e) {
-                console.error("Failed to init POS", e);
+                logger.error('pos.menu.init.failed', { siteId, error: e });
             }
         }
         init();
@@ -150,7 +151,7 @@ export function MenuGrid({ initialItems, initialInventoryMap }: MenuGridProps) {
                     }
                 }
             } catch (e) {
-                console.error("Error fetching items", e);
+                logger.error('pos.menu.items.fetch.failed', { siteId, error: e });
             } finally {
                 setLoading(false);
             }
@@ -167,7 +168,7 @@ export function MenuGrid({ initialItems, initialInventoryMap }: MenuGridProps) {
             setLastDoc(newLastDoc);
             setHasMore(!!newLastDoc);
         } catch (e) {
-            console.error("Error loading more items", e);
+            logger.error('pos.menu.items.load-more.failed', { siteId, error: e });
         } finally {
             setLoadingMore(false);
         }
@@ -214,7 +215,7 @@ export function MenuGrid({ initialItems, initialInventoryMap }: MenuGridProps) {
                     setLookupMaps({ byLink, byName });
                     setInventoryById(byId);
                 } catch (err: any) {
-                    console.warn("Inventory access restricted (Public POS).", err.code);
+                    logger.warn('pos.menu.inventory.access-restricted', { siteId, code: err.code });
                 }
             }
         }

@@ -3,6 +3,7 @@ import { useCallback } from 'react';
 import { POSOrder, POSSettings } from '../types';
 import { generateReceiptHtml } from '../receipt-generator';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 export function useReceiptPrinter() {
     const printReceipt = useCallback((order: POSOrder, settings?: POSSettings) => {
@@ -27,7 +28,7 @@ export function useReceiptPrinter() {
                 toast.error("Popup blocked. Please allow popups to print receipts.");
             }
         } catch (e) {
-            console.error("Print failed", e);
+            logger.error('pos.receipt.print.failed', { siteId: 'platform', error: e });
             toast.error("Failed to generate receipt");
         }
     }, []);

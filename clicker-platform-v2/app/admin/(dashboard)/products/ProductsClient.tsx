@@ -9,6 +9,7 @@ import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { useSite } from '@/lib/site-context';
 import { purgeTenantCache } from '@/lib/admin/purgeCache';
+import { logger } from '@/lib/logger';
 
 const ProductFormModal = dynamic(() => import('./ProductFormModal').then(mod => mod.ProductFormModal), {
     ssr: false,
@@ -77,7 +78,7 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
             await setDoc(doc(db, "sites", siteId, "content", "productSettings"), settings);
             purgeTenantCache(siteId);
         } catch (error) {
-            console.error(error);
+            logger.error('admin.products.settings.save.failed', { siteId, error });
         } finally {
             setIsSavingSettings(false);
             setShowSettings(false);
@@ -140,7 +141,7 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
             setIsEditing(false);
             purgeTenantCache(siteId);
         } catch (error) {
-            console.error("Error saving product:", error);
+            logger.error('admin.products.save.failed', { siteId, error });
             alert("Failed to save product. Please try again.");
         } finally {
             setIsSubmitting(false);
@@ -158,7 +159,7 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
             ));
             purgeTenantCache(siteId);
         } catch (error) {
-            console.error("Error updating visibility:", error);
+            logger.error('admin.products.visibility.update.failed', { siteId, error });
         }
     };
 
@@ -182,7 +183,7 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
             }
             if (featuredId === productToDelete) setFeaturedId(null);
         } catch (error) {
-            console.error(error);
+            logger.error('admin.products.delete.failed', { siteId, error });
         } finally {
             setIsDeleting(false);
             setDeleteDialogOpen(false);
@@ -199,7 +200,7 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
             });
             setFeaturedId(product.id);
         } catch (error) {
-            console.error(error);
+            logger.error('admin.products.featured.set.failed', { siteId, error });
         }
     };
 

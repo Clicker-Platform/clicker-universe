@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { Save, Loader2, CreditCard, LayoutTemplate, Hash } from 'lucide-react';
 
 import { useSite } from '@/lib/site-context';
+import { logger } from '@/lib/logger';
 
 export default function POSSettingsPage() {
     const { siteId } = useSite();
@@ -26,7 +27,7 @@ export default function POSSettingsPage() {
             const data = await getPOSSettings(siteId);
             setSettings(data);
         } catch (error) {
-            console.error(error);
+            logger.error('pos.settings.fetch.failed', { siteId, error });
             toast.error("Failed to load settings");
         } finally {
             setLoading(false);
@@ -40,7 +41,7 @@ export default function POSSettingsPage() {
             await updatePOSSettings(siteId, settings);
             toast.success("Settings saved successfully");
         } catch (error) {
-            console.error(error);
+            logger.error('pos.settings.save.failed', { siteId, error });
             toast.error("Failed to save settings");
         } finally {
             setSaving(false);

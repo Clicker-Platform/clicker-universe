@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ChevronLeft, Car, User, ExternalLink, X } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
+import { logger } from '@/lib/logger';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import {
@@ -51,7 +52,7 @@ function MemberPanel({ memberId, siteId, onClose, onOpenFullPage }: MemberPanelP
                     setHistory(txs);
                 }
             } catch (err) {
-                console.error('[MemberPanel] load error:', err);
+                logger.error('service-records.vehicle-detail.member.load.failed', { siteId, error: err });
             } finally {
                 setLoading(false);
             }
@@ -205,7 +206,7 @@ function VehicleDetailContent() {
                 setRecords(recs);
             }
         } catch (err) {
-            console.error('[VehicleDetailPage] load error:', err);
+            logger.error('service-records.vehicle-detail.load.failed', { siteId, error: err });
         } finally {
             setLoading(false);
         }
