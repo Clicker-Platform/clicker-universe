@@ -12,6 +12,7 @@
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { logger } from '@/lib/logger';
 
 export const config = {
     matcher: [
@@ -50,7 +51,7 @@ export async function middleware(request: NextRequest) {
     const hostname = request.headers.get('host') || '';
     const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN;
     if (!baseDomain) {
-        console.error('[Middleware] NEXT_PUBLIC_BASE_DOMAIN is not defined');
+        logger.error('middleware.env.missing', { siteId: 'platform', error: 'NEXT_PUBLIC_BASE_DOMAIN is not defined' });
         return new NextResponse('Site Configuration Missing (Base Domain)', { status: 500 });
     }
     const isLocal = hostname.includes('localhost');
@@ -133,7 +134,7 @@ export async function middleware(request: NextRequest) {
             const tenantSlug = request.headers.get('x-tenant-slug');
 
             if (!gatewayUrl) {
-                console.error('[Middleware] NEXT_PUBLIC_AUTH_GATEWAY_URL is not defined');
+                logger.error('middleware.env.missing', { siteId: 'platform', error: 'NEXT_PUBLIC_AUTH_GATEWAY_URL is not defined' });
                 // Return a clear error instead of redirecting to prod
                 return new NextResponse('Authentication Gateway Configuration Missing', { status: 500 });
             }
@@ -252,7 +253,7 @@ export async function middleware(request: NextRequest) {
             const gatewayUrl = process.env.NEXT_PUBLIC_AUTH_GATEWAY_URL;
 
             if (!gatewayUrl) {
-                console.error('[Middleware] NEXT_PUBLIC_AUTH_GATEWAY_URL is not defined for tenant admin');
+                logger.error('middleware.env.missing', { siteId: tenant, error: 'NEXT_PUBLIC_AUTH_GATEWAY_URL is not defined for tenant admin' });
                 return new NextResponse('Authentication Gateway Configuration Missing', { status: 500 });
             }
 
