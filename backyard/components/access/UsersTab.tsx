@@ -5,7 +5,7 @@ import { httpsCallable } from 'firebase/functions';
 import { functions } from '@/lib/firebase';
 import { toast } from 'sonner';
 import Link from 'next/link';
-import { Search, Loader2, ShieldCheck, ChevronRight, AlertTriangle } from 'lucide-react';
+import { Search, Loader2, ShieldCheck, ChevronRight, AlertTriangle, UserPlus, X, Save } from 'lucide-react';
 
 interface AuthUser {
     uid: string;
@@ -14,6 +14,8 @@ interface AuthUser {
     disabled?: boolean;
     customClaims?: { role?: string; siteId?: string };
 }
+
+interface Tenant { id: string; name: string; }
 
 const roleColor = (r?: string) => {
     if (r === 'superadmin') return 'bg-red-50 text-red-700 border-red-100';
@@ -29,20 +31,62 @@ export default function UsersTab() {
     const [searchQuery, setSearchQuery] = useState('');
     const [filterStatus, setFilterStatus] = useState<'all' | 'no-role' | 'no-tenant'>('all');
 
+    // Assign-to-tenant modal
+    const [tenants, setTenants] = useState<Tenant[]>([]);
+    const [assignTarget, setAssignTarget] = useState<AuthUser | null>(null);
+    const [assignTenant, setAssignTenant] = useState('');
+    const [assignRole, setAssignRole] = useState('staff');
+    const [assignSaving, setAssignSaving] = useState(false);
+
+    const fetchUsers = async () => {
+        setLoading(true);
+        try {
+            const fn = httpsCallable(functions, 'listUsers');
+            const res: any = await fn();
+            setUsers((res.data?.users || []).filter((u: any) => u.email));
+        } catch (err: any) {
+            toast.error('Failed to load users', { description: err.message });
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const fetchUsers = async () => {
-            try {
-                const fn = httpsCallable(functions, 'listUsers');
-                const res: any = await fn();
-                setUsers((res.data?.users || []).filter((u: any) => u.email));
-            } catch (err: any) {
-                toast.error('Failed to load users', { description: err.message });
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchUsers();
+        const fetchTenants = async () => {
+            try {
+                const fn = httpsCallable(functions, 'getTenants');
+                const res: any = await fn();
+                setTenants(res.data.list ?? []);
+            } catch { /* non-critical */ }
+        };
+        fetchTenants();
     }, []);
+
+    const openAssign = (user: AuthUser) => {
+        setAssignTarget(user);
+        setAssignTenant(tenants[0]?.id || '');
+        setAssignRole('staff');
+    };
+
+    const handleAssign = async () => {
+        if (!assignTarget || !assignTenant) return;
+        setAssignSaving(true);
+        try {
+            const fn = httpsCallable(functions, 'setCustomClaims');
+            await fn({
+                uid: assignTarget.uid,
+                claims: { role: assignRole, siteId: assignTenant },
+            });
+            toast.success('Assigned to tenant', { description: `${assignTarget.email} → ${assignTenant} as ${assignRole}` });
+            setAssignTarget(null);
+            await fetchUsers();
+        } catch (err: any) {
+            toast.error('Assign failed', { description: err.message });
+        } finally {
+            setAssignSaving(false);
+        }
+    };
 
     const stats = useMemo(() => {
         const total = users.length;
@@ -175,7 +219,12 @@ export default function UsersTab() {
                                                 Manage in tenant <ChevronRight className="w-3 h-3" />
                                             </Link>
                                         ) : (
-                                            <span className="text-xs text-gray-300">—</span>
+                                            <button
+                                                onClick={() => openAssign(u)}
+                                                className="flex items-center justify-end gap-1 px-3 py-1.5 bg-brand-dark text-white text-xs font-black rounded-lg hover:opacity-90 transition-opacity ml-auto"
+                                            >
+                                                <UserPlus className="w-3 h-3" /> Assign to tenant
+                                            </button>
                                         )}
                                     </td>
                                 </tr>
@@ -186,8 +235,56 @@ export default function UsersTab() {
             </div>
 
             <div className="mt-6 p-4 bg-blue-50 border border-blue-100 rounded-xl text-xs text-blue-700 max-w-2xl">
-                <strong>Read-only audit view.</strong> To add, edit, or remove user access, open the relevant tenant via "Manage in tenant".
+                <strong>Audit view.</strong> Use "Assign to tenant" to onboard users without a tenant. For existing members, click "Manage in tenant" to edit role and per-module permissions.
             </div>
+
+            {/* Assign to tenant modal */}
+            {assignTarget && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl border border-gray-200 shadow-xl w-full max-w-md p-6">
+                        <div className="flex items-start justify-between mb-4">
+                            <div>
+                                <h3 className="font-black text-brand-dark text-lg">Assign to Tenant</h3>
+                                <p className="text-sm text-gray-400 font-mono">{assignTarget.email}</p>
+                            </div>
+                            <button onClick={() => setAssignTarget(null)} className="p-1 text-gray-400 hover:text-gray-600">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <div className="space-y-3">
+                            <div>
+                                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Tenant</label>
+                                <select value={assignTenant} onChange={e => setAssignTenant(e.target.value)}
+                                    className="w-full mt-1 px-3 py-2 border-2 border-gray-200 rounded-xl text-sm font-medium outline-none focus:border-brand-dark bg-white">
+                                    <option value="">— Select tenant —</option>
+                                    {tenants.map(t => <option key={t.id} value={t.id}>{t.name} ({t.id})</option>)}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Role</label>
+                                <select value={assignRole} onChange={e => setAssignRole(e.target.value)}
+                                    className="w-full mt-1 px-3 py-2 border-2 border-gray-200 rounded-xl text-sm font-medium outline-none focus:border-brand-dark bg-white">
+                                    <option value="owner">Owner</option>
+                                    <option value="manager">Manager</option>
+                                    <option value="staff">Staff</option>
+                                </select>
+                            </div>
+                            <p className="text-xs text-gray-400 pt-2">
+                                After assignment, edit per-module permissions in the tenant detail page.
+                            </p>
+                        </div>
+                        <div className="flex gap-2 justify-end mt-6">
+                            <button onClick={() => setAssignTarget(null)}
+                                className="px-4 py-2 border border-gray-200 rounded-xl text-sm font-bold text-gray-600">Cancel</button>
+                            <button onClick={handleAssign} disabled={assignSaving || !assignTenant}
+                                className="flex items-center gap-2 px-5 py-2 bg-brand-dark text-white text-sm font-black rounded-xl hover:opacity-90 disabled:opacity-50">
+                                {assignSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                                Assign
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 }
