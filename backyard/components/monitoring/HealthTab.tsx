@@ -82,6 +82,8 @@ export default function HealthTab({ onSelectService }: Props) {
     const [errors, setErrors] = useState<ErrorEntry[]>([]);
     const [loading, setLoading] = useState(true);
 
+    const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'unknown';
+
     useEffect(() => {
         const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
         const q = query(
@@ -141,17 +143,23 @@ export default function HealthTab({ onSelectService }: Props) {
         <>
             {/* Overall status banner */}
             <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-2">
-                    <div className={`w-2 h-2 rounded-full ${
-                        overallHealth.color === 'green' ? 'bg-green-500 animate-pulse' :
-                        overallHealth.color === 'amber' ? 'bg-amber-500' : 'bg-red-500 animate-pulse'
-                    }`} />
-                    <span className={`text-xs font-black uppercase tracking-widest ${
-                        overallHealth.color === 'green' ? 'text-green-700' :
-                        overallHealth.color === 'amber' ? 'text-amber-700' : 'text-red-700'
-                    }`}>
-                        {overallHealth.label}
+                <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
+                        <div className={`w-2 h-2 rounded-full ${
+                            overallHealth.color === 'green' ? 'bg-green-500 animate-pulse' :
+                            overallHealth.color === 'amber' ? 'bg-amber-500' : 'bg-red-500 animate-pulse'
+                        }`} />
+                        <span className={`text-xs font-black uppercase tracking-widest ${
+                            overallHealth.color === 'green' ? 'text-green-700' :
+                            overallHealth.color === 'amber' ? 'text-amber-700' : 'text-red-700'
+                        }`}>
+                            {overallHealth.label}
+                        </span>
+                    </div>
+                    <span className="text-[10px] font-black uppercase tracking-widest bg-brand-dark text-white px-2 py-0.5 rounded-full">
+                        {projectId === 'clicker-universe' ? 'PROD' : 'STAGING'}
                     </span>
+                    <span className="text-xs text-gray-400 font-mono">{projectId}</span>
                 </div>
                 <p className="text-xs text-gray-400 font-medium">Last 24 hours · Updates live</p>
             </div>
@@ -200,25 +208,49 @@ export default function HealthTab({ onSelectService }: Props) {
                 })}
             </div>
 
-            {/* Firebase Status link card */}
-            <div className="bg-white rounded-2xl border border-gray-200 p-5">
-                <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
+            {/* Firebase links */}
+            <div className="grid grid-cols-2 gap-4">
+                {/* Firebase Console (This Project) */}
+                <div className="bg-white rounded-2xl border border-gray-200 p-5">
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                        <div className="w-10 h-10 rounded-lg bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600">
+                            <Server className="w-5 h-5" />
+                        </div>
+                        <span className="text-[10px] font-black uppercase tracking-widest bg-brand-dark text-white px-2 py-0.5 rounded-full">
+                            {projectId === 'clicker-universe' ? 'PROD' : 'STAGING'}
+                        </span>
+                    </div>
+                    <h3 className="font-black text-brand-dark text-sm">Firebase Console</h3>
+                    <p className="text-xs text-gray-400 font-medium mt-0.5 mb-3">Project: <span className="font-mono">{projectId}</span></p>
+                    <a
+                        href={`https://console.firebase.google.com/project/${projectId}/overview`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 border-2 border-gray-200 hover:border-brand-dark text-xs font-black text-brand-dark rounded-lg transition-colors"
+                    >
+                        Open Console <ExternalLink className="w-3 h-3" />
+                    </a>
+                </div>
+
+                {/* Firebase Status (Global) */}
+                <div className="bg-white rounded-2xl border border-gray-200 p-5">
+                    <div className="flex items-start justify-between gap-3 mb-3">
                         <div className="w-10 h-10 rounded-lg bg-orange-50 border border-orange-100 flex items-center justify-center text-orange-500">
                             <Server className="w-5 h-5" />
                         </div>
-                        <div>
-                            <h3 className="font-black text-brand-dark text-sm">Firebase Status</h3>
-                            <p className="text-xs text-gray-400 font-medium mt-0.5">Check Google's official status dashboard for outages</p>
-                        </div>
+                        <span className="text-[10px] font-black uppercase tracking-widest bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
+                            GLOBAL
+                        </span>
                     </div>
+                    <h3 className="font-black text-brand-dark text-sm">Firebase Status</h3>
+                    <p className="text-xs text-gray-400 font-medium mt-0.5 mb-3">Google's official status — check for service outages</p>
                     <a
                         href="https://status.firebase.google.com"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-1.5 px-4 py-2 border-2 border-gray-200 hover:border-brand-dark text-sm font-black text-brand-dark rounded-xl transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 border-2 border-gray-200 hover:border-brand-dark text-xs font-black text-brand-dark rounded-lg transition-colors"
                     >
-                        Open <ExternalLink className="w-3.5 h-3.5" />
+                        Open Status <ExternalLink className="w-3 h-3" />
                     </a>
                 </div>
             </div>
