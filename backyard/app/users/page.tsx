@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { httpsCallable } from 'firebase/functions';
-import { functions } from '@/lib/firebase';
+import { collection, onSnapshot } from 'firebase/firestore';
+import { functions, db } from '@/lib/firebase';
 import { toast } from 'sonner';
 import { Search, ShieldAlert, UserCog, UserX, CheckCircle2, Copy, Users, Loader2 } from 'lucide-react';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
-import Sidebar from '@/components/Sidebar';
+import PageShell from '@/components/PageShell';
 
 export default function UsersPage() {
     // Data State
@@ -32,6 +33,14 @@ export default function UsersPage() {
     const [newName, setNewName] = useState('');
     const [newSiteId, setNewSiteId] = useState('');
     const [newRole, setNewRole] = useState('owner'); // Default to owner for easy tenant setup
+
+    // Team Management state
+    const [tenants, setTenants] = useState<any[]>([]);
+    const [selectedTenantId, setSelectedTenantId] = useState('');
+    const [teamMembers, setTeamMembers] = useState<any[]>([]);
+    const [teamLoading, setTeamLoading] = useState(false);
+    const [removeMemberUid, setRemoveMemberUid] = useState<string | null>(null);
+    const [removeMemberConfirm, setRemoveMemberConfirm] = useState(false);
 
     const handleCreateUser = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -89,6 +98,37 @@ export default function UsersPage() {
         };
         fetchUsers();
     }, []);
+
+    // 1b. Fetch Tenants for Team Management
+    useEffect(() => {
+        const fetchTenants = async () => {
+            try {
+                const fn = httpsCallable(functions, 'getTenants');
+                const res: any = await fn();
+                const list = res.data.list ?? [];
+                setTenants(list);
+                if (list.length > 0) setSelectedTenantId(list[0].id);
+            } catch {
+                // non-critical
+            }
+        };
+        fetchTenants();
+    }, []);
+
+    // 1c. Fetch Team Members when tenant changes
+    useEffect(() => {
+        if (!selectedTenantId) return;
+        setTeamLoading(true);
+        const unsub = onSnapshot(
+            collection(db, 'sites', selectedTenantId, 'members'),
+            snap => {
+                setTeamMembers(snap.docs.map(d => ({ uid: d.id, ...d.data() })));
+                setTeamLoading(false);
+            },
+            () => setTeamLoading(false)
+        );
+        return unsub;
+    }, [selectedTenantId]);
 
     // 2. Filter Users
     const filteredUsers = users
@@ -154,17 +194,27 @@ export default function UsersPage() {
         }
     };
 
+    // 5. Handle Remove Team Member
+    const handleRemoveMember = async (uid: string) => {
+        try {
+            const fn = httpsCallable(functions, 'removeUserFromSite');
+            await fn({ uid, siteId: selectedTenantId });
+            toast.success('Member removed');
+        } catch (err: any) {
+            toast.error('Remove failed', { description: err.message });
+        }
+    };
+
     return (
-        <div className="min-h-screen bg-gray-50/50 flex font-sans">
-            <Sidebar />
-            <div className="flex-1 ml-64 p-8">
-                <header className="mb-8">
-                    <h1 className="text-3xl font-black text-brand-dark flex items-center gap-3">
-                        <UserCog className="w-8 h-8" />
-                        Users
-                    </h1>
-                    <p className="text-gray-500 font-medium">Manage users & roles</p>
-                </header>
+        <>
+        <PageShell title="Users" subtitle="Firebase Auth users + Team management">
+            <header className="mb-8">
+                <h1 className="text-3xl font-black text-brand-dark flex items-center gap-3">
+                    <UserCog className="w-8 h-8" />
+                    Users
+                </h1>
+                <p className="text-gray-500 font-medium">Manage users & roles</p>
+            </header>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-[calc(100vh-200px)]">
 
@@ -365,11 +415,74 @@ export default function UsersPage() {
                     title="Confirm Role Assignment"
                     description={`Grant ${roleType.toUpperCase()} access for site "${roleSiteId}" to this user?`}
                 />
-            </div>
 
-            {/* CREATE USER DIALOG */}
-            {createOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                {/* Team Management Section */}
+                <div className="mt-10">
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-xs font-black uppercase tracking-wider text-gray-400">Team Management</h2>
+                        <select
+                            value={selectedTenantId}
+                            onChange={e => setSelectedTenantId(e.target.value)}
+                            className="border-2 border-gray-200 rounded-xl px-3 py-1.5 text-sm font-medium outline-none focus:border-brand-dark"
+                        >
+                            {tenants.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                        </select>
+                    </div>
+                    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+                        {teamLoading ? (
+                            <div className="text-center py-8 text-gray-400 text-sm">Loading members...</div>
+                        ) : teamMembers.length === 0 ? (
+                            <div className="text-center py-8 text-gray-400 text-sm">No members for this tenant.</div>
+                        ) : (
+                            <table className="w-full text-sm">
+                                <thead className="border-b border-gray-100 bg-slate-50">
+                                    <tr>
+                                        <th className="text-left px-5 py-3 text-xs font-black text-brand-dark uppercase tracking-wider">Member</th>
+                                        <th className="text-left px-5 py-3 text-xs font-black text-brand-dark uppercase tracking-wider">Role</th>
+                                        <th className="px-5 py-3" />
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {teamMembers.map(m => (
+                                        <tr key={m.uid} className="border-b border-gray-50 hover:bg-slate-50/50">
+                                            <td className="px-5 py-3">
+                                                <div className="font-semibold text-gray-800">{m.displayName || 'No Name'}</div>
+                                                <div className="text-xs text-gray-400">{m.email}</div>
+                                            </td>
+                                            <td className="px-5 py-3">
+                                                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">{m.role || 'staff'}</span>
+                                            </td>
+                                            <td className="px-5 py-3 text-right">
+                                                <button
+                                                    onClick={() => { setRemoveMemberUid(m.uid); setRemoveMemberConfirm(true); }}
+                                                    className="p-1.5 rounded-lg border border-gray-200 text-gray-400 hover:border-red-300 hover:text-red-500 transition-colors"
+                                                    title="Remove from team"
+                                                >
+                                                    <UserX className="w-4 h-4" />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
+                    </div>
+                    <ConfirmationDialog
+                        isOpen={removeMemberConfirm}
+                        onCancel={() => setRemoveMemberConfirm(false)}
+                        onConfirm={async () => {
+                            if (removeMemberUid) await handleRemoveMember(removeMemberUid);
+                            setRemoveMemberConfirm(false);
+                        }}
+                        title="Remove member?"
+                        description="This will remove the member's access to this tenant."
+                        variant="danger"
+                    />
+                </div>
+
+                {/* CREATE USER DIALOG */}
+                {createOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
                     <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                         <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                             <h3 className="font-bold text-lg text-brand-dark flex items-center gap-2">
@@ -454,7 +567,8 @@ export default function UsersPage() {
                         </form>
                     </div>
                 </div>
-            )}
-        </div>
+                )}
+            </PageShell>
+        </>
     );
 }
