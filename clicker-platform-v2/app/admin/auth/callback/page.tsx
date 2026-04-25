@@ -5,6 +5,7 @@ import { signInWithCustomToken } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getUserSites } from '@/lib/admin-auth';
+import { logger } from '@/lib/logger';
 
 /**
  * Decode a JWT payload without verification (client-side only).
@@ -99,7 +100,6 @@ function AuthCallbackHandler() {
                     if (currentHost !== targetHost) {
                         // We're at the wrong origin (e.g., clicker.id).
                         // Relay the token to the target origin's callback.
-                        // console.log(`[Auth Callback] Relaying token from ${currentHost} → ${targetHost}`);
                         setStatus('Redirecting to tenant...');
 
                         // Build relay URL with all params
@@ -129,11 +129,9 @@ function AuthCallbackHandler() {
                 ]);
                 const user = userCredential.user;
 
-                console.log('[Auth Callback] Signed in user:', user.uid, user.email);
                 setStatus('Resolving tenant access...');
 
                 // 4. Resolve user's site memberships (with timeout protection)
-                console.log('[Auth Callback] Starting getUserSites...');
                 let sites: any[] = [];
                 try {
                     const sitesPromise = getUserSites(user.uid, user.email);
@@ -142,15 +140,12 @@ function AuthCallbackHandler() {
                     );
                     sites = await Promise.race([sitesPromise, timeoutPromise]);
                 } catch (siteErr: any) {
-                    console.warn('[Auth Callback] getUserSites failed/timeout:', siteErr.message);
                     // Fallback: use siteId from custom token claims
                     const claims = (await user.getIdTokenResult()).claims;
                     if (claims.siteId) {
-                        console.log('[Auth Callback] Using siteId from token claims:', claims.siteId);
                         sites = [{ siteId: claims.siteId as string, slug: claims.siteId as string, role: (claims.role as string) || 'owner', name: 'My Site' }];
                     }
                 }
-                console.log('[Auth Callback] Sites resolved:', JSON.stringify(sites));
 
                 if (sites.length > 0) {
                     // 5. Set cookies with Wildcard Domain for Multi-tenant access
@@ -162,13 +157,10 @@ function AuthCallbackHandler() {
                     const cookieValue = `__session=${targetSite.siteId}; path=/; max-age=${60 * 60 * 24 * 30}; SameSite=Lax${secureAttribute}${domainAttribute}`;
                     document.cookie = cookieValue;
 
-                    console.log('[Auth Callback] Cookie set:', cookieValue);
-                    console.log('[Auth Callback] Site resolved:', targetSite.siteId);
                     setStatus('Verifikasi Berhasil! Mengalihkan...');
 
                     // 6. Redirect to dashboard (we're already at the correct origin!)
                     const finalRedirectUrl = `${window.location.origin}${safeNextPath}`;
-                    console.log('[Auth Callback] Redirecting to:', finalRedirectUrl);
 
                     window.location.href = finalRedirectUrl;
 
@@ -188,7 +180,7 @@ function AuthCallbackHandler() {
                 }
 
             } catch (err: any) {
-                console.error('[Auth Callback] Error:', err);
+                logger.error('auth.callback.failed', { siteId: 'platform', error: err });
                 setError(`Gagal Masuk: ${err.message || 'Unknown error'}`);
                 // Clear stale cookies to prevent loops on retry
                 try { await auth.signOut(); } catch { }

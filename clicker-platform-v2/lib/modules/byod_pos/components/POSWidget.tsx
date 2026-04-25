@@ -13,6 +13,7 @@ import { POSMemberLookup } from './POSMemberLookup';
 import { Member } from '@/lib/modules/membership/types';
 import { auth } from '@/lib/firebase';
 import { getPOSSettings, addToOrder, requestPayment } from '@/lib/modules/byod_pos/api';
+import { logger } from '@/lib/logger';
 import { POSSettings } from '@/lib/modules/byod_pos/types';
 import { useSearchParams } from 'next/navigation';
 import { CartProvider } from '../cart-context';
@@ -111,7 +112,6 @@ export function POSWidget({ initialItems, initialInventoryMap, settings: propSet
         if (!siteId) return;
         setIsCheckingOut(true);
         try {
-            console.log("Checking out. Current User:", auth.currentUser?.uid);
 
             // 1. Create Order
             // Determine Status based on mode
@@ -150,7 +150,6 @@ export function POSWidget({ initialItems, initialInventoryMap, settings: propSet
                 creatorId: auth.currentUser?.uid || null,
                 taxBreakdown: payloadTaxBreakdown
             };
-            console.log("Order Payload:", payload);
 
             const docRef = await addDoc(collection(db, 'sites', siteId, 'modules/byod_pos/orders'), payload);
 
@@ -185,7 +184,7 @@ export function POSWidget({ initialItems, initialInventoryMap, settings: propSet
             setMember(null);
 
         } catch (e: any) {
-            console.error(e);
+            logger.error('pos.order.failed', { siteId, error: e });
             toast.error('Checkout Failed', {
                 description: e.message
             });

@@ -1,4 +1,5 @@
 import { fetchPageBySlug, fetchPublicData, fetchLightweightPublicData, hydratePageBlocks } from '@/lib/fetchData';
+import { logger } from '@/lib/logger';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { BlockRenderer } from "@/components/blocks/BlockRenderer";
@@ -69,8 +70,6 @@ export default async function TenantCatchAllPage({ params, searchParams }: Props
     const path = getPath(slug);
     const siteId = tenant;
 
-    console.log('[TenantCatchAll] Tenant:', tenant, 'Path:', path);
-
     // ---------------------------------------------------------
     // 1. Module Routing
     // ---------------------------------------------------------
@@ -87,7 +86,7 @@ export default async function TenantCatchAllPage({ params, searchParams }: Props
                 const settings = await getPOSSettings(siteId);
                 initialData = { initialSettings: settings };
             } catch (e) {
-                console.error("Failed to fetch POS settings on server", e);
+                logger.error('pos.settings.no.siteId', { siteId, error: e });
             }
         }
 

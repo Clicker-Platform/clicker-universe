@@ -22,12 +22,10 @@ export default async function TenantPage({ params, searchParams }: TenantPagePro
 
     // Use tenant from URL segment as siteId
     const siteId = tenant;
-    console.log('[TenantPage] Tenant/SiteId:', siteId);
 
     // Also set from header if middleware provides it (for consistency)
     const headersList = await headers();
     const headerSiteId = headersList.get('x-site-id');
-    console.log('[TenantPage] Header SiteId:', headerSiteId);
 
     // Module Routing Check
     const moduleMatch = await findModuleForRoute('/');

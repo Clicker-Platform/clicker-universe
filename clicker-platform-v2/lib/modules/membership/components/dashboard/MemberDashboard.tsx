@@ -13,6 +13,7 @@ import { CLIENT_MODULE_COMPONENTS } from '@/lib/modules/client-registry';
 import { Loader2, LogOut } from 'lucide-react';
 
 import { useSite } from '@/lib/site-context';
+import { logger } from '@/lib/logger';
 
 export default function MemberDashboard() {
     const { siteId } = useSite();
@@ -42,7 +43,6 @@ export default function MemberDashboard() {
     // 2. Fetch Member Data
     const loadMember = async (authUser: User, currentSiteId: string) => {
         try {
-            console.log("DEBUG: Loading member...", { currentSiteId, email: authUser.email, uid: authUser.uid });
             // A. Try finding by Linked UID
             let foundMember = await findMemberByAuthId(currentSiteId, authUser.uid);
 
@@ -52,7 +52,6 @@ export default function MemberDashboard() {
                 if (foundMember) {
                     // Link it!
                     await updateMemberAuth(currentSiteId, foundMember.id, authUser.uid, authUser.email);
-                    console.log("Linked Member to Auth UID");
                 }
             }
 
@@ -63,7 +62,7 @@ export default function MemberDashboard() {
             setWidgets(foundWidgets);
 
         } catch (error) {
-            console.error("Dashboard load error:", error);
+            logger.error('membership.load.failed', { siteId, error });
         } finally {
             setLoading(false);
         }
