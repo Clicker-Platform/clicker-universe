@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminAuth, adminDb, Timestamp } from '@/lib/firebase-admin';
+import { logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -58,12 +59,10 @@ export async function POST(req: NextRequest) {
                 return NextResponse.json({ error: 'Forbidden: Insufficient permissions' }, { status: 403 });
             }
         } catch (authError) {
-            console.error('Auth verification failed:', authError);
+            logger.error('team.add.auth.failed', { siteId: siteId ?? 'platform', error: authError });
             return NextResponse.json({ error: 'Unauthorized: Invalid token' }, { status: 401 });
         }
         // --- SECURITY CHECK END ---
-
-        console.log(`[Create Member API] Processing member ${email} for site ${siteId} as ${role} with permissions [${permissions.join(',')}]`);
 
         let uid = null;
         let displayName = '';
@@ -81,10 +80,8 @@ export async function POST(req: NextRequest) {
             displayName = userRecord.displayName || '';
             photoURL = userRecord.photoURL || '';
             isNewUser = true;
-            console.log(`[Create Member API] New user created: ${uid}`);
         } catch (error: any) {
             if (error.code === 'auth/email-already-exists') {
-                console.log(`[Create Member API] User already exists. Fetching details...`);
                 // Fetch existing user
                 const userRecord = await adminAuth.getUserByEmail(email);
                 uid = userRecord.uid;
@@ -126,7 +123,7 @@ export async function POST(req: NextRequest) {
         });
 
     } catch (error: any) {
-        console.error('[Create Member API] Error:', error);
+        logger.error('team.add.failed', { siteId: req.headers.get('x-site-id') ?? 'platform', error });
         return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
     }
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { decryptToken } from '@/lib/whatsapp/encryption';
 import { META_API_BASE } from '@/lib/whatsapp/constants';
+import { logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,7 +37,7 @@ export async function POST(req: Request) {
       });
     }
   } catch (err) {
-    console.error('[WA test]', err);
+    logger.error('wa.test.failed', { siteId: 'platform', error: err });
     return NextResponse.json({ ok: false, message: 'Tidak dapat menghubungi Meta API.' });
   }
 }

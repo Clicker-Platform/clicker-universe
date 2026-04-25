@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createHmac, timingSafeEqual } from 'crypto';
 import type { MetaWebhookPayload } from '@/lib/whatsapp/types';
+import { logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,7 +39,7 @@ export async function GET(req: NextRequest) {
     if (snap.empty) return new Response('Forbidden', { status: 403 });
     return new Response(challenge, { status: 200 });
   } catch (err) {
-    console.error('[WA webhook] GET error:', err);
+    logger.error('wa.webhook.get.failed', { siteId: 'platform', error: err });
     return new Response('Forbidden', { status: 403 });
   }
 }
@@ -55,7 +56,7 @@ export async function POST(req: NextRequest) {
     const appSecret = process.env.META_APP_SECRET ?? '';
 
     if (appSecret && !validateSignature(rawBody, signature, appSecret)) {
-      console.error('[WA webhook] Invalid signature — ignoring payload');
+      logger.warn('wa.webhook.invalid.signature', { siteId: 'platform' });
       return NextResponse.json({ ok: true }); // Still 200 to Meta
     }
 
@@ -75,20 +76,20 @@ export async function POST(req: NextRequest) {
 
     const siteId = await resolveSiteId(phoneNumberId);
     if (!siteId) {
-      console.warn('[WA webhook] No site found for phoneNumberId:', phoneNumberId);
+      logger.warn('wa.webhook.site.not.found', { siteId: 'platform', error: phoneNumberId });
       return NextResponse.json({ ok: true });
     }
 
     // Process async — respond 200 immediately so Meta doesn't retry
     import('@/lib/whatsapp/webhook-processor').then(({ processIncomingMessage }) =>
       processIncomingMessage(siteId, payload).catch(err =>
-        console.error('[WA webhook] processIncomingMessage error:', err)
+        logger.error('wa.webhook.process.failed', { siteId, error: err })
       )
     );
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error('[WA webhook] POST error:', err);
+    logger.error('wa.webhook.post.failed', { siteId: 'platform', error: err });
     return NextResponse.json({ ok: true }); // Always 200 to Meta
   }
 }

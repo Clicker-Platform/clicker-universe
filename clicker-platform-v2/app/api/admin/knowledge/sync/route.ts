@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase-admin";
 import * as cheerio from 'cheerio';
+import { logger } from '@/lib/logger';
 
 // Force dynamic to ensure no static optimization weirdness with file uploads
 export const dynamic = 'force-dynamic';
@@ -17,8 +18,6 @@ export async function POST(req: NextRequest) {
         if (!siteId) {
             return NextResponse.json({ success: false, error: 'Site ID is required for knowledge sync' }, { status: 400 });
         }
-
-        console.log(`[Sync] Started for Site: ${siteId}. PDF: ${pdfFile ? pdfFile.name : 'None'}, URL Count: ${urlsString ? urlsString.split('\n').length : 0}`);
 
         let combinedText = "";
 
@@ -57,7 +56,6 @@ ${content}
 ----------------------
 `;
                 } catch (err: any) {
-                    console.error(`Error scraping ${url}:`, err);
                     return `[ERROR SCRAPING ${url}: ${err.message}]`;
                 }
             });
@@ -68,8 +66,6 @@ ${content}
 
         if (pdfFile) {
             try {
-                console.log(`[Sync] Processing PDF with Gemini Vision: ${pdfFile.name}...`);
-
                 // Get Gemini Client (siteId is already validated above)
                 const { getGeminiClient } = await import("@/lib/modules/ai-sales-agent/server/gemini-client");
                 const ai = await getGeminiClient(siteId);
@@ -113,8 +109,6 @@ ${content}
                 const response = await result.response;
                 const text = response.text();
 
-                console.log(`[Sync] PDF Processed. Extracted Chars: ${text.length}`);
-
                 combinedText += `
 \n
 --- SOURCE: PDF BROCHURE (${pdfFile.name}) [Processed by Gemini Vision] ---
@@ -122,7 +116,6 @@ ${text}
 -------------------------------------------------------------------------
 `;
             } catch (err: any) {
-                console.error("Error processing PDF with Gemini:", err);
                 combinedText += `\n[ERROR PROCESSING PDF: ${err.message}]`;
             }
         }
@@ -145,7 +138,7 @@ ${text}
         });
 
     } catch (error: any) {
-        console.error("Knowledge Sync Error:", error);
+        logger.error('knowledge.sync.failed', { siteId: req.headers.get('x-site-id') ?? 'platform', error });
         return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 }

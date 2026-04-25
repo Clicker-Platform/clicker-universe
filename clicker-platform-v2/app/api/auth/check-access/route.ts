@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminAuth, adminDb, Timestamp } from '@/lib/firebase-admin';
+import { logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,8 +12,6 @@ export async function POST(req: NextRequest) {
         if (!uid || !email || !siteId) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
-
-        console.log(`[Check Access] Checking access rights for ${email} at site ${siteId}`);
 
         // 1. Check if pending access grant exists (legacy invitations)
         const accessRef = adminDb.collection('sites').doc(siteId).collection('invitations').doc(email);
@@ -26,8 +25,6 @@ export async function POST(req: NextRequest) {
         if (!accessData) {
             return NextResponse.json({ status: 'error', message: 'Invalid access data' });
         }
-
-        console.log(`[Check Access] Found pending access for role: ${accessData.role}`);
 
         // 2. Promote to Member
         // Get user details ensuring we have latest
@@ -52,12 +49,10 @@ export async function POST(req: NextRequest) {
 
         await batch.commit();
 
-        console.log(`[Check Access] Successfully granted access to ${email}.`);
-
         return NextResponse.json({ status: 'joined', role: accessData.role });
 
     } catch (error: any) {
-        console.error('[Check Access] Error:', error);
+        logger.error('auth.check.failed', { siteId: siteId ?? 'platform', error });
         return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
     }
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateSalesResponse, listAvailableModels } from "@/lib/modules/ai-sales-agent/server/gemini-client";
 import { adminDb } from "@/lib/firebase-admin";
+import { logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -55,7 +56,6 @@ export async function POST(req: NextRequest) {
                 ).join('\n');
             }
         } catch (err) {
-            console.error("Failed to fetch products for AI context:", err);
             // Continue without products if fetch fails
         }
 
@@ -165,7 +165,7 @@ INSTRUCTIONS:
 
         } catch (primaryError: any) {
             debugLog.push(`Primary error: ${primaryError.message}`);
-            console.warn(`Primary model ${primaryModel} failed, trying fallback:`, primaryError.message);
+            logger.warn('ai.primary.model.failed', { siteId, error: primaryError.message });
 
             // If explicit model failed (404), try the stable 'gemini-flash-latest'
             if (primaryError.message.includes('404') || primaryError.message.includes('not found')) {
@@ -206,7 +206,7 @@ INSTRUCTIONS:
         });
 
     } catch (error: any) {
-        console.error("AI Sales Agent API Error:", error);
+        logger.error('ai.chat.failed', { siteId: req.headers.get('x-site-id') ?? 'platform', error });
         return NextResponse.json({
             error: "Failed to generate response.",
             details: error.message

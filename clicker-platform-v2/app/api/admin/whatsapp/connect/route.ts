@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { randomBytes } from 'crypto';
 import { encryptToken } from '@/lib/whatsapp/encryption';
+import { logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,7 +30,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ ok: true, webhookVerifyToken });
   } catch (err) {
-    console.error('[WA connect]', err);
+    logger.error('wa.connect.failed', { siteId: 'platform', error: err });
     return NextResponse.json({ error: 'Gagal menyimpan konfigurasi.' }, { status: 500 });
   }
 }

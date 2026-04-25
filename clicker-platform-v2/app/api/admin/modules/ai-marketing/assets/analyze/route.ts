@@ -7,6 +7,7 @@ import { invokeAI } from '@/lib/ai/openrouter-client';
 import { buildAnalyzePrompt } from '@/lib/modules/ai-marketing/agents/visual-analyst';
 import { AssetType } from '@/lib/modules/ai-marketing/types';
 import { COLLECTION_ASSETS } from '@/lib/modules/ai-marketing/constants';
+import { logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -83,7 +84,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    console.error('[analyze] error:', err.message);
+    logger.warn('ai.marketing.analyze.failed', { siteId: siteId ?? 'platform', error: err.message });
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

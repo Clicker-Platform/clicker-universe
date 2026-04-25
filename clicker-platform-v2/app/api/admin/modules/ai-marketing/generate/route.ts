@@ -7,6 +7,7 @@ import { runSkill, runFlow } from '@/lib/modules/ai-marketing/orchestrator/runne
 import { getMarketingSettings } from '@/lib/modules/ai-marketing/api-server';
 import { COLLECTION_GENERATIONS } from '@/lib/modules/ai-marketing/constants';
 import { DEFAULT_BRAND_VOICE } from '@/lib/modules/ai-marketing/constants';
+import { logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -106,7 +107,7 @@ export async function POST(req: NextRequest) {
         { status: 402 }
       );
     }
-    console.error('[generate] error:', err.message);
+    logger.error('ai.marketing.generate.failed', { siteId: siteId ?? 'platform', error: err.message });
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

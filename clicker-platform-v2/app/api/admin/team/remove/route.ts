@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
+import { logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -55,12 +56,10 @@ export async function POST(req: NextRequest) {
                 return NextResponse.json({ error: 'Forbidden: Insufficient permissions' }, { status: 403 });
             }
         } catch (authError) {
-            console.error('Auth check failed', authError);
+            logger.error('team.remove.auth.failed', { siteId: siteId ?? 'platform', error: authError });
             return NextResponse.json({ error: 'Unauthorized: Invalid token' }, { status: 401 });
         }
         // --- SECURITY CHECK END ---
-
-        console.log(`[Remove API] Removing ${type} ${id} from site ${siteId}`);
 
         if (type === 'member') {
             await adminDb.collection('sites').doc(siteId).collection('members').doc(id).delete();
@@ -73,7 +72,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ message: 'Removed successfully' });
 
     } catch (error: any) {
-        console.error('[Remove API] Error:', error);
+        logger.error('team.remove.failed', { siteId: req.headers.get('x-site-id') ?? 'platform', error });
         return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
     }
 }

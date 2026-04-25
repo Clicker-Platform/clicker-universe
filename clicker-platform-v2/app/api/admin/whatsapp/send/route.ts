@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { decryptToken } from '@/lib/whatsapp/encryption';
 import { META_MESSAGES_ENDPOINT, WA_ROOT, WA_MAIN_DOC, WA_CUSTOMER_THREADS } from '@/lib/whatsapp/constants';
+import { logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -41,7 +42,7 @@ export async function POST(req: Request) {
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      console.error('[WA send] Meta error:', JSON.stringify(err));
+      logger.error('wa.send.failed', { siteId, error: err });
       return NextResponse.json({ error: err?.error?.message ?? 'Gagal mengirim pesan.', detail: err }, { status: 502 });
     }
 
@@ -64,7 +65,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error('[WA send]', err);
+    logger.error('wa.send.failed', { siteId: 'platform', error: err });
     return NextResponse.json({ error: 'Internal server error.' }, { status: 500 });
   }
 }

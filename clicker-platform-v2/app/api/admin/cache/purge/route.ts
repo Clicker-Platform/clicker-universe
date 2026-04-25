@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { invalidate } from '@/lib/cache/redis';
+import { logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,7 +32,7 @@ export async function POST(req: NextRequest) {
         revalidatePath(`/${siteId}`, 'layout');
         return NextResponse.json({ ok: true, deleted });
     } catch (err) {
-        console.error('[purge] error:', err);
+        logger.error('cache.purge.failed', { siteId: 'platform', error: err });
         return NextResponse.json({ error: 'internal' }, { status: 500 });
     }
 }

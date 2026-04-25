@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,7 +19,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error('[WA disconnect]', err);
+    logger.error('wa.disconnect.failed', { siteId: 'platform', error: err });
     return NextResponse.json({ error: 'Internal server error.' }, { status: 500 });
   }
 }

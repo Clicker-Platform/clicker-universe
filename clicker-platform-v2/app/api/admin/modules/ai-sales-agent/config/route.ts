@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb, adminAuth } from "@/lib/firebase-admin";
+import { logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -67,7 +68,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ success: true });
 
     } catch (error: any) {
-        console.error("Admin Config Update Error:", error);
+        logger.error('ai.agent.config.failed', { siteId: 'platform', error });
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
