@@ -20,7 +20,6 @@ const NAV_ITEMS: NavItem[] = [
     { label: '—' as any, href: '' },
     { label: 'Tenants', href: '/tenants' },
     { label: '—' as any, href: '' },
-    { label: 'Users', href: '/users' },
     { label: 'Claims & Roles', href: '/claims', isNew: true },
     { label: 'RBAC Settings', href: '/rbac', isNew: true },
     { label: '—' as any, href: '' },
