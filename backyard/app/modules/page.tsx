@@ -65,10 +65,10 @@ export default function ModulesPage() {
             {loading ? (
                 <div className="text-center py-16 text-gray-400 font-medium">Loading tenants...</div>
             ) : (
-                <div className="bg-white rounded-2xl border border-gray-100 overflow-auto">
+                <div className="bg-slate-50 rounded-2xl border border-gray-200 overflow-auto">
                     <table className="w-full text-sm">
                         <thead>
-                            <tr className="border-b border-gray-100">
+                            <tr className="border-b border-gray-200 bg-white">
                                 <th className="text-left px-5 py-3 font-black text-brand-dark text-xs uppercase tracking-wider w-40">Tenant</th>
                                 {SYSTEM_MODULES.map(mod => (
                                     <th key={mod.id} className="px-3 py-3 font-bold text-gray-400 text-xs uppercase tracking-wider text-center whitespace-nowrap">
@@ -79,8 +79,11 @@ export default function ModulesPage() {
                         </thead>
                         <tbody>
                             {tenants.map(tenant => (
-                                <tr key={tenant.id} className="border-b border-gray-50 hover:bg-gray-50/50">
-                                    <td className="px-5 py-3 font-black text-brand-dark">{tenant.name}</td>
+                                <tr key={tenant.id} className="border-b border-gray-100 hover:bg-white">
+                                    <td className="px-5 py-3">
+                                        <div className="font-black text-brand-dark">{tenant.name}</div>
+                                        <div className="text-xs font-mono text-gray-400 mt-0.5">{tenant.id}</div>
+                                    </td>
                                     {SYSTEM_MODULES.map(mod => {
                                         const enabled = tenant.modules?.[mod.id] ?? false;
                                         const key = `${tenant.id}:${mod.id}`;
@@ -90,7 +93,7 @@ export default function ModulesPage() {
                                                     onClick={() => handleToggle(tenant, mod.id, enabled)}
                                                     disabled={updating === key}
                                                     className={`w-9 h-5 rounded-full transition-colors relative ${
-                                                        enabled ? 'bg-brand-green' : 'bg-gray-200'
+                                                        enabled ? 'bg-brand-dark' : 'bg-gray-300'
                                                     } ${updating === key ? 'opacity-50' : ''}`}
                                                 >
                                                     <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all ${
