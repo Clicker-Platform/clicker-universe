@@ -90,6 +90,13 @@ describe('logger', () => {
       const k2 = buildDedupeKey('siteB', 'upload.image.failed');
       expect(k1).not.toBe(k2);
     });
+
+    it('sanitizes siteId containing slashes', async () => {
+      const { buildDedupeKey } = await import('@/lib/logger');
+      const key = buildDedupeKey('site/with/slash', 'upload.image.failed');
+      expect(key).not.toContain('/');
+      expect(key).toMatch(/^site_with_slash_upload\.image\.failed_\d+$/);
+    });
   });
 
   describe('formatDev', () => {

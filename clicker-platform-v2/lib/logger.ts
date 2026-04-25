@@ -18,8 +18,9 @@ export function isFirestoreCritical(event: string): boolean {
 }
 
 export function buildDedupeKey(siteId: string, event: string): string {
-  const window = Math.floor(Date.now() / 300_000);
-  return `${siteId}_${event}_${window}`;
+  const windowSlot = Math.floor(Date.now() / 300_000);
+  const safeSiteId = siteId.replace(/\//g, '_');
+  return `${safeSiteId}_${event}_${windowSlot}`;
 }
 
 interface LogContext {
@@ -78,6 +79,9 @@ async function writeToFirestore(payload: LogPayload): Promise<void> {
       writesToday = meta.writesToday ?? 0;
     }
 
+    // Known limitation: quota check is not atomic — concurrent requests can both
+    // pass this check during a spike. FieldValue.increment ensures count accuracy,
+    // but writes may slightly exceed 500/day. Acceptable given the low cost impact.
     if (writesToday >= 500) return;
 
     const dedupeKey = buildDedupeKey(payload.siteId, payload.event);
