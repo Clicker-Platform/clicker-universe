@@ -54,7 +54,7 @@ function LogCard({ log }: { log: PlatformLog }) {
         )}
       </div>
 
-      {log.meta?.error && (
+      {!!log.meta?.error && (
         <p className="mt-1 text-xs text-gray-600 font-mono truncate">
           {String(log.meta.error)}
         </p>
