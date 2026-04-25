@@ -11,6 +11,7 @@ import {
     deleteDoc
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { logger } from '@/lib/logger';
 import { TemplateDocument, TemplateDefinition, ThemeConfig } from './types';
 import { templateDefinitions } from './definitions';
 
@@ -76,7 +77,7 @@ export const getAvailableTemplates = async (): Promise<TemplateDocument[]> => {
 
         return [...newSystemTemplates, ...templates];
     } catch (error) {
-        console.error("Error fetching templates:", error);
+        logger.error('template.fetch.failed', { siteId: 'platform', error });
         // Fallback to system templates only
         return Object.values(templateDefinitions).map(def => ({
             id: def.id,
@@ -138,7 +139,7 @@ export const fetchTemplate = async (id: string): Promise<TemplateDocument | null
 
         return null;
     } catch (error) {
-        console.error("Error fetching template:", error);
+        logger.error('template.fetch.failed', { siteId: 'platform', error });
         return null;
     }
 };
@@ -162,7 +163,7 @@ export const saveTemplate = async (template: TemplateDocument): Promise<void> =>
 
         await setDoc(docRef, data, { merge: true });
     } catch (error) {
-        console.error("Error saving template:", error);
+        logger.error('template.save.failed', { siteId: 'platform', error });
         throw error;
     }
 };
@@ -174,7 +175,7 @@ export const deleteTemplate = async (id: string): Promise<void> => {
     try {
         await deleteDoc(doc(db, TEMPLATES_COLLECTION, id));
     } catch (error) {
-        console.error("Error deleting template:", error);
+        logger.error('template.delete.failed', { siteId: 'platform', error });
         throw error;
     }
 };
@@ -205,7 +206,7 @@ export const assignTemplateToProfile = async (templateId: string, customConfig?:
             'updatedAt': Timestamp.now()
         });
     } catch (error) {
-        console.error("Error assigning template:", error);
+        logger.error('template.assign.failed', { siteId: 'platform', error });
         throw error;
     }
 };

@@ -1,4 +1,5 @@
 import { PageBlock } from '@/data/mockData';
+import { logger } from '@/lib/logger';
 
 /**
  * System Block IDs that can be rendered on the homepage
@@ -69,7 +70,7 @@ export function generateSystemBlocks(
                 break;
 
             default:
-                console.warn(`Unknown system block ID: ${blockId}`);
+                logger.warn('content.block.unknown', { siteId: 'platform', error: blockId });
         }
 
         if (block) {
