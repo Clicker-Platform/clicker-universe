@@ -6,6 +6,7 @@ import { doc, getDoc, onSnapshot, DocumentSnapshot, FirestoreError } from 'fireb
 import { auth, db } from '@/lib/firebase';
 import { useSite } from '@/lib/site-context';
 import { Role } from '@/lib/rbac';
+import { logger } from '@/lib/logger';
 
 interface ModuleAccess {
     [routeId: string]: 'full' | 'view' | 'none'; // sub-route permissions
@@ -131,7 +132,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
                     const memberData = memberSnap.data();
                     if (!memberData) return; // Guard clause
 
-                    // console.log('[UserContext] Realtime Update:', memberData.moduleAccess); // Debug
                     setRole(memberData.role as Role || 'staff');
                     setPermissions(memberData.permissions || []);
                     setModuleAccess(memberData.moduleAccess || {});
@@ -163,13 +163,13 @@ export function UserProvider({ children }: { children: ReactNode }) {
                             }
                         }
                     } catch (err) {
-                        console.error('Error fetching site owner data:', err);
+                        logger.error('user.owner.fetch.failed', { siteId: siteId ?? 'platform', error: err });
                     } finally {
                         setLoading(false);
                     }
                 }
             }, (error: FirestoreError) => {
-                console.error('[UserContext] Firestore listener error:', error);
+                logger.error('user.context.listener.failed', { siteId: siteId ?? 'platform', error });
                 setLoading(false);
             });
         });

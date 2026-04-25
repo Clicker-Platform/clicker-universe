@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { NavigationItem } from '@/data/mockData';
+import { logger } from '@/lib/logger';
 
 export interface TopNavActions {
     showSearch?: boolean;
@@ -90,7 +91,7 @@ export function useNavigationConfig(siteId: string, initialData?: InitialNavData
                         setLoading(false);
                         return;
                     }
-                    console.error('useNavigationConfig: Firestore error', err);
+                    logger.error('nav.config.fetch.failed', { siteId: siteId ?? 'platform', error: err });
                     setError(err as Error);
                     setLoading(false);
                 }
