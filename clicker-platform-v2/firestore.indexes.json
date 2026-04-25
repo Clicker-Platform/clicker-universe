@@ -434,7 +434,37 @@
             "collectionGroup": "platform_logs",
             "queryScope": "COLLECTION",
             "fields": [
-                { "fieldPath": "ttl", "order": "ASCENDING" }
+                { "fieldPath": "siteId", "order": "ASCENDING" },
+                { "fieldPath": "level", "order": "ASCENDING" },
+                { "fieldPath": "ts", "order": "DESCENDING" }
+            ]
+        },
+        {
+            "collectionGroup": "platform_logs",
+            "queryScope": "COLLECTION",
+            "fields": [
+                { "fieldPath": "siteId", "order": "ASCENDING" },
+                { "fieldPath": "event", "order": "ASCENDING" },
+                { "fieldPath": "ts", "order": "DESCENDING" }
+            ]
+        },
+        {
+            "collectionGroup": "platform_logs",
+            "queryScope": "COLLECTION",
+            "fields": [
+                { "fieldPath": "level", "order": "ASCENDING" },
+                { "fieldPath": "event", "order": "ASCENDING" },
+                { "fieldPath": "ts", "order": "DESCENDING" }
+            ]
+        },
+        {
+            "collectionGroup": "platform_logs",
+            "queryScope": "COLLECTION",
+            "fields": [
+                { "fieldPath": "siteId", "order": "ASCENDING" },
+                { "fieldPath": "level", "order": "ASCENDING" },
+                { "fieldPath": "event", "order": "ASCENDING" },
+                { "fieldPath": "ts", "order": "DESCENDING" }
             ]
         }
     ],
