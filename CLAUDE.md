@@ -58,6 +58,19 @@ This project has Claude Code skills in `.claude/commands/`. Use them:
 
 See `.agents/README.md` for the full skill index.
 
+## Superpowers Output Convention
+
+Always save skill outputs to the appropriate folder under `superpowers/`:
+
+| Activity               | Save to                                        |
+| ---------------------- | ---------------------------------------------- |
+| Brainstorming sessions | `superpowers/brainstorm/YYYY-MM-DD-topic.md`   |
+| Feature specs          | `superpowers/specs/YYYY-MM-DD-topic.md`        |
+| Implementation plans   | `superpowers/plans/YYYY-MM-DD-topic.md`        |
+| Audit & research notes | `superpowers/notes/YYYY-MM-DD-topic.md`        |
+
+Use today's date and a short kebab-case topic name for the filename.
+
 ## File Navigation
 
 - Main platform: `clicker-platform-v2/`
