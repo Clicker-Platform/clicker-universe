@@ -70,7 +70,6 @@ Always save skill outputs to the appropriate folder under `superpowers/`:
 | Audit & research notes | `superpowers/notes/YYYY-MM-DD-topic.md`        |
 
 Use today's date and a short kebab-case topic name for the filename.
-
 ## File Navigation
 
 - Main platform: `clicker-platform-v2/`
