@@ -23,6 +23,13 @@ export const STATIC_MODULE_DEFINITIONS: Record<string, Partial<ModuleDefinition>
             { label: 'Items', path: '/admin/inventory/items', icon: 'box', componentKey: 'inventory:AdminDashboard' }
         ]
     },
+    'stocklens': {
+        adminRoutes: [
+            { label: 'Scanner',  path: '/admin/stocklens',          icon: 'scan-line', componentKey: 'stocklens:ScannerPage' },
+            { label: 'Vault',    path: '/admin/stocklens/vault',     icon: 'vault',     componentKey: 'stocklens:VaultPage' },
+            { label: 'Settings', path: '/admin/stocklens/settings',  icon: 'settings',  componentKey: 'stocklens:SettingsPage', permission: 'settings' },
+        ]
+    },
     'reservation': {
         adminRoutes: [
             { label: 'Bookings', path: '/admin/reservation/bookings', icon: 'calendar', componentKey: 'reservation:Dashboard' },

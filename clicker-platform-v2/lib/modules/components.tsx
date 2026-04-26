@@ -27,6 +27,11 @@ const ReservationSettingsPage = dynamic(() => import('@/lib/modules/reservation/
 // Admin Pages (Inventory)
 const InventoryAdminPage = dynamic(() => import('@/lib/modules/inventory/admin/InventoryAdminPage'));
 
+// Admin Pages (Stocklens)
+const SL_ScannerPage  = dynamic(() => import('@/lib/modules/stocklens/admin/ScannerPage'));
+const SL_VaultPage    = dynamic(() => import('@/lib/modules/stocklens/admin/VaultPage'));
+const SL_SettingsPage = dynamic(() => import('@/lib/modules/stocklens/admin/SettingsPage'));
+
 // Admin Pages (Service Records)
 const SR_RecordsListPage  = dynamic(() => import('@/lib/modules/service-records/admin/RecordsListPage'));
 const SR_RecordFormPage   = dynamic(() => import('@/lib/modules/service-records/admin/RecordFormPage'));
@@ -95,6 +100,11 @@ export const MODULE_COMPONENTS: Record<string, any> = {
 
     // Inventory Module
     'inventory:AdminDashboard': InventoryAdminPage,
+
+    // Stocklens Module
+    'stocklens:ScannerPage':  SL_ScannerPage,
+    'stocklens:VaultPage':    SL_VaultPage,
+    'stocklens:SettingsPage': SL_SettingsPage,
 
     // Membership Module
     'membership:MemberListPage': MemberListPage,

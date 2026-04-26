@@ -71,6 +71,19 @@ const MODULES = [
         ]
     },
     {
+        id: 'stocklens',
+        displayName: 'Stocklens',
+        description: 'AI-powered product scanner and inventory vault',
+        icon: 'scan-line',
+        version: '1.0.0',
+        enabled: true,
+        adminRoutes: [
+            { label: 'Scanner',  path: '/admin/stocklens',          icon: 'scan-line', componentKey: 'stocklens:ScannerPage' },
+            { label: 'Vault',    path: '/admin/stocklens/vault',     icon: 'vault',     componentKey: 'stocklens:VaultPage' },
+            { label: 'Settings', path: '/admin/stocklens/settings',  icon: 'settings',  componentKey: 'stocklens:SettingsPage', permission: 'settings' },
+        ],
+    },
+    {
         id: 'byod_pos',
         displayName: 'Self Order',
         description: 'BYOD POS System',
