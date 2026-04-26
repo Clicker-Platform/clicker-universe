@@ -62,6 +62,39 @@ export default function SeedPage() {
         setConfirmOpen(true);
     };
 
+    const [syncingRegistry, setSyncingRegistry] = useState(false);
+
+    const syncSystemModules = async () => {
+        setSyncingRegistry(true);
+        try {
+            // Write each system module to the global /modules/{id} registry
+            // so subscribeToEnabledModules() in clicker-platform-v2 picks them up.
+            await Promise.all(
+                SYSTEM_MODULES.map(mod =>
+                    setDoc(
+                        doc(db, 'modules', mod.id),
+                        {
+                            id: mod.id,
+                            displayName: mod.displayName,
+                            description: mod.description ?? '',
+                            icon: mod.icon ?? '',
+                            version: mod.version ?? '1.0.0',
+                            enabled: true,
+                            adminRoutes: mod.adminRoutes ?? [],
+                            publicRoutes: mod.publicRoutes ?? [],
+                        },
+                        { merge: true }
+                    )
+                )
+            );
+            toast.success(`Synced ${SYSTEM_MODULES.length} modules to global registry`);
+        } catch (err: any) {
+            toast.error('Sync failed', { description: err.message });
+        } finally {
+            setSyncingRegistry(false);
+        }
+    };
+
     const confirmSeed = async () => {
         setConfirmOpen(false);
         setLoading(true);
@@ -122,14 +155,26 @@ export default function SeedPage() {
                 </div>
             </div>
 
-            <button
-                onClick={handleSeed}
-                disabled={loading || !selectedTenant}
-                className="flex items-center gap-2 px-6 py-3 bg-brand-green text-brand-dark font-black rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50 mb-8"
-            >
-                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
-                {loading ? 'Seeding...' : 'Run Seed'}
-            </button>
+            <div className="flex flex-wrap gap-3 mb-8">
+                <button
+                    onClick={handleSeed}
+                    disabled={loading || !selectedTenant}
+                    className="flex items-center gap-2 px-6 py-3 bg-brand-green text-brand-dark font-black rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50"
+                >
+                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
+                    {loading ? 'Seeding...' : 'Run Seed'}
+                </button>
+
+                <button
+                    onClick={syncSystemModules}
+                    disabled={syncingRegistry}
+                    className="flex items-center gap-2 px-6 py-3 bg-gray-900 text-white font-black rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50"
+                    title="Write all SYSTEM_MODULES to /modules registry (required before tenants can enable them)"
+                >
+                    {syncingRegistry ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
+                    {syncingRegistry ? 'Syncing...' : 'Sync System Modules to Registry'}
+                </button>
+            </div>
 
             <div>
                 <h2 className="text-xs font-black uppercase tracking-wider text-gray-400 mb-3">Seed History</h2>
