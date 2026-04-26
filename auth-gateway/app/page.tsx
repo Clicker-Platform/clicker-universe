@@ -98,11 +98,9 @@ function AdminLoginForm() {
     // Check if redirected back due to an error (e.g., no site membership)
     const errorParam = searchParams.get('error');
     if (errorParam) {
-      if (typeof window !== 'undefined') {
-        const url = new URL(window.location.href);
-        url.searchParams.delete('error');
-        window.history.replaceState(null, '', url.toString());
-      }
+      const url = new URL(window.location.href);
+      url.searchParams.delete('error');
+      window.history.replaceState(null, '', url.toString());
       // Clear stale auth session, then show error
       auth.signOut().then(() => {
         clearSessionCookies();
