@@ -21,7 +21,7 @@ import {
 import { db } from '@/lib/firebase';
 import { POSOrder, POSSettings, POSItem, POSStaffMember } from './types';
 import { isModuleEnabled } from '@/lib/modules/registry';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 import { ORDERS_COLLECTION, SETTINGS_DOC } from './constants';
 

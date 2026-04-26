@@ -20,7 +20,7 @@ import {
 import { db } from '@/lib/firebase';
 import { Booking, Service, ReservationSettings } from './types';
 import { isModuleEnabled } from '../registry';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 import { getStaffMembers } from './staff';
 import { DaySchedule } from '@/lib/core/types';
 import {

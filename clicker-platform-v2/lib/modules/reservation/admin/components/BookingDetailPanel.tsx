@@ -4,7 +4,7 @@ import { User, Calendar, Clock, X, CheckCircle, ClipboardList, ExternalLink, Car
 import type { Vehicle, CarCatalogEntry } from '@/lib/modules/service-records/types';
 import { StatusBadge, getStatusLabel } from './StatusBadge';
 import { useSite } from '@/lib/site-context'; // New import
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 

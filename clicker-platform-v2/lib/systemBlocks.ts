@@ -1,5 +1,5 @@
 import { PageBlock } from '@/data/mockData';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 /**
  * System Block IDs that can be rendered on the homepage

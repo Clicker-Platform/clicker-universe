@@ -2,7 +2,7 @@ import { Service, Staff } from '../../types';
 import { User, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { useSite } from '@/lib/site-context';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 import { ThemeConfig } from '@/lib/templates/types';
 
 interface DetailsStepProps {

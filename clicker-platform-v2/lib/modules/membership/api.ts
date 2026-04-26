@@ -20,7 +20,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Member, LoyaltyTransaction, MembershipSettings, MembershipStaffMember } from './types';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 // Collection References
 export const MEMBERS_COLLECTION = 'modules/membership/members';

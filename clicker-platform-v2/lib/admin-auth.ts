@@ -1,6 +1,6 @@
 import { db } from "@/lib/firebase";
 import { collection, query, where, getDocs, collectionGroup, doc, getDoc } from "firebase/firestore";
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 export interface UserSite {
     siteId: string;

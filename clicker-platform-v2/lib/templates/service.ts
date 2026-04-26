@@ -11,7 +11,7 @@ import {
     deleteDoc
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 import { TemplateDocument, TemplateDefinition, ThemeConfig } from './types';
 import { templateDefinitions } from './definitions';
 

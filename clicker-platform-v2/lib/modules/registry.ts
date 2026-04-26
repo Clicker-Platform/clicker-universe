@@ -31,7 +31,7 @@ import { collection, query, where, onSnapshot, Unsubscribe } from 'firebase/fire
 import { PublicRouteDefinition, ModuleDefinition, AdminRoute } from './types';
 import { getDoc, getDocs, doc } from 'firebase/firestore';
 import { STATIC_MODULE_DEFINITIONS } from './definitions';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 export async function findModuleForRoute(path: string): Promise<{ module: ModuleDefinition, route: PublicRouteDefinition } | null> {
     try {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 import { InventoryItem, TransactionReason } from '@/lib/modules/inventory/types';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { MobileBottomSheet } from '@/components/admin/blocks/MobileBottomSheet';

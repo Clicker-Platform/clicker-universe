@@ -2,7 +2,7 @@ import { Service, Staff } from '../../types';
 import { ChevronLeft, ChevronRight, Loader2, Calendar as CalendarIcon } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { ThemeConfig } from '@/lib/templates/types';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 interface TimeStepProps {
     siteId: string;

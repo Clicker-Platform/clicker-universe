@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import { POSOrder, POSSettings } from '../types';
 import { generateReceiptHtml } from '../receipt-generator';
 import { toast } from 'sonner';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 export function useReceiptPrinter() {
     const printReceipt = useCallback((order: POSOrder, settings?: POSSettings) => {

@@ -1,7 +1,7 @@
 import { cache } from 'react';
 import { cached, siteKey } from '@/lib/cache/redis';
 import { db } from "@/lib/firebase";
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 import { doc, getDoc, collection, getDocs, query, where, orderBy } from "firebase/firestore";
 import { BusinessProfile, LinkItem, Product, SocialLink, SiteSettings, SocialLinkItem, initialBusinessHours, BusinessHours, Page, PageBlock, BusinessContact, Branch, initialBusinessContact, LinkSettings, ProductSettings } from "@/data/mockData";
 import { TemplateId } from "@/lib/templates/types";

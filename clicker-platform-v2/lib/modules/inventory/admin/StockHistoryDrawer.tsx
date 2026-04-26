@@ -4,7 +4,7 @@ import { InventoryItem, StockTransaction } from '@/lib/modules/inventory/types';
 import { getInventoryTransactions } from '@/lib/modules/inventory/api';
 import { toast } from 'sonner';
 import { useSite } from '@/lib/site-context'; // New import
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 interface StockHistoryDrawerProps {
     isOpen: boolean;

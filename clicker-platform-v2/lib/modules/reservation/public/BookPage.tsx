@@ -1,7 +1,7 @@
 import { getServices, getReservationSettings } from '@/lib/modules/reservation/api';
 import { getStaffMembers } from '@/lib/modules/reservation/staff';
 import BookingForm from '@/lib/modules/reservation/public/BookingForm';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 import { db } from '@/lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';

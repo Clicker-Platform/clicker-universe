@@ -1,5 +1,5 @@
 import { Redis } from '@upstash/redis';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 const URL = process.env.UPSTASH_REDIS_REST_URL;
 const TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;

@@ -8,7 +8,7 @@ import { CreditCard, Clock, User, Armchair, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 import { useSite } from '@/lib/site-context';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 interface BillCardProps {
     group: {

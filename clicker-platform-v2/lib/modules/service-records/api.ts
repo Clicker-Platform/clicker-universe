@@ -46,7 +46,7 @@ import type {
     ServiceConfig,
     ServiceRecordFilters,
 } from './types';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 // ─── Utility ──────────────────────────────────────────────────────────────────
 
