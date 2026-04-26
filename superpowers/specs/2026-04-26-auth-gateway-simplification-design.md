@@ -1,7 +1,7 @@
 # Auth Gateway Simplification Design
 
 **Date:** 2026-04-26  
-**Status:** Awaiting review  
+**Status:** Approved  
 **Related:**
 - `Docs/TEAM_SIMPLIFICATION_PLAN.md`
 - `Docs/AUTH_RBAC_REVIEW_2026-04-26.md`
@@ -55,20 +55,28 @@ Menghapus Firebase Auth state di client membutuhkan audit dan refactor semua tit
 
 ## Flow Baru (5 langkah, ~2 detik, callback tidak terlihat)
 
-```
-GATEWAY:
-  1. signInWithEmailAndPassword (Firebase Auth)
-  2. getUserSites(uid, email)   → dapat siteSlug langsung dari Firestore
-  3. generateHandoffToken(uid)  → custom token (tanpa claims)
-  4. set __session=siteId cookie (Domain=.clicker.id)
-  5. redirect → https://slug.clicker.id/admin#token=xyz
+`auth.clicker.id` adalah domain tersendiri (Firebase Hosting + Cloudflare masking).
+Karena gateway dan semua tenant subdomain berada di bawah `.clicker.id`, cookie
+`Domain=.clicker.id` yang di-set di `auth.clicker.id` langsung terbaca oleh
+`slug.clicker.id` — tidak ada cross-origin cookie issue, tidak perlu relay.
 
-PLATFORM (background, user tidak melihat):
-  middleware: ada __session cookie → lolos ke /admin
-  AdminGuard: ada #token di URL fragment
-            → signInWithCustomToken (background)
-            → hapus fragment dari URL
-            → user sudah di dashboard
+```
+User buka auth.clicker.id  ATAU  slug.clicker.id/admin (redirect ke gateway)
+         ↓
+  auth.clicker.id (gateway):
+  1. signInWithEmailAndPassword
+  2. getUserSites(uid, email)  → dapat siteId + slug dari Firestore
+  3. generateHandoffToken(uid) → custom token (tanpa claims)
+  4. set __session=siteId cookie (Domain=.clicker.id) ← terbaca di semua *.clicker.id
+  5. redirect → https://slug.clicker.id/admin#token=xyz
+         ↓
+  slug.clicker.id/admin:
+  middleware: ada __session → lolos ke /admin
+  TokenBootstrap: ada #token di fragment
+               → signInWithCustomToken (background, user tidak melihat)
+               → hapus fragment dari URL
+               → onAuthStateChanged fire → UserProvider resolve → AdminGuard lolos
+               → user sudah di dashboard ✓
 ```
 
 ---
