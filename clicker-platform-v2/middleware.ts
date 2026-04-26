@@ -192,6 +192,7 @@ export async function middleware(request: NextRequest) {
             }
 
             requestHeaders.set('x-site-id', siteId);
+            requestHeaders.set('x-is-admin', '1');
         } else {
             // For other special routes (api, member, etc.), use the detected siteId
             requestHeaders.set('x-site-id', siteId);
