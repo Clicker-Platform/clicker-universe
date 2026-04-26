@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Search, ScanLine } from 'lucide-react';
 import Link from 'next/link';
 import { useSite } from '@/lib/site-context';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 import { VaultSKU } from '../types';
 import { getVaultSKUs } from '../api';
 import { VaultSKUCard } from './VaultSKUCard';

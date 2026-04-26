@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { ArrowLeft, Lock, ScanLine, Trash2 } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
 import { usePermission } from '@/components/admin/PermissionGuard';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 import { VaultSKU, VaultUnit } from '../types';
 import { getVaultSKU, getVaultUnits, deleteVaultSKU, deleteVaultUnit } from '../api';
 import { CONDITION_COLORS, CATEGORY_LABELS } from '../constants';

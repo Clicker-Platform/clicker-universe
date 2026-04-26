@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useSite } from '@/lib/site-context';
 import { usePermission } from '@/components/admin/PermissionGuard';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 import { ScanResult, ItemCondition, VaultSKU } from '../types';
 import { createVaultSKU, createVaultUnit } from '../api';
 import { STOCKLENS_STORAGE } from '../constants';
