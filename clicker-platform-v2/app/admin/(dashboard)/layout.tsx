@@ -3,6 +3,7 @@
 import React from 'react';
 import { AdminSidebar } from './AdminSidebar';
 import AdminGuard from '@/components/admin/AdminGuard';
+import { TokenBootstrap } from '@/components/admin/TokenBootstrap';
 import { UserProvider } from '@/lib/user-context';
 import { AdminThemeProvider, useAdminTheme } from '@/lib/use-admin-theme';
 import { InboxPanelProvider } from '@/lib/inbox-panel-context';
@@ -34,16 +35,19 @@ function AdminContentWrapper({ children }: { children: React.ReactNode }) {
 // instead of making its own duplicate Firebase/Firestore calls.
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     return (
-        <UserProvider>
-            <AdminGuard>
-                <AdminThemeProvider>
-                    <InboxPanelProvider>
-                        <AdminContentWrapper>
-                            {children}
-                        </AdminContentWrapper>
-                    </InboxPanelProvider>
-                </AdminThemeProvider>
-            </AdminGuard>
-        </UserProvider>
+        <>
+            <TokenBootstrap />
+            <UserProvider>
+                <AdminGuard>
+                    <AdminThemeProvider>
+                        <InboxPanelProvider>
+                            <AdminContentWrapper>
+                                {children}
+                            </AdminContentWrapper>
+                        </InboxPanelProvider>
+                    </AdminThemeProvider>
+                </AdminGuard>
+            </UserProvider>
+        </>
     );
 }

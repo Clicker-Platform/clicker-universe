@@ -55,32 +55,12 @@ if (!admin.apps.length) {
 // Generate Handoff Token for cross-app authentication
 export const generateHandoffToken = functions.https.onCall(async (request) => {
     if (!request.auth) {
-        throw new functions.https.HttpsError('unauthenticated', 'User must be logged in to generate handoff token.');
+        throw new functions.https.HttpsError('unauthenticated', 'User must be logged in.');
     }
-
     try {
-        const uid = request.auth.uid;
-
-        // Fetch user record to get existing custom claims
-        const userRecord = await admin.auth().getUser(uid);
-        const claims = userRecord.customClaims || {};
-
-        console.log(`👤 Generating token for ${uid} with claims:`, claims);
-
-        // Create custom token WITH claims using the runtime service account
-        // NOTE: The service account (1065982109250-compute@developer.gserviceaccount.com)
-        // must have "Service Account Token Creator" role granted
-        const customToken = await admin.auth().createCustomToken(uid, claims);
-
-        console.log(`✅ Successfully created custom token for UID: ${uid}`);
+        const customToken = await admin.auth().createCustomToken(request.auth.uid);
         return { token: customToken };
     } catch (error: any) {
-        console.error("❌ Error generating handoff token:", error);
-        console.error("Error details:", {
-            code: error.code,
-            message: error.message,
-            stack: error.stack
-        });
         throw new functions.https.HttpsError('internal', error.message);
     }
 });

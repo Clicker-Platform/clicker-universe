@@ -4,10 +4,10 @@ import { useEffect, useState, Suspense, useRef } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { httpsCallable } from 'firebase/functions';
 import { auth, functions } from '@/lib/firebase';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { clearSessionCookies } from '@/lib/session';
-import { resolvePlatformUrl } from '@/lib/resolve-platform-url';
+import { getUserSites } from '@/lib/get-user-sites';
 
 function AdminLoginForm() {
   const [email, setEmail] = useState('');
@@ -19,73 +19,74 @@ function AdminLoginForm() {
   // Guard: prevent double performHandoff from onAuthStateChanged + handleLogin racing
   const handoffInProgress = useRef(false);
 
-  const router = useRouter();
   const searchParams = useSearchParams();
 
   const redirectTo = searchParams.get('redirect');
 
   // Shared Handoff Logic — guarded against double-invocation
   const performHandoff = async () => {
-    if (handoffInProgress.current) {
-      return;
-    }
-
-    // Loop detection: if performHandoff is called too many times in one session,
-    // it indicates a redirect loop (gateway → callback → middleware → gateway).
-    const LOOP_KEY = 'handoff_loop_count';
-    const loopCount = parseInt(sessionStorage.getItem(LOOP_KEY) || '0');
-    if (loopCount >= 3) {
-      console.error('[Auth Gateway] Loop detected after', loopCount, 'attempts. Breaking cycle.');
-      sessionStorage.removeItem(LOOP_KEY);
-      try {
-        await auth.signOut();
-      } catch { /* ignore */ }
-      clearSessionCookies();
-      setError('⚠️ Login loop terdeteksi. Session telah di-reset. Silakan login ulang dari awal.');
-      setIsChecking(false);
-      return;
-    }
-    sessionStorage.setItem(LOOP_KEY, String(loopCount + 1));
-
+    if (handoffInProgress.current) return;
     handoffInProgress.current = true;
 
     try {
-      setStatus('Generating secure access token...');
-      const generateHandoffTokenFn = httpsCallable(functions, 'generateHandoffToken');
+      setStatus('Mencari akses tenant...');
 
-      // Wrap with 15s timeout — Cloud Function cold starts can cause indefinite hang
-      const result = await Promise.race([
-        generateHandoffTokenFn(),
+      const currentUser = auth.currentUser;
+      if (!currentUser) throw new Error('Sesi tidak ditemukan.');
+
+      // 1. Resolve tenant — satu-satunya source of truth
+      const sites = await Promise.race([
+        getUserSites(currentUser.uid, currentUser.email),
         new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('Token generation timeout (15s). Cek koneksi internet dan coba lagi.')), 15000)
-        )
+          setTimeout(() => reject(new Error('Timeout resolving tenant (5s).')), 5000)
+        ),
+      ]);
+
+      if (!sites || sites.length === 0) {
+        await auth.signOut();
+        window.location.href = `${window.location.origin}?error=no_membership`;
+        return;
+      }
+
+      const site = sites[0];
+      setStatus('Membuat token akses...');
+
+      // 2. Generate handoff token
+      const result = await Promise.race([
+        httpsCallable(functions, 'generateHandoffToken')(),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Token timeout (15s).')), 15000)
+        ),
       ]);
 
       const handoffData = result.data as { token?: string };
-      if (!handoffData?.token) {
-        throw new Error('No token received.');
-      }
-      const handoffToken = handoffData.token;
+      if (!handoffData?.token) throw new Error('Token tidak diterima.');
+      const token = handoffData.token;
 
-      setStatus('Redirecting to dashboard...');
+      // 3. Set __session cookie — terbaca di semua *.clicker.id
+      const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'clicker.id';
+      const isSecure = window.location.protocol === 'https:';
+      const domainAttr = isSecure ? `; Domain=.${baseDomain}` : '';
+      const secureAttr = isSecure ? '; Secure' : '';
+      document.cookie = `__session=${site.siteId}; path=/; max-age=${60 * 60 * 24 * 30}; SameSite=Lax${secureAttr}${domainAttr}`;
 
-      const platformUrl = await resolvePlatformUrl({ redirectTo, currentUser: auth.currentUser });
+      // 4. Redirect langsung ke /admin — token di fragment (tidak masuk server log)
+      setStatus('Mengalihkan ke dashboard...');
+      const isFirebaseDefaultDomain = baseDomain.includes('.web.app');
+      const targetOrigin = isFirebaseDefaultDomain
+        ? `https://${baseDomain}/${site.slug}`
+        : isSecure
+          ? `https://${site.slug}.${baseDomain}`
+          : `http://localhost:3000`;
 
-      const nextPath = (redirectTo && redirectTo !== '/')
+      const nextPath = redirectTo && redirectTo !== '/'
         ? (redirectTo.startsWith('http') ? new URL(redirectTo).pathname : redirectTo)
         : '/admin';
-      // Token in fragment (#) — never sent to server, not in logs, not in referrer headers
-      const finalUrl = `${platformUrl}/admin/auth/callback?next=${encodeURIComponent(nextPath)}#token=${encodeURIComponent(handoffToken)}`;
 
-      // Handoff successful — clear loop counter before redirecting
-      sessionStorage.removeItem('handoff_loop_count');
-
-      window.location.href = finalUrl;
+      window.location.href = `${targetOrigin}${nextPath}#token=${encodeURIComponent(token)}`;
 
     } catch (err: any) {
-      console.error('Handoff Error:', err);
-      sessionStorage.removeItem('handoff_loop_count');
-      setError(`Gagal login otomatis: ${err.message}. Silakan login ulang.`);
+      setError(`Gagal login: ${err.message}`);
       setIsChecking(false);
     } finally {
       handoffInProgress.current = false;

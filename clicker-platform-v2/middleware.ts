@@ -169,7 +169,7 @@ export async function middleware(request: NextRequest) {
             }
 
             // If no activeSite cookie and not on callback/claim pages, redirect to Gateway
-            if (!activeSite && !pathname.startsWith('/admin/auth/callback') && !pathname.startsWith('/admin/claim-admin')) {
+            if (!activeSite && !pathname.startsWith('/admin/claim-admin')) {
                 const redirectBackUrl = buildRedirectUrl(pathname);
                 return NextResponse.redirect(`${gatewayUrl}?redirect=${encodeURIComponent(redirectBackUrl)}`);
             }
@@ -282,7 +282,7 @@ export async function middleware(request: NextRequest) {
 
             // Skip auth check for callback routes
             const adminPath = '/' + segments.slice(1).join('/');
-            const isCallbackRoute = adminPath.startsWith('/admin/auth/callback') || adminPath.startsWith('/admin/claim-admin');
+            const isCallbackRoute = adminPath.startsWith('/admin/claim-admin');
 
             // If no session and not on callback, redirect to auth gateway
             if (!activeSite && !isCallbackRoute) {
