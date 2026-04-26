@@ -1,23 +1,23 @@
 'use client';
 
-import { createContext, useContext, ReactNode } from 'react';
+import { createContext, useContext, useState, ReactNode } from 'react';
 
 interface SiteContextType {
     siteId: string;
     tenantSlug: string;
     isPending: boolean;
     isSubdomain: boolean;
+    setSiteId: (id: string) => void;
 }
 
 const SiteContext = createContext<SiteContextType | undefined>(undefined);
 
-export function SiteProvider({ siteId, tenantSlug = '', isSubdomain = false, children }: { siteId: string, tenantSlug?: string, isSubdomain?: boolean, children: ReactNode }) {
-    // Derived state for easier consumption
-    // We treat 'default' as pending too, just in case legacy code passes it.
+export function SiteProvider({ siteId: initialSiteId, tenantSlug = '', isSubdomain = false, children }: { siteId: string, tenantSlug?: string, isSubdomain?: boolean, children: ReactNode }) {
+    const [siteId, setSiteId] = useState(initialSiteId);
     const isPending = !siteId || siteId === 'pending' || siteId === 'default';
 
     return (
-        <SiteContext.Provider value={{ siteId, tenantSlug, isPending, isSubdomain }}>
+        <SiteContext.Provider value={{ siteId, tenantSlug, isPending, isSubdomain, setSiteId }}>
             {children}
         </SiteContext.Provider>
     );

@@ -112,6 +112,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
             }
 
             if (!currentUser) {
+                // TokenBootstrap sedang memproses token — tunggu sampai selesai
+                if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('__token_bootstrapping')) return;
                 setUser(null);
                 setRole(null);
                 setPermissions([]);

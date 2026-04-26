@@ -2,8 +2,7 @@
 
 import { useEffect, useState, Suspense, useRef } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { httpsCallable } from 'firebase/functions';
-import { auth, functions } from '@/lib/firebase';
+import { auth } from '@/lib/firebase';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { clearSessionCookies } from '@/lib/session';
@@ -34,12 +33,25 @@ function AdminLoginForm() {
       const currentUser = auth.currentUser;
       if (!currentUser) throw new Error('Sesi tidak ditemukan.');
 
-      // 1. Resolve tenant — satu-satunya source of truth
-      const sites = await Promise.race([
-        getUserSites(currentUser.uid, currentUser.email),
-        new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('Timeout resolving tenant (5s).')), 5000)
-        ),
+      // 1+2. Resolve tenant & generate token in parallel
+      setStatus('Membuat token akses...');
+      const [sites, tokenRes] = await Promise.all([
+        Promise.race([
+          getUserSites(currentUser.uid, currentUser.email),
+          new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error('Timeout resolving tenant (5s).')), 5000)
+          ),
+        ]),
+        Promise.race([
+          fetch('/api/token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ uid: currentUser.uid }),
+          }),
+          new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error('Token timeout (10s).')), 10000)
+          ),
+        ]),
       ]);
 
       if (!sites || sites.length === 0) {
@@ -48,20 +60,11 @@ function AdminLoginForm() {
         return;
       }
 
+      if (!tokenRes.ok) throw new Error('Gagal membuat token.');
+      const { token } = await tokenRes.json();
+      if (!token) throw new Error('Token tidak diterima.');
+
       const site = sites[0];
-      setStatus('Membuat token akses...');
-
-      // 2. Generate handoff token
-      const result = await Promise.race([
-        httpsCallable(functions, 'generateHandoffToken')(),
-        new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('Token timeout (15s).')), 15000)
-        ),
-      ]);
-
-      const handoffData = result.data as { token?: string };
-      if (!handoffData?.token) throw new Error('Token tidak diterima.');
-      const token = handoffData.token;
 
       // 3. Set __session cookie — terbaca di semua *.clicker.id
       const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'clicker.id';
@@ -83,7 +86,7 @@ function AdminLoginForm() {
         ? (redirectTo.startsWith('http') ? new URL(redirectTo).pathname : redirectTo)
         : '/admin';
 
-      window.location.href = `${targetOrigin}${nextPath}#token=${encodeURIComponent(token)}`;
+      window.location.href = `${targetOrigin}${nextPath}#token=${encodeURIComponent(token)}&siteId=${encodeURIComponent(site.siteId)}`;
 
     } catch (err: any) {
       setError(`Gagal login: ${err.message}`);

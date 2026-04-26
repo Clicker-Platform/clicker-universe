@@ -169,7 +169,8 @@ export async function middleware(request: NextRequest) {
             }
 
             // If no activeSite cookie and not on callback/claim pages, redirect to Gateway
-            if (!activeSite && !pathname.startsWith('/admin/claim-admin')) {
+            // On localhost, skip this — TokenBootstrap sets the cookie client-side after first load
+            if (!activeSite && !isLocal && !pathname.startsWith('/admin/claim-admin')) {
                 const redirectBackUrl = buildRedirectUrl(pathname);
                 return NextResponse.redirect(`${gatewayUrl}?redirect=${encodeURIComponent(redirectBackUrl)}`);
             }
