@@ -133,6 +133,26 @@ export default function SeedModulesPage() {
                 ]
             };
             await setDoc(doc(db, 'modules', 'sales_pipeline'), salesPipelineModule);
+
+            const stocklensModule: ModuleDefinition = {
+                id: 'stocklens',
+                displayName: 'Stocklens',
+                description: 'AI-powered product scanner and inventory vault',
+                icon: 'scan-line',
+                version: '1.0.0',
+                enabled: true,
+                adminRoutes: [
+                    { path: '/admin/stocklens',          label: 'Scanner',  icon: 'scan-line', componentKey: 'stocklens:ScannerPage' },
+                    { path: '/admin/stocklens/vault',    label: 'Vault',    icon: 'vault',     componentKey: 'stocklens:VaultPage' },
+                    { path: '/admin/stocklens/settings', label: 'Settings', icon: 'settings',  componentKey: 'stocklens:SettingsPage', permission: 'settings' },
+                ],
+                publicRoutes: [],
+                collections: [
+                    'modules/stocklens/skus',
+                ],
+            };
+            await setDoc(doc(db, 'modules', 'stocklens'), stocklensModule);
+
             setStatus('Success: Modules seeded!');
         } catch (e: any) {
             logger.error('admin.modules.seed.failed', { siteId: 'platform', error: e });
@@ -140,15 +160,49 @@ export default function SeedModulesPage() {
         }
     };
 
+    const seedStocklens = async () => {
+        setStatus('Seeding stocklens...');
+        try {
+            const stocklensModule: ModuleDefinition = {
+                id: 'stocklens',
+                displayName: 'Stocklens',
+                description: 'AI-powered product scanner and inventory vault',
+                icon: 'scan-line',
+                version: '1.0.0',
+                enabled: true,
+                adminRoutes: [
+                    { path: '/admin/stocklens',          label: 'Scanner',  icon: 'scan-line', componentKey: 'stocklens:ScannerPage' },
+                    { path: '/admin/stocklens/vault',    label: 'Vault',    icon: 'vault',     componentKey: 'stocklens:VaultPage' },
+                    { path: '/admin/stocklens/settings', label: 'Settings', icon: 'settings',  componentKey: 'stocklens:SettingsPage', permission: 'settings' },
+                ],
+                publicRoutes: [],
+                collections: ['modules/stocklens/skus'],
+            };
+            await setDoc(doc(db, 'modules', 'stocklens'), stocklensModule);
+            setStatus('Success: Stocklens seeded!');
+        } catch (e: any) {
+            logger.error('admin.modules.seed.failed', { siteId: 'platform', error: e });
+            setStatus('Error: ' + e.message);
+        }
+    };
+
     return (
-        <div className="p-10">
+        <div className="p-10 space-y-4">
             <h1 className="text-2xl font-bold mb-4">Module Seeder</h1>
-            <button
-                onClick={seed}
-                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-            >
-                Seed Modules
-            </button>
+            <div className="flex gap-2 flex-wrap">
+                <button
+                    onClick={seed}
+                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                >
+                    Seed All Modules
+                </button>
+                <button
+                    onClick={seedStocklens}
+                    className="bg-emerald-600 text-white px-4 py-2 rounded hover:bg-emerald-700"
+                >
+                    Seed Stocklens Only
+                </button>
+            </div>
             <p className="mt-4 font-mono">{status}</p>
         </div>
     );

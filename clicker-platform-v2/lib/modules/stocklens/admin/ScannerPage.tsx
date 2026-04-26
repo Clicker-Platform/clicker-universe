@@ -154,28 +154,10 @@ export default function ScannerPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center shadow-lg">
-              <ScanLine className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl md:text-2xl font-bold text-neutral-900 dark:text-neutral-100">Stocklens Scanner</h1>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">AI-powered product identification & inventory</p>
-            </div>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Link href="/admin/stocklens/vault" className="flex items-center gap-1.5 text-sm rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 py-2 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition">
-            <Vault className="w-4 h-4" /> Vault ({vaultCount})
-          </Link>
-          <Link href="/admin/stocklens/settings" className="flex items-center gap-1.5 text-sm rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 py-2 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition">
-            <SettingsIcon className="w-4 h-4" /> Settings
-          </Link>
-        </div>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">Scanner</h1>
+        <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">Scan produk dengan AI untuk auto-identifikasi nama, brand, kategori, dan harga</p>
       </div>
 
       {/* API key warning */}
@@ -233,7 +215,7 @@ export default function ScannerPage() {
               <button
                 onClick={handleSave}
                 disabled={saving || !!duplicate || isViewOnly}
-                className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 px-4 py-3 font-semibold text-white shadow-lg shadow-yellow-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                className="w-full flex items-center justify-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-700 px-4 py-3 font-semibold text-white shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition"
               >
                 {saving ? 'Menyimpan...' : <><Save className="w-4 h-4" /> Simpan ke Vault</>}
               </button>
@@ -253,7 +235,7 @@ export default function ScannerPage() {
                 <button onClick={handleReset} className="flex items-center gap-2 rounded-lg border border-neutral-300 dark:border-neutral-700 px-4 py-2 text-sm font-medium hover:bg-neutral-50 dark:hover:bg-neutral-800 transition">
                   <RotateCcw className="w-4 h-4" /> Scan Lagi
                 </button>
-                <Link href="/admin/stocklens/vault" className="flex items-center gap-2 rounded-lg bg-yellow-500 hover:bg-yellow-600 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-yellow-500/20 transition">
+                <Link href="/admin/stocklens/vault" className="flex items-center gap-2 rounded-lg bg-yellow-500 hover:bg-yellow-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition">
                   <Vault className="w-4 h-4" /> Lihat Vault
                 </Link>
               </div>

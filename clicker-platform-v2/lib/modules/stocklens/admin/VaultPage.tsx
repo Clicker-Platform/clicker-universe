@@ -37,20 +37,14 @@ export default function VaultPage() {
   }), [skus, categoryFilter, search]);
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center shadow-lg">
-            <VaultIcon className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h1 className="text-xl md:text-2xl font-bold text-neutral-900 dark:text-neutral-100">Vault Inventory</h1>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">{skus.length} SKU · {categories.length} kategori</p>
-          </div>
+    <div className="space-y-6">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">Vault</h1>
+          <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">{skus.length} SKU · {categories.length} kategori tersimpan</p>
         </div>
-        <Link href="/admin/stocklens" className="flex items-center justify-center gap-1.5 text-sm rounded-lg bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 px-4 py-2 text-white font-medium shadow-lg shadow-yellow-500/20 transition">
-          <ScanLine className="w-4 h-4" /> Scan Produk Baru
+        <Link href="/admin/stocklens" className="shrink-0 inline-flex items-center gap-1.5 text-sm rounded-lg bg-blue-600 hover:bg-blue-700 px-4 py-2 text-white font-medium transition">
+          <ScanLine className="w-4 h-4" /> Scan Produk
         </Link>
       </div>
 

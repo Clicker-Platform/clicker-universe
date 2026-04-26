@@ -63,16 +63,10 @@ export default function StocklensSettingsPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-2">
-        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-neutral-700 to-neutral-900 flex items-center justify-center shadow-lg">
-          <SettingsIcon className="w-5 h-5 text-white" />
-        </div>
-        <div>
-          <h1 className="text-xl md:text-2xl font-bold text-neutral-900 dark:text-neutral-100">Stocklens Settings</h1>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400">Konfigurasi Gemini AI untuk product scanning</p>
-        </div>
+    <div className="max-w-3xl space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">Settings</h1>
+        <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">Konfigurasi Gemini AI untuk product scanning</p>
       </div>
 
       {/* API Key card */}
