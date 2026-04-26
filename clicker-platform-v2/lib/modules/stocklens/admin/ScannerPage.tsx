@@ -181,9 +181,6 @@ export default function ScannerPage() {
                 <span className="font-medium text-neutral-700 dark:text-neutral-300">Scan Produk Baru</span>
               </div>
               <ScanUploader onImageReady={handleImageReady} scanning={scanning} />
-              <p className="text-xs text-neutral-500 dark:text-neutral-400 text-center">
-                Foto akan dianalisa AI untuk identifikasi otomatis nama, brand, kategori, SKU, dan harga.
-              </p>
             </>
           )}
 
