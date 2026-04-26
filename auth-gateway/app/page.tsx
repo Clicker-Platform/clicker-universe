@@ -193,7 +193,7 @@ function AdminLoginForm() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 rounded-lg border-[2px] border-gray-300 focus:border-brand-dark focus:ring-0 outline-none transition-colors"
+              className="w-full px-4 py-2 rounded-lg border-2 border-gray-300 focus:border-brand-dark focus:ring-0 outline-none transition-colors"
               required
             />
           </div>
@@ -203,14 +203,14 @@ function AdminLoginForm() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 rounded-lg border-[2px] border-gray-300 focus:border-brand-dark focus:ring-0 outline-none transition-colors"
+              className="w-full px-4 py-2 rounded-lg border-2 border-gray-300 focus:border-brand-dark focus:ring-0 outline-none transition-colors"
               required
             />
           </div>
 
           <button
             type="submit"
-            className="w-full bg-brand-dark text-brand-green font-black uppercase py-3 rounded-xl border-[3px] border-brand-dark hover:bg-brand-green hover:text-brand-dark transition-all shadow-sticker hover:shadow-none translate-x-0 hover:translate-x-[2px] hover:translate-y-[2px]"
+            className="w-full bg-brand-dark text-brand-green font-black uppercase py-3 rounded-xl border-[3px] border-brand-dark hover:bg-brand-green hover:text-brand-dark transition-all shadow-sticker hover:shadow-none translate-x-0 hover:translate-x-0.5 hover:translate-y-0.5"
           >
             Enter Dashboard
           </button>
