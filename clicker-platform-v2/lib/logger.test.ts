@@ -65,7 +65,7 @@ describe('logger', () => {
       const { isFirestoreCritical } = await import('@/lib/logger');
       expect(isFirestoreCritical('upload.image.failed')).toBe(true);
       expect(isFirestoreCritical('wa.send.failed')).toBe(true);
-      expect(isFirestoreCritical('pos.checkout.failed')).toBe(true);
+      expect(isFirestoreCritical('stocklens.scan.route.failed')).toBe(true);
     });
 
     it('returns false for non-whitelisted events', async () => {

@@ -1,16 +1,13 @@
 const FIRESTORE_CRITICAL_EVENTS = new Set([
-  'middleware.env.missing',
-  'firebase.admin.init.failed',
-  'auth.callback.failed',
   'upload.image.failed',
   'upload.avatar.failed',
   'wa.send.failed',
   'wa.webhook.site.not.found',
   'ai.chat.failed',
   'form.submit.failed',
-  'pos.checkout.failed',
-  'service.record.create.failed',
-  'firestore.write.failed',
+  'stocklens.scan.route.failed',
+  'stocklens.apikey.fetch.failed',
+  'stocklens.scan.parse.failed',
 ]);
 
 export function isFirestoreCritical(event: string): boolean {
