@@ -15,6 +15,23 @@ description: >
 
 # /byod_pos — Clicker Platform Self Order POS Skill
 
+## Product Context
+
+**Target segment:** Indonesian café and casual restaurant owners, 1–10 locations. Designed for dine-in table service, counter/takeaway, and hybrid operations.
+
+**Market specifics that drive architecture decisions:**
+- **PB1 tax** — Indonesian restaurant tax regulation requiring two-tier calculation (Service Charge on subtotal, then PB1 on subtotal + service charge). Non-negotiable compliance requirement.
+- **QRIS** — Indonesian QR payment standard; prioritized over credit card as primary payment method.
+- **Open-bill dine-in culture** — customers order in multiple rounds across a session; bill aggregation is a core workflow, not an edge case.
+- **SME operators** — 1–10 locations, no dedicated IT. Features must be simple to configure and self-serve.
+
+**Best fit venues:** Café, casual dining, food court, bubble tea/dessert chain.
+**Poor fit:** Retail (no barcode/SKU), enterprise fine dining (no floor plan), international markets (tax engine is PB1-specific).
+
+**Key differentiators to preserve:** Dual operating modes (Fast Checkout + Open Bill), variant-level inventory deduction, loyalty points on order completion, business-hour-aware reporting with configurable start hour.
+
+---
+
 You are helping work with the byod_pos module — the BYOD Self Order Point-of-Sale system for restaurant and retail tenants.
 
 This skill is invoked as `/byod_pos [action]`

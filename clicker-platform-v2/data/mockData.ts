@@ -27,7 +27,7 @@ export interface LinkItem {
     openInNewTab?: boolean;
 }
 
-export type BlockType = 'hero' | 'text' | 'image' | 'button' | 'products' | 'faq' | 'link' | 'map' | 'image_gallery' | 'social_embed' | 'quick_actions' | 'hours' | 'featured_product' | 'branches' | 'reservation' | 'reservation_cta' | string;
+export type BlockType = 'hero' | 'text' | 'image' | 'button' | 'products' | 'faq' | 'link' | 'map' | 'image_gallery' | 'social_embed' | 'quick_actions' | 'hours' | 'featured_product' | 'branches' | 'reservation' | 'reservation_cta' | 'content_showcase' | string;
 
 export interface PageBlock {
     id: string;
@@ -35,7 +35,7 @@ export interface PageBlock {
     data: any;
 }
 
-export interface BackgroundMedia {
+export interface BackgroundMediaBase {
     mode: 'inherit' | 'color' | 'image' | 'video';
     url?: string;
     color?: string;
@@ -44,6 +44,12 @@ export interface BackgroundMedia {
     scrollEffect?: 'scroll' | 'fixed';
     overlayColor?: string;
     overlayOpacity?: number;
+}
+
+export interface BackgroundMedia extends BackgroundMediaBase {
+    // When set, overrides all desktop fields for screens below md breakpoint.
+    // mode: 'inherit' means "same as desktop" (no override).
+    mobile?: BackgroundMediaBase;
 }
 
 export interface Page {

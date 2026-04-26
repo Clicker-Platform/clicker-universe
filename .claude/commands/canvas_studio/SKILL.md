@@ -31,7 +31,7 @@ app/admin/(dashboard)/canvas/page.tsx
                 ├── Left Sidebar
                 │   ├── Icon strip (w-12)
                 │   │   ├── P/A/Z shortcuts → Switchable Panels
-                │   │   └── L/F/B/I shortcuts → Slide-over (Links/Forms/Products/Site Info)
+                │   │   └── L/F/B/I shortcuts → Slide-over (Links/Forms/Products/Site Info) + Branding (no hotkey)
                 │   └── Switchable Panels (w-56)
                 │       ├── PagesPanel          ← list + switch pages
                 │       ├── AddBlocksPanel      ← add new blocks
@@ -86,7 +86,8 @@ Defined in `components/admin/blocks/blockDefinitions.ts` (`BLOCK_OPTIONS`):
 |---|---|---|
 | `hero` | Hero Section | `{ title, subtitle, layoutVariant }` |
 | `text` | Text Content | `{ content: '<p>...</p>', layoutVariant }` |
-| `image` | Image | `{ alt, caption, layoutVariant }` |
+| `content_showcase` | Content Showcase | `{ ...DEFAULT_SHOWCASE_DATA, rows, layoutVariant }` |
+| `image` | Image | `{ media, caption, layoutVariant }` |
 | `button` | Button | `{ label, url, style: 'primary', layoutVariant }` |
 | `products` | Product List | `{ title, layoutVariant }` |
 | `faq` | FAQ List | `{ title, items: [{question, answer}], layoutVariant }` |
@@ -251,6 +252,8 @@ Module blocks are contributed by modules (e.g., `reservation`, `pos_menu`). They
 6. Add a label in `BlockOutlineItem.tsx → getBlockLabel()` — the default fallback renders `'Module ({type})'`
 
 > **Note:** The `reservation` block type exists in `BlockType` and is rendered by `BlockRenderer.tsx` via `ReservationBlock.tsx`, but currently has no form in `BlockFormRenderer`. It is treated as a read-only module block. If you need to make it editable, follow steps 3–6 above.
+>
+> **Note:** `reservation_cta` also exists in `BlockType` but has no BLOCK_OPTIONS entry, no form, and no case in `BlockRenderer`. It is a dangling type — do not use it until it is fully implemented.
 
 ---
 
@@ -412,6 +415,7 @@ Block form system:
   components/admin/blocks/blockDefinitions.ts            ← BLOCK_OPTIONS, getDefaultData()
   components/admin/blocks/forms/LayoutVariantPicker.tsx  ← layout switcher rendered above block forms
   components/admin/blocks/forms/HeroForm.tsx
+  components/admin/blocks/forms/ContentShowcaseForm.tsx
   components/admin/blocks/forms/TextForm.tsx
   components/admin/blocks/forms/ImageForm.tsx
   components/admin/blocks/forms/ButtonForm.tsx
@@ -429,14 +433,17 @@ Block rendering (shared admin + public):
   components/blocks/SafeBlockRenderer.tsx        ← error-boundary wrapper around every rendered block
   components/blocks/public/Default*.tsx          ← public block components
   components/blocks/public/DefaultSocialEmbedBlock.tsx
+  components/blocks/public/DefaultContentShowcaseBlock.tsx
+  components/blocks/public/MediaView.tsx         ← shared media renderer (image/video/lottie) used by image + content_showcase blocks
   components/blocks/public/ReservationBlock.tsx  ← reservation module block (read-only in canvas)
   components/blocks/public/LinkBlockClient.tsx   ← client-side interactive wrapper for link blocks
   components/blocks/public/ProductsBlockClient.tsx ← client-side interactive wrapper for product blocks
   components/blocks/public/cardStyles.ts         ← getCardClasses(), getTextColor()
   components/blocks/mrb/                        ← MRB template-specific block overrides (MrbHero, MrbQuickActions, MrbOperatingHours)
 
-Image uploads in blocks:
-  components/admin/blocks/BlockImageUploader.tsx ← image upload/preview widget
+Image/media uploads in blocks:
+  components/admin/blocks/BlockImageUploader.tsx    ← image upload/preview widget
+  components/admin/blocks/BackgroundMediaEditor.tsx ← background media editor (used by page/canvas background settings)
 
 Legacy block editor (deprecated — use BlockFormRenderer + CanvasStudio):
   components/admin/blocks/BlockEditor.tsx        ← older inline-expand editor, still present but superseded
@@ -447,6 +454,7 @@ Slide-over panels:
   components/admin/blocks/panels/FormsPanel.tsx
   components/admin/blocks/panels/ProductsPanel.tsx
   components/admin/blocks/panels/SiteInfoPanel.tsx
+  components/admin/blocks/panels/BrandingPanel.tsx  ← branding slide-over (no keyboard hotkey)
   components/admin/blocks/panels/HeaderNavPanel.tsx
   components/admin/blocks/panels/ChromeBottomNavProperties.tsx
 

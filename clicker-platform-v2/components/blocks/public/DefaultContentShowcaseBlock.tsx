@@ -33,6 +33,11 @@ function resolveRowLayout(row: ShowcaseRow, rowIndex: number, defaultLayout: Con
     return rowIndex % 2 === 0 ? 'image-left' : 'image-right';
 }
 
+function isSafeHref(href: string | undefined | null): boolean {
+    if (!href) return false;
+    return /^(https?:\/\/|\/|#|mailto:|tel:)/i.test(href);
+}
+
 function ctaClasses(variant: string): string {
     switch (variant) {
         case 'primary':
@@ -59,7 +64,7 @@ export const DefaultContentShowcaseBlock = ({ data }: { data: unknown }) => {
     const verticalAlignClass = VERTICAL_ALIGN_CLASS[showcase.verticalAlign] || VERTICAL_ALIGN_CLASS.center;
 
     return (
-        <section className={`w-full ${dv(d, 'py-6', 'md:py-10')}`}>
+        <section className={`w-full ${dv(d, 'py-6 px-4', 'md:py-10 md:px-8')}`}>
             <div className={`mx-auto ${maxWidthClass} flex flex-col ${rowGapClass}`}>
                 {showcase.rows.map((row, i) => (
                     <ShowcaseRowView
@@ -93,22 +98,28 @@ function ShowcaseRowView({
     const contentWidth = 100 - mediaWidth;
 
     const bgEnabled = showcase.rowBackgrounds.enabled;
-    const isEven = index % 2 === 1;
+    const isEven = index % 2 === 0;
     const bgColor = bgEnabled ? (isEven ? showcase.rowBackgrounds.evenColor : showcase.rowBackgrounds.oddColor) : undefined;
 
     const safeContent = sanitizeRichText(row.content);
-    const isMobile = d === 'mobile';
-    const mediaWidthPct = isMobile ? '100%' : `${mediaWidth}%`;
-    const contentWidthPct = isMobile ? '100%' : `${contentWidth}%`;
+    const isPreviewMobile = d === 'mobile';
+
+    // In canvas preview use JS-driven widths; in real browser let CSS handle it via flex-basis
+    const mediaStyle: React.CSSProperties = isPreviewMobile
+        ? { width: '100%', order: 0 }
+        : { flexBasis: `${mediaWidth}%`, flexShrink: 0, order: isLeft ? 0 : 1 };
+    const contentStyle: React.CSSProperties = isPreviewMobile
+        ? { width: '100%', order: 1 }
+        : { flexBasis: `${contentWidth}%`, minWidth: 0, order: isLeft ? 1 : 0 };
 
     const mediaNode = (
-        <div style={{ width: mediaWidthPct, order: isMobile ? 0 : isLeft ? 0 : 1 }}>
+        <div style={mediaStyle}>
             <MediaView media={row.media} className="rounded-lg" />
         </div>
     );
 
     const contentNode = (
-        <div className="space-y-4" style={{ width: contentWidthPct, order: isMobile ? 1 : isLeft ? 1 : 0 }}>
+        <div className="space-y-4" style={contentStyle}>
             <h3 className="text-2xl md:text-3xl font-black font-heading text-[var(--theme-foreground)] leading-tight">
                 {row.heading.text}
             </h3>
@@ -117,7 +128,7 @@ function ShowcaseRowView({
                 dangerouslySetInnerHTML={{ __html: safeContent }}
             />
             {row.cta?.enabled && row.cta.label && (
-                <a href={row.cta.href || '#'} className={ctaClasses(row.cta.variant)}>
+                <a href={isSafeHref(row.cta.href) ? row.cta.href : '#'} className={ctaClasses(row.cta.variant)}>
                     {row.cta.label}
                 </a>
             )}
@@ -126,15 +137,12 @@ function ShowcaseRowView({
 
     return (
         <div
-            className={`${dv(d, 'px-4 py-6', 'md:px-8 md:py-10')} rounded-xl`}
+            className={`${dv(d, 'py-6', 'md:py-10')} rounded-xl`}
             style={bgColor ? { background: bgColor } : undefined}
         >
             <div
-                className={`flex ${verticalAlignClass}`}
-                style={{
-                    flexDirection: isMobile ? 'column' : 'row',
-                    gap: isMobile ? '1.5rem' : '2.5rem',
-                }}
+                className={`flex flex-col md:flex-row ${verticalAlignClass}`}
+                style={{ flexDirection: isPreviewMobile ? 'column' : undefined, gap: isPreviewMobile ? '1.5rem' : '2.5rem' }}
             >
                 {mediaNode}
                 {contentNode}

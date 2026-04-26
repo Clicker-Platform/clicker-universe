@@ -4,6 +4,8 @@ import Image from 'next/image';
 import { useTemplate } from '@/components/TemplateProvider';
 import { getCardClasses } from './cardStyles';
 import { useDeviceView, dv } from '@/components/DeviceViewContext';
+import { MediaView } from './MediaView';
+import { MediaFieldValue, DEFAULT_MEDIA } from '@/components/admin/blocks/media-field/types';
 
 export const DefaultImageBlock = ({ data }: { data: any }) => {
     const { theme } = useTemplate();
@@ -12,7 +14,37 @@ export const DefaultImageBlock = ({ data }: { data: any }) => {
     const isGlass = cardStyle === 'glass';
     const radius = theme.borderRadius || 'var(--theme-radius)';
 
-    if (!data.url) return null;
+    // Resolve media: prefer new `media` field, fall back to legacy `url`
+    const media: MediaFieldValue | null = data.media
+        ? data.media
+        : data.url
+            ? { ...DEFAULT_MEDIA, type: 'image', src: data.url }
+            : null;
+
+    if (!media || !media.src) return null;
+
+    // If type is image but src looks like a video/lottie URL, don't attempt to render with next/image
+    const isVideoSrc = /youtu\.?be|vimeo\.com|\.(mp4|webm|ogg|json)(\?.*)?$/i.test(media.src);
+    if (media.type === 'image' && isVideoSrc) return null;
+
+    // Lottie and video: render via MediaView across all variants
+    if (media.type === 'lottie' || media.type === 'video') {
+        return (
+            <section className={`w-full ${dv(d, 'px-4', 'md:px-8')} py-6 max-w-5xl mx-auto`}>
+                <MediaView
+                    media={media}
+                    className={`shadow-md ${getCardClasses(cardStyle)}`}
+                    style={{ borderRadius: radius }}
+                />
+                {data.caption && (
+                    <p className={`text-center text-sm font-bold mt-4 italic ${isGlass ? 'text-white/50' : 'text-gray-500'}`}>
+                        {data.caption}
+                    </p>
+                )}
+            </section>
+        );
+    }
+
     const variant = data.layoutVariant || 'standard';
 
     if (variant === 'full-width') {
@@ -20,7 +52,7 @@ export const DefaultImageBlock = ({ data }: { data: any }) => {
             <section className="w-full">
                 <div className="w-full relative">
                     <Image
-                        src={data.url}
+                        src={media.src}
                         alt={data.caption || "Image"}
                         width={1920}
                         height={1080}
@@ -43,7 +75,7 @@ export const DefaultImageBlock = ({ data }: { data: any }) => {
             <section className={`w-full ${dv(d, 'p-4', 'md:p-8')} flex justify-center`}>
                 <div className={`overflow-hidden max-w-4xl w-full ${getCardClasses(cardStyle)}`} style={{ borderRadius: radius }}>
                     <Image
-                        src={data.url}
+                        src={media.src}
                         alt={data.caption || "Image"}
                         width={1200}
                         height={800}
@@ -68,7 +100,7 @@ export const DefaultImageBlock = ({ data }: { data: any }) => {
             <section className={`w-full ${dv(d, 'p-6', 'md:p-12')} max-w-6xl mx-auto flex ${dv(d, 'flex-col', 'md:flex-row')} items-center gap-8`}>
                 <div className={`flex-1 overflow-hidden shadow-lg ${getCardClasses(cardStyle)}`} style={{ borderRadius: radius }}>
                     <Image
-                        src={data.url}
+                        src={media.src}
                         alt={data.caption || "Image"}
                         width={800}
                         height={800}
@@ -95,7 +127,7 @@ export const DefaultImageBlock = ({ data }: { data: any }) => {
         <section className={`w-full ${dv(d, 'px-4', 'md:px-8')} py-6 max-w-5xl mx-auto`}>
             <div className={`overflow-hidden shadow-md ${getCardClasses(cardStyle)}`} style={{ borderRadius: radius }}>
                 <Image
-                    src={data.url}
+                    src={media.src}
                     alt={data.caption || "Image"}
                     width={1000}
                     height={600}
