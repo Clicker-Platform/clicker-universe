@@ -16,8 +16,11 @@ import { CONDITION_COLORS, CATEGORY_LABELS } from '../constants';
 export default function DetailPage() {
   const { siteId } = useSite();
   const { isViewOnly } = usePermission();
-  const params = useParams<{ skuId: string }>();
+  const params = useParams<{ slug: string[] }>();
   const router = useRouter();
+
+  // Catch-all route: slug = ['stocklens', 'vault', '<skuId>']
+  const skuId = Array.isArray(params.slug) ? params.slug[2] : undefined;
 
   const [sku, setSku] = useState<VaultSKU | null>(null);
   const [units, setUnits] = useState<VaultUnit[]>([]);
@@ -25,12 +28,12 @@ export default function DetailPage() {
   const [activePhoto, setActivePhoto] = useState(0);
 
   useEffect(() => {
-    if (!siteId || !params.skuId) return;
-    Promise.all([getVaultSKU(siteId, params.skuId), getVaultUnits(siteId, params.skuId)])
+    if (!siteId || !skuId) return;
+    Promise.all([getVaultSKU(siteId, skuId), getVaultUnits(siteId, skuId)])
       .then(([s, u]) => { setSku(s); setUnits(u); })
       .catch(e => logger.error('stocklens.detail.load.failed', { siteId, error: e }))
       .finally(() => setLoading(false));
-  }, [siteId, params.skuId]);
+  }, [siteId, skuId]);
 
   async function handleDeleteSKU() {
     if (!sku || isViewOnly) return;

@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { Key, Save, CheckCircle, Loader2 } from 'lucide-react';
+import { Key, Save, CheckCircle, Loader2, ExternalLink, Settings as SettingsIcon, Shield } from 'lucide-react';
+import Link from 'next/link';
 import { useSite } from '@/lib/site-context';
 import { logger } from '@/lib/logger-edge';
 
@@ -62,45 +63,98 @@ export default function StocklensSettingsPage() {
   }
 
   return (
-    <div className="max-w-lg space-y-6 p-6">
+    <div className="max-w-3xl mx-auto space-y-6">
+      {/* Header */}
       <div className="flex items-center gap-2">
-        <Key className="w-5 h-5 text-muted-foreground" />
-        <h2 className="text-lg font-semibold">Gemini API Key</h2>
-        {hasKey && (
-          <span className="ml-auto flex items-center gap-1 text-xs text-green-500">
-            <CheckCircle className="w-3.5 h-3.5" /> Terkonfigurasi
-          </span>
-        )}
+        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-neutral-700 to-neutral-900 flex items-center justify-center shadow-lg">
+          <SettingsIcon className="w-5 h-5 text-white" />
+        </div>
+        <div>
+          <h1 className="text-xl md:text-2xl font-bold text-neutral-900 dark:text-neutral-100">Stocklens Settings</h1>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400">Konfigurasi Gemini AI untuk product scanning</p>
+        </div>
       </div>
-      <p className="text-sm text-muted-foreground">
-        Masukkan Gemini API Key dari Google AI Studio. Key disimpan secara aman di server.
-      </p>
-      <input
-        type="password"
-        placeholder={hasKey ? '••••••••••••••••' : 'AIza...'}
-        value={apiKey}
-        onChange={e => setApiKey(e.target.value)}
-        className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-      />
-      <div className="flex gap-2">
-        <button
-          onClick={handleSave}
-          disabled={!apiKey.trim() || saving}
-          className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
-        >
-          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-          Simpan
-        </button>
-        {hasKey && (
+
+      {/* API Key card */}
+      <div className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm p-6 space-y-4">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-2">
+            <Key className="w-5 h-5 text-neutral-500 dark:text-neutral-400" />
+            <div>
+              <h2 className="text-base font-semibold text-neutral-900 dark:text-neutral-100">Gemini API Key</h2>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">Required untuk fitur scan AI</p>
+            </div>
+          </div>
+          {hasKey && (
+            <span className="flex items-center gap-1 text-xs font-medium text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded-full">
+              <CheckCircle className="w-3.5 h-3.5" /> Aktif
+            </span>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-xs font-medium text-neutral-700 dark:text-neutral-300">API Key</label>
+          <input
+            type="password"
+            placeholder={hasKey ? '••••••••••••••••  (sudah tersimpan)' : 'AIzaSy...'}
+            value={apiKey}
+            onChange={e => setApiKey(e.target.value)}
+            className="w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/30 focus:border-yellow-500 font-mono"
+          />
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 flex items-center gap-1">
+            Dapatkan API Key gratis dari
+            <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" className="text-yellow-600 dark:text-yellow-500 hover:underline inline-flex items-center gap-0.5 font-medium">
+              Google AI Studio <ExternalLink className="w-3 h-3" />
+            </a>
+          </p>
+        </div>
+
+        <div className="flex flex-wrap gap-2 pt-1">
           <button
-            onClick={handleTest}
-            disabled={testing}
-            className="flex items-center gap-2 rounded-md border px-4 py-2 text-sm font-medium disabled:opacity-50"
+            onClick={handleSave}
+            disabled={!apiKey.trim() || saving}
+            className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-yellow-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition"
           >
-            {testing ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
-            Test Koneksi
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            Simpan API Key
           </button>
-        )}
+          {hasKey && (
+            <button
+              onClick={handleTest}
+              disabled={testing}
+              className="flex items-center gap-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-4 py-2 text-sm font-medium hover:bg-neutral-50 dark:hover:bg-neutral-800 disabled:opacity-50 transition"
+            >
+              {testing ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+              Test Koneksi
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Security info */}
+      <div className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50 p-5 flex gap-3">
+        <Shield className="w-5 h-5 text-neutral-500 dark:text-neutral-400 shrink-0 mt-0.5" />
+        <div className="space-y-1.5">
+          <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">Keamanan API Key</p>
+          <ul className="text-xs text-neutral-600 dark:text-neutral-400 space-y-1 list-disc pl-4">
+            <li>Key tersimpan terenkripsi di Firestore tenant ini</li>
+            <li>Tidak terexpose ke browser — hanya digunakan server-side</li>
+            <li>Setiap tenant punya API Key terpisah (tidak shared)</li>
+            <li>Quota & billing dihitung di akun Google Cloud Anda sendiri</li>
+          </ul>
+        </div>
+      </div>
+
+      {/* Quick links */}
+      <div className="grid grid-cols-2 gap-3">
+        <Link href="/admin/stocklens" className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-4 hover:border-yellow-500/50 hover:shadow-sm transition group">
+          <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100 group-hover:text-yellow-600 dark:group-hover:text-yellow-500">Scanner →</p>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">Scan produk baru</p>
+        </Link>
+        <Link href="/admin/stocklens/vault" className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-4 hover:border-yellow-500/50 hover:shadow-sm transition group">
+          <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100 group-hover:text-yellow-600 dark:group-hover:text-yellow-500">Vault →</p>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">Lihat semua SKU</p>
+        </Link>
       </div>
     </div>
   );
