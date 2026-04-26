@@ -33,9 +33,9 @@ export const STATIC_MODULE_DEFINITIONS: Record<string, Partial<ModuleDefinition>
         displayName: 'Stocklens',
         description: 'AI-powered product scanner and inventory vault',
         adminRoutes: [
-            { label: 'Scanner',  path: '/admin/stocklens',          icon: 'scan-line', componentKey: 'stocklens:ScannerPage' },
-            { label: 'Vault',    path: '/admin/stocklens/vault',     icon: 'vault',     componentKey: 'stocklens:VaultPage' },
-            { label: 'Settings', path: '/admin/stocklens/settings',  icon: 'settings',  componentKey: 'stocklens:SettingsPage', permission: 'settings' },
+            { label: 'Scanner',  path: '/admin/stocklens/scanner',  icon: 'scan-line', componentKey: 'stocklens:ScannerPage' },
+            { label: 'Vault',    path: '/admin/stocklens/vault',    icon: 'vault',     componentKey: 'stocklens:VaultPage' },
+            { label: 'Settings', path: '/admin/stocklens/settings', icon: 'settings',  componentKey: 'stocklens:SettingsPage', permission: 'settings' },
         ]
     },
     'reservation': {

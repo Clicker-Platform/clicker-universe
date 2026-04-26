@@ -141,7 +141,7 @@ export default function StocklensSettingsPage() {
 
       {/* Quick links */}
       <div className="grid grid-cols-2 gap-3">
-        <Link href="/admin/stocklens" className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-4 hover:border-blue-500/50 hover:shadow-sm transition group">
+        <Link href="/admin/stocklens/scanner" className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-4 hover:border-blue-500/50 hover:shadow-sm transition group">
           <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100 group-hover:text-blue-600 dark:group-hover:text-blue-400">Scanner →</p>
           <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">Scan produk baru</p>
         </Link>

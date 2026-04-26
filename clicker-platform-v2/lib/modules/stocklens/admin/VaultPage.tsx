@@ -43,7 +43,7 @@ export default function VaultPage() {
           <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">Vault</h1>
           <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">{skus.length} SKU · {categories.length} kategori tersimpan</p>
         </div>
-        <Link href="/admin/stocklens" className="shrink-0 inline-flex items-center gap-1.5 text-sm rounded-lg bg-blue-600 hover:bg-blue-700 px-4 py-2 text-white font-medium transition">
+        <Link href="/admin/stocklens/scanner" className="shrink-0 inline-flex items-center gap-1.5 text-sm rounded-lg bg-blue-600 hover:bg-blue-700 px-4 py-2 text-white font-medium transition">
           <ScanLine className="w-4 h-4" /> Scan Produk
         </Link>
       </div>
@@ -100,7 +100,7 @@ export default function VaultPage() {
               Mulai bangun inventory dengan scan produk pertamamu. AI akan otomatis identifikasi nama, brand, kategori, dan harga.
             </p>
           </div>
-          <Link href="/admin/stocklens" className="inline-flex items-center gap-2 rounded-lg bg-blue-600 hover:bg-blue-700 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition">
+          <Link href="/admin/stocklens/scanner" className="inline-flex items-center gap-2 rounded-lg bg-blue-600 hover:bg-blue-700 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition">
             <ScanLine className="w-4 h-4" /> Scan Produk Pertama
           </Link>
         </div>

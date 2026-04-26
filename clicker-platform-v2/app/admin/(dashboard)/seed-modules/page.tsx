@@ -144,7 +144,7 @@ export default function SeedModulesPage() {
                 version: '1.0.0',
                 enabled: true,
                 adminRoutes: [
-                    { path: '/admin/stocklens',          label: 'Scanner',  icon: 'scan-line', componentKey: 'stocklens:ScannerPage' },
+                    { path: '/admin/stocklens/scanner',          label: 'Scanner',  icon: 'scan-line', componentKey: 'stocklens:ScannerPage' },
                     { path: '/admin/stocklens/vault',    label: 'Vault',    icon: 'vault',     componentKey: 'stocklens:VaultPage' },
                     { path: '/admin/stocklens/settings', label: 'Settings', icon: 'settings',  componentKey: 'stocklens:SettingsPage', permission: 'settings' },
                 ],
@@ -173,7 +173,7 @@ export default function SeedModulesPage() {
                 version: '1.0.0',
                 enabled: true,
                 adminRoutes: [
-                    { path: '/admin/stocklens',          label: 'Scanner',  icon: 'scan-line', componentKey: 'stocklens:ScannerPage' },
+                    { path: '/admin/stocklens/scanner',          label: 'Scanner',  icon: 'scan-line', componentKey: 'stocklens:ScannerPage' },
                     { path: '/admin/stocklens/vault',    label: 'Vault',    icon: 'vault',     componentKey: 'stocklens:VaultPage' },
                     { path: '/admin/stocklens/settings', label: 'Settings', icon: 'settings',  componentKey: 'stocklens:SettingsPage', permission: 'settings' },
                 ],
