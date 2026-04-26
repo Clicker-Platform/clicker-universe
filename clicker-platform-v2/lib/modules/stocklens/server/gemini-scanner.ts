@@ -48,6 +48,7 @@ export async function scanProductImage(
   const ai = new GoogleGenerativeAI(apiKey);
   const model = ai.getGenerativeModel({
     model: 'gemini-2.0-flash',
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     tools: [{ googleSearch: {} } as any],
   });
 
@@ -61,9 +62,9 @@ export async function scanProductImage(
   // Strip markdown code fences if present
   const jsonStr = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
 
-  let parsed: any;
+  let parsed: Record<string, unknown>;
   try {
-    parsed = JSON.parse(jsonStr);
+    parsed = JSON.parse(jsonStr) as Record<string, unknown>;
   } catch {
     logger.error('stocklens.scan.parse.failed', { siteId, raw: text });
     return {
@@ -78,24 +79,26 @@ export async function scanProductImage(
     };
   }
 
-  const category: CategoryCode = CATEGORY_CODES.includes(parsed.category)
-    ? parsed.category
+  const rawCategory = parsed.category as string;
+  const category: CategoryCode = (CATEGORY_CODES as readonly string[]).includes(rawCategory)
+    ? (rawCategory as CategoryCode)
     : 'GEN';
 
   const conditions: ItemCondition[] = ['BNIB', 'BNOB', 'SECOND', 'BROKEN'];
-  const suggestedCondition: ItemCondition = conditions.includes(parsed.suggestedCondition)
-    ? parsed.suggestedCondition
+  const rawCondition = parsed.suggestedCondition as string;
+  const suggestedCondition: ItemCondition = (conditions as string[]).includes(rawCondition)
+    ? (rawCondition as ItemCondition)
     : 'SECOND';
 
   return {
-    name: parsed.name || '',
-    brand: parsed.brand || '',
+    name: (parsed.name as string) || '',
+    brand: (parsed.brand as string) || '',
     category,
-    sku: parsed.sku || '',
-    series: parsed.series,
+    sku: (parsed.sku as string) || '',
+    series: parsed.series as string | undefined,
     releasePrice: Number(parsed.releasePrice) || 0,
     marketPrice: Number(parsed.marketPrice) || 0,
     suggestedCondition,
-    aiAnalysis: parsed.aiAnalysis || '',
+    aiAnalysis: (parsed.aiAnalysis as string) || '',
   };
 }

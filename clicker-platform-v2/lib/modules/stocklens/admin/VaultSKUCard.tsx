@@ -19,11 +19,15 @@ export function VaultSKUCard({ sku }: Props) {
 
   useEffect(() => {
     if (!open || units.length > 0) return;
-    setLoading(true);
-    getVaultUnits(siteId, sku.id)
-      .then(setUnits)
-      .finally(() => setLoading(false));
-  }, [open, siteId, sku.id, units.length]);
+    let cancelled = false;
+    Promise.resolve()
+      .then(() => { if (!cancelled) setLoading(true); })
+      .then(() => getVaultUnits(siteId, sku.id))
+      .then(data => { if (!cancelled) { setUnits(data); setLoading(false); } })
+      .catch(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, siteId, sku.id]);
 
   const byCondition = units.reduce((acc, u) => {
     acc[u.condition] = [...(acc[u.condition] || []), u];

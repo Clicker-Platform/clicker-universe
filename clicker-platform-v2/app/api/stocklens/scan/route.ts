@@ -20,8 +20,9 @@ export async function POST(req: NextRequest) {
 
     const result = await scanProductImage(siteId, base64, mimeType);
     return NextResponse.json(result);
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('stocklens.scan.route.failed', { error });
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

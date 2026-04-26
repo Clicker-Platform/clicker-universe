@@ -12,9 +12,10 @@ export async function GET(req: NextRequest) {
   try {
     const snap = await adminDb.doc(`sites/${siteId}/${STOCKLENS_CONFIG}`).get();
     return NextResponse.json({ hasKey: snap.exists && !!snap.data()?.apiKey });
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('stocklens.settings.get.failed', { error });
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
@@ -30,8 +31,9 @@ export async function POST(req: NextRequest) {
       { merge: true }
     );
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('stocklens.settings.post.failed', { error });
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

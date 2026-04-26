@@ -38,8 +38,8 @@ export default function DetailPage() {
       await deleteVaultSKU(siteId, sku.id);
       toast.success('SKU dihapus');
       router.push('/admin/stocklens/vault');
-    } catch (e: any) {
-      toast.error(e.message);
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Terjadi kesalahan');
     }
   }
 
@@ -49,8 +49,8 @@ export default function DetailPage() {
       await deleteVaultUnit(siteId, sku.id, unitId);
       setUnits(u => u.filter(x => x.id !== unitId));
       toast.success('Unit dihapus');
-    } catch (e: any) {
-      toast.error(e.message);
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Terjadi kesalahan');
     }
   }
 

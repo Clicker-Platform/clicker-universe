@@ -34,8 +34,8 @@ export default function StocklensSettingsPage() {
       setHasKey(true);
       setApiKey('');
       toast.success('API Key berhasil disimpan');
-    } catch (e: any) {
-      toast.error(e.message);
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Terjadi kesalahan');
     } finally {
       setSaving(false);
     }
@@ -54,8 +54,8 @@ export default function StocklensSettingsPage() {
         if (data.error?.includes('API Key')) throw new Error(data.error);
       }
       toast.success('Koneksi Gemini berhasil');
-    } catch (e: any) {
-      toast.error('Test gagal: ' + e.message);
+    } catch (e: unknown) {
+      toast.error('Test gagal: ' + (e instanceof Error ? e.message : 'Unknown error'));
     } finally {
       setTesting(false);
     }

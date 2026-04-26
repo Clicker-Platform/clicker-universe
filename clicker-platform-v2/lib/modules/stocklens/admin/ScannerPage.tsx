@@ -48,26 +48,27 @@ export default function ScannerPage() {
       formData.append('siteId', siteId);
       formData.append('image', file);
       const res = await fetch('/api/stocklens/scan', { method: 'POST', body: formData });
-      const data: ScanResult = await res.json();
-      if (!res.ok) throw new Error((data as any).error || 'Scan gagal');
+      const data: unknown = await res.json();
+      if (!res.ok) throw new Error((data as Record<string, string>).error || 'Scan gagal');
+      const scanData = data as ScanResult;
 
-      setScanResult(data);
-      setMarketPrice(data.marketPrice);
-      setCondition(data.suggestedCondition);
+      setScanResult(scanData);
+      setMarketPrice(scanData.marketPrice);
+      setCondition(scanData.suggestedCondition);
       setPhase('result');
 
       const checkRes = await fetch('/api/stocklens/check-sku', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ siteId, sku: data.sku }),
+        body: JSON.stringify({ siteId, sku: scanData.sku }),
       });
       const checkData = await checkRes.json();
       if (checkData.exists) {
         setDuplicate({ skuId: checkData.skuId, existingData: checkData.existingData });
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       logger.error('stocklens.scanner.scan.failed', { siteId, error: e });
-      toast.error(e.message || 'Scan gagal. Coba lagi.');
+      toast.error(e instanceof Error ? e.message : 'Scan gagal. Coba lagi.');
       setPhase('upload');
     } finally {
       setScanning(false);
@@ -123,9 +124,9 @@ export default function ScannerPage() {
 
       setPhase('saved');
       toast.success('Berhasil disimpan ke Vault');
-    } catch (e: any) {
+    } catch (e: unknown) {
       logger.error('stocklens.scanner.save.failed', { siteId, error: e });
-      toast.error(e.message || 'Gagal menyimpan');
+      toast.error(e instanceof Error ? e.message : 'Gagal menyimpan');
     } finally {
       setSaving(false);
     }

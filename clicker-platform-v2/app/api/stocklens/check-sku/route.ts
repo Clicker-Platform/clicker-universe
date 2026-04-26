@@ -24,8 +24,9 @@ export async function POST(req: NextRequest) {
 
     const docSnap = snap.docs[0];
     return NextResponse.json({ exists: true, skuId: docSnap.id, existingData: { id: docSnap.id, ...docSnap.data() } });
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('stocklens.check-sku.failed', { error });
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
