@@ -61,11 +61,18 @@ describe('logger', () => {
   });
 
   describe('isFirestoreCritical', () => {
-    it('returns true for whitelisted events', async () => {
+    it('returns true for whitelisted server events', async () => {
       const { isFirestoreCritical } = await import('@/lib/logger');
       expect(isFirestoreCritical('upload.image.failed')).toBe(true);
       expect(isFirestoreCritical('wa.send.failed')).toBe(true);
       expect(isFirestoreCritical('stocklens.scan.route.failed')).toBe(true);
+    });
+
+    it('returns true for whitelisted client events (received via beacon)', async () => {
+      const { isFirestoreCritical } = await import('@/lib/logger');
+      expect(isFirestoreCritical('auth.callback.failed')).toBe(true);
+      expect(isFirestoreCritical('stocklens.vault.load.failed')).toBe(true);
+      expect(isFirestoreCritical('stocklens.scanner.scan.failed')).toBe(true);
     });
 
     it('returns false for non-whitelisted events', async () => {

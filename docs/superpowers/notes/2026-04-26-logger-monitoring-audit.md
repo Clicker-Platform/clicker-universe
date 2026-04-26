@@ -2,7 +2,13 @@
 
 **Date:** 2026-04-26
 **Branch:** dev-logging
-**Status:** Implemented (Opsi A — Konservatif)
+**Status:** Wired end-to-end via client beacon (revision 2)
+
+> Revision history:
+> - **v1 (initial):** Opsi A konservatif — split logger.ts vs logger-edge.ts to fix
+>   client bundle build error, expand whitelist to 9 server-side events.
+> - **v2 (this):** Add `/api/log/client-error` beacon so client errors also reach
+>   Backyard Monitoring. Whitelist expanded to ~40 platform-wide events.
 
 ---
 
@@ -70,6 +76,81 @@ digraph logger_decision {
 - `lib/modules/{x}/server/*.ts`
 - `lib/modules/byod_pos/api-server.ts`, `lib/whatsapp/*.ts`
 - `lib/modules/ai-sales-agent/server/gemini-client.ts`, `lib/modules/stocklens/server/gemini-scanner.ts`
+
+---
+
+## Client Beacon (revision 2)
+
+### Problem identified
+
+After v1 split, only server-side events reached Backyard Monitoring. Of the
+~215 unique error events called platform-wide, ~89 are from client components
+(using logger-edge) and never wrote to Firestore. Critical user-facing
+failures like `auth.callback.failed`, `template.save.failed`, and
+`stocklens.vault.load.failed` were invisible to operators.
+
+### Solution
+
+Two new components wire client errors to Backyard:
+
+**1. `app/api/log/client-error/route.ts`** — POST endpoint that:
+- Accepts `{ event, level, siteId, meta }` payload
+- Re-validates event against `FIRESTORE_CRITICAL_EVENTS` (defense-in-depth
+  against tampered client requests)
+- Applies the same dedupe-key + 500-writes/day quota as direct server logging
+- Writes to `platform_logs` with `service: 'clicker-platform-client'` so
+  client-origin entries are distinguishable from server in Backyard
+- Never throws — failed beacons must not affect UX
+
+**2. `lib/logger-edge.ts` beacon function** — fire-and-forget:
+- Filters by `NOISY_PREFIXES` (analytics, fetch, dashboard listeners) before
+  network call to avoid burning quota on auto-recovering events
+- Uses `navigator.sendBeacon` when available (survives page unload, async
+  by design); falls back to `fetch` with `keepalive: true`
+- Runs only in browser (`typeof window !== 'undefined'` guard)
+- Forwards error-level only — warn/info stay console-only
+
+### Flow
+
+```
+[Client component]
+  logger.error('template.save.failed', { siteId, error })
+    │
+    ├──> console.error  (always — visible in DevTools + GCP Logs)
+    │
+    └──> beacon (if browser + level=error + non-noisy prefix)
+           │
+           └──> POST /api/log/client-error
+                  │
+                  ├── re-check FIRESTORE_CRITICAL_EVENTS whitelist
+                  ├── re-check 500/day quota
+                  ├── apply dedupe key (5-min window)
+                  │
+                  └──> platform_logs/{dedupeKey}
+                         {
+                           level: 'error',
+                           event: 'template.save.failed',
+                           service: 'clicker-platform-client',
+                           siteId,
+                           meta,
+                           ts, ttl, count
+                         }
+                              │
+                              └──> Backyard Monitoring tab ✓
+```
+
+### Filter strategy
+
+**Client-side fast filter (NOISY_PREFIXES):** drops without network call
+- `analytics.*` — high-volume tracking events
+- `fetch.*` — read failures auto-recover via retry
+- `admin.dashboard.*`, `admin.sidebar.*`, `admin.unread.*` — listener noise
+- `inbox.*` — inbox listener disconnects
+
+**Server-side authoritative filter:** `FIRESTORE_CRITICAL_EVENTS` Set match.
+~50 events covering: auth, uploads, WhatsApp, AI, forms, team, business
+config, modules (stocklens), templates, canvas, cache. Updated by adding
+events to logger.ts as new modules ship.
 
 ---
 
@@ -219,7 +300,34 @@ Saat membuat modul baru atau menemukan event yang perlu monitoring:
 - `clicker-platform-v2/lib/logger.test.ts` — test suite
 - `backyard/` — dashboard yang menampilkan `platform_logs` collection
 
+## Cara Menambah Event Client/Server ke Monitoring
+
+1. **Tentukan kekritisan event** — apakah memenuhi salah satu criteria:
+   - User-facing failure yang harus alert ops?
+   - Cross-tenant / platform-level concern?
+   - Silent failure yang tidak akan ketahuan?
+
+   Jika tidak salah satu di atas → biarkan console-only, jangan tambahkan.
+
+2. **Tambahkan event name** ke `FIRESTORE_CRITICAL_EVENTS` di `lib/logger.ts`
+   pada section yang sesuai (auth/upload/wa/ai/forms/dll).
+
+3. **Tidak perlu update `lib/logger-edge.ts`** — beacon-nya generic, hanya
+   filter berdasarkan prefix. Jika event prefix-nya tidak masuk
+   `NOISY_PREFIXES`, otomatis di-forward ke server.
+
+4. **Untuk client event yang ingin di-log tapi prefix-nya noisy:** rename
+   event ke prefix lain (e.g. `analytics.payment.critical.failed` → 
+   `payment.analytics.critical.failed`), atau adjust `NOISY_PREFIXES` jika
+   prefix tersebut secara umum bermanfaat di-monitor.
+
+5. **Jangan tambahkan event yang:**
+   - High-volume / noisy (akan habiskan quota 500/hari cepat)
+   - Auto-recovery / retry-able tanpa user impact
+   - Already covered oleh event yang lebih agregat
+
 ## Commits Terkait
 
 - `9be31ac` — fix(platform): use logger-edge in client-bundled files to fix production build
 - `5699871` — chore(logger): clean Firestore critical events whitelist + add stocklens
+- *(pending commit)* — feat(logger): client error beacon to /api/log/client-error

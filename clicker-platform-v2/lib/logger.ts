@@ -1,13 +1,104 @@
+// Critical events that warrant a Firestore write to platform_logs (visible
+// in Backyard Monitoring). Both server-direct writes (writeToFirestore in
+// this file) and client beacons (/api/log/client-error) consult this list.
+//
+// Inclusion criteria:
+// 1. User-facing failure (login broken, save lost, payment fail) — must alert
+// 2. Cross-tenant / platform-level concern (auth, billing, integrations)
+// 3. Silent failure that wouldn't otherwise be noticed (webhooks, schedulers)
+//
+// Exclusion (kept out by lib/logger-edge.ts NOISY_PREFIXES too):
+// - analytics.*, fetch.*, *.dashboard.*, *.sidebar.*, *.unread.*, inbox.*
+//   (high-volume listeners that auto-recover)
+// - *.fetch.failed for read-only data with retry
 const FIRESTORE_CRITICAL_EVENTS = new Set([
+  // ─── Auth & access ──────────────────────────────────────────────────────
+  'auth.callback.failed',
+  'auth.check.failed',
+  'auth.sites.fetch.failed',
+  'admin.auth.logout.failed',
+
+  // ─── Uploads ────────────────────────────────────────────────────────────
   'upload.image.failed',
   'upload.avatar.failed',
+
+  // ─── WhatsApp ───────────────────────────────────────────────────────────
   'wa.send.failed',
+  'wa.connect.failed',
+  'wa.disconnect.failed',
   'wa.webhook.site.not.found',
+  'wa.webhook.process.failed',
+
+  // ─── AI (chat & marketing) ──────────────────────────────────────────────
   'ai.chat.failed',
+  'ai.agent.config.failed',
+  'ai.agent.chat.send.failed',
+  'ai.agent.settings.save.failed',
+  'ai.marketing.generate.failed',
+
+  // ─── Forms & submissions ────────────────────────────────────────────────
   'form.submit.failed',
+  'admin.form.save.failed',
+  'admin.form.delete.failed',
+  'crm.submission.update.failed',
+
+  // ─── Team & permissions ─────────────────────────────────────────────────
+  'team.add.failed',
+  'team.remove.failed',
+  'admin.team.members.fetch.failed',
+
+  // ─── Business config ────────────────────────────────────────────────────
+  'admin.business.settings.update.failed',
+  'admin.business.branch.save.failed',
+  'admin.business.branch.delete.failed',
+
+  // ─── Modules: stocklens ─────────────────────────────────────────────────
   'stocklens.scan.route.failed',
   'stocklens.apikey.fetch.failed',
   'stocklens.scan.parse.failed',
+  'stocklens.scanner.scan.failed',
+  'stocklens.scanner.save.failed',
+  'stocklens.vault.load.failed',
+  'stocklens.detail.load.failed',
+  'stocklens.settings.load.failed',
+
+  // ─── Module catalog operations ──────────────────────────────────────────
+  'admin.modules.seed.failed',
+  'admin.products.save.failed',
+  'admin.products.delete.failed',
+  'admin.links.save.failed',
+  'admin.links.delete.failed',
+  'admin.services.save.failed',
+  'admin.services.delete.failed',
+
+  // ─── Templates ──────────────────────────────────────────────────────────
+  'template.fetch.failed',
+  'template.save.failed',
+  'template.delete.failed',
+  'template.assign.failed',
+  'admin.template.save.failed',
+  'admin.template.seed.failed',
+  'admin.template.settings.fetch.failed',
+
+  // ─── Canvas Studio / Pages / Blocks ─────────────────────────────────────
+  'canvas.page.save.failed',
+  'canvas.page.load.failed',
+  'canvas.block.save.failed',
+  'canvas.block.delete.failed',
+  'canvas.publish.failed',
+  'canvas.media.upload.failed',
+  'admin.pages.save.failed',
+  'admin.pages.delete.failed',
+  'admin.pages.publish.failed',
+  'admin.links.pages.fetch.failed',
+  'fetch.page.failed',
+
+  // ─── Bookings ───────────────────────────────────────────────────────────
+  'admin.bookings.listener.failed',
+
+  // ─── Cache & infra ──────────────────────────────────────────────────────
+  'cache.purge.failed',
+  'knowledge.sync.failed',
 ]);
 
 export function isFirestoreCritical(event: string): boolean {
