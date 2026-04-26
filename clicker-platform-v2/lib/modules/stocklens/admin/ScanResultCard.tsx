@@ -14,7 +14,7 @@ export function ScanResultCard({ result, marketPrice, onMarketPriceChange }: Pro
   return (
     <div className="rounded-xl border bg-card p-4 space-y-3">
       <div className="flex items-center gap-2">
-        <span className="text-xs font-mono text-muted-foreground uppercase tracking-widest">Codex Result</span>
+        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Detail Produk</span>
         <div className="h-px flex-1 bg-border" />
       </div>
       <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">

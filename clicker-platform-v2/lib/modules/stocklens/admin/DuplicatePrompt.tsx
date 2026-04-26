@@ -14,9 +14,9 @@ export function DuplicatePrompt({ sku, onDifferentiate, onMerge }: Props) {
   const [showYear, setShowYear] = useState(false);
 
   return (
-    <div className="rounded-xl border border-yellow-400/30 bg-yellow-400/5 p-4 space-y-3">
+    <div className="rounded-xl border border-amber-300 dark:border-amber-700/50 bg-amber-50 dark:bg-amber-900/20 p-4 space-y-3">
       <div className="flex items-start gap-2">
-        <AlertTriangle className="w-4 h-4 text-yellow-400 mt-0.5 shrink-0" />
+        <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
         <div>
           <p className="text-sm font-medium"><code className="text-xs bg-muted px-1 rounded">{sku}</code> sudah ada di Vault.</p>
           <p className="text-xs text-muted-foreground mt-0.5">Bedakan versi tahun, atau tambahkan unit ke SKU yang sama?</p>
@@ -44,7 +44,7 @@ export function DuplicatePrompt({ sku, onDifferentiate, onMerge }: Props) {
         <div className="flex gap-2">
           <button
             onClick={() => setShowYear(true)}
-            className="flex-1 rounded-lg border border-yellow-400/50 px-3 py-2 text-xs font-medium hover:bg-muted"
+            className="flex-1 rounded-lg border border-amber-400 dark:border-amber-600/60 text-amber-700 dark:text-amber-300 px-3 py-2 text-xs font-medium hover:bg-amber-100 dark:hover:bg-amber-900/30"
           >
             Ya, Bedakan
           </button>

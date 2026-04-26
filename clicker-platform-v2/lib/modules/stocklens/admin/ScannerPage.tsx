@@ -178,7 +178,7 @@ export default function ScannerPage() {
           {phase === 'upload' && (
             <>
               <div className="flex items-center gap-2 text-sm">
-                <Sparkles className="w-4 h-4 text-yellow-500" />
+                <Sparkles className="w-4 h-4 text-blue-500" />
                 <span className="font-medium text-neutral-700 dark:text-neutral-300">Scan Produk Baru</span>
               </div>
               <ScanUploader onImageReady={handleImageReady} scanning={scanning} />
@@ -235,7 +235,7 @@ export default function ScannerPage() {
                 <button onClick={handleReset} className="flex items-center gap-2 rounded-lg border border-neutral-300 dark:border-neutral-700 px-4 py-2 text-sm font-medium hover:bg-neutral-50 dark:hover:bg-neutral-800 transition">
                   <RotateCcw className="w-4 h-4" /> Scan Lagi
                 </button>
-                <Link href="/admin/stocklens/vault" className="flex items-center gap-2 rounded-lg bg-yellow-500 hover:bg-yellow-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition">
+                <Link href="/admin/stocklens/vault" className="flex items-center gap-2 rounded-lg bg-blue-600 hover:bg-blue-700 px-4 py-2 text-sm font-medium text-white shadow-sm transition">
                   <Vault className="w-4 h-4" /> Lihat Vault
                 </Link>
               </div>
@@ -249,8 +249,8 @@ export default function ScannerPage() {
           <div className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm p-5">
             <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-3">Statistik Vault</p>
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center shadow-lg">
-                <Box className="w-6 h-6 text-white" />
+              <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                <Box className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
                 <p className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">{vaultCount}</p>
@@ -262,7 +262,7 @@ export default function ScannerPage() {
           {/* How it works */}
           <div className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm p-5 space-y-3">
             <div className="flex items-center gap-2">
-              <Zap className="w-4 h-4 text-yellow-500" />
+              <Zap className="w-4 h-4 text-blue-500" />
               <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">Cara Kerja</p>
             </div>
             <ol className="space-y-2.5 text-xs text-neutral-600 dark:text-neutral-400">

@@ -93,11 +93,11 @@ export default function StocklensSettingsPage() {
             placeholder={hasKey ? '••••••••••••••••  (sudah tersimpan)' : 'AIzaSy...'}
             value={apiKey}
             onChange={e => setApiKey(e.target.value)}
-            className="w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/30 focus:border-yellow-500 font-mono"
+            className="w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 font-mono"
           />
           <p className="text-xs text-neutral-500 dark:text-neutral-400 flex items-center gap-1">
             Dapatkan API Key gratis dari
-            <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" className="text-yellow-600 dark:text-yellow-500 hover:underline inline-flex items-center gap-0.5 font-medium">
+            <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" className="text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-0.5 font-medium">
               Google AI Studio <ExternalLink className="w-3 h-3" />
             </a>
           </p>
@@ -107,7 +107,7 @@ export default function StocklensSettingsPage() {
           <button
             onClick={handleSave}
             disabled={!apiKey.trim() || saving}
-            className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-yellow-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            className="flex items-center gap-2 rounded-lg bg-blue-600 hover:bg-blue-700 px-4 py-2 text-sm font-medium text-white shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition"
           >
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
             Simpan API Key
@@ -141,12 +141,12 @@ export default function StocklensSettingsPage() {
 
       {/* Quick links */}
       <div className="grid grid-cols-2 gap-3">
-        <Link href="/admin/stocklens" className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-4 hover:border-yellow-500/50 hover:shadow-sm transition group">
-          <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100 group-hover:text-yellow-600 dark:group-hover:text-yellow-500">Scanner →</p>
+        <Link href="/admin/stocklens" className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-4 hover:border-blue-500/50 hover:shadow-sm transition group">
+          <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100 group-hover:text-blue-600 dark:group-hover:text-blue-400">Scanner →</p>
           <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">Scan produk baru</p>
         </Link>
-        <Link href="/admin/stocklens/vault" className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-4 hover:border-yellow-500/50 hover:shadow-sm transition group">
-          <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100 group-hover:text-yellow-600 dark:group-hover:text-yellow-500">Vault →</p>
+        <Link href="/admin/stocklens/vault" className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-4 hover:border-blue-500/50 hover:shadow-sm transition group">
+          <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100 group-hover:text-blue-600 dark:group-hover:text-blue-400">Vault →</p>
           <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">Lihat semua SKU</p>
         </Link>
       </div>

@@ -11,10 +11,10 @@ export const CONDITION_LABELS = {
 } as const;
 
 export const CONDITION_COLORS = {
-  BNIB: 'text-yellow-400 border-yellow-400',
-  BNOB: 'text-cyan-400 border-cyan-400',
-  SECOND: 'text-yellow-300 border-yellow-300',
-  BROKEN: 'text-red-400 border-red-400',
+  BNIB: 'text-emerald-600 dark:text-emerald-400 border-emerald-300 dark:border-emerald-700/50 bg-emerald-50 dark:bg-emerald-900/20',
+  BNOB: 'text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-700/50 bg-blue-50 dark:bg-blue-900/20',
+  SECOND: 'text-amber-600 dark:text-amber-400 border-amber-300 dark:border-amber-700/50 bg-amber-50 dark:bg-amber-900/20',
+  BROKEN: 'text-red-600 dark:text-red-400 border-red-300 dark:border-red-700/50 bg-red-50 dark:bg-red-900/20',
 } as const;
 
 export const CATEGORY_CODES = [

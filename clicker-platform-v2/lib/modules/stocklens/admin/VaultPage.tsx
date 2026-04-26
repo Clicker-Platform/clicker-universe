@@ -57,7 +57,7 @@ export default function VaultPage() {
             placeholder="Cari nama produk atau SKU..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/30 focus:border-yellow-500"
+            className="w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500"
           />
         </div>
 
@@ -69,7 +69,7 @@ export default function VaultPage() {
                 onClick={() => setCategoryFilter(cat)}
                 className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium transition
                   ${categoryFilter === cat
-                    ? 'bg-yellow-500 text-white border-yellow-500 shadow-sm shadow-yellow-500/20'
+                    ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
                     : 'border-neutral-300 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800'
                   }`}
               >
@@ -83,7 +83,7 @@ export default function VaultPage() {
       {/* Loading */}
       {loading && (
         <div className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-12 text-center">
-          <div className="inline-block w-8 h-8 border-2 border-neutral-300 dark:border-neutral-700 border-t-yellow-500 rounded-full animate-spin" />
+          <div className="inline-block w-8 h-8 border-2 border-neutral-300 dark:border-neutral-700 border-t-blue-500 rounded-full animate-spin" />
           <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-3">Memuat vault...</p>
         </div>
       )}
@@ -91,8 +91,8 @@ export default function VaultPage() {
       {/* Empty state */}
       {!loading && skus.length === 0 && (
         <div className="rounded-2xl border-2 border-dashed border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900/50 p-12 text-center space-y-4">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center mx-auto shadow-lg">
-            <Package className="w-8 h-8 text-white" />
+          <div className="w-16 h-16 rounded-2xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mx-auto">
+            <Package className="w-8 h-8 text-blue-600 dark:text-blue-400" />
           </div>
           <div>
             <p className="text-base font-semibold text-neutral-900 dark:text-neutral-100">Vault masih kosong</p>
@@ -100,7 +100,7 @@ export default function VaultPage() {
               Mulai bangun inventory dengan scan produk pertamamu. AI akan otomatis identifikasi nama, brand, kategori, dan harga.
             </p>
           </div>
-          <Link href="/admin/stocklens" className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-yellow-500 to-yellow-600 px-5 py-2.5 text-sm font-medium text-white shadow-lg shadow-yellow-500/20 hover:from-yellow-600 hover:to-yellow-700 transition">
+          <Link href="/admin/stocklens" className="inline-flex items-center gap-2 rounded-lg bg-blue-600 hover:bg-blue-700 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition">
             <ScanLine className="w-4 h-4" /> Scan Produk Pertama
           </Link>
         </div>
