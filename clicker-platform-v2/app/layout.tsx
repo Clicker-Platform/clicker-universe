@@ -28,8 +28,6 @@ export const revalidate = 3600; // Enable ISR for layout
 export async function generateMetadata(): Promise<Metadata> {
   const headersList = await headers();
   const siteId = headersList.get('x-site-id') || 'default';
-  const isAdmin = headersList.get('x-is-admin') === '1';
-  if (isAdmin) return { title: 'Clicker Admin' };
   const settings = await fetchSiteSettings(siteId);
 
   return {
@@ -68,10 +66,9 @@ export default async function RootLayout({
       }
     }
 
-  // Admin routes: skip Upstash/Firestore fetch — admin has its own theme (AdminThemeProvider)
-  const isAdmin = headersList.get('x-is-admin') === '1';
-
-  const settings = (!isAdmin && siteId && siteId !== 'pending' && siteId !== 'default')
+  // 4. THEME REGISTRY requests
+  // 2. Fetch Settings (Only if we have a valid siteId)
+  const settings = (siteId && siteId !== 'pending' && siteId !== 'default')
     ? await fetchSiteSettings(siteId)
     : null;
 
@@ -89,7 +86,7 @@ export default async function RootLayout({
         className={`${figtree.variable} ${spaceMono.variable} antialiased font-sans`}
       >
         <SiteProvider siteId={siteId} tenantSlug={tenantSlug} isSubdomain={isSubdomain}>
-          {!isAdmin && <ThemeRegistry initialSettings={settings} />}
+          <ThemeRegistry initialSettings={settings} />
           <AnalyticsTracker />
           <div className="flex-grow w-full">
             {children}
