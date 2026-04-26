@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { ExternalLink, Wrench } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 import { getServiceTypes, toggleServiceType } from '../api';
 import type { ServiceType } from '../types';
 import Link from 'next/link';

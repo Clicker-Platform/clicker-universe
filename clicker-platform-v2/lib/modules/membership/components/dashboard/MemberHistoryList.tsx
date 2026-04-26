@@ -9,7 +9,7 @@ import { Calendar, CreditCard, ChevronRight } from 'lucide-react';
 import { POSOrder } from '@/lib/modules/byod_pos/types';
 import { FileText, X } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 interface MemberHistoryListProps {
     memberId: string;

@@ -8,7 +8,7 @@ import { Eye, MousePointer2, TrendingUp, Link as LinkIcon, ShoppingBag } from 'l
 import { DashboardSkeleton } from '@/components/skeletons/DashboardSkeleton';
 import { useSite } from '@/lib/site-context';
 import { getSiteStatsTotals } from '@/lib/analytics/counters';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 interface DashboardLink {
     id: string;

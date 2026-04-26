@@ -6,7 +6,7 @@ import { getServices, getReservationSettings } from '../api';
 import { getStaffMembers } from '../staff';
 import { Service, Staff } from '../types';
 import { useSite } from '@/lib/site-context';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 export default function ReservationWidget({
     siteId: propSiteId,

@@ -13,7 +13,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useSite } from '@/lib/site-context';
 import { purgeTenantCache } from '@/lib/admin/purgeCache';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 interface BusinessSettingsClientProps {
     initialHours: BusinessHours;

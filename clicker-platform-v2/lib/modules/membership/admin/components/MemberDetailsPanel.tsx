@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 import { usePermission } from '@/lib/hooks/use-permission';
 import { useSite } from '@/lib/site-context';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 import { SlideOverPanel } from '@/components/admin/blocks/SlideOverPanel';
 import { MobileBottomSheet } from '@/components/admin/blocks/MobileBottomSheet';
 

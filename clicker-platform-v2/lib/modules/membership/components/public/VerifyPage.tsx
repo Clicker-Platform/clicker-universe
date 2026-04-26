@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { isSignInWithEmailLink, signInWithEmailLink, User } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { Loader2, CheckCircle2, AlertTriangle, ArrowRight } from 'lucide-react';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 export default function VerifyPage() {
     const router = useRouter();

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { db } from '@/lib/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { ModuleDefinition } from '@/lib/modules/types';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 export default function SeedModulesPage() {
     const [status, setStatus] = useState('Idle');

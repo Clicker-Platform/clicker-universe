@@ -12,7 +12,7 @@ import { SubmitButton } from '@/components/admin/SubmitButton';
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 import { useSite } from '@/lib/site-context';
 import { purgeTenantCache } from '@/lib/admin/purgeCache';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 import {
     DndContext,
     closestCenter,

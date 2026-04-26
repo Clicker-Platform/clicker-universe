@@ -13,7 +13,7 @@ import { CLIENT_MODULE_COMPONENTS } from '@/lib/modules/client-registry';
 import { Loader2, LogOut } from 'lucide-react';
 
 import { useSite } from '@/lib/site-context';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 export default function MemberDashboard() {
     const { siteId } = useSite();

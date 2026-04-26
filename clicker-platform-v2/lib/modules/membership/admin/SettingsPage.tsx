@@ -5,7 +5,7 @@ import { Save, AlertCircle, Lock, RefreshCw, CheckCircle2 } from 'lucide-react';
 import { getMembershipSettings, updateMembershipSettings, backfillMemberCodes } from '../api';
 import { MembershipSettings, Tier, DEFAULT_TIER_THRESHOLDS } from '../types';
 import { useSite } from '@/lib/site-context';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 import { usePermission } from '@/lib/hooks/use-permission';
 
 export default function MembershipSettingsPage() {

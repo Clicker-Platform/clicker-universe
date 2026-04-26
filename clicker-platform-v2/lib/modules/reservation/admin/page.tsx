@@ -13,7 +13,7 @@ import {
 } from '@/lib/modules/reservation/api';
 import { Booking, Service, Staff } from '@/lib/modules/reservation/types';
 import { useSite } from '@/lib/site-context';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 import Link from 'next/link';
 import { toast } from 'sonner';

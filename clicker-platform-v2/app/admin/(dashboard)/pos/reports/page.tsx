@@ -17,7 +17,7 @@ import { downloadAsCSV } from '@/lib/utils/export';
 import { getPOSSettings } from '@/lib/modules/byod_pos/api';
 import { Timestamp, QueryDocumentSnapshot } from 'firebase/firestore';
 import { useSite } from '@/lib/site-context';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 export default function POSReportsPage() {
     const { siteId } = useSite();

@@ -9,7 +9,7 @@ import { collection, query, where, onSnapshot, doc } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase';
 import { signOut, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { subscribeToEnabledModules, MODULE_ICONS, getRouteIdFromPath } from '@/lib/modules/registry';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 import { STATIC_MODULE_DEFINITIONS } from '@/lib/modules/definitions';
 import { ModuleDefinition } from '@/lib/modules/types';
 import { useSite } from '@/lib/site-context';

@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 import { useSite } from '@/lib/site-context'; // New import
 import { useTemplate } from '@/components/TemplateProvider';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 interface POSMemberLookupProps {
     onMemberSelect: (member: Member | null) => void;

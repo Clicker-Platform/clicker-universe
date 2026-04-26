@@ -16,7 +16,7 @@ import { IconSelector } from '@/components/admin/IconSelector';
 import { ICON_MAP } from '@/data/icons';
 import { useSite } from '@/lib/site-context';
 import { purgeTenantCache } from '@/lib/admin/purgeCache';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 export default function TemplateClient() {
     const { siteId } = useSite();

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Settings } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 import { getReservationSettings, updateReservationSettings } from '@/lib/modules/reservation/api';
 import { isModuleEnabled } from '@/lib/modules/registry';
 import type { ReservationSettings, PricingDisplay } from '@/lib/modules/reservation/types';

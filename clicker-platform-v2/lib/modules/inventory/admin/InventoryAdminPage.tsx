@@ -10,7 +10,7 @@ import { collection, getDocs, query, orderBy, deleteDoc, doc, updateDoc, where }
 import { toast } from 'sonner';
 import { useSite } from '@/lib/site-context'; // New import
 import { usePermission } from '@/components/admin/PermissionGuard'; // Import
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 import { InventorySkeleton } from './InventorySkeleton';
 import { InventoryItemForm } from './InventoryItemForm';

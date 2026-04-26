@@ -8,7 +8,7 @@ import { Plus, Trash2, User, CheckCircle, XCircle, Edit2, X, Save, Settings, Loa
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 import { toast } from 'sonner';
 import { useSite } from '@/lib/site-context';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 interface StaffClientProps {
     initialStaff?: Staff[];

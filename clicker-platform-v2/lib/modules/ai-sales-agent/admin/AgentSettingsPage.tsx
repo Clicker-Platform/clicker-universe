@@ -6,7 +6,7 @@ import { db } from '@/lib/firebase';
 import { toast } from 'sonner';
 import { Save, Bot, MessageSquare, Loader2, Sparkles, RefreshCw, Power, Brain, Settings2 } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 interface AgentConfig {
     enabled: boolean;

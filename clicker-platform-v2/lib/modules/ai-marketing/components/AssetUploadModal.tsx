@@ -5,7 +5,7 @@ import { X, Upload, Loader2, ImageIcon } from 'lucide-react';
 import { uploadToStorage } from '@/lib/upload';
 import { useSite } from '@/lib/site-context';
 import { auth } from '@/lib/firebase';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 import { apiPost, apiGet } from '../api';
 import { API, STORAGE_FOLDER } from '../constants';
 import { AssetType } from '../types';

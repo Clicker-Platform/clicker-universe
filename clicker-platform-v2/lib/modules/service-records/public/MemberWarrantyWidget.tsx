@@ -6,7 +6,7 @@ import { db } from '@/lib/firebase';
 import { SR_WARRANTY_CARDS } from '../constants';
 import type { WarrantyCard } from '../types';
 import { ShieldCheck, ExternalLink, Clock } from 'lucide-react';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 interface Props {
     siteId: string;

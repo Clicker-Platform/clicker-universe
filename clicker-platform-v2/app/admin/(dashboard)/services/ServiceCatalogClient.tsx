@@ -18,7 +18,7 @@ import {
 import type { ServiceCatalogItem, ServiceCategoryConfig } from '@/lib/core/serviceCatalog/types';
 import { DEFAULT_SERVICE_CATEGORIES } from '@/lib/core/serviceCatalog/types';
 import { getReservationSettings } from '@/lib/modules/reservation/api';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 import type { PricingDisplay } from '@/lib/modules/reservation/types';
 
 // ─── Color presets for category manager ────────────────────────────────────────

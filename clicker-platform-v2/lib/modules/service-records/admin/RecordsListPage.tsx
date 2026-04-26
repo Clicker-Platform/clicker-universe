@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Plus, Search, ClipboardList } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 import { getServiceRecords } from '../api';
 import { RecordStatusBadge } from './components/RecordStatusBadge';
 import { PaymentStatusBadge } from './components/PaymentStatusBadge';

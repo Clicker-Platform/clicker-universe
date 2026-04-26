@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSite } from '@/lib/site-context';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 import { useUser } from '@/lib/user-context';
 import { getServiceConfig, updateServiceConfig } from '../api';
 import type { ServiceConfig } from '../types';

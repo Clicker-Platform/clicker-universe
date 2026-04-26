@@ -8,7 +8,7 @@ import { FormBuilderClient } from './FormBuilderClient';
 import { Form } from '@/data/mockData';
 import { Loader2 } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 export default function BuilderPage() {
     const searchParams = useSearchParams();

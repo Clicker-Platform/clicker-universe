@@ -6,7 +6,7 @@ import { POSBlock } from './POSWidget';
 import { Loader2 } from 'lucide-react';
 
 import { useSite } from '@/lib/site-context';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 export default function POSBlockClient() {
     const { siteId } = useSite();

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { NavigationItem } from '@/data/mockData';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 export interface TopNavActions {
     showSearch?: boolean;

@@ -6,7 +6,7 @@ import { FileText, Calendar, Trash2 } from 'lucide-react';
 import { Form } from '@/data/mockData';
 import { useRouter } from 'next/navigation';
 import { useSite } from '@/lib/site-context';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 import { AlertDialog } from '@/components/common/AlertDialog';

@@ -5,7 +5,7 @@ import { signInWithCustomToken } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getUserSites } from '@/lib/admin-auth';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 /**
  * Decode a JWT payload without verification (client-side only).

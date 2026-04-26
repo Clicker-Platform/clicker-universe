@@ -6,7 +6,7 @@ import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { ShieldCheck, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 export default function ClaimAdminPage() {
     const [user, setUser] = useState<any>(null);

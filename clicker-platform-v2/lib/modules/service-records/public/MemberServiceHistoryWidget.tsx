@@ -6,7 +6,7 @@ import { db } from '@/lib/firebase';
 import { SR_RECORDS, OUTLET_ID_V1 } from '../constants';
 import type { ServiceRecord } from '../types';
 import { Wrench } from 'lucide-react';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 interface Props {
     siteId: string;

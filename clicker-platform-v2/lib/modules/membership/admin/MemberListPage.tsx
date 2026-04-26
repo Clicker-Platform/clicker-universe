@@ -5,7 +5,7 @@ import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { toast } from 'sonner';
 import { Loader2, Plus, Search, User, X } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 import { createMember, getMembershipSettings } from '../api';
 import { Member, MembershipSettings, getTier, TIER_COLORS, DEFAULT_TIER_THRESHOLDS } from '../types';
 import { usePermission } from '@/lib/hooks/use-permission';

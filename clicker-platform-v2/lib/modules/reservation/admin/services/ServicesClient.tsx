@@ -5,7 +5,7 @@ import { Service } from '@/lib/modules/reservation/types';
 import { getServices } from '@/lib/modules/reservation/api';
 import { Search, Clock, LayoutGrid, List as ListIcon, ExternalLink } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 import Link from 'next/link';
 
 import { ReservationBreadcrumb } from '../components/ReservationBreadcrumb';

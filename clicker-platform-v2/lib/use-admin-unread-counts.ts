@@ -5,7 +5,7 @@ import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { db, auth } from '@/lib/firebase';
 import { useSite } from '@/lib/site-context';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 interface AdminUnreadCounts {
     unreadInbox: number;

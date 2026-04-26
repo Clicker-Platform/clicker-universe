@@ -1,7 +1,7 @@
 'use client';
 
 import { useSite } from '@/lib/site-context';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 import { useState, useMemo } from 'react';
 import {

@@ -6,7 +6,7 @@ import { doc, onSnapshot, Unsubscribe } from 'firebase/firestore';
 import { signInAnonymously, onAuthStateChanged, User } from 'firebase/auth';
 import { toast } from 'sonner';
 import { POSOrder } from './types';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 interface OrderTrackerContextType {
     activeOrderIds: string[];

@@ -13,7 +13,7 @@ import { POSMemberLookup } from './POSMemberLookup';
 import { Member } from '@/lib/modules/membership/types';
 import { auth } from '@/lib/firebase';
 import { getPOSSettings, addToOrder, requestPayment } from '@/lib/modules/byod_pos/api';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 import { POSSettings } from '@/lib/modules/byod_pos/types';
 import { useSearchParams } from 'next/navigation';
 import { CartProvider } from '../cart-context';

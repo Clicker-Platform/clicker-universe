@@ -5,7 +5,7 @@ import { createBooking } from '@/lib/modules/reservation/api';
 import { Service, Staff } from '@/lib/modules/reservation/types';
 import { Clock, User, Check, ChevronLeft, ChevronRight, Loader2, Search } from 'lucide-react';
 import { useSite } from '@/lib/site-context'; // New import
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 interface AdminBookingWizardProps {
     initialServices: Service[];

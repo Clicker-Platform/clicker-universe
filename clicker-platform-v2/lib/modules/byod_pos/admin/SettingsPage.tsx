@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { Save, Loader2, CreditCard, LayoutTemplate, Hash } from 'lucide-react';
 
 import { useSite } from '@/lib/site-context';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 export default function POSSettingsPage() {
     const { siteId } = useSite();

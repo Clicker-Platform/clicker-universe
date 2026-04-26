@@ -17,7 +17,7 @@ import { getPOSSettings } from '@/lib/modules/byod_pos/api';
 import { POSSettings } from '@/lib/modules/byod_pos/types';
 import { useSite } from '@/lib/site-context';
 import { usePermission } from '@/components/admin/PermissionGuard';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 export default function POSClient({ initialOrders = [] }: { initialOrders?: POSOrder[] }) {
     const { siteId } = useSite();

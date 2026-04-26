@@ -4,7 +4,7 @@
 import React, { useState } from 'react';
 import { db } from '@/lib/firebase';
 import { doc, setDoc } from 'firebase/firestore';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 const MODULE_DEF = {
     id: 'membership',

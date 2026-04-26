@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { sendSignInLinkToEmail } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { Loader2, Mail, ArrowRight, CheckCircle2 } from 'lucide-react';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 export default function LoginPage() {
     const [step, setStep] = useState<'INPUT' | 'SENT'>('INPUT');

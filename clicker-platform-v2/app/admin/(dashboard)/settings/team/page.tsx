@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useSite } from '@/lib/site-context';
 import { db, auth } from '@/lib/firebase';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 import { collection, onSnapshot, query, where, doc, getDoc } from 'firebase/firestore'; // Removed deleteDoc/setDoc as we use API
 import { Plus, Mail, Shield, Trash2, X, Loader2, User, Clock } from 'lucide-react';
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';

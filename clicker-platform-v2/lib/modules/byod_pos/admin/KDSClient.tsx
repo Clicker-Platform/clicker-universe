@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { POSOrderCard } from './components/POSOrderCard';
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 import { useSite } from '@/lib/site-context'; // New import
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 export default function KDSClient({ initialOrders = [] }: { initialOrders?: POSOrder[] }) {
     const { siteId } = useSite();

@@ -5,7 +5,7 @@ import { Globe, FileText, Upload, Database, RefreshCw, AlertCircle } from 'lucid
 import { db } from '@/lib/firebase';
 import { doc, setDoc, onSnapshot } from 'firebase/firestore';
 import { toast } from 'sonner';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 interface AgentTrainingSectionProps {
     siteId?: string;

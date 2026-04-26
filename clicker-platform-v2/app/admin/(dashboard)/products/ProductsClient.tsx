@@ -9,7 +9,7 @@ import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { useSite } from '@/lib/site-context';
 import { purgeTenantCache } from '@/lib/admin/purgeCache';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 const ProductFormModal = dynamic(() => import('./ProductFormModal').then(mod => mod.ProductFormModal), {
     ssr: false,

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Form, FormField } from '@/data/mockData';
 import { Plus, Trash2, Save, ArrowLeft, GripVertical, Settings } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 interface FormBuilderClientProps {
     initialForm?: Form;

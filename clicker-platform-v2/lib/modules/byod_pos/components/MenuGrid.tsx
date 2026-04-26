@@ -12,7 +12,7 @@ import { POSItem } from '@/lib/modules/byod_pos/types';
 import { VariantSelectionDialog } from './VariantSelectionDialog';
 import { useSite } from '@/lib/site-context';
 import { useTemplate } from '@/components/TemplateProvider';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 function AddButton({ disabled, onClick, primaryColor, borderColor }: {
     disabled: boolean;

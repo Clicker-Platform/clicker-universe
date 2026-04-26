@@ -4,7 +4,7 @@ import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ChevronLeft, Car, User, ExternalLink, X } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import {

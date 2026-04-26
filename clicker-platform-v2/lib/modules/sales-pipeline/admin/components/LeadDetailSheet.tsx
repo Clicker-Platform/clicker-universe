@@ -8,7 +8,7 @@ import { Loader2, Trash2, X, Calendar, User } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useSite } from '@/lib/site-context';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 interface LeadDetailSheetProps {
     lead: Lead | null;

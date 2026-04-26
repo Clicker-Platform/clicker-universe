@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { BarChart3, Download, Printer, TrendingUp, Clock, CheckCircle2, XCircle, Car, CreditCard, Shield, Users } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 import { downloadAsCSV } from '@/lib/utils/export';
 import { Timestamp } from 'firebase/firestore';
 import {

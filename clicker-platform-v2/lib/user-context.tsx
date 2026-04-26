@@ -6,7 +6,7 @@ import { doc, getDoc, onSnapshot, DocumentSnapshot, FirestoreError } from 'fireb
 import { auth, db } from '@/lib/firebase';
 import { useSite } from '@/lib/site-context';
 import { Role } from '@/lib/rbac';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 interface ModuleAccess {
     [routeId: string]: 'full' | 'view' | 'none'; // sub-route permissions

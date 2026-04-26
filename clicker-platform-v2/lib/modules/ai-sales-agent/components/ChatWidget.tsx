@@ -5,7 +5,7 @@ import { MessageSquare, X, Send, Minus } from 'lucide-react';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { ChatMessage } from '../types';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 interface ChatWidgetProps {
     siteId: string;

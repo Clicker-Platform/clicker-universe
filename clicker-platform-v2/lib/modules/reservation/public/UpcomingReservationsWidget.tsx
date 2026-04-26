@@ -5,7 +5,7 @@ import { collection, query, where, getDocs, orderBy, Timestamp } from 'firebase/
 import { db } from '@/lib/firebase';
 import { Calendar, Clock, MapPin } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 // Define strict minimal interface for what we read
 interface WidgetBooking {

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Plus, Edit2, Car, Search, AlertTriangle, List } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useSite } from '@/lib/site-context';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 import { getVehicles, createVehicle, updateVehicle, findVehicleByPlate, getCarCatalog, addCarCatalogEntry, updateCarCatalogEntry } from '../api';
 import type { Vehicle, CarCatalogEntry, VehicleType } from '../types';
 

@@ -13,7 +13,7 @@ import { getPOSSettings } from '@/lib/modules/byod_pos/api';
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 import { useSite } from '@/lib/site-context';
 import { usePermission } from '@/components/admin/PermissionGuard';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 export default function CashierClient({ initialOrders = [] }: { initialOrders?: POSOrder[] }) {
     const { siteId } = useSite();

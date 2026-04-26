@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Bell, Clock, Mail } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 import { useUser } from '@/lib/user-context';
 import { getServiceConfig, updateServiceConfig, getReminderQueue } from '../api';
 import type { ServiceConfig, ReminderQueueEntry } from '../types';

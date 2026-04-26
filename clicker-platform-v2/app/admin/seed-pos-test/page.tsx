@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 export default function SeedPOSTest() {
     const [status, setStatus] = useState('Idle');

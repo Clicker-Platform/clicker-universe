@@ -11,7 +11,7 @@ import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 import { POSMenuItemDialog } from './components/POSMenuItemDialog';
 import { POSCategoryManagerModal } from './components/POSCategoryManagerModal';
 import { useSite } from '@/lib/site-context';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 interface POSItem {
     id: string;

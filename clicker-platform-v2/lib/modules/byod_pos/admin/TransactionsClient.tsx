@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 
 import { HistorySidebar } from './components/HistorySidebar';
 import { useSite } from '@/lib/site-context';
-import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger-edge';
 
 export default function TransactionsClient({ initialOrders = [] }: { initialOrders?: POSOrder[] }) {
     const { siteId } = useSite();
