@@ -13,7 +13,6 @@ function AdminLoginForm() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isChecking, setIsChecking] = useState(true);
-  const [status, setStatus] = useState('');
 
   // Guard: prevent double performHandoff from onAuthStateChanged + handleLogin racing
   const handoffInProgress = useRef(false);
@@ -28,13 +27,10 @@ function AdminLoginForm() {
     handoffInProgress.current = true;
 
     try {
-      setStatus('Mencari akses tenant...');
-
       const currentUser = auth.currentUser;
       if (!currentUser) throw new Error('Sesi tidak ditemukan.');
 
       // 1+2. Resolve tenant & generate token in parallel
-      setStatus('Membuat token akses...');
       const [sites, tokenRes] = await Promise.all([
         Promise.race([
           getUserSites(currentUser.uid, currentUser.email),
@@ -74,7 +70,6 @@ function AdminLoginForm() {
       document.cookie = `__session=${site.siteId}; path=/; max-age=${60 * 60 * 24 * 30}; SameSite=Lax${secureAttr}${domainAttr}`;
 
       // 4. Redirect langsung ke /admin — token di fragment (tidak masuk server log)
-      setStatus('Mengalihkan ke dashboard...');
       const isFirebaseDefaultDomain = baseDomain.includes('.web.app');
       const targetOrigin = isFirebaseDefaultDomain
         ? `https://${baseDomain}/${site.slug}`
@@ -134,7 +129,6 @@ function AdminLoginForm() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setStatus('Authenticating...');
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
@@ -149,7 +143,6 @@ function AdminLoginForm() {
         errorMessage = err.message;
       }
       setError(`⚠️ Login Gagal: ${errorMessage}`);
-      setStatus('');
       setIsChecking(false);
     }
   };
@@ -159,7 +152,7 @@ function AdminLoginForm() {
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <div className="flex flex-col items-center">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-brand-dark border-t-transparent mb-4"></div>
-          <p className="text-brand-dark font-bold animate-pulse">{status || 'Checking session...'}</p>
+          <p className="text-brand-dark font-bold animate-pulse">Mempersiapkan dashboard...</p>
         </div>
       </div>
     );

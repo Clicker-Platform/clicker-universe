@@ -7,32 +7,34 @@ export interface UserSite {
     name: string;
 }
 
+function toSite(d: { id: string; data: () => Record<string, any> }): UserSite {
+    return { siteId: d.id, slug: d.data().slug || d.id, name: d.data().name || 'My Site' };
+}
+
 export async function getUserSites(uid: string, email: string | null): Promise<UserSite[]> {
-    const sites: UserSite[] = [];
     const seen = new Set<string>();
+    const sites: UserSite[] = [];
 
-    // 1. Owner by ownerId
-    const ownerSnap = await getDocs(query(collection(db, 'sites'), where('ownerId', '==', uid)));
-    ownerSnap.forEach(d => {
-        if (!seen.has(d.id)) {
-            seen.add(d.id);
-            sites.push({ siteId: d.id, slug: d.data().slug || d.id, name: d.data().name || 'My Site' });
-        }
+    // 1+2. Query ownerId & ownerEmail in parallel — saves ~200ms for email-based fallback
+    const queries: Promise<any>[] = [
+        getDocs(query(collection(db, 'sites'), where('ownerId', '==', uid))),
+        email ? getDocs(query(collection(db, 'sites'), where('ownerEmail', '==', email))) : Promise.resolve(null),
+    ];
+    const [ownerSnap, emailSnap] = await Promise.all(queries);
+
+    ownerSnap.forEach((d: any) => {
+        if (!seen.has(d.id)) { seen.add(d.id); sites.push(toSite(d)); }
     });
-
-    // 2. Owner by ownerEmail (fallback for seeded data)
-    if (email && sites.length === 0) {
-        const emailSnap = await getDocs(query(collection(db, 'sites'), where('ownerEmail', '==', email)));
-        emailSnap.forEach(d => {
-            if (!seen.has(d.id)) {
-                seen.add(d.id);
-                sites.push({ siteId: d.id, slug: d.data().slug || d.id, name: d.data().name || 'My Site' });
-            }
+    if (emailSnap) {
+        emailSnap.forEach((d: any) => {
+            if (!seen.has(d.id)) { seen.add(d.id); sites.push(toSite(d)); }
         });
     }
 
-    // 3. Staff member (collectionGroup)
-    if (email && sites.length === 0) {
+    if (sites.length > 0) return sites;
+
+    // 3. Staff member (collectionGroup) — only if not an owner
+    if (email) {
         try {
             const memberSnap = await getDocs(query(collectionGroup(db, 'members'), where('email', '==', email)));
             await Promise.all(memberSnap.docs.map(async memberDoc => {
@@ -40,9 +42,7 @@ export async function getUserSites(uid: string, email: string | null): Promise<U
                 if (!siteRef || seen.has(siteRef.id)) return;
                 seen.add(siteRef.id);
                 const siteDoc = await getDoc(doc(db, 'sites', siteRef.id));
-                if (siteDoc.exists()) {
-                    sites.push({ siteId: siteDoc.id, slug: siteDoc.data().slug || siteDoc.id, name: siteDoc.data().name || 'My Site' });
-                }
+                if (siteDoc.exists()) sites.push(toSite(siteDoc as any));
             }));
         } catch { /* missing index — graceful skip */ }
     }
