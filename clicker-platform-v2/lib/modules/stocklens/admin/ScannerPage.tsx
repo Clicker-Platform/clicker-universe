@@ -171,8 +171,7 @@ export default function ScannerPage() {
         </div>
       )}
 
-      {/* Main grid: scanner + sidebar */}
-      <div className="grid lg:grid-cols-[1fr_320px] gap-6">
+      <div className="space-y-4">
         {/* Scanner panel */}
         <div className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm p-6 space-y-5">
           {phase === 'upload' && (
@@ -243,59 +242,38 @@ export default function ScannerPage() {
           )}
         </div>
 
-        {/* Side info */}
-        <aside className="space-y-4">
-          {/* Stats card */}
-          <div className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm p-5">
-            <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-3">Statistik Vault</p>
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                <Box className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+        {/* Compact info row */}
+        {phase === 'upload' && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-4 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
+                <Box className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               </div>
-              <div>
-                <p className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">{vaultCount}</p>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400">SKU tersimpan</p>
+              <div className="min-w-0">
+                <p className="text-xl font-bold text-neutral-900 dark:text-neutral-100">{vaultCount}</p>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">SKU di Vault</p>
+              </div>
+            </div>
+            <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-4 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
+                <Zap className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">AI Vision</p>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">Gemini + Google Search</p>
+              </div>
+            </div>
+            <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-4 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
+                <Sparkles className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">Auto-detect</p>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">Nama, brand, harga, SKU</p>
               </div>
             </div>
           </div>
-
-          {/* How it works */}
-          <div className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm p-5 space-y-3">
-            <div className="flex items-center gap-2">
-              <Zap className="w-4 h-4 text-blue-500" />
-              <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">Cara Kerja</p>
-            </div>
-            <ol className="space-y-2.5 text-xs text-neutral-600 dark:text-neutral-400">
-              <li className="flex gap-2">
-                <span className="shrink-0 w-5 h-5 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-[10px] font-bold text-neutral-600 dark:text-neutral-400">1</span>
-                <span>Upload atau ambil foto produk</span>
-              </li>
-              <li className="flex gap-2">
-                <span className="shrink-0 w-5 h-5 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-[10px] font-bold text-neutral-600 dark:text-neutral-400">2</span>
-                <span>AI Gemini menganalisa & cari data via Google Search</span>
-              </li>
-              <li className="flex gap-2">
-                <span className="shrink-0 w-5 h-5 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-[10px] font-bold text-neutral-600 dark:text-neutral-400">3</span>
-                <span>Pilih kondisi (BNIB/BNOB/2ND/BRKN) & adjust harga</span>
-              </li>
-              <li className="flex gap-2">
-                <span className="shrink-0 w-5 h-5 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-[10px] font-bold text-neutral-600 dark:text-neutral-400">4</span>
-                <span>Simpan ke Vault — siap dijual</span>
-              </li>
-            </ol>
-          </div>
-
-          {/* Tips */}
-          <div className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50 p-5 space-y-2">
-            <p className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">💡 Tips foto bagus</p>
-            <ul className="space-y-1 text-xs text-neutral-500 dark:text-neutral-400 list-disc pl-4">
-              <li>Cahaya cukup, hindari bayangan tajam</li>
-              <li>Tampilkan label/box jika produk masih baru</li>
-              <li>Untuk barang bekas, foto kondisi terbaik</li>
-              <li>Frame penuh — jangan terlalu jauh</li>
-            </ul>
-          </div>
-        </aside>
+        )}
       </div>
     </div>
   );

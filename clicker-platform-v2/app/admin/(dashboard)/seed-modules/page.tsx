@@ -5,8 +5,10 @@ import { db } from '@/lib/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { ModuleDefinition } from '@/lib/modules/types';
 import { logger } from '@/lib/logger-edge';
+import { useSite } from '@/lib/site-context';
 
 export default function SeedModulesPage() {
+    const { siteId } = useSite();
     const [status, setStatus] = useState('Idle');
 
     const seed = async () => {
@@ -179,7 +181,17 @@ export default function SeedModulesPage() {
                 collections: ['modules/stocklens/skus'],
             };
             await setDoc(doc(db, 'modules', 'stocklens'), stocklensModule);
-            setStatus('Success: Stocklens seeded!');
+
+            // Also enable on the current tenant so it shows up in sidebar/topbar/apps
+            if (siteId && siteId !== 'default' && siteId !== 'pending') {
+                await setDoc(
+                    doc(db, 'sites', siteId),
+                    { modules: { stocklens: true } },
+                    { merge: true }
+                );
+            }
+
+            setStatus(`Success: Stocklens seeded${siteId ? ` & enabled on tenant "${siteId}"` : ''}!`);
         } catch (e: any) {
             logger.error('admin.modules.seed.failed', { siteId: 'platform', error: e });
             setStatus('Error: ' + e.message);
