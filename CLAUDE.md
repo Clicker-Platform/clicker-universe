@@ -60,14 +60,16 @@ See `.agents/README.md` for the full skill index.
 
 ## Superpowers Output Convention
 
-Always save skill outputs to the appropriate folder under `superpowers/`:
+Always save skill outputs to the appropriate folder under `dev/superpowers/`:
 
-| Activity               | Save to                                        |
-| ---------------------- | ---------------------------------------------- |
-| Brainstorming sessions | `superpowers/brainstorm/YYYY-MM-DD-topic.md`   |
-| Feature specs          | `superpowers/specs/YYYY-MM-DD-topic.md`        |
-| Implementation plans   | `superpowers/plans/YYYY-MM-DD-topic.md`        |
-| Audit & research notes | `superpowers/notes/YYYY-MM-DD-topic.md`        |
+| Activity               | Save to                                                      |
+| ---------------------- | ------------------------------------------------------------ |
+| Brainstorming sessions | `dev/superpowers/brainstorm/YYYY-MM-DD-topic.md`             |
+| Feature specs          | `dev/superpowers/specs/YYYY-MM-DD-topic.md`                  |
+| Implementation plans   | `dev/superpowers/plans/YYYY-MM-DD-topic.md`                  |
+| Audit & research notes | `dev/superpowers/notes/YYYY-MM-DD-topic.md`                  |
+
+Full path dari repo root: `/Users/mac/Documents/AI Project/clicker-platform/dev/superpowers/`
 
 Use today's date and a short kebab-case topic name for the filename.
 ## Auth Gateway — Flow & Rules
