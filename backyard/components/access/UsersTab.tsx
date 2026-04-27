@@ -5,7 +5,7 @@ import { httpsCallable } from 'firebase/functions';
 import { functions } from '@/lib/firebase';
 import { toast } from 'sonner';
 import Link from 'next/link';
-import { Search, Loader2, ShieldCheck, ChevronRight, AlertTriangle, UserPlus, X, Save } from 'lucide-react';
+import { Search, Loader2, ShieldCheck, ChevronRight, AlertTriangle, UserPlus, UserMinus, X, Save } from 'lucide-react';
 
 interface AuthUser {
     uid: string;
@@ -37,6 +37,10 @@ export default function UsersTab() {
     const [assignTenant, setAssignTenant] = useState('');
     const [assignRole, setAssignRole] = useState('staff');
     const [assignSaving, setAssignSaving] = useState(false);
+
+    // Revoke
+    const [revokeTarget, setRevokeTarget] = useState<AuthUser | null>(null);
+    const [revoking, setRevoking] = useState(false);
 
     const fetchUsers = async () => {
         setLoading(true);
@@ -73,18 +77,43 @@ export default function UsersTab() {
         if (!assignTarget || !assignTenant) return;
         setAssignSaving(true);
         try {
-            const fn = httpsCallable(functions, 'setCustomClaims');
-            await fn({
-                uid: assignTarget.uid,
-                claims: { role: assignRole, siteId: assignTenant },
+            // Create Firestore member doc (actual access)
+            const createFn = httpsCallable(functions, 'createUser');
+            await createFn({
+                email: assignTarget.email,
+                displayName: assignTarget.displayName,
+                role: assignRole,
+                siteId: assignTenant,
             });
-            toast.success('Assigned to tenant', { description: `${assignTarget.email} → ${assignTenant} as ${assignRole}` });
+            // Set siteId claim so UsersTab can track assignment state
+            const claimsFn = httpsCallable(functions, 'setCustomClaims');
+            await claimsFn({ uid: assignTarget.uid, claims: { siteId: assignTenant } });
+            toast.success('Member added', { description: `${assignTarget.email} → ${assignTenant}` });
             setAssignTarget(null);
             await fetchUsers();
         } catch (err: any) {
             toast.error('Assign failed', { description: err.message });
         } finally {
             setAssignSaving(false);
+        }
+    };
+
+    const handleRevoke = async (user: AuthUser) => {
+        if (!user.customClaims?.siteId) return;
+        setRevokeTarget(user);
+        setRevoking(true);
+        try {
+            const removeFn = httpsCallable(functions, 'removeUserFromSite');
+            await removeFn({ uid: user.uid, siteId: user.customClaims.siteId });
+            const claimsFn = httpsCallable(functions, 'setCustomClaims');
+            await claimsFn({ uid: user.uid, claims: {} });
+            toast.success('Member removed', { description: `${user.email} removed from ${user.customClaims.siteId}` });
+            await fetchUsers();
+        } catch (err: any) {
+            toast.error('Revoke failed', { description: err.message });
+        } finally {
+            setRevoking(false);
+            setRevokeTarget(null);
         }
     };
 
@@ -212,12 +241,24 @@ export default function UsersTab() {
                                     </td>
                                     <td className="px-5 py-3 text-right">
                                         {u.customClaims?.siteId ? (
-                                            <Link
-                                                href={`/tenants/${u.customClaims.siteId}`}
-                                                className="flex items-center justify-end gap-1 text-xs font-bold text-gray-500 hover:text-brand-dark transition-colors"
-                                            >
-                                                Manage in tenant <ChevronRight className="w-3 h-3" />
-                                            </Link>
+                                            <div className="flex items-center justify-end gap-2">
+                                                <Link
+                                                    href={`/tenants/${u.customClaims.siteId}`}
+                                                    className="flex items-center gap-1 text-xs font-bold text-gray-500 hover:text-brand-dark transition-colors"
+                                                >
+                                                    Manage <ChevronRight className="w-3 h-3" />
+                                                </Link>
+                                                <button
+                                                    onClick={() => handleRevoke(u)}
+                                                    disabled={revoking && revokeTarget?.uid === u.uid}
+                                                    className="flex items-center gap-1 px-2.5 py-1.5 border border-gray-200 hover:border-red-300 hover:text-red-500 rounded-lg text-xs font-bold text-gray-400 transition-colors disabled:opacity-50"
+                                                >
+                                                    {revoking && revokeTarget?.uid === u.uid
+                                                        ? <Loader2 className="w-3 h-3 animate-spin" />
+                                                        : <UserMinus className="w-3 h-3" />}
+                                                    Revoke
+                                                </button>
+                                            </div>
                                         ) : (
                                             <button
                                                 onClick={() => openAssign(u)}
@@ -265,12 +306,11 @@ export default function UsersTab() {
                                 <select value={assignRole} onChange={e => setAssignRole(e.target.value)}
                                     className="w-full mt-1 px-3 py-2 border-2 border-gray-200 rounded-xl text-sm font-medium outline-none focus:border-brand-dark bg-white">
                                     <option value="owner">Owner</option>
-                                    <option value="manager">Manager</option>
                                     <option value="staff">Staff</option>
                                 </select>
                             </div>
                             <p className="text-xs text-gray-400 pt-2">
-                                After assignment, edit per-module permissions in the tenant detail page.
+                                Member akan ditambahkan ke tenant. Set module access di tenant detail page.
                             </p>
                         </div>
                         <div className="flex gap-2 justify-end mt-6">

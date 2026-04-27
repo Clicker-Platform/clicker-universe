@@ -7,8 +7,7 @@ import { functions, db } from '@/lib/firebase';
 import { toast } from 'sonner';
 import { UserX, UserPlus, Loader2, Settings, X, Save } from 'lucide-react';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
-import { PermissionEditor } from '@/components/PermissionEditor';
-import { ModuleAccess } from '@/lib/modules/types';
+import { SYSTEM_MODULES } from '@/lib/modules/definitions';
 
 interface Member {
     uid: string;
@@ -16,7 +15,7 @@ interface Member {
     email?: string;
     role?: string;
     permissions?: string[];
-    moduleAccess?: Record<string, ModuleAccess>;
+    moduleAccess?: Record<string, Record<string, string>>;
 }
 
 interface Props {
@@ -42,11 +41,19 @@ export default function TenantMembersCard({ siteId, siteModules }: Props) {
 
     // Permissions modal
     const [permTarget, setPermTarget] = useState<Member | null>(null);
-    const [permValue, setPermValue] = useState<{ permissions: string[]; moduleAccess: Record<string, ModuleAccess> }>({
-        permissions: [],
-        moduleAccess: {},
-    });
+    const [checkedModules, setCheckedModules] = useState<Set<string>>(new Set());
     const [savingPerm, setSavingPerm] = useState(false);
+
+    const activeModules = SYSTEM_MODULES.filter(m => siteModules?.[m.id]);
+
+    const getModuleDisplay = (permissions: string[] = []) => {
+        const names = permissions
+            .map(id => activeModules.find(m => m.id === id)?.displayName || id)
+            .filter(Boolean);
+        if (names.length === 0) return null;
+        if (names.length <= 3) return names.join(', ');
+        return `${names.slice(0, 3).join(', ')} (+${names.length - 3} more)`;
+    };
 
     useEffect(() => {
         if (!siteId) return;
@@ -89,7 +96,7 @@ export default function TenantMembersCard({ siteId, siteModules }: Props) {
             // Auto-open permissions modal for non-owner roles
             if (newUid && addedRole !== 'owner') {
                 setPermTarget({ uid: newUid, email: addedEmail, displayName: addedName, role: addedRole });
-                setPermValue({ permissions: [], moduleAccess: {} });
+                setCheckedModules(new Set());
             }
         } catch (err: any) {
             toast.error('Add failed', { description: err.message });
@@ -114,10 +121,15 @@ export default function TenantMembersCard({ siteId, siteModules }: Props) {
 
     const openPermissions = (member: Member) => {
         setPermTarget(member);
-        setPermValue({
-            permissions: member.permissions || [],
-            moduleAccess: member.moduleAccess || {},
+        const initial = new Set<string>(
+            (member.permissions || []).filter(id => siteModules?.[id])
+        );
+        Object.entries(member.moduleAccess || {}).forEach(([moduleId, access]) => {
+            if (siteModules?.[moduleId] && Object.values(access).some(v => v === 'full' || v === 'view')) {
+                initial.add(moduleId);
+            }
         });
+        setCheckedModules(initial);
     };
 
     const handleSavePermissions = async () => {
@@ -127,8 +139,8 @@ export default function TenantMembersCard({ siteId, siteModules }: Props) {
             await setDoc(
                 doc(db, 'sites', siteId, 'members', permTarget.uid),
                 {
-                    permissions: permValue.permissions,
-                    moduleAccess: permValue.moduleAccess,
+                    permissions: [...checkedModules],
+                    moduleAccess: {},
                 },
                 { merge: true }
             );
@@ -143,7 +155,6 @@ export default function TenantMembersCard({ siteId, siteModules }: Props) {
 
     const roleColor = (r?: string) => {
         if (r === 'owner') return 'bg-brand-dark text-white border-brand-dark';
-        if (r === 'manager') return 'bg-amber-50 text-amber-700 border-amber-100';
         return 'bg-gray-100 text-gray-600 border-gray-200';
     };
 
@@ -173,7 +184,6 @@ export default function TenantMembersCard({ siteId, siteModules }: Props) {
                     <select value={role} onChange={e => setRole(e.target.value)}
                         className="px-3 py-2 border-2 border-gray-200 rounded-lg text-sm font-medium outline-none focus:border-brand-dark bg-white">
                         <option value="owner">Owner</option>
-                        <option value="manager">Manager</option>
                         <option value="staff">Staff</option>
                     </select>
                     <div className="col-span-2 flex justify-end">
@@ -202,7 +212,6 @@ export default function TenantMembersCard({ siteId, siteModules }: Props) {
                     </thead>
                     <tbody>
                         {members.map(m => {
-                            const moduleCount = (m.permissions || []).length;
                             return (
                                 <tr key={m.uid} className="border-b border-gray-50 hover:bg-slate-50/50">
                                     <td className="px-4 py-2.5">
@@ -217,8 +226,8 @@ export default function TenantMembersCard({ siteId, siteModules }: Props) {
                                     <td className="px-4 py-2.5 text-xs text-gray-500">
                                         {m.role === 'owner' ? (
                                             <span className="font-semibold text-brand-dark">Full access</span>
-                                        ) : moduleCount > 0 ? (
-                                            <span>{moduleCount} module{moduleCount > 1 ? 's' : ''}</span>
+                                        ) : getModuleDisplay(m.permissions) ? (
+                                            <span className="text-gray-600">{getModuleDisplay(m.permissions)}</span>
                                         ) : (
                                             <span className="text-gray-300">No access</span>
                                         )}
@@ -275,14 +284,34 @@ export default function TenantMembersCard({ siteId, siteModules }: Props) {
                             {permTarget.role === 'owner' ? (
                                 <div className="text-center py-8">
                                     <p className="text-sm font-semibold text-brand-dark mb-1">Owner has full access</p>
-                                    <p className="text-xs text-gray-400">Owners always have access to all enabled modules. Per-module permissions only apply to Manager and Staff roles.</p>
+                                    <p className="text-xs text-gray-400">Owners always have access to all enabled modules.</p>
                                 </div>
+                            ) : activeModules.length === 0 ? (
+                                <p className="text-center py-8 text-sm text-gray-400">No modules enabled for this tenant.</p>
                             ) : (
-                                <PermissionEditor
-                                    value={permValue}
-                                    onChange={setPermValue}
-                                    siteModules={siteModules}
-                                />
+                                <div className="space-y-2">
+                                    {activeModules.map(module => (
+                                        <label key={module.id} className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-brand-dark/20 hover:bg-gray-50 cursor-pointer transition-all">
+                                            <input
+                                                type="checkbox"
+                                                className="w-4 h-4 accent-brand-dark"
+                                                checked={checkedModules.has(module.id)}
+                                                onChange={e => {
+                                                    const next = new Set(checkedModules);
+                                                    if (e.target.checked) next.add(module.id);
+                                                    else next.delete(module.id);
+                                                    setCheckedModules(next);
+                                                }}
+                                            />
+                                            <div>
+                                                <div className="text-sm font-bold text-gray-800">{module.displayName}</div>
+                                                {module.description && (
+                                                    <div className="text-xs text-gray-400">{module.description}</div>
+                                                )}
+                                            </div>
+                                        </label>
+                                    ))}
+                                </div>
                             )}
                         </div>
                         {permTarget.role !== 'owner' && (
