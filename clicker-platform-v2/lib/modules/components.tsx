@@ -60,6 +60,14 @@ const MktCampaignDetail = dynamic(() => import('@/lib/modules/ai-marketing/admin
 const MktAnalytics = dynamic(() => import('@/lib/modules/ai-marketing/admin/AnalyticsPage'));
 const MktSettings = dynamic(() => import('@/lib/modules/ai-marketing/admin/SettingsPage'));
 
+// Admin Pages (Fintrack)
+const FT_DashboardPage   = dynamic(() => import('@/lib/modules/fintrack/admin/DashboardPage'));
+const FT_EntriesPage     = dynamic(() => import('@/lib/modules/fintrack/admin/EntriesPage'));
+const FT_WalletVaultPage = dynamic(() => import('@/lib/modules/fintrack/admin/WalletVaultPage'));
+const FT_NewEntryPage    = dynamic(() => import('@/lib/modules/fintrack/admin/NewEntryPage'));
+const FT_AdvancedPage    = dynamic(() => import('@/lib/modules/fintrack/admin/AdvancedPage'));
+const FT_SettingsPage    = dynamic(() => import('@/lib/modules/fintrack/admin/SettingsPage'));
+
 // Admin Pages (Membership)
 const MemberListPage = dynamic(() => import('@/lib/modules/membership/admin/MemberListPage'));
 const MembershipSettingsPage = dynamic(() => import('@/lib/modules/membership/admin/SettingsPage'));
@@ -134,6 +142,14 @@ export const MODULE_COMPONENTS: Record<string, any> = {
     ),
     'ai_sales:AdminSettings': dynamic(() => import('@/lib/modules/ai-sales-agent/admin/AgentSettingsPage')),
     'ai_sales:Dashboard': dynamic(() => import('@/lib/modules/ai-sales-agent/admin/AgentDashboard')),
+
+    // Fintrack Module
+    'fintrack:DashboardPage':   FT_DashboardPage,
+    'fintrack:EntriesPage':     FT_EntriesPage,
+    'fintrack:WalletVaultPage': FT_WalletVaultPage,
+    'fintrack:NewEntryPage':    FT_NewEntryPage,
+    'fintrack:AdvancedPage':    FT_AdvancedPage,
+    'fintrack:SettingsPage':    FT_SettingsPage,
 
     // AI Marketing Module
     'ai_marketing:Dashboard': MktDashboard,

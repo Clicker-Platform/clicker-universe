@@ -63,6 +63,16 @@ export const STATIC_MODULE_DEFINITIONS: Record<string, Partial<ModuleDefinition>
             { label: 'Settings',        path: '/admin/service-records/settings',      icon: 'settings',       componentKey: 'service_records:SettingsPage',     permission: 'settings' },
         ]
     },
+    'fintrack': {
+        adminRoutes: [
+            { label: 'Dashboard', path: '/admin/fintrack',          icon: 'layout-dashboard', componentKey: 'fintrack:DashboardPage' },
+            { label: 'Entries',   path: '/admin/fintrack/entries',  icon: 'list',             componentKey: 'fintrack:EntriesPage' },
+            { label: 'Wallets',   path: '/admin/fintrack/wallets',  icon: 'wallet',           componentKey: 'fintrack:WalletVaultPage' },
+            { label: 'New Entry', path: '/admin/fintrack/new',      icon: 'plus',             componentKey: 'fintrack:NewEntryPage', hidden: true },
+            { label: 'Advanced',  path: '/admin/fintrack/advanced', icon: 'star',             componentKey: 'fintrack:AdvancedPage' },
+            { label: 'Settings',  path: '/admin/fintrack/settings', icon: 'settings',         componentKey: 'fintrack:SettingsPage', permission: 'settings' },
+        ]
+    },
     'ai_marketing': {
         adminRoutes: [
             { label: 'Dashboard',        path: '/admin/marketing/dashboard',          icon: 'dashboard',      componentKey: 'ai_marketing:Dashboard',      hidden: true },
