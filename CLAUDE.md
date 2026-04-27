@@ -70,10 +70,48 @@ Always save skill outputs to the appropriate folder under `superpowers/`:
 | Audit & research notes | `superpowers/notes/YYYY-MM-DD-topic.md`        |
 
 Use today's date and a short kebab-case topic name for the filename.
+## Auth Gateway — Flow & Rules
+
+Gateway (`auth-gateway/`, port **3012**) adalah thin auth layer. Tugasnya hanya autentikasi, bukan tenant logic.
+
+**Login flow (Opsi B+ Silent Handoff):**
+```
+Gateway: signInWithEmailAndPassword
+         → getUserSites + /api/token (parallel)
+         → redirect: platform/admin#token=xxx&siteId=yyy
+
+Platform: TokenBootstrap (layout) baca hash
+          → set __session cookie + setSiteId()
+          → signInWithCustomToken (background)
+          → UserProvider load member data → dashboard
+```
+
+**File penting auth-gateway:**
+| File | Fungsi |
+|------|--------|
+| `app/page.tsx` | Login form + performHandoff |
+| `app/api/token/route.ts` | Buat custom token (Firebase Admin, no CF) |
+| `lib/firebase-admin.ts` | Init Firebase Admin dengan service account |
+| `lib/get-user-sites.ts` | Resolve tenant (ownerId ∥ ownerEmail → members) |
+| `.env.development.local` | `GCP_SERVICE_ACCOUNT_KEY`, `NEXT_PUBLIC_AUTH_GATEWAY_URL` |
+
+**File penting platform (auth):**
+| File | Fungsi |
+|------|--------|
+| `components/admin/TokenBootstrap.tsx` | Process `#token` dari gateway, set cookie + siteId |
+| `lib/site-context.tsx` | `setSiteId()` untuk client-side override tanpa reload |
+| `lib/user-context.tsx` | Guard `__token_bootstrapping` sessionStorage flag |
+| `middleware.ts` | Skip `__session` check di localhost (`isLocal`) |
+
+**Rules:**
+- Gateway TIDAK boleh tahu detail tenant — hanya resolve siteId minimal untuk cookie
+- Jangan tambah logika bisnis ke gateway
+- `generateHandoffToken` Cloud Function sudah digantikan `/api/token` route — jangan pakai CF lagi
+
 ## File Navigation
 
 - Main platform: `clicker-platform-v2/`
-- Auth service: `auth-gateway/`
+- Auth service: `auth-gateway/` (port 3012)
 - Super-admin: `backyard/`
 - Firebase functions: `functions/`
 - Architecture docs: `clicker-platform-v2/Docs/ARCHITECTURE.md`

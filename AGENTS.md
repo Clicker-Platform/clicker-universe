@@ -31,6 +31,10 @@ pnpm dev          # port 3000
 pnpm build        # production build
 pnpm lint         # ESLint
 pnpm test         # Vitest
+
+# Auth gateway
+cd auth-gateway
+pnpm dev          # port 3012
 ```
 
 ---
@@ -107,10 +111,38 @@ pnpm test         # Vitest
 |------|---------|
 | `clicker-platform-v2/lib/modules/definitions.ts` | Module registry |
 | `clicker-platform-v2/lib/modules/components.tsx` | Dynamic component map |
-| `clicker-platform-v2/lib/site-context.tsx` | `useSite()` — tenant context |
+| `clicker-platform-v2/lib/site-context.tsx` | `useSite()` + `setSiteId()` — tenant context |
 | `clicker-platform-v2/lib/user-context.tsx` | `useUser()` — auth + RBAC |
-| `clicker-platform-v2/middleware.ts` | Tenant routing middleware |
+| `clicker-platform-v2/middleware.ts` | Tenant routing + auth gate |
+| `clicker-platform-v2/components/admin/TokenBootstrap.tsx` | Process handoff token from gateway |
+| `auth-gateway/app/page.tsx` | Login form + performHandoff |
+| `auth-gateway/app/api/token/route.ts` | Create custom token (Firebase Admin) |
+| `auth-gateway/lib/get-user-sites.ts` | Resolve tenant from Firestore |
+| `auth-gateway/lib/firebase-admin.ts` | Firebase Admin SDK init |
 | `scripts/seed-modules.ts` | DB seeding for modules |
+
+---
+
+## Auth Flow (Opsi B+ Silent Handoff)
+
+```
+1. User → auth-gateway:3012 (login form)
+2. Gateway: signInWithEmailAndPassword
+            → getUserSites ∥ /api/token (parallel Firestore + Admin SDK)
+            → set __session cookie (gateway origin)
+            → redirect platform/admin#token=xxx&siteId=yyy
+3. Platform: TokenBootstrap reads hash
+             → set __session cookie (platform origin) + setSiteId()
+             → signInWithCustomToken (background, Firebase client SDK)
+             → UserProvider loads member/role from Firestore
+             → AdminGuard renders dashboard
+```
+
+**Rules:**
+- Gateway hanya auth — tidak ada bisnis logic
+- `/api/token` route (gateway) menggantikan `generateHandoffToken` Cloud Function — jangan pakai CF lagi
+- `app/admin/auth/callback/` sudah dihapus — tidak ada callback page
+- Middleware skip `__session` gate saat `isLocal` (localhost) — TokenBootstrap set cookie client-side
 
 ---
 
