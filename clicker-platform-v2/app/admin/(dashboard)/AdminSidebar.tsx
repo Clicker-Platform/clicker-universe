@@ -157,7 +157,7 @@ export function AdminSidebar() {
             { icon: Box, label: 'Canvas Studio', href: `${baseUrl}/admin/canvas`, permission: 'biolink' },
             { icon: Palette, label: 'Template', href: `${baseUrl}/admin/template`, permission: 'biolink' },
             { icon: Layers, label: 'Services', href: `${baseUrl}/admin/services`, permission: null },
-            { icon: MessageCircle, label: 'WhatsApp', href: `${baseUrl}/admin/whatsapp`, permission: null },
+            // { icon: MessageCircle, label: 'WhatsApp', href: `${baseUrl}/admin/whatsapp`, permission: null },
         ];
 
         const hasFullAccess = isOwner || userPermissions.includes('*');
