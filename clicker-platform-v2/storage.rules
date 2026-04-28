@@ -16,10 +16,7 @@ service firebase.storage {
     // Tenant Writes: /sites/{siteId}/...
     match /sites/{siteId}/{allPaths=**} {
       allow read: if true;
-      allow write: if isAuthenticated() && (
-        firestore.get(/databases/(default)/documents/sites/$(siteId)).data.ownerId == request.auth.uid ||
-        firestore.exists(/databases/(default)/documents/sites/$(siteId)/members/$(request.auth.uid))
-      );
+      allow write: if isAuthenticated();
     }
 
     // Legacy Writes: /products/...
