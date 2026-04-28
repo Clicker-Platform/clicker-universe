@@ -1,15 +1,20 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { requireAuthedMember } from '@/lib/api-auth';
 import { decryptToken } from '@/lib/whatsapp/encryption';
 import { META_MESSAGES_ENDPOINT, WA_ROOT, WA_MAIN_DOC, WA_CUSTOMER_THREADS } from '@/lib/whatsapp/constants';
 import { logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(req: Request) {
-  try {
-    const { siteId, to, content, threadId, staffUserId } = await req.json();
+export async function POST(req: NextRequest) {
+  const auth = await requireAuthedMember(req);
+  if (!auth.ok) return auth.res;
+  const { siteId, uid } = auth.session;
 
-    if (!siteId || !to || !content || !threadId) {
+  try {
+    const { to, content, threadId } = await req.json();
+
+    if (!to || !content || !threadId) {
       return NextResponse.json({ error: 'Missing required fields.' }, { status: 400 });
     }
 
@@ -54,7 +59,7 @@ export async function POST(req: Request) {
       content,
       type: 'text',
       sentAt: FieldValue.serverTimestamp(),
-      sentBy: staffUserId ? `staff:${staffUserId}` : 'staff',
+      sentBy: `staff:${uid}`,
       waMessageId: metaData.messages?.[0]?.id ?? null,
     });
 

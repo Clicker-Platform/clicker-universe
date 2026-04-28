@@ -3,21 +3,22 @@ import { adminStorage } from '@/lib/firebase-admin';
 // Dynamic require to prevent Turbopack from hashing the module name
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const sharp = require('sharp') as typeof import('sharp');
-import { cookies } from 'next/headers';
 import { v4 as uuidv4 } from 'uuid';
 import { logger } from '@/lib/logger';
+import { requireAuthedMember } from '@/lib/api-auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
+    const auth = await requireAuthedMember(req);
+    if (!auth.ok) return auth.res;
+    const { siteId } = auth.session;
+
     try {
         const formData = await req.formData();
         const file = formData.get('file') as File;
         const searchParams = req.nextUrl.searchParams;
         const folder = searchParams.get('folder') || 'uploads';
-
-        // Site-aware isolation
-        const siteId = req.headers.get('x-site-id') || 'platform';
 
         if (!file) {
             return NextResponse.json({ error: 'No file provided' }, { status: 400 });
@@ -80,7 +81,6 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ url: publicUrl });
 
     } catch (error) {
-        const siteId = req.headers.get('x-site-id') || 'platform';
         logger.error('upload.image.failed', { siteId, error });
         return NextResponse.json({
             error: 'Internal server error',

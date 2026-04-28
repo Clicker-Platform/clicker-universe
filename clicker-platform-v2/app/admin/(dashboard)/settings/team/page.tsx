@@ -8,14 +8,15 @@ import { collection, onSnapshot, query, where, doc, getDoc } from 'firebase/fire
 import { Plus, Mail, Shield, Trash2, X, Loader2, User, Clock } from 'lucide-react';
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 import { toast } from 'sonner';
-import { PermissionEditor, ModuleAccess } from '@/components/admin/settings/PermissionEditor';
+import { ModuleDefinition } from '@/lib/modules/types';
+import { subscribeToEnabledModules } from '@/lib/modules/registry';
 
 interface Member {
     uid: string;
     email: string;
     role: 'owner' | 'admin' | 'staff'; // Simplified roles
     permissions?: string[]; // Array of module keys
-    moduleAccess?: Record<string, ModuleAccess>; // Granular permissions
+    moduleAccess?: Record<string, Record<string, string>>; // Granular permissions
     displayName?: string;
     photoURL?: string;
     status: 'active' | 'suspended';
@@ -31,6 +32,18 @@ interface Invitation {
     invitedBy?: string;
 }
 
+const MODULE_LABELS: Record<string, string> = {
+    'pos': 'Legacy POS', // Hide this in UI
+    'byod_pos': 'POS', // Unified Name
+    'inventory': 'Inventory',
+    'reservation': 'Reservations',
+    'membership': 'Loyalty',
+    'kitchen-display': 'Kitchen Screen',
+    'finance': 'Finance & Reports',
+};
+
+const HIDDEN_MODULES = ['pos']; // Keys to hide from selection
+
 export default function TeamPage() {
     const { siteId } = useSite();
     const [members, setMembers] = useState<Member[]>([]);
@@ -43,8 +56,9 @@ export default function TeamPage() {
     const [memberEmail, setMemberEmail] = useState('');
     const [memberPassword, setMemberPassword] = useState('');
     const [memberPermissions, setMemberPermissions] = useState<string[]>([]);
-    const [memberModuleAccess, setMemberModuleAccess] = useState<Record<string, any>>({}); // Assuming 'any' for ModuleAccess type
     const [isSaving, setIsSaving] = useState(false);
+    const [enabledModules, setEnabledModules] = useState<ModuleDefinition[]>([]);
+    const [allModules, setAllModules] = useState<ModuleDefinition[]>([]);
 
     // Site Modules Config
     const [siteModules, setSiteModules] = useState<{ [key: string]: boolean }>({});
@@ -54,25 +68,16 @@ export default function TeamPage() {
 
     // Data Fetching
 
-    const MODULE_LABELS: Record<string, string> = {
-        'pos': 'Legacy POS', // Hide this in UI
-        'byod_pos': 'POS', // Unified Name
-        'inventory': 'Inventory',
-        'reservation': 'Reservations',
-        'membership': 'Loyalty',
-        'kitchen-display': 'Kitchen Screen',
-        'finance': 'Finance & Reports',
-    };
-
-    const HIDDEN_MODULES = ['pos']; // Keys to hide from selection
-
-    const formatPermission = (key: string) => {
-        return MODULE_LABELS[key] || key.replace(/_/g, ' ').replace(/-/g, ' ');
+    const formatModuleList = (permissions: string[]) => {
+        const visible = permissions
+            .filter(p => !HIDDEN_MODULES.includes(p))
+            .map(p => MODULE_LABELS[p] || p.replace(/_/g, ' ').replace(/-/g, ' '));
+        if (visible.length <= 3) return visible.join(', ');
+        return `${visible.slice(0, 3).join(', ')} (+${visible.length - 3} lagi)`;
     };
 
     useEffect(() => {
         if (!siteId) return;
-
 
         const unsubscribeMembers = onSnapshot(collection(db, 'sites', siteId, 'members'),
             (snapshot) => {
@@ -114,21 +119,38 @@ export default function TeamPage() {
         return () => unsubSite();
     }, [siteId]);
 
+    // Subscribe to enabled modules list
+    useEffect(() => {
+        const unsubscribe = subscribeToEnabledModules(setAllModules);
+        return () => unsubscribe();
+    }, []);
+
+    useEffect(() => {
+        const active = allModules.filter(m => siteModules[m.id] && !HIDDEN_MODULES.includes(m.id));
+        setEnabledModules(active);
+    }, [allModules, siteModules]);
+
     const openAddModal = () => {
         setEditingMember(null);
         setMemberEmail('');
         setMemberPassword('');
         setMemberPermissions([]);
-        setMemberModuleAccess({});
         setIsMemberModalOpen(true);
     };
 
     const openEditModal = (member: Member) => {
         setEditingMember(member);
         setMemberEmail(member.email);
-        setMemberPassword(''); // Leave blank to keep unchanged
-        setMemberPermissions(member.permissions || []);
-        setMemberModuleAccess(member.moduleAccess || {});
+        setMemberPassword('');
+
+        // Derive checked modules dari kedua field (permissions[] dan granular moduleAccess)
+        const fromPermissions = new Set(member.permissions || []);
+        const fromModuleAccess = new Set(
+            Object.entries(member.moduleAccess || {})
+                .filter(([_, routes]) => Object.values(routes).some(v => v === 'full' || v === 'view'))
+                .map(([moduleId]) => moduleId)
+        );
+        setMemberPermissions(Array.from(new Set([...fromPermissions, ...fromModuleAccess])));
         setIsMemberModalOpen(true);
     };
 
@@ -156,7 +178,7 @@ export default function TeamPage() {
                     // API line 19: `if (password && password.length < 6)`. So undefined is Safe.
                     role: 'staff', // Always staff (owner set by system/metadata only)
                     permissions: memberPermissions,
-                    moduleAccess: memberModuleAccess
+                    moduleAccess: {}
                 }),
             });
 
@@ -165,7 +187,7 @@ export default function TeamPage() {
                 throw new Error(errorData.error || 'Failed to save member');
             }
 
-            const data = await res.json();
+            await res.json();
             toast.success(editingMember ? 'Member updated successfully' : 'Member added successfully');
             setIsMemberModalOpen(false);
         } catch (error: any) {
@@ -204,23 +226,12 @@ export default function TeamPage() {
         }
     };
 
-    // Debug: Force stop loading if it changes too long
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            if (loading) {
-                logger.warn('admin.team.members.load.timeout', { siteId });
-            }
-        }, 8000);
-        return () => clearTimeout(timer);
-    }, [loading]);
-
     if (loading) {
         return (
             <div className="flex flex-col items-center justify-center gap-4">
                 <Loader2 className="animate-spin" />
                 <div className="text-sm text-gray-400 dark:text-neutral-600">
-                    Loading Team... <br />
-                    Site ID: {siteId || 'Waiting...'}
+                    Loading Team...
                 </div>
             </div>
         );
@@ -232,11 +243,6 @@ export default function TeamPage() {
 
     return (
         <div className="max-w-5xl">
-            {/* Debug Info (Can remove later) */}
-            <div className="fixed bottom-4 right-4 text-xs text-gray-300 dark:text-neutral-700 pointer-events-none">
-                {siteId}
-            </div>
-
             <div className="flex justify-between items-center mb-8">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">Team Management</h1>
@@ -283,15 +289,9 @@ export default function TeamPage() {
                                             {member.role}
                                         </span>
                                         {member.role !== 'owner' && member.permissions && member.permissions.length > 0 && (
-                                            <div className="flex gap-1 flex-wrap justify-end max-w-[200px]">
-                                                {member.permissions
-                                                    .filter(p => siteModules[p] !== false) // Only show if module is NOT disabled (undefined allows core/static perms if any)
-                                                    .map(p => (
-                                                        <span key={p} className="text-[10px] px-1.5 py-0.5 bg-brand-green/20 text-brand-dark rounded font-medium capitalize truncate max-w-[100px]" title={formatPermission(p)}>
-                                                            {formatPermission(p)}
-                                                        </span>
-                                                    ))}
-                                            </div>
+                                            <p className="text-xs text-gray-500 dark:text-neutral-500 text-right max-w-[200px]">
+                                                {formatModuleList(member.permissions)}
+                                            </p>
                                         )}
                                     </div>
                                     {member.role !== 'owner' && (
@@ -363,19 +363,35 @@ export default function TeamPage() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-2">Access Permissions</label>
-                                <PermissionEditor
-                                    value={{
-                                        permissions: memberPermissions,
-                                        moduleAccess: memberModuleAccess
-                                    }}
-                                    onChange={(val) => {
-                                        setMemberPermissions(val.permissions);
-                                        setMemberModuleAccess(val.moduleAccess);
-                                    }}
-                                    siteModules={siteModules}
-                                />
-                                <p className="text-xs text-gray-400 dark:text-neutral-600 mt-2">Select which features this staff member can access.</p>
+                                <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-2">Modul yang bisa diakses</label>
+                                {enabledModules.length === 0 ? (
+                                    <p className="text-sm text-gray-400 dark:text-neutral-600 py-4 text-center">
+                                        Belum ada modul aktif. Aktifkan modul di Site Settings terlebih dahulu.
+                                    </p>
+                                ) : (
+                                    <div className="space-y-2 border border-gray-200 dark:border-neutral-700 rounded-lg p-4">
+                                        {enabledModules.map(module => (
+                                            <label key={module.id} className="flex items-center gap-3 cursor-pointer group">
+                                                <input
+                                                    type="checkbox"
+                                                    className="w-4 h-4 rounded border-gray-300 dark:border-neutral-600 text-studio-blue focus:ring-studio-blue dark:bg-neutral-800"
+                                                    checked={memberPermissions.includes(module.id)}
+                                                    onChange={(e) => {
+                                                        setMemberPermissions(prev =>
+                                                            e.target.checked
+                                                                ? [...prev, module.id]
+                                                                : prev.filter(p => p !== module.id)
+                                                        );
+                                                    }}
+                                                />
+                                                <span className="text-sm font-medium text-gray-700 dark:text-neutral-300 group-hover:text-gray-900 dark:group-hover:text-neutral-100 transition-colors">
+                                                    {module.displayName || module.id}
+                                                </span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                )}
+                                <p className="text-xs text-gray-400 dark:text-neutral-600 mt-2">Pilih fitur mana yang bisa diakses staff ini.</p>
                             </div>
 
                             <button

@@ -1,12 +1,16 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { templateDefinitions } from '@/lib/templates/definitions';
 import { saveTemplate } from '@/lib/templates/service';
 import { TemplateDocument } from '@/lib/templates/types';
-import { Timestamp } from 'firebase/firestore';
+import { Timestamp } from 'firebase-admin/firestore';
+import { requireAuthedMember } from '@/lib/api-auth';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+    const auth = await requireAuthedMember(req);
+    if (!auth.ok) return auth.res;
+
     try {
         const results = [];
         for (const key in templateDefinitions) {

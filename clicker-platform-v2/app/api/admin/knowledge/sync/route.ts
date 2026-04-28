@@ -3,21 +3,20 @@ import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase-admin";
 import * as cheerio from 'cheerio';
 import { logger } from '@/lib/logger';
+import { requireAuthedMember } from '@/lib/api-auth';
 
 // Force dynamic to ensure no static optimization weirdness with file uploads
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
     try {
+        const auth = await requireAuthedMember(req);
+        if (!auth.ok) return auth.res;
+        const { siteId } = auth.session;
+
         const formData = await req.formData();
         const urlsString = formData.get('urls') as string;
         const pdfFile = formData.get('pdfFile') as File | null;
-
-        // Get siteId from request headers (set by middleware)
-        const siteId = req.headers.get('x-site-id');
-        if (!siteId) {
-            return NextResponse.json({ success: false, error: 'Site ID is required for knowledge sync' }, { status: 400 });
-        }
 
         let combinedText = "";
 
@@ -138,7 +137,7 @@ ${text}
         });
 
     } catch (error: any) {
-        logger.error('knowledge.sync.failed', { siteId: req.headers.get('x-site-id') ?? 'platform', error });
+        logger.error('knowledge.sync.failed', { error });
         return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 }

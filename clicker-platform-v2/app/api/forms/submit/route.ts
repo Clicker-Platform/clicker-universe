@@ -1,5 +1,4 @@
-import { db } from '@/lib/firebase';
-import { collection, addDoc, doc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { adminDb, FieldValue } from '@/lib/firebase-admin';
 import { NextResponse } from 'next/server';
 import { logger } from '@/lib/logger';
 
@@ -19,20 +18,20 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Missing siteId' }, { status: 400 });
         }
 
-        // Write submission to site-scoped inbox (Firestore rules allow public create)
-        await addDoc(collection(db, 'sites', siteId, 'inbox'), {
+        // Write submission to site-scoped inbox (Admin SDK bypasses Firestore rules)
+        await adminDb.collection('sites').doc(siteId).collection('inbox').add({
             formId,
             formTitle,
             data,
-            submittedAt: serverTimestamp(),
+            submittedAt: FieldValue.serverTimestamp(),
             status: 'new'
         });
 
         // Email notification — fetch form to get emailNotificationTo
         try {
             if (!formId) throw new Error('formId missing');
-            const formDoc = await getDoc(doc(db, 'sites', siteId, 'forms', formId));
-            if (formDoc.exists()) {
+            const formDoc = await adminDb.collection('sites').doc(siteId).collection('forms').doc(formId).get();
+            if (formDoc.exists) {
                 const emailTo = formDoc.data()?.emailNotificationTo;
                 if (emailTo) {
                     const { sendFormNotification } = await import('@/lib/email');

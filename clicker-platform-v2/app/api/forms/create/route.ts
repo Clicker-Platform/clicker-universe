@@ -1,27 +1,20 @@
 import { adminDb, FieldValue } from '@/lib/firebase-admin';
-import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
+import { NextRequest, NextResponse } from 'next/server';
+import { requireAuthedMember } from '@/lib/api-auth';
 import { logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(request: Request) {
-    let siteId: string | undefined;
-    try {
-        // const session = (await cookies()).get('session')?.value;
-        // if (!session) {
-        //     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        // }
+export async function POST(req: NextRequest) {
+    const auth = await requireAuthedMember(req);
+    if (!auth.ok) return auth.res;
+    const { siteId } = auth.session;
 
-        const form = await request.json();
+    try {
+        const form = await req.json();
 
         // Remove id and siteId from data to avoid storing them as fields
-        const { id, ...data } = form;
-        siteId = form.siteId;
-
-        if (!siteId) {
-            return NextResponse.json({ error: 'Missing siteId' }, { status: 400 });
-        }
+        const { id, siteId: _siteId, ...data } = form;
 
         let docRef;
         if (id) {

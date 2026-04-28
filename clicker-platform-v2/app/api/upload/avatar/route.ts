@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { adminStorage } from '@/lib/firebase-admin';
 import { v4 as uuidv4 } from 'uuid';
 import { logger } from '@/lib/logger';
+import { requireAuthedMember } from '@/lib/api-auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,12 +15,13 @@ const MIME_TO_EXT: Record<string, string> = {
 };
 
 export async function POST(req: NextRequest) {
+    const auth = await requireAuthedMember(req);
+    if (!auth.ok) return auth.res;
+    const { siteId } = auth.session;
+
     try {
         const formData = await req.formData();
         const file = formData.get('file') as File;
-
-        // Site-aware isolation
-        const siteId = req.headers.get('x-site-id') || 'platform';
 
         if (!file) {
             return NextResponse.json({ error: 'No file provided' }, { status: 400 });
@@ -72,7 +74,6 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ url: publicUrl });
 
     } catch (error) {
-        const siteId = req.headers.get('x-site-id') || 'platform';
         logger.error('upload.avatar.failed', { siteId, error });
         return NextResponse.json({
             error: 'Internal server error',

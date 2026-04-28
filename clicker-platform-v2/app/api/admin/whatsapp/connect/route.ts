@@ -1,15 +1,20 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { randomBytes } from 'crypto';
 import { encryptToken } from '@/lib/whatsapp/encryption';
 import { logger } from '@/lib/logger';
+import { requireAuthedMember } from '@/lib/api-auth';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(req: Request) {
-  try {
-    const { siteId, phoneNumberId, wabaId, accessToken, ownerPhone } = await req.json();
+export async function POST(req: NextRequest) {
+  const auth = await requireAuthedMember(req);
+  if (!auth.ok) return auth.res;
+  const { siteId } = auth.session;
 
-    if (!siteId || !phoneNumberId || !wabaId || !accessToken || !ownerPhone) {
+  try {
+    const { phoneNumberId, wabaId, accessToken, ownerPhone } = await req.json();
+
+    if (!phoneNumberId || !wabaId || !accessToken || !ownerPhone) {
       return NextResponse.json({ error: 'Semua field wajib diisi.' }, { status: 400 });
     }
 
@@ -30,7 +35,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ ok: true, webhookVerifyToken });
   } catch (err) {
-    logger.error('wa.connect.failed', { siteId: 'platform', error: err });
+    logger.error('wa.connect.failed', { siteId, error: err });
     return NextResponse.json({ error: 'Gagal menyimpan konfigurasi.' }, { status: 500 });
   }
 }

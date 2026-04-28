@@ -15,6 +15,21 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
+        // Token assertion — verify caller is actually the user they claim to be
+        const authHeader = req.headers.get('authorization');
+        if (!authHeader?.startsWith('Bearer ')) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+        let decoded: { uid: string; email?: string };
+        try {
+            decoded = await adminAuth.verifyIdToken(authHeader.slice(7));
+        } catch {
+            return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+        }
+        if (decoded.uid !== uid || decoded.email !== email) {
+            return NextResponse.json({ error: 'Token mismatch' }, { status: 403 });
+        }
+
         // 1. Check if pending access grant exists (legacy invitations)
         const accessRef = adminDb.collection('sites').doc(siteId).collection('invitations').doc(email);
         const accessSnap = await accessRef.get();

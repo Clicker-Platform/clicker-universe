@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/firebase';
-import { doc, writeBatch, increment } from 'firebase/firestore';
-import { randomShardId, analyticsShardRef } from '@/lib/analytics/counters';
+import { adminDb, FieldValue } from '@/lib/firebase-admin';
+import { randomShardId } from '@/lib/analytics/counters';
 import { logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
@@ -31,14 +30,9 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Invalid site context' }, { status: 400 });
         }
 
-        if (!db) {
-            logger.error('analytics.db.missing', { siteId: siteId ?? 'platform', error: 'Firebase db not initialized' });
-            return NextResponse.json({ error: 'Database not initialized' }, { status: 500 });
-        }
-
         let batch;
         try {
-            batch = writeBatch(db);
+            batch = adminDb.batch();
         } catch (dbError: any) {
             logger.error('analytics.batch.failed', { siteId: siteId ?? 'platform', error: dbError });
             return NextResponse.json({ error: 'Database connection failed', details: dbError.message }, { status: 500 });
@@ -46,22 +40,22 @@ export async function POST(request: Request) {
 
         // Pick a random shard to distribute write load across 10 documents
         const shardId = randomShardId();
-        const shard = analyticsShardRef(siteId, shardId);
+        const shard = adminDb.collection('sites').doc(siteId).collection('analytics_shards').doc(shardId);
 
         if (type === 'page_view') {
-            batch.set(shard, { pageViews: increment(1) }, { merge: true });
+            batch.set(shard, { pageViews: FieldValue.increment(1) }, { merge: true });
         }
 
         if (type === 'link_click' && id) {
-            const linkRef = doc(db, `sites/${siteId}/links/${id}`);
-            batch.set(linkRef, { clicks: increment(1) }, { merge: true });
-            batch.set(shard, { totalClicks: increment(1) }, { merge: true });
+            const linkRef = adminDb.doc(`sites/${siteId}/links/${id}`);
+            batch.set(linkRef, { clicks: FieldValue.increment(1) }, { merge: true });
+            batch.set(shard, { totalClicks: FieldValue.increment(1) }, { merge: true });
         }
 
         if (type === 'product_click' && id) {
-            const productRef = doc(db, `sites/${siteId}/products/${id}`);
-            batch.set(productRef, { clicks: increment(1) }, { merge: true });
-            batch.set(shard, { totalClicks: increment(1) }, { merge: true });
+            const productRef = adminDb.doc(`sites/${siteId}/products/${id}`);
+            batch.set(productRef, { clicks: FieldValue.increment(1) }, { merge: true });
+            batch.set(shard, { totalClicks: FieldValue.increment(1) }, { merge: true });
         }
 
         try {

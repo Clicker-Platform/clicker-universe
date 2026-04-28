@@ -1,21 +1,20 @@
 import { adminDb } from '@/lib/firebase-admin';
-import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
+import { NextRequest, NextResponse } from 'next/server';
+import { requireAuthedMember } from '@/lib/api-auth';
 import { logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+    const auth = await requireAuthedMember(request);
+    if (!auth.ok) return auth.res;
+    const { siteId } = auth.session;
+
     try {
-        // const session = (await cookies()).get('session')?.value;
-        // if (!session) {
-        //     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        // }
-
         const body = await request.json();
-        const { id, action, siteId } = body;
+        const { id, action } = body;
 
-        if (!id || !action || !siteId) {
+        if (!id || !action) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
@@ -31,7 +30,7 @@ export async function POST(request: Request) {
 
         return NextResponse.json({ success: true });
     } catch (error) {
-        logger.error('crm.submission.update.failed', { siteId: 'platform', error });
+        logger.error('crm.submission.update.failed', { siteId, error });
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }
