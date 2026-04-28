@@ -15,6 +15,7 @@ const POSSettingsPage = dynamic(() => import('@/lib/modules/byod_pos/admin/Setti
 const KDSClient = dynamic(() => import('@/lib/modules/byod_pos/admin/KDSClient'));
 const CashierClient = dynamic(() => import('@/lib/modules/byod_pos/admin/CashierClient'));
 const TransactionsClient = dynamic(() => import('@/lib/modules/byod_pos/admin/TransactionsClient'));
+const POSMenuGrid = dynamic(() => import('@/lib/modules/byod_pos/components/POSBlockClientLoader'));
 
 // Admin Pages (Reservation) - USING CLIENT COMPONENTS DIRECTLY
 const CalendarPage = dynamic(() => import('@/lib/modules/reservation/admin/calendar/CalendarClient'));
@@ -88,7 +89,7 @@ export const MODULE_COMPONENTS: Record<string, any> = {
     'byod_pos:AdminOrders': POSOrdersPage,
     'byod_pos:AdminMenu': POSMenuPage,
     'byod_pos:AdminSettings': POSSettingsPage,
-    'byod_pos:MenuGrid': dynamic(() => import('@/lib/modules/byod_pos/components/POSBlockClientLoader')),
+    'byod_pos:MenuGrid': POSMenuGrid,
     // Separated Views
     'byod_pos:KDS': KDSClient,
     'byod_pos:Cashier': CashierClient,
