@@ -91,12 +91,12 @@ const MODULES = [
         version: '1.0.0',
         enabled: true,
         adminRoutes: [
-            { label: 'Cashier Station', path: '/admin/pos/cashier',     icon: 'monitor-dot',    componentKey: 'byod_pos:Cashier' },
-            { label: 'Kitchen Display', path: '/admin/pos/kds',          icon: 'utensils',       componentKey: 'byod_pos:KDS' },
-            { label: 'Transactions',    path: '/admin/pos/transactions', icon: 'credit-card',    componentKey: 'byod_pos:Transactions' },
-            { label: 'Menu Manager',    path: '/admin/pos/menu',         icon: 'clipboard-list', componentKey: 'byod_pos:AdminMenu' },
-            { label: 'Configuration',   path: '/admin/pos/settings',     icon: 'settings',       componentKey: 'byod_pos:AdminSettings', permission: 'settings' },
-            { label: 'Reports',         path: '/admin/pos/reports',      icon: 'file-text',      componentKey: 'byod_pos:AdminOrders',   permission: 'view_reports' },
+            { label: 'Cashier',       path: '/admin/pos/cashier',     icon: 'monitor-dot',    componentKey: 'byod_pos:Cashier' },
+            { label: 'Kitchen',       path: '/admin/pos/kds',          icon: 'utensils',       componentKey: 'byod_pos:KDS' },
+            { label: 'Transactions',  path: '/admin/pos/transactions', icon: 'credit-card',    componentKey: 'byod_pos:Transactions' },
+            { label: 'Menu',          path: '/admin/pos/menu',         icon: 'clipboard-list', componentKey: 'byod_pos:AdminMenu' },
+            { label: 'Configuration', path: '/admin/pos/settings',     icon: 'settings',       componentKey: 'byod_pos:AdminSettings', permission: 'settings' },
+            { label: 'Reports',       path: '/admin/pos/reports',      icon: 'file-text',      componentKey: 'byod_pos:AdminOrders',   permission: 'view_reports' },
         ],
         publicRoutes: [
             { path: '/order', componentKey: 'byod_pos:OrderPage' }

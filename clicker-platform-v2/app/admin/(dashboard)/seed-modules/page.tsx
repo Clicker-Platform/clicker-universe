@@ -55,11 +55,12 @@ export default function SeedModulesPage() {
             version: '1.0.0',
             enabled: true,
             adminRoutes: [
-                { path: '/admin/pos/cashier', label: 'Cashier Station', icon: 'credit-card', componentKey: 'byod_pos:Cashier' },
-                { path: '/admin/pos/kitchen', label: 'Kitchen Display', icon: 'monitor-dot', componentKey: 'byod_pos:KDS' },
-                { path: '/admin/pos/history', label: 'Transactions', icon: 'clipboard-list', componentKey: 'byod_pos:Transactions' },
-                { path: '/admin/pos/menu', label: 'Menu Manager', icon: 'utensils', componentKey: 'byod_pos:AdminMenu' },
-                { path: '/admin/pos/settings', label: 'Configuration', icon: 'settings', componentKey: 'byod_pos:AdminSettings' }
+                { path: '/admin/pos/cashier',      label: 'Cashier',       icon: 'monitor-dot',    componentKey: 'byod_pos:Cashier' },
+                { path: '/admin/pos/kds',          label: 'Kitchen',       icon: 'utensils',       componentKey: 'byod_pos:KDS' },
+                { path: '/admin/pos/transactions', label: 'Transactions',  icon: 'credit-card',    componentKey: 'byod_pos:Transactions' },
+                { path: '/admin/pos/menu',         label: 'Menu',          icon: 'clipboard-list', componentKey: 'byod_pos:AdminMenu' },
+                { path: '/admin/pos/settings',     label: 'Configuration', icon: 'settings',       componentKey: 'byod_pos:AdminSettings' },
+                { path: '/admin/pos/reports',      label: 'Reports',       icon: 'file-text',      componentKey: 'byod_pos:AdminOrders', permission: 'view_reports' }
             ],
             publicRoutes: [
                 { path: '/order', componentKey: 'byod_pos:OrderPage' }
