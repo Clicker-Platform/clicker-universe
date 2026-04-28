@@ -15,9 +15,9 @@ async function getApiKey(siteId: string): Promise<string | null> {
   }
 }
 
-const SCAN_PROMPT = `You are a product identification expert. Analyze this product image and use Google Search to find accurate product details.
+const SCAN_PROMPT = `You are a product identification and pricing expert. Analyze this product image and use Google Search to find accurate product details.
 
-Return ONLY a JSON object with these exact fields:
+Return ONLY a valid JSON object with these exact fields (no markdown, no extra text):
 {
   "name": "Full product name including series/variant",
   "brand": "Brand or manufacturer name",
@@ -30,12 +30,17 @@ Return ONLY a JSON object with these exact fields:
   "aiAnalysis": "Short product description in Bahasa Indonesia, 1-2 sentences"
 }
 
-Rules:
-- releasePrice and marketPrice must be numbers in IDR (Indonesian Rupiah), no symbols
+Pricing rules (CRITICAL — never return 0):
+- releasePrice = official retail price in IDR when this product first launched (search launch news, brand announcements)
+- marketPrice = current retail price in IDR for brand new stock (search Tokopedia, Shopee, or official brand store today)
+- If price is in USD, convert to IDR (1 USD ≈ 16000 IDR)
+- Both must be realistic non-zero integers
+
+Other rules:
 - category must be exactly one of the listed codes
-- suggestedCondition: BNIB if sealed/new looking, BNOB if box opened, SECOND if used, BROKEN if damaged
-- sku brand code: use first 3 letters of brand (Apple→APL, Nike→NKE, Hasbro→HSB, Sony→SNY)
-- If you cannot identify the product, use best guess with low confidence values`;
+- suggestedCondition: BNIB if sealed/new, BNOB if box opened unused, SECOND if visibly used, BROKEN if damaged
+- sku brand code: first 3 uppercase letters of brand (Apple→APL, Nike→NKE, Hasbro→HSB, Sony→SNY)
+- If product cannot be identified, make your best guess — never leave prices as 0`;
 
 export async function scanProductImage(
   siteId: string,
@@ -46,16 +51,55 @@ export async function scanProductImage(
   if (!apiKey) throw new Error('Gemini API Key belum dikonfigurasi. Silakan atur di Settings.');
 
   const ai = new GoogleGenerativeAI(apiKey);
-  const model = ai.getGenerativeModel({
-    model: 'gemini-2.0-flash',
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    tools: [{ googleSearch: {} } as any],
-  });
 
-  const result = await model.generateContent([
-    SCAN_PROMPT,
-    { inlineData: { data: imageBase64, mimeType } },
-  ]);
+  type ModelConfig = {
+    model: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    generationConfig?: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    tools?: any[];
+  };
+
+  const modelConfigs: ModelConfig[] = [
+    {
+      model: 'gemini-3-flash-preview',
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      tools: [{ googleSearch: {} } as any],
+    },
+    {
+      model: 'gemini-2.5-flash',
+      generationConfig: { thinkingConfig: { thinkingBudget: 0 } },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      tools: [{ googleSearch: {} } as any],
+    },
+    {
+      model: 'gemini-2.0-flash-lite',
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      tools: [{ googleSearch: {} } as any],
+    },
+  ];
+
+  let result;
+  let lastError: unknown;
+  for (const config of modelConfigs) {
+    try {
+      const model = ai.getGenerativeModel(config);
+      result = await model.generateContent([
+        SCAN_PROMPT,
+        { inlineData: { data: imageBase64, mimeType } },
+      ]);
+      break;
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      if (msg.includes('429') || msg.includes('quota') || msg.includes('400') || msg.includes('Unable to process')) {
+        logger.warn('stocklens.scan.model.failed', { siteId, model: config.model, error: msg });
+        lastError = e;
+        continue;
+      }
+      throw e;
+    }
+  }
+  if (!result) throw lastError;
 
   const text = result.response.text();
 

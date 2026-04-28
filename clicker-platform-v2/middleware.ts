@@ -54,7 +54,8 @@ export async function middleware(request: NextRequest) {
         logger.error('middleware.env.missing', { siteId: 'platform', error: 'NEXT_PUBLIC_BASE_DOMAIN is not defined' });
         return new NextResponse('Site Configuration Missing (Base Domain)', { status: 500 });
     }
-    const isLocal = hostname.includes('localhost');
+    const isLocal = hostname.includes('localhost') ||
+        (process.env.NODE_ENV === 'development' && /^\d{1,3}(\.\d{1,3}){3}(:\d+)?$/.test(hostname));
     const protocol = isLocal ? 'http' : 'https';
     // Firebase default domains (e.g. stg-clicker-core.web.app) don't support custom subdomains.
     // On these domains, path-based routing must be used instead of subdomain-based routing.

@@ -56,10 +56,18 @@ export default function ScannerPage() {
     setYearSuffix(null);
 
     try {
-      const formData = new FormData();
-      formData.append('siteId', siteId);
-      formData.append('image', file);
-      const res = await fetch('/api/stocklens/scan', { method: 'POST', body: formData });
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve((reader.result as string).split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const res = await fetch('/api/stocklens/scan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ siteId, base64, mimeType: file.type || 'image/jpeg' }),
+      });
       const data: unknown = await res.json();
       if (!res.ok) throw new Error((data as Record<string, string>).error || 'Scan gagal');
       const scanData = data as ScanResult;
@@ -107,7 +115,9 @@ export default function ScannerPage() {
     setSaving(true);
     try {
       const storage = getStorage();
-      const unitDocId = crypto.randomUUID();
+      const unitDocId = typeof crypto.randomUUID === 'function'
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
       const storageRef = ref(storage, `sites/${siteId}/${STOCKLENS_STORAGE}/${unitDocId}/${imageFile.name}`);
       await uploadBytes(storageRef, imageFile);
       const photoUrl = await getDownloadURL(storageRef);
