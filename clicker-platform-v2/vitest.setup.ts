@@ -51,6 +51,9 @@ vi.mock('firebase/firestore', () => ({
     static fromMillis(m: number) {
       return new MockTimestamp(Math.floor(m / 1000), 0);
     }
+    static fromDate(d: Date) {
+      return new MockTimestamp(Math.floor(d.getTime() / 1000), 0);
+    }
   },
   serverTimestamp: vi.fn(),
   runTransaction: vi.fn(),
