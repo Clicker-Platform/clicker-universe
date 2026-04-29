@@ -1,6 +1,6 @@
 // lib/modules/promo/api/evaluator.ts
 import { Timestamp } from 'firebase/firestore';
-import { findPromoByCode } from './promos';
+import { findPromoByCode, listPromos } from './promos';
 import { findVoucherByCode } from './vouchers';
 import { getPromoSettings } from './settings';
 import { calculateDiscount } from './discount';
@@ -143,12 +143,68 @@ export async function evaluatePromo(input: EvaluateInput): Promise<EvaluationRes
   };
 }
 
-// Stub for Task 10
 export async function findAutoApplicable(
   siteId: string,
   subtotal: number,
   source: PromoSource,
   memberId?: string,
 ): Promise<EvaluationResult | null> {
-  return null;
+  // 1. Fetch all active promos for the site
+  const allPromos = await listPromos(siteId);
+
+  // 2. Filter to only trigger='auto' and status='active' promos
+  const candidates = allPromos.filter(p => p.trigger === 'auto' && p.status === 'active');
+
+  if (candidates.length === 0) return null;
+
+  // 3. Fetch settings once for audience/guest check
+  const settings = await getPromoSettings(siteId);
+
+  // 4. Run rule checks for each candidate and calculate discount
+  let best: EvaluationResult | null = null;
+  let bestDiscount = -1;
+
+  for (const promo of candidates) {
+    // Paused check (redundant given filter above, but defensive)
+    if (promo.status === 'paused') continue;
+
+    // Window check
+    if (promo.conditions.validUntil && isExpired(promo.conditions.validUntil)) continue;
+    if (promo.conditions.validFrom && !isExpired(promo.conditions.validFrom)) continue;
+
+    // Source check
+    if (!sourceEligible(promo.conditions.eligibleSources, source)) continue;
+
+    // Audience/guest check
+    if (!memberId && !settings.allowGuestCodes) continue;
+    if (!audienceMatches(promo, memberId)) continue;
+
+    // Min subtotal check
+    if (promo.conditions.minSubtotal !== undefined && subtotal < promo.conditions.minSubtotal) continue;
+
+    // Usage exhausted check
+    if (promo.maxUses !== undefined && promo.usageCount >= promo.maxUses) continue;
+
+    // Calculate discount
+    const discount = calculateDiscount(
+      { kind: promo.kind, value: promo.value, maxDiscount: promo.maxDiscount },
+      subtotal,
+    );
+
+    // 5. Keep track of the highest discount
+    if (discount > bestDiscount) {
+      bestDiscount = discount;
+      best = {
+        ok: true,
+        kind: 'promo',
+        refId: promo.id,
+        label: promo.name,
+        discount,
+        remainingSubtotal: subtotal - discount,
+      };
+    }
+  }
+
+  // 6. Return best or null
+  return best;
 }
