@@ -152,6 +152,9 @@ export const MODULE_COMPONENTS: Record<string, any> = {
     'fintrack:AdvancedPage':    FT_AdvancedPage,
     'fintrack:SettingsPage':    FT_SettingsPage,
 
+    // Promo Module
+    'promo:PromoAdminPage': dynamic(() => import('@/lib/modules/promo/components/PromoAdminPage')),
+
     // AI Marketing Module
     'ai_marketing:Dashboard': MktDashboard,
     'ai_marketing:Generate': MktGenerate,

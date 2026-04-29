@@ -73,6 +73,13 @@ export const STATIC_MODULE_DEFINITIONS: Record<string, Partial<ModuleDefinition>
             { label: 'Settings',  path: '/admin/fintrack/settings', icon: 'settings',         componentKey: 'fintrack:SettingsPage', permission: 'settings' },
         ]
     },
+    'promo': {
+        adminRoutes: [
+            { label: 'Promotions', path: '/admin/promo', icon: 'tag', componentKey: 'promo:PromoAdminPage' },
+            { label: 'Vouchers', path: '/admin/promo/vouchers', icon: 'ticket', componentKey: 'promo:PromoAdminPage' },
+            { label: 'Settings', path: '/admin/promo/settings', icon: 'settings', permission: 'settings', componentKey: 'promo:PromoAdminPage' },
+        ]
+    },
     'ai_marketing': {
         adminRoutes: [
             { label: 'Dashboard',        path: '/admin/marketing/dashboard',          icon: 'dashboard',      componentKey: 'ai_marketing:Dashboard',      hidden: true },
