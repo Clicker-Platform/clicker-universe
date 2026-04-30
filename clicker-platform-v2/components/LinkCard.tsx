@@ -3,7 +3,6 @@
 import React from 'react';
 import { LinkItem } from '@/data/mockData';
 import { ArrowRight, ExternalLink, ShoppingBag } from 'lucide-react';
-import { useAnalytics } from '@/hooks/useAnalytics';
 import { ICON_MAP } from '@/data/icons';
 
 import { FormModal } from '@/components/FormModal';
@@ -27,7 +26,6 @@ export const LinkCard: React.FC<LinkCardProps> = ({ item, siteId, tenantSlug, ca
     const { theme } = React.useContext(TemplateContext) || { theme: { cardStyle: 'brutalist' } as any };
     const isGlass = theme.cardStyle === 'glass';
 
-    const { track } = useAnalytics();
     const [isModalOpen, setIsModalOpen] = React.useState(false);
     const [formData, setFormData] = React.useState<any>(null);
     const [isLoadingForm, setIsLoadingForm] = React.useState(false);
@@ -46,7 +44,6 @@ export const LinkCard: React.FC<LinkCardProps> = ({ item, siteId, tenantSlug, ca
     const mutedColor = isGlass ? 'rgba(255,255,255,0.4)' : (cardFgColor ? `${cardFgColor}99` : (theme.colors?.textMuted || '#9ca3af'));
 
     const handleClick = async (e: React.MouseEvent) => {
-        track({ type: 'link_click', id: item.id, siteId: effectiveSiteId });
         if (item.type === 'form' && item.formId) {
             e.preventDefault();
             if (!formData) {

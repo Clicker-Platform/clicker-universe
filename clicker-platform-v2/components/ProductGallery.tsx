@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { Product } from '@/data/mockData';
-import { useAnalytics } from '@/hooks/useAnalytics';
 import { ProductCard } from '@/components/catalog/ProductCard';
 import { ProductDetailModal } from '@/components/catalog/ProductDetailModal';
 import { useSite } from '@/lib/site-context';
@@ -18,7 +17,6 @@ interface ProductGalleryProps {
 }
 
 export const ProductGallery: React.FC<ProductGalleryProps> = ({ products, title = "Popular Treats", viewAllHref, phoneNumber, whatsappSettings }) => {
-    const { track } = useAnalytics();
     const { siteId } = useSite();
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const { templateId, theme } = useTemplate();
@@ -26,7 +24,6 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({ products, title 
     const isGlass = theme.cardStyle === 'glass';
 
     const handleProductClick = (product: Product) => {
-        track({ type: 'product_click', id: product.id, siteId });
         setSelectedProduct(product);
     };
 
@@ -100,7 +97,7 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({ products, title 
                                     ? 'bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm border border-white/20'
                                     : 'bg-brand-dark text-white hover:bg-brand-green hover:text-brand-dark shadow-sm'
                         }`}
-                        onClick={() => track({ type: 'view_all_click', id: 'catalog', siteId })}
+
                     >
                         View More ...
                     </a>
