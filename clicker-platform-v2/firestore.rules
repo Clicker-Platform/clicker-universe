@@ -344,7 +344,24 @@ service cloud.firestore {
         allow write: if isValidUser(siteId) && isModuleEnabled(siteId, 'service_records');
       }
 
-      // 6. AI SALES AGENT (Strictly Nested)
+      // 6. PROMO ENGINE
+      match /modules/promo/promos/{promoId} {
+        allow read: if true; // Public — customers need to read active promos for auto-apply and code evaluation
+        allow write: if isValidUser(siteId) && hasRole(siteId, ['owner', 'staff']);
+      }
+      match /modules/promo/vouchers/{voucherId} {
+        allow read: if isModuleEnabled(siteId, 'promo') && (
+          isValidUser(siteId) ||
+          (request.auth != null && resource.data.ownerMemberId != null) // member can read own vouchers
+        );
+        allow write: if isValidUser(siteId) && hasRole(siteId, ['owner', 'staff']);
+      }
+      match /modules/promo/settings/{settingId} {
+        allow read: if true; // Public — needed for allowGuestCodes check during evaluation
+        allow write: if isValidUser(siteId) && hasRole(siteId, ['owner']);
+      }
+
+      // 7. AI SALES AGENT (Strictly Nested)
       match /modules/ai_sales {
         allow read: if true; // Public needs to read config (enabled/greeting)
         allow write: if isValidUser(siteId) && hasRole(siteId, ['owner']);

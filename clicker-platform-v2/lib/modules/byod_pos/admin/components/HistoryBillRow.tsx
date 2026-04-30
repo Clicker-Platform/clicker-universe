@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { POSOrder } from '@/lib/modules/byod_pos/types';
-import { ChevronDown, ChevronRight, CheckCircle, Clock, XCircle, User, CreditCard, Receipt } from 'lucide-react';
+import { ChevronDown, ChevronRight, CheckCircle, Clock, XCircle, User, CreditCard, Receipt, Tag } from 'lucide-react';
 
 interface HistoryBillRowProps {
     group: {
@@ -72,9 +72,11 @@ export function HistoryBillRow({ group, onClick }: HistoryBillRowProps) {
                                 {group.displayId}
                             </span>
                         )}
-                        <span className="text-xs text-gray-400 dark:text-neutral-600 font-medium px-1.5 py-0.5 bg-gray-100 dark:bg-neutral-800 rounded-md">
-                            {group.orders.length} orders
-                        </span>
+                        {group.orders.length > 1 && (
+                            <span className="text-xs text-gray-400 dark:text-neutral-600 font-medium px-1.5 py-0.5 bg-gray-100 dark:bg-neutral-800 rounded-md">
+                                {group.orders.length} orders
+                            </span>
+                        )}
                     </div>
                     <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-neutral-500">
                         <span className="flex items-center gap-1">
@@ -85,6 +87,12 @@ export function HistoryBillRow({ group, onClick }: HistoryBillRowProps) {
                             <span className="flex items-center gap-1 uppercase">
                                 <CreditCard size={12} />
                                 {group.orders[0].paymentMethod}
+                            </span>
+                        )}
+                        {group.orders[0]?.appliedPromo && (
+                            <span className="flex items-center gap-1 text-green-600 dark:text-green-400 font-medium">
+                                <Tag size={12} />
+                                {group.orders[0].appliedPromo.label}
                             </span>
                         )}
                     </div>

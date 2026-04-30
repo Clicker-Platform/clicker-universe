@@ -55,6 +55,9 @@ describe('commitPromoUsage', () => {
       memberId: 'member-A',
     };
 
+    // Voucher doc has no promoId — parent promo increment is skipped
+    mockGet.mockResolvedValue({ data: () => ({}) });
+
     await commitPromoUsage(input);
 
     expect(runTransaction).toHaveBeenCalledOnce();
@@ -68,6 +71,37 @@ describe('commitPromoUsage', () => {
         usedDiscount: 50_000,
       })
     );
+  });
+
+  // Test 2b: voucher kind with promoId — also increments parent promo usageCount
+  it('2b. voucher kind with promoId: also increments parent promo usageCount atomically', async () => {
+    const input: CommitInput = {
+      siteId: 'site-1',
+      applied: { refId: 'voucher-1', kind: 'voucher', label: 'VCH-ABCD', discount: 50_000 },
+      source: 'RESERVATION',
+      refId: 'booking-xyz',
+      memberId: 'member-A',
+    };
+
+    // First get() = voucher doc (has promoId), second get() = promo doc (usageCount: 7)
+    mockGet
+      .mockResolvedValueOnce({ data: () => ({ promoId: 'promo-parent' }) })
+      .mockResolvedValueOnce({ data: () => ({ usageCount: 7 }) });
+
+    await commitPromoUsage(input);
+
+    expect(runTransaction).toHaveBeenCalledOnce();
+    // Voucher update
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({ path: expect.stringContaining('voucher-1') }),
+      expect.objectContaining({ status: 'used', usedDiscount: 50_000 })
+    );
+    // Parent promo usageCount increment
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({ path: expect.stringContaining('promo-parent') }),
+      { usageCount: 8 }
+    );
+    expect(mockUpdate).toHaveBeenCalledTimes(2);
   });
 });
 

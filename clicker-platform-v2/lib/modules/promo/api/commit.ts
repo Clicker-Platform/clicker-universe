@@ -25,15 +25,23 @@ export async function commitPromoUsage(input: CommitInput): Promise<void> {
     });
   } else {
     // kind === 'voucher'
-    const ref = doc(db, 'sites', siteId, VOUCHERS_COLLECTION, applied.refId);
+    const voucherRef = doc(db, 'sites', siteId, VOUCHERS_COLLECTION, applied.refId);
     await runTransaction(db, async (tx) => {
-      tx.update(ref, {
+      const voucherSnap = await tx.get(voucherRef);
+      const promoId = voucherSnap.data()?.promoId as string;
+      tx.update(voucherRef, {
         status: 'used',
         usedAt: Timestamp.now(),
         usedSource: source,
         usedRefId: refId,
         usedDiscount: applied.discount,
       });
+      if (promoId) {
+        const promoRef = doc(db, 'sites', siteId, PROMOS_COLLECTION, promoId);
+        const promoSnap = await tx.get(promoRef);
+        const currentCount = (promoSnap.data()?.usageCount ?? 0) as number;
+        tx.update(promoRef, { usageCount: currentCount + 1 });
+      }
     });
   }
 }

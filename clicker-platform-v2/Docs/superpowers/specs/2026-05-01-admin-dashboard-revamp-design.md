@@ -21,7 +21,7 @@ A prominent banner at the top of the page. Contains:
 
 **Button derivation rule:** Each module definition declares an optional `dashboardAction: { label, icon, href }`. The dashboard collects these from active modules only and renders them in definition order after the pinned Create Page button. Modules without a `dashboardAction` field are skipped silently.
 
-Visual: dark blue gradient card (`#1e3a5f → #1e40af`), white text, semi-transparent button tiles.
+Visual: flat dark blue card (`#1e3a5f`), white text, semi-transparent button tiles. No gradients.
 
 ---
 
@@ -30,7 +30,8 @@ Visual: dark blue gradient card (`#1e3a5f → #1e40af`), white text, semi-transp
 A grid of Canvas Studio pages the tenant has created. Shows up to 6 pages, with a "View all →" link when there are more.
 
 **Each page card:**
-- Gradient color thumbnail (a consistent color derived from the page slug/id — no screenshot capture)
+
+- Flat color thumbnail (a solid color picked sequentially from a fixed palette — no gradients, no screenshot capture)
 - Page name
 - Published / Draft status badge
 - "Edit →" link that navigates to Canvas Studio with that page preloaded
@@ -144,7 +145,7 @@ The `ModuleCards` component maintains a registry mapping `dashboardWidget.compon
 
 ## Out of scope (deferred)
 
-- Real page thumbnail screenshots (gradient placeholder is sufficient for now)
+- Real page thumbnail screenshots (flat color placeholder is sufficient for now)
 - Cross-module activity feed / event timeline
 - User-pinned shortcuts / personalization
 - Articles / publishing content section

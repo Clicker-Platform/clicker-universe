@@ -1,6 +1,6 @@
 // lib/modules/promo/api/evaluator.ts
 import { Timestamp } from 'firebase/firestore';
-import { findPromoByCode, listPromos } from './promos';
+import { findPromoByCode, findAutoPromos } from './promos';
 import { findVoucherByCode } from './vouchers';
 import { getPromoSettings } from './settings';
 import { calculateDiscount } from './discount';
@@ -149,11 +149,8 @@ export async function findAutoApplicable(
   source: PromoSource,
   memberId?: string,
 ): Promise<EvaluationResult | null> {
-  // 1. Fetch all active promos for the site
-  const allPromos = await listPromos(siteId);
-
-  // 2. Filter to only trigger='auto' and status='active' promos
-  const candidates = allPromos.filter(p => p.trigger === 'auto' && p.status === 'active');
+  // 1. Fetch only trigger='auto' + status='active' promos directly
+  const candidates = await findAutoPromos(siteId);
 
   if (candidates.length === 0) return null;
 

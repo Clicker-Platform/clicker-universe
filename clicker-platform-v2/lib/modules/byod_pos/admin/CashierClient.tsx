@@ -118,7 +118,9 @@ export default function CashierClient({ initialOrders = [] }: { initialOrders?: 
             let type: 'table' | 'member' | 'walk-in' = 'walk-in';
             let label = 'Walk-in';
 
-            if (order.tableNumber) {
+            const isRealTable = order.tableNumber && order.tableNumber !== 'Walk-in';
+
+            if (isRealTable) {
                 key = `table-${order.tableNumber}`;
                 type = 'table';
                 label = `Table ${order.tableNumber}`;

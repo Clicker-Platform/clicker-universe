@@ -72,104 +72,40 @@ export default function TransactionsClient({ initialOrders = [] }: { initialOrde
         if (siteId) loadOrders(true);
     }, [siteId]);
 
-    // ... (grouping logic remains effectively same, just memoized)
+    // Each order is its own row — no grouping. Combining causes confusion when
+    // unrelated walk-in orders share table/customer keys.
     const historyGroups = useMemo(() => {
-        // Restore client-side filter to be safe for both Fetch methods.
-        // If getHistoryOrders works, it returns already filtered data (filter is redundant but harmless).
-        // If fallback getPaginatedOrders works, it returns mixed data (filter is necessary).
+        const sorted = [...orders].sort(
+            (a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)
+        );
 
-        // We might want to show ALL orders for history, not just completed/paid?
-        // User requirements said "Transaction History" -> usually implies completed stuff or at least recorded stuff.
-        // The original filter was:
-        // const relevant = orders.filter(o => ['completed', 'cancelled'].includes(o.status) || o.paymentStatus === 'paid')
-        // We should PROBABLY keep this filter if we want to hide 'open' orders that are not paid yet?
-        // But paginated query fetches generic orders. 
-        // If we filter client-side, we might end up with empty pages.
-        // For now, let's keep the client-side filter but acknowledge it might be imperfect for paging if many 'open' orders exist.
-        // Ideally, the QUERY should filter, but let's stick to existing logic for safety first.
-
-        // Server-side filtering now handles status filtering.
-        // sorting is also done by query, but strictly sorting locally is safe too.
-        const relevant = orders
-            .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-
-        const groups: Record<string, any> = {};
-
-        relevant.forEach(order => {
-            const dateStr = new Date((order.createdAt?.seconds || 0) * 1000).toDateString();
-            let key = '';
-            let label = '';
-
-            // Logic:
-            // 1. If valid Table -> Group by Table
-            // 2. If valid Customer -> Group by Customer
-            // 3. Fallback -> Group by Order ID (effectively no grouping if singleton)
-
-            // Helper to check if table is "real"
+        return sorted.map(order => {
             const isRealTable = order.tableNumber && order.tableNumber !== 'Walk-in';
-
+            let label: string;
             if (isRealTable) {
-                key = `TABLE-${order.tableNumber}-${dateStr}`;
                 const isNumeric = /^\d+$/.test(order.tableNumber!);
                 label = isNumeric ? `Table ${order.tableNumber}` : order.tableNumber!;
             } else if (order.customerName) {
-                key = `CUST-${order.customerName}-${dateStr}`;
                 label = order.customerName;
             } else {
-                // Same date walk-ins without name -> Group by order ID?
-                // Or just singleton.
-                if (order.tableNumber) {
-                    key = `TABLE-${order.tableNumber}-${dateStr}`;
-                    label = "Walk-in";
-                } else {
-                    key = `ORDER-${order.id}`;
-                    label = `Order #${order.id.slice(-4)}`;
-                }
+                label = `#${order.id.slice(-4)}`;
             }
 
-            if (!groups[key]) {
-                groups[key] = {
-                    id: key,
-                    displayId: '',
-                    label: label,
-                    orders: [],
-                    total: 0,
-                    timestamp: 0,
-                    status: 'paid'
-                };
-            }
+            const status: 'paid' | 'cancelled' | 'mixed' =
+                order.status === 'cancelled' ? 'cancelled'
+                : order.paymentStatus === 'paid' ? 'paid'
+                : 'mixed';
 
-            groups[key].orders.push(order);
-            groups[key].total += order.total;
-            if ((order.createdAt?.seconds || 0) > groups[key].timestamp) {
-                groups[key].timestamp = order.createdAt?.seconds || 0;
-            }
+            return {
+                id: order.id,
+                displayId: `#${order.id.slice(-4)}`,
+                label,
+                orders: [order],
+                total: order.total,
+                timestamp: order.createdAt?.seconds || 0,
+                status,
+            };
         });
-
-        // Post-processing to refine Labels and IDs
-        Object.values(groups).forEach((g: any) => {
-            // Set Display ID to the first order's ID
-            if (g.orders.length > 0) {
-                g.displayId = `#${g.orders[0].id.slice(-4)}`;
-            }
-
-            // If label is "Walk-in" or generic, use Order IDs
-            if (g.label === 'Walk-in' || g.label.startsWith('Order #')) {
-                // Collect last 4 digits of all orders
-                const ids = g.orders.map((o: POSOrder) => `#${o.id.slice(-4)}`).join(' ');
-                g.label = ids;
-            }
-
-            // ... status logic
-            const allPaid = g.orders.every((o: POSOrder) => o.paymentStatus === 'paid');
-            const allCancelled = g.orders.every((o: POSOrder) => o.status === 'cancelled');
-
-            if (allCancelled) g.status = 'cancelled';
-            else if (allPaid) g.status = 'paid';
-            else g.status = 'mixed';
-        });
-
-        return Object.values(groups).sort((a: any, b: any) => b.timestamp - a.timestamp);
     }, [orders]);
 
     return (
