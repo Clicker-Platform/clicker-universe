@@ -3,6 +3,8 @@
 import { useEffect, useState, useMemo } from 'react';
 import { POSOrder, POSSettings } from '@/lib/modules/byod_pos/types';
 import { subscribeToRecentOrders, confirmPayment } from '@/lib/modules/byod_pos/api';
+import { commitPromoUsage, reversePromoUsage } from '@/lib/modules/promo/api';
+import type { AppliedPromo } from '@/lib/modules/promo/api';
 import { ShoppingBag } from 'lucide-react';
 import { toast } from 'sonner';
 import { BillCard } from './components/BillCard';
@@ -52,13 +54,27 @@ export default function CashierClient({ initialOrders = [] }: { initialOrders?: 
         getPOSSettings(siteId).then(setSettings);
     }, [siteId]);
 
-    const confirmPaymentProcess = async (method: POSOrder['paymentMethod']) => {
+    const confirmPaymentProcess = async (method: POSOrder['paymentMethod'], appliedPromo: AppliedPromo | null) => {
         if (isViewOnly) { toast.error('You do not have permission to confirm payments.'); return; }
         if (paymentConfig.orders.length === 0) return;
 
         try {
             if (!siteId) return;
+            const orderIds = paymentConfig.orders.map(o => o.id);
             await Promise.all(paymentConfig.orders.map(o => confirmPayment(siteId, o.id, method)));
+
+            // Commit promo usage after successful payment
+            if (appliedPromo) {
+                const memberId = paymentConfig.orders[0]?.memberId;
+                const refId = orderIds.length === 1 ? orderIds[0] : orderIds.join(',');
+                try {
+                    await commitPromoUsage({ siteId, applied: appliedPromo, source: 'POS', refId, memberId });
+                } catch (promoErr) {
+                    logger.error('pos.cashier.promo.commit.failed', { siteId, promoErr });
+                    // Non-fatal: payment already succeeded
+                }
+            }
+
             toast.success(`Payment confirmed via ${method?.toUpperCase()}`);
 
             // Store paid orders for printing option
@@ -170,11 +186,13 @@ export default function CashierClient({ initialOrders = [] }: { initialOrders?: 
                 isOpen={paymentConfig.isOpen}
                 onClose={() => setPaymentConfig({ isOpen: false, orders: [] })}
                 onConfirm={confirmPaymentProcess}
-                order={paymentConfig.orders.length === 1 ? paymentConfig.orders[0] : {
+                order={paymentConfig.orders.length === 1 ? paymentConfig.orders[0] : paymentConfig.orders.length > 1 ? {
                     ...paymentConfig.orders[0],
                     total: calculateBillTotals(paymentConfig.orders).total, // Use aggregated total
                     id: 'BILL-GROUP'
-                }}
+                } : null}
+                siteId={siteId}
+                memberId={paymentConfig.orders[0]?.memberId}
             />
 
             <ConfirmationDialog
