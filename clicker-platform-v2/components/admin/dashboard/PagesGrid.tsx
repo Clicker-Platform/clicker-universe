@@ -9,13 +9,9 @@ import { useSite } from '@/lib/site-context';
 interface Page {
   id: string;
   title: string;
-  status: 'published' | 'draft';
 }
 
-const THUMBNAIL_COLORS = [
-  'bg-blue-500', 'bg-violet-500', 'bg-emerald-500',
-  'bg-rose-500', 'bg-amber-500', 'bg-cyan-500',
-];
+const THUMBNAIL_COLOR = 'bg-gray-200 dark:bg-neutral-700';
 
 interface Props {
   baseUrl: string;
@@ -33,7 +29,6 @@ export function PagesGrid({ baseUrl }: Props) {
         setPages(snap.docs.map(d => ({
           id: d.id,
           title: d.data().title ?? 'Untitled',
-          status: d.data().published ? 'published' : 'draft',
         })));
       }
     );
@@ -51,24 +46,17 @@ export function PagesGrid({ baseUrl }: Props) {
         )}
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-        {pages.map((page, i) => (
+        {pages.map(page => (
           <div
             key={page.id}
             className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-lg overflow-hidden"
           >
-            <div className={`h-14 ${THUMBNAIL_COLORS[i % THUMBNAIL_COLORS.length]}`} />
+            <div className={`h-14 ${THUMBNAIL_COLOR}`} />
             <div className="p-2.5">
               <p className="font-semibold text-xs text-gray-800 dark:text-neutral-100 truncate mb-1.5">
                 {page.title}
               </p>
-              <div className="flex items-center justify-between">
-                <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${
-                  page.status === 'published'
-                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                    : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
-                }`}>
-                  {page.status === 'published' ? 'Published' : 'Draft'}
-                </span>
+              <div className="flex items-center justify-end">
                 <Link
                   href={`${baseUrl}/admin/canvas?page=${page.id}`}
                   className="text-[10px] text-blue-500 hover:underline"
