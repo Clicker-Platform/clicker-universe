@@ -128,30 +128,37 @@ export function PromoForm({ siteId, promo, onClose, onSaved }: PromoFormProps) {
         setError(null);
 
         try {
+            // Build conditions — only include fields that have actual values
+            const conditions: Promo['conditions'] = {
+                eligibleSources: form.eligibleSources,
+                audience: form.audience,
+            };
+            if (form.minSubtotal) conditions.minSubtotal = parseFloat(form.minSubtotal);
+            const validFrom = dateStrToTs(form.validFrom);
+            if (validFrom) conditions.validFrom = validFrom;
+            const validUntil = dateStrToTs(form.validUntil);
+            if (validUntil) conditions.validUntil = validUntil;
+            if (form.audience === 'specific' && form.specificMemberIds.trim()) {
+                conditions.specificMemberIds = form.specificMemberIds.split(',').map(s => s.trim()).filter(Boolean);
+            }
+
+            // Build top-level payload — only include optional fields when they have values
             const payload: Omit<Promo, 'id' | 'siteId' | 'createdAt' | 'updatedAt' | 'usageCount'> = {
                 name: form.name.trim(),
-                description: form.description.trim() || undefined,
                 kind: form.kind,
                 value: parseFloat(form.value) || 0,
-                maxDiscount: form.kind === 'percent' && form.maxDiscount ? parseFloat(form.maxDiscount) : undefined,
-                code: form.trigger === 'code' && form.code.trim() ? form.code.trim() : undefined,
                 trigger: form.trigger,
-                costInPoints: form.trigger === 'claim' && form.costInPoints ? parseInt(form.costInPoints) : undefined,
-                voucherExpiryDays: form.trigger === 'claim' && form.voucherExpiryDays ? parseInt(form.voucherExpiryDays) : undefined,
                 status: isEdit ? form.status : 'active',
-                maxUses: form.maxUses ? parseInt(form.maxUses) : undefined,
-                perMemberLimit: form.perMemberLimit ? parseInt(form.perMemberLimit) : undefined,
-                conditions: {
-                    minSubtotal: form.minSubtotal ? parseFloat(form.minSubtotal) : undefined,
-                    validFrom: dateStrToTs(form.validFrom),
-                    validUntil: dateStrToTs(form.validUntil),
-                    eligibleSources: form.eligibleSources,
-                    audience: form.audience,
-                    specificMemberIds: form.audience === 'specific' && form.specificMemberIds
-                        ? form.specificMemberIds.split(',').map(s => s.trim()).filter(Boolean)
-                        : undefined,
-                },
+                conditions,
             };
+
+            if (form.description.trim()) payload.description = form.description.trim();
+            if (form.kind === 'percent' && form.maxDiscount) payload.maxDiscount = parseFloat(form.maxDiscount);
+            if (form.trigger === 'code' && form.code.trim()) payload.code = form.code.trim();
+            if (form.trigger === 'claim' && form.costInPoints) payload.costInPoints = parseInt(form.costInPoints);
+            if (form.trigger === 'claim' && form.voucherExpiryDays) payload.voucherExpiryDays = parseInt(form.voucherExpiryDays);
+            if (form.maxUses) payload.maxUses = parseInt(form.maxUses);
+            if (form.perMemberLimit) payload.perMemberLimit = parseInt(form.perMemberLimit);
 
             if (isEdit && promo) {
                 await updatePromo(siteId, promo.id, payload);
