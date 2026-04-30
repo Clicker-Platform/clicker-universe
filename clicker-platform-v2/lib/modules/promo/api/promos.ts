@@ -35,33 +35,40 @@ export async function findPromoByCode(siteId: string, code: string): Promise<Pro
   return { id: snap.docs[0].id, ...snap.docs[0].data() } as Promo;
 }
 
+// Recursively remove undefined values from an object before writing to Firestore
+function stripUndefined<T extends Record<string, any>>(obj: T): T {
+  const out: any = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (v === undefined) continue;
+    out[k] = v !== null && typeof v === 'object' && !Array.isArray(v) && typeof v.toDate !== 'function'
+      ? stripUndefined(v)
+      : v;
+  }
+  return out;
+}
+
 export async function createPromo(
   siteId: string,
   data: Omit<Promo, 'id' | 'siteId' | 'createdAt' | 'updatedAt' | 'usageCount'>
 ): Promise<Promo> {
   const ref = doc(collection(db, 'sites', siteId, PROMOS_COLLECTION));
-  const payload: any = {
+  const payload = stripUndefined({
     ...data,
     siteId,
     code: data.code ? data.code.trim().toUpperCase() : null,
     usageCount: 0,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
-  };
-  // Firestore rejects undefined values — strip all optional fields that were left unset
-  Object.keys(payload).forEach(k => payload[k] === undefined && delete payload[k]);
+  });
   await setDoc(ref, payload);
   return { id: ref.id, ...payload, createdAt: Timestamp.now(), updatedAt: Timestamp.now() } as Promo;
 }
 
 export async function updatePromo(siteId: string, promoId: string, patch: Partial<Promo>): Promise<void> {
   const ref = doc(db, 'sites', siteId, PROMOS_COLLECTION, promoId);
-  const cleaned: any = { ...patch, updatedAt: serverTimestamp() };
+  const { id: _id, siteId: _siteId, createdAt: _createdAt, ...rest } = patch as any;
+  const cleaned = stripUndefined({ ...rest, updatedAt: serverTimestamp() });
   if (patch.code !== undefined) cleaned.code = patch.code ? patch.code.trim().toUpperCase() : null;
-  delete cleaned.id;
-  delete cleaned.siteId;
-  delete cleaned.createdAt;
-  Object.keys(cleaned).forEach(k => cleaned[k] === undefined && delete cleaned[k]);
   await updateDoc(ref, cleaned);
 }
 
