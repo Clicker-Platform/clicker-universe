@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Loader2, Tag, X, Sparkles } from 'lucide-react';
+import { Loader2, Tag, X } from 'lucide-react';
 import { evaluatePromo, findAutoApplicable } from '@/lib/modules/promo/api';
 import type { AppliedPromo, PromoSource } from '@/lib/modules/promo/api';
 import { logger } from '@/lib/logger-edge';
@@ -180,20 +180,6 @@ export function PromoApplicator({
         </button>
       </div>
 
-      {/* Auto-apply row */}
-      <button
-        type="button"
-        onClick={handleAutoCheck}
-        disabled={disabled || autoLoading || subtotal <= 0}
-        className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-neutral-400 hover:text-studio-blue dark:hover:text-studio-blue transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-      >
-        {autoLoading ? (
-          <Loader2 className="w-3 h-3 animate-spin" />
-        ) : (
-          <Sparkles className="w-3 h-3" />
-        )}
-        Auto-apply best promo
-      </button>
 
       {/* Inline error */}
       {error && (
