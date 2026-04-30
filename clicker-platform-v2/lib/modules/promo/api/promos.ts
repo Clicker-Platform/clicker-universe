@@ -48,6 +48,8 @@ export async function createPromo(
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   };
+  // Firestore rejects undefined values — strip all optional fields that were left unset
+  Object.keys(payload).forEach(k => payload[k] === undefined && delete payload[k]);
   await setDoc(ref, payload);
   return { id: ref.id, ...payload, createdAt: Timestamp.now(), updatedAt: Timestamp.now() } as Promo;
 }
@@ -59,6 +61,7 @@ export async function updatePromo(siteId: string, promoId: string, patch: Partia
   delete cleaned.id;
   delete cleaned.siteId;
   delete cleaned.createdAt;
+  Object.keys(cleaned).forEach(k => cleaned[k] === undefined && delete cleaned[k]);
   await updateDoc(ref, cleaned);
 }
 
@@ -69,6 +72,16 @@ export async function setPromoStatus(siteId: string, promoId: string, status: Pr
 export async function deletePromo(siteId: string, promoId: string): Promise<void> {
   const ref = doc(db, 'sites', siteId, PROMOS_COLLECTION, promoId);
   await deleteDoc(ref);
+}
+
+export async function findAutoPromos(siteId: string): Promise<Promo[]> {
+  const q = query(
+    collection(db, 'sites', siteId, PROMOS_COLLECTION),
+    where('trigger', '==', 'auto'),
+    where('status', '==', 'active')
+  );
+  const snap = await getDocs(q);
+  return snap.docs.map(d => ({ id: d.id, ...d.data() } as Promo));
 }
 
 export async function listClaimablePromos(siteId: string, memberId: string): Promise<Promo[]> {
