@@ -78,7 +78,11 @@ export const STATIC_MODULE_DEFINITIONS: Record<string, Partial<ModuleDefinition>
             { label: 'Promotions', path: '/admin/promo', icon: 'tag', componentKey: 'promo:PromoAdminPage' },
             { label: 'Vouchers', path: '/admin/promo/vouchers', icon: 'ticket', componentKey: 'promo:PromoAdminPage' },
             { label: 'Settings', path: '/admin/promo/settings', icon: 'settings', permission: 'settings', componentKey: 'promo:PromoAdminPage' },
-        ]
+        ],
+        dashboardWidgets: [
+            { location: 'member_dashboard', componentKey: 'promo:MemberRewardsWidget', priority: 50 },
+            { location: 'member_dashboard', componentKey: 'promo:MyVouchersWidget',    priority: 40 },
+        ],
     },
     'ai_marketing': {
         adminRoutes: [

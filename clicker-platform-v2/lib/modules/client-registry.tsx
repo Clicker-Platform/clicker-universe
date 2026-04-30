@@ -7,6 +7,8 @@
 import POSBlockClient from '@/lib/modules/byod_pos/components/POSBlockClient';
 import UpcomingReservationsWidget from '@/lib/modules/reservation/public/UpcomingReservationsWidget';
 import ReservationWidget from '@/lib/modules/reservation/public/ReservationWidget';
+import MemberRewardsWidget from '@/lib/modules/promo/components/MemberRewardsWidget';
+import MyVouchersWidget from '@/lib/modules/promo/components/MyVouchersWidget';
 
 // Only include components specifically designed for Client usage
 export const CLIENT_MODULE_COMPONENTS: Record<string, any> = {
@@ -16,6 +18,10 @@ export const CLIENT_MODULE_COMPONENTS: Record<string, any> = {
     // Reservation Module
     'reservation:BookNowWaitlist': ReservationWidget, // Client Version
     'reservation:UpcomingWidget': UpcomingReservationsWidget,
+
+    // Promo Module
+    'promo:MemberRewardsWidget': MemberRewardsWidget,
+    'promo:MyVouchersWidget': MyVouchersWidget,
 
     // Add others only if verified as Client Components
 };

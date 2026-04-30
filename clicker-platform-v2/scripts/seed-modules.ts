@@ -193,6 +193,29 @@ const MODULES = [
         ]
     },
     {
+        id: 'promo',
+        displayName: 'Promotions & Vouchers',
+        description: 'Promo rules, voucher issuance, and member rewards.',
+        icon: 'tag',
+        version: '1.0.0',
+        enabled: true,
+        adminRoutes: [
+            { label: 'Promotions', path: '/admin/promo',          icon: 'tag',      componentKey: 'promo:PromoAdminPage' },
+            { label: 'Vouchers',   path: '/admin/promo/vouchers', icon: 'ticket',   componentKey: 'promo:PromoAdminPage' },
+            { label: 'Settings',   path: '/admin/promo/settings', icon: 'settings', componentKey: 'promo:PromoAdminPage', permission: 'settings' },
+        ],
+        publicRoutes: [],
+        dashboardWidgets: [
+            { location: 'member_dashboard', componentKey: 'promo:MemberRewardsWidget', priority: 50 },
+            { location: 'member_dashboard', componentKey: 'promo:MyVouchersWidget',    priority: 40 },
+        ],
+        collections: [
+            'modules/promo/promos',
+            'modules/promo/vouchers',
+            'modules/promo/settings',
+        ],
+    },
+    {
         id: 'ai_marketing',
         displayName: 'AI Marketing Workspace',
         description: 'Multi-agent AI system for marketing content generation.',
