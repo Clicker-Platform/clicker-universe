@@ -21,6 +21,7 @@ pnpm build      # Production build
 3. **Multi-tenancy** — always use `siteId` from `useSite()`. Never hardcode tenant IDs.
 4. **RBAC guard** — check `canEdit()` before every write in client components.
 5. **DB paths** — use constants from `lib/modules/{name}/constants.ts`, never raw strings.
+6. **Cross-module promo imports** — modules may import from `@/lib/modules/promo/api` (the facade only). Designated exception to rule 1, same as `@/lib/modules/membership/api`.
 
 ## Skills Available
 
@@ -36,6 +37,8 @@ This project has Claude Code skills in `.claude/commands/`. Use them:
 - `/inventory` — stock management, audit trails
 - `/reservation` — booking & scheduling
 - `/membership` — loyalty program, member profiles
+- `/promo` — promo engine, discount codes, vouchers, auto-apply rules
+- `/promo_integration` — step-by-step guide to add promo support to any billing module
 - `/sales_pipeline` — CRM Kanban board
 - `/service_records` — vehicle service records, warranty, reminders
 - `/ai_sales_agent` — Gemini AI chatbot, lead capture
