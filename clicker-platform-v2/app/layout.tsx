@@ -19,7 +19,6 @@ const spaceMono = Space_Mono({
 
 import { fetchSiteSettings } from "@/lib/fetchData";
 import ThemeRegistry from "@/components/ThemeRegistry";
-import { AnalyticsTracker } from "@/components/AnalyticsTracker";
 import { headers } from "next/headers";
 import { SiteProvider } from "@/lib/site-context";
 
@@ -87,8 +86,7 @@ export default async function RootLayout({
       >
         <SiteProvider siteId={siteId} tenantSlug={tenantSlug} isSubdomain={isSubdomain}>
           <ThemeRegistry initialSettings={settings} />
-          <AnalyticsTracker />
-          <div className="flex-grow w-full">
+<div className="flex-grow w-full">
             {children}
           </div>
           <Toaster position="top-right" richColors />
