@@ -61,7 +61,7 @@ export default function CashierClient({ initialOrders = [] }: { initialOrders?: 
         try {
             if (!siteId) return;
             const orderIds = paymentConfig.orders.map(o => o.id);
-            await Promise.all(paymentConfig.orders.map(o => confirmPayment(siteId, o.id, method)));
+            await Promise.all(paymentConfig.orders.map(o => confirmPayment(siteId, o.id, method, appliedPromo ?? undefined)));
 
             // Commit promo usage after successful payment
             if (appliedPromo) {

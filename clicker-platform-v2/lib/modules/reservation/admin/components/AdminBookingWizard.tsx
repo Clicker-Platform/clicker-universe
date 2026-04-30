@@ -256,7 +256,8 @@ export default function AdminBookingWizard({
                 totalPrice: finalPrice,
                 notes: customerInfo.notes,
                 staffId: selectedStaff?.id,
-                staffName: selectedStaff?.name
+                staffName: selectedStaff?.name,
+                ...(appliedPromo ? { appliedPromo } : {}),
             } as any);
 
             if (appliedPromo) {

@@ -24,6 +24,9 @@ vi.mock('@/lib/firebase', () => ({
 vi.mock('../api/promos');
 vi.mock('../api/settings');
 vi.mock('../code-generator');
+vi.mock('@/lib/modules/membership/api', () => ({
+  awardPoints: vi.fn().mockResolvedValue(undefined),
+}));
 
 import { claimVoucher, grantVoucher } from '../api/claim';
 import { getPromo } from '../api/promos';

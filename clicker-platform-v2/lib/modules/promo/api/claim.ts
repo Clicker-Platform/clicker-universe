@@ -5,6 +5,7 @@ import { getPromo } from './promos';
 import { getPromoSettings } from './settings';
 import { PROMOS_COLLECTION, VOUCHERS_COLLECTION } from '../constants';
 import type { Voucher, VoucherIssuedVia } from '../types';
+import { awardPoints } from '@/lib/modules/membership/api';
 
 export interface ClaimVoucherInput {
   siteId: string;
@@ -65,6 +66,18 @@ export async function claimVoucher(input: ClaimVoucherInput): Promise<Voucher> {
   };
 
   await setDoc(ref, voucher);
+
+  // Deduct points after voucher is written — best-effort (non-fatal if loyalty disabled)
+  if (issuedVia === 'points_redemption' && promo.costInPoints) {
+    await awardPoints(
+      siteId,
+      memberId,
+      -promo.costInPoints,
+      'PROMO_CLAIM',
+      ref.id,
+      `Redeemed for voucher: ${voucher.code}`,
+    );
+  }
 
   return voucher;
 }

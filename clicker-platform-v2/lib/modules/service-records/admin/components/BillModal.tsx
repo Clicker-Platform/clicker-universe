@@ -132,6 +132,7 @@ export default function BillModal({ siteId, record, approvedByEmail, onCompleted
                 consumedItems: consumedItems.length > 0
                     ? consumedItems.map(({ _tempId, ...ci }) => ci)
                     : undefined,
+                ...(appliedPromo ? { appliedPromo } : {}),
             } as any);
 
             // Step 2 — Atomically complete: warranty card + reminders + points

@@ -117,7 +117,7 @@ export default function POSClient({ initialOrders = [] }: { initialOrders?: POSO
             if (!siteId) return;
             const orderIds = paymentConfig.orders.map(o => o.id);
             // Process all orders in parallel
-            await Promise.all(paymentConfig.orders.map(o => confirmPayment(siteId, o.id, method)));
+            await Promise.all(paymentConfig.orders.map(o => confirmPayment(siteId, o.id, method, appliedPromo ?? undefined)));
 
             // Commit promo usage after successful payment
             if (appliedPromo) {

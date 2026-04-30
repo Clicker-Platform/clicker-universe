@@ -44,6 +44,7 @@ export interface ServiceRecord {
     bookingSource?: 'reservation';
     approvedBy?: string;        // email of approver, set on COMPLETED
     approvedAt?: Timestamp;     // set on COMPLETED
+    appliedPromo?: import('@/lib/modules/promo/api').AppliedPromo;
     createdAt: Timestamp;
     updatedAt: Timestamp;
     createdBy: string;          // user email or uid

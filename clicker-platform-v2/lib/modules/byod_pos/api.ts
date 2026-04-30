@@ -365,6 +365,22 @@ export async function cancelOrder(siteId: string, orderId: string): Promise<void
             }
         }
     }
+    // Reverse promo usage if a promo was applied and committed (best-effort)
+    if (orderData.appliedPromo && orderData.paymentStatus === 'paid') {
+        try {
+            const { reversePromoUsage } = await import('@/lib/modules/promo/api');
+            await reversePromoUsage({
+                siteId,
+                applied: orderData.appliedPromo,
+                source: 'POS',
+                refId: orderId,
+                memberId: orderData.memberId,
+            });
+        } catch (e) {
+            logger.warn('pos.promo.reverse.failed', { siteId, orderId, error: e });
+        }
+    }
+
     await deleteDoc(orderRef);
 }
 
@@ -416,13 +432,19 @@ export async function requestPayment(siteId: string, orderId: string): Promise<v
     });
 }
 
-export async function confirmPayment(siteId: string, orderId: string, method: POSOrder['paymentMethod']): Promise<void> {
+export async function confirmPayment(
+    siteId: string,
+    orderId: string,
+    method: POSOrder['paymentMethod'],
+    appliedPromo?: POSOrder['appliedPromo'],
+): Promise<void> {
     const orderRef = doc(db, 'sites', siteId, ORDERS_COLLECTION, orderId);
 
     await updateDoc(orderRef, {
         paymentStatus: 'paid',
         paymentMethod: method,
-        status: 'completed'
+        status: 'completed',
+        ...(appliedPromo ? { appliedPromo } : {}),
     });
 }
 
