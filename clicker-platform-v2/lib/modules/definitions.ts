@@ -10,18 +10,24 @@ export const STATIC_MODULE_DEFINITIONS: Record<string, Partial<ModuleDefinition>
             { label: 'Menu', path: '/admin/pos/menu', icon: 'clipboard-list', componentKey: 'byod_pos:AdminMenu' },
             { label: 'Configuration', path: '/admin/pos/settings', icon: 'settings', permission: 'settings', componentKey: 'byod_pos:AdminSettings' },
             { label: 'Reports', path: '/admin/pos/reports', icon: 'file-text', permission: 'view_reports', componentKey: 'byod_pos:AdminOrders' }
-        ]
+        ],
+        dashboardAction: { label: 'Open Cashier', href: '/admin/pos/cashier' },
+        adminDashboardWidget: { componentKey: 'byod_pos:DashboardWidget' },
     },
     'membership': {
         adminRoutes: [
             { label: 'Members', path: '/admin/membership/list', icon: 'users', componentKey: 'membership:MemberListPage' },
             { label: 'Settings', path: '/admin/membership/settings', icon: 'settings', permission: 'settings', componentKey: 'membership:Settings' }
-        ]
+        ],
+        dashboardAction: { label: 'View Members', href: '/admin/membership/list' },
+        adminDashboardWidget: { componentKey: 'membership:DashboardWidget' },
     },
     'inventory': {
         adminRoutes: [
             { label: 'Items', path: '/admin/inventory/items', icon: 'box', componentKey: 'inventory:AdminDashboard' }
-        ]
+        ],
+        dashboardAction: { label: 'View Stock', href: '/admin/inventory/items' },
+        adminDashboardWidget: { componentKey: 'inventory:DashboardWidget' },
     },
     'stocklens': {
         adminRoutes: [
@@ -36,7 +42,9 @@ export const STATIC_MODULE_DEFINITIONS: Record<string, Partial<ModuleDefinition>
             { label: 'Services', path: '/admin/reservation/services', icon: 'list', componentKey: 'reservation:ServiceList' },
             { label: 'Staff', path: '/admin/reservation/staff', icon: 'users', componentKey: 'reservation:AdminStaff', hidden: true },
             { label: 'Settings', path: '/admin/reservation/settings', icon: 'settings', permission: 'settings', componentKey: 'reservation:Settings' }
-        ]
+        ],
+        dashboardAction: { label: 'New Booking', href: '/admin/reservation/bookings' },
+        adminDashboardWidget: { componentKey: 'reservation:DashboardWidget' },
     },
     'ai_sales': {
         adminRoutes: [
@@ -48,7 +56,9 @@ export const STATIC_MODULE_DEFINITIONS: Record<string, Partial<ModuleDefinition>
         adminRoutes: [
             { label: 'Pipeline Board', path: '/admin/sales-pipeline/board', icon: 'trophy', componentKey: 'sales_pipeline:PipelinePage' },
             { label: 'Settings', path: '/admin/sales-pipeline/settings', icon: 'settings', permission: 'settings', componentKey: 'sales_pipeline:SettingsPage' }
-        ]
+        ],
+        dashboardAction: { label: 'View Pipeline', href: '/admin/sales-pipeline/board' },
+        adminDashboardWidget: { componentKey: 'sales_pipeline:DashboardWidget' },
     },
     'service_records': {
         adminRoutes: [
@@ -61,7 +71,9 @@ export const STATIC_MODULE_DEFINITIONS: Record<string, Partial<ModuleDefinition>
             { label: 'Service Types',   path: '/admin/service-records/service-types', icon: 'wrench',         componentKey: 'service_records:ServiceTypesPage', permission: 'settings' },
             { label: 'Reminders',       path: '/admin/service-records/reminders',     icon: 'bell',           componentKey: 'service_records:RemindersPage',    permission: 'settings' },
             { label: 'Settings',        path: '/admin/service-records/settings',      icon: 'settings',       componentKey: 'service_records:SettingsPage',     permission: 'settings' },
-        ]
+        ],
+        dashboardAction: { label: 'New Record', href: '/admin/service-records/new' },
+        adminDashboardWidget: { componentKey: 'service_records:DashboardWidget' },
     },
     'fintrack': {
         adminRoutes: [
@@ -71,7 +83,9 @@ export const STATIC_MODULE_DEFINITIONS: Record<string, Partial<ModuleDefinition>
             { label: 'New Entry', path: '/admin/fintrack/new',      icon: 'plus',             componentKey: 'fintrack:NewEntryPage', hidden: true },
             { label: 'Advanced',  path: '/admin/fintrack/advanced', icon: 'star',             componentKey: 'fintrack:AdvancedPage' },
             { label: 'Settings',  path: '/admin/fintrack/settings', icon: 'settings',         componentKey: 'fintrack:SettingsPage', permission: 'settings' },
-        ]
+        ],
+        dashboardAction: { label: 'View Entries', href: '/admin/fintrack/entries' },
+        adminDashboardWidget: { componentKey: 'fintrack:DashboardWidget' },
     },
     'promo': {
         adminRoutes: [
@@ -83,6 +97,8 @@ export const STATIC_MODULE_DEFINITIONS: Record<string, Partial<ModuleDefinition>
             { location: 'member_dashboard', componentKey: 'promo:MemberRewardsWidget', priority: 50 },
             { location: 'member_dashboard', componentKey: 'promo:MyVouchersWidget',    priority: 40 },
         ],
+        dashboardAction: { label: 'New Promo', href: '/admin/promo' },
+        adminDashboardWidget: { componentKey: 'promo:DashboardWidget' },
     },
     'ai_marketing': {
         adminRoutes: [
