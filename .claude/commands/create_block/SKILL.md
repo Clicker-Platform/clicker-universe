@@ -117,6 +117,42 @@ export const DefaultYourBlock = ({ data }: { data: any }) => {
 
 Use `var(--theme-*)` CSS variables for colours so the block respects templates.
 
+### LCP rule — blocks that render images
+
+If your block renders a `<Image>` (next/image) or a `<img>` tag, it **must** accept an `isFirst` prop and use it to gate `priority` and `fetchPriority`. This ensures the LCP element gets a preload hint injected in `<head>` without also preloading images that are below the fold.
+
+```tsx
+'use client';
+
+import Image from 'next/image';
+
+export const DefaultYourBlock = ({ data, isFirst = false }: { data: any; isFirst?: boolean }) => {
+    if (!data?.imageUrl) return null;
+    return (
+        <section className="w-full px-4 py-6 max-w-5xl mx-auto">
+            <Image
+                src={data.imageUrl}
+                alt={data.alt || ''}
+                width={1200}
+                height={800}
+                sizes="(max-width: 1024px) 100vw, 1200px"
+                priority={isFirst}
+                fetchPriority={isFirst ? 'high' : 'auto'}
+                className="w-full h-auto object-cover"
+            />
+        </section>
+    );
+};
+```
+
+If your block uses `MediaView`, pass the prop through:
+
+```tsx
+<MediaView media={data.media} priority={isFirst} />
+```
+
+Blocks with **no images** (text, buttons, maps, iframes) can omit `isFirst` entirely.
+
 ---
 
 ## 6. Register in `BlockRenderer`
@@ -130,6 +166,13 @@ const YourBlock = dynamic(
 );
 
 // 2. Add switch case inside renderBlock()
+// If the block renders images, forward isFirst so the LCP element gets priority:
+case 'your_block':
+    return customBlocks?.YourBlock
+        ? React.createElement(customBlocks.YourBlock, { data: block.data, isFirst })
+        : <YourBlock data={block.data} isFirst={isFirst} />;
+
+// If the block never renders images (text, button, map, iframe), omit isFirst:
 case 'your_block':
     return customBlocks?.YourBlock
         ? React.createElement(customBlocks.YourBlock, { data: block.data })
@@ -158,7 +201,9 @@ Export interfaces, constants, and a `DEFAULT_*` object. Import from both the for
 - [ ] Admin form created at `forms/YourBlockForm.tsx`
 - [ ] Form registered in `BlockFormRenderer.tsx` (dynamic import + coreLabels + switch case)
 - [ ] Public renderer created at `public/DefaultYourBlock.tsx`
+- [ ] **If block renders images:** accepts `isFirst?: boolean`, gates `priority`/`fetchPriority` on it
 - [ ] Public renderer registered in `BlockRenderer.tsx` (dynamic import + switch case)
+- [ ] **If block renders images:** `isFirst` forwarded in the `BlockRenderer` switch case
 - [ ] Types file created if data shape is non-trivial
 
 ---
@@ -166,9 +211,11 @@ Export interfaces, constants, and a `DEFAULT_*` object. Import from both the for
 ## Common Mistakes
 
 | Mistake | Fix |
-|---|---|
+| --- | --- |
 | Forgot `coreLabels` entry in `BlockFormRenderer` | Without it, the editor treats the block as a module block and shows the module fallback UI |
 | Used `static import` for public renderer | Only hero/image_gallery are static; all others must be `dynamic()` to keep bundle size small |
 | Hardcoded colours in public renderer | Use `var(--theme-primary)`, `var(--theme-foreground)` etc. so templates can override |
 | No `customBlocks?.YourBlock` branch in `BlockRenderer` | Template-specific overrides won't work; always include the ternary |
 | Missing `'use client'` on form or public renderer | Both are client components; they need the directive |
+| Block renders images but ignores `isFirst` | LCP image won't be preloaded; page will score poorly on Core Web Vitals. Accept `isFirst?: boolean` and gate `priority`/`fetchPriority` on it |
+| Forgot to forward `isFirst` in `BlockRenderer` switch case | The prop never reaches the block component, so the LCP fix is silently broken |

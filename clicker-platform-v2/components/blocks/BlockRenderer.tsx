@@ -32,6 +32,7 @@ import { getTemplate } from '@/lib/templates/registry';
 
 export const BlockRenderer = ({
     block,
+    isFirst = false,
     phoneNumber,
     whatsappSettings,
     theme,
@@ -58,6 +59,7 @@ export const BlockRenderer = ({
     reservationSettings,
 }: {
     block: PageBlock,
+    isFirst?: boolean,
     phoneNumber?: string,
     whatsappSettings?: any,
     theme?: any,
@@ -87,21 +89,24 @@ export const BlockRenderer = ({
     const renderBlock = () => {
         const customBlocks = fullTemplate.components?.Blocks;
 
+        // LCP RULE: if a new block type renders an above-the-fold image, pass `isFirst` to it
+        // and gate `priority`/`fetchPriority` on that prop inside the block component.
+        // Blocks that are text-only, iframes, or never the LCP element can omit it.
         switch (block.type) {
             case 'hero':
                 return customBlocks?.Hero ?
-                    React.createElement(customBlocks.Hero, { profile, theme, data: block.data, previewMode, onInlineChange, onFieldFocus, onFieldBlur }) :
-                    <HeroBlock data={block.data} theme={theme} onInlineChange={onInlineChange} onFieldFocus={onFieldFocus} onFieldBlur={onFieldBlur} />;
+                    React.createElement(customBlocks.Hero, { profile, theme, data: block.data, isFirst, previewMode, onInlineChange, onFieldFocus, onFieldBlur }) :
+                    <HeroBlock data={block.data} theme={theme} isFirst={isFirst} onInlineChange={onInlineChange} onFieldFocus={onFieldFocus} onFieldBlur={onFieldBlur} />;
             case 'text':
                 return customBlocks?.Text ?
                     React.createElement(customBlocks.Text, { data: block.data }) :
                     <TextBlock data={block.data} />;
             case 'content_showcase':
-                return <ContentShowcaseBlock data={block.data} />;
-            case 'image': 
-                return customBlocks?.Image ? 
-                    React.createElement(customBlocks.Image, { data: block.data }) : 
-                    <ImageBlock data={block.data} />;
+                return <ContentShowcaseBlock data={block.data} isFirst={isFirst} />;
+            case 'image':
+                return customBlocks?.Image ?
+                    React.createElement(customBlocks.Image, { data: block.data, isFirst }) :
+                    <ImageBlock data={block.data} isFirst={isFirst} />;
             case 'button': 
                 return customBlocks?.Button ? 
                     React.createElement(customBlocks.Button, { data: block.data }) : 
@@ -123,9 +128,9 @@ export const BlockRenderer = ({
                     React.createElement(customBlocks.Map, { data: block.data }) : 
                     <MapBlock data={block.data} />;
             case 'image_gallery':
-                return customBlocks?.ImageGallery ? 
-                    React.createElement(customBlocks.ImageGallery, { data: block.data }) : 
-                    <ImageGalleryBlock data={block.data} />;
+                return customBlocks?.ImageGallery ?
+                    React.createElement(customBlocks.ImageGallery, { data: block.data, isFirst }) :
+                    <ImageGalleryBlock data={block.data} isFirst={isFirst} />;
 
             case 'quick_actions':
                 return customBlocks?.QuickActions ?

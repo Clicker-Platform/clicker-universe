@@ -150,6 +150,7 @@ interface CtaBtn { label?: string; url?: string; }
 interface MrbHeroProps {
     profile: BusinessProfile;
     previewMode?: boolean;
+    isFirst?: boolean;
     onInlineChange?: (field: string, value: string) => void;
     onFieldFocus?: (field: string, rect: DOMRect) => void;
     onFieldBlur?: () => void;
@@ -183,7 +184,7 @@ interface MrbHeroProps {
     };
 }
 
-export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, onInlineChange, onFieldFocus, onFieldBlur }) => {
+export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, isFirst = true, onInlineChange, onFieldFocus, onFieldBlur }) => {
     const { theme } = useTemplate();
     const d = useDeviceView();
 
@@ -261,8 +262,8 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, onInlineChange,
                     src={imageUrl}
                     alt=""
                     fill
-                    priority
-                    fetchPriority="high"
+                    priority={isFirst}
+                    fetchPriority={isFirst ? 'high' : 'auto'}
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
                     placeholder="blur"
                     blurDataURL={BLUR_PLACEHOLDER}
@@ -283,8 +284,8 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, onInlineChange,
                         src={imageUrlMobile}
                         alt=""
                         fill
-                        priority
-                        fetchPriority="high"
+                        priority={isFirst}
+                        fetchPriority={isFirst ? 'high' : 'auto'}
                         sizes="100vw"
                         placeholder="blur"
                         blurDataURL={BLUR_PLACEHOLDER}

@@ -7,7 +7,7 @@ import { useDeviceView, dv } from '@/components/DeviceViewContext';
 import { MediaView } from './MediaView';
 import { MediaFieldValue, DEFAULT_MEDIA } from '@/components/admin/blocks/media-field/types';
 
-export const DefaultImageBlock = ({ data }: { data: any }) => {
+export const DefaultImageBlock = ({ data, isFirst = false }: { data: any; isFirst?: boolean }) => {
     const { theme } = useTemplate();
     const d = useDeviceView();
     const cardStyle = theme.cardStyle;
@@ -35,6 +35,7 @@ export const DefaultImageBlock = ({ data }: { data: any }) => {
                     media={media}
                     className={`shadow-md ${getCardClasses(cardStyle)}`}
                     style={{ borderRadius: radius }}
+                    priority={isFirst}
                 />
                 {data.caption && (
                     <p className={`text-center text-sm font-bold mt-4 italic ${isGlass ? 'text-white/50' : 'text-gray-500'}`}>
@@ -57,6 +58,8 @@ export const DefaultImageBlock = ({ data }: { data: any }) => {
                         width={1920}
                         height={1080}
                         sizes="100vw"
+                        priority={isFirst}
+                        fetchPriority={isFirst ? 'high' : 'auto'}
                         className="w-full h-auto object-cover max-h-[70vh]"
                         style={{ width: '100%', height: 'auto' }}
                     />
@@ -80,6 +83,8 @@ export const DefaultImageBlock = ({ data }: { data: any }) => {
                         width={1200}
                         height={800}
                         sizes="(max-width: 1024px) 100vw, 800px"
+                        priority={isFirst}
+                        fetchPriority={isFirst ? 'high' : 'auto'}
                         className="w-full h-auto object-cover max-h-[60vh]"
                         style={{ width: '100%', height: 'auto' }}
                     />
@@ -105,6 +110,8 @@ export const DefaultImageBlock = ({ data }: { data: any }) => {
                         width={800}
                         height={800}
                         sizes="(max-width: 768px) 100vw, 50vw"
+                        priority={isFirst}
+                        fetchPriority={isFirst ? 'high' : 'auto'}
                         className={`w-full h-auto object-cover ${dv(d, 'aspect-square', 'md:aspect-auto md:h-[60vh]')}`}
                         style={{ width: '100%', height: 'auto' }}
                     />
@@ -132,6 +139,8 @@ export const DefaultImageBlock = ({ data }: { data: any }) => {
                     width={1000}
                     height={600}
                     sizes="(max-width: 1024px) 100vw, 1000px"
+                    priority={isFirst}
+                    fetchPriority={isFirst ? 'high' : 'auto'}
                     className="w-full h-auto object-cover max-h-[70vh]"
                     style={{ width: '100%', height: 'auto' }}
                 />

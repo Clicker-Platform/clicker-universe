@@ -199,9 +199,10 @@ const CtaButtons = ({
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export const DefaultHeroBlock = ({ data, theme, onInlineChange, onFieldFocus, onFieldBlur }: {
+export const DefaultHeroBlock = ({ data, theme, isFirst = true, onInlineChange, onFieldFocus, onFieldBlur }: {
     data: any;
     theme?: any;
+    isFirst?: boolean;
     onInlineChange?: (field: string, value: string) => void;
     onFieldFocus?: (field: string, rect: DOMRect) => void;
     onFieldBlur?: () => void;
@@ -337,8 +338,8 @@ export const DefaultHeroBlock = ({ data, theme, onInlineChange, onFieldFocus, on
                             src={data.imageUrl}
                             alt={data?.title || 'Hero Image'}
                             fill
-                            priority
-                            fetchPriority="high"
+                            priority={isFirst}
+                            fetchPriority={isFirst ? 'high' : 'auto'}
                             sizes="(max-width: 768px) 100vw, 50vw"
                             placeholder="blur"
                             blurDataURL={BLUR_PLACEHOLDER}
@@ -362,8 +363,8 @@ export const DefaultHeroBlock = ({ data, theme, onInlineChange, onFieldFocus, on
                             src={data.imageUrl}
                             alt=""
                             fill
-                            priority
-                            fetchPriority="high"
+                            priority={isFirst}
+                            fetchPriority={isFirst ? 'high' : 'auto'}
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
                             placeholder="blur"
                             blurDataURL={BLUR_PLACEHOLDER}
@@ -458,7 +459,8 @@ export const DefaultHeroBlock = ({ data, theme, onInlineChange, onFieldFocus, on
                         src={data.imageUrl}
                         alt=""
                         fill
-                        priority
+                        priority={isFirst}
+                        fetchPriority={isFirst ? 'high' : 'auto'}
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
                         placeholder="blur"
                         blurDataURL={BLUR_PLACEHOLDER}
