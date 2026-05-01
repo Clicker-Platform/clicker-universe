@@ -32,6 +32,7 @@ const ImageGalleryBlockForm = dynamic(() => import('./forms/ImageGalleryBlockFor
 const SystemBlockForm = dynamic(() => import('./forms/SystemBlockForm').then(mod => mod.SystemBlockForm), { loading: () => <FormSkeleton /> });
 const QuickActionsBlockForm = dynamic(() => import('./forms/QuickActionsBlockForm').then(mod => mod.QuickActionsBlockForm), { loading: () => <FormSkeleton /> });
 const SocialEmbedForm = dynamic(() => import('./forms/SocialEmbedForm').then(mod => mod.SocialEmbedForm), { loading: () => <FormSkeleton /> });
+const InlineFormBlockForm = dynamic(() => import('./forms/InlineFormBlockForm').then(mod => mod.InlineFormBlockForm), { loading: () => <FormSkeleton /> });
 
 interface BlockFormRendererProps {
     block: PageBlock;
@@ -51,7 +52,8 @@ export const BlockFormRenderer = memo(({ block, onChange, templateId = 'classic'
             'products': 'Products', 'faq': 'FAQ', 'link': 'Link', 'map': 'Map', 'image_gallery': 'Gallery',
             'quick_actions': 'Quick Actions', 'hours': 'Operating Hours', 'featured_product': 'Featured Product', 'branches': 'Branches',
             'social_embed': 'Social Embeds',
-            'content_showcase': 'Content Showcase'
+            'content_showcase': 'Content Showcase',
+            'inline_form': 'Inline Form',
         };
 
         if (coreLabels[block.type]) {
@@ -127,6 +129,7 @@ export const BlockFormRenderer = memo(({ block, onChange, templateId = 'classic'
         case 'map': return renderWithLayoutPicker(<MapForm data={block.data} onChange={handleDataChange} />);
         case 'image_gallery': return renderWithLayoutPicker(<ImageGalleryBlockForm data={block.data} onChange={handleDataChange} />);
         case 'social_embed': return <SocialEmbedForm data={block.data} onChange={handleDataChange} />;
+        case 'inline_form': return renderWithLayoutPicker(<InlineFormBlockForm data={block.data} onChange={handleDataChange} />);
 
         case 'quick_actions':
             return <QuickActionsBlockForm data={block.data} onChange={handleDataChange} onOpenLinks={onOpenSlideOver ? () => onOpenSlideOver('links') : undefined} />;
