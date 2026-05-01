@@ -1,5 +1,5 @@
 import { BlockType } from '@/data/mockData';
-import { Type, Image as ImageIcon, Layout, Box, HelpCircle, AlignCenter, Link, Map, List, Clock, Star, MapPin, Play, Columns2 } from 'lucide-react';
+import { Type, Image as ImageIcon, Layout, Box, HelpCircle, AlignCenter, Link, Map, List, Clock, Star, MapPin, Play, Columns2, ClipboardList } from 'lucide-react';
 import { getTemplate } from '@/lib/templates/registry';
 import { DEFAULT_SHOWCASE_DATA, newRow } from '@/components/blocks/content-showcase/types';
 import { DEFAULT_MEDIA } from '@/components/admin/blocks/media-field/types';
@@ -20,6 +20,7 @@ export const BLOCK_OPTIONS: { type: BlockType; label: string; icon: React.Elemen
     { type: 'hours', label: 'Operating Hours', icon: Clock },
     { type: 'featured_product', label: 'Featured Product', icon: Star },
     { type: 'branches', label: 'Branches', icon: MapPin },
+    { type: 'inline_form', label: 'Inline Form', icon: ClipboardList },
 ];
 
 export function getDefaultData(type: BlockType, templateId = 'classic'): any {
@@ -59,6 +60,15 @@ export function getDefaultData(type: BlockType, templateId = 'classic'): any {
         case 'branches':
         case 'featured_product':
             return baseData;
+        case 'inline_form':
+            return {
+                ...baseData,
+                formId: '',
+                heading: '',
+                subheading: '',
+                successMessage: "Thank you! We'll be in touch.",
+                redirectUrl: '',
+            };
         default:
             return baseData;
     }
