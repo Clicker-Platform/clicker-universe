@@ -17,6 +17,7 @@ const LinkBlock = dynamic(() => import('./public/DefaultLinkBlock').then(mod => 
 const MapBlock = dynamic(() => import('./public/DefaultMapBlock').then(mod => mod.DefaultMapBlock));
 const ReservationBlock = dynamic(() => import('./public/ReservationBlock').then(mod => mod.ReservationBlock));
 const SocialEmbedBlock = dynamic(() => import('./public/DefaultSocialEmbedBlock').then(mod => mod.DefaultSocialEmbedBlock));
+const InlineFormBlock = dynamic(() => import('./public/DefaultInlineFormBlock').then(mod => mod.DefaultInlineFormBlock));
 
 // System blocks (from PublicPageRenderer)
 const QuickActions = dynamic(() => import('@/components/QuickActions').then(mod => mod.QuickActions));
@@ -185,6 +186,11 @@ export const BlockRenderer = ({
 
             case 'social_embed':
                 return <SocialEmbedBlock data={block.data} previewMode={previewMode} />;
+
+            case 'inline_form':
+                return customBlocks?.InlineFormBlock
+                    ? React.createElement(customBlocks.InlineFormBlock, { data: block.data, siteId })
+                    : <InlineFormBlock data={block.data} siteId={siteId} />;
 
             default:
                 return <ModuleBlockLoader type={block.type} data={block.data} siteId={siteId} />;
