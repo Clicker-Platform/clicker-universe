@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import { CheckCircle, Loader } from 'lucide-react';
 import { Form } from '@/data/mockData';
 import { useFormSubmit } from '@/lib/forms/useFormSubmit';
@@ -32,11 +34,21 @@ export function DefaultInlineFormBlock({ data, siteId }: Props) {
             setLoadingForm(false);
             return;
         }
-        fetch(`/api/forms?id=${data.formId}&siteId=${siteId}`)
-            .then((r) => (r.ok ? r.json() : null))
-            .then((f) => setForm(f && f.isPublished !== false ? f : null))
-            .catch(() => setForm(null))
-            .finally(() => setLoadingForm(false));
+        (async () => {
+            try {
+                const snap = await getDoc(doc(db, 'sites', siteId, 'forms', data.formId!));
+                if (!snap.exists()) {
+                    setForm(null);
+                    return;
+                }
+                const formData = { id: snap.id, ...snap.data() } as Form;
+                setForm(formData.isPublished === false ? null : formData);
+            } catch {
+                setForm(null);
+            } finally {
+                setLoadingForm(false);
+            }
+        })();
     }, [data?.formId, siteId]);
 
     const { formData, setField, submitting, error, handleSubmit } = useFormSubmit({
@@ -50,20 +62,6 @@ export function DefaultInlineFormBlock({ data, siteId }: Props) {
             }
         },
     });
-
-    if (loadingForm) {
-        return (
-            <section className="w-full px-4 py-10 max-w-2xl mx-auto space-y-4 animate-pulse">
-                <div className="h-6 bg-gray-200 dark:bg-neutral-800 rounded w-1/3" />
-                <div className="h-4 bg-gray-200 dark:bg-neutral-800 rounded w-1/2" />
-                <div className="h-10 bg-gray-200 dark:bg-neutral-800 rounded" />
-                <div className="h-10 bg-gray-200 dark:bg-neutral-800 rounded" />
-                <div className="h-12 bg-gray-200 dark:bg-neutral-800 rounded" />
-            </section>
-        );
-    }
-
-    if (!form) return null;
 
     const labelClassName = isGlass ? 'text-white/80' : 'text-gray-700';
     const inputClassName = isGlass
@@ -108,29 +106,44 @@ export function DefaultInlineFormBlock({ data, siteId }: Props) {
                 </p>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-                <FormFieldsRenderer
-                    fields={form.fields}
-                    formData={formData}
-                    onChange={setField}
-                    labelClassName={labelClassName}
-                    inputClassName={inputClassName}
-                />
-
-                {error && (
-                    <p className="text-sm text-red-500 font-medium">{error}</p>
-                )}
-
-                <button
-                    type="submit"
-                    disabled={submitting}
-                    className="w-full font-bold py-4 rounded-xl shadow-lg hover:-translate-y-1 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-white"
-                    style={{ backgroundColor: 'var(--theme-primary)' }}
+            {loadingForm ? (
+                <div className="space-y-4 animate-pulse">
+                    <div className="h-10 bg-gray-200 dark:bg-neutral-800 rounded" />
+                    <div className="h-10 bg-gray-200 dark:bg-neutral-800 rounded" />
+                    <div className="h-12 bg-gray-200 dark:bg-neutral-800 rounded" />
+                </div>
+            ) : !form ? (
+                <p
+                    className="text-sm font-medium italic"
+                    style={{ color: 'var(--theme-foreground)', opacity: 0.5 }}
                 >
-                    {submitting && <Loader size={20} className="animate-spin" />}
-                    {form.buttonText || 'Submit'}
-                </button>
-            </form>
+                    Select a form in the block settings.
+                </p>
+            ) : (
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <FormFieldsRenderer
+                        fields={form.fields}
+                        formData={formData}
+                        onChange={setField}
+                        labelClassName={labelClassName}
+                        inputClassName={inputClassName}
+                    />
+
+                    {error && (
+                        <p className="text-sm text-red-500 font-medium">{error}</p>
+                    )}
+
+                    <button
+                        type="submit"
+                        disabled={submitting}
+                        className="w-full font-bold py-4 rounded-xl shadow-lg hover:-translate-y-1 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-white"
+                        style={{ backgroundColor: 'var(--theme-primary)' }}
+                    >
+                        {submitting && <Loader size={20} className="animate-spin" />}
+                        {form.buttonText || 'Submit'}
+                    </button>
+                </form>
+            )}
         </section>
     );
 }
