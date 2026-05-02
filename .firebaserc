@@ -28,6 +28,9 @@
         ],
         "auth": [
           "stg-clicker-auth"
+        ],
+        "website": [
+          "clicker-universe-stagging"
         ]
       }
     }
