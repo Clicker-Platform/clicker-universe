@@ -10,6 +10,7 @@ import { logger } from '@/lib/logger-edge';
 
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 import { AlertDialog } from '@/components/common/AlertDialog';
+import { auth } from '@/lib/firebase';
 
 interface FormCardProps {
     form: Form;
@@ -31,7 +32,11 @@ export const FormCard: React.FC<FormCardProps> = ({ form }) => {
     const handleConfirmDelete = async () => {
         setIsDeleting(true);
         try {
-            const res = await fetch(`/api/forms/delete?id=${form.id}&siteId=${siteId}`, { method: 'DELETE' });
+            const token = await auth.currentUser?.getIdToken();
+            const res = await fetch(`/api/forms/delete?id=${form.id}`, {
+                method: 'DELETE',
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            });
             if (res.ok) {
                 router.refresh();
             } else {
