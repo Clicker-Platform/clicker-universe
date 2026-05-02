@@ -6,6 +6,7 @@ import { Form, FormField } from '@/data/mockData';
 import { Plus, Trash2, Save, ArrowLeft, GripVertical, Settings } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
 import { logger } from '@/lib/logger-edge';
+import { auth } from '@/lib/firebase';
 
 interface FormBuilderClientProps {
     initialForm?: Form;
@@ -53,9 +54,13 @@ export function FormBuilderClient({ initialForm }: FormBuilderClientProps) {
         setLoading(true);
         try {
             const endpoint = initialForm ? '/api/forms/update' : '/api/forms/create';
+            const token = await auth.currentUser?.getIdToken();
             const res = await fetch(endpoint, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                },
                 body: JSON.stringify({ ...form, siteId })
             });
 
