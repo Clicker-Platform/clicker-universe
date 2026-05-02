@@ -2,11 +2,10 @@
 
 import React, { useState } from 'react';
 import { X, CheckCircle, Loader } from 'lucide-react';
-import { Form, FormField } from '@/data/mockData';
-import { FormFileField } from '@/components/FormFileField';
+import { Form } from '@/data/mockData';
 import { useTemplate } from '@/components/TemplateProvider';
-
-
+import { useFormSubmit } from '@/lib/forms/useFormSubmit';
+import { FormFieldsRenderer } from '@/components/forms/FormFieldsRenderer';
 
 interface FormModalProps {
     form: Form;
@@ -18,46 +17,27 @@ interface FormModalProps {
 export const FormModal: React.FC<FormModalProps> = ({ form, isOpen, onClose, siteId }) => {
     const { theme } = useTemplate();
     const isGlass = theme.cardStyle === 'glass';
-    const [submitting, setSubmitting] = useState(false);
     const [success, setSuccess] = useState(false);
-    const [formData, setFormData] = useState<Record<string, string>>({});
 
-    if (!isOpen) return null;
-    if (form.isPublished === false) return null;
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setSubmitting(true);
-
-        try {
-            const res = await fetch('/api/forms/submit', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    formId: form.id,
-                    formTitle: form.title,
-                    data: formData,
-                    siteId,
-                    fieldLabels: form.fields?.reduce((acc, f) => ({ ...acc, [f.id]: f.label }), {})
-                })
-            });
-            if (!res.ok) throw new Error('Submission failed');
+    const { formData, setField, submitting, handleSubmit } = useFormSubmit({
+        siteId,
+        form,
+        onSuccess: () => {
             setSuccess(true);
             setTimeout(() => {
                 onClose();
                 setSuccess(false);
-                setFormData({});
             }, 2000);
-        } catch (error) {
-            console.error('Submission error:', error);
-            alert('Something went wrong. Please try again.');
-        }
-        setSubmitting(false);
-    };
+        },
+    });
 
-    const handleChange = (fieldId: string, value: string) => {
-        setFormData(prev => ({ ...prev, [fieldId]: value }));
-    };
+    if (!isOpen) return null;
+    if (form.isPublished === false) return null;
+
+    const labelClassName = isGlass ? 'text-white/80' : 'text-gray-700';
+    const inputClassName = isGlass
+        ? 'bg-white/5 border-white/10 text-white placeholder-white/30 focus:border-[var(--theme-primary)]/50'
+        : 'bg-gray-50 border-2 border-gray-200 focus:border-brand-dark';
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -65,9 +45,7 @@ export const FormModal: React.FC<FormModalProps> = ({ form, isOpen, onClose, sit
 
             <div
                 className={`relative rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200 ${
-                    isGlass
-                        ? 'border border-white/10 backdrop-blur-xl'
-                        : 'bg-white'
+                    isGlass ? 'border border-white/10 backdrop-blur-xl' : 'bg-white'
                 }`}
                 style={isGlass ? { background: 'rgba(26, 26, 26, 0.85)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' } : undefined}
             >
@@ -104,79 +82,25 @@ export const FormModal: React.FC<FormModalProps> = ({ form, isOpen, onClose, sit
                             >
                                 {form.title}
                             </h2>
-                            <p className={`font-medium text-sm ${isGlass ? 'text-white/50' : 'text-gray-500'}`}>Fill out the form below.</p>
+                            <p className={`font-medium text-sm ${isGlass ? 'text-white/50' : 'text-gray-500'}`}>
+                                Fill out the form below.
+                            </p>
                         </div>
 
                         <form onSubmit={handleSubmit} className="space-y-4">
-                            {form.fields.map((field) => (
-                                <div key={field.id}>
-                                    {field.type !== 'file' && (
-                                        <label className={`block text-sm font-bold mb-1 ${
-                                            isGlass ? 'text-white/80' : 'text-gray-700'
-                                        }`}>
-                                            {field.label} {field.required && <span className="text-red-500">*</span>}
-                                        </label>
-                                    )}
-
-                                    {field.type === 'textarea' ? (
-                                        <textarea
-                                            required={field.required}
-                                            placeholder={field.placeholder}
-                                            value={formData[field.id] || ''}
-                                            onChange={e => handleChange(field.id, e.target.value)}
-                                            className={`w-full px-4 py-3 rounded-xl border focus:ring-0 transition-colors font-medium resize-none h-32 ${
-                                                isGlass
-                                                    ? 'bg-white/5 border-white/10 text-white placeholder-white/30 focus:border-[var(--theme-primary)]/50'
-                                                    : 'bg-gray-50 border-2 border-gray-200 focus:border-brand-dark'
-                                            }`}
-                                        />
-                                    ) : field.type === 'select' ? (
-                                        <select
-                                            required={field.required}
-                                            value={formData[field.id] || ''}
-                                            onChange={e => handleChange(field.id, e.target.value)}
-                                            className={`w-full px-4 py-3 rounded-xl border focus:ring-0 transition-colors font-medium appearance-none ${
-                                                isGlass
-                                                    ? 'bg-white/5 border-white/10 text-white focus:border-[var(--theme-primary)]/50'
-                                                    : 'bg-gray-50 border-2 border-gray-200 focus:border-brand-dark'
-                                            }`}
-                                        >
-                                            <option value="" className={isGlass ? 'bg-neutral-900 text-white/50' : ''}>Select an option...</option>
-                                            {field.options?.map(opt => (
-                                                <option key={opt} value={opt} className={isGlass ? 'bg-neutral-900 text-white' : ''}>{opt}</option>
-                                            ))}
-                                        </select>
-                                    ) : field.type === 'file' ? (
-                                        <FormFileField
-                                            label={field.label}
-                                            required={field.required}
-                                            value={formData[field.id] || ''}
-                                            onChange={url => handleChange(field.id, url)}
-                                        />
-                                    ) : (
-                                        <input
-                                            type={field.type}
-                                            required={field.required}
-                                            placeholder={field.placeholder}
-                                            value={formData[field.id] || ''}
-                                            onChange={e => handleChange(field.id, e.target.value)}
-                                            className={`w-full px-4 py-3 rounded-xl border focus:ring-0 transition-colors font-medium ${
-                                                isGlass
-                                                    ? 'bg-white/5 border-white/10 text-white placeholder-white/30 focus:border-[var(--theme-primary)]/50'
-                                                    : 'bg-gray-50 border-2 border-gray-200 focus:border-brand-dark'
-                                            }`}
-                                        />
-                                    )}
-                                </div>
-                            ))}
+                            <FormFieldsRenderer
+                                fields={form.fields}
+                                formData={formData}
+                                onChange={setField}
+                                labelClassName={labelClassName}
+                                inputClassName={inputClassName}
+                            />
 
                             <button
                                 type="submit"
                                 disabled={submitting}
                                 className={`w-full font-bold py-4 rounded-xl shadow-lg hover:-translate-y-1 transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-6 flex items-center justify-center gap-2 ${
-                                    isGlass
-                                        ? 'text-white hover:brightness-110'
-                                        : 'bg-brand-dark text-white hover:bg-gray-800'
+                                    isGlass ? 'text-white hover:brightness-110' : 'bg-brand-dark text-white hover:bg-gray-800'
                                 }`}
                                 style={isGlass ? { backgroundColor: 'var(--theme-primary)' } : undefined}
                             >

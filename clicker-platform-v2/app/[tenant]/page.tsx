@@ -112,7 +112,26 @@ export default async function TenantPage({ params, searchParams }: TenantPagePro
 
     const heroFirst = blocksToRender[0]?.type === 'hero';
 
+    // Emit a server-side preload hint for the LCP image.
+    // SharedPageLayout is 'use client', so next/image priority cannot inject <link rel="preload">
+    // at SSR time from inside the client tree. We do it here instead, from the Server Component.
+    const firstBlock = blocksToRender[0];
+    const lcpImageUrl: string | null =
+        firstBlock?.data?.imageUrl ||
+        firstBlock?.data?.media?.src ||
+        firstBlock?.data?.url ||
+        null;
+
     return (
+        <>
+            {lcpImageUrl && (
+                <link
+                    rel="preload"
+                    as="image"
+                    href={`/_next/image?url=${encodeURIComponent(lcpImageUrl)}&w=1920&q=75`}
+                    fetchPriority="high"
+                />
+            )}
         <SharedPageLayout
             templateId={safeTemplateId}
             data={publicData}
@@ -134,10 +153,11 @@ export default async function TenantPage({ params, searchParams }: TenantPagePro
                     className="grid gap-6"
                     style={{ gridTemplateColumns: '1fr' }}
                 >
-                    {blocksToRender.map(block => (
+                    {blocksToRender.map((block, idx) => (
                         <div key={block.id} className="min-w-0">
                             <BlockRenderer
                                 block={block}
+                                isFirst={idx === 0}
                                 phoneNumber={contact?.whatsapp}
                                 whatsappSettings={{
                                     label: productSettings?.whatsappBtnLabel,
@@ -193,5 +213,6 @@ export default async function TenantPage({ params, searchParams }: TenantPagePro
                 </article>
             )}
         </SharedPageLayout>
+        </>
     );
 }

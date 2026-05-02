@@ -40,6 +40,7 @@ export interface Booking {
     cancellationReason?: string; // reason provided by admin when cancelling/rejecting
     assetId?: string;           // captures the customer-provided asset (e.g. license plate, room ID)
     assetModel?: string;        // captures the asset model or type (e.g. Toyota Fortuner)
+    appliedPromo?: import('@/lib/modules/promo/api').AppliedPromo;
 }
 
 export type PricingDisplay = 'fixed' | 'starting_from' | 'range' | 'hidden';

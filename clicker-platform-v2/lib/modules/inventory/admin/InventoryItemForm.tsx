@@ -25,6 +25,8 @@ export function InventoryItemForm({ isOpen, onClose, onSubmit, initialData, posI
         linkedPosItemId: ''
     });
 
+    const isEditing = !!initialData;
+
     useEffect(() => {
         if (initialData) {
             setFormData({
@@ -81,20 +83,25 @@ export function InventoryItemForm({ isOpen, onClose, onSubmit, initialData, posI
                 />
             </div>
             <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                    <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300">Initial Stock</label>
-                    <input
-                        type="number"
-                        required
-                        className="w-full border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 p-2.5 rounded-lg focus:ring-2 focus:ring-brand-dark/10 focus:border-brand-dark outline-none transition-all"
-                        value={formData.currentStock}
-                        onChange={e => setFormData({ ...formData, currentStock: e.target.value === '' ? 0 : parseInt(e.target.value) })}
-                    />
-                </div>
-                <div className="space-y-1.5">
+                {!isEditing && (
+                    <div className="space-y-1.5">
+                        <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300">Initial Stock</label>
+                        <input
+                            type="number"
+                            min={0}
+                            required
+                            className="w-full border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 p-2.5 rounded-lg focus:ring-2 focus:ring-brand-dark/10 focus:border-brand-dark outline-none transition-all"
+                            value={formData.currentStock}
+                            onChange={e => setFormData({ ...formData, currentStock: e.target.value === '' ? 0 : parseInt(e.target.value) })}
+                        />
+                        <p className="text-xs text-gray-400 dark:text-neutral-500">Recorded as opening balance. Use Adjust to change stock later.</p>
+                    </div>
+                )}
+                <div className={`space-y-1.5 ${!isEditing ? '' : 'col-span-2'}`}>
                     <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300">Low Stock Alert</label>
                     <input
                         type="number"
+                        min={0}
                         required
                         className="w-full border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 p-2.5 rounded-lg focus:ring-2 focus:ring-brand-dark/10 focus:border-brand-dark outline-none transition-all"
                         value={formData.lowStockThreshold}

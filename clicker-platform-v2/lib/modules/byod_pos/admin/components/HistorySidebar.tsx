@@ -1,7 +1,7 @@
 'use client';
 
 import { POSOrder, POSSettings } from '@/lib/modules/byod_pos/types';
-import { X, Clock, CreditCard, Receipt, FileText, CheckCircle, XCircle, Printer } from 'lucide-react';
+import { X, Clock, CreditCard, Receipt, FileText, CheckCircle, XCircle, Printer, Tag } from 'lucide-react';
 import { useReceiptPrinter } from '@/lib/modules/byod_pos/hooks/useReceiptPrinter';
 import { getPOSSettings } from '@/lib/modules/byod_pos/api';
 import { useSite } from '@/lib/site-context';
@@ -163,6 +163,30 @@ export function HistorySidebar({ isOpen, onClose, group }: HistorySidebarProps) 
                                             ) : null;
                                         })()}
 
+                                        {(() => {
+                                            const seen = new Set<string>();
+                                            const promos = group.orders
+                                                .map(o => o.appliedPromo)
+                                                .filter((p): p is NonNullable<POSOrder['appliedPromo']> => !!p)
+                                                .filter(p => {
+                                                    const key = `${p.kind}:${p.refId}`;
+                                                    if (seen.has(key)) return false;
+                                                    seen.add(key);
+                                                    return true;
+                                                });
+                                            if (promos.length === 0) return null;
+                                            const totalDiscount = promos.reduce((sum, p) => sum + (p.discount || 0), 0);
+                                            return (
+                                                <div className="flex justify-end gap-4 text-xs text-green-700 dark:text-green-400 mb-2">
+                                                    <span className="flex items-center gap-1">
+                                                        <Tag size={11} />
+                                                        Promo {promos.map(p => p.label).join(', ')}
+                                                    </span>
+                                                    <span>−{formatCurrency(totalDiscount)}</span>
+                                                </div>
+                                            );
+                                        })()}
+
                                         <div className="text-sm text-gray-500 dark:text-neutral-500 mb-1 pt-2 border-t border-gray-200 dark:border-neutral-800">Total Amount</div>
                                         <div className="text-2xl font-black text-brand-dark">
                                             {formatCurrency(group.total)}
@@ -236,6 +260,15 @@ export function HistorySidebar({ isOpen, onClose, group }: HistorySidebarProps) 
                                                     <span className="text-xs font-medium text-gray-400 dark:text-neutral-600">Subtotal</span>
                                                     <span className="text-sm font-bold text-gray-900 dark:text-neutral-100">{formatCurrency(order.total)}</span>
                                                 </div>
+                                                {order.appliedPromo && (
+                                                    <div className="flex justify-between items-center text-xs text-green-700 dark:text-green-400">
+                                                        <span className="flex items-center gap-1">
+                                                            <Tag size={11} />
+                                                            Promo {order.appliedPromo.label}
+                                                        </span>
+                                                        <span>−{formatCurrency(order.appliedPromo.discount)}</span>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     ))}

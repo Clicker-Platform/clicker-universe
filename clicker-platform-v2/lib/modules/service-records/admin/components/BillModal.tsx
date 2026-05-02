@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react';
 import { Plus, Trash2, Loader2 } from 'lucide-react';
 import { approveRecord, updateServiceRecord } from '../../api';
 import type { ServiceRecord, PaymentMethod, ConsumedItem } from '../../types';
+import { PromoApplicator } from '@/lib/modules/promo/components/PromoApplicator';
+import { commitPromoUsage } from '@/lib/modules/promo/api';
+import type { AppliedPromo } from '@/lib/modules/promo/api';
 
 interface BillLineItem {
     _id: string;
@@ -60,8 +63,13 @@ export default function BillModal({ siteId, record, approvedByEmail, onCompleted
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    // Promo
+    const [appliedPromo, setAppliedPromo] = useState<AppliedPromo | null>(null);
+
     // Derived
-    const total = lineItems.reduce((sum, item) => sum + item.amount, 0);
+    const subtotal = lineItems.reduce((sum, item) => sum + item.amount, 0);
+    const promoDiscount = appliedPromo?.discount ?? 0;
+    const total = Math.max(0, subtotal - promoDiscount);
     const balance = total - amountPaid;
 
     useEffect(() => {
@@ -124,10 +132,22 @@ export default function BillModal({ siteId, record, approvedByEmail, onCompleted
                 consumedItems: consumedItems.length > 0
                     ? consumedItems.map(({ _tempId, ...ci }) => ci)
                     : undefined,
+                ...(appliedPromo ? { appliedPromo } : {}),
             } as any);
 
             // Step 2 — Atomically complete: warranty card + reminders + points
             await approveRecord(siteId, record.id, approvedByEmail);
+
+            // Step 3 — Commit promo usage if a promo was applied
+            if (appliedPromo) {
+                await commitPromoUsage({
+                    siteId,
+                    applied: appliedPromo,
+                    source: 'SERVICE',
+                    refId: record.id,
+                    memberId: record.memberId,
+                });
+            }
 
             onCompleted();
         } catch (err: any) {
@@ -191,12 +211,32 @@ export default function BillModal({ siteId, record, approvedByEmail, onCompleted
                             ))}
                         </div>
                         <div className="mt-3 flex justify-between items-center border-t border-gray-100 dark:border-neutral-800 pt-3">
-                            <p className="text-sm font-semibold text-gray-700 dark:text-neutral-300">Total</p>
+                            <p className="text-sm font-semibold text-gray-700 dark:text-neutral-300">Subtotal</p>
                             <p className="text-lg font-bold text-gray-900 dark:text-neutral-100">
-                                Rp {total.toLocaleString('id-ID')}
+                                Rp {subtotal.toLocaleString('id-ID')}
                             </p>
                         </div>
                     </div>
+
+                    {/* Promo */}
+                    <PromoApplicator
+                        siteId={siteId}
+                        subtotal={subtotal}
+                        source="SERVICE"
+                        memberId={record.memberId}
+                        applied={appliedPromo}
+                        onApply={setAppliedPromo}
+                        onRemove={() => setAppliedPromo(null)}
+                        disabled={submitting}
+                    />
+
+                    {/* Grand Total (after promo) */}
+                    {promoDiscount > 0 && (
+                        <div className="flex justify-between items-center text-sm font-semibold text-gray-900 dark:text-neutral-100">
+                            <span>Total</span>
+                            <span className="text-lg font-bold">Rp {total.toLocaleString('id-ID')}</span>
+                        </div>
+                    )}
 
                     {/* Inventory items (if enabled) */}
                     {inventoryEnabled && inventoryItems.length > 0 && (

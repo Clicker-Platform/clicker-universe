@@ -53,7 +53,7 @@ function ctaClasses(variant: string): string {
     }
 }
 
-export const DefaultContentShowcaseBlock = ({ data }: { data: unknown }) => {
+export const DefaultContentShowcaseBlock = ({ data, isFirst = false }: { data: unknown; isFirst?: boolean }) => {
     const d = useDeviceView();
     const showcase = useMemo(() => normalize(data), [data]);
 
@@ -73,6 +73,7 @@ export const DefaultContentShowcaseBlock = ({ data }: { data: unknown }) => {
                         index={i}
                         showcase={showcase}
                         verticalAlignClass={verticalAlignClass}
+                        priority={isFirst && i === 0}
                     />
                 ))}
             </div>
@@ -85,11 +86,13 @@ function ShowcaseRowView({
     index,
     showcase,
     verticalAlignClass,
+    priority = false,
 }: {
     row: ShowcaseRow;
     index: number;
     showcase: ContentShowcaseData;
     verticalAlignClass: string;
+    priority?: boolean;
 }) {
     const d = useDeviceView();
     const layout = resolveRowLayout(row, index, showcase.defaultLayout);
@@ -114,7 +117,7 @@ function ShowcaseRowView({
 
     const mediaNode = (
         <div style={mediaStyle}>
-            <MediaView media={row.media} className="rounded-lg" />
+            <MediaView media={row.media} className="rounded-lg" priority={priority} />
         </div>
     );
 

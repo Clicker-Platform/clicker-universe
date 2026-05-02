@@ -3,6 +3,8 @@
 import { useEffect, useState, useMemo } from 'react';
 import { POSOrder } from '@/lib/modules/byod_pos/types';
 import { subscribeToRecentOrders, updateOrderStatus, cancelOrder, confirmPayment } from '@/lib/modules/byod_pos/api';
+import { commitPromoUsage, reversePromoUsage } from '@/lib/modules/promo/api';
+import type { AppliedPromo } from '@/lib/modules/promo/api';
 import { ShoppingBag, Grid, List } from 'lucide-react';
 import { toast } from 'sonner';
 import { POSOrderCard } from './components/POSOrderCard';
@@ -107,14 +109,27 @@ export default function POSClient({ initialOrders = [] }: { initialOrders?: POSO
         orders: []
     });
 
-    const confirmPaymentProcess = async (method: POSOrder['paymentMethod']) => {
+    const confirmPaymentProcess = async (method: POSOrder['paymentMethod'], appliedPromo: AppliedPromo | null) => {
         if (isViewOnly) { toast.error('You do not have permission to confirm payments.'); return; }
         if (paymentConfig.orders.length === 0) return;
 
         try {
             if (!siteId) return;
+            const orderIds = paymentConfig.orders.map(o => o.id);
             // Process all orders in parallel
-            await Promise.all(paymentConfig.orders.map(o => confirmPayment(siteId, o.id, method)));
+            await Promise.all(paymentConfig.orders.map(o => confirmPayment(siteId, o.id, method, appliedPromo ?? undefined)));
+
+            // Commit promo usage after successful payment
+            if (appliedPromo) {
+                const memberId = paymentConfig.orders[0]?.memberId;
+                const refId = orderIds.length === 1 ? orderIds[0] : orderIds.join(',');
+                try {
+                    await commitPromoUsage({ siteId, applied: appliedPromo, source: 'POS', refId, memberId });
+                } catch (promoErr) {
+                    logger.error('pos.admin.promo.commit.failed', { siteId, promoErr });
+                    // Non-fatal: payment already succeeded
+                }
+            }
 
             toast.success(`Payment confirmed via ${method?.toUpperCase()}`);
 
@@ -165,7 +180,9 @@ export default function POSClient({ initialOrders = [] }: { initialOrders?: POSO
             let type: 'table' | 'member' | 'walk-in' = 'walk-in';
             let label = 'Walk-in';
 
-            if (order.tableNumber) {
+            const isRealTable = order.tableNumber && order.tableNumber !== 'Walk-in';
+
+            if (isRealTable) {
                 key = `table-${order.tableNumber}`;
                 type = 'table';
                 label = `Table ${order.tableNumber}`;
@@ -366,11 +383,13 @@ export default function POSClient({ initialOrders = [] }: { initialOrders?: POSO
                 onClose={() => setPaymentConfig({ isOpen: false, orders: [] })}
                 onConfirm={confirmPaymentProcess}
                 // Calculate aggregated total for the dialog
-                order={paymentConfig.orders.length === 1 ? paymentConfig.orders[0] : {
+                order={paymentConfig.orders.length === 1 ? paymentConfig.orders[0] : paymentConfig.orders.length > 1 ? {
                     ...paymentConfig.orders[0], // fallback mocks
                     total: paymentConfig.orders.reduce((sum, o) => sum + o.total, 0),
                     id: 'BILL-GROUP' // Hide ID if multiple? Or show "Multi"
-                }}
+                } : null}
+                siteId={siteId}
+                memberId={paymentConfig.orders[0]?.memberId}
             />
             <ConfirmationDialog
                 isOpen={postPaymentConfig.isOpen}

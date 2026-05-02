@@ -27,6 +27,8 @@ import {
     ImageIcon,
     ScanLine,
     Vault,
+    Tag,
+    Ticket,
 } from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { collection, query, where, onSnapshot, Unsubscribe } from 'firebase/firestore';
@@ -134,6 +136,8 @@ export const MODULE_ICONS: Record<string, any> = {
     'image': ImageIcon,
     'scan-line': ScanLine,
     'vault': Vault,
+    'tag': Tag,
+    'ticket': Ticket,
 };
 
 /**

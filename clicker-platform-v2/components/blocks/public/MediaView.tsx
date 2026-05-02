@@ -11,9 +11,10 @@ interface MediaViewProps {
     media?: MediaFieldValue;
     className?: string;
     style?: React.CSSProperties;
+    priority?: boolean;
 }
 
-export function MediaView({ media, className = '', style }: MediaViewProps) {
+export function MediaView({ media, className = '', style, priority = false }: MediaViewProps) {
     if (!media || !media.src) return null;
 
     const aspectClass = ASPECT_RATIO_CLASS[media.aspectRatio || '16:9'] || '';
@@ -27,7 +28,8 @@ export function MediaView({ media, className = '', style }: MediaViewProps) {
                 <img
                     src={media.src}
                     alt={media.alt || ''}
-                    loading="lazy"
+                    loading={priority ? 'eager' : 'lazy'}
+                    fetchPriority={priority ? 'high' : 'auto'}
                     className={`w-full h-full ${fitClass}`}
                 />
             </div>

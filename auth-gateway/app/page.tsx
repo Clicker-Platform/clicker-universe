@@ -75,7 +75,7 @@ function AdminLoginForm() {
         ? `https://${baseDomain}/${site.slug}`
         : isSecure
           ? `https://${site.slug}.${baseDomain}`
-          : `http://localhost:3000`;
+          : `http://${window.location.hostname}:3000`;
 
       const nextPath = redirectTo && redirectTo !== '/'
         ? (redirectTo.startsWith('http') ? new URL(redirectTo).pathname : redirectTo)

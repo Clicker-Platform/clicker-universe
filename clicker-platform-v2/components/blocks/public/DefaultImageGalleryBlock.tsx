@@ -16,6 +16,7 @@ interface ImageGalleryBlockProps {
         thumbnails?: string[];
         coverImage?: string;
     };
+    isFirst?: boolean;
 }
 
 // Tile used in both mobile cover and desktop grid
@@ -75,7 +76,7 @@ function GalleryTile({
     );
 }
 
-export const DefaultImageGalleryBlock = ({ data }: ImageGalleryBlockProps) => {
+export const DefaultImageGalleryBlock = ({ data, isFirst = false }: ImageGalleryBlockProps) => {
     const { theme } = useTemplate();
     const isClean = theme.cardStyle === 'clean';
     const isGlass = theme.cardStyle === 'glass';
@@ -123,7 +124,7 @@ export const DefaultImageGalleryBlock = ({ data }: ImageGalleryBlockProps) => {
                             src={coverThumb}
                             alt="Gallery Cover"
                             onClick={() => openAt(coverIndex)}
-                            priority
+                            priority={isFirst}
                             badge={photoBadge}
                             cardClass={`w-full ${cardClass}`}
                         />
@@ -142,7 +143,7 @@ export const DefaultImageGalleryBlock = ({ data }: ImageGalleryBlockProps) => {
                         src={thumb}
                         alt={`Gallery image ${idx + 1}`}
                         onClick={() => openAt(idx)}
-                        priority={idx < 2}
+                        priority={isFirst && idx < 2}
                         badge={idx === thumbnails.length - 1 && images.length > 1 ? photoBadge : undefined}
                         cardClass={cardClass}
                     />

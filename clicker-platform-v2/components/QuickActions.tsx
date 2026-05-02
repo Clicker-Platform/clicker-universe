@@ -4,7 +4,6 @@ import React from 'react';
 import { LinkItem, BusinessContact, LinkSettings } from '@/data/mockData';
 import { LinkCard } from './LinkCard';
 import { useTemplate } from '@/components/TemplateProvider';
-import { useAnalytics } from '@/hooks/useAnalytics';
 import { useSite } from '@/lib/site-context';
 import { FormModal } from '@/components/FormModal';
 import { ICON_MAP } from '@/data/icons';
@@ -27,7 +26,6 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
     links, contact, settings, siteId, tenantSlug, blockData, defaultLayout = 'list'
 }) => {
     const { theme } = useTemplate();
-    const { track } = useAnalytics();
     const { siteId: contextSiteId, tenantSlug: contextTenantSlug, isSubdomain } = useSite();
     const effectiveSiteId = siteId || contextSiteId;
     const effectiveTenantSlug = tenantSlug || contextTenantSlug || '';
@@ -63,7 +61,6 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
         resolveNavHref(url, effectiveTenantSlug, isSubdomain);
 
     const handleClick = async (e: React.MouseEvent, item: LinkItem) => {
-        track({ type: 'link_click', id: item.id, siteId: effectiveSiteId });
         if (item.type === 'form' && item.formId) {
             e.preventDefault();
             if (!formData) {

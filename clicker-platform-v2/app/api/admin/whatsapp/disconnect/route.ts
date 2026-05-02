@@ -1,12 +1,15 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { logger } from '@/lib/logger';
+import { requireAuthedMember } from '@/lib/api-auth';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+  const auth = await requireAuthedMember(req);
+  if (!auth.ok) return auth.res;
+  const { siteId } = auth.session;
+
   try {
-    const { siteId } = await req.json();
-    if (!siteId) return NextResponse.json({ error: 'Missing siteId.' }, { status: 400 });
 
     const { adminDb } = await import('@/lib/firebase-admin');
     await adminDb.doc(`sites/${siteId}/wa/config`).update({
@@ -19,7 +22,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    logger.error('wa.disconnect.failed', { siteId: 'platform', error: err });
+    logger.error('wa.disconnect.failed', { siteId, error: err });
     return NextResponse.json({ error: 'Internal server error.' }, { status: 500 });
   }
 }

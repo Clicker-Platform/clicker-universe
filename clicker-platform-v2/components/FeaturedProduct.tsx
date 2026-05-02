@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { Product } from '@/data/mockData';
 import { Sparkles, ArrowRight, Image as ImageIcon, Maximize } from 'lucide-react';
 import Image from 'next/image';
-import { useAnalytics } from '@/hooks/useAnalytics';
 import { useTemplate } from '@/components/TemplateProvider';
 import { useSite } from '@/lib/site-context';
 import { ProductDetailModal } from './catalog/ProductDetailModal';
@@ -31,7 +30,6 @@ export const FeaturedProduct: React.FC<FeaturedProductProps> = ({
     const [isLoading, setIsLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isFullScreenOpen, setIsFullScreenOpen] = useState(false);
-    const { track } = useAnalytics();
     const { templateId, theme } = useTemplate();
     const { siteId } = useSite();
     const isClean = theme.cardStyle === 'clean';
@@ -39,7 +37,6 @@ export const FeaturedProduct: React.FC<FeaturedProductProps> = ({
     const isBold = !isClean && !isGlass;
 
     const handleOrderClick = () => {
-        track({ type: 'product_click', id: product.id, siteId });
         setIsModalOpen(true);
     };
 
@@ -145,7 +142,7 @@ export const FeaturedProduct: React.FC<FeaturedProductProps> = ({
                     {/* Fullscreen Button */}
                     {showGallery && (
                         <button
-                            onClick={(e) => { e.stopPropagation(); track({ type: 'view_all_click', id: 'catalog', siteId }); setIsFullScreenOpen(true); }}
+                            onClick={(e) => { e.stopPropagation(); setIsFullScreenOpen(true); }}
                             className="absolute top-4 right-4 z-20 bg-black/30 hover:bg-black/50 text-white p-2 rounded-full transition-colors backdrop-blur-md flex items-center gap-1 group/fs"
                             title="View Fullscreen"
                         >

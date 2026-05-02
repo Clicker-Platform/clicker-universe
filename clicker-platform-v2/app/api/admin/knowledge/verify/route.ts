@@ -2,10 +2,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase-admin";
 import { listAvailableModels } from "@/lib/modules/ai-sales-agent/server/gemini-client";
+import { requireAuthedMember } from '@/lib/api-auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
+    const auth = await requireAuthedMember(req);
+    if (!auth.ok) return auth.res;
+    const { siteId } = auth.session;
+
     const diagnostic: any = {
         timestamp: new Date().toISOString(),
         layers: {},
@@ -62,7 +67,6 @@ export async function GET(req: NextRequest) {
 
         // --- GEMINI CONNECTIVITY ---
         try {
-            const siteId = req.headers.get('x-site-id') || 'default';
             const models = await listAvailableModels(siteId);
             diagnostic.layers.aiEngine = {
                 status: models.length > 0 ? "OK" : "ERROR",

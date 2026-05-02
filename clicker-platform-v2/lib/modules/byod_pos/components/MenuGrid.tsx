@@ -13,6 +13,7 @@ import { VariantSelectionDialog } from './VariantSelectionDialog';
 import { useSite } from '@/lib/site-context';
 import { useTemplate } from '@/components/TemplateProvider';
 import { logger } from '@/lib/logger-edge';
+import { POSSettings } from '@/lib/modules/byod_pos/types';
 
 function AddButton({ disabled, onClick, primaryColor, borderColor }: {
     disabled: boolean;
@@ -43,10 +44,10 @@ function AddButton({ disabled, onClick, primaryColor, borderColor }: {
 
 interface MenuGridProps {
     initialItems?: POSItem[];
-    initialInventoryMap?: Record<string, InventoryItem>;
+    initialSettings?: POSSettings | null;
 }
 
-export function MenuGrid({ initialItems, initialInventoryMap }: MenuGridProps) {
+export function MenuGrid({ initialItems, initialSettings }: MenuGridProps) {
     const { siteId } = useSite();
     const { theme } = useTemplate();
     const { addToCart, itemCount } = useCart();
@@ -59,7 +60,6 @@ export function MenuGrid({ initialItems, initialInventoryMap }: MenuGridProps) {
     const primaryColor = theme.colors.primary;
     const accentFg = theme.colors.accentForeground || '#ffffff';
     const [items, setItems] = useState<POSItem[]>(initialItems || []);
-    const [inventoryMap, setInventoryMap] = useState<Record<string, InventoryItem>>(initialInventoryMap || {});
     const [inventoryById, setInventoryById] = useState<Record<string, InventoryItem>>({});
 
     const [loading, setLoading] = useState(!initialItems);
@@ -83,51 +83,15 @@ export function MenuGrid({ initialItems, initialInventoryMap }: MenuGridProps) {
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
-    // Initial Load: Settings & Inventory
+    // Seed categories from initialSettings if available (avoids a getPOSSettings round-trip)
     useEffect(() => {
-        async function init() {
-            if (!siteId) return;
-
-            try {
-                const settings = await getPOSSettings(siteId);
-                if (settings.categories && settings.categories.length > 0) {
-                    setCategories(['All', ...settings.categories.sort()]);
-                } else {
-                    if (initialItems && initialItems.length > 0) {
-                        const derived = Array.from(new Set(initialItems.map(i => i.category))).filter(Boolean).sort();
-                        setCategories(['All', ...derived]);
-                    }
-                }
-
-                // Dynamic Import for Modularity
-                const { isModuleEnabled } = await import('@/lib/modules/registry');
-                const inventoryEnabled = await isModuleEnabled('inventory');
-
-                if (inventoryEnabled) {
-                    try {
-                        const { getInventory } = await import('@/lib/modules/inventory/api');
-                        const inventoryItems = await getInventory(siteId);
-
-                        const invById: Record<string, InventoryItem> = {};
-                        inventoryItems.forEach(invItem => {
-                            invById[invItem.id] = invItem;
-                        });
-                        setInventoryById(invById);
-                    } catch (inventoryError: any) {
-                        // Gracefully handle permission errors for Public POS
-                        if (inventoryError.code === 'permission-denied' || inventoryError.message?.includes('permission-denied') || inventoryError.message?.includes('Missing or insufficient permissions')) {
-                            logger.warn('pos.menu.inventory.access-restricted', { siteId });
-                        } else {
-                            throw inventoryError;
-                        }
-                    }
-                }
-            } catch (e) {
-                logger.error('pos.menu.init.failed', { siteId, error: e });
-            }
+        if (initialSettings?.categories && initialSettings.categories.length > 0) {
+            setCategories(['All', ...initialSettings.categories.sort()]);
+        } else if (initialItems && initialItems.length > 0) {
+            const derived = Array.from(new Set(initialItems.map(i => i.category))).filter(Boolean).sort();
+            if (derived.length > 0) setCategories(['All', ...derived]);
         }
-        init();
-    }, [siteId]);
+    }, []);  // intentionally empty — runs once on mount with prop values
 
     // Fetch Items on Filter Change
     useEffect(() => {
@@ -174,23 +138,7 @@ export function MenuGrid({ initialItems, initialInventoryMap }: MenuGridProps) {
         }
     };
 
-    // Helper to find stock for an item
-    const getStockForItem = (item: POSItem) => {
-        // We need the raw inventory lists or maps. 
-        // Let's use `inventoryById` or re-fetch?
-        // Actually, preventing `inventoryMap` complexity:
-        // Let's just find by ID (linked) or Name.
-        // We need access to the FULL inventory list to match by name?
-        // We can't easily do "match by name" if we only have ID map.
-        // But `inventoryById` is by ID.
-        // `initialInventoryMap` logic in original code built a map `itemID -> stock`.
-        // We should replicate that for the *current* items.
-        // But `inventoryItems` (array) is not in state, only `inventoryById`.
-        // I should put `inventoryItems` in state or `invByLink`/`invByName` in state.
-        return null; // Implementation detail below
-    };
-
-    // We need `invByLink` and `invByName` in state to map correctly.
+    // invByLink and invByName allow O(1) stock lookup per item.
     const [lookupMaps, setLookupMaps] = useState<{ byLink: Record<string, InventoryItem>, byName: Record<string, InventoryItem> }>({ byLink: {}, byName: {} });
 
     useEffect(() => {
@@ -286,9 +234,9 @@ export function MenuGrid({ initialItems, initialInventoryMap }: MenuGridProps) {
 
             {/* Grid */}
             {loading ? (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4">
+                <div className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-2">
                     {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
-                        <div key={i} className="aspect-square rounded-2xl animate-pulse" style={{ backgroundColor: borderColor }} />
+                        <div key={i} className="aspect-square animate-pulse" style={{ backgroundColor: borderColor, borderRadius: 'var(--theme-radius)' }} />
                     ))}
                 </div>
             ) : (
@@ -310,10 +258,11 @@ export function MenuGrid({ initialItems, initialInventoryMap }: MenuGridProps) {
                                             src={item.imageUrl}
                                             alt={item.name}
                                             fill
-                                            unoptimized
                                             className="object-cover"
                                             sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-                                            priority={index < 4}
+                                            quality={75}
+                                            priority={index < 2}
+                                            fetchPriority={index < 2 ? 'high' : 'auto'}
                                         />
                                     ) : (
                                         <div

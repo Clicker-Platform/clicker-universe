@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { createBooking } from '@/lib/modules/reservation/api';
 import { Service, Staff } from '@/lib/modules/reservation/types';
 import { Clock, User, Check, ChevronLeft, ChevronRight, Loader2, Search } from 'lucide-react';
+import { PromoApplicator } from '@/lib/modules/promo/components/PromoApplicator';
+import { commitPromoUsage, AppliedPromo } from '@/lib/modules/promo/api';
 import { useSite } from '@/lib/site-context'; // New import
 import { logger } from '@/lib/logger-edge';
 
@@ -72,6 +74,7 @@ export default function AdminBookingWizard({
     };
 
     const [bookingRef, setBookingRef] = useState<string | null>(null);
+    const [appliedPromo, setAppliedPromo] = useState<AppliedPromo | null>(null);
 
     // Generate Slots when Date or Service changes
     useEffect(() => {
@@ -235,6 +238,10 @@ export default function AdminBookingWizard({
                 return;
             }
 
+            const finalPrice = appliedPromo
+                ? Math.max(0, selectedService.price - appliedPromo.discount)
+                : selectedService.price;
+
             const id = await createBooking(siteId, {
                 serviceId: selectedService.id,
                 serviceName: selectedService.name,
@@ -246,11 +253,22 @@ export default function AdminBookingWizard({
                 status: 'confirmed', // Admin bookings are confirmed by default
                 startAt: bookingStart as any,
                 endAt: bookingEnd as any,
-                totalPrice: selectedService.price,
+                totalPrice: finalPrice,
                 notes: customerInfo.notes,
                 staffId: selectedStaff?.id,
-                staffName: selectedStaff?.name
+                staffName: selectedStaff?.name,
+                ...(appliedPromo ? { appliedPromo } : {}),
             } as any);
+
+            if (appliedPromo) {
+                await commitPromoUsage({
+                    siteId,
+                    applied: appliedPromo,
+                    source: 'RESERVATION',
+                    refId: id,
+                    memberId: customerInfo.id !== 'guest' ? customerInfo.id : undefined,
+                });
+            }
 
             setBookingRef(id);
             setStep(5);
@@ -546,6 +564,17 @@ export default function AdminBookingWizard({
                                 placeholder="Any special notes?"
                             />
                         </div>
+
+                        <PromoApplicator
+                            siteId={siteId!}
+                            subtotal={selectedService?.price ?? 0}
+                            source="RESERVATION"
+                            memberId={customerInfo.id !== 'guest' ? customerInfo.id : undefined}
+                            applied={appliedPromo}
+                            onApply={setAppliedPromo}
+                            onRemove={() => setAppliedPromo(null)}
+                            disabled={loading}
+                        />
 
                         <button
                             type="submit"

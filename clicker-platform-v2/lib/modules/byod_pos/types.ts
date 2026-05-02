@@ -1,4 +1,7 @@
 import { Timestamp } from 'firebase/firestore';
+import type { AppliedPromo } from '@/lib/modules/promo/api';
+
+export type { AppliedPromo };
 
 export interface ProductVariant {
     id: string;
@@ -37,6 +40,7 @@ export interface POSOrder {
     paymentStatus?: 'unpaid' | 'pending_confirmation' | 'paid';
     paymentMethod?: 'cash' | 'card' | 'qris' | 'other';
     taxBreakdown?: TaxBreakdown;
+    appliedPromo?: AppliedPromo;
 }
 
 export interface TaxSettings {

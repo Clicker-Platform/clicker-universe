@@ -36,7 +36,6 @@ export default function POSBlockClient() {
     return (
         <POSBlock
             initialItems={items}
-            initialInventoryMap={{}} // Client side inventory sync via context or realtime usually
         />
     );
 }

@@ -15,6 +15,7 @@ const POSSettingsPage = dynamic(() => import('@/lib/modules/byod_pos/admin/Setti
 const KDSClient = dynamic(() => import('@/lib/modules/byod_pos/admin/KDSClient'));
 const CashierClient = dynamic(() => import('@/lib/modules/byod_pos/admin/CashierClient'));
 const TransactionsClient = dynamic(() => import('@/lib/modules/byod_pos/admin/TransactionsClient'));
+const POSMenuGrid = dynamic(() => import('@/lib/modules/byod_pos/components/POSBlockClientLoader'));
 
 // Admin Pages (Reservation) - USING CLIENT COMPONENTS DIRECTLY
 const CalendarPage = dynamic(() => import('@/lib/modules/reservation/admin/calendar/CalendarClient'));
@@ -60,6 +61,14 @@ const MktCampaignDetail = dynamic(() => import('@/lib/modules/ai-marketing/admin
 const MktAnalytics = dynamic(() => import('@/lib/modules/ai-marketing/admin/AnalyticsPage'));
 const MktSettings = dynamic(() => import('@/lib/modules/ai-marketing/admin/SettingsPage'));
 
+// Admin Pages (Fintrack)
+const FT_DashboardPage   = dynamic(() => import('@/lib/modules/fintrack/admin/DashboardPage'));
+const FT_EntriesPage     = dynamic(() => import('@/lib/modules/fintrack/admin/EntriesPage'));
+const FT_WalletVaultPage = dynamic(() => import('@/lib/modules/fintrack/admin/WalletVaultPage'));
+const FT_NewEntryPage    = dynamic(() => import('@/lib/modules/fintrack/admin/NewEntryPage'));
+const FT_AdvancedPage    = dynamic(() => import('@/lib/modules/fintrack/admin/AdvancedPage'));
+const FT_SettingsPage    = dynamic(() => import('@/lib/modules/fintrack/admin/SettingsPage'));
+
 // Admin Pages (Membership)
 const MemberListPage = dynamic(() => import('@/lib/modules/membership/admin/MemberListPage'));
 const MembershipSettingsPage = dynamic(() => import('@/lib/modules/membership/admin/SettingsPage'));
@@ -80,7 +89,7 @@ export const MODULE_COMPONENTS: Record<string, any> = {
     'byod_pos:AdminOrders': POSOrdersPage,
     'byod_pos:AdminMenu': POSMenuPage,
     'byod_pos:AdminSettings': POSSettingsPage,
-    'byod_pos:MenuGrid': dynamic(() => import('@/lib/modules/byod_pos/components/POSBlockClientLoader')),
+    'byod_pos:MenuGrid': POSMenuGrid,
     // Separated Views
     'byod_pos:KDS': KDSClient,
     'byod_pos:Cashier': CashierClient,
@@ -134,6 +143,17 @@ export const MODULE_COMPONENTS: Record<string, any> = {
     ),
     'ai_sales:AdminSettings': dynamic(() => import('@/lib/modules/ai-sales-agent/admin/AgentSettingsPage')),
     'ai_sales:Dashboard': dynamic(() => import('@/lib/modules/ai-sales-agent/admin/AgentDashboard')),
+
+    // Fintrack Module
+    'fintrack:DashboardPage':   FT_DashboardPage,
+    'fintrack:EntriesPage':     FT_EntriesPage,
+    'fintrack:WalletVaultPage': FT_WalletVaultPage,
+    'fintrack:NewEntryPage':    FT_NewEntryPage,
+    'fintrack:AdvancedPage':    FT_AdvancedPage,
+    'fintrack:SettingsPage':    FT_SettingsPage,
+
+    // Promo Module
+    'promo:PromoAdminPage': dynamic(() => import('@/lib/modules/promo/components/PromoAdminPage')),
 
     // AI Marketing Module
     'ai_marketing:Dashboard': MktDashboard,

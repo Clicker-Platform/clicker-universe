@@ -407,6 +407,14 @@
             ]
         },
         {
+            "collectionGroup": "promos",
+            "queryScope": "COLLECTION",
+            "fields": [
+                { "fieldPath": "trigger", "order": "ASCENDING" },
+                { "fieldPath": "status", "order": "ASCENDING" }
+            ]
+        },
+        {
             "collectionGroup": "platform_logs",
             "queryScope": "COLLECTION",
             "fields": [

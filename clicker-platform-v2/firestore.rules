@@ -44,8 +44,9 @@ service cloud.firestore {
 
     // 3. Role-Based Access Control (Granular)
     function hasRole(siteId, allowedRoles) {
-      // Check global admin OR check user role
-      return isGlobalAdmin() || (
+      // Check global admin OR site owner OR check user role (with exists guard)
+      return isGlobalAdmin() || isSiteOwner(siteId) || (
+        exists(/databases/$(database)/documents/sites/$(siteId)/members/$(request.auth.uid)) &&
         get(/databases/$(database)/documents/sites/$(siteId)/members/$(request.auth.uid)).data.role in allowedRoles
       );
     }
@@ -132,6 +133,7 @@ service cloud.firestore {
       match /members/{memberId} {
         allow read, write: if isGlobalAdmin() || isSiteOwner(siteId);
         allow read: if isValidUser(siteId);
+        allow read: if request.auth != null && request.auth.uid == memberId;
         allow create, update: if isValidUser(siteId) && hasRole(siteId, ['owner']);
         allow delete: if isValidUser(siteId) && isOwner(siteId);
       }
@@ -342,7 +344,24 @@ service cloud.firestore {
         allow write: if isValidUser(siteId) && isModuleEnabled(siteId, 'service_records');
       }
 
-      // 6. AI SALES AGENT (Strictly Nested)
+      // 6. PROMO ENGINE
+      match /modules/promo/promos/{promoId} {
+        allow read: if true; // Public — customers need to read active promos for auto-apply and code evaluation
+        allow write: if isValidUser(siteId) && hasRole(siteId, ['owner', 'staff']);
+      }
+      match /modules/promo/vouchers/{voucherId} {
+        allow read: if isModuleEnabled(siteId, 'promo') && (
+          isValidUser(siteId) ||
+          (request.auth != null && resource.data.ownerMemberId != null) // member can read own vouchers
+        );
+        allow write: if isValidUser(siteId) && hasRole(siteId, ['owner', 'staff']);
+      }
+      match /modules/promo/settings/{settingId} {
+        allow read: if true; // Public — needed for allowGuestCodes check during evaluation
+        allow write: if isValidUser(siteId) && hasRole(siteId, ['owner']);
+      }
+
+      // 7. AI SALES AGENT (Strictly Nested)
       match /modules/ai_sales {
         allow read: if true; // Public needs to read config (enabled/greeting)
         allow write: if isValidUser(siteId) && hasRole(siteId, ['owner']);
@@ -360,10 +379,10 @@ service cloud.firestore {
       // === WHATSAPP CORE ===
       // WA is core infrastructure (not a module) — lives at sites/{siteId}/wa/
 
-      // Config doc — owner only (contains encrypted access token)
+      // Config doc — all active members can read (access token encrypted server-side)
       // Path: sites/{siteId}/wa/config
       match /wa/config {
-        allow read: if isValidUser(siteId) && isOwner(siteId);
+        allow read: if isValidUser(siteId);
         allow write: if false; // Server-side only via /api/admin/whatsapp/connect
       }
 

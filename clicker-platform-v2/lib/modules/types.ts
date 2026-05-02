@@ -29,6 +29,13 @@ export interface ModuleDefinition {
     blocks?: ModuleBlockDefinition[]; // Custom blocks provided by this module
     dashboardWidgets?: ModuleWidgetDefinition[]; // Widgets for Member Dashboard
     settings?: Record<string, any>; // Module-specific configuration
+    dashboardAction?: {
+        label: string;
+        href: string;
+    };
+    adminDashboardWidget?: {
+        componentKey: string;
+    };
 }
 
 export interface ModuleWidgetDefinition {

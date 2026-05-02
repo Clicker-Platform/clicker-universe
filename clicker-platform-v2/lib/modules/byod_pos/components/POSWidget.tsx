@@ -23,12 +23,11 @@ import { useTemplate } from '@/components/TemplateProvider';
 
 interface POSWidgetProps {
     initialItems?: any[];
-    initialInventoryMap?: Record<string, any>;
     settings?: POSSettings;
     onCartOpenChange?: (open: boolean) => void;
 }
 
-export function POSWidget({ initialItems, initialInventoryMap, settings: propSettings, onCartOpenChange }: POSWidgetProps) {
+export function POSWidget({ initialItems, settings: propSettings, onCartOpenChange }: POSWidgetProps) {
     const { siteId } = useSite();
     const { theme } = useTemplate();
     const { items, total, itemCount, removeFromCart, updateQuantity, clearCart, taxBreakdown } = useCart();
@@ -197,7 +196,7 @@ export function POSWidget({ initialItems, initialInventoryMap, settings: propSet
         <div className="relative">
             {/* Content */}
             <div>
-                <MenuGrid initialItems={initialItems} initialInventoryMap={initialInventoryMap} />
+                <MenuGrid initialItems={initialItems} initialSettings={settings} />
             </div>
 
             {/* Floating Cart Button — portaled to escape <main> stacking context */}

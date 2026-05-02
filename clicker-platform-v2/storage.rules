@@ -15,6 +15,7 @@ service firebase.storage {
 
     // Tenant Writes: /sites/{siteId}/...
     match /sites/{siteId}/{allPaths=**} {
+      allow read: if true;
       allow write: if isAuthenticated();
     }
 

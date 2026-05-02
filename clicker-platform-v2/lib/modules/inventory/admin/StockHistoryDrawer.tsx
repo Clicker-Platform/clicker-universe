@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, History, TrendingUp, TrendingDown, Clock, User, StickyNote } from 'lucide-react';
+import { X, History, TrendingUp, TrendingDown } from 'lucide-react';
 import { InventoryItem, StockTransaction } from '@/lib/modules/inventory/types';
 import { getInventoryTransactions } from '@/lib/modules/inventory/api';
 import { toast } from 'sonner';
@@ -50,9 +50,9 @@ export function StockHistoryDrawer({ isOpen, onClose, item }: StockHistoryDrawer
             />
 
             {/* Drawer */}
-            <div className="relative bg-white dark:bg-neutral-900 w-full max-w-md h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
+            <div className="relative bg-white dark:bg-neutral-900 w-full max-w-lg h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-neutral-800 bg-gray-50/50 dark:bg-neutral-800/50">
+                <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-neutral-800 bg-gray-50/50 dark:bg-neutral-800/50">
                     <div>
                         <h2 className="text-xl font-bold text-gray-800 dark:text-neutral-200 flex items-center gap-2">
                             <History size={20} className="text-brand-dark" />
@@ -86,48 +86,31 @@ export function StockHistoryDrawer({ isOpen, onClose, item }: StockHistoryDrawer
                         <div className="divide-y divide-gray-100 dark:divide-neutral-800">
                             {transactions.map((tx) => {
                                 const isPositive = tx.change > 0;
+                                const timestamp = tx.timestamp?.toDate
+                                    ? tx.timestamp.toDate().toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })
+                                    : 'Just now';
                                 return (
-                                    <div key={tx.id} className="p-6 hover:bg-gray-50 dark:hover:bg-neutral-800/50 transition-colors flex gap-4">
-                                        <div className={`
-                                            flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center
-                                            ${isPositive ? 'bg-green-100 dark:bg-green-950/30 text-green-600 dark:text-green-400' : 'bg-red-100 dark:bg-red-950/30 text-red-600 dark:text-red-400'}
-                                        `}>
-                                            {isPositive ? <TrendingUp size={18} /> : <TrendingDown size={18} />}
+                                    <div key={tx.id} className="px-5 py-3 hover:bg-gray-50 dark:hover:bg-neutral-800/50 transition-colors flex items-center gap-3">
+                                        <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${isPositive ? 'bg-green-100 dark:bg-green-950/30 text-green-600 dark:text-green-400' : 'bg-red-100 dark:bg-red-950/30 text-red-600 dark:text-red-400'}`}>
+                                            {isPositive ? <TrendingUp size={15} /> : <TrendingDown size={15} />}
                                         </div>
 
                                         <div className="flex-1 min-w-0">
-                                            <div className="flex justify-between items-start mb-1">
-                                                <span className={`font-bold text-lg ${isPositive ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}>
+                                            {/* Line 1: change + reason badge */}
+                                            <div className="flex items-center justify-between gap-2">
+                                                <span className={`font-bold text-sm ${isPositive ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}>
                                                     {isPositive ? '+' : ''}{tx.change} {item.unit}
                                                 </span>
-                                                <span className="text-xs font-medium px-2 py-1 rounded-md bg-gray-100 dark:bg-neutral-800 text-gray-600 dark:text-neutral-400 uppercase tracking-wide">
+                                                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-gray-100 dark:bg-neutral-800 text-gray-500 dark:text-neutral-400 uppercase tracking-wide flex-shrink-0">
                                                     {tx.reason}
                                                 </span>
                                             </div>
-
-                                            <div className="space-y-1.5 text-sm">
-                                                <div className="flex items-center gap-2 text-gray-500 dark:text-neutral-500">
-                                                    <Clock size={14} />
-                                                    <span>
-                                                        {tx.timestamp?.toDate ? tx.timestamp.toDate().toLocaleString() : 'Just now'}
-                                                    </span>
-                                                </div>
-
-                                                <div className="flex items-center gap-2 text-gray-500 dark:text-neutral-500">
-                                                    <User size={14} />
-                                                    <span className="truncate">{tx.performedBy || 'Unknown User'}</span>
-                                                </div>
-
-                                                {(tx.notes || tx.referenceId) && (
-                                                    <div className="flex items-start gap-2 text-gray-500 dark:text-neutral-500 mt-2 bg-gray-50 dark:bg-neutral-800 p-2 rounded text-xs">
-                                                        <StickyNote size={14} className="mt-0.5 flex-shrink-0" />
-                                                        <div className="break-words">
-                                                            {tx.referenceId && <span className="block font-mono mb-0.5">Ref: {tx.referenceId}</span>}
-                                                            {tx.notes}
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
+                                            {/* Line 2: timestamp · user · notes */}
+                                            <p className="text-xs text-gray-400 dark:text-neutral-500 truncate mt-0.5">
+                                                {timestamp} · {tx.performedBy || 'Unknown'}
+                                                {tx.notes ? ` · ${tx.notes}` : ''}
+                                                {tx.referenceId ? ` · Ref: ${tx.referenceId}` : ''}
+                                            </p>
                                         </div>
                                     </div>
                                 );

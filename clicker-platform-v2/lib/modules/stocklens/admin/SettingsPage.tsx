@@ -45,15 +45,13 @@ export default function StocklensSettingsPage() {
   async function handleTest() {
     setTesting(true);
     try {
-      const formData = new FormData();
-      formData.append('siteId', siteId);
-      const arr = new Uint8Array([0xff, 0xd8, 0xff, 0xd9]);
-      formData.append('image', new Blob([arr], { type: 'image/jpeg' }), 'test.jpg');
-      const res = await fetch('/api/stocklens/scan', { method: 'POST', body: formData });
-      if (res.status === 500) {
-        const data = await res.json();
-        if (data.error?.includes('API Key')) throw new Error(data.error);
-      }
+      const res = await fetch('/api/stocklens/test-key', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ siteId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Test gagal');
       toast.success('Koneksi Gemini berhasil');
     } catch (e: unknown) {
       toast.error('Test gagal: ' + (e instanceof Error ? e.message : 'Unknown error'));

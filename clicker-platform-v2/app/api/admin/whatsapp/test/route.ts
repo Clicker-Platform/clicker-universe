@@ -1,14 +1,17 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { requireAuthedMember } from '@/lib/api-auth';
 import { decryptToken } from '@/lib/whatsapp/encryption';
 import { META_API_BASE } from '@/lib/whatsapp/constants';
 import { logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+  const auth = await requireAuthedMember(req);
+  if (!auth.ok) return auth.res;
+  const { siteId } = auth.session;
+
   try {
-    const { siteId } = await req.json();
-    if (!siteId) return NextResponse.json({ error: 'Missing siteId.' }, { status: 400 });
 
     const { adminDb } = await import('@/lib/firebase-admin');
     const configSnap = await adminDb.doc(`sites/${siteId}/wa/config`).get();

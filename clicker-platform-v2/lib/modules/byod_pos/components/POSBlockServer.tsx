@@ -8,13 +8,12 @@ export default async function POSBlockServer() {
     const siteId = headersList.get('x-site-id') || '';
 
     // 1. Fetch Data Server-Side (No "Loading..." spinor on client)
-    const { initialItems, initialInventoryMap } = await getPOSDataServer(siteId);
+    const { initialItems } = await getPOSDataServer(siteId);
 
     // 2. Pass data to Client Component for hydration
     return (
         <POSBlock
             initialItems={initialItems}
-            initialInventoryMap={initialInventoryMap}
         />
     );
 }

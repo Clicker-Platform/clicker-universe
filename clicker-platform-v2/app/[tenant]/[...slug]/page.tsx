@@ -165,7 +165,23 @@ export default async function TenantCatchAllPage({ params, searchParams }: Props
         bottomNavStyle: navSettings.bottomNavStyle ?? {},
     };
 
+    const firstBlock = page.blocks?.[0];
+    const lcpImageUrl: string | null =
+        firstBlock?.data?.imageUrl ||
+        firstBlock?.data?.media?.src ||
+        firstBlock?.data?.url ||
+        null;
+
     return (
+        <>
+            {lcpImageUrl && (
+                <link
+                    rel="preload"
+                    as="image"
+                    href={`/_next/image?url=${encodeURIComponent(lcpImageUrl)}&w=1920&q=75`}
+                    fetchPriority="high"
+                />
+            )}
         <SharedPageLayout
             templateId={safeTemplateId}
             data={publicData}
@@ -183,7 +199,7 @@ export default async function TenantCatchAllPage({ params, searchParams }: Props
         >
             {page.blocks && Array.isArray(page.blocks) && page.blocks.length > 0 ? (
                 <div className="grid gap-[var(--grid-gap)] dynamic-grid">
-                    {page.blocks.map(block => {
+                    {page.blocks.map((block, idx) => {
                         const isSingleCol = template.config.layout?.grid?.desktop === 1;
                         const spanClass = isSingleCol ? 'col-span-full' : getBlockSpan(block.type);
 
@@ -191,6 +207,7 @@ export default async function TenantCatchAllPage({ params, searchParams }: Props
                             <div key={block.id} className={`${spanClass} min-w-0`}>
                                 <BlockRenderer
                                     block={block}
+                                    isFirst={idx === 0}
                                     phoneNumber={contact?.whatsapp}
                                     whatsappSettings={{
                                         label: hydratedData.productSettings?.whatsappBtnLabel || productSettings?.whatsappBtnLabel,
@@ -247,5 +264,6 @@ export default async function TenantCatchAllPage({ params, searchParams }: Props
                 </article>
             )}
         </SharedPageLayout>
+        </>
     );
 }

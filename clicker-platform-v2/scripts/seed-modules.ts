@@ -91,12 +91,12 @@ const MODULES = [
         version: '1.0.0',
         enabled: true,
         adminRoutes: [
-            { label: 'Cashier Station', path: '/admin/pos/cashier',     icon: 'monitor-dot',    componentKey: 'byod_pos:Cashier' },
-            { label: 'Kitchen Display', path: '/admin/pos/kds',          icon: 'utensils',       componentKey: 'byod_pos:KDS' },
-            { label: 'Transactions',    path: '/admin/pos/transactions', icon: 'credit-card',    componentKey: 'byod_pos:Transactions' },
-            { label: 'Menu Manager',    path: '/admin/pos/menu',         icon: 'clipboard-list', componentKey: 'byod_pos:AdminMenu' },
-            { label: 'Configuration',   path: '/admin/pos/settings',     icon: 'settings',       componentKey: 'byod_pos:AdminSettings', permission: 'settings' },
-            { label: 'Reports',         path: '/admin/pos/reports',      icon: 'file-text',      componentKey: 'byod_pos:AdminOrders',   permission: 'view_reports' },
+            { label: 'Cashier',       path: '/admin/pos/cashier',     icon: 'monitor-dot',    componentKey: 'byod_pos:Cashier' },
+            { label: 'Kitchen',       path: '/admin/pos/kds',          icon: 'utensils',       componentKey: 'byod_pos:KDS' },
+            { label: 'Transactions',  path: '/admin/pos/transactions', icon: 'credit-card',    componentKey: 'byod_pos:Transactions' },
+            { label: 'Menu',          path: '/admin/pos/menu',         icon: 'clipboard-list', componentKey: 'byod_pos:AdminMenu' },
+            { label: 'Configuration', path: '/admin/pos/settings',     icon: 'settings',       componentKey: 'byod_pos:AdminSettings', permission: 'settings' },
+            { label: 'Reports',       path: '/admin/pos/reports',      icon: 'file-text',      componentKey: 'byod_pos:AdminOrders',   permission: 'view_reports' },
         ],
         publicRoutes: [
             { path: '/order', componentKey: 'byod_pos:OrderPage' }
@@ -191,6 +191,29 @@ const MODULES = [
             'modules/service_records/reminderQueue',
             'modules/service_records/serviceConfig',
         ]
+    },
+    {
+        id: 'promo',
+        displayName: 'Promotions & Vouchers',
+        description: 'Promo rules, voucher issuance, and member rewards.',
+        icon: 'tag',
+        version: '1.0.0',
+        enabled: true,
+        adminRoutes: [
+            { label: 'Promotions', path: '/admin/promo',          icon: 'tag',      componentKey: 'promo:PromoAdminPage' },
+            { label: 'Vouchers',   path: '/admin/promo/vouchers', icon: 'ticket',   componentKey: 'promo:PromoAdminPage' },
+            { label: 'Settings',   path: '/admin/promo/settings', icon: 'settings', componentKey: 'promo:PromoAdminPage', permission: 'settings' },
+        ],
+        publicRoutes: [],
+        dashboardWidgets: [
+            { location: 'member_dashboard', componentKey: 'promo:MemberRewardsWidget', priority: 50 },
+            { location: 'member_dashboard', componentKey: 'promo:MyVouchersWidget',    priority: 40 },
+        ],
+        collections: [
+            'modules/promo/promos',
+            'modules/promo/vouchers',
+            'modules/promo/settings',
+        ],
     },
     {
         id: 'ai_marketing',
