@@ -481,7 +481,7 @@ export async function hydratePageBlocks(siteId: string, blocks: PageBlock[]) {
 
     const blockTypes = blocks.map(b => b.type);
     
-    const needsLinks = blockTypes.includes('quick_actions');
+    const needsLinks = blockTypes.includes('quick_actions') || blockTypes.includes('link');
     const needsProducts = blockTypes.includes('products');
     const needsFeatured = blockTypes.includes('featured_product');
     const needsBranches = blockTypes.includes('branches');

@@ -12,7 +12,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { logger } from '@/lib/logger-edge';
-import { TemplateDocument, TemplateDefinition, ThemeConfig } from './types';
+import { TemplateDocument, ThemeConfig } from './types';
 import { templateDefinitions } from './definitions';
 
 // Collection Reference
@@ -40,13 +40,19 @@ export const clearTemplateCache = (id?: string) => {
  */
 export const getAvailableTemplates = async (): Promise<TemplateDocument[]> => {
     try {
-        const q = query(collection(db, TEMPLATES_COLLECTION), where('status', '==', 'active'));
-        const snapshot = await getDocs(q);
+        // Fetch ALL Firestore docs to know which templates are managed (active or inactive).
+        // Only the active subset is returned to the UI — but we need the full set of IDs
+        // so we don't re-inject inactive templates from the static definitions fallback.
+        const [activeSnapshot, allSnapshot] = await Promise.all([
+            getDocs(query(collection(db, TEMPLATES_COLLECTION), where('status', '==', 'active'))),
+            getDocs(collection(db, TEMPLATES_COLLECTION)),
+        ]);
 
-        const templates = snapshot.docs.map(doc => {
+        const seededIds = new Set(allSnapshot.docs.map(d => d.id));
+
+        const templates = activeSnapshot.docs.map(doc => {
             const data = doc.data();
             const id = doc.id;
-            // Provide fallback thumbnail if missing in DB
             const staticDef = templateDefinitions[id];
             return {
                 id,
@@ -55,27 +61,24 @@ export const getAvailableTemplates = async (): Promise<TemplateDocument[]> => {
             };
         }) as TemplateDocument[];
 
-        // Combine with static definitions (System Templates)
-        const systemTemplates = Object.values(templateDefinitions).map(def => ({
-            id: def.id,
-            name: def.name,
-            description: def.description,
-            type: 'system',
-            tier: def.isPro ? 'premium' : 'free',
-            status: 'active',
-            config: def.config,
-            thumbnailUrl: def.thumbnailUrl, // Assuming definition has it or we map it
-            createdAt: Timestamp.now(),
-            updatedAt: Timestamp.now()
-        } as TemplateDocument));
+        // Only inject static definitions for templates not yet seeded to Firestore.
+        // Templates that exist in Firestore (even as inactive) are intentionally excluded.
+        const unseededSystemTemplates = Object.values(templateDefinitions)
+            .filter(def => !seededIds.has(def.id as string))
+            .map(def => ({
+                id: def.id,
+                name: def.name,
+                description: def.description,
+                type: 'system',
+                tier: def.isPro ? 'premium' : 'free',
+                status: 'active',
+                config: def.config,
+                thumbnailUrl: def.thumbnailUrl,
+                createdAt: Timestamp.now(),
+                updatedAt: Timestamp.now()
+            } as TemplateDocument));
 
-        // Merge: DB overrides System if IDs clash (though usually they shouldn't)
-        // Or System first, then DB. 
-        // Let's return System templates + DB templates that are NOT in System.
-        const dbTemplateIds = new Set(templates.map(t => t.id));
-        const newSystemTemplates = systemTemplates.filter(t => !dbTemplateIds.has(t.id));
-
-        return [...newSystemTemplates, ...templates];
+        return [...unseededSystemTemplates, ...templates];
     } catch (error) {
         logger.error('template.fetch.failed', { siteId: 'platform', error });
         // Fallback to system templates only
@@ -155,10 +158,13 @@ export const saveTemplate = async (template: TemplateDocument): Promise<void> =>
             updatedAt: Timestamp.now()
         };
 
-        // If it's a new doc, set createdAt
         const snap = await getDoc(docRef);
         if (!snap.exists()) {
             data.createdAt = Timestamp.now();
+        } else {
+            // Preserve admin-managed fields so re-seeding doesn't reset them
+            const existing = snap.data();
+            if (existing.status) data.status = existing.status;
         }
 
         await setDoc(docRef, data, { merge: true });

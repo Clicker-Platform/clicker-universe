@@ -5,6 +5,14 @@ import { InventoryItem, TransactionReason } from '@/lib/modules/inventory/types'
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { MobileBottomSheet } from '@/components/admin/blocks/MobileBottomSheet';
 
+// Reasons that always remove stock — quantity input is always positive,
+// sign is applied here so staff never need to type a minus sign.
+const DEDUCT_REASONS: TransactionReason[] = ['sale', 'waste'];
+
+function applySign(qty: number, reason: TransactionReason): number {
+    return DEDUCT_REASONS.includes(reason) ? -Math.abs(qty) : Math.abs(qty);
+}
+
 interface AdjustStockDialogProps {
     isOpen: boolean;
     onClose: () => void;
@@ -27,13 +35,15 @@ export function AdjustStockDialog({ isOpen, onClose, item, onConfirm }: AdjustSt
         }
     }, [isOpen, item]);
 
+    const signedChange = adjustQuantity !== 0 ? applySign(adjustQuantity, adjustReason) : 0;
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (adjustQuantity === 0) return;
 
         setIsSubmitting(true);
         try {
-            await onConfirm(adjustQuantity, adjustReason);
+            await onConfirm(signedChange, adjustReason);
             onClose();
         } catch (error) {
             // Error handling should be done by the parent content often, 
@@ -56,20 +66,22 @@ export function AdjustStockDialog({ isOpen, onClose, item, onConfirm }: AdjustSt
             </div>
 
             <div className="space-y-1.5">
-                <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300">Adjustment (+/-)</label>
+                <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300">Quantity</label>
                 <input
                     type="number"
                     required
+                    min={1}
                     className="w-full border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 p-3 rounded-lg text-lg font-mono focus:ring-2 focus:ring-brand-dark/10 focus:border-brand-dark outline-none transition-all"
-                    value={adjustQuantity}
-                    onChange={e => setAdjustQuantity(e.target.value === '' ? 0 : parseInt(e.target.value))}
-                    placeholder="e.g. 10 or -5"
+                    value={adjustQuantity === 0 ? '' : adjustQuantity}
+                    onChange={e => setAdjustQuantity(e.target.value === '' ? 0 : Math.abs(parseInt(e.target.value)))}
+                    placeholder="e.g. 10"
                     autoFocus
                 />
-                <p className="text-xs text-gray-500 dark:text-neutral-500 mt-1 flex items-center gap-1">
-                    Use <span className="font-mono bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-400 px-1 rounded">+</span> to add,
-                    <span className="font-mono bg-red-100 dark:bg-red-950/30 text-red-700 dark:text-red-400 px-1 rounded">-</span> to remove.
-                </p>
+                {adjustQuantity > 0 && item && (
+                    <p className={`text-xs font-medium mt-1 ${signedChange < 0 ? 'text-red-500 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
+                        {signedChange > 0 ? '+' : ''}{signedChange} → new stock: {item.currentStock + signedChange} {item.unit}
+                    </p>
+                )}
             </div>
 
             <div className="space-y-1.5">

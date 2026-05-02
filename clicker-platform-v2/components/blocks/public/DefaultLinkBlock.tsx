@@ -13,5 +13,5 @@ export const DefaultLinkBlock = ({ data, siteId, links }: { data: any, siteId?: 
 
     if (!link) return null;
 
-    return <LinkBlockClient link={link} siteId={siteId} />;
+    return <LinkBlockClient link={link} siteId={siteId} cardBgColor={data.cardBgColor} cardBorderColor={data.cardBorderColor} />;
 };

@@ -221,7 +221,7 @@ export function CanvasStudio({
     const BackgroundComponent = template.components?.Background;
 
     const pageBackgroundColor = template.config.allowThemeColorOverride === false
-        ? template.config.colors.background
+        ? (globalSettings?.backgroundColor || template.config.colors.background)
         : (globalSettings?.backgroundColor || themeColor || template.config.colors.background);
 
     const isHomepage = pageSlug === (globalSettings?.homepageSlug || 'home');

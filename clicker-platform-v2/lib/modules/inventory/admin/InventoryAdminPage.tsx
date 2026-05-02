@@ -1,12 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Search, AlertTriangle, Pencil, Trash2, PackageOpen, History } from 'lucide-react';
-import { getInventory, createInventoryItem, updateStock } from '@/lib/modules/inventory/api';
+import { Plus, Search, AlertTriangle, Pencil, Archive, PackageOpen, History } from 'lucide-react';
+import { getInventory, createInventoryItem, updateStock, archiveInventoryItem } from '@/lib/modules/inventory/api';
 import { InventoryItem, TransactionReason } from '@/lib/modules/inventory/types';
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, query, orderBy, deleteDoc, doc, updateDoc, where } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, doc, updateDoc, where, serverTimestamp } from 'firebase/firestore';
 import { toast } from 'sonner';
 import { useSite } from '@/lib/site-context'; // New import
 import { usePermission } from '@/components/admin/PermissionGuard'; // Import
@@ -31,8 +31,8 @@ export default function InventoryPage() {
     const [adjustItem, setAdjustItem] = useState<InventoryItem | null>(null);
     const [historyItem, setHistoryItem] = useState<InventoryItem | null>(null);
 
-    const [deleteId, setDeleteId] = useState<string | null>(null);
-    const [isDeleting, setIsDeleting] = useState(false);
+    const [archiveId, setArchiveId] = useState<string | null>(null);
+    const [isArchiving, setIsArchiving] = useState(false);
 
     // Form Handling State
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -86,15 +86,13 @@ export default function InventoryPage() {
         setIsSubmitting(true);
         try {
             if (editingItem) {
-                // Update manually constructed path to be tenant-aware or use API if available?
-                // The original code used updateDoc directly. Better to use API or fix path.
-                // Let's fix path: `sites/${siteId}/modules/inventory/items`
+                // currentStock is intentionally excluded — stock moves only through updateStock()
+                const { currentStock, ...metadataOnly } = formData;
                 await updateDoc(doc(db, 'sites', siteId, 'modules/inventory/items', editingItem.id), {
-                    ...formData,
-                    // Ensure numeric values
-                    currentStock: Number(formData.currentStock),
-                    lowStockThreshold: Number(formData.lowStockThreshold),
-                    costPrice: Number(formData.costPrice || 0)
+                    ...metadataOnly,
+                    lowStockThreshold: Number(metadataOnly.lowStockThreshold),
+                    costPrice: Number(metadataOnly.costPrice || 0),
+                    updatedAt: serverTimestamp()
                 });
                 toast.success("Item updated successfully");
             } else {
@@ -140,44 +138,37 @@ export default function InventoryPage() {
         }
     };
 
-    const handleDeleteClick = (id: string) => {
-        setDeleteId(id);
+    const handleArchiveClick = (id: string) => {
+        setArchiveId(id);
     };
 
-    const handleConfirmDelete = async () => {
-        if (!deleteId) return;
-        setIsDeleting(true);
+    const handleConfirmArchive = async () => {
+        if (!archiveId) return;
+        setIsArchiving(true);
         try {
-            // Verify query path for orders!
-            // Old: 'modules/byod_pos/orders'
-            // New: 'sites/${siteId}/modules/byod_pos/orders'
             const activeOrdersQ = query(
                 collection(db, 'sites', siteId, 'modules/byod_pos/orders'),
                 where('status', 'in', ['pending', 'preparing', 'ready'])
             );
             const snapshot = await getDocs(activeOrdersQ);
-
-            const conflictingOrder = snapshot.docs.find(d => {
-                const data = d.data();
-                return data.items?.some((item: any) => item.inventoryId === deleteId);
-            });
+            const conflictingOrder = snapshot.docs.find(d =>
+                d.data().items?.some((item: any) => item.inventoryId === archiveId)
+            );
 
             if (conflictingOrder) {
-                toast.error(`Cannot delete. Used in active order #${conflictingOrder.id.slice(-4).toUpperCase()}`);
-                setIsDeleting(false);
-                setDeleteId(null);
+                toast.error(`Cannot archive. Used in active order #${conflictingOrder.id.slice(-4).toUpperCase()}`);
                 return;
             }
 
-            await deleteDoc(doc(db, 'sites', siteId, 'modules/inventory/items', deleteId));
-            toast.success("Item deleted successfully");
+            await archiveInventoryItem(siteId, archiveId);
+            toast.success("Item archived. Stock history preserved.");
             fetchData();
         } catch (error) {
-            logger.error('inventory.adjust.failed', { siteId, error });
-            toast.error("Failed to delete item");
+            logger.error('inventory.archive.failed', { siteId, error });
+            toast.error("Failed to archive item");
         } finally {
-            setIsDeleting(false);
-            setDeleteId(null);
+            setIsArchiving(false);
+            setArchiveId(null);
         }
     };
 
@@ -199,7 +190,7 @@ export default function InventoryPage() {
     };
 
     return (
-        <div className="max-w-7xl animate-in fade-in duration-500">
+        <div className="animate-in fade-in duration-500">
             {/* Header */}
             <div className="hidden md:flex md:items-center justify-between mb-8 gap-4">
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">Inventory</h1>
@@ -316,11 +307,11 @@ export default function InventoryPage() {
                                                                         <Pencil size={18} />
                                                                     </button>
                                                                     <button
-                                                                        onClick={() => handleDeleteClick(item.id)}
-                                                                        className="p-2 text-gray-400 dark:text-neutral-600 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors"
-                                                                        title="Delete"
+                                                                        onClick={() => handleArchiveClick(item.id)}
+                                                                        className="p-2 text-gray-400 dark:text-neutral-600 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/30 rounded-lg transition-colors"
+                                                                        title="Archive"
                                                                     >
-                                                                        <Trash2 size={18} />
+                                                                        <Archive size={18} />
                                                                     </button>
                                                                 </>
                                                             )}
@@ -383,10 +374,10 @@ export default function InventoryPage() {
                                                                     <Pencil size={18} />
                                                                 </button>
                                                                 <button
-                                                                    onClick={() => handleDeleteClick(item.id)}
-                                                                    className="p-2 text-gray-400 dark:text-neutral-600 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors border border-transparent hover:border-red-100"
+                                                                    onClick={() => handleArchiveClick(item.id)}
+                                                                    className="p-2 text-gray-400 dark:text-neutral-600 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/30 rounded-lg transition-colors border border-transparent hover:border-amber-100"
                                                                 >
-                                                                    <Trash2 size={18} />
+                                                                    <Archive size={18} />
                                                                 </button>
                                                             </>
                                                         )}
@@ -442,12 +433,12 @@ export default function InventoryPage() {
             />
 
             <ConfirmationDialog
-                isOpen={!!deleteId}
-                title="Delete Inventory Item"
-                message="Are you sure you want to delete this item? This action cannot be undone."
-                onConfirm={handleConfirmDelete}
-                onCancel={() => setDeleteId(null)}
-                isLoading={isDeleting}
+                isOpen={!!archiveId}
+                title="Archive Inventory Item"
+                message="This item will be hidden from the inventory list. Stock history will be preserved and can still be referenced in reports."
+                onConfirm={handleConfirmArchive}
+                onCancel={() => setArchiveId(null)}
+                isLoading={isArchiving}
             />
         </div >
     );

@@ -15,6 +15,7 @@ export interface InventoryItem {
 
     createdAt?: Timestamp;
     updatedAt?: Timestamp;
+    archivedAt?: Timestamp;
 }
 
 export type TransactionReason = "purchase" | "sale" | "adjustment" | "waste" | "return";
