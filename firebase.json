@@ -59,19 +59,6 @@
                 "region": "us-central1",
                 "memory": "1GiB"
             }
-        },
-        {
-            "target": "website",
-            "source": "clicker-website",
-            "ignore": [
-                "firebase.json",
-                "**/.*",
-                "**/node_modules/**"
-            ],
-            "frameworksBackend": {
-                "region": "us-central1",
-                "memory": "512MiB"
-            }
         }
     ],
     "emulators": {

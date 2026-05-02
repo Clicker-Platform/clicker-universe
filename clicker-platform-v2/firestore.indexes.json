@@ -474,6 +474,30 @@
                 { "fieldPath": "event", "order": "ASCENDING" },
                 { "fieldPath": "ts", "order": "DESCENDING" }
             ]
+        },
+        {
+            "collectionGroup": "reminderQueue",
+            "queryScope": "COLLECTION",
+            "fields": [
+                { "fieldPath": "outletId", "order": "ASCENDING" },
+                { "fieldPath": "scheduledAt", "order": "DESCENDING" }
+            ]
+        },
+        {
+            "collectionGroup": "links",
+            "queryScope": "COLLECTION",
+            "fields": [
+                { "fieldPath": "deletedAt", "order": "ASCENDING" },
+                { "fieldPath": "order", "order": "ASCENDING" }
+            ]
+        },
+        {
+            "collectionGroup": "forms",
+            "queryScope": "COLLECTION",
+            "fields": [
+                { "fieldPath": "isPublished", "order": "ASCENDING" },
+                { "fieldPath": "createdAt", "order": "DESCENDING" }
+            ]
         }
     ],
     "fieldOverrides": [
