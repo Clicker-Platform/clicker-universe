@@ -117,6 +117,7 @@ export interface TemplateComponents {
         Link?: React.ElementType<any>;
         Map?: React.ElementType<any>;
         ImageGallery?: React.ElementType<any>;
+        InlineFormBlock?: React.ElementType<any>;
     };
 }
 

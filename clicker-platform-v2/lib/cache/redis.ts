@@ -37,11 +37,6 @@ export async function cached<T>(
 }
 
 export async function invalidate(pattern: string): Promise<number> {
-    // Clear matching keys from memory cache
-    for (const key of memCache.keys()) {
-        if (key.includes(pattern.replace('*', ''))) memCache.delete(key);
-    }
-
     if (!ENABLED || !redis) return 0;
     let deleted = 0;
     try {

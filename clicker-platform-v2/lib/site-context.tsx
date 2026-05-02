@@ -23,7 +23,7 @@ export function SiteProvider({ siteId: initialSiteId, tenantSlug = '', isSubdoma
     );
 }
 
-const SITE_FALLBACK: SiteContextType = { siteId: '', tenantSlug: '', isPending: true, isSubdomain: false };
+const SITE_FALLBACK: SiteContextType = { siteId: '', tenantSlug: '', isPending: true, isSubdomain: false, setSiteId: () => {} };
 
 export function useSite() {
     const context = useContext(SiteContext);
