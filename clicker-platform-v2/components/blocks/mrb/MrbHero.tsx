@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import Image from 'next/image';
 import { ImageIcon } from 'lucide-react';
 
@@ -146,6 +146,77 @@ const TITLE_SIZES = (d: DeviceView): Record<string, string> => ({
 });
 
 interface CtaBtn { label?: string; url?: string; }
+
+function CtaButtons({ primary, secondary, ctaJustify, primaryColor, bgColor, defaultTextColor, titleColor, onFieldFocus }: {
+    primary?: CtaBtn | null;
+    secondary?: CtaBtn | null;
+    ctaJustify: string;
+    primaryColor: string;
+    bgColor: string;
+    defaultTextColor: string;
+    titleColor?: string;
+    onFieldFocus?: (field: string, rect: DOMRect) => void;
+}) {
+    const primaryRef = useRef<HTMLDivElement>(null);
+    const secondaryRef = useRef<HTMLDivElement>(null);
+    const [focusedBtn, setFocusedBtn] = useState<'primary' | 'secondary' | null>(null);
+
+    useEffect(() => {
+        if (!focusedBtn) return;
+        const handler = (e: MouseEvent) => {
+            const t = e.target as HTMLElement | null;
+            if (primaryRef.current?.contains(t) || secondaryRef.current?.contains(t)) return;
+            setFocusedBtn(null);
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, [focusedBtn]);
+
+    const handleClick = (btn: 'primary' | 'secondary', ref: React.RefObject<HTMLDivElement | null>) => {
+        if (!onFieldFocus || !ref.current) return;
+        setFocusedBtn(btn);
+        onFieldFocus('buttons', ref.current.getBoundingClientRect());
+    };
+
+    return (
+        <div className={`flex flex-wrap gap-4 relative z-10 w-full ${ctaJustify}`}>
+            {primary?.label && (
+                <div
+                    ref={primaryRef}
+                    className="relative inline-flex"
+                    style={{ overflow: 'visible' }}
+                    onClick={() => handleClick('primary', primaryRef)}
+                >
+                    <a
+                        href={onFieldFocus ? undefined : (primary.url || '#')}
+                        className="inline-flex items-center px-6 py-3 rounded-xl text-sm font-bold transition-all active:scale-[0.98] shadow-lg"
+                        style={{ backgroundColor: primaryColor, color: bgColor }}
+                    >
+                        {primary.label}
+                    </a>
+                    {onFieldFocus && focusedBtn === 'primary' && <FieldSelectionChrome />}
+                </div>
+            )}
+            {secondary?.label && (
+                <div
+                    ref={secondaryRef}
+                    className="relative inline-flex"
+                    style={{ overflow: 'visible' }}
+                    onClick={() => handleClick('secondary', secondaryRef)}
+                >
+                    <a
+                        href={onFieldFocus ? undefined : (secondary.url || '#')}
+                        className="inline-flex items-center px-6 py-3 rounded-xl text-sm font-bold border-2 transition-all active:scale-[0.98]"
+                        style={{ borderColor: `${primaryColor}66`, color: titleColor || defaultTextColor }}
+                    >
+                        {secondary.label}
+                    </a>
+                    {onFieldFocus && focusedBtn === 'secondary' && <FieldSelectionChrome />}
+                </div>
+            )}
+        </div>
+    );
+}
 
 interface MrbHeroProps {
     profile: BusinessProfile;
@@ -376,22 +447,16 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, isFirst = true,
 
             {/* CTA Buttons */}
             {(primaryBtn?.label || secondaryBtn?.label) && (
-                <div className={`flex flex-wrap gap-4 relative z-10 w-full ${ctaJustify}`}>
-                    {primaryBtn?.label && (
-                        <a href={primaryBtn.url || '#'}
-                            className="inline-flex items-center px-6 py-3 rounded-xl text-sm font-bold uppercase tracking-wide transition-all active:scale-[0.98] shadow-lg"
-                            style={{ backgroundColor: theme.colors.primary, color: theme.colors.background }}>
-                            {primaryBtn.label}
-                        </a>
-                    )}
-                    {secondaryBtn?.label && (
-                        <a href={secondaryBtn.url || '#'}
-                            className="inline-flex items-center px-6 py-3 rounded-xl text-sm font-bold uppercase tracking-wide border-2 transition-all active:scale-[0.98]"
-                            style={{ borderColor: `${theme.colors.primary}66`, color: data?.titleColor || defaultTextColor }}>
-                            {secondaryBtn.label}
-                        </a>
-                    )}
-                </div>
+                <CtaButtons
+                    primary={primaryBtn}
+                    secondary={secondaryBtn}
+                    ctaJustify={ctaJustify}
+                    primaryColor={theme.colors.primary}
+                    bgColor={theme.colors.background}
+                    defaultTextColor={defaultTextColor}
+                    titleColor={data?.titleColor}
+                    onFieldFocus={onFieldFocus}
+                />
             )}
         </div>
     );

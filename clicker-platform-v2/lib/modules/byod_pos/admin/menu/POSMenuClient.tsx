@@ -296,11 +296,11 @@ export default function POSMenuClient({ initialItems = [] }: POSMenuClientProps)
                                 if (viewMode === 'list') {
                                     return (
                                         <div key={item.id} className={`
-                                        p-4 flex flex-col md:flex-row md:items-center gap-4 transition-colors group
+                                        py-2 px-4 flex flex-col md:flex-row md:items-center gap-3 transition-colors group
                                         ${!isActive ? 'opacity-60 bg-gray-50/50 dark:bg-neutral-800/20' : 'hover:bg-gray-50 dark:hover:bg-neutral-800'}
                                     `}>
-                                            <div className="flex items-start gap-4 flex-1 w-full">
-                                                <div className="w-14 h-14 bg-gray-100 dark:bg-neutral-800 rounded-lg overflow-hidden flex-shrink-0 border border-gray-200 dark:border-neutral-700">
+                                            <div className="flex items-center gap-3 flex-1 w-full">
+                                                <div className="w-10 h-10 bg-gray-100 dark:bg-neutral-800 rounded-lg overflow-hidden flex-shrink-0 border border-gray-200 dark:border-neutral-700">
                                                     {displayImage ? (
                                                         <img src={displayImage} alt={item.name} className={`w-full h-full object-cover ${!isActive ? 'grayscale' : ''}`} />
                                                     ) : (
@@ -309,7 +309,7 @@ export default function POSMenuClient({ initialItems = [] }: POSMenuClientProps)
                                                         </div>
                                                     )}
                                                 </div>
-                                                <div className="flex-1 min-w-0 py-1">
+                                                <div className="flex-1 min-w-0">
                                                     <div className="flex items-start justify-between gap-2">
                                                         <h3 className="font-bold text-gray-900 dark:text-neutral-100">{item.name}</h3>
                                                         {!isActive && <span className="text-[10px] font-bold bg-gray-200 dark:bg-neutral-700 text-gray-500 dark:text-neutral-500 px-1.5 py-0.5 rounded whitespace-nowrap">HIDDEN</span>}
@@ -321,7 +321,7 @@ export default function POSMenuClient({ initialItems = [] }: POSMenuClientProps)
                                                 </div>
                                             </div>
 
-                                            <div className="flex items-center justify-end gap-1 w-full md:w-auto border-t md:border-t-0 pt-3 md:pt-0 border-gray-100 dark:border-neutral-800 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <div className="hidden md:flex items-center justify-end gap-1 md:w-auto opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <button
                                                     onClick={() => toggleItemVisibility(item)}
                                                     className="p-2 rounded-lg text-gray-400 dark:text-neutral-600 hover:text-gray-700 dark:hover:text-neutral-300 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors"

@@ -42,7 +42,7 @@ export function getDefaultData(type: BlockType, templateId = 'classic'): any {
         case 'image':
             return { ...baseData, media: { ...DEFAULT_MEDIA, type: 'image' }, caption: '' };
         case 'button':
-            return { ...baseData, label: 'Click Me', url: '#', style: 'primary' };
+            return { ...baseData, label: 'Click Me', url: '#', variant: 'primary' };
         case 'products':
             return { ...baseData, title: 'Our Products' };
         case 'faq':

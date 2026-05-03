@@ -156,42 +156,74 @@ const CtaButtons = ({
     align?: string;
     onFieldFocus?: (field: string, rect: DOMRect) => void;
 }) => {
-    const ref = useRef<HTMLDivElement>(null);
+    const primaryRef = useRef<HTMLDivElement>(null);
+    const secondaryRef = useRef<HTMLDivElement>(null);
+    const [focusedBtn, setFocusedBtn] = useState<'primary' | 'secondary' | null>(null);
+
+    useEffect(() => {
+        if (!focusedBtn) return;
+        const handler = (e: MouseEvent) => {
+            const t = e.target as HTMLElement | null;
+            if (primaryRef.current?.contains(t) || secondaryRef.current?.contains(t)) return;
+            setFocusedBtn(null);
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, [focusedBtn]);
+
     if (!primary && !secondary) return null;
 
     const justifyClass = align === 'left' ? 'justify-start' : align === 'right' ? 'justify-end' : 'justify-center';
 
+    const handleBtnClick = (btn: 'primary' | 'secondary', ref: React.RefObject<HTMLDivElement | null>) => {
+        if (!onFieldFocus || !ref.current) return;
+        setFocusedBtn(btn);
+        onFieldFocus('buttons', ref.current.getBoundingClientRect());
+    };
+
     return (
-        <div
-            ref={ref}
-            className={`flex flex-wrap gap-3 mt-6 ${justifyClass}`}
-            onClick={() => { if (onFieldFocus && ref.current) onFieldFocus('buttons', ref.current.getBoundingClientRect()); }}
-        >
+        <div className={`flex flex-wrap gap-3 mt-6 ${justifyClass}`}>
             {primary?.label && (
-                <a
-                    href={primary?.type === 'form' ? `#form-${primary.formId}` : primary.url || '#'}
-                    className={`inline-flex items-center px-6 py-2.5 text-sm font-bold transition-all active:scale-[0.98] shadow-sm ${
-                        dark
-                            ? 'bg-white text-gray-900 hover:bg-white/90'
-                            : 'bg-theme-primary text-white hover:opacity-90'
-                    }`}
-                    style={{ borderRadius: 'var(--theme-radius)' }}
+                <div
+                    ref={primaryRef}
+                    className="relative inline-flex"
+                    style={{ overflow: 'visible' }}
+                    onClick={() => handleBtnClick('primary', primaryRef)}
                 >
-                    {primary.label}
-                </a>
+                    <a
+                        href={onFieldFocus ? undefined : (primary?.type === 'form' ? `#form-${primary.formId}` : primary.url || '#')}
+                        className={`inline-flex items-center px-6 py-2.5 text-sm font-bold transition-all shadow-sm ${
+                            dark
+                                ? 'bg-white text-gray-900 hover:bg-white/90'
+                                : 'bg-theme-primary text-white hover:opacity-90'
+                        }`}
+                        style={{ borderRadius: 'var(--theme-radius)' }}
+                    >
+                        {primary.label}
+                    </a>
+                    {onFieldFocus && focusedBtn === 'primary' && <FieldSelectionChrome />}
+                </div>
             )}
             {secondary?.label && (
-                <a
-                    href={secondary?.type === 'form' ? `#form-${secondary.formId}` : secondary.url || '#'}
-                    className={`inline-flex items-center px-6 py-2.5 text-sm font-bold border-2 transition-all active:scale-[0.98] ${
-                        dark
-                            ? 'border-white/50 text-white hover:bg-white/10'
-                            : 'border-theme-border text-theme-foreground hover:bg-black/5'
-                    }`}
-                    style={{ borderRadius: 'var(--theme-radius)' }}
+                <div
+                    ref={secondaryRef}
+                    className="relative inline-flex"
+                    style={{ overflow: 'visible' }}
+                    onClick={() => handleBtnClick('secondary', secondaryRef)}
                 >
-                    {secondary.label}
-                </a>
+                    <a
+                        href={onFieldFocus ? undefined : (secondary?.type === 'form' ? `#form-${secondary.formId}` : secondary.url || '#')}
+                        className={`inline-flex items-center px-6 py-2.5 text-sm font-bold border-2 transition-all ${
+                            dark
+                                ? 'border-white/50 text-white hover:bg-white/10'
+                                : 'border-theme-border text-theme-foreground hover:bg-black/5'
+                        }`}
+                        style={{ borderRadius: 'var(--theme-radius)' }}
+                    >
+                        {secondary.label}
+                    </a>
+                    {onFieldFocus && focusedBtn === 'secondary' && <FieldSelectionChrome />}
+                </div>
             )}
         </div>
     );
@@ -507,7 +539,7 @@ export const DefaultHeroBlock = ({ data, theme, isFirst = true, onInlineChange, 
                         style={{ color: data?.subtitleColor || defaultSubtitleColor }}
                     />
                 )}
-                <CtaButtons primary={primaryBtn} secondary={secondaryBtn} dark={isDark} align={ctaAlign} />
+                <CtaButtons primary={primaryBtn} secondary={secondaryBtn} dark={isDark} align={ctaAlign} onFieldFocus={onFieldFocus} />
             </div>
         </section>
     );

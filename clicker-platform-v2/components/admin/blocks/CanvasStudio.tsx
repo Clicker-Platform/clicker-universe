@@ -231,7 +231,7 @@ export function CanvasStudio({
     const canvasContent = (
         <div
             ref={canvasScrollRef}
-            className={`flex-1 flex justify-center relative overflow-y-auto overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [--canvas-bg:rgb(229_231_235)] [--canvas-dot:rgb(0_0_0_/_0.12)] dark:[--canvas-bg:rgb(10_10_10)] dark:[--canvas-dot:rgb(255_255_255_/_0.09)] ${isMobile ? 'pb-20' : ''}`}
+            className={`flex-1 flex items-start relative overflow-y-auto overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [--canvas-bg:rgb(229_231_235)] [--canvas-dot:rgb(0_0_0_/_0.12)] dark:[--canvas-bg:rgb(10_10_10)] dark:[--canvas-dot:rgb(255_255_255_/_0.09)] ${deviceView === 'mobile' ? 'justify-center' : ''} ${isMobile ? 'pb-20' : ''}`}
             style={{
                 backgroundColor: 'var(--canvas-bg)',
                 backgroundImage: 'radial-gradient(circle, var(--canvas-dot) 1.5px, transparent 1.5px)',
@@ -248,7 +248,8 @@ export function CanvasStudio({
                 </div>
             )}
             {/* The actual canvas container */}
-            <div className={`w-full min-w-[375px] ${deviceView === 'tablet' ? 'max-w-lg' : deviceView === 'mobile' ? 'max-w-[390px]' : ''} shadow-2xl ring-1 ring-black/10 dark:ring-white/10 overflow-hidden transition-all duration-300 my-8 self-start isolate`}>
+            <div className="px-8 py-8 self-start">
+            <div className={`${deviceView === 'tablet' ? 'min-w-[768px] max-w-[768px]' : deviceView === 'mobile' ? 'min-w-[375px] max-w-[390px]' : 'min-w-[1024px]'} shadow-2xl ring-1 ring-black/10 dark:ring-white/10 overflow-hidden transition-all duration-300 isolate`}>
                 {/* WYSIWYG Renderer — providers are always mounted to prevent context loss during block reorder */}
                 <DeviceViewProvider deviceView={deviceView}>
                 <TemplateProvider
@@ -479,6 +480,7 @@ export function CanvasStudio({
                 </div>
                 </TemplateProvider>
                 </DeviceViewProvider>
+            </div>
             </div>
         </div>
     );
