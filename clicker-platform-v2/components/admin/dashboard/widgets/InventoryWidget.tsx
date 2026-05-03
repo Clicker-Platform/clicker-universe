@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { collection, query, where, getCountFromServer } from 'firebase/firestore';
+import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 interface Props { siteId: string }
@@ -11,14 +11,18 @@ export function InventoryWidget({ siteId }: Props) {
   const [lowStock, setLowStock] = useState<number | null>(null);
 
   useEffect(() => {
-    const col = collection(db, 'sites', siteId, 'inventory_items');
-    Promise.all([
-      getCountFromServer(col),
-      getCountFromServer(query(col, where('lowStock', '==', true))),
-    ]).then(([totalSnap, lowSnap]) => {
-      setTotal(totalSnap.data().count);
-      setLowStock(lowSnap.data().count);
-    }).catch(() => {});
+    const col = collection(db, 'sites', siteId, 'modules', 'inventory', 'items');
+    getDocs(col).then(snap => {
+      const items = snap.docs.filter(d => !d.data().archivedAt);
+      const low = items.filter(d => {
+        const data = d.data();
+        return typeof data.currentStock === 'number'
+          && typeof data.lowStockThreshold === 'number'
+          && data.currentStock <= data.lowStockThreshold;
+      }).length;
+      setTotal(items.length);
+      setLowStock(low);
+    }).catch(err => console.error('InventoryWidget query failed', err));
   }, [siteId]);
 
   return (

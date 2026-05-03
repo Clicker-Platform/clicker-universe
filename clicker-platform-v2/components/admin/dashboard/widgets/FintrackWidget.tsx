@@ -15,17 +15,18 @@ export function FintrackWidget({ siteId }: Props) {
     startOfMonth.setDate(1);
     startOfMonth.setHours(0, 0, 0, 0);
     getDocs(query(
-      collection(db, 'sites', siteId, 'fin_entries'),
+      collection(db, 'sites', siteId, 'modules', 'fintrack', 'entries'),
       where('createdAt', '>=', Timestamp.fromDate(startOfMonth))
     )).then(snap => {
       let bal = 0;
       snap.forEach(d => {
-        const amt = d.data().amount ?? 0;
-        bal += d.data().type === 'income' ? amt : -amt;
+        const data = d.data();
+        const amt = data.jumlah ?? 0;
+        bal += data.jenis === 'pemasukan' ? amt : -amt;
       });
       setBalance(bal);
       setEntries(snap.size);
-    }).catch(() => {});
+    }).catch(err => console.error('FintrackWidget query failed', err));
   }, [siteId]);
 
   return (

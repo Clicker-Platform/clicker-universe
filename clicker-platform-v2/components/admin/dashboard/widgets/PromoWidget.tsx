@@ -14,7 +14,7 @@ export function PromoWidget({ siteId }: Props) {
     const now = new Date();
     const weekFromNow = new Date();
     weekFromNow.setDate(weekFromNow.getDate() + 7);
-    const col = collection(db, 'sites', siteId, 'promos');
+    const col = collection(db, 'sites', siteId, 'modules', 'promo', 'promos');
     Promise.all([
       getCountFromServer(query(col, where('status', '==', 'active'))),
       getCountFromServer(query(col,
@@ -25,7 +25,7 @@ export function PromoWidget({ siteId }: Props) {
     ]).then(([activeSnap, expiringSnap]) => {
       setActive(activeSnap.data().count);
       setExpiringSoon(expiringSnap.data().count);
-    }).catch(() => {});
+    }).catch(err => console.error('PromoWidget query failed', err));
   }, [siteId]);
 
   return (
