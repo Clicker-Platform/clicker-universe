@@ -388,8 +388,8 @@ export function CanvasStudio({
                                                     )}
                                                     <div className={
                                                         block.type === 'social_embed' ? 'pointer-events-auto' :
-                                                        // Hero selected: allow pointer events so contentEditable fields are clickable
-                                                        (block.type === 'hero' && selectedBlockId === block.id) ? 'pointer-events-auto' :
+                                                        // Hero/Heading selected: allow pointer events so contentEditable fields are clickable
+                                                        ((block.type === 'hero' || block.type === 'heading') && selectedBlockId === block.id) ? 'pointer-events-auto' :
                                                         'pointer-events-none'
                                                     }>
                                                         <BlockRenderer
