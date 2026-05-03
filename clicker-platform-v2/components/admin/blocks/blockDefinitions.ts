@@ -21,6 +21,7 @@ export const BLOCK_OPTIONS: { type: BlockType; label: string; icon: React.Elemen
     { type: 'featured_product', label: 'Featured Product', icon: Star },
     { type: 'branches', label: 'Branches', icon: MapPin },
     { type: 'inline_form', label: 'Inline Form', icon: ClipboardList },
+    { type: 'heading', label: 'Heading', icon: Type },
 ];
 
 export function getDefaultData(type: BlockType, templateId = 'classic'): any {
@@ -68,6 +69,17 @@ export function getDefaultData(type: BlockType, templateId = 'classic'): any {
                 subheading: '',
                 successMessage: "Thank you! We'll be in touch.",
                 redirectUrl: '',
+            };
+        case 'heading':
+            return {
+                ...baseData,
+                heading: 'Your Headline',
+                headingSize: 'xl',
+                headingAlign: 'left',
+                subheading: null,
+                subheadingAlign: 'left',
+                verticalSpacing: 'medium',
+                horizontalPadding: 'none',
             };
         default:
             return baseData;
