@@ -413,17 +413,17 @@ export function CanvasStudio({
                                                             businessSchedule={globalSettings?.businessSchedule}
                                                             profile={globalSettings?.profile}
                                                             onInlineChange={
-                                                                block.type === 'hero' && selectedBlockId === block.id
+                                                                (block.type === 'hero' || block.type === 'heading') && selectedBlockId === block.id
                                                                     ? (field, value) => updateBlockData(block.id, { [field]: value })
                                                                     : undefined
                                                             }
                                                             onFieldFocus={
-                                                                block.type === 'hero' && selectedBlockId === block.id
+                                                                (block.type === 'hero' || block.type === 'heading') && selectedBlockId === block.id
                                                                     ? (field, rect) => setInlineFocus({ blockId: block.id, field, rect, currentData: block.data })
                                                                     : undefined
                                                             }
                                                             onFieldBlur={
-                                                                block.type === 'hero' && selectedBlockId === block.id
+                                                                (block.type === 'hero' || block.type === 'heading') && selectedBlockId === block.id
                                                                     ? () => setInlineFocus(null)
                                                                     : undefined
                                                             }
