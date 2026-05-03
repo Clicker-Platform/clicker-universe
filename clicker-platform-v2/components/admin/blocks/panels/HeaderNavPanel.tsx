@@ -215,10 +215,12 @@ export function HeaderNavPanel() {
     const [pages, setPages] = useState<any[]>([]);
     const [homepageSlug, setHomepageSlug] = useState<string>('home');
     const [loading, setLoading] = useState(true);
+    const [hydrated, setHydrated] = useState(false);
     const [status, setStatus] = useState<'idle' | 'pending' | 'saving' | 'saved' | 'error'>('idle');
     const [panelView, setPanelView] = useState<PanelView>({ type: 'properties' });
-    const isFirstRender = useRef(true);
     const siteIdRef = useRef(siteId);
+    const hydratedSiteIdRef = useRef<string | null>(null);
+    const lastSavedSnapshotRef = useRef<string | null>(null);
     useEffect(() => { siteIdRef.current = siteId; }, [siteId]);
 
     const openIconPicker = useCallback((currentIcon: string, onSelect: (icon: string) => void) => {
@@ -230,39 +232,63 @@ export function HeaderNavPanel() {
         useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
     );
 
-    const fetchData = useCallback(async () => {
+    useEffect(() => {
         if (!siteId) return;
-        try {
-            const [formsSnap, pagesSnap, settingsSnap] = await Promise.all([
-                getDocs(collection(db, 'sites', siteId, 'forms')),
-                getDocs(collection(db, 'sites', siteId, 'pages')),
-                getDoc(doc(db, 'sites', siteId, 'content', 'siteSettings')),
-            ]);
-            setForms(formsSnap.docs.map(d => ({ id: d.id, ...d.data() })));
-            setPages(pagesSnap.docs.map(d => ({ id: d.id, ...d.data() })));
-            if (settingsSnap.exists()) {
-                const data = settingsSnap.data();
-                if (data.navigation) setNavigation(data.navigation);
-                if (data.homepageSlug) setHomepageSlug(data.homepageSlug);
-            }
-        } catch (err) {
-            console.error('Failed to load navigation:', err);
-        } finally {
-            setLoading(false);
-        }
-    }, [siteId]);
+        let cancelled = false;
+        setHydrated(false);
+        setLoading(true);
+        hydratedSiteIdRef.current = null;
 
-    useEffect(() => { fetchData(); }, [fetchData]);
+        (async () => {
+            try {
+                const [formsSnap, pagesSnap, settingsSnap] = await Promise.all([
+                    getDocs(collection(db, 'sites', siteId, 'forms')),
+                    getDocs(collection(db, 'sites', siteId, 'pages')),
+                    getDoc(doc(db, 'sites', siteId, 'content', 'siteSettings')),
+                ]);
+                if (cancelled) return;
+                setForms(formsSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+                setPages(pagesSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+                let loaded: any;
+                if (settingsSnap.exists()) {
+                    const data = settingsSnap.data();
+                    if (data.homepageSlug) setHomepageSlug(data.homepageSlug);
+                    const nav = data.navigation || {};
+                    // Only hold the keys this panel owns; avoid round-tripping unrelated keys (bottomNav/fab/bottomNavStyle)
+                    // which would otherwise let a stale copy here clobber edits made by ChromeBottomNavProperties.
+                    loaded = {
+                        topNav: nav.topNav || [],
+                        topNavActions: nav.topNavActions || {},
+                        headerStyle: nav.headerStyle || {},
+                    };
+                } else {
+                    loaded = { topNav: [], topNavActions: {}, headerStyle: {} };
+                }
+                setNavigation(loaded);
+                lastSavedSnapshotRef.current = JSON.stringify(loaded);
+                hydratedSiteIdRef.current = siteId;
+                setHydrated(true);
+            } catch (err) {
+                if (!cancelled) console.error('Failed to load navigation:', err);
+            } finally {
+                if (!cancelled) setLoading(false);
+            }
+        })();
+
+        return () => { cancelled = true; };
+    }, [siteId]);
 
     const saveToFirestore = useCallback(async (nav: any) => {
         const sid = siteIdRef.current;
         if (!sid) return;
+        if (hydratedSiteIdRef.current !== sid) return;
+        const snapshot = JSON.stringify(nav);
+        if (snapshot === lastSavedSnapshotRef.current) return;
         setStatus('saving');
         try {
             const docRef = doc(db, 'sites', sid, 'content', 'siteSettings');
-            const snap = await getDoc(docRef);
-            const current = snap.exists() ? snap.data() : {};
-            await setDoc(docRef, { ...current, navigation: { ...current.navigation, ...nav } }, { merge: true });
+            await setDoc(docRef, { navigation: nav }, { merge: true });
+            lastSavedSnapshotRef.current = snapshot;
             setStatus('saved');
             setTimeout(() => setStatus('idle'), 2000);
         } catch (err) {
@@ -272,16 +298,21 @@ export function HeaderNavPanel() {
         }
     }, []);
 
-    // Debounced auto-save on every navigation change (skip initial load)
+    // Debounced auto-save — only fires after the panel has hydrated from Firestore for the current site
+    // AND only if the navigation differs from the last value persisted to Firestore.
+    // On unmount/dependency-change, flush the pending value so a closed-while-typing edit is not lost.
     useEffect(() => {
-        if (isFirstRender.current) {
-            isFirstRender.current = false;
-            return;
-        }
+        if (!hydrated) return;
+        if (hydratedSiteIdRef.current !== siteId) return;
+        if (JSON.stringify(navigation) === lastSavedSnapshotRef.current) return;
         setStatus('pending');
-        const timer = setTimeout(() => { saveToFirestore(navigation); }, 600);
-        return () => clearTimeout(timer);
-    }, [navigation, saveToFirestore]);
+        let fired = false;
+        const timer = setTimeout(() => { fired = true; saveToFirestore(navigation); }, 600);
+        return () => {
+            clearTimeout(timer);
+            if (!fired) saveToFirestore(navigation);
+        };
+    }, [navigation, hydrated, siteId, saveToFirestore]);
 
     const generateId = () => Math.random().toString(36).substr(2, 9);
 
