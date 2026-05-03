@@ -364,6 +364,13 @@ export function CanvasStudio({
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         setSelectedBlockId?.(block.id);
+                                                        // Single-click into a contentEditable field: select block + open toolbar in one gesture
+                                                        const ce = (e.target as HTMLElement).closest<HTMLElement>('[contenteditable="true"][data-field]');
+                                                        if (ce) {
+                                                            const field = ce.dataset.field!;
+                                                            setInlineFocus({ blockId: block.id, field, rect: ce.getBoundingClientRect(), currentData: block.data });
+                                                            ce.focus();
+                                                        }
                                                     }}
                                                 >
                                                     {/* Hover outline */}
@@ -387,9 +394,10 @@ export function CanvasStudio({
                                                         </div>
                                                     )}
                                                     <div className={
+                                                        // social_embed always needs pointer events (iframe interaction)
                                                         block.type === 'social_embed' ? 'pointer-events-auto' :
-                                                        // Hero/Heading selected: allow pointer events so contentEditable fields are clickable
-                                                        ((block.type === 'hero' || block.type === 'heading') && selectedBlockId === block.id) ? 'pointer-events-auto' :
+                                                        // Inline-editable blocks always allow pointer events so a single click can land on contentEditable
+                                                        (block.type === 'hero' || block.type === 'heading') ? 'pointer-events-auto' :
                                                         'pointer-events-none'
                                                     }>
                                                         <BlockRenderer

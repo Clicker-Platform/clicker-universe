@@ -56,6 +56,7 @@ export function EditableText({
                 contentEditable
                 suppressContentEditableWarning
                 data-placeholder={placeholder}
+                data-field={field}
                 className={`${className ?? ''} outline-none cursor-text relative
                     before:content-[attr(data-placeholder)] before:absolute before:inset-0 before:opacity-40 before:pointer-events-none
                     [&:not(:empty)]:before:hidden`}
