@@ -68,6 +68,8 @@ export function CanvasStudio({
         saving,
         isDirty,
         savePage,
+        pages,
+        switchPage,
     } = usePageStudio();
 
     const isMobile = useIsMobile();
@@ -79,7 +81,7 @@ export function CanvasStudio({
     const [rightPanelOpen, setRightPanelOpen] = useState(true);
     const [host] = useState(() => typeof window !== 'undefined' ? window.location.host : '');
     const [tooltip, setTooltip] = useState<{ label: string; top: number; left: number; side?: boolean; sideLeft?: boolean } | null>(null);
-    const [leftPanel, setLeftPanel] = useState<'pages' | 'add' | 'navigator' | null>('navigator');
+    const [leftPanel, setLeftPanel] = useState<'pages' | 'add' | 'layers' | null>('layers');
     const [slideOverPanel, setSlideOverPanel] = useState<'links' | 'forms' | 'products' | 'siteinfo' | 'branding' | null>(null);
 
     // Mobile state
@@ -114,7 +116,7 @@ export function CanvasStudio({
         return () => clearTimeout(t);
     }, [inlineFocus?.field, isMobile]);
 
-    const toggleLeftPanel = (panel: 'pages' | 'add' | 'navigator') => {
+    const toggleLeftPanel = (panel: 'pages' | 'add' | 'layers') => {
         setLeftPanel(prev => prev === panel ? null : panel);
         setSlideOverPanel(null);
     };
@@ -177,7 +179,7 @@ export function CanvasStudio({
         scrollEl.scrollTo({ top: offset, behavior: 'smooth' });
     }, [selectedBlockId]);
 
-    // Keyboard shortcuts: P = Pages, A = Add, Z = Navigator, L = Links (desktop only)
+    // Keyboard shortcuts: P = Pages, A = Add, Z = Layers, L = Links, F = Forms, B = Products, I = Site Info, G = Branding (desktop only)
     useEffect(() => {
         if (isMobile) return;
         const handler = (e: KeyboardEvent) => {
@@ -187,11 +189,12 @@ export function CanvasStudio({
             switch (e.key.toLowerCase()) {
                 case 'p': toggleLeftPanel('pages'); break;
                 case 'a': toggleLeftPanel('add'); break;
-                case 'z': toggleLeftPanel('navigator'); break;
+                case 'z': toggleLeftPanel('layers'); break;
                 case 'l': toggleSlideOverPanel('links'); break;
                 case 'f': toggleSlideOverPanel('forms'); break;
                 case 'b': toggleSlideOverPanel('products'); break;
                 case 'i': toggleSlideOverPanel('siteinfo'); break;
+                case 'g': toggleSlideOverPanel('branding'); break;
             }
         };
         window.addEventListener('keydown', handler);
@@ -318,6 +321,20 @@ export function CanvasStudio({
                                         forceMobile={deviceView !== 'desktop'}
                                         isSubPage={isSubPage}
                                         pageTitle={pageTitle}
+                                        onNavigate={(href, item) => {
+                                            const val: string = item?.value ?? href;
+                                            // External URLs — open in new tab
+                                            if (val.startsWith('http://') || val.startsWith('https://') || val.startsWith('mailto:') || val.startsWith('tel:')) {
+                                                window.open(val, '_blank', 'noopener,noreferrer');
+                                                return;
+                                            }
+                                            // Anchor links — ignore in preview
+                                            if (val.startsWith('#')) return;
+                                            // Page slugs — find page and switch canvas to it
+                                            const slug = val.startsWith('/') ? val.slice(1) : val;
+                                            const target = pages.find(p => p.slug === slug);
+                                            if (target) switchPage(target.id);
+                                        }}
                                     />
                                 )}
                             </div>
@@ -686,7 +703,7 @@ export function CanvasStudio({
     if (isMobile) {
         const mobileSheetTitle =
             mobileSheet === 'pages' ? 'Pages' :
-            mobileSheet === 'navigator' ? 'Navigator' :
+            mobileSheet === 'layers' ? 'Layers' :
             mobileSheet === 'add' ? 'Add Block' :
             mobileSheet === 'more' ? 'More' :
             mobileSheet === 'props' ? (
@@ -697,7 +714,7 @@ export function CanvasStudio({
 
         const mobileSheetIcon =
             mobileSheet === 'pages' ? FileText :
-            mobileSheet === 'navigator' ? Layers :
+            mobileSheet === 'layers' ? Layers :
             mobileSheet === 'add' ? Plus :
             mobileSheet === 'more' ? MoreHorizontalIcon :
             Settings;
@@ -717,7 +734,7 @@ export function CanvasStudio({
                     height={mobileSheet === 'props' ? '72vh' : '65vh'}
                 >
                     {mobileSheet === 'pages' && <PagesPanel />}
-                    {mobileSheet === 'navigator' && (
+                    {mobileSheet === 'layers' && (
                         <div className="overflow-y-auto flex-1 custom-scrollbar py-1">
                             <BlockManager
                                 blocks={blocks}
@@ -729,7 +746,7 @@ export function CanvasStudio({
                     {mobileSheet === 'add' && (
                         <AddBlocksPanel
                             templateId={templateId}
-                            onAfterAdd={() => setMobileSheet('navigator')}
+                            onAfterAdd={() => setMobileSheet('layers')}
                         />
                     )}
                     {mobileSheet === 'more' && (
@@ -857,7 +874,7 @@ export function CanvasStudio({
                     {([
                         { id: 'pages' as const, icon: FileText, label: 'Pages', shortcut: 'P' },
                         { id: 'add' as const, icon: Plus, label: 'Add Block', shortcut: 'A' },
-                        { id: 'navigator' as const, icon: Layers, label: 'Navigator', shortcut: 'Z' },
+                        { id: 'layers' as const, icon: Layers, label: 'Layers', shortcut: 'Z' },
                     ]).map(({ id, icon: Icon, label, shortcut }) => (
                         <button
                             key={id}
@@ -914,14 +931,14 @@ export function CanvasStudio({
                         {leftPanel === 'add' && (
                             <AddBlocksPanel
                                 templateId={templateId}
-                                onAfterAdd={() => setLeftPanel('navigator')}
+                                onAfterAdd={() => setLeftPanel('layers')}
                             />
                         )}
-                        {leftPanel === 'navigator' && (
+                        {leftPanel === 'layers' && (
                             <>
                                 <div className="px-3 h-10 border-b border-gray-200 dark:border-neutral-800 font-bold text-sm text-neutral-900 dark:text-neutral-200 flex items-center gap-2 flex-shrink-0">
                                     <Layers size={15} className="text-neutral-500 dark:text-neutral-400" />
-                                    <span className="flex-1">Navigator</span>
+                                    <span className="flex-1">Layers</span>
                                 </div>
                                 <div className="overflow-y-auto flex-1 custom-scrollbar py-1">
                                     <BlockManager

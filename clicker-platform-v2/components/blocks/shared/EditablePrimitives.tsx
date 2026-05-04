@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { toolbarMouseDownRef } from '@/components/admin/blocks/InlineEditToolbar';
 
 export function FieldSelectionChrome() {
@@ -40,8 +40,28 @@ export function EditableText({
     onFieldFocus?: (field: string, rect: DOMRect) => void;
     onFieldBlur?: () => void;
 }) {
-    const ref = useRef<HTMLElement>(null);
-    const [focused, setFocused] = useState(false);
+    const elRef = useRef<HTMLElement | null>(null);
+    const chromeRef = useRef<HTMLDivElement>(null);
+    const valueRef = useRef(value);
+    valueRef.current = value;
+
+    // Ref callback: fires whenever the contentEditable element mounts/unmounts.
+    // Populates initial textContent on every (re)mount — covers the case where
+    // EditableText switches between read-only and editable branches.
+    const setEl = useCallback((node: HTMLElement | null) => {
+        elRef.current = node;
+        if (node && document.activeElement !== node) {
+            node.textContent = valueRef.current || '';
+        }
+    }, []);
+
+    // Sync external value updates (e.g. toolbar) when not focused.
+    useEffect(() => {
+        const node = elRef.current;
+        if (node && document.activeElement !== node) {
+            node.textContent = value || '';
+        }
+    }, [value]);
 
     if (!onInlineChange) {
         const El = Tag as any;
@@ -52,7 +72,7 @@ export function EditableText({
     return (
         <div className="relative w-full">
             <El
-                ref={ref}
+                ref={setEl}
                 contentEditable
                 suppressContentEditableWarning
                 data-placeholder={placeholder}
@@ -62,14 +82,14 @@ export function EditableText({
                     [&:not(:empty)]:before:hidden`}
                 style={style}
                 onFocus={() => {
-                    setFocused(true);
-                    if (onFieldFocus && ref.current) {
-                        onFieldFocus(field, ref.current.getBoundingClientRect());
+                    if (chromeRef.current) chromeRef.current.style.display = 'block';
+                    if (onFieldFocus && elRef.current) {
+                        onFieldFocus(field, elRef.current.getBoundingClientRect());
                     }
                 }}
                 onBlur={(e: React.FocusEvent<HTMLElement>) => {
                     if (!toolbarMouseDownRef.current) {
-                        setFocused(false);
+                        if (chromeRef.current) chromeRef.current.style.display = 'none';
                         onInlineChange(field, e.currentTarget.textContent || '');
                         onFieldBlur?.();
                     }
@@ -82,9 +102,10 @@ export function EditableText({
                         document.execCommand('insertText', false, text);
                     }
                 }}
-                dangerouslySetInnerHTML={{ __html: value || '' }}
             />
-            {focused && <FieldSelectionChrome />}
+            <div ref={chromeRef} style={{ display: 'none' }}>
+                <FieldSelectionChrome />
+            </div>
         </div>
     );
 }

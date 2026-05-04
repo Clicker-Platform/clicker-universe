@@ -35,9 +35,9 @@ export function getDefaultData(type: BlockType, templateId = 'classic'): any {
 
     switch (type) {
         case 'hero':
-            return { ...baseData, title: 'Your Headline', subtitle: 'Your subtitle goes here' };
+            return { ...baseData, title: 'Your Wonderful Headline', subtitle: 'Your subtitle goes here' };
         case 'text':
-            return { ...baseData, content: '<p>Start writing your content here...</p>' };
+            return { ...baseData, content: '<p>Start writing your content here...</p>', verticalSpacing: 'medium', horizontalPadding: 'none' };
         case 'content_showcase':
             return { ...baseData, ...DEFAULT_SHOWCASE_DATA, rows: [newRow()] };
         case 'image':

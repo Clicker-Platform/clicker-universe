@@ -15,6 +15,8 @@ const RichTextEditor = dynamic(
     }
 );
 
+const labelClass = "block text-xs font-medium text-neutral-400 dark:text-neutral-500 mb-1";
+
 interface TextFormProps {
     data: any;
     onChange: (data: any) => void;
@@ -22,19 +24,63 @@ interface TextFormProps {
 
 export const TextForm = ({ data, onChange }: TextFormProps) => {
     const safeData = data || {};
+    const set = (field: string, value: any) => onChange({ ...safeData, [field]: value });
+
     return (
         <div className="space-y-4">
-            <label className="block text-xs font-medium text-neutral-400 dark:text-neutral-500">Content</label>
-            <div className="min-h-[200px] rounded-lg overflow-hidden border border-gray-200 dark:border-neutral-800 bg-gray-100/50 dark:bg-neutral-900/50">
-                <RichTextEditor
-                    value={safeData.content || ''}
-                    onChange={(html) => onChange({ ...safeData, content: html })}
-                />
+            <div>
+                <label className={labelClass}>Content</label>
+                <div className="min-h-[200px] rounded-lg overflow-hidden">
+                    <RichTextEditor
+                        value={safeData.content || ''}
+                        onChange={(html) => set('content', html)}
+                    />
+                </div>
+                <p className="text-[10px] text-neutral-400 dark:text-neutral-500 font-medium flex items-center gap-1.5 mt-2">
+                    <span className="w-1 h-1 rounded-full bg-gray-300 dark:bg-neutral-700" />
+                    Type <kbd className="bg-gray-100 dark:bg-neutral-800 px-1 rounded border border-gray-200 dark:border-neutral-700 text-neutral-500 dark:text-neutral-400 font-mono">/</kbd> for quick actions. Supports rich text and images.
+                </p>
             </div>
-            <p className="text-[10px] text-neutral-400 dark:text-neutral-500 font-medium flex items-center gap-1.5">
-                <span className="w-1 h-1 rounded-full bg-gray-300 dark:bg-neutral-700" />
-                Type <kbd className="bg-gray-100 dark:bg-neutral-800 px-1 rounded border border-gray-200 dark:border-neutral-700 text-neutral-500 dark:text-neutral-400 font-mono">/</kbd> for quick actions. Supports rich text and images.
-            </p>
+
+            <div>
+                <label className={labelClass}>Vertical Spacing</label>
+                <div className="flex gap-1 p-1 bg-gray-50 dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800">
+                    {(['small', 'medium', 'tall'] as const).map((v) => (
+                        <button
+                            key={v}
+                            type="button"
+                            onClick={() => set('verticalSpacing', v)}
+                            className={`flex-1 py-1.5 rounded-lg text-xs font-bold capitalize transition-all ${
+                                (safeData.verticalSpacing || 'medium') === v
+                                    ? 'bg-blue-600 text-white shadow'
+                                    : 'text-neutral-400 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800'
+                            }`}
+                        >
+                            {v === 'small' ? 'Small' : v === 'medium' ? 'Medium' : 'Tall'}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            <div>
+                <label className={labelClass}>Horizontal Padding</label>
+                <div className="flex gap-1 p-1 bg-gray-50 dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800">
+                    {(['none', 'normal', 'wide'] as const).map((v) => (
+                        <button
+                            key={v}
+                            type="button"
+                            onClick={() => set('horizontalPadding', v)}
+                            className={`flex-1 py-1.5 rounded-lg text-xs font-bold capitalize transition-all ${
+                                (safeData.horizontalPadding || 'none') === v
+                                    ? 'bg-blue-600 text-white shadow'
+                                    : 'text-neutral-400 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800'
+                            }`}
+                        >
+                            {v === 'none' ? 'None' : v === 'normal' ? 'Normal' : 'Wide'}
+                        </button>
+                    ))}
+                </div>
+            </div>
         </div>
     );
 };

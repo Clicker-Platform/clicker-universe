@@ -72,7 +72,7 @@ Always save skill outputs to the appropriate folder under `dev/superpowers/`:
 | Implementation plans   | `dev/superpowers/plans/YYYY-MM-DD-topic.md`                  |
 | Audit & research notes | `dev/superpowers/notes/YYYY-MM-DD-topic.md`                  |
 
-Full path dari repo root: `/Users/mac/Documents/AI Project/clicker-platform/dev/superpowers/`
+Full path dari repo root: `/Users/andre/Repository/clicker-universe/dev/superpowers/`
 
 Use today's date and a short kebab-case topic name for the filename.
 ## Auth Gateway — Flow & Rules

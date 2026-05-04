@@ -21,6 +21,8 @@ interface ResponsiveNavBarProps {
     forceMobile?: boolean;
     isSubPage?: boolean;
     pageTitle?: string;
+    /** Canvas Studio preview: intercepts nav clicks instead of real navigation */
+    onNavigate?: (href: string, item: any) => void;
 }
 
 export const ResponsiveNavBar: React.FC<ResponsiveNavBarProps> = ({
@@ -29,6 +31,7 @@ export const ResponsiveNavBar: React.FC<ResponsiveNavBarProps> = ({
     forceMobile = false,
     isSubPage = false,
     pageTitle,
+    onNavigate,
 }) => {
     const router = useRouter();
     const { tenantSlug, isSubdomain } = useSite();
@@ -54,7 +57,14 @@ export const ResponsiveNavBar: React.FC<ResponsiveNavBarProps> = ({
         }
     }, []);
 
+    const getHref = useCallback((val: string) => resolveNavHref(val, tenantSlug, isSubdomain), [tenantSlug, isSubdomain]);
+
     const handleItemClick = useCallback(async (e: React.MouseEvent, item: any) => {
+        if (onNavigate) {
+            e.preventDefault();
+            onNavigate(getHref(item.value), item);
+            return;
+        }
         if (item.value === 'action:chat' || item.type === 'action-chat') {
             e.preventDefault();
             openChat();
@@ -81,9 +91,7 @@ export const ResponsiveNavBar: React.FC<ResponsiveNavBarProps> = ({
                 }
             }
         }
-    }, [formCache, siteId, openChat]);
-
-    const getHref = useCallback((val: string) => resolveNavHref(val, tenantSlug, isSubdomain), [tenantSlug, isSubdomain]);
+    }, [formCache, siteId, openChat, onNavigate, getHref]);
 
     const isMobileOnly = layout?.navMode === 'mobile-only';
 
