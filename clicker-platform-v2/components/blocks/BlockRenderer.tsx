@@ -24,7 +24,7 @@ const HeadingBlock = dynamic(() => import('./public/DefaultHeadingBlock').then(m
 const QuickActions = dynamic(() => import('@/components/QuickActions').then(mod => mod.QuickActions));
 const OperatingHours = dynamic(() => import('@/components/OperatingHours').then(mod => mod.OperatingHours));
 const BranchesList = dynamic(() => import('@/components/BranchesList').then(mod => mod.BranchesList));
-const FeaturedProduct = dynamic(() => import('@/components/FeaturedProduct').then(mod => mod.FeaturedProduct));
+const FeaturedProductBlock = dynamic(() => import('./public/DefaultFeaturedProductBlock').then(mod => mod.DefaultFeaturedProductBlock));
 
 
 import { ModuleBlockLoader } from '@/components/modules/ModuleBlockLoader';
@@ -149,38 +149,28 @@ export const BlockRenderer = ({
                     React.createElement(customBlocks.Branches, { contact, branches: branches || [] }) : 
                     <BranchesList contact={contact} branches={branches || []} />;
 
-            case 'featured_product':
+            case 'featured_product': {
                 if (!featuredProduct) return null;
                 const featuredSettings = productSettings || {};
-                
-                return customBlocks?.FeaturedProduct ? 
-                    React.createElement(customBlocks.FeaturedProduct, { 
-                        product: featuredProduct,
-                        badgeText: featuredSettings.featuredTitle || "Star Pick",
-                        showBadge: featuredSettings.showFeaturedTitle !== false,
-                        buttonText: featuredSettings.featuredBtnText || "Order This Now",
-                        phoneNumber: contact?.whatsapp,
-                        whatsappSettings: {
-                            label: featuredSettings.whatsappBtnLabel,
-                            messageTemplate: featuredSettings.whatsappMessageTemplate,
-                            bgColor: featuredSettings.whatsappBtnColor,
-                            textColor: featuredSettings.whatsappBtnTextColor
-                        }
-                    }) : (
-                    <FeaturedProduct
-                        product={featuredProduct}
-                        badgeText={featuredSettings.featuredTitle || "Star Pick"}
-                        showBadge={featuredSettings.showFeaturedTitle !== false}
-                        buttonText={featuredSettings.featuredBtnText || "Order This Now"}
-                        phoneNumber={contact?.whatsapp}
-                        whatsappSettings={{
-                            label: featuredSettings.whatsappBtnLabel,
-                            messageTemplate: featuredSettings.whatsappMessageTemplate,
-                            bgColor: featuredSettings.whatsappBtnColor,
-                            textColor: featuredSettings.whatsappBtnTextColor
-                        }}
-                    />
-                );
+                const featuredProps = {
+                    product: featuredProduct,
+                    theme,
+                    previewMode,
+                    badgeText: featuredSettings.featuredTitle || 'Star Pick',
+                    showBadge: featuredSettings.showFeaturedTitle !== false,
+                    buttonText: featuredSettings.featuredBtnText || 'Order This Now',
+                    phoneNumber: contact?.whatsapp,
+                    whatsappSettings: {
+                        label: featuredSettings.whatsappBtnLabel,
+                        messageTemplate: featuredSettings.whatsappMessageTemplate,
+                        bgColor: featuredSettings.whatsappBtnColor,
+                        textColor: featuredSettings.whatsappBtnTextColor,
+                    },
+                };
+                return customBlocks?.FeaturedProduct
+                    ? React.createElement(customBlocks.FeaturedProduct, featuredProps)
+                    : <FeaturedProductBlock {...featuredProps} />;
+            }
 
             case 'reservation':
                 return <ReservationBlock data={block.data} siteId={siteId} initialServices={reservationServices} initialStaff={reservationStaff} initialSettings={reservationSettings} />;

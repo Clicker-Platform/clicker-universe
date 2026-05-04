@@ -3,7 +3,7 @@
 import React from 'react';
 import dynamic from 'next/dynamic';
 import { ClassicProfileHeader } from "@/components/headers/ClassicProfileHeader";
-import { FeaturedProduct } from "@/components/FeaturedProduct";
+import { DefaultFeaturedProductBlock } from "@/components/blocks/public/DefaultFeaturedProductBlock";
 import { ProductGallery } from "@/components/ProductGallery";
 import { Footer } from "@/components/Footer";
 import { OperatingHours } from "@/components/OperatingHours";
@@ -180,7 +180,7 @@ function PublicContentContent({ data }: { data: any }) {
                             if (!featuredProduct) return null;
                             const featuredSettings = data.productSettings || {};
                             return (
-                                <FeaturedProduct
+                                <DefaultFeaturedProductBlock
                                     key={blockId}
                                     product={featuredProduct}
                                     badgeText={featuredSettings.featuredTitle || "Star Pick"}
