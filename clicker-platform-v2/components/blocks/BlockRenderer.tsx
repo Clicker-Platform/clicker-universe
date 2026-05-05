@@ -21,7 +21,7 @@ const InlineFormBlock = dynamic(() => import('./public/DefaultInlineFormBlock').
 const HeadingBlock = dynamic(() => import('./public/DefaultHeadingBlock').then(mod => mod.DefaultHeadingBlock));
 
 // System blocks (from PublicPageRenderer)
-const QuickActions = dynamic(() => import('@/components/QuickActions').then(mod => mod.QuickActions));
+const QuickActions = dynamic(() => import('./public/DefaultQuickActionsBlock').then(mod => mod.DefaultQuickActionsBlock));
 const OperatingHours = dynamic(() => import('@/components/OperatingHours').then(mod => mod.OperatingHours));
 const BranchesList = dynamic(() => import('@/components/BranchesList').then(mod => mod.BranchesList));
 const FeaturedProductBlock = dynamic(() => import('./public/DefaultFeaturedProductBlock').then(mod => mod.DefaultFeaturedProductBlock));

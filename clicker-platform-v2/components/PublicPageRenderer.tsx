@@ -8,7 +8,7 @@ import { ProductGallery } from "@/components/ProductGallery";
 import { Footer } from "@/components/Footer";
 import { OperatingHours } from "@/components/OperatingHours";
 import { BackgroundDecorations } from "@/components/BackgroundDecorations";
-import { QuickActions } from "@/components/QuickActions";
+import { DefaultQuickActionsBlock as QuickActions } from "@/components/blocks/public/DefaultQuickActionsBlock";
 import { BranchesList } from "@/components/BranchesList";
 import { BusinessProfile, LinkItem, Product, SocialLinkItem, BusinessHours, BusinessContact, Branch } from "@/data/mockData";
 import { ResponsiveContainer } from '@/components/layout/ResponsiveContainer';
