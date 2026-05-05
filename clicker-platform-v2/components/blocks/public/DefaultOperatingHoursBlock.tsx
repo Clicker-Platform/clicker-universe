@@ -43,7 +43,7 @@ function buildRows(schedule: DaySchedule[]): { label: string; hours: string }[] 
     return rows;
 }
 
-export const OperatingHours: React.FC<OperatingHoursProps> = ({ data, schedule }) => {
+export const DefaultOperatingHoursBlock: React.FC<OperatingHoursProps> = ({ data, schedule }) => {
     const { theme } = useTemplate();
     const isClean = theme.cardStyle === 'clean';
     const [isOpen, setIsOpen] = React.useState(false);
@@ -111,3 +111,5 @@ export const OperatingHours: React.FC<OperatingHoursProps> = ({ data, schedule }
         </div>
     );
 };
+
+export { DefaultOperatingHoursBlock as OperatingHours };

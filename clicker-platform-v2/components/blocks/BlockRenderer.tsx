@@ -22,7 +22,7 @@ const HeadingBlock = dynamic(() => import('./public/DefaultHeadingBlock').then(m
 
 // System blocks (from PublicPageRenderer)
 const QuickActions = dynamic(() => import('./public/DefaultQuickActionsBlock').then(mod => mod.DefaultQuickActionsBlock));
-const OperatingHours = dynamic(() => import('@/components/OperatingHours').then(mod => mod.OperatingHours));
+const OperatingHours = dynamic(() => import('./public/DefaultOperatingHoursBlock').then(mod => mod.DefaultOperatingHoursBlock));
 const BranchesList = dynamic(() => import('@/components/BranchesList').then(mod => mod.BranchesList));
 const FeaturedProductBlock = dynamic(() => import('./public/DefaultFeaturedProductBlock').then(mod => mod.DefaultFeaturedProductBlock));
 

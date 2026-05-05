@@ -6,7 +6,7 @@ import { ClassicProfileHeader } from "@/components/headers/ClassicProfileHeader"
 import { DefaultFeaturedProductBlock } from "@/components/blocks/public/DefaultFeaturedProductBlock";
 import { ProductGallery } from "@/components/ProductGallery";
 import { Footer } from "@/components/Footer";
-import { OperatingHours } from "@/components/OperatingHours";
+import { DefaultOperatingHoursBlock as OperatingHours } from "@/components/blocks/public/DefaultOperatingHoursBlock";
 import { BackgroundDecorations } from "@/components/BackgroundDecorations";
 import { DefaultQuickActionsBlock as QuickActions } from "@/components/blocks/public/DefaultQuickActionsBlock";
 import { BranchesList } from "@/components/BranchesList";
