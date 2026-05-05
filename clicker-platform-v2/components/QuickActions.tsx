@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { LinkItem, BusinessContact, LinkSettings } from '@/data/mockData';
-import { LinkCard } from './LinkCard';
+import { LinkCard } from '@/components/blocks/public/LinkCard';
 import { useTemplate } from '@/components/TemplateProvider';
 import { useSite } from '@/lib/site-context';
 import { FormModal } from '@/components/FormModal';
