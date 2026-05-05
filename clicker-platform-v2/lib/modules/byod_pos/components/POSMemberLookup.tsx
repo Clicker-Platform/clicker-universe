@@ -7,7 +7,8 @@ import { Member } from '@/lib/modules/membership/types';
 import { toast } from 'sonner';
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 import { useSite } from '@/lib/site-context'; // New import
-import { useTemplate } from '@/components/TemplateProvider';
+import { useContext } from 'react';
+import { TemplateContext } from '@/components/TemplateProvider';
 import { logger } from '@/lib/logger-edge';
 
 interface POSMemberLookupProps {
@@ -19,17 +20,18 @@ interface POSMemberLookupProps {
 
 export function POSMemberLookup({ onMemberSelect, selectedMember, submitLabel = "Join & Link", toggleLabel = "Not a member? Join now" }: POSMemberLookupProps) {
     const { siteId } = useSite();
-    const { theme } = useTemplate();
-    const isGlass = theme.decorations?.surfaceStyle === 'glass' || theme.cardStyle === 'glass';
-    const surfaceBg = isGlass ? 'rgba(255,255,255,0.05)' : (theme.colors.surface || '#f9fafb');
-    const borderColor = isGlass ? 'rgba(255,255,255,0.1)' : (theme.colors.border || '#e5e7eb');
-    const subtleText = theme.colors.textSubtle || theme.colors.muted || theme.colors.foreground;
-    const primaryColor = theme.colors.primary;
-    const accentFg = theme.colors.accentForeground || '#ffffff';
+    const templateCtx = useContext(TemplateContext);
+    const theme = templateCtx?.theme;
+    const isGlass = theme?.decorations?.surfaceStyle === 'glass' || theme?.cardStyle === 'glass';
+    const surfaceBg = isGlass ? 'rgba(255,255,255,0.05)' : (theme?.colors.surface ?? '#f9fafb');
+    const borderColor = isGlass ? 'rgba(255,255,255,0.1)' : (theme?.colors.border ?? '#e5e7eb');
+    const subtleText = theme?.colors.textSubtle ?? theme?.colors.muted ?? theme?.colors.foreground ?? '#6b7280';
+    const primaryColor = theme?.colors.primary ?? '#16a34a';
+    const accentFg = theme?.colors.accentForeground ?? '#ffffff';
     const inputStyle: React.CSSProperties = {
-        backgroundColor: isGlass ? 'rgba(255,255,255,0.05)' : (theme.colors.surfaceElevated || '#ffffff'),
+        backgroundColor: isGlass ? 'rgba(255,255,255,0.05)' : (theme?.colors.surfaceElevated ?? '#ffffff'),
         borderColor,
-        color: theme.colors.foreground,
+        color: theme?.colors.foreground ?? '#111827',
     };
     const [phone, setPhone] = useState('');
     const [loading, setLoading] = useState(false);
@@ -122,7 +124,7 @@ export function POSMemberLookup({ onMemberSelect, selectedMember, submitLabel = 
                 style={{ backgroundColor: `${primaryColor}10`, borderColor: `${primaryColor}30` }}>
                 <div>
                     <p className="text-xs font-bold uppercase tracking-wider" style={{ color: primaryColor }}>Member Linked</p>
-                    <p className="font-bold" style={{ color: theme.colors.foreground }}>{selectedMember.fullName}</p>
+                    <p className="font-bold" style={{ color: theme?.colors.foreground ?? '#111827' }}>{selectedMember.fullName}</p>
                     <p className="text-xs" style={{ color: subtleText }}>{selectedMember.currentPoints} pts</p>
                 </div>
                 <button
@@ -240,7 +242,7 @@ export function POSMemberLookup({ onMemberSelect, selectedMember, submitLabel = 
                     onClick={handleSearch}
                     disabled={!phone}
                     className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-md border disabled:opacity-0 transition-opacity hover:opacity-70"
-                    style={{ backgroundColor: isGlass ? 'rgba(255,255,255,0.1)' : (theme.colors.surfaceElevated || '#ffffff'), borderColor, color: primaryColor }}
+                    style={{ backgroundColor: isGlass ? 'rgba(255,255,255,0.1)' : (theme?.colors.surfaceElevated ?? '#ffffff'), borderColor, color: primaryColor }}
                 >
                     {loading ? <Loader2 size={14} className="animate-spin" /> : <Search size={14} />}
                 </button>

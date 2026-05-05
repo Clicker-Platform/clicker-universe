@@ -1,6 +1,7 @@
 
 import { POSOrder, POSSettings } from './types';
 
+
 export function generateReceiptHtml(order: POSOrder, settings?: POSSettings): string {
     const date = order.createdAt ? new Date(order.createdAt.seconds * 1000) : new Date();
     const dateStr = date.toLocaleString('en-US', {
@@ -136,7 +137,7 @@ export function generateReceiptHtml(order: POSOrder, settings?: POSSettings): st
         </div>
          <div class="row" style="margin-top:5px; font-size:10px;">
             <span>Payment</span>
-            <span>${order.paymentMethod || 'Unpaid'}</span>
+            <span>Paid</span>
         </div>
     </div>
 

@@ -1,6 +1,5 @@
 'use client';
 
-import { useRef, useState } from 'react';
 import { useOrderTracker } from '../order-tracker-context';
 import { ShoppingBag, ChevronRight, CheckCircle, Clock, Play, X, Store, CreditCard } from 'lucide-react';
 import { requestPayment } from '../api';
@@ -10,6 +9,9 @@ import { POSOrder } from '../types';
 import { useSite } from '@/lib/site-context';
 import { useTemplate } from '@/components/TemplateProvider';
 import { ThemeConfig } from '@/lib/templates/types';
+
+const fmt = (n: number) =>
+    new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(n);
 
 export function OrderTracker({ hidden = false }: { hidden?: boolean }) {
     const { siteId } = useSite();
@@ -26,9 +28,56 @@ export function OrderTracker({ hidden = false }: { hidden?: boolean }) {
     const primaryColor = theme.colors.primary;
     const accentFg = theme.colors.accentForeground || '#ffffff';
 
-    const grandTotal = orders.reduce((sum, o) => sum + o.total, 0);
     const outstandingTotal = orders.reduce((sum, o) => (o.paymentStatus === 'paid' ? sum : sum + o.total), 0);
     const allPaid = orders.length > 0 && orders.every(o => o.paymentStatus === 'paid' || o.status === 'cancelled');
+
+    const payableOrders = orders.filter(o => o.status !== 'cancelled' && o.paymentStatus !== 'paid' && o.paymentStatus !== 'pending_confirmation');
+    const pendingConfirmationOrders = orders.filter(o => o.status !== 'cancelled' && o.paymentStatus === 'pending_confirmation');
+
+    let footerAction: React.ReactNode = null;
+    if (payableOrders.length > 0) {
+        footerAction = (
+            <button
+                onClick={async () => {
+                    if (!siteId) return;
+                    try {
+                        const results = await Promise.allSettled(
+                            payableOrders.map(o => requestPayment(siteId, o.id))
+                        );
+                        let anyCancelled = false;
+                        results.forEach((r, i) => {
+                            if (r.status === 'rejected') {
+                                const msg = (r.reason as Error)?.message;
+                                if (msg === 'cancelled') {
+                                    anyCancelled = true;
+                                    dismissOrder(payableOrders[i].id);
+                                }
+                            }
+                        });
+                        const succeeded = results.filter(r => r.status === 'fulfilled').length;
+                        if (anyCancelled) {
+                            toast.error("Order was cancelled", { description: "The order was cancelled before payment could be requested." });
+                        }
+                        if (succeeded > 0) {
+                            toast.success("Payment Requested");
+                        }
+                    } catch {
+                        toast.error("Failed to request payment");
+                    }
+                }}
+                className="w-full py-4 mb-3 font-bold rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+                style={{ backgroundColor: primaryColor, color: accentFg }}
+            >
+                <CreditCard size={20} /> Pay
+            </button>
+        );
+    } else if (pendingConfirmationOrders.length > 0) {
+        footerAction = (
+            <div className="w-full py-4 mb-3 bg-yellow-100 text-yellow-800 font-bold rounded-xl flex items-center justify-center gap-2 animate-pulse">
+                <Clock size={20} /> Waiting for Cashier...
+            </div>
+        );
+    }
 
     return (
         <>
@@ -49,10 +98,7 @@ export function OrderTracker({ hidden = false }: { hidden?: boolean }) {
                         </div>
                         <div className="font-black leading-none flex items-center gap-1"
                             style={{ color: outstandingTotal === 0 ? '#22c55e' : primaryColor }}>
-                            {outstandingTotal === 0
-                                ? 'PAID'
-                                : new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(outstandingTotal)
-                            }
+                            {outstandingTotal === 0 ? 'PAID' : fmt(outstandingTotal)}
                             <ChevronRight size={14} />
                         </div>
                     </div>
@@ -79,136 +125,97 @@ export function OrderTracker({ hidden = false }: { hidden?: boolean }) {
 
                         {/* Content */}
                         <div className="p-0 overflow-y-auto flex-1" style={{ backgroundColor: surfaceMuted }}>
-                            {orders.map((order) => (
-                                <div key={order.id} className="border-b mb-2 last:mb-0 pb-6"
-                                    style={{ backgroundColor: surfaceBg, borderColor }}>
-                                    <div className="p-4 border-b flex justify-between items-center"
-                                        style={{ borderColor, backgroundColor: surfaceMuted }}>
-                                        <div className="flex items-center gap-2">
-                                            <span className="font-black uppercase text-sm" style={{ color: subtleText }}>#{order.id.slice(-4).toUpperCase()}</span>
-                                            {(order.status === 'completed' || order.status === 'cancelled') && (
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        dismissOrder(order.id);
-                                                        toast.success("Order removed from list");
-                                                    }}
-                                                    className="p-1 -ml-1 rounded-full transition-colors hover:text-red-500 hover:bg-red-50"
-                                                    style={{ color: subtleText }}
-                                                    title="Remove from list"
-                                                >
-                                                    <X size={16} />
-                                                </button>
+                            {orders.map((order) => {
+                                const itemsSubtotal = order.items.reduce((s, item) => s + item.price * item.quantity, 0);
+                                const tax = order.total - itemsSubtotal;
+
+                                return (
+                                    <div key={order.id} className="border-b mb-2 last:mb-0 pb-6"
+                                        style={{ backgroundColor: surfaceBg, borderColor }}>
+                                        <div className="p-4 border-b flex justify-between items-center"
+                                            style={{ borderColor, backgroundColor: surfaceMuted }}>
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-black uppercase text-sm" style={{ color: subtleText }}>#{order.id.slice(-4).toUpperCase()}</span>
+                                                {(order.status === 'completed' || order.status === 'cancelled') && (
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            dismissOrder(order.id);
+                                                            toast.success("Order removed from list");
+                                                        }}
+                                                        className="p-1 -ml-1 rounded-full transition-colors hover:text-red-500 hover:bg-red-50"
+                                                        style={{ color: subtleText }}
+                                                        title="Remove from list"
+                                                    >
+                                                        <X size={16} />
+                                                    </button>
+                                                )}
+                                            </div>
+                                            <div className={`text-xs font-bold uppercase tracking-wider border px-2 py-1 rounded ${order.paymentStatus === 'pending_confirmation'
+                                                ? 'bg-yellow-100 text-yellow-700 border-yellow-200 animate-pulse'
+                                                : order.paymentStatus === 'paid'
+                                                    ? 'bg-green-100 text-green-700 border-green-200'
+                                                    : ''
+                                                }`}
+                                                style={order.paymentStatus !== 'pending_confirmation' && order.paymentStatus !== 'paid'
+                                                    ? { backgroundColor: surfaceMuted, borderColor, color: subtleText }
+                                                    : undefined
+                                                }>
+                                                {getStatusLabel(order)}
+                                            </div>
+                                        </div>
+
+                                        <div className="px-4 pt-4">
+                                            <OrderStepper status={order.status} theme={theme} />
+                                        </div>
+
+                                        <div className="p-4 space-y-3">
+                                            {order.items.map((item, idx) => (
+                                                <div key={idx} className="flex justify-between items-start gap-4 text-sm">
+                                                    <div className="flex gap-2">
+                                                        <div className="font-bold min-w-[20px]" style={{ color: primaryColor }}>
+                                                            {item.quantity}x
+                                                        </div>
+                                                        <span className="font-medium" style={{ color: theme.colors.foreground }}>{item.name} {item.variantName && `(${item.variantName})`}</span>
+                                                    </div>
+                                                    <span className="font-bold shrink-0" style={{ color: subtleText }}>
+                                                        {fmt(item.price * item.quantity)}
+                                                    </span>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        <div className="px-4 space-y-1">
+                                            <div className="flex justify-between items-center text-sm font-bold" style={{ color: subtleText }}>
+                                                <span>Subtotal</span>
+                                                <span>{fmt(itemsSubtotal)}</span>
+                                            </div>
+                                            {tax > 0 && (
+                                                <div className="flex justify-between items-center text-sm" style={{ color: subtleText }}>
+                                                    <span>Tax & Service</span>
+                                                    <span>{fmt(tax)}</span>
+                                                </div>
                                             )}
                                         </div>
-                                        <div className={`text-xs font-bold uppercase tracking-wider border px-2 py-1 rounded ${order.paymentStatus === 'pending_confirmation'
-                                            ? 'bg-yellow-100 text-yellow-700 border-yellow-200 animate-pulse'
-                                            : order.paymentStatus === 'paid'
-                                                ? 'bg-green-100 text-green-700 border-green-200'
-                                                : ''
-                                            }`}
-                                            style={order.paymentStatus !== 'pending_confirmation' && order.paymentStatus !== 'paid'
-                                                ? { backgroundColor: surfaceMuted, borderColor, color: subtleText }
-                                                : undefined
-                                            }>
-                                            {getStatusLabel(order)}
-                                        </div>
                                     </div>
-
-                                    <div className="px-4 pt-4">
-                                        <OrderStepper status={order.status} theme={theme} />
-                                    </div>
-
-                                    <div className="p-4 space-y-3">
-                                        {order.items.map((item, idx) => (
-                                            <div key={idx} className="flex justify-between items-start gap-4 text-sm">
-                                                <div className="flex gap-2">
-                                                    <div className="font-bold min-w-[20px]" style={{ color: primaryColor }}>
-                                                        {item.quantity}x
-                                                    </div>
-                                                    <span className="font-medium" style={{ color: theme.colors.foreground }}>{item.name} {item.variantName && `(${item.variantName})`}</span>
-                                                </div>
-                                                <span className="font-bold shrink-0" style={{ color: subtleText }}>
-                                                    {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(item.price * item.quantity)}
-                                                </span>
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    <div className="px-4 flex justify-between items-center text-sm font-bold" style={{ color: subtleText }}>
-                                        <span>Subtotal</span>
-                                        <span>{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(order.total)}</span>
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
 
-                        {/* Footer / Grand Total */}
+                        {/* Footer */}
                         <div className="p-4 border-t shrink-0"
                             style={{ backgroundColor: surfaceBg, borderColor }}>
                             <div className="flex justify-between items-center mb-4">
-                                <span className="font-black text-xl" style={{ color: subtleText }}>Total Pay</span>
+                                <span className="font-black text-xl" style={{ color: subtleText }}>
+                                    {outstandingTotal > 0 ? 'Amount Due' : 'Total Pay'}
+                                </span>
                                 <span className="font-black text-2xl"
                                     style={{ color: outstandingTotal > 0 ? primaryColor : '#22c55e' }}>
-                                    {outstandingTotal > 0
-                                        ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(outstandingTotal)
-                                        : 'PAID'
-                                    }
+                                    {outstandingTotal > 0 ? fmt(outstandingTotal) : 'PAID'}
                                 </span>
                             </div>
 
-                            {(() => {
-                                const payableOrders = orders.filter(o => o.status !== 'cancelled' && o.paymentStatus !== 'paid' && o.paymentStatus !== 'pending_confirmation');
-                                const pendingOrders = orders.filter(o => o.status !== 'cancelled' && o.paymentStatus === 'pending_confirmation');
-
-                                if (payableOrders.length > 0) {
-                                    return (
-                                        <button
-                                            onClick={async () => {
-                                                if (!siteId) return;
-                                                try {
-                                                    const results = await Promise.allSettled(
-                                                        payableOrders.map(o => requestPayment(siteId, o.id))
-                                                    );
-                                                    let anyCancelled = false;
-                                                    results.forEach((r, i) => {
-                                                        if (r.status === 'rejected') {
-                                                            const msg = (r.reason as Error)?.message;
-                                                            if (msg === 'cancelled') {
-                                                                anyCancelled = true;
-                                                                dismissOrder(payableOrders[i].id);
-                                                            }
-                                                        }
-                                                    });
-                                                    const succeeded = results.filter(r => r.status === 'fulfilled').length;
-                                                    if (anyCancelled) {
-                                                        toast.error("Order was cancelled", { description: "The order was cancelled before payment could be requested." });
-                                                    }
-                                                    if (succeeded > 0) {
-                                                        toast.success("Payment Requested");
-                                                    }
-                                                } catch (e) {
-                                                    toast.error("Failed to request payment");
-                                                }
-                                            }}
-                                            className="w-full py-4 mb-3 font-bold rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
-                                            style={{ backgroundColor: primaryColor, color: accentFg }}
-                                        >
-                                            <CreditCard size={20} /> Pay
-                                        </button>
-                                    );
-                                }
-
-                                if (pendingOrders.length > 0) {
-                                    return (
-                                        <div className="w-full py-4 mb-3 bg-yellow-100 text-yellow-800 font-bold rounded-xl flex items-center justify-center gap-2 animate-pulse">
-                                            <Clock size={20} /> Waiting for Cashier...
-                                        </div>
-                                    );
-                                }
-
-                                return null;
-                            })()}
+                            {footerAction}
 
                             <button
                                 onClick={() => {
@@ -258,6 +265,7 @@ function OrderStepper({ status, theme }: { status: string; theme: ThemeConfig })
 
     const steps = [
         { id: 'open', label: 'Bill Open', icon: ShoppingBag },
+        { id: 'pending', label: 'Placed', icon: Clock },
         { id: 'preparing', label: 'Kitchen', icon: Play },
         { id: 'ready', label: 'Ready', icon: Store },
         { id: 'completed', label: 'Completed', icon: CheckCircle },
@@ -265,10 +273,10 @@ function OrderStepper({ status, theme }: { status: string; theme: ThemeConfig })
 
     let activeIndex = 0;
     if (status === 'open') activeIndex = 0;
-    if (status === 'pending') activeIndex = 0;
-    if (status === 'preparing') activeIndex = 1;
-    if (status === 'ready') activeIndex = 2;
-    if (status === 'completed') activeIndex = 3;
+    if (status === 'pending') activeIndex = 1;
+    if (status === 'preparing') activeIndex = 2;
+    if (status === 'ready') activeIndex = 3;
+    if (status === 'completed') activeIndex = 4;
 
     return (
         <div className="relative flex justify-between items-center px-4">
@@ -293,7 +301,7 @@ function OrderStepper({ status, theme }: { status: string; theme: ThemeConfig })
                     <div key={step.id} className="flex flex-col items-center gap-2 px-2"
                         style={{ backgroundColor: surfaceBg }}>
                         <div
-                            className="w-12 h-12 rounded-full flex items-center justify-center border-[3px] transition-all duration-300"
+                            className="w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300"
                             style={{
                                 backgroundColor: isActive ? primaryColor : surfaceBg,
                                 borderColor: isActive ? primaryColor : borderColor,
