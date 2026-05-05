@@ -9,7 +9,7 @@ import { Footer } from "@/components/Footer";
 import { DefaultOperatingHoursBlock as OperatingHours } from "@/components/blocks/public/DefaultOperatingHoursBlock";
 import { BackgroundDecorations } from "@/components/BackgroundDecorations";
 import { DefaultQuickActionsBlock as QuickActions } from "@/components/blocks/public/DefaultQuickActionsBlock";
-import { BranchesList } from "@/components/BranchesList";
+import { DefaultBranchesBlock as BranchesList } from "@/components/blocks/public/DefaultBranchesBlock";
 import { BusinessProfile, LinkItem, Product, SocialLinkItem, BusinessHours, BusinessContact, Branch } from "@/data/mockData";
 import { ResponsiveContainer } from '@/components/layout/ResponsiveContainer';
 import { DaySchedule } from "@/lib/core/types";
