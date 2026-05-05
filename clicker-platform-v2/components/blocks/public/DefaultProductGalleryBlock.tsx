@@ -16,7 +16,7 @@ interface ProductGalleryProps {
     whatsappSettings?: any;
 }
 
-export const ProductGallery: React.FC<ProductGalleryProps> = ({ products, title = "Popular Treats", viewAllHref, phoneNumber, whatsappSettings }) => {
+export const DefaultProductGalleryBlock: React.FC<ProductGalleryProps> = ({ products, title = "Popular Treats", viewAllHref, phoneNumber, whatsappSettings }) => {
     const { siteId } = useSite();
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const { templateId, theme } = useTemplate();
@@ -114,3 +114,5 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({ products, title 
         </div>
     );
 };
+
+export { DefaultProductGalleryBlock as ProductGallery };

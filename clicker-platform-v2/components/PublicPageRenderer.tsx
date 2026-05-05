@@ -4,7 +4,7 @@ import React from 'react';
 import dynamic from 'next/dynamic';
 import { ClassicProfileHeader } from "@/components/headers/ClassicProfileHeader";
 import { DefaultFeaturedProductBlock } from "@/components/blocks/public/DefaultFeaturedProductBlock";
-import { ProductGallery } from "@/components/ProductGallery";
+import { DefaultProductGalleryBlock as ProductGallery } from "@/components/blocks/public/DefaultProductGalleryBlock";
 import { Footer } from "@/components/Footer";
 import { DefaultOperatingHoursBlock as OperatingHours } from "@/components/blocks/public/DefaultOperatingHoursBlock";
 import { BackgroundDecorations } from "@/components/BackgroundDecorations";
