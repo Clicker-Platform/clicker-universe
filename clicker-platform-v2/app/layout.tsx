@@ -21,6 +21,7 @@ import { fetchSiteSettings } from "@/lib/fetchData";
 import ThemeRegistry from "@/components/ThemeRegistry";
 import { headers } from "next/headers";
 import { SiteProvider } from "@/lib/site-context";
+import { PostHogProvider } from "@/lib/analytics/PostHogProvider";
 
 export const revalidate = 3600; // Enable ISR for layout
 
@@ -84,13 +85,15 @@ export default async function RootLayout({
         suppressHydrationWarning
         className={`${figtree.variable} ${spaceMono.variable} antialiased font-sans`}
       >
-        <SiteProvider siteId={siteId} tenantSlug={tenantSlug} isSubdomain={isSubdomain}>
-          <ThemeRegistry initialSettings={settings} />
-<div className="flex-grow w-full">
-            {children}
-          </div>
-          <Toaster position="top-right" richColors />
-        </SiteProvider>
+        <PostHogProvider>
+          <SiteProvider siteId={siteId} tenantSlug={tenantSlug} isSubdomain={isSubdomain}>
+            <ThemeRegistry initialSettings={settings} />
+            <div className="flex-grow w-full">
+              {children}
+            </div>
+            <Toaster position="top-right" richColors />
+          </SiteProvider>
+        </PostHogProvider>
       </body>
     </html>
   );

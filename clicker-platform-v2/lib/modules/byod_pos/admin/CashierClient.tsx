@@ -16,11 +16,18 @@ import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 import { useSite } from '@/lib/site-context';
 import { usePermission } from '@/components/admin/PermissionGuard';
 import { logger } from '@/lib/logger-edge';
+import { useAnalytics } from '@/lib/analytics/useAnalytics';
 
 export default function CashierClient({ initialOrders = [] }: { initialOrders?: POSOrder[] }) {
     const { siteId } = useSite();
     const { isViewOnly } = usePermission(); // Use context
+    const { capture } = useAnalytics();
     const [orders, setOrders] = useState<POSOrder[]>(initialOrders);
+
+    useEffect(() => {
+        capture('pos.cashier_opened');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     // Payment State
     const [paymentConfig, setPaymentConfig] = useState<{ isOpen: boolean; orders: POSOrder[] }>({

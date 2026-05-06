@@ -4,6 +4,7 @@ import { logger } from '@/lib/logger-edge';
 import { InventoryItem, TransactionReason } from '@/lib/modules/inventory/types';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { MobileBottomSheet } from '@/components/admin/blocks/MobileBottomSheet';
+import { useAnalytics } from '@/lib/analytics/useAnalytics';
 
 // Reasons that always remove stock — quantity input is always positive,
 // sign is applied here so staff never need to type a minus sign.
@@ -22,6 +23,7 @@ interface AdjustStockDialogProps {
 
 export function AdjustStockDialog({ isOpen, onClose, item, onConfirm }: AdjustStockDialogProps) {
     const isMobile = useIsMobile();
+    const { capture } = useAnalytics();
     const [adjustQuantity, setAdjustQuantity] = useState<number>(0);
     const [adjustReason, setAdjustReason] = useState<TransactionReason>('purchase');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -44,6 +46,7 @@ export function AdjustStockDialog({ isOpen, onClose, item, onConfirm }: AdjustSt
         setIsSubmitting(true);
         try {
             await onConfirm(signedChange, adjustReason);
+            capture('inventory.stock_updated');
             onClose();
         } catch (error) {
             // Error handling should be done by the parent content often, 

@@ -23,6 +23,20 @@
 
 ---
 
+## SSR Safety Rule
+
+`posthog-js` is browser-only. Any `posthog.capture()` call in a non-React file (e.g. `api.ts`) must be guarded:
+
+```ts
+if (typeof window !== 'undefined') {
+  posthog.capture('event.name', { siteId });
+}
+```
+
+React components do not need this guard — they only run in the browser.
+
+---
+
 ## Packages
 
 ```
@@ -105,14 +119,16 @@ Location: `lib/analytics/useAnalytics.ts`
 
 ```ts
 export function useAnalytics() {
-  const capture = (event: string, properties?: Record<string, unknown>) => {
-    posthog.capture(event, properties)
-  }
-  return { capture }
+  const { siteId } = useSite();
+  const capture = useCallback((event: string, properties?: Record<string, unknown>) => {
+    posthog.capture(event, { siteId, ...properties });
+  }, [siteId]);
+  return { capture };
 }
 ```
 
 - Modules import `useAnalytics`, never `posthog` directly
+- `capture` is wrapped in `useCallback` — safe to use as `useEffect` dependency without triggering infinite loops
 - If PostHog is uninitialized, `posthog.capture()` is already a no-op
 - No error handling needed — posthog-js guards itself internally
 
@@ -124,17 +140,17 @@ export function useAnalytics() {
 
 ## Module Events — Initial Set
 
-| Module | Event | Trigger point |
-|---|---|---|
-| `byod_pos` | `pos.cashier_opened` | Cashier page mount |
-| `byod_pos` | `pos.order_completed` | After successful order Firestore write |
-| `byod_pos` | `pos.order_cancelled` | After order cancellation |
-| `reservation` | `reservation.booking_created` | After booking Firestore write |
-| `reservation` | `reservation.booking_cancelled` | After cancellation |
-| `membership` | `membership.member_added` | After member creation |
-| `inventory` | `inventory.stock_updated` | After stock adjustment write |
-| `promo` | `promo.code_applied` | After promo code applied to order |
-| `sales_pipeline` | `sales_pipeline.deal_moved` | After deal stage change |
+| Module | Event | Trigger point | Status |
+|---|---|---|---|
+| `byod_pos` | `pos.cashier_opened` | Cashier page mount | sprint 1 |
+| `byod_pos` | `pos.order_completed` | After successful order Firestore write | sprint 1 |
+| `byod_pos` | `pos.order_cancelled` | After order cancellation | deferred |
+| `reservation` | `reservation.booking_created` | After booking Firestore write | sprint 1 |
+| `reservation` | `reservation.booking_cancelled` | After cancellation | deferred |
+| `membership` | `membership.member_added` | After member creation | sprint 1 |
+| `inventory` | `inventory.stock_updated` | After stock adjustment write | sprint 1 |
+| `promo` | `promo.code_applied` | After promo code applied to order | sprint 1 |
+| `sales_pipeline` | `sales_pipeline.deal_moved` | After deal stage change | sprint 1 |
 
 ### Event Properties
 

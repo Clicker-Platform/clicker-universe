@@ -5,6 +5,7 @@ import { Loader2, Tag, X } from 'lucide-react';
 import { evaluatePromo, findAutoApplicable } from '@/lib/modules/promo/api';
 import type { AppliedPromo, PromoSource } from '@/lib/modules/promo/api';
 import { logger } from '@/lib/logger-edge';
+import { useAnalytics } from '@/lib/analytics/useAnalytics';
 
 export interface PromoApplicatorProps {
   siteId: string;
@@ -33,6 +34,7 @@ export function PromoApplicator({
   disabled = false,
   autoCheck = false,
 }: PromoApplicatorProps) {
+  const { capture } = useAnalytics();
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [autoLoading, setAutoLoading] = useState(false);
@@ -81,6 +83,7 @@ export function PromoApplicator({
           label: result.label,
           discount: result.discount,
         });
+        capture('promo.code_applied', { promoCode: trimmed });
         setCode('');
       } else {
         setError(result.message);
