@@ -312,14 +312,15 @@ Create `clicker-platform-v2/lib/analytics/useAnalytics.ts`:
 
 ```ts
 import posthog from 'posthog-js';
+import { useCallback } from 'react';
 import { useSite } from '@/lib/site-context';
 
 export function useAnalytics() {
     const { siteId } = useSite();
 
-    const capture = (event: string, properties?: Record<string, unknown>) => {
+    const capture = useCallback((event: string, properties?: Record<string, unknown>) => {
         posthog.capture(event, { siteId, ...properties });
-    };
+    }, [siteId]);
 
     return { capture };
 }
@@ -436,7 +437,9 @@ export async function confirmPayment(
         ...(appliedPromo ? { appliedPromo } : {}),
     });
 
-    posthog.capture('pos.order_completed', { siteId, orderId, paymentMethod: method });
+    if (typeof window !== 'undefined') {
+        posthog.capture('pos.order_completed', { siteId, orderId, paymentMethod: method });
+    }
 }
 ```
 
@@ -502,7 +505,9 @@ export async function createBooking(siteId: string, booking: Omit<Booking, 'id' 
         // ... existing fields ...
     });
 
-    posthog.capture('reservation.booking_created', { siteId, bookingId: docRef.id, serviceId: booking.serviceId });
+    if (typeof window !== 'undefined') {
+        posthog.capture('reservation.booking_created', { siteId, bookingId: docRef.id, serviceId: booking.serviceId });
+    }
 
     return docRef.id;
 }
