@@ -1,5 +1,4 @@
 import { logger } from '@/lib/logger';
-import { getResendClient } from './resend-client';
 import { getEmailContext } from './context';
 import { isAllowedInDev } from './guard';
 import { newLogDocRef, writeEmailLog } from './log';
@@ -54,21 +53,39 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
   }
 
   try {
-    const client = getResendClient();
-    const resp = await client.emails.send({
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) throw new Error('RESEND_API_KEY is not set');
+
+    const body: Record<string, unknown> = {
       from: fromHeader,
       to: toList,
-      cc: ccList.length ? ccList : undefined,
-      bcc: bccList.length ? bccList : undefined,
-      replyTo,
-      // @ts-expect-error — resend SDK types may not yet expose templateAlias; works at runtime
-      templateAlias: input.templateAlias,
-      variables: {
-        ...input.variables,
-        businessName: context.fromName,
+      template: {
+        id: input.templateAlias,
+        variables: {
+          ...input.variables,
+          businessName: context.fromName,
+        },
       },
       tags: input.tags ?? [],
+    };
+    if (ccList.length) body.cc = ccList;
+    if (bccList.length) body.bcc = bccList;
+    if (replyTo) body.reply_to = replyTo;
+
+    const httpResp = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
     });
+
+    const respJson = await httpResp.json() as { id?: string; message?: string; name?: string };
+    const resp = {
+      data: httpResp.ok ? { id: respJson.id ?? null } : null,
+      error: httpResp.ok ? null : { message: respJson.message ?? 'Unknown error', name: respJson.name },
+    };
 
     if (resp.error) {
       const error = resp.error.message ?? 'Unknown Resend error';

@@ -1,12 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-const mockSend = vi.fn();
+const mockFetch = vi.fn();
 const mockSetLog = vi.fn();
 const mockGetCtx = vi.fn();
 
-vi.mock('../resend-client', () => ({
-  getResendClient: () => ({ emails: { send: mockSend } }),
-}));
+vi.stubGlobal('fetch', mockFetch);
 
 vi.mock('../log', () => ({
   newLogDocRef: () => ({ id: 'log-id-123', set: mockSetLog }),
@@ -20,7 +18,7 @@ vi.mock('../context', () => ({
 
 beforeEach(() => {
   vi.resetModules();
-  mockSend.mockReset();
+  mockFetch.mockReset();
   mockSetLog.mockReset();
   mockGetCtx.mockReset();
   mockGetCtx.mockResolvedValue({
@@ -38,9 +36,23 @@ beforeEach(() => {
   process.env.RESEND_API_KEY = 'test-key';
 });
 
+function mockResendSuccess(id = 'resend-msg-1') {
+  mockFetch.mockResolvedValueOnce({
+    ok: true,
+    json: async () => ({ id }),
+  });
+}
+
+function mockResendError(message: string, name = 'validation_error') {
+  mockFetch.mockResolvedValueOnce({
+    ok: false,
+    json: async () => ({ message, name }),
+  });
+}
+
 describe('sendEmail', () => {
   it('returns ok and writes sent log on success', async () => {
-    mockSend.mockResolvedValueOnce({ data: { id: 'resend-msg-1' }, error: null });
+    mockResendSuccess('resend-msg-1');
     const { sendEmail } = await import('../sender');
     const result = await sendEmail({
       to: 'jane@example.com',
@@ -55,8 +67,8 @@ describe('sendEmail', () => {
     );
   });
 
-  it('sends templateAlias and merged variables to Resend', async () => {
-    mockSend.mockResolvedValueOnce({ data: { id: 'r1' }, error: null });
+  it('sends template.id and merged variables to Resend API', async () => {
+    mockResendSuccess('r1');
     const { sendEmail } = await import('../sender');
     await sendEmail({
       to: 'jane@example.com',
@@ -64,21 +76,18 @@ describe('sendEmail', () => {
       variables: { resetLink: 'https://example.com/reset' },
       siteId: 'site-1',
     });
-    const sendCall = mockSend.mock.calls[0]![0];
-    expect(sendCall.templateAlias).toBe('password-reset');
-    expect(sendCall.variables).toMatchObject({
+    const fetchCall = mockFetch.mock.calls[0]!;
+    const body = JSON.parse(fetchCall[1].body);
+    expect(body.template.id).toBe('password-reset');
+    expect(body.template.variables).toMatchObject({
       resetLink: 'https://example.com/reset',
       businessName: 'Acme',
     });
-    expect(sendCall.html).toBeUndefined();
-    expect(sendCall.text).toBeUndefined();
+    expect(body.html).toBeUndefined();
   });
 
   it('returns failure and writes failed log on Resend error', async () => {
-    mockSend.mockResolvedValueOnce({
-      data: null,
-      error: { message: 'Rate limited', name: 'rate_limit' },
-    });
+    mockResendError('Rate limited', 'rate_limit');
     const { sendEmail } = await import('../sender');
     const result = await sendEmail({
       to: 'jane@example.com',
@@ -104,7 +113,7 @@ describe('sendEmail', () => {
       siteId: 'site-1',
     });
     expect(result.ok).toBe(true);
-    expect(mockSend).not.toHaveBeenCalled();
+    expect(mockFetch).not.toHaveBeenCalled();
     expect(mockSetLog).toHaveBeenCalledWith(
       expect.objectContaining({
         status: 'sent',
@@ -114,7 +123,7 @@ describe('sendEmail', () => {
   });
 
   it('normalizes string to/cc/bcc into arrays in the log doc', async () => {
-    mockSend.mockResolvedValueOnce({ data: { id: 'r2' }, error: null });
+    mockResendSuccess('r2');
     const { sendEmail } = await import('../sender');
     await sendEmail({
       to: 'a@clicker.id',
@@ -129,7 +138,7 @@ describe('sendEmail', () => {
   });
 
   it('passes through tags into Resend and log', async () => {
-    mockSend.mockResolvedValueOnce({ data: { id: 'r3' }, error: null });
+    mockResendSuccess('r3');
     const { sendEmail } = await import('../sender');
     await sendEmail({
       to: 'a@clicker.id',
@@ -138,8 +147,8 @@ describe('sendEmail', () => {
       siteId: null,
       tags: [{ name: 'module', value: 'forms' }],
     });
-    const sendCall = mockSend.mock.calls[0]![0];
-    expect(sendCall.tags).toEqual([{ name: 'module', value: 'forms' }]);
+    const body = JSON.parse(mockFetch.mock.calls[0]![1].body);
+    expect(body.tags).toEqual([{ name: 'module', value: 'forms' }]);
     expect(mockSetLog).toHaveBeenCalledWith(
       expect.objectContaining({ tags: [{ name: 'module', value: 'forms' }] })
     );
