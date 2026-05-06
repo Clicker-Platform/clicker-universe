@@ -160,7 +160,7 @@ function AppMenu({ groups, pathname, baseUrl, siteId, onClose }: AppMenuProps) {
                 {/* Brand */}
                 <div className="flex items-center gap-2 px-2 py-1.5 mb-2">
                     <div className="relative w-5 h-5 flex-shrink-0">
-                        <Image src="/clicker_brand_logo.png" alt="Clicker" fill className="object-contain rounded-full" />
+                        <Image src="/clicker_brand_logo.png" alt="Clicker" fill sizes="20px" className="object-contain rounded-full" />
                     </div>
                     <span className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Clicker</span>
                 </div>

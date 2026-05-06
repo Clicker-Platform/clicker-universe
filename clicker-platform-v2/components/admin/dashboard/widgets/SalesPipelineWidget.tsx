@@ -13,14 +13,14 @@ export function SalesPipelineWidget({ siteId }: Props) {
   useEffect(() => {
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
-    const col = collection(db, 'sites', siteId, 'pipeline_leads');
+    const col = collection(db, 'sites', siteId, 'modules', 'sales_pipeline', 'leads');
     Promise.all([
       getCountFromServer(query(col, where('status', 'in', ['new', 'contacted', 'qualified', 'proposal']))),
       getCountFromServer(query(col, where('createdAt', '>=', Timestamp.fromDate(weekAgo)))),
     ]).then(([openSnap, weekSnap]) => {
       setOpen(openSnap.data().count);
       setNewThisWeek(weekSnap.data().count);
-    }).catch(() => {});
+    }).catch(err => console.error('SalesPipelineWidget query failed', err));
   }, [siteId]);
 
   return (

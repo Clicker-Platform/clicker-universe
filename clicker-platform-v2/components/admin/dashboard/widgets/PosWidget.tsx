@@ -14,7 +14,7 @@ export function PosWidget({ siteId }: Props) {
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
     getDocs(query(
-      collection(db, 'sites', siteId, 'pos_orders'),
+      collection(db, 'sites', siteId, 'modules', 'byod_pos', 'orders'),
       where('status', '==', 'completed'),
       where('createdAt', '>=', Timestamp.fromDate(startOfDay))
     )).then(snap => {
@@ -22,7 +22,7 @@ export function PosWidget({ siteId }: Props) {
       snap.forEach(d => { total += d.data().total ?? 0; });
       setRevenue(total);
       setOrders(snap.size);
-    }).catch(() => {});
+    }).catch(err => console.error('PosWidget query failed', err));
   }, [siteId]);
 
   return (

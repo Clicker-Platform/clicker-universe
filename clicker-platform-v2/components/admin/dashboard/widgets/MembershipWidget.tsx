@@ -13,14 +13,14 @@ export function MembershipWidget({ siteId }: Props) {
   useEffect(() => {
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
-    const col = collection(db, 'sites', siteId, 'members');
+    const col = collection(db, 'sites', siteId, 'modules', 'membership', 'members');
     Promise.all([
       getCountFromServer(col),
       getCountFromServer(query(col, where('createdAt', '>=', Timestamp.fromDate(weekAgo)))),
     ]).then(([totalSnap, weekSnap]) => {
       setTotal(totalSnap.data().count);
       setNewThisWeek(weekSnap.data().count);
-    }).catch(() => {});
+    }).catch(err => console.error('MembershipWidget query failed', err));
   }, [siteId]);
 
   return (

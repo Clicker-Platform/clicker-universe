@@ -14,12 +14,12 @@ export function ReservationWidget({ siteId }: Props) {
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
     getDocs(query(
-      collection(db, 'sites', siteId, 'bookings'),
-      where('date', '>=', Timestamp.fromDate(startOfDay))
+      collection(db, 'sites', siteId, 'modules', 'reservation', 'bookings'),
+      where('startAt', '>=', Timestamp.fromDate(startOfDay))
     )).then(snap => {
       setTotal(snap.size);
       setPending(snap.docs.filter(d => d.data().status === 'pending').length);
-    }).catch(() => {});
+    }).catch(err => console.error('ReservationWidget query failed', err));
   }, [siteId]);
 
   return (

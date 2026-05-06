@@ -415,6 +415,14 @@
             ]
         },
         {
+            "collectionGroup": "promos",
+            "queryScope": "COLLECTION",
+            "fields": [
+                { "fieldPath": "status", "order": "ASCENDING" },
+                { "fieldPath": "endDate", "order": "ASCENDING" }
+            ]
+        },
+        {
             "collectionGroup": "platform_logs",
             "queryScope": "COLLECTION",
             "fields": [
