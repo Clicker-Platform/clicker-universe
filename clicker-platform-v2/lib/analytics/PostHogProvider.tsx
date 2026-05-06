@@ -24,7 +24,7 @@ function PostHogPageviewTracker() {
 
 export function PostHogProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
-        if (!POSTHOG_KEY || process.env.NODE_ENV === 'development') return;
+        if (!POSTHOG_KEY) return;
         posthog.init(POSTHOG_KEY, {
             api_host: POSTHOG_HOST,
             capture_pageview: false,
@@ -32,7 +32,7 @@ export function PostHogProvider({ children }: { children: ReactNode }) {
         });
     }, []);
 
-    if (!POSTHOG_KEY || process.env.NODE_ENV === 'development') {
+    if (!POSTHOG_KEY) {
         return <>{children}</>;
     }
 
