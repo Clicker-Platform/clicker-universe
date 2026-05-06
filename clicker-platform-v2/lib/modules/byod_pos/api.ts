@@ -24,6 +24,7 @@ import { isModuleEnabled } from '@/lib/modules/registry';
 import { logger } from '@/lib/logger-edge';
 
 import { ORDERS_COLLECTION, SETTINGS_DOC } from './constants';
+import posthog from 'posthog-js';
 
 export { ORDERS_COLLECTION }; // Re-export for potential legacy consumers if needed
 // const SETTINGS_DOC = 'modules/byod_pos/settings/config'; // Removed local def
@@ -446,6 +447,10 @@ export async function confirmPayment(
         status: 'completed',
         ...(appliedPromo ? { appliedPromo } : {}),
     });
+
+    if (typeof window !== 'undefined') {
+        posthog.capture('pos.order_completed', { siteId, orderId, paymentMethod: method });
+    }
 }
 
 /**

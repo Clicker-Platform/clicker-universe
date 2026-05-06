@@ -21,6 +21,7 @@ import {
 import { db } from '@/lib/firebase';
 import { Member, LoyaltyTransaction, MembershipSettings, MembershipStaffMember } from './types';
 import { logger } from '@/lib/logger-edge';
+import posthog from 'posthog-js';
 
 // Collection References
 export const MEMBERS_COLLECTION = 'modules/membership/members';
@@ -199,6 +200,10 @@ export async function createMember(
         });
         transaction.set(counterRef, { memberCount: newCount }, { merge: true });
     });
+
+    if (typeof window !== 'undefined') {
+        posthog.capture('membership.member_added', { siteId });
+    }
 
     // 4. Return the new Member object (optimistic timestamp)
     return {

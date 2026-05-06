@@ -1,5 +1,6 @@
 import { db } from '@/lib/firebase';
 import { logger } from '@/lib/logger-edge';
+import posthog from 'posthog-js';
 import {
     collection,
     doc,
@@ -100,11 +101,15 @@ export async function createLead(siteId: string, leadData: Omit<Lead, 'id' | 'cr
     return docRef.id;
 }
 
-export async function updateLeadStage(siteId: string, leadId: string, stageId: string): Promise<void> {
+export async function updateLeadStage(siteId: string, leadId: string, stageId: string, fromStageId?: string): Promise<void> {
     await updateDoc(leadDoc(siteId, leadId), {
         stageId,
         updatedAt: Date.now()
     });
+
+    if (typeof window !== 'undefined') {
+        posthog.capture('sales_pipeline.deal_moved', { siteId, leadId, toStage: stageId, fromStage: fromStageId });
+    }
 }
 
 export async function updateLead(siteId: string, leadId: string, updates: Partial<Lead>): Promise<void> {
