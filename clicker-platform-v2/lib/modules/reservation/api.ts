@@ -22,6 +22,7 @@ import { Booking, Service, ReservationSettings } from './types';
 import { isModuleEnabled } from '../registry';
 import { logger } from '@/lib/logger-edge';
 import { getStaffMembers } from './staff';
+import posthog from 'posthog-js';
 import { DaySchedule } from '@/lib/core/types';
 import {
     getServiceCatalog,
@@ -191,6 +192,11 @@ export async function createBooking(siteId: string, booking: Omit<Booking, 'id' 
         createdAt: serverTimestamp(),
         isRead: false // Default to unread for new bookings
     });
+
+    if (typeof window !== 'undefined') {
+        posthog.capture('reservation.booking_created', { siteId, bookingId: docRef.id, serviceId: booking.serviceId });
+    }
+
     return docRef.id;
 }
 
