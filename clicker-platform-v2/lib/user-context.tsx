@@ -7,6 +7,7 @@ import { auth, db } from '@/lib/firebase';
 import { useSite } from '@/lib/site-context';
 import { Role } from '@/lib/rbac';
 import { logger } from '@/lib/logger-edge';
+import posthog from 'posthog-js';
 
 interface ModuleAccess {
     [routeId: string]: 'full' | 'view' | 'none'; // sub-route permissions
@@ -120,10 +121,12 @@ export function UserProvider({ children }: { children: ReactNode }) {
                 setModuleAccess({});
                 setIsOwner(false);
                 setLoading(false);
+                posthog.reset();
                 return;
             }
 
             setUser(currentUser);
+            posthog.identify(currentUser.uid, { siteId, email: currentUser.email ?? undefined });
 
             // 1. Setup Realtime Listener for Member Data
             // This ensures if Admin changes permissions, the User sees it IMMEDIATELY without refresh.
