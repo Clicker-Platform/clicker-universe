@@ -24,3 +24,12 @@ export function getSystemDefaults() {
 export function formatFrom(fromName: string, parts: SenderParts): string {
   return `${fromName} <${parts.localPart}@${parts.domain}>`;
 }
+
+export function getTemplateAliases() {
+  return {
+    passwordReset: process.env.RESEND_TEMPLATE_PASSWORD_RESET ?? 'password-reset',
+    emailVerification: process.env.RESEND_TEMPLATE_EMAIL_VERIFY ?? 'email-verification',
+    formSubmission: process.env.RESEND_TEMPLATE_FORM_SUBMISSION ?? 'form-submission',
+    systemAlert: process.env.RESEND_TEMPLATE_SYSTEM_ALERT ?? 'system-alert',
+  };
+}

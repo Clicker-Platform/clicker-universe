@@ -34,13 +34,18 @@ export async function POST(request: Request) {
             if (formDoc.exists) {
                 const emailTo = formDoc.data()?.emailNotificationTo;
                 if (emailTo) {
-                    const { sendEmail, FormSubmission } = await import('@/lib/email');
-                    const { createElement } = await import('react');
+                    const { sendEmail } = await import('@/lib/email');
+                    const formDataStr = Object.entries(data as Record<string, string>)
+                        .map(([k, v]) => `${fieldLabels?.[k] ?? k}: ${v}`)
+                        .join('\n');
                     await sendEmail({
                         to: emailTo,
                         siteId,
-                        subject: `New submission: ${formTitle}`,
-                        template: createElement(FormSubmission, { formTitle, data, fieldLabels }),
+                        templateAlias: 'form-submission',
+                        variables: {
+                            formTitle: formTitle ?? '',
+                            formData: formDataStr,
+                        },
                         tags: [
                             { name: 'module', value: 'core_crm' },
                             { name: 'template', value: 'form-submission' },

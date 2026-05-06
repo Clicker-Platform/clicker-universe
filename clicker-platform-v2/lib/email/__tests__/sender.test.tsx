@@ -1,5 +1,4 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { createElement } from 'react';
 
 const mockSend = vi.fn();
 const mockSetLog = vi.fn();
@@ -17,10 +16,6 @@ vi.mock('../log', () => ({
 
 vi.mock('../context', () => ({
   getEmailContext: (...args: unknown[]) => mockGetCtx(...args),
-}));
-
-vi.mock('../render', () => ({
-  renderTemplate: async () => ({ html: '<html></html>', text: 'plain' }),
 }));
 
 beforeEach(() => {
@@ -49,8 +44,8 @@ describe('sendEmail', () => {
     const { sendEmail } = await import('../sender');
     const result = await sendEmail({
       to: 'jane@example.com',
-      subject: 'Hello',
-      template: createElement('div', null, 'x'),
+      templateAlias: 'password-reset',
+      variables: { resetLink: 'https://example.com/reset' },
       siteId: 'site-1',
     });
     expect(result.ok).toBe(true);
@@ -58,6 +53,25 @@ describe('sendEmail', () => {
     expect(mockSetLog).toHaveBeenCalledWith(
       expect.objectContaining({ status: 'sent', resendId: 'resend-msg-1' })
     );
+  });
+
+  it('sends templateAlias and merged variables to Resend', async () => {
+    mockSend.mockResolvedValueOnce({ data: { id: 'r1' }, error: null });
+    const { sendEmail } = await import('../sender');
+    await sendEmail({
+      to: 'jane@example.com',
+      templateAlias: 'password-reset',
+      variables: { resetLink: 'https://example.com/reset' },
+      siteId: 'site-1',
+    });
+    const sendCall = mockSend.mock.calls[0]![0];
+    expect(sendCall.templateAlias).toBe('password-reset');
+    expect(sendCall.variables).toMatchObject({
+      resetLink: 'https://example.com/reset',
+      businessName: 'Acme',
+    });
+    expect(sendCall.html).toBeUndefined();
+    expect(sendCall.text).toBeUndefined();
   });
 
   it('returns failure and writes failed log on Resend error', async () => {
@@ -68,8 +82,8 @@ describe('sendEmail', () => {
     const { sendEmail } = await import('../sender');
     const result = await sendEmail({
       to: 'jane@example.com',
-      subject: 'Hello',
-      template: createElement('div', null, 'x'),
+      templateAlias: 'password-reset',
+      variables: {},
       siteId: 'site-1',
     });
     expect(result.ok).toBe(false);
@@ -85,8 +99,8 @@ describe('sendEmail', () => {
     const { sendEmail } = await import('../sender');
     const result = await sendEmail({
       to: 'random@example.com',
-      subject: 'Hello',
-      template: createElement('div', null, 'x'),
+      templateAlias: 'password-reset',
+      variables: {},
       siteId: 'site-1',
     });
     expect(result.ok).toBe(true);
@@ -105,8 +119,8 @@ describe('sendEmail', () => {
     await sendEmail({
       to: 'a@clicker.id',
       cc: 'b@clicker.id',
-      subject: 's',
-      template: createElement('div', null, 'x'),
+      templateAlias: 'system-alert',
+      variables: {},
       siteId: null,
     });
     expect(mockSetLog).toHaveBeenCalledWith(
@@ -119,8 +133,8 @@ describe('sendEmail', () => {
     const { sendEmail } = await import('../sender');
     await sendEmail({
       to: 'a@clicker.id',
-      subject: 's',
-      template: createElement('div', null, 'x'),
+      templateAlias: 'form-submission',
+      variables: {},
       siteId: null,
       tags: [{ name: 'module', value: 'forms' }],
     });

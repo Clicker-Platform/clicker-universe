@@ -1,7 +1,6 @@
 import { logger } from '@/lib/logger';
 import { getResendClient } from './resend-client';
 import { getEmailContext } from './context';
-import { renderTemplate } from './render';
 import { isAllowedInDev } from './guard';
 import { newLogDocRef, writeEmailLog } from './log';
 import { formatFrom, resolveDefaultSender } from './config';
@@ -27,7 +26,7 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
     to: toList,
     cc: ccList.length ? ccList : null,
     bcc: bccList.length ? bccList : null,
-    subject: input.subject,
+    subject: input.templateAlias,
     fromName: context.fromName,
     fromAddress: context.fromAddress,
     replyTo: replyTo ?? null,
@@ -50,28 +49,8 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
       errorCode: null,
       sentAt: new Date(),
     });
-    logger.info('email.dev.blocked', { to: toList.join(','), subject: input.subject });
+    logger.info('email.dev.blocked', { to: toList.join(','), templateAlias: input.templateAlias });
     return { ok: true, id: 'dev_blocked', logId: logRef.id };
-  }
-
-  let html: string;
-  let text: string;
-  try {
-    const rendered = await renderTemplate(input.template, context);
-    html = rendered.html;
-    text = rendered.text;
-  } catch (err) {
-    const error = err instanceof Error ? err.message : String(err);
-    await writeEmailLog(logRef, {
-      ...baseLog,
-      status: 'failed',
-      resendId: null,
-      error: `Template render failed: ${error}`,
-      errorCode: 'render_error',
-      sentAt: null,
-    });
-    logger.error('email.render.failed', { siteId: input.siteId ?? undefined, error });
-    return { ok: false, error: `Template render failed: ${error}`, logId: logRef.id };
   }
 
   try {
@@ -81,17 +60,19 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
       to: toList,
       cc: ccList.length ? ccList : undefined,
       bcc: bccList.length ? bccList : undefined,
-      replyTo: replyTo,
-      subject: input.subject,
-      html,
-      text,
+      replyTo,
+      // @ts-expect-error — resend SDK types may not yet expose templateAlias; works at runtime
+      templateAlias: input.templateAlias,
+      variables: {
+        ...input.variables,
+        businessName: context.fromName,
+      },
       tags: input.tags ?? [],
     });
 
     if (resp.error) {
       const error = resp.error.message ?? 'Unknown Resend error';
-      const errorCode =
-        (resp.error as { name?: string }).name ?? null;
+      const errorCode = (resp.error as { name?: string }).name ?? null;
       await writeEmailLog(logRef, {
         ...baseLog,
         status: 'failed',
