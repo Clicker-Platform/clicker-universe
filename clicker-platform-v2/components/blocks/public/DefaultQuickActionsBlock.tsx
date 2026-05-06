@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { LinkItem, BusinessContact, LinkSettings } from '@/data/mockData';
-import { LinkCard } from './LinkCard';
+import { LinkCard } from '@/components/blocks/public/LinkCard';
 import { useTemplate } from '@/components/TemplateProvider';
 import { useSite } from '@/lib/site-context';
 import { FormModal } from '@/components/FormModal';
@@ -22,7 +22,7 @@ interface QuickActionsProps {
     defaultLayout?: 'list' | 'grid';
 }
 
-export const QuickActions: React.FC<QuickActionsProps> = ({
+export const DefaultQuickActionsBlock: React.FC<QuickActionsProps> = ({
     links, contact, settings, siteId, tenantSlug, blockData, defaultLayout = 'list'
 }) => {
     const { theme } = useTemplate();
@@ -175,3 +175,5 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
         </section>
     );
 };
+
+export { DefaultQuickActionsBlock as QuickActions };

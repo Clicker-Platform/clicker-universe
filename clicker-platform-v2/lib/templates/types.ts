@@ -118,6 +118,7 @@ export interface TemplateComponents {
         Map?: React.ElementType<any>;
         ImageGallery?: React.ElementType<any>;
         InlineFormBlock?: React.ElementType<any>;
+        HeadingBlock?: React.ElementType<any>;
     };
 }
 

@@ -1551,55 +1551,9 @@ git commit -m "feat(email): add public barrel"
 
 ## Phase 4 — Migrate existing form notification
 
-### Task 13: Migrate `forms/submit` to new transport
+### Task 13: Refactor templates to receive context via React Context, then migrate the route
 
-**Files:**
-- Modify: `clicker-platform-v2/app/api/forms/submit/route.ts`
-- Delete: `clicker-platform-v2/lib/email.ts`
-
-- [ ] **Step 1: Update the route**
-
-Edit `clicker-platform-v2/app/api/forms/submit/route.ts`:
-
-Replace:
-```ts
-                if (emailTo) {
-                    const { sendFormNotification } = await import('@/lib/email');
-                    await sendFormNotification(emailTo, formTitle, data, fieldLabels);
-                }
-```
-
-With:
-```ts
-                if (emailTo) {
-                    const { sendEmail, FormSubmission } = await import('@/lib/email');
-                    await sendEmail({
-                        to: emailTo,
-                        siteId,
-                        subject: `New submission: ${formTitle}`,
-                        template: <FormSubmission
-                            context={await (await import('@/lib/email')).getEmailContext(siteId)}
-                            formTitle={formTitle}
-                            data={data}
-                            fieldLabels={fieldLabels}
-                        />,
-                        tags: [
-                            { name: 'module', value: 'core_crm' },
-                            { name: 'template', value: 'form-submission' },
-                        ],
-                    });
-                }
-```
-
-Wait — the template needs `context`, but `sendEmail` already resolves context internally and the `EmailLayout` *currently* takes context as a prop. There are two approaches: (a) pass context twice (caller passes once for the body template, sender resolves again — wasteful); (b) refactor templates to read context from a React context provider injected by the renderer.
-
-Approach (b) keeps callers simple. **Refactor first** — split into Step 1a/1b. (See Task 13a below — corrected.) Skip this step; proceed to Task 13a.
-
-- [ ] **Step 2: (skipped — see 13a)**
-
----
-
-### Task 13a: Refactor templates to receive context via React Context, then migrate the route
+**Why this refactor before the migration:** Templates currently take `context` as a prop, which means callers would have to call `getEmailContext()` themselves and pass it twice (once to the template, once via `siteId` so `sendEmail` resolves again). Switching to a React context provider injected by the renderer keeps callers thin and prevents drift between the rendered template's `context` and the sender's `context`.
 
 **Files:**
 - Modify: `clicker-platform-v2/lib/email/render.ts`
@@ -1839,31 +1793,31 @@ git commit -m "refactor(email): migrate form submission to new transport; drop i
 
 ---
 
-### Task 14: Add `email:dev` smoke check
+### Task 14: Add preview defaults so `email:dev` can render templates
+
+**Why:** Templates read tenant context via `useEmailContext()`. The standalone preview server has no provider in scope, so each template needs an `export default` that wraps itself in a preview provider with sample data.
 
 **Files:**
-- (no file changes; verification only)
 
-- [ ] **Step 1: Run preview server**
+- Create: `clicker-platform-v2/lib/email/templates/_preview-context.tsx`
+- Modify: `clicker-platform-v2/lib/email/templates/system/FormSubmission.tsx` (add default export)
+- Modify: `clicker-platform-v2/lib/email/templates/system/PasswordReset.tsx` (add default export)
+- Modify: `clicker-platform-v2/lib/email/templates/system/EmailVerification.tsx` (add default export)
+- Modify: `clicker-platform-v2/lib/email/templates/system/SystemAlert.tsx` (add default export)
 
-Run: `cd clicker-platform-v2 && pnpm email:dev`
-Expected: server starts at `http://localhost:3001`. Browser shows all four system templates rendering.
+- [ ] **Step 1: Create preview context helper**
 
-- [ ] **Step 2: Visually inspect**
-
-Open each of `FormSubmission`, `PasswordReset`, `EmailVerification`, `SystemAlert` in the preview and verify layout looks correct (header, body, footer).
-
-Note: the preview tool uses **dummy** context values since templates now read from React context. Add a wrapper file under `lib/email/templates/_preview.tsx` if needed:
+Create `clicker-platform-v2/lib/email/templates/_preview-context.tsx`:
 
 ```tsx
-import type { ReactElement } from 'react';
+import type { ReactNode } from 'react';
 import { EmailContextProvider } from '../email-context-provider';
 import type { EmailContext } from '../types';
 
-const previewContext: EmailContext = {
+export const PREVIEW_CONTEXT: EmailContext = {
   fromName: 'Acme Coffee',
   fromAddress: 'noreply@clicker.id',
-  replyTo: null,
+  replyTo: 'owner@acme.com',
   brand: {
     businessName: 'Acme Coffee',
     logoUrl: null,
@@ -1872,14 +1826,95 @@ const previewContext: EmailContext = {
   },
 };
 
-export function withPreviewContext(template: ReactElement) {
-  return <EmailContextProvider context={previewContext}>{template}</EmailContextProvider>;
+export function PreviewWrap({ children }: { children: ReactNode }) {
+  return <EmailContextProvider context={PREVIEW_CONTEXT}>{children}</EmailContextProvider>;
 }
 ```
 
-If the preview tool can't handle missing context out of the box, wrap each system template's preview-default in this helper. (React Email picks up `export default` from each template file.)
+- [ ] **Step 2: Add default export to `FormSubmission.tsx`**
 
-- [ ] **Step 3: No commit — verification only**
+Append to `clicker-platform-v2/lib/email/templates/system/FormSubmission.tsx`:
+
+```tsx
+import { PreviewWrap } from '../_preview-context';
+
+export default function FormSubmissionPreview() {
+  return (
+    <PreviewWrap>
+      <FormSubmission
+        formTitle="Contact form"
+        data={{ name: 'Jane Doe', email: 'jane@example.com', message: 'Hello there!' }}
+        fieldLabels={{ name: 'Name', email: 'Email', message: 'Message' }}
+      />
+    </PreviewWrap>
+  );
+}
+```
+
+- [ ] **Step 3: Add default export to `PasswordReset.tsx`**
+
+Append:
+
+```tsx
+import { PreviewWrap } from '../_preview-context';
+
+export default function PasswordResetPreview() {
+  return (
+    <PreviewWrap>
+      <PasswordReset resetUrl="https://example.com/reset?token=abc123" />
+    </PreviewWrap>
+  );
+}
+```
+
+- [ ] **Step 4: Add default export to `EmailVerification.tsx`**
+
+Append:
+
+```tsx
+import { PreviewWrap } from '../_preview-context';
+
+export default function EmailVerificationPreview() {
+  return (
+    <PreviewWrap>
+      <EmailVerification verifyUrl="https://example.com/verify?token=abc123" />
+    </PreviewWrap>
+  );
+}
+```
+
+- [ ] **Step 5: Add default export to `SystemAlert.tsx`**
+
+Append:
+
+```tsx
+import { PreviewWrap } from '../_preview-context';
+
+export default function SystemAlertPreview() {
+  return (
+    <PreviewWrap>
+      <SystemAlert title="Scheduled maintenance" body="The platform will be undergoing maintenance on Sunday from 2am to 4am UTC." />
+    </PreviewWrap>
+  );
+}
+```
+
+- [ ] **Step 6: Run preview server**
+
+Run: `cd clicker-platform-v2 && pnpm email:dev`
+Expected: server starts at `http://localhost:3001`. Browser shows all four system templates rendering with preview data.
+
+- [ ] **Step 7: Visually inspect**
+
+Open each of `FormSubmission`, `PasswordReset`, `EmailVerification`, `SystemAlert` in the preview. Verify header (business name "Acme Coffee"), body content, and footer ("Sent by Acme Coffee via Clicker Platform") render correctly.
+
+- [ ] **Step 8: Commit**
+
+```bash
+git add clicker-platform-v2/lib/email/templates/_preview-context.tsx \
+        clicker-platform-v2/lib/email/templates/system/
+git commit -m "feat(email): add preview defaults for email:dev rendering"
+```
 
 ---
 

@@ -34,8 +34,23 @@ export async function POST(request: Request) {
             if (formDoc.exists) {
                 const emailTo = formDoc.data()?.emailNotificationTo;
                 if (emailTo) {
-                    const { sendFormNotification } = await import('@/lib/email');
-                    await sendFormNotification(emailTo, formTitle, data, fieldLabels);
+                    const { sendEmail } = await import('@/lib/email');
+                    const formDataStr = Object.entries(data as Record<string, string>)
+                        .map(([k, v]) => `${fieldLabels?.[k] ?? k}: ${v}`)
+                        .join('\n');
+                    await sendEmail({
+                        to: emailTo,
+                        siteId,
+                        templateAlias: 'form-submission',
+                        variables: {
+                            formTitle: formTitle ?? '',
+                            formData: formDataStr,
+                        },
+                        tags: [
+                            { name: 'module', value: 'core_crm' },
+                            { name: 'template', value: 'form-submission' },
+                        ],
+                    });
                 }
             } else {
                 logger.warn('form.not.found', { siteId, formId });

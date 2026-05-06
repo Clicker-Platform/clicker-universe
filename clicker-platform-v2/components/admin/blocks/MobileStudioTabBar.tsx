@@ -2,7 +2,7 @@
 
 import { Layers, Plus, Settings, Save, Loader2, FileText, MoreHorizontal } from 'lucide-react';
 
-export type MobileActiveSheet = 'navigator' | 'add' | 'props' | 'pages' | 'more' | null;
+export type MobileActiveSheet = 'layers' | 'add' | 'props' | 'pages' | 'more' | null;
 
 interface MobileStudioTabBarProps {
     activeSheet: MobileActiveSheet;
@@ -15,7 +15,7 @@ interface MobileStudioTabBarProps {
 
 const tabs = [
     { id: 'pages' as const, icon: FileText, label: 'Pages' },
-    { id: 'navigator' as const, icon: Layers, label: 'Layers' },
+    { id: 'layers' as const, icon: Layers, label: 'Layers' },
     { id: 'add' as const, icon: Plus, label: 'Add' },
     { id: 'props' as const, icon: Settings, label: 'Properties' },
     { id: 'more' as const, icon: MoreHorizontal, label: 'More' },

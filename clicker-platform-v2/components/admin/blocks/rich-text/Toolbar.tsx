@@ -6,15 +6,11 @@ import {
     Italic,
     Strikethrough,
     Code,
-    Heading1,
     Heading2,
     Heading3,
     List,
     ListOrdered,
     Quote,
-    AlignLeft,
-    AlignCenter,
-    AlignRight,
     Link2,
     Image as ImageIcon,
     Film,
@@ -27,6 +23,7 @@ import { convertToWebP, validateImageFile } from '@/lib/imageUtils';
 import { storage } from '@/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { LinkSelector } from './LinkSelector';
+import { VideoSelector } from './VideoSelector';
 import { useSite } from '@/lib/site-context';
 
 interface ToolbarProps {
@@ -38,6 +35,7 @@ export const Toolbar = ({ editor }: ToolbarProps) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [uploading, setUploading] = useState(false);
     const [linkSelectorOpen, setLinkSelectorOpen] = useState(false);
+    const [videoSelectorOpen, setVideoSelectorOpen] = useState(false);
 
     if (!editor) return null;
 
@@ -111,7 +109,7 @@ export const Toolbar = ({ editor }: ToolbarProps) => {
     );
 
     return (
-        <div className="border-b border-gray-200 dark:border-neutral-800 bg-gray-50/80 dark:bg-neutral-900/80 backdrop-blur-md p-2 flex flex-wrap gap-1 items-center sticky top-0 z-10">
+        <div className="relative border-b border-gray-200 dark:border-neutral-800 bg-gray-50/80 dark:bg-neutral-900/80 backdrop-blur-md p-2 flex flex-wrap gap-1 items-center sticky top-0 z-10">
             {/* History */}
             <div className="flex gap-1 mr-2 border-r border-gray-200 dark:border-neutral-800 pr-2">
                 <ToggleButton
@@ -200,20 +198,14 @@ export const Toolbar = ({ editor }: ToolbarProps) => {
             </div>
 
             {/* Links & Media */}
-            <div className="flex gap-1 relative">
+            <div className="flex gap-1">
                 <ToggleButton
-                    isActive={editor.isActive('link')}
-                    onClick={() => setLinkSelectorOpen(!linkSelectorOpen)}
+                    isActive={editor.isActive('link') || linkSelectorOpen}
+                    onClick={() => { setLinkSelectorOpen(!linkSelectorOpen); setVideoSelectorOpen(false); }}
                     title="Link"
                 >
                     <Link2 size={16} />
                 </ToggleButton>
-
-                <LinkSelector
-                    editor={editor}
-                    isOpen={linkSelectorOpen}
-                    onClose={() => setLinkSelectorOpen(false)}
-                />
 
                 <input
                     type="file"
@@ -224,30 +216,33 @@ export const Toolbar = ({ editor }: ToolbarProps) => {
                 />
                 <button
                     type="button"
-                    onClick={() => fileInputRef.current?.click()}
+                    onClick={() => { fileInputRef.current?.click(); setLinkSelectorOpen(false); setVideoSelectorOpen(false); }}
                     disabled={uploading}
                     title="Upload Image"
-                    className={`
-                        p-2 rounded-lg transition-all active:scale-95 text-neutral-400 dark:text-neutral-500 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-neutral-200 disabled:opacity-50
-                    `}
+                    className="p-2 rounded-lg transition-all active:scale-95 text-neutral-400 dark:text-neutral-500 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-neutral-200 disabled:opacity-50"
                 >
                     {uploading ? <Loader2 size={16} className="animate-spin text-blue-500" /> : <ImageIcon size={16} />}
                 </button>
 
-                <button
-                    type="button"
-                    onClick={() => {
-                        const url = window.prompt('Paste a YouTube, Vimeo, or direct .mp4 URL');
-                        if (!url) return;
-                        const ok = (editor.chain().focus() as any).setVideoEmbed({ src: url }).run();
-                        if (!ok) alert('Unrecognized video URL. Use YouTube, Vimeo, or a direct .mp4/.webm link.');
-                    }}
+                <ToggleButton
+                    isActive={videoSelectorOpen}
+                    onClick={() => { setVideoSelectorOpen(!videoSelectorOpen); setLinkSelectorOpen(false); }}
                     title="Embed Video"
-                    className="p-2 rounded-lg transition-all active:scale-95 text-neutral-400 dark:text-neutral-500 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-neutral-200"
                 >
                     <Film size={16} />
-                </button>
+                </ToggleButton>
             </div>
+
+            <LinkSelector
+                editor={editor}
+                isOpen={linkSelectorOpen}
+                onClose={() => setLinkSelectorOpen(false)}
+            />
+            <VideoSelector
+                editor={editor}
+                isOpen={videoSelectorOpen}
+                onClose={() => setVideoSelectorOpen(false)}
+            />
         </div>
     );
 };

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 interface Props { siteId: string }
@@ -12,17 +12,30 @@ export function InventoryWidget({ siteId }: Props) {
 
   useEffect(() => {
     const col = collection(db, 'sites', siteId, 'modules', 'inventory', 'items');
-    getDocs(col).then(snap => {
-      const items = snap.docs.filter(d => !d.data().archivedAt);
-      const low = items.filter(d => {
+    // Only fetch active (non-archived) items — avoids full collection scan
+    getDocs(query(col, where('archivedAt', '==', null))).then(snap => {
+      const low = snap.docs.filter(d => {
         const data = d.data();
         return typeof data.currentStock === 'number'
           && typeof data.lowStockThreshold === 'number'
           && data.currentStock <= data.lowStockThreshold;
       }).length;
-      setTotal(items.length);
+      setTotal(snap.size);
       setLowStock(low);
-    }).catch(err => console.error('InventoryWidget query failed', err));
+    }).catch(() => {
+      // archivedAt field may not exist on older items — fall back to unfiltered count
+      getDocs(col).then(snap => {
+        const items = snap.docs.filter(d => !d.data().archivedAt);
+        const low = items.filter(d => {
+          const data = d.data();
+          return typeof data.currentStock === 'number'
+            && typeof data.lowStockThreshold === 'number'
+            && data.currentStock <= data.lowStockThreshold;
+        }).length;
+        setTotal(items.length);
+        setLowStock(low);
+      }).catch(() => { setTotal(0); setLowStock(0); });
+    });
   }, [siteId]);
 
   return (

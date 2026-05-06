@@ -21,6 +21,7 @@ export const BLOCK_OPTIONS: { type: BlockType; label: string; icon: React.Elemen
     { type: 'featured_product', label: 'Featured Product', icon: Star },
     { type: 'branches', label: 'Branches', icon: MapPin },
     { type: 'inline_form', label: 'Inline Form', icon: ClipboardList },
+    { type: 'heading', label: 'Heading', icon: Type },
 ];
 
 export function getDefaultData(type: BlockType, templateId = 'classic'): any {
@@ -34,15 +35,15 @@ export function getDefaultData(type: BlockType, templateId = 'classic'): any {
 
     switch (type) {
         case 'hero':
-            return { ...baseData, title: 'Your Headline', subtitle: 'Your subtitle goes here' };
+            return { ...baseData, title: 'Your Wonderful Headline', subtitle: 'Your subtitle goes here' };
         case 'text':
-            return { ...baseData, content: '<p>Start writing your content here...</p>' };
+            return { ...baseData, content: '<p>Start writing your content here...</p>', verticalSpacing: 'medium', horizontalPadding: 'none' };
         case 'content_showcase':
             return { ...baseData, ...DEFAULT_SHOWCASE_DATA, rows: [newRow()] };
         case 'image':
             return { ...baseData, media: { ...DEFAULT_MEDIA, type: 'image' }, caption: '' };
         case 'button':
-            return { ...baseData, label: 'Click Me', url: '#', style: 'primary' };
+            return { ...baseData, label: 'Click Me', url: '#', variant: 'primary' };
         case 'products':
             return { ...baseData, title: 'Our Products' };
         case 'faq':
@@ -68,6 +69,17 @@ export function getDefaultData(type: BlockType, templateId = 'classic'): any {
                 subheading: '',
                 successMessage: "Thank you! We'll be in touch.",
                 redirectUrl: '',
+            };
+        case 'heading':
+            return {
+                ...baseData,
+                heading: 'Your Headline',
+                headingSize: 'xl',
+                headingAlign: 'left',
+                subheading: null,
+                subheadingAlign: 'left',
+                verticalSpacing: 'medium',
+                horizontalPadding: 'none',
             };
         default:
             return baseData;

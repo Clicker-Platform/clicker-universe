@@ -301,7 +301,7 @@ export function PagesPanel() {
 
 interface AddBlocksPanelProps {
     templateId?: string;
-    onAfterAdd?: () => void; // Called after block is added (to switch to Navigator)
+    onAfterAdd?: () => void; // Called after block is added (to switch to Layers)
 }
 
 export function AddBlocksPanel({ templateId = 'classic', onAfterAdd }: AddBlocksPanelProps) {

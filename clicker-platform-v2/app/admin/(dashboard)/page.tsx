@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useSite } from '@/lib/site-context';
@@ -44,12 +44,12 @@ export default function AdminDashboard() {
     return () => unsub();
   }, [siteId]);
 
-  const activeModules: ModuleDefinition[] = allModules
-    .filter(m => siteEnabledModules[m.id] === true)
-    .map(m => ({
-      ...m,
-      ...(STATIC_MODULE_DEFINITIONS[m.id] ?? {}),
-    }));
+  const activeModules = useMemo<ModuleDefinition[]>(() =>
+    allModules
+      .filter(m => siteEnabledModules[m.id] === true)
+      .map(m => ({ ...m, ...(STATIC_MODULE_DEFINITIONS[m.id] ?? {}) })),
+    [allModules, siteEnabledModules]
+  );
 
   if (loading) return <DashboardSkeletonNew />;
 

@@ -60,9 +60,16 @@ export function InlineEditToolbar({ focus, onAction, onDismiss }: Props) {
     if (!mounted || !focus) return null;
 
     const { blockId, field, currentData } = focus;
-    const isTitle = field === 'title';
-    const titleSize = currentData.titleSize || 'md';
-    const alignKey = field === 'tagline' ? 'taglineAlign' : field === 'title' ? 'titleAlign' : 'subtitleAlign';
+    const isTitle = field === 'title' || field === 'heading';
+    const titleSize = field === 'heading'
+        ? (currentData.headingSize || 'xl')
+        : (currentData.titleSize || 'md');
+    const alignKey =
+        field === 'tagline' ? 'taglineAlign' :
+        field === 'title' ? 'titleAlign' :
+        field === 'heading' ? 'headingAlign' :
+        field === 'subheading' ? 'subheadingAlign' :
+        'subtitleAlign';
     const fallbackAlign = currentData.textAlign || 'left';
     const textAlign = currentData[alignKey] ?? fallbackAlign;
 
@@ -103,7 +110,7 @@ export function InlineEditToolbar({ focus, onAction, onDismiss }: Props) {
                         {TITLE_SIZES.map(size => (
                             <Fragment key={size}>
                                 {btn(
-                                    () => onAction(blockId, { titleSize: size }),
+                                    () => onAction(blockId, field === 'heading' ? { headingSize: size } : { titleSize: size }),
                                     <span className="text-[11px] font-extrabold">{size.toUpperCase()}</span>,
                                     titleSize === size
                                 )}

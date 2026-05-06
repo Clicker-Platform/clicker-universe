@@ -1,6 +1,6 @@
 import React from 'react';
 import { LinkItem } from "@/data/mockData";
-import { LinkCard } from '@/components/LinkCard';
+import { LinkCard } from './LinkCard';
 
 interface LinkBlockClientProps {
     link: LinkItem;

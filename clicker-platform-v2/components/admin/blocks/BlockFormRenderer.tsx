@@ -33,6 +33,7 @@ const SystemBlockForm = dynamic(() => import('./forms/SystemBlockForm').then(mod
 const QuickActionsBlockForm = dynamic(() => import('./forms/QuickActionsBlockForm').then(mod => mod.QuickActionsBlockForm), { loading: () => <FormSkeleton /> });
 const SocialEmbedForm = dynamic(() => import('./forms/SocialEmbedForm').then(mod => mod.SocialEmbedForm), { loading: () => <FormSkeleton /> });
 const InlineFormBlockForm = dynamic(() => import('./forms/InlineFormBlockForm').then(mod => mod.InlineFormBlockForm), { loading: () => <FormSkeleton /> });
+const HeadingForm = dynamic(() => import('./forms/HeadingForm').then(mod => mod.HeadingForm), { loading: () => <FormSkeleton /> });
 
 interface BlockFormRendererProps {
     block: PageBlock;
@@ -54,6 +55,7 @@ export const BlockFormRenderer = memo(({ block, onChange, templateId = 'classic'
             'social_embed': 'Social Embeds',
             'content_showcase': 'Content Showcase',
             'inline_form': 'Inline Form',
+            'heading': 'Heading',
         };
 
         if (coreLabels[block.type]) {
@@ -130,6 +132,8 @@ export const BlockFormRenderer = memo(({ block, onChange, templateId = 'classic'
         case 'image_gallery': return renderWithLayoutPicker(<ImageGalleryBlockForm data={block.data} onChange={handleDataChange} />);
         case 'social_embed': return <SocialEmbedForm data={block.data} onChange={handleDataChange} />;
         case 'inline_form': return renderWithLayoutPicker(<InlineFormBlockForm data={block.data} onChange={handleDataChange} />);
+
+        case 'heading': return <HeadingForm data={block.data} onChange={handleDataChange} />;
 
         case 'quick_actions':
             return <QuickActionsBlockForm data={block.data} onChange={handleDataChange} onOpenLinks={onOpenSlideOver ? () => onOpenSlideOver('links') : undefined} />;

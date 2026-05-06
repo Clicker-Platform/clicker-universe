@@ -1,13 +1,13 @@
 'use client';
 
 import Image from 'next/image';
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 
 const BLUR_PLACEHOLDER = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxIiBoZWlnaHQ9IjEiPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNlNWU3ZWIiLz48L3N2Zz4=';
 const ALIGN_CLASS = { left: 'text-left', center: 'text-center', right: 'text-right' } as const;
 import { useTemplate } from '@/components/TemplateProvider';
 import { useDeviceView, dv, type DeviceView } from '@/components/DeviceViewContext';
-import { toolbarMouseDownRef } from '@/components/admin/blocks/InlineEditToolbar';
+import { FieldSelectionChrome, EditableText } from '@/components/blocks/shared/EditablePrimitives';
 
 // ─── Colour helpers ───────────────────────────────────────────────────────────
 
@@ -47,94 +47,6 @@ function resolveTextOnBg(
     return 'dark';
 }
 
-// ─── Selection chrome ─────────────────────────────────────────────────────────
-
-function FieldSelectionChrome() {
-    return (
-        <div className="absolute pointer-events-none z-10" style={{ inset: -2 }}>
-            <div className="absolute inset-0 border-[1.5px] border-blue-500" style={{ borderRadius: 0 }} />
-            <div className="absolute -top-[3.5px] -left-[3.5px] w-[7px] h-[7px] bg-white border-[1.5px] border-blue-500" />
-            <div className="absolute -top-[3.5px] left-1/2 -translate-x-1/2 w-[7px] h-[7px] bg-white border-[1.5px] border-blue-500" />
-            <div className="absolute -top-[3.5px] -right-[3.5px] w-[7px] h-[7px] bg-white border-[1.5px] border-blue-500" />
-            <div className="absolute top-1/2 -translate-y-1/2 -left-[3.5px] w-[7px] h-[7px] bg-white border-[1.5px] border-blue-500" />
-            <div className="absolute top-1/2 -translate-y-1/2 -right-[3.5px] w-[7px] h-[7px] bg-white border-[1.5px] border-blue-500" />
-            <div className="absolute -bottom-[3.5px] -left-[3.5px] w-[7px] h-[7px] bg-white border-[1.5px] border-blue-500" />
-            <div className="absolute -bottom-[3.5px] left-1/2 -translate-x-1/2 w-[7px] h-[7px] bg-white border-[1.5px] border-blue-500" />
-            <div className="absolute -bottom-[3.5px] -right-[3.5px] w-[7px] h-[7px] bg-white border-[1.5px] border-blue-500" />
-        </div>
-    );
-}
-
-// ─── Inline-editable text primitive ─────────────────────────────────────────
-
-function EditableText({
-    value,
-    field,
-    tag: Tag = 'span',
-    className,
-    style,
-    placeholder,
-    onInlineChange,
-    onFieldFocus,
-    onFieldBlur,
-}: {
-    value?: string;
-    field: string;
-    tag?: keyof React.JSX.IntrinsicElements;
-    className?: string;
-    style?: React.CSSProperties;
-    placeholder?: string;
-    onInlineChange?: (field: string, value: string) => void;
-    onFieldFocus?: (field: string, rect: DOMRect) => void;
-    onFieldBlur?: () => void;
-}) {
-    const ref = useRef<HTMLElement>(null);
-    const [focused, setFocused] = useState(false);
-
-    if (!onInlineChange) {
-        const El = Tag as any;
-        return <El className={className} style={style}>{value}</El>;
-    }
-
-    const El = Tag as any;
-    return (
-        <div className="relative w-full">
-            <El
-                ref={ref}
-                contentEditable
-                suppressContentEditableWarning
-                data-placeholder={placeholder}
-                className={`${className ?? ''} outline-none cursor-text relative
-                    before:content-[attr(data-placeholder)] before:absolute before:inset-0 before:opacity-40 before:pointer-events-none
-                    [&:not(:empty)]:before:hidden`}
-                style={style}
-                onFocus={() => {
-                    setFocused(true);
-                    if (onFieldFocus && ref.current) {
-                        onFieldFocus(field, ref.current.getBoundingClientRect());
-                    }
-                }}
-                onBlur={(e: React.FocusEvent<HTMLElement>) => {
-                    if (!toolbarMouseDownRef.current) {
-                        setFocused(false);
-                        onInlineChange(field, e.currentTarget.textContent || '');
-                        onFieldBlur?.();
-                    }
-                }}
-                onKeyDown={(e: React.KeyboardEvent<HTMLElement>) => {
-                    if (e.key === 'Enter') { e.preventDefault(); (e.target as HTMLElement).blur(); }
-                    if (e.key === 'v' && (e.metaKey || e.ctrlKey)) {
-                        e.preventDefault();
-                        const text = (e.nativeEvent as any).clipboardData?.getData('text/plain') ?? '';
-                        document.execCommand('insertText', false, text);
-                    }
-                }}
-                dangerouslySetInnerHTML={{ __html: value || '' }}
-            />
-            {focused && <FieldSelectionChrome />}
-        </div>
-    );
-}
 
 const TITLE_SIZES = (d: DeviceView): Record<string, string> => ({
     sm: dv(d, 'text-2xl', 'md:text-3xl'),
@@ -156,42 +68,74 @@ const CtaButtons = ({
     align?: string;
     onFieldFocus?: (field: string, rect: DOMRect) => void;
 }) => {
-    const ref = useRef<HTMLDivElement>(null);
+    const primaryRef = useRef<HTMLDivElement>(null);
+    const secondaryRef = useRef<HTMLDivElement>(null);
+    const [focusedBtn, setFocusedBtn] = useState<'primary' | 'secondary' | null>(null);
+
+    useEffect(() => {
+        if (!focusedBtn) return;
+        const handler = (e: MouseEvent) => {
+            const t = e.target as HTMLElement | null;
+            if (primaryRef.current?.contains(t) || secondaryRef.current?.contains(t)) return;
+            setFocusedBtn(null);
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, [focusedBtn]);
+
     if (!primary && !secondary) return null;
 
     const justifyClass = align === 'left' ? 'justify-start' : align === 'right' ? 'justify-end' : 'justify-center';
 
+    const handleBtnClick = (btn: 'primary' | 'secondary', ref: React.RefObject<HTMLDivElement | null>) => {
+        if (!onFieldFocus || !ref.current) return;
+        setFocusedBtn(btn);
+        onFieldFocus('buttons', ref.current.getBoundingClientRect());
+    };
+
     return (
-        <div
-            ref={ref}
-            className={`flex flex-wrap gap-3 mt-6 ${justifyClass}`}
-            onClick={() => { if (onFieldFocus && ref.current) onFieldFocus('buttons', ref.current.getBoundingClientRect()); }}
-        >
+        <div className={`flex flex-wrap gap-3 mt-6 ${justifyClass}`}>
             {primary?.label && (
-                <a
-                    href={primary?.type === 'form' ? `#form-${primary.formId}` : primary.url || '#'}
-                    className={`inline-flex items-center px-6 py-2.5 text-sm font-bold transition-all active:scale-[0.98] shadow-sm ${
-                        dark
-                            ? 'bg-white text-gray-900 hover:bg-white/90'
-                            : 'bg-theme-primary text-white hover:opacity-90'
-                    }`}
-                    style={{ borderRadius: 'var(--theme-radius)' }}
+                <div
+                    ref={primaryRef}
+                    className="relative inline-flex"
+                    style={{ overflow: 'visible' }}
+                    onClick={() => handleBtnClick('primary', primaryRef)}
                 >
-                    {primary.label}
-                </a>
+                    <a
+                        href={onFieldFocus ? undefined : (primary?.type === 'form' ? `#form-${primary.formId}` : primary.url || '#')}
+                        className={`inline-flex items-center px-6 py-2.5 text-sm font-bold transition-all shadow-sm ${
+                            dark
+                                ? 'bg-white text-gray-900 hover:bg-white/90'
+                                : 'bg-theme-primary text-white hover:opacity-90'
+                        }`}
+                        style={{ borderRadius: 'var(--theme-radius)' }}
+                    >
+                        {primary.label}
+                    </a>
+                    {onFieldFocus && focusedBtn === 'primary' && <FieldSelectionChrome />}
+                </div>
             )}
             {secondary?.label && (
-                <a
-                    href={secondary?.type === 'form' ? `#form-${secondary.formId}` : secondary.url || '#'}
-                    className={`inline-flex items-center px-6 py-2.5 text-sm font-bold border-2 transition-all active:scale-[0.98] ${
-                        dark
-                            ? 'border-white/50 text-white hover:bg-white/10'
-                            : 'border-theme-border text-theme-foreground hover:bg-black/5'
-                    }`}
-                    style={{ borderRadius: 'var(--theme-radius)' }}
+                <div
+                    ref={secondaryRef}
+                    className="relative inline-flex"
+                    style={{ overflow: 'visible' }}
+                    onClick={() => handleBtnClick('secondary', secondaryRef)}
                 >
-                    {secondary.label}
-                </a>
+                    <a
+                        href={onFieldFocus ? undefined : (secondary?.type === 'form' ? `#form-${secondary.formId}` : secondary.url || '#')}
+                        className={`inline-flex items-center px-6 py-2.5 text-sm font-bold border-2 transition-all ${
+                            dark
+                                ? 'border-white/50 text-white hover:bg-white/10'
+                                : 'border-theme-border text-theme-foreground hover:bg-black/5'
+                        }`}
+                        style={{ borderRadius: 'var(--theme-radius)' }}
+                    >
+                        {secondary.label}
+                    </a>
+                    {onFieldFocus && focusedBtn === 'secondary' && <FieldSelectionChrome />}
+                </div>
             )}
         </div>
     );
@@ -507,7 +451,7 @@ export const DefaultHeroBlock = ({ data, theme, isFirst = true, onInlineChange, 
                         style={{ color: data?.subtitleColor || defaultSubtitleColor }}
                     />
                 )}
-                <CtaButtons primary={primaryBtn} secondary={secondaryBtn} dark={isDark} align={ctaAlign} />
+                <CtaButtons primary={primaryBtn} secondary={secondaryBtn} dark={isDark} align={ctaAlign} onFieldFocus={onFieldFocus} />
             </div>
         </section>
     );

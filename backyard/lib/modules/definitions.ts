@@ -91,6 +91,15 @@ export const STATIC_MODULE_DEFINITIONS: Record<string, Partial<ModuleDefinition>
             { path: '/admin/marketing/settings',         label: 'Settings',        icon: 'settings',       componentKey: 'ai_marketing:Settings',       permission: 'settings' },
         ]
     },
+    'promo': {
+        displayName: 'Promotions',
+        description: 'Discount codes, vouchers, and member reward programs.',
+        adminRoutes: [
+            { label: 'Promotions', path: '/admin/promo',          icon: 'tag',      componentKey: 'promo:PromoAdminPage' },
+            { label: 'Vouchers',   path: '/admin/promo/vouchers', icon: 'ticket',   componentKey: 'promo:PromoAdminPage' },
+            { label: 'Settings',   path: '/admin/promo/settings', icon: 'settings', componentKey: 'promo:PromoAdminPage', permission: 'settings' },
+        ]
+    },
 };
 
 // Helper for UI iterators (Backyard)

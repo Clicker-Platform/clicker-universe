@@ -3,13 +3,13 @@
 import React from 'react';
 import dynamic from 'next/dynamic';
 import { ClassicProfileHeader } from "@/components/headers/ClassicProfileHeader";
-import { FeaturedProduct } from "@/components/FeaturedProduct";
-import { ProductGallery } from "@/components/ProductGallery";
+import { DefaultFeaturedProductBlock } from "@/components/blocks/public/DefaultFeaturedProductBlock";
+import { DefaultProductGalleryBlock as ProductGallery } from "@/components/blocks/public/DefaultProductGalleryBlock";
 import { Footer } from "@/components/Footer";
-import { OperatingHours } from "@/components/OperatingHours";
+import { DefaultOperatingHoursBlock as OperatingHours } from "@/components/blocks/public/DefaultOperatingHoursBlock";
 import { BackgroundDecorations } from "@/components/BackgroundDecorations";
-import { QuickActions } from "@/components/QuickActions";
-import { BranchesList } from "@/components/BranchesList";
+import { DefaultQuickActionsBlock as QuickActions } from "@/components/blocks/public/DefaultQuickActionsBlock";
+import { DefaultBranchesBlock as BranchesList } from "@/components/blocks/public/DefaultBranchesBlock";
 import { BusinessProfile, LinkItem, Product, SocialLinkItem, BusinessHours, BusinessContact, Branch } from "@/data/mockData";
 import { ResponsiveContainer } from '@/components/layout/ResponsiveContainer';
 import { DaySchedule } from "@/lib/core/types";
@@ -180,7 +180,7 @@ function PublicContentContent({ data }: { data: any }) {
                             if (!featuredProduct) return null;
                             const featuredSettings = data.productSettings || {};
                             return (
-                                <FeaturedProduct
+                                <DefaultFeaturedProductBlock
                                     key={blockId}
                                     product={featuredProduct}
                                     badgeText={featuredSettings.featuredTitle || "Star Pick"}

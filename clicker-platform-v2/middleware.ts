@@ -286,8 +286,10 @@ export async function middleware(request: NextRequest) {
             const adminPath = '/' + segments.slice(1).join('/');
             const isCallbackRoute = adminPath.startsWith('/admin/claim-admin');
 
-            // If no session and not on callback, redirect to auth gateway
-            if (!activeSite && !isCallbackRoute) {
+            // On Firebase default domains (.web.app), cookies are cross-origin from auth gateway
+            // so __session won't be present on first load. Let TokenBootstrap (client-side) set
+            // the cookie and handle auth — AdminGuard handles the unauthenticated redirect.
+            if (!activeSite && !isCallbackRoute && !isFirebaseDefaultDomain) {
                 const currentPath = '/' + segments.join('/'); // Keep full path like /hi-clicker/admin
                 const redirectBackUrl = buildRedirectUrl(currentPath);
                 return NextResponse.redirect(`${gatewayUrl}?redirect=${encodeURIComponent(redirectBackUrl)}`);
@@ -299,10 +301,10 @@ export async function middleware(request: NextRequest) {
             const url = request.nextUrl.clone();
             url.pathname = newPath;
 
-            // Explicitly signal subdomain status to Server Components
-            // Since this block is only hit when Cloudflare rewrites a request from a subdomain
-            // (e.g. clicker.id/admin hits the special routes block instead),
-            // we can definitively set this to true, bypassing the unreliability of Firebase headers.
+            // Use activeSite from cookie if available, else fall back to tenant slug from URL.
+            // On Firebase default domains, __session cookie won't be set on first load (cross-origin),
+            // so tenant from URL is the only reliable source.
+            requestHeaders.set('x-site-id', activeSite || tenant);
             requestHeaders.set('x-clicker-is-subdomain', 'true');
 
             return NextResponse.rewrite(url, {

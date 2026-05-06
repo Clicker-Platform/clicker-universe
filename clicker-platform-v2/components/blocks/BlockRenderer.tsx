@@ -18,12 +18,13 @@ const MapBlock = dynamic(() => import('./public/DefaultMapBlock').then(mod => mo
 const ReservationBlock = dynamic(() => import('./public/ReservationBlock').then(mod => mod.ReservationBlock));
 const SocialEmbedBlock = dynamic(() => import('./public/DefaultSocialEmbedBlock').then(mod => mod.DefaultSocialEmbedBlock));
 const InlineFormBlock = dynamic(() => import('./public/DefaultInlineFormBlock').then(mod => mod.DefaultInlineFormBlock));
+const HeadingBlock = dynamic(() => import('./public/DefaultHeadingBlock').then(mod => mod.DefaultHeadingBlock));
 
 // System blocks (from PublicPageRenderer)
-const QuickActions = dynamic(() => import('@/components/QuickActions').then(mod => mod.QuickActions));
-const OperatingHours = dynamic(() => import('@/components/OperatingHours').then(mod => mod.OperatingHours));
-const BranchesList = dynamic(() => import('@/components/BranchesList').then(mod => mod.BranchesList));
-const FeaturedProduct = dynamic(() => import('@/components/FeaturedProduct').then(mod => mod.FeaturedProduct));
+const QuickActions = dynamic(() => import('./public/DefaultQuickActionsBlock').then(mod => mod.DefaultQuickActionsBlock));
+const OperatingHours = dynamic(() => import('./public/DefaultOperatingHoursBlock').then(mod => mod.DefaultOperatingHoursBlock));
+const BranchesList = dynamic(() => import('./public/DefaultBranchesBlock').then(mod => mod.DefaultBranchesBlock));
+const FeaturedProductBlock = dynamic(() => import('./public/DefaultFeaturedProductBlock').then(mod => mod.DefaultFeaturedProductBlock));
 
 
 import { ModuleBlockLoader } from '@/components/modules/ModuleBlockLoader';
@@ -108,10 +109,10 @@ export const BlockRenderer = ({
                 return customBlocks?.Image ?
                     React.createElement(customBlocks.Image, { data: block.data, isFirst }) :
                     <ImageBlock data={block.data} isFirst={isFirst} />;
-            case 'button': 
-                return customBlocks?.Button ? 
-                    React.createElement(customBlocks.Button, { data: block.data }) : 
-                    <ButtonBlock data={block.data} />;
+            case 'button':
+                return customBlocks?.Button ?
+                    React.createElement(customBlocks.Button, { data: block.data, previewMode }) :
+                    <ButtonBlock data={block.data} previewMode={previewMode} />;
             case 'products': 
                 return customBlocks?.Products ? 
                     React.createElement(customBlocks.Products, { data: block.data, phoneNumber, whatsappSettings, siteId, products }) : 
@@ -148,38 +149,28 @@ export const BlockRenderer = ({
                     React.createElement(customBlocks.Branches, { contact, branches: branches || [] }) : 
                     <BranchesList contact={contact} branches={branches || []} />;
 
-            case 'featured_product':
+            case 'featured_product': {
                 if (!featuredProduct) return null;
                 const featuredSettings = productSettings || {};
-                
-                return customBlocks?.FeaturedProduct ? 
-                    React.createElement(customBlocks.FeaturedProduct, { 
-                        product: featuredProduct,
-                        badgeText: featuredSettings.featuredTitle || "Star Pick",
-                        showBadge: featuredSettings.showFeaturedTitle !== false,
-                        buttonText: featuredSettings.featuredBtnText || "Order This Now",
-                        phoneNumber: contact?.whatsapp,
-                        whatsappSettings: {
-                            label: featuredSettings.whatsappBtnLabel,
-                            messageTemplate: featuredSettings.whatsappMessageTemplate,
-                            bgColor: featuredSettings.whatsappBtnColor,
-                            textColor: featuredSettings.whatsappBtnTextColor
-                        }
-                    }) : (
-                    <FeaturedProduct
-                        product={featuredProduct}
-                        badgeText={featuredSettings.featuredTitle || "Star Pick"}
-                        showBadge={featuredSettings.showFeaturedTitle !== false}
-                        buttonText={featuredSettings.featuredBtnText || "Order This Now"}
-                        phoneNumber={contact?.whatsapp}
-                        whatsappSettings={{
-                            label: featuredSettings.whatsappBtnLabel,
-                            messageTemplate: featuredSettings.whatsappMessageTemplate,
-                            bgColor: featuredSettings.whatsappBtnColor,
-                            textColor: featuredSettings.whatsappBtnTextColor
-                        }}
-                    />
-                );
+                const featuredProps = {
+                    product: featuredProduct,
+                    theme,
+                    previewMode,
+                    badgeText: featuredSettings.featuredTitle || 'Star Pick',
+                    showBadge: featuredSettings.showFeaturedTitle !== false,
+                    buttonText: featuredSettings.featuredBtnText || 'Order This Now',
+                    phoneNumber: contact?.whatsapp,
+                    whatsappSettings: {
+                        label: featuredSettings.whatsappBtnLabel,
+                        messageTemplate: featuredSettings.whatsappMessageTemplate,
+                        bgColor: featuredSettings.whatsappBtnColor,
+                        textColor: featuredSettings.whatsappBtnTextColor,
+                    },
+                };
+                return customBlocks?.FeaturedProduct
+                    ? React.createElement(customBlocks.FeaturedProduct, featuredProps)
+                    : <FeaturedProductBlock {...featuredProps} />;
+            }
 
             case 'reservation':
                 return <ReservationBlock data={block.data} siteId={siteId} initialServices={reservationServices} initialStaff={reservationStaff} initialSettings={reservationSettings} />;
@@ -191,6 +182,11 @@ export const BlockRenderer = ({
                 return customBlocks?.InlineFormBlock
                     ? React.createElement(customBlocks.InlineFormBlock, { data: block.data, siteId })
                     : <InlineFormBlock data={block.data} siteId={siteId} />;
+
+            case 'heading':
+                return customBlocks?.HeadingBlock
+                    ? React.createElement(customBlocks.HeadingBlock, { data: block.data })
+                    : <HeadingBlock data={block.data} onInlineChange={onInlineChange} onFieldFocus={onFieldFocus} onFieldBlur={onFieldBlur} />;
 
             default:
                 return <ModuleBlockLoader type={block.type} data={block.data} siteId={siteId} />;

@@ -1,15 +1,17 @@
 'use client';
 
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { ModuleDefinition } from '@/lib/modules/types';
-import { PosWidget } from './widgets/PosWidget';
-import { ReservationWidget } from './widgets/ReservationWidget';
-import { MembershipWidget } from './widgets/MembershipWidget';
-import { InventoryWidget } from './widgets/InventoryWidget';
-import { PromoWidget } from './widgets/PromoWidget';
-import { ServiceRecordsWidget } from './widgets/ServiceRecordsWidget';
-import { SalesPipelineWidget } from './widgets/SalesPipelineWidget';
-import { FintrackWidget } from './widgets/FintrackWidget';
+
+const PosWidget = dynamic(() => import('./widgets/PosWidget').then(m => m.PosWidget));
+const ReservationWidget = dynamic(() => import('./widgets/ReservationWidget').then(m => m.ReservationWidget));
+const MembershipWidget = dynamic(() => import('./widgets/MembershipWidget').then(m => m.MembershipWidget));
+const InventoryWidget = dynamic(() => import('./widgets/InventoryWidget').then(m => m.InventoryWidget));
+const PromoWidget = dynamic(() => import('./widgets/PromoWidget').then(m => m.PromoWidget));
+const ServiceRecordsWidget = dynamic(() => import('./widgets/ServiceRecordsWidget').then(m => m.ServiceRecordsWidget));
+const SalesPipelineWidget = dynamic(() => import('./widgets/SalesPipelineWidget').then(m => m.SalesPipelineWidget));
+const FintrackWidget = dynamic(() => import('./widgets/FintrackWidget').then(m => m.FintrackWidget));
 
 const WIDGET_REGISTRY: Record<string, React.ComponentType<{ siteId: string }>> = {
   'byod_pos:DashboardWidget': PosWidget,

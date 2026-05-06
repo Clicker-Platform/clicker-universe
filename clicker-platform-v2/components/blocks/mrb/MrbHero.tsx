@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import Image from 'next/image';
 import { ImageIcon } from 'lucide-react';
 
@@ -9,7 +9,7 @@ const ALIGN_CLASS = { left: 'text-left', center: 'text-center', right: 'text-rig
 import { BusinessProfile } from '@/data/mockData';
 import { useTemplate } from '@/components/TemplateProvider';
 import { useDeviceView, dv, type DeviceView } from '@/components/DeviceViewContext';
-import { toolbarMouseDownRef } from '@/components/admin/blocks/InlineEditToolbar';
+import { FieldSelectionChrome, EditableText } from '@/components/blocks/shared/EditablePrimitives';
 
 // ─── Colour helpers ───────────────────────────────────────────────────────────
 
@@ -51,93 +51,6 @@ function resolveTextOnBg(
     return 'dark';
 }
 
-// ─── Internal primitives ─────────────────────────────────────────────────────
-
-function FieldSelectionChrome() {
-    return (
-        <div className="absolute pointer-events-none z-10" style={{ inset: -2 }}>
-            <div className="absolute inset-0 border-[1.5px] border-blue-500" style={{ borderRadius: 0 }} />
-            <div className="absolute -top-[3.5px] -left-[3.5px] w-[7px] h-[7px] bg-white border-[1.5px] border-blue-500" />
-            <div className="absolute -top-[3.5px] left-1/2 -translate-x-1/2 w-[7px] h-[7px] bg-white border-[1.5px] border-blue-500" />
-            <div className="absolute -top-[3.5px] -right-[3.5px] w-[7px] h-[7px] bg-white border-[1.5px] border-blue-500" />
-            <div className="absolute top-1/2 -translate-y-1/2 -left-[3.5px] w-[7px] h-[7px] bg-white border-[1.5px] border-blue-500" />
-            <div className="absolute top-1/2 -translate-y-1/2 -right-[3.5px] w-[7px] h-[7px] bg-white border-[1.5px] border-blue-500" />
-            <div className="absolute -bottom-[3.5px] -left-[3.5px] w-[7px] h-[7px] bg-white border-[1.5px] border-blue-500" />
-            <div className="absolute -bottom-[3.5px] left-1/2 -translate-x-1/2 w-[7px] h-[7px] bg-white border-[1.5px] border-blue-500" />
-            <div className="absolute -bottom-[3.5px] -right-[3.5px] w-[7px] h-[7px] bg-white border-[1.5px] border-blue-500" />
-        </div>
-    );
-}
-
-function EditableText({
-    value,
-    field,
-    tag: Tag = 'span',
-    className,
-    style,
-    placeholder,
-    onInlineChange,
-    onFieldFocus,
-    onFieldBlur,
-}: {
-    value?: string;
-    field: string;
-    tag?: React.ElementType;
-    className?: string;
-    style?: React.CSSProperties;
-    placeholder?: string;
-    onInlineChange?: (field: string, value: string) => void;
-    onFieldFocus?: (field: string, rect: DOMRect) => void;
-    onFieldBlur?: () => void;
-}) {
-    const ref = useRef<HTMLElement>(null);
-    const [focused, setFocused] = useState(false);
-    const El = Tag as any;
-
-    if (!onInlineChange) {
-        return <El className={className} style={style}>{value}</El>;
-    }
-
-    return (
-        <div className="relative w-full">
-            <El
-                ref={ref}
-                contentEditable
-                suppressContentEditableWarning
-                data-placeholder={placeholder}
-                className={`${className ?? ''} outline-none cursor-text relative
-                    before:content-[attr(data-placeholder)] before:absolute before:inset-0 before:opacity-40 before:pointer-events-none
-                    [&:not(:empty)]:before:hidden`}
-                style={style}
-                onFocus={() => {
-                    setFocused(true);
-                    if (onFieldFocus && ref.current) {
-                        onFieldFocus(field, ref.current.getBoundingClientRect());
-                    }
-                }}
-                onBlur={(e: React.FocusEvent<HTMLElement>) => {
-                    if (!toolbarMouseDownRef.current) {
-                        setFocused(false);
-                        onInlineChange(field, e.currentTarget.textContent || '');
-                        onFieldBlur?.();
-                    }
-                }}
-                onKeyDown={(e: React.KeyboardEvent<HTMLElement>) => {
-                    if (e.key === 'Enter') { e.preventDefault(); (e.target as HTMLElement).blur(); }
-                    if (e.key === 'v' && (e.metaKey || e.ctrlKey)) {
-                        e.preventDefault();
-                        navigator.clipboard?.readText().then(text => {
-                            document.execCommand('insertText', false, text);
-                        });
-                    }
-                }}
-                dangerouslySetInnerHTML={{ __html: value || '' }}
-            />
-            {focused && <FieldSelectionChrome />}
-        </div>
-    );
-}
-
 const TITLE_SIZES = (d: DeviceView): Record<string, string> => ({
     sm: dv(d, 'text-3xl', 'md:text-4xl'),
     md: dv(d, 'text-5xl', 'md:text-6xl'),
@@ -146,6 +59,77 @@ const TITLE_SIZES = (d: DeviceView): Record<string, string> => ({
 });
 
 interface CtaBtn { label?: string; url?: string; }
+
+function CtaButtons({ primary, secondary, ctaJustify, primaryColor, bgColor, defaultTextColor, titleColor, onFieldFocus }: {
+    primary?: CtaBtn | null;
+    secondary?: CtaBtn | null;
+    ctaJustify: string;
+    primaryColor: string;
+    bgColor: string;
+    defaultTextColor: string;
+    titleColor?: string;
+    onFieldFocus?: (field: string, rect: DOMRect) => void;
+}) {
+    const primaryRef = useRef<HTMLDivElement>(null);
+    const secondaryRef = useRef<HTMLDivElement>(null);
+    const [focusedBtn, setFocusedBtn] = useState<'primary' | 'secondary' | null>(null);
+
+    useEffect(() => {
+        if (!focusedBtn) return;
+        const handler = (e: MouseEvent) => {
+            const t = e.target as HTMLElement | null;
+            if (primaryRef.current?.contains(t) || secondaryRef.current?.contains(t)) return;
+            setFocusedBtn(null);
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, [focusedBtn]);
+
+    const handleClick = (btn: 'primary' | 'secondary', ref: React.RefObject<HTMLDivElement | null>) => {
+        if (!onFieldFocus || !ref.current) return;
+        setFocusedBtn(btn);
+        onFieldFocus('buttons', ref.current.getBoundingClientRect());
+    };
+
+    return (
+        <div className={`flex flex-wrap gap-4 relative z-10 w-full ${ctaJustify}`}>
+            {primary?.label && (
+                <div
+                    ref={primaryRef}
+                    className="relative inline-flex"
+                    style={{ overflow: 'visible' }}
+                    onClick={() => handleClick('primary', primaryRef)}
+                >
+                    <a
+                        href={onFieldFocus ? undefined : (primary.url || '#')}
+                        className="inline-flex items-center px-6 py-3 rounded-xl text-sm font-bold transition-all active:scale-[0.98] shadow-lg"
+                        style={{ backgroundColor: primaryColor, color: bgColor }}
+                    >
+                        {primary.label}
+                    </a>
+                    {onFieldFocus && focusedBtn === 'primary' && <FieldSelectionChrome />}
+                </div>
+            )}
+            {secondary?.label && (
+                <div
+                    ref={secondaryRef}
+                    className="relative inline-flex"
+                    style={{ overflow: 'visible' }}
+                    onClick={() => handleClick('secondary', secondaryRef)}
+                >
+                    <a
+                        href={onFieldFocus ? undefined : (secondary.url || '#')}
+                        className="inline-flex items-center px-6 py-3 rounded-xl text-sm font-bold border-2 transition-all active:scale-[0.98]"
+                        style={{ borderColor: `${primaryColor}66`, color: titleColor || defaultTextColor }}
+                    >
+                        {secondary.label}
+                    </a>
+                    {onFieldFocus && focusedBtn === 'secondary' && <FieldSelectionChrome />}
+                </div>
+            )}
+        </div>
+    );
+}
 
 interface MrbHeroProps {
     profile: BusinessProfile;
@@ -376,22 +360,16 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, isFirst = true,
 
             {/* CTA Buttons */}
             {(primaryBtn?.label || secondaryBtn?.label) && (
-                <div className={`flex flex-wrap gap-4 relative z-10 w-full ${ctaJustify}`}>
-                    {primaryBtn?.label && (
-                        <a href={primaryBtn.url || '#'}
-                            className="inline-flex items-center px-6 py-3 rounded-xl text-sm font-bold uppercase tracking-wide transition-all active:scale-[0.98] shadow-lg"
-                            style={{ backgroundColor: theme.colors.primary, color: theme.colors.background }}>
-                            {primaryBtn.label}
-                        </a>
-                    )}
-                    {secondaryBtn?.label && (
-                        <a href={secondaryBtn.url || '#'}
-                            className="inline-flex items-center px-6 py-3 rounded-xl text-sm font-bold uppercase tracking-wide border-2 transition-all active:scale-[0.98]"
-                            style={{ borderColor: `${theme.colors.primary}66`, color: data?.titleColor || defaultTextColor }}>
-                            {secondaryBtn.label}
-                        </a>
-                    )}
-                </div>
+                <CtaButtons
+                    primary={primaryBtn}
+                    secondary={secondaryBtn}
+                    ctaJustify={ctaJustify}
+                    primaryColor={theme.colors.primary}
+                    bgColor={theme.colors.background}
+                    defaultTextColor={defaultTextColor}
+                    titleColor={data?.titleColor}
+                    onFieldFocus={onFieldFocus}
+                />
             )}
         </div>
     );

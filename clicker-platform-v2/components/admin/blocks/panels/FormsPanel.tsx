@@ -439,10 +439,10 @@ export function FormsPanel() {
     return (
         <div className="flex flex-col h-full">
             {/* Toolbar */}
-            <div className="px-3 py-2 border-b border-neutral-800 flex items-center gap-2 flex-shrink-0">
+            <div className="px-3 py-2 border-b border-gray-200 dark:border-neutral-800 flex items-center gap-2 flex-shrink-0">
                 <button
                     onClick={() => openBuilder()}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-neutral-800 text-neutral-300 border border-neutral-700 hover:bg-neutral-700 transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-gray-300 dark:border-neutral-700 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors"
                 >
                     <Plus size={13} /> Create Form
                 </button>

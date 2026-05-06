@@ -11,7 +11,7 @@ interface BranchesListProps {
     branches: Branch[];
 }
 
-export const BranchesList: React.FC<BranchesListProps> = ({ contact, branches }) => {
+export const DefaultBranchesBlock: React.FC<BranchesListProps> = ({ contact, branches }) => {
     const [isExpanded, setIsExpanded] = useState(false);
 
     const { theme } = useTemplate();
@@ -105,3 +105,5 @@ export const BranchesList: React.FC<BranchesListProps> = ({ contact, branches })
         </div>
     );
 };
+
+export { DefaultBranchesBlock as BranchesList };
