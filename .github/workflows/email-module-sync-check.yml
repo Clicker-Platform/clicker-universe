@@ -1,0 +1,30 @@
+name: Email Module Sync Check
+
+on:
+  pull_request:
+    paths:
+      - 'clicker-platform-v2/lib/email/**'
+      - 'auth-gateway/lib/email/**'
+      - 'scripts/sync-email-module.sh'
+
+jobs:
+  diff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compare directories (excluding __tests__)
+        run: |
+          if [ ! -d auth-gateway/lib/email ]; then
+            echo "auth-gateway/lib/email does not exist yet — skipping."
+            exit 0
+          fi
+          # Build temp copy of platform without __tests__, diff against auth-gateway/lib/email.
+          tmp=$(mktemp -d)
+          cp -R clicker-platform-v2/lib/email/. "$tmp/"
+          rm -rf "$tmp/__tests__"
+          if ! diff -r "$tmp" auth-gateway/lib/email; then
+            echo ""
+            echo "::error::lib/email/ is out of sync between platform and auth-gateway."
+            echo "Run: ./scripts/sync-email-module.sh"
+            exit 1
+          fi
