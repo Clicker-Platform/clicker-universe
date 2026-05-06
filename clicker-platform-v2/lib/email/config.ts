@@ -1,10 +1,8 @@
 export type SenderParts = { localPart: string; domain: string };
 
 export function resolveDefaultSender(): SenderParts {
-  const isDev = process.env.NODE_ENV !== 'production';
-  const domain = process.env.EMAIL_SENDER_DOMAIN ?? (isDev ? 'resend.dev' : 'clicker.id');
-  const fallbackLocal = domain === 'resend.dev' ? 'onboarding' : 'noreply';
-  const localPart = process.env.EMAIL_SENDER_LOCAL_PART ?? fallbackLocal;
+  const domain = process.env.EMAIL_SENDER_DOMAIN ?? 'clicker.id';
+  const localPart = process.env.EMAIL_SENDER_LOCAL_PART ?? 'noreply';
   return { localPart, domain };
 }
 

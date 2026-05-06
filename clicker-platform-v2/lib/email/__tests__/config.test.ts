@@ -17,20 +17,16 @@ afterEach(() => {
 });
 
 describe('resolveDefaultSender', () => {
-  it('falls back to onboarding@resend.dev in dev with no EMAIL_SENDER_DOMAIN', () => {
-    process.env.NODE_ENV = 'development';
-    expect(resolveDefaultSender()).toEqual({ localPart: 'onboarding', domain: 'resend.dev' });
-  });
-
-  it('uses configured domain and default local-part in production', () => {
-    process.env.NODE_ENV = 'production';
-    process.env.EMAIL_SENDER_DOMAIN = 'clicker.id';
+  it('defaults to noreply@clicker.id when no env vars set', () => {
     expect(resolveDefaultSender()).toEqual({ localPart: 'noreply', domain: 'clicker.id' });
   });
 
+  it('uses EMAIL_SENDER_DOMAIN override when set', () => {
+    process.env.EMAIL_SENDER_DOMAIN = 'custom.example.com';
+    expect(resolveDefaultSender()).toEqual({ localPart: 'noreply', domain: 'custom.example.com' });
+  });
+
   it('respects EMAIL_SENDER_LOCAL_PART override', () => {
-    process.env.NODE_ENV = 'production';
-    process.env.EMAIL_SENDER_DOMAIN = 'clicker.id';
     process.env.EMAIL_SENDER_LOCAL_PART = 'hello';
     expect(resolveDefaultSender()).toEqual({ localPart: 'hello', domain: 'clicker.id' });
   });

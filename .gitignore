@@ -1,2 +1,52 @@
+# Worktrees
 .worktrees/
 worktrees/
+
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build outputs
+.next/
+**/.next/
+out/
+**/out/
+dist/
+**/dist/
+build/
+**/build/
+
+# Firebase
+.firebase/
+**/.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+*-debug.log
+functions/lib/
+functions/node_modules/
+
+# Environment & secrets
+.env*.local
+.env.production
+**/service-account*.json
+**/service-account-prod.json
+clicker-universe-firebase-adminsdk-*.json
+
+# OS
+.DS_Store
+**/.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+logs/
+
+# Misc
+.cache/
+.turbo/
+*.tsbuildinfo
