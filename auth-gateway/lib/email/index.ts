@@ -1,5 +1,6 @@
 export { sendEmail } from './sender';
 export { getEmailContext } from './context';
+export { getTemplateAliases } from './config';
 export type {
   SendEmailInput,
   SendEmailResult,
@@ -7,7 +8,3 @@ export type {
   EmailLogDoc,
   EmailTag,
 } from './types';
-export { FormSubmission } from './templates/system/FormSubmission';
-export { PasswordReset } from './templates/system/PasswordReset';
-export { EmailVerification } from './templates/system/EmailVerification';
-export { SystemAlert } from './templates/system/SystemAlert';

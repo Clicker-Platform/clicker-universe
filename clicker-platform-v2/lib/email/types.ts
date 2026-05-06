@@ -1,12 +1,11 @@
-import type { ReactElement } from 'react';
 import type { Timestamp } from 'firebase-admin/firestore';
 
 export type EmailTag = { name: string; value: string };
 
 export type SendEmailInput = {
   to: string | string[];
-  subject: string;
-  template: ReactElement;
+  templateAlias: string;
+  variables: Record<string, string>;
   siteId: string | null;
   replyTo?: string;
   cc?: string | string[];

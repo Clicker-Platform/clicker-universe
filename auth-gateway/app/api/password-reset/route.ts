@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server';
-import { createElement } from 'react';
 import { adminAuth } from '@/lib/firebase-admin';
 import { logger } from '@/lib/logger';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { resolveSiteFromEmail } from '@/lib/resolve-site-from-email';
-import { sendEmail, PasswordReset } from '@/lib/email';
+import { sendEmail } from '@/lib/email';
 
 export async function POST(request: Request) {
   const ip = request.headers.get('x-forwarded-for') ?? 'unknown';
@@ -26,7 +25,6 @@ export async function POST(request: Request) {
         handleCodeInApp: false,
       });
     } catch {
-      // Email not found in Firebase Auth — return ok without sending
       return NextResponse.json({ ok: true });
     }
 
@@ -35,8 +33,8 @@ export async function POST(request: Request) {
     await sendEmail({
       to: email,
       siteId,
-      subject: 'Reset your password',
-      template: createElement(PasswordReset, { resetUrl: resetLink }),
+      templateAlias: 'password-reset',
+      variables: { resetLink },
       tags: [{ name: 'template', value: 'password-reset' }],
     });
   } catch (error) {

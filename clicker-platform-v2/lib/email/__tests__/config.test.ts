@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { resolveDefaultSender, getDevAllowlistSuffixes, getSystemDefaults } from '../config';
+import { resolveDefaultSender, getDevAllowlistSuffixes, getSystemDefaults, getTemplateAliases } from '../config';
 
 const ORIGINAL_ENV = { ...process.env };
 
@@ -63,5 +63,27 @@ describe('getSystemDefaults', () => {
     expect(d.fromName).toBe('Custom Name');
     expect(d.platformUrl).toBe('https://example.com');
     expect(d.logoUrl).toBe('https://example.com/logo.png');
+  });
+});
+
+describe('getTemplateAliases', () => {
+  it('returns hardcoded defaults when env vars not set', () => {
+    delete process.env.RESEND_TEMPLATE_PASSWORD_RESET;
+    delete process.env.RESEND_TEMPLATE_EMAIL_VERIFY;
+    delete process.env.RESEND_TEMPLATE_FORM_SUBMISSION;
+    delete process.env.RESEND_TEMPLATE_SYSTEM_ALERT;
+    const aliases = getTemplateAliases();
+    expect(aliases.passwordReset).toBe('password-reset');
+    expect(aliases.emailVerification).toBe('email-verification');
+    expect(aliases.formSubmission).toBe('form-submission');
+    expect(aliases.systemAlert).toBe('system-alert');
+  });
+
+  it('reads from env vars when set', () => {
+    process.env.RESEND_TEMPLATE_PASSWORD_RESET = 'pw-reset-v2';
+    process.env.RESEND_TEMPLATE_EMAIL_VERIFY = 'verify-v2';
+    const aliases = getTemplateAliases();
+    expect(aliases.passwordReset).toBe('pw-reset-v2');
+    expect(aliases.emailVerification).toBe('verify-v2');
   });
 });

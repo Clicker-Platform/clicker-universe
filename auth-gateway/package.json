@@ -9,8 +9,6 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@react-email/components": "^1.0.12",
-    "@react-email/render": "^2.0.8",
     "firebase": "^12.7.0",
     "firebase-admin": "^13.8.0",
     "next": "15.5.15",
