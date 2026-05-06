@@ -48,5 +48,5 @@ Makefile text eol=lf
 clicker-universe-stagging-firebase-adminsdk-*.json linguist-generated=true
 *firebase-adminsdk*.json linguist-generated=true
 *.bak linguist-generated=true
-pnpm-lock.yaml linguist-generated=true
-package-lock.json linguist-generated=true
+pnpm-lock.yaml linguist-generated=true -diff
+package-lock.json linguist-generated=true -diff
