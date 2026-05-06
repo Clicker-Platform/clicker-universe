@@ -25,3 +25,6 @@ function getAdminApp(): admin.app.App {
 
 export const adminApp = getAdminApp();
 export const adminAuth = admin.auth(adminApp);
+export const adminDb = admin.firestore(adminApp);
+export const FieldValue = admin.firestore.FieldValue;
+export const Timestamp = admin.firestore.Timestamp;
