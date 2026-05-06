@@ -1,4 +1,5 @@
 import { Text } from '@react-email/components';
+import { PreviewWrap } from '../_preview-context';
 import { EmailLayout } from '../EmailLayout';
 import { Heading } from '../components/Heading';
 import { Button } from '../components/Button';
@@ -23,5 +24,13 @@ export function PasswordReset({ resetUrl }: Props) {
         This link expires in 1 hour.
       </Text>
     </EmailLayout>
+  );
+}
+
+export default function PasswordResetPreview() {
+  return (
+    <PreviewWrap>
+      <PasswordReset resetUrl="https://example.com/reset?token=abc123" />
+    </PreviewWrap>
   );
 }

@@ -1,4 +1,5 @@
 import { Text } from '@react-email/components';
+import { PreviewWrap } from '../_preview-context';
 import { EmailLayout } from '../EmailLayout';
 import { Heading } from '../components/Heading';
 
@@ -15,5 +16,13 @@ export function SystemAlert({ title, body }: Props) {
         {body}
       </Text>
     </EmailLayout>
+  );
+}
+
+export default function SystemAlertPreview() {
+  return (
+    <PreviewWrap>
+      <SystemAlert title="Scheduled maintenance" body="The platform will be undergoing maintenance on Sunday from 2am to 4am UTC." />
+    </PreviewWrap>
   );
 }

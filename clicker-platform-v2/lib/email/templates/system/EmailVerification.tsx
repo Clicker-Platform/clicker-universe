@@ -1,4 +1,5 @@
 import { Text } from '@react-email/components';
+import { PreviewWrap } from '../_preview-context';
 import { EmailLayout } from '../EmailLayout';
 import { Heading } from '../components/Heading';
 import { Button } from '../components/Button';
@@ -20,5 +21,13 @@ export function EmailVerification({ verifyUrl }: Props) {
         Verify email
       </Button>
     </EmailLayout>
+  );
+}
+
+export default function EmailVerificationPreview() {
+  return (
+    <PreviewWrap>
+      <EmailVerification verifyUrl="https://example.com/verify?token=abc123" />
+    </PreviewWrap>
   );
 }

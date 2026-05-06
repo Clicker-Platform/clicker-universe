@@ -1,4 +1,5 @@
 import { Text } from '@react-email/components';
+import { PreviewWrap } from '../_preview-context';
 import { EmailLayout } from '../EmailLayout';
 import { Heading } from '../components/Heading';
 import { DataTable } from '../components/DataTable';
@@ -23,5 +24,17 @@ export function FormSubmission({ formTitle, data, fieldLabels }: Props) {
       </Text>
       <DataTable rows={rows} />
     </EmailLayout>
+  );
+}
+
+export default function FormSubmissionPreview() {
+  return (
+    <PreviewWrap>
+      <FormSubmission
+        formTitle="Contact form"
+        data={{ name: 'Jane Doe', email: 'jane@example.com', message: 'Hello there!' }}
+        fieldLabels={{ name: 'Name', email: 'Email', message: 'Message' }}
+      />
+    </PreviewWrap>
   );
 }
