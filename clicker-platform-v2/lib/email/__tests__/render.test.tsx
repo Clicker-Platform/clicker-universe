@@ -20,10 +20,10 @@ describe('renderTemplate', () => {
   it('renders FormSubmission to HTML and text', async () => {
     const out = await renderTemplate(
       createElement(FormSubmission, {
-        context: ctx,
         formTitle: 'Contact form',
         data: { name: 'Jane', email: 'jane@example.com' },
-      })
+      }),
+      ctx
     );
     expect(out.html).toContain('<html');
     expect(out.html).toContain('Contact form');
@@ -36,11 +36,11 @@ describe('renderTemplate', () => {
   it('uses field labels when provided', async () => {
     const out = await renderTemplate(
       createElement(FormSubmission, {
-        context: ctx,
         formTitle: 'Contact',
         data: { field_1: 'Hello' },
         fieldLabels: { field_1: 'Message' },
-      })
+      }),
+      ctx
     );
     expect(out.html).toContain('Message');
     expect(out.html).toContain('Hello');

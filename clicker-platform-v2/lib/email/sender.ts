@@ -57,7 +57,7 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
   let html: string;
   let text: string;
   try {
-    const rendered = await renderTemplate(input.template);
+    const rendered = await renderTemplate(input.template, context);
     html = rendered.html;
     text = rendered.text;
   } catch (err) {

@@ -10,15 +10,15 @@ import {
   Link,
 } from '@react-email/components';
 import type { ReactNode } from 'react';
-import type { EmailContext } from '../types';
+import { useEmailContext } from '../email-context-provider';
 
 type Props = {
-  context: EmailContext;
   preview: string;
   children: ReactNode;
 };
 
-export function EmailLayout({ context, preview, children }: Props) {
+export function EmailLayout({ preview, children }: Props) {
+  const context = useEmailContext();
   return (
     <Html>
       <Head />
