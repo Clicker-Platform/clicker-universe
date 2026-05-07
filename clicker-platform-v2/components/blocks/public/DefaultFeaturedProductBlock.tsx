@@ -48,8 +48,8 @@ export function DefaultFeaturedProductBlock({
     const { theme: contextTheme } = useTemplate();
     const theme = themeProp ?? contextTheme;
 
-    const isClean = theme.cardStyle === 'clean';
-    const isGlass = theme.cardStyle === 'glass';
+    const isClean = theme?.cardStyle === 'clean';
+    const isGlass = theme?.cardStyle === 'glass';
     const isBold = !isClean && !isGlass;
 
     const handleOrderClick = () => {
@@ -67,28 +67,30 @@ export function DefaultFeaturedProductBlock({
     const images = validImages.length > 0 ? validImages : mainImage ? [mainImage] : [];
     const showGallery = images.length > 1;
 
+    const colors = theme?.colors ?? {};
+    const fonts = theme?.fonts ?? {};
     const primaryContrastColor =
-        theme.colors.accent && theme.colors.accent !== theme.colors.primary
-            ? theme.colors.accent
-            : theme.colors.background;
+        colors.accent && colors.accent !== colors.primary
+            ? colors.accent
+            : colors.background ?? undefined;
 
     const badgeStyle = isBold
         ? {
-              backgroundColor: theme.colors.primary,
-              borderColor: theme.colors.foreground,
-              color: theme.colors.foreground,
+              backgroundColor: colors.primary,
+              borderColor: colors.foreground,
+              color: colors.foreground,
           }
         : {
-              backgroundColor: theme.colors.primary,
+              backgroundColor: colors.primary,
               color: primaryContrastColor,
           };
 
     const imageContainerStyle = {
         borderRadius: `calc(var(--theme-radius) * 0.75)`,
         backgroundColor: isGlass
-            ? `${theme.colors.surface || theme.colors.background}10`
-            : theme.colors.muted || theme.colors.border || '#f3f4f6',
-        borderColor: isBold ? theme.colors.foreground : theme.colors.border || theme.colors.foreground,
+            ? `${colors.surface || colors.background}10`
+            : colors.muted || colors.border || '#f3f4f6',
+        borderColor: isBold ? colors.foreground : colors.border || colors.foreground,
     };
 
     return (
@@ -100,8 +102,8 @@ export function DefaultFeaturedProductBlock({
                         <span
                             className="text-xs font-bold uppercase tracking-[0.2em]"
                             style={{
-                                color: theme.colors.muted || theme.colors.foreground,
-                                opacity: theme.colors.muted ? 1 : 0.5,
+                                color: colors.muted || colors.foreground,
+                                opacity: colors.muted ? 1 : 0.5,
                             }}
                         >
                             {badgeText}
@@ -109,7 +111,7 @@ export function DefaultFeaturedProductBlock({
                     ) : !isBold ? (
                         <div
                             className="px-4 py-1 rounded-full shadow-sm flex items-center gap-2"
-                            style={{ ...badgeStyle, fontFamily: theme.fonts.body }}
+                            style={{ ...badgeStyle, fontFamily: fonts.body }}
                         >
                             <Star size={14} className="fill-current" />
                             <span className="font-bold uppercase tracking-wider text-xs">{badgeText}</span>
@@ -119,8 +121,8 @@ export function DefaultFeaturedProductBlock({
                             className="border-[3px] px-6 py-2 rounded-full rotate-[-2deg] flex items-center gap-2 animate-bounce"
                             style={{
                                 ...badgeStyle,
-                                boxShadow: `2px 2px 0px 0px ${theme.colors.foreground}`,
-                                fontFamily: theme.fonts.body,
+                                boxShadow: `2px 2px 0px 0px ${colors.foreground}`,
+                                fontFamily: fonts.body,
                             }}
                         >
                             <Star size={20} className="fill-current" />
@@ -143,18 +145,18 @@ export function DefaultFeaturedProductBlock({
                 style={
                     isGlass
                         ? {
-                              ...getGlassStyle(theme.colors.surface),
+                              ...getGlassStyle(colors.surface),
                               borderRadius: 'var(--theme-radius)',
-                              borderColor: theme.colors.border || theme.colors.foreground,
+                              borderColor: colors.border || colors.foreground,
                           }
                         : {
                               borderRadius: 'var(--theme-radius)',
-                              backgroundColor: theme.colors.surface || theme.colors.background,
+                              backgroundColor: colors.surface || colors.background,
                               borderColor: isBold
-                                  ? theme.colors.foreground
-                                  : theme.colors.border || theme.colors.foreground,
+                                  ? colors.foreground
+                                  : colors.border || colors.foreground,
                               boxShadow: isBold
-                                  ? `4px 4px 0px 0px ${theme.colors.border}`
+                                  ? `4px 4px 0px 0px ${colors.border}`
                                   : '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
                           }
                 }
@@ -173,7 +175,7 @@ export function DefaultFeaturedProductBlock({
                             <ImageIcon
                                 className="w-16 h-16 relative z-20"
                                 strokeWidth={2}
-                                style={{ color: theme.colors.border || theme.colors.foreground, opacity: 0.4 }}
+                                style={{ color: colors.border || colors.foreground, opacity: 0.4 }}
                             />
                         </div>
                     )}
@@ -210,7 +212,7 @@ export function DefaultFeaturedProductBlock({
                     ) : (
                         <div
                             className="flex items-center justify-center w-full h-full"
-                            style={{ color: theme.colors.border || theme.colors.foreground, opacity: 0.4 }}
+                            style={{ color: colors.border || colors.foreground, opacity: 0.4 }}
                         >
                             <ImageIcon className="w-16 h-16" />
                         </div>
@@ -228,22 +230,22 @@ export function DefaultFeaturedProductBlock({
                             style={
                                 isBold
                                     ? {
-                                          backgroundColor: theme.colors.foreground,
-                                          color: theme.colors.primary,
-                                          borderColor: theme.colors.primary,
+                                          backgroundColor: colors.foreground,
+                                          color: colors.primary,
+                                          borderColor: colors.primary,
                                           boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
-                                          fontFamily: theme.fonts.heading,
+                                          fontFamily: fonts.heading,
                                       }
-                                    : { fontFamily: theme.fonts.body }
+                                    : { fontFamily: fonts.body }
                             }
                         >
                             {!isBold ? (
                                 <div
                                     className="px-3 py-1.5 rounded-lg font-bold text-lg border shadow-sm backdrop-blur-md"
                                     style={{
-                                        backgroundColor: `${theme.colors.surface || theme.colors.background}E6`,
-                                        color: theme.colors.foreground,
-                                        borderColor: theme.colors.border || theme.colors.foreground,
+                                        backgroundColor: `${colors.surface || colors.background}E6`,
+                                        color: colors.foreground,
+                                        borderColor: colors.border || colors.foreground,
                                     }}
                                 >
                                     {product.price}
@@ -261,7 +263,7 @@ export function DefaultFeaturedProductBlock({
                         className={`mb-3 uppercase leading-none tracking-tight ${
                             !isBold ? 'font-bold text-2xl' : 'font-black text-3xl'
                         }`}
-                        style={{ color: theme.colors.foreground, fontFamily: theme.fonts.heading }}
+                        style={{ color: colors.foreground, fontFamily: fonts.heading }}
                     >
                         {product.name}
                     </h3>
@@ -271,18 +273,18 @@ export function DefaultFeaturedProductBlock({
                         className="w-full py-4 rounded-xl flex items-center justify-center gap-2 transition-all duration-300"
                         style={{
                             borderRadius: 'calc(var(--theme-radius) * 0.6)',
-                            backgroundColor: isBold ? theme.colors.foreground : theme.colors.primary,
-                            color: isBold ? theme.colors.background : primaryContrastColor,
+                            backgroundColor: isBold ? colors.foreground : colors.primary,
+                            color: isBold ? colors.background : primaryContrastColor,
                             border: isBold
-                                ? `3px solid ${theme.colors.foreground}`
-                                : `1px solid ${theme.colors.border || theme.colors.primary}`,
+                                ? `3px solid ${colors.foreground}`
+                                : `1px solid ${colors.border || colors.primary}`,
                             boxShadow: isBold
-                                ? `4px 4px 0px 0px ${theme.colors.border}`
+                                ? `4px 4px 0px 0px ${colors.border}`
                                 : '0 4px 6px -1px rgb(0 0 0 / 0.1)',
                             fontWeight: isBold ? 800 : 700,
                             textTransform: isBold ? 'uppercase' : 'none',
                             letterSpacing: isBold ? '0.05em' : 'normal',
-                            fontFamily: theme.fonts.heading,
+                            fontFamily: fonts.heading,
                         }}
                     >
                         {buttonText} <ArrowRight size={24} strokeWidth={isBold ? 3 : 2} />
