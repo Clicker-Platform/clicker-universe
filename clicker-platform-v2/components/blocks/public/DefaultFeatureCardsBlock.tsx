@@ -36,8 +36,8 @@ function CardItem({ card, cardStyle }: CardItemProps) {
         : undefined;
 
     const cardClass = hasCustomBg
-        ? 'rounded-2xl overflow-hidden flex flex-col'
-        : `rounded-2xl overflow-hidden flex flex-col ${getCardClasses(cardStyle)}`;
+        ? 'rounded-2xl overflow-hidden flex flex-col h-full'
+        : `rounded-2xl overflow-hidden flex flex-col h-full ${getCardClasses(cardStyle)}`;
 
     const inlineStyle = hasCustomBg
         ? { backgroundColor: card.bgColor, color: autoTextColor }
