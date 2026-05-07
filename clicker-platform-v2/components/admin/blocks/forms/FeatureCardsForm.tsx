@@ -7,9 +7,9 @@ import { MediaField } from '@/components/admin/blocks/media-field/MediaField';
 import { DEFAULT_MEDIA } from '@/components/admin/blocks/media-field/types';
 import type { FeatureCard, FeatureCardsData } from '@/components/blocks/feature-cards/types';
 
-const inputClass = "w-full px-4 py-2.5 bg-neutral-800 border border-neutral-700 rounded-xl text-sm text-neutral-200 placeholder-neutral-600 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-medium";
-const labelClass = "block text-xs font-medium text-neutral-500 mb-1";
-const sectionClass = "p-3 bg-neutral-900/50 rounded-xl border border-neutral-800 space-y-3";
+const inputClass = "w-full px-4 py-2.5 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-600 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-medium";
+const labelClass = "block text-xs font-medium text-neutral-500 dark:text-neutral-500 mb-1";
+const sectionClass = "p-3 bg-gray-50 dark:bg-neutral-900/50 rounded-xl border border-gray-200 dark:border-neutral-800 space-y-3";
 
 interface Props {
     data: FeatureCardsData;
@@ -39,7 +39,7 @@ function TagInput({ tags, onChange }: { tags: string[]; onChange: (tags: string[
                 <button
                     type="button"
                     onClick={add}
-                    className="px-3 py-2 bg-neutral-700 rounded-xl text-xs text-neutral-300 hover:bg-neutral-600 transition-colors"
+                    className="px-3 py-2 bg-gray-200 dark:bg-neutral-700 rounded-xl text-xs text-neutral-700 dark:text-neutral-300 hover:bg-gray-300 dark:hover:bg-neutral-600 transition-colors"
                 >
                     Add
                 </button>
@@ -47,7 +47,7 @@ function TagInput({ tags, onChange }: { tags: string[]; onChange: (tags: string[
             {tags.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
                     {tags.map((tag, i) => (
-                        <span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 bg-neutral-700 rounded-full text-xs text-neutral-300">
+                        <span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-200 dark:bg-neutral-700 rounded-full text-xs text-neutral-700 dark:text-neutral-300">
                             {tag}
                             <button type="button" onClick={() => onChange(tags.filter((_, j) => j !== i))} className="hover:text-red-400 transition-colors">×</button>
                         </span>
@@ -72,22 +72,22 @@ function CardItem({ card, index, total, onChange, onDelete, onMove }: {
     const set = (field: keyof FeatureCard, value: any) => onChange({ ...card, [field]: value });
 
     return (
-        <div className="bg-neutral-800 rounded-xl border border-neutral-700 overflow-hidden">
-            <div className="flex items-center gap-2 px-3 py-2.5 bg-neutral-800/80">
+        <div className="bg-gray-100 dark:bg-neutral-800 rounded-xl border border-gray-200 dark:border-neutral-700 overflow-hidden">
+            <div className="flex items-center gap-2 px-3 py-2.5">
                 <button type="button" onClick={() => setExpanded(e => !e)} className="flex-1 flex items-center gap-2 text-left">
                     <span className="text-xs font-bold text-neutral-400">#{index + 1}</span>
-                    <span className="text-sm font-medium text-neutral-200 truncate">{card.headline || 'Untitled Card'}</span>
-                    {expanded ? <ChevronUp size={14} className="ml-auto text-neutral-500" /> : <ChevronDown size={14} className="ml-auto text-neutral-500" />}
+                    <span className="text-sm font-medium text-neutral-700 dark:text-neutral-200 truncate">{card.headline || 'Untitled Card'}</span>
+                    {expanded ? <ChevronUp size={14} className="ml-auto text-neutral-400" /> : <ChevronDown size={14} className="ml-auto text-neutral-400" />}
                 </button>
                 <div className="flex items-center gap-1">
-                    <button type="button" disabled={index === 0} onClick={() => onMove('up')} className="p-1 text-neutral-500 hover:text-neutral-200 disabled:opacity-30 transition-colors">↑</button>
-                    <button type="button" disabled={index === total - 1} onClick={() => onMove('down')} className="p-1 text-neutral-500 hover:text-neutral-200 disabled:opacity-30 transition-colors">↓</button>
-                    <button type="button" onClick={onDelete} className="p-1 text-neutral-500 hover:text-red-400 transition-colors"><Trash2 size={13} /></button>
+                    <button type="button" disabled={index === 0} onClick={() => onMove('up')} className="p-1 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 disabled:opacity-30 transition-colors">↑</button>
+                    <button type="button" disabled={index === total - 1} onClick={() => onMove('down')} className="p-1 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 disabled:opacity-30 transition-colors">↓</button>
+                    <button type="button" onClick={onDelete} className="p-1 text-neutral-400 hover:text-red-400 transition-colors"><Trash2 size={13} /></button>
                 </div>
             </div>
 
             {expanded && (
-                <div className="p-3 space-y-3 border-t border-neutral-700">
+                <div className="p-3 space-y-3 border-t border-gray-200 dark:border-neutral-700">
                     <div>
                         <label className={labelClass}>Headline *</label>
                         <input value={card.headline} onChange={e => set('headline', e.target.value)} className={inputClass} placeholder="Card Headline" />
@@ -116,7 +116,7 @@ function CardItem({ card, index, total, onChange, onDelete, onMove }: {
                                     type="color"
                                     value={card.bgColor || '#ffffff'}
                                     onChange={e => set('bgColor', e.target.value)}
-                                    className="w-8 h-8 rounded cursor-pointer border border-neutral-600 bg-transparent"
+                                    className="w-8 h-8 rounded cursor-pointer border border-gray-300 dark:border-neutral-600 bg-transparent"
                                 />
                                 <input
                                     value={card.bgColor || ''}
@@ -133,7 +133,7 @@ function CardItem({ card, index, total, onChange, onDelete, onMove }: {
                                     type="color"
                                     value={card.textColor || '#ffffff'}
                                     onChange={e => set('textColor', e.target.value)}
-                                    className="w-8 h-8 rounded cursor-pointer border border-neutral-600 bg-transparent"
+                                    className="w-8 h-8 rounded cursor-pointer border border-gray-300 dark:border-neutral-600 bg-transparent"
                                 />
                                 <input
                                     value={card.textColor || ''}
@@ -223,7 +223,7 @@ export function FeatureCardsForm({ data, onChange }: Props) {
                                 key={n}
                                 type="button"
                                 onClick={() => update({ columns: n })}
-                                className={`flex-1 py-2 rounded-xl text-sm font-bold transition-colors border ${safeData.columns === n ? 'bg-blue-600 border-blue-500 text-white' : 'bg-neutral-800 border-neutral-700 text-neutral-400 hover:border-neutral-500'}`}
+                                className={`flex-1 py-2 rounded-xl text-sm font-bold transition-colors border ${safeData.columns === n ? 'bg-blue-600 border-blue-500 text-white' : 'bg-gray-100 dark:bg-neutral-800 border-gray-300 dark:border-neutral-700 text-neutral-500 dark:text-neutral-400 hover:border-gray-400 dark:hover:border-neutral-500'}`}
                             >
                                 {n}
                             </button>
@@ -245,7 +245,7 @@ export function FeatureCardsForm({ data, onChange }: Props) {
                 </div>
 
                 {safeData.cards.length === 0 && (
-                    <div className="text-center py-8 bg-neutral-900/50 rounded-xl border-2 border-dashed border-neutral-800 text-neutral-500 text-sm">
+                    <div className="text-center py-8 bg-gray-50 dark:bg-neutral-900/50 rounded-xl border-2 border-dashed border-gray-200 dark:border-neutral-800 text-neutral-400 dark:text-neutral-500 text-sm">
                         No cards yet. Click &quot;Add Card&quot; to start.
                     </div>
                 )}
