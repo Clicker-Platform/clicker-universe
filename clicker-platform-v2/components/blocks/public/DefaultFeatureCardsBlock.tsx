@@ -17,9 +17,9 @@ function isLightColor(hex: string): boolean {
 }
 
 const COLS_CLASS: Record<number, string> = {
-    2: 'grid-cols-2',
-    3: 'grid-cols-2 md:grid-cols-3',
-    4: 'grid-cols-2 lg:grid-cols-4',
+    2: 'md:grid-cols-2',
+    3: 'md:grid-cols-3',
+    4: 'md:grid-cols-4',
 };
 
 interface CardItemProps {
@@ -58,7 +58,7 @@ function CardItem({ card, cardStyle }: CardItemProps) {
             {card.media?.src && (
                 <MediaView media={card.media} />
             )}
-            <div className="flex flex-col gap-2 p-3 md:p-5 flex-1">
+            <div className="flex flex-col gap-2 p-4 flex-1">
                 {card.label && (
                     <span
                         className="text-xs font-bold tracking-widest uppercase"
@@ -68,14 +68,14 @@ function CardItem({ card, cardStyle }: CardItemProps) {
                     </span>
                 )}
                 <h3
-                    className="text-base md:text-xl font-black leading-tight"
+                    className="text-xl font-black leading-tight"
                     style={hasCustomBg ? { color: autoTextColor } : { color: 'var(--theme-foreground)' }}
                 >
                     {card.headline}
                 </h3>
                 {card.body && (
                     <p
-                        className="text-xs md:text-sm leading-relaxed"
+                        className="text-sm leading-relaxed"
                         style={bodyColor ? { color: bodyColor } : { color: 'var(--theme-muted-foreground, #6b7280)' }}
                     >
                         {card.body}
@@ -120,9 +120,9 @@ export function DefaultFeatureCardsBlock({ data, theme: themeProp, previewMode: 
     const cards = data.cards || [];
 
     return (
-        <section className="w-full px-4 py-8">
+        <section className="w-full py-8">
             {(data.title || data.subtitle) && (
-                <div className="mb-8 text-center">
+                <div className="mb-8 px-4 text-center">
                     {data.title && (
                         <h2 className="text-3xl font-black tracking-tight" style={{ color: 'var(--theme-foreground)' }}>
                             {data.title}
@@ -136,11 +136,22 @@ export function DefaultFeatureCardsBlock({ data, theme: themeProp, previewMode: 
                 </div>
             )}
             {cards.length > 0 && (
-                <div className={`grid ${colsClass} gap-4 items-stretch`}>
-                    {cards.map((card) => (
-                        <CardItem key={card.id} card={card} cardStyle={theme?.cardStyle} />
-                    ))}
-                </div>
+                <>
+                    {/* Mobile: horizontal scroll */}
+                    <div className={`md:hidden flex gap-3 overflow-x-auto px-4 pb-2 snap-x snap-mandatory scrollbar-hide`}>
+                        {cards.map((card) => (
+                            <div key={card.id} className="snap-start shrink-0 w-[72vw] max-w-[260px]">
+                                <CardItem card={card} cardStyle={theme?.cardStyle} />
+                            </div>
+                        ))}
+                    </div>
+                    {/* Desktop: grid */}
+                    <div className={`hidden md:grid ${colsClass} gap-4 items-stretch px-4`}>
+                        {cards.map((card) => (
+                            <CardItem key={card.id} card={card} cardStyle={theme?.cardStyle} />
+                        ))}
+                    </div>
+                </>
             )}
         </section>
     );
