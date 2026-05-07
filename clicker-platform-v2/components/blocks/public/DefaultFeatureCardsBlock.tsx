@@ -8,7 +8,10 @@ import { getCardClasses } from './cardStyles';
 import type { FeatureCardsData, FeatureCard } from '@/components/blocks/feature-cards/types';
 
 function isLightColor(hex: string): boolean {
-    const clean = hex.replace('#', '');
+    let clean = hex.replace('#', '');
+    if (clean.length === 3) {
+        clean = clean.split('').map(c => c + c).join('');
+    }
     if (clean.length !== 6) return true;
     const r = parseInt(clean.slice(0, 2), 16) / 255;
     const g = parseInt(clean.slice(2, 4), 16) / 255;
@@ -126,13 +129,13 @@ export function DefaultFeatureCardsBlock({ data, theme: themeProp, previewMode: 
     const containerClass = dv(
         deviceView,
         'flex items-stretch gap-3 overflow-x-auto px-4 pb-2 snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
-        `md:grid md:grid-cols-1 ${desktopCols} md:gap-4 md:items-stretch md:px-4 md:overflow-visible md:pb-0`
+        `md:grid md:grid-cols-1 ${desktopCols} md:gap-4 md:items-stretch md:px-4 md:max-w-6xl md:mx-auto md:overflow-visible md:pb-0`
     );
 
     return (
         <section className="w-full py-8">
             {(data.title || data.subtitle) && (
-                <div className="mb-8 px-4 text-center">
+                <div className="mb-8 px-4 text-center max-w-2xl mx-auto">
                     {data.title && (
                         <h2 className="text-3xl font-black tracking-tight" style={{ color: 'var(--theme-foreground)' }}>
                             {data.title}
