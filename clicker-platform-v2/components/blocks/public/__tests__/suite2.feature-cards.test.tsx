@@ -8,6 +8,10 @@ vi.mock('@/components/TemplateProvider', () => ({
     useTemplate: () => ({ theme: { cardStyle: 'clean' } }),
 }));
 
+vi.mock('@/components/DeviceViewContext', () => ({
+    useDeviceView: () => 'desktop',
+}));
+
 vi.mock('../MediaView', () => ({
     MediaView: ({ media }: any) =>
         media?.src ? <div data-testid="media-view" data-src={media.src} /> : null,

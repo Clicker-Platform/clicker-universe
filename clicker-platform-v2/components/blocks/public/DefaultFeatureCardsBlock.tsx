@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useTemplate } from '@/components/TemplateProvider';
+import { useDeviceView } from '@/components/DeviceViewContext';
 import { MediaView } from './MediaView';
 import { getCardClasses } from './cardStyles';
 import type { FeatureCardsData, FeatureCard } from '@/components/blocks/feature-cards/types';
@@ -112,6 +113,8 @@ interface DefaultFeatureCardsBlockProps {
 export function DefaultFeatureCardsBlock({ data, theme: themeProp, previewMode: _previewMode }: DefaultFeatureCardsBlockProps) {
     const { theme: contextTheme } = useTemplate();
     const theme = themeProp ?? contextTheme;
+    const deviceView = useDeviceView();
+    const isMobile = deviceView === 'mobile';
 
     if (!data) return null;
 
@@ -136,22 +139,21 @@ export function DefaultFeatureCardsBlock({ data, theme: themeProp, previewMode: 
                 </div>
             )}
             {cards.length > 0 && (
-                <>
-                    {/* Mobile: horizontal scroll */}
-                    <div className={`md:hidden flex gap-3 overflow-x-auto px-4 pb-2 snap-x snap-mandatory scrollbar-hide`}>
+                isMobile ? (
+                    <div className="flex gap-3 overflow-x-auto px-4 pb-2 snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                         {cards.map((card) => (
                             <div key={card.id} className="snap-start shrink-0 w-[72vw] max-w-[260px]">
                                 <CardItem card={card} cardStyle={theme?.cardStyle} />
                             </div>
                         ))}
                     </div>
-                    {/* Desktop: grid */}
-                    <div className={`hidden md:grid ${colsClass} gap-4 items-stretch px-4`}>
+                ) : (
+                    <div className={`grid ${colsClass} gap-4 items-stretch px-4`}>
                         {cards.map((card) => (
                             <CardItem key={card.id} card={card} cardStyle={theme?.cardStyle} />
                         ))}
                     </div>
-                </>
+                )
             )}
         </section>
     );
