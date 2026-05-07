@@ -140,9 +140,9 @@ export function DefaultFeatureCardsBlock({ data, theme: themeProp, previewMode: 
             )}
             {cards.length > 0 && (
                 isMobile ? (
-                    <div className="flex gap-3 overflow-x-auto px-4 pb-2 snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                    <div className="flex items-stretch gap-3 overflow-x-auto px-4 pb-2 snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                         {cards.map((card) => (
-                            <div key={card.id} className="snap-start shrink-0 w-[72vw] max-w-[260px]">
+                            <div key={card.id} className="snap-start shrink-0 w-[72vw] max-w-[260px] flex flex-col">
                                 <CardItem card={card} cardStyle={theme?.cardStyle} />
                             </div>
                         ))}
