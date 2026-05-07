@@ -17,9 +17,9 @@ function isLightColor(hex: string): boolean {
 }
 
 const COLS_CLASS: Record<number, string> = {
-    2: 'grid-cols-1 md:grid-cols-2',
-    3: 'grid-cols-1 md:grid-cols-3',
-    4: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4',
+    2: 'grid-cols-2',
+    3: 'grid-cols-2 md:grid-cols-3',
+    4: 'grid-cols-2 lg:grid-cols-4',
 };
 
 interface CardItemProps {
@@ -58,7 +58,7 @@ function CardItem({ card, cardStyle }: CardItemProps) {
             {card.media?.src && (
                 <MediaView media={card.media} />
             )}
-            <div className="flex flex-col gap-2 p-5 flex-1">
+            <div className="flex flex-col gap-2 p-3 md:p-5 flex-1">
                 {card.label && (
                     <span
                         className="text-xs font-bold tracking-widest uppercase"
@@ -68,14 +68,14 @@ function CardItem({ card, cardStyle }: CardItemProps) {
                     </span>
                 )}
                 <h3
-                    className="text-xl font-black leading-tight"
+                    className="text-base md:text-xl font-black leading-tight"
                     style={hasCustomBg ? { color: autoTextColor } : { color: 'var(--theme-foreground)' }}
                 >
                     {card.headline}
                 </h3>
                 {card.body && (
                     <p
-                        className="text-sm leading-relaxed"
+                        className="text-xs md:text-sm leading-relaxed"
                         style={bodyColor ? { color: bodyColor } : { color: 'var(--theme-muted-foreground, #6b7280)' }}
                     >
                         {card.body}
