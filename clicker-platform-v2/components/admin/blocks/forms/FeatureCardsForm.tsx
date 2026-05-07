@@ -69,7 +69,15 @@ function CardItem({ card, index, total, onChange, onDelete, onMove }: {
     const [expanded, setExpanded] = useState(true);
     const [showMedia, setShowMedia] = useState(!!card.media?.src);
 
-    const set = (field: keyof FeatureCard, value: any) => onChange({ ...card, [field]: value });
+    const set = (field: keyof FeatureCard, value: any) => {
+        const next = { ...card };
+        if (value === undefined || value === null) {
+            delete next[field];
+        } else {
+            (next as any)[field] = value;
+        }
+        onChange(next);
+    };
 
     return (
         <div className="bg-gray-100 dark:bg-neutral-800 rounded-xl border border-gray-200 dark:border-neutral-700 overflow-hidden">
