@@ -2,6 +2,10 @@
 .worktrees/
 worktrees/
 
+# Superpowers plugin artifacts
+.superpowers/
+**/.superpowers/
+
 # Dependencies
 node_modules/
 **/node_modules/

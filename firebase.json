@@ -31,7 +31,11 @@
                 "secrets": [
                     "UPSTASH_REDIS_REST_URL",
                     "UPSTASH_REDIS_REST_TOKEN"
-                ]
+                ],
+                "environmentVariables": {
+                    "NEXT_PUBLIC_POSTHOG_KEY": "phc_CxagLBzb5nKgeG7xMDrwQjmC7WmGWarmMjUQzjgJCGjG",
+                    "NEXT_PUBLIC_POSTHOG_HOST": "https://app.posthog.com"
+                }
             }
         },
         {

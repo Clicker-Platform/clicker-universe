@@ -24,7 +24,8 @@ export const getBlockLabel = (type: string, moduleInfoName?: string) => {
         'featured_product': 'Featured Product',
         'branches': 'Branches',
         'social_embed': 'Social Embeds',
-        'content_showcase': 'Content Showcase'
+        'content_showcase': 'Content Showcase',
+        'feature_cards': 'Feature Cards'
     };
     return coreLabels[type] || `Module (${type})`;
 };
