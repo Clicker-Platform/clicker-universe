@@ -1,8 +1,9 @@
 import { BlockType } from '@/data/mockData';
-import { Type, Image as ImageIcon, Layout, Box, HelpCircle, AlignCenter, Link, Map, List, Clock, Star, MapPin, Play, Columns2, ClipboardList } from 'lucide-react';
+import { Type, Image as ImageIcon, Layout, Box, HelpCircle, AlignCenter, Link, Map, List, Clock, Star, MapPin, Play, Columns2, ClipboardList, LayoutGrid } from 'lucide-react';
 import { getTemplate } from '@/lib/templates/registry';
 import { DEFAULT_SHOWCASE_DATA, newRow } from '@/components/blocks/content-showcase/types';
 import { DEFAULT_MEDIA } from '@/components/admin/blocks/media-field/types';
+import { makeDefaultCard } from '@/components/blocks/feature-cards/types';
 
 export const BLOCK_OPTIONS: { type: BlockType; label: string; icon: React.ElementType }[] = [
     { type: 'hero', label: 'Hero Section', icon: Layout },
@@ -22,6 +23,7 @@ export const BLOCK_OPTIONS: { type: BlockType; label: string; icon: React.Elemen
     { type: 'branches', label: 'Branches', icon: MapPin },
     { type: 'inline_form', label: 'Inline Form', icon: ClipboardList },
     { type: 'heading', label: 'Heading', icon: Type },
+    { type: 'feature_cards', label: 'Feature Cards', icon: LayoutGrid },
 ];
 
 export function getDefaultData(type: BlockType, templateId = 'classic'): any {
@@ -80,6 +82,18 @@ export function getDefaultData(type: BlockType, templateId = 'classic'): any {
                 subheadingAlign: 'left',
                 verticalSpacing: 'medium',
                 horizontalPadding: 'none',
+            };
+        case 'feature_cards':
+            return {
+                ...baseData,
+                title: '',
+                subtitle: '',
+                columns: 3,
+                cards: [
+                    makeDefaultCard(),
+                    makeDefaultCard(),
+                    makeDefaultCard(),
+                ],
             };
         default:
             return baseData;
