@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useTemplate } from '@/components/TemplateProvider';
-import { useDeviceView } from '@/components/DeviceViewContext';
+import { useDeviceView, dv } from '@/components/DeviceViewContext';
 import { MediaView } from './MediaView';
 import { getCardClasses } from './cardStyles';
 import type { FeatureCardsData, FeatureCard } from '@/components/blocks/feature-cards/types';
@@ -17,7 +17,7 @@ function isLightColor(hex: string): boolean {
     return luminance > 0.5;
 }
 
-const COLS_CLASS: Record<number, string> = {
+const DESKTOP_COLS_CLASS: Record<number, string> = {
     2: 'md:grid-cols-2',
     3: 'md:grid-cols-3',
     4: 'md:grid-cols-4',
@@ -114,13 +114,20 @@ export function DefaultFeatureCardsBlock({ data, theme: themeProp, previewMode: 
     const { theme: contextTheme } = useTemplate();
     const theme = themeProp ?? contextTheme;
     const deviceView = useDeviceView();
-    const isMobile = deviceView === 'mobile';
 
     if (!data) return null;
 
     const columns = data.columns || 3;
-    const colsClass = COLS_CLASS[columns] || COLS_CLASS[3];
+    const desktopCols = DESKTOP_COLS_CLASS[columns] || DESKTOP_COLS_CLASS[3];
     const cards = data.cards || [];
+
+    // Mobile: horizontal scroll. Desktop: grid.
+    // dv() emits the right classes for canvas previews + responsive viewport.
+    const containerClass = dv(
+        deviceView,
+        'flex items-stretch gap-3 overflow-x-auto px-4 pb-2 snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+        `md:grid md:grid-cols-1 ${desktopCols} md:gap-4 md:items-stretch md:px-4 md:overflow-visible md:pb-0`
+    );
 
     return (
         <section className="w-full py-8">
@@ -139,21 +146,13 @@ export function DefaultFeatureCardsBlock({ data, theme: themeProp, previewMode: 
                 </div>
             )}
             {cards.length > 0 && (
-                isMobile ? (
-                    <div className="flex items-stretch gap-3 overflow-x-auto px-4 pb-2 snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                        {cards.map((card) => (
-                            <div key={card.id} className="snap-start shrink-0 w-[72vw] max-w-[260px] flex flex-col">
-                                <CardItem card={card} cardStyle={theme?.cardStyle} />
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    <div className={`grid grid-cols-1 ${colsClass} gap-4 items-stretch px-4`}>
-                        {cards.map((card) => (
-                            <CardItem key={card.id} card={card} cardStyle={theme?.cardStyle} />
-                        ))}
-                    </div>
-                )
+                <div className={containerClass}>
+                    {cards.map((card) => (
+                        <div key={card.id} className="snap-start shrink-0 w-[72vw] max-w-[280px] md:w-auto md:max-w-none flex flex-col">
+                            <CardItem card={card} cardStyle={theme?.cardStyle} />
+                        </div>
+                    ))}
+                </div>
             )}
         </section>
     );

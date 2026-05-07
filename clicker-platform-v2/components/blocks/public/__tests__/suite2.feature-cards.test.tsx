@@ -9,7 +9,8 @@ vi.mock('@/components/TemplateProvider', () => ({
 }));
 
 vi.mock('@/components/DeviceViewContext', () => ({
-    useDeviceView: () => 'desktop',
+    useDeviceView: () => 'responsive',
+    dv: (_view: string, mobile: string, desktop: string) => `${mobile} ${desktop}`,
 }));
 
 vi.mock('../MediaView', () => ({
