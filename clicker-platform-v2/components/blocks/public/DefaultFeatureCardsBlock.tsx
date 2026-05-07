@@ -17,10 +17,10 @@ function isLightColor(hex: string): boolean {
     return luminance > 0.5;
 }
 
-const COLS_CLASS: Record<number, string> = {
-    2: 'md:grid-cols-2',
-    3: 'md:grid-cols-3',
-    4: 'md:grid-cols-4',
+const COLS_STYLE: Record<number, React.CSSProperties> = {
+    2: { gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' },
+    3: { gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' },
+    4: { gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' },
 };
 
 interface CardItemProps {
@@ -119,7 +119,7 @@ export function DefaultFeatureCardsBlock({ data, theme: themeProp, previewMode: 
     if (!data) return null;
 
     const columns = data.columns || 3;
-    const colsClass = COLS_CLASS[columns] || COLS_CLASS[3];
+    const colsStyle = COLS_STYLE[columns] || COLS_STYLE[3];
     const cards = data.cards || [];
 
     return (
@@ -148,7 +148,7 @@ export function DefaultFeatureCardsBlock({ data, theme: themeProp, previewMode: 
                         ))}
                     </div>
                 ) : (
-                    <div className={`grid ${colsClass} gap-4 items-stretch px-4`}>
+                    <div className="grid gap-4 items-stretch px-4" style={colsStyle}>
                         {cards.map((card) => (
                             <CardItem key={card.id} card={card} cardStyle={theme?.cardStyle} />
                         ))}
