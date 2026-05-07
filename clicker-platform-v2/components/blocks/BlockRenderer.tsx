@@ -19,6 +19,7 @@ const ReservationBlock = dynamic(() => import('./public/ReservationBlock').then(
 const SocialEmbedBlock = dynamic(() => import('./public/DefaultSocialEmbedBlock').then(mod => mod.DefaultSocialEmbedBlock));
 const InlineFormBlock = dynamic(() => import('./public/DefaultInlineFormBlock').then(mod => mod.DefaultInlineFormBlock));
 const HeadingBlock = dynamic(() => import('./public/DefaultHeadingBlock').then(mod => mod.DefaultHeadingBlock));
+const FeatureCardsBlock = dynamic(() => import('./public/DefaultFeatureCardsBlock').then(mod => mod.DefaultFeatureCardsBlock));
 
 // System blocks (from PublicPageRenderer)
 const QuickActions = dynamic(() => import('./public/DefaultQuickActionsBlock').then(mod => mod.DefaultQuickActionsBlock));
@@ -187,6 +188,9 @@ export const BlockRenderer = ({
                 return customBlocks?.HeadingBlock
                     ? React.createElement(customBlocks.HeadingBlock, { data: block.data })
                     : <HeadingBlock data={block.data} onInlineChange={onInlineChange} onFieldFocus={onFieldFocus} onFieldBlur={onFieldBlur} />;
+
+            case 'feature_cards':
+                return <FeatureCardsBlock data={block.data} theme={theme} previewMode={previewMode} />;
 
             default:
                 return <ModuleBlockLoader type={block.type} data={block.data} siteId={siteId} />;
