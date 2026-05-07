@@ -4,7 +4,6 @@ import React from 'react';
 import { useTemplate } from '@/components/TemplateProvider';
 import { useDeviceView, dv } from '@/components/DeviceViewContext';
 import { MediaView } from './MediaView';
-import { getCardClasses } from './cardStyles';
 import type { FeatureCardsData, FeatureCard } from '@/components/blocks/feature-cards/types';
 
 function isLightColor(hex: string): boolean {
@@ -38,9 +37,14 @@ function CardItem({ card, cardStyle }: CardItemProps) {
         ? (card.textColor || (isLightColor(card.bgColor) ? '#111111' : '#ffffff'))
         : undefined;
 
+    const isGlass = cardStyle === 'glass';
+    const defaultStyleClass = isGlass
+        ? 'backdrop-blur-md border border-white/10 [box-shadow:var(--theme-card-shadow)] [background:color-mix(in_srgb,var(--theme-surface)_60%,transparent)]'
+        : 'bg-white border border-gray-200 [box-shadow:var(--theme-card-shadow)]';
+
     const cardClass = hasCustomBg
         ? 'rounded-2xl overflow-hidden flex flex-col h-full'
-        : `rounded-2xl overflow-hidden flex flex-col h-full ${getCardClasses(cardStyle)}`;
+        : `rounded-2xl overflow-hidden flex flex-col h-full ${defaultStyleClass}`;
 
     const inlineStyle = hasCustomBg
         ? { backgroundColor: card.bgColor, color: autoTextColor }
