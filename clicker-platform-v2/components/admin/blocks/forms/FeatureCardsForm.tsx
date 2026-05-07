@@ -7,6 +7,21 @@ import { MediaField } from '@/components/admin/blocks/media-field/MediaField';
 import { DEFAULT_MEDIA } from '@/components/admin/blocks/media-field/types';
 import type { FeatureCard, FeatureCardsData } from '@/components/blocks/feature-cards/types';
 
+function stripUndefined<T>(value: T): T {
+    if (Array.isArray(value)) {
+        return value.map(stripUndefined) as any;
+    }
+    if (value && typeof value === 'object') {
+        const out: any = {};
+        for (const [k, v] of Object.entries(value)) {
+            if (v === undefined) continue;
+            out[k] = stripUndefined(v);
+        }
+        return out;
+    }
+    return value;
+}
+
 const inputClass = "w-full px-4 py-2.5 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-600 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-medium";
 const labelClass = "block text-xs font-medium text-neutral-500 dark:text-neutral-500 mb-1";
 const sectionClass = "p-3 bg-gray-50 dark:bg-neutral-900/50 rounded-xl border border-gray-200 dark:border-neutral-800 space-y-3";
@@ -189,7 +204,7 @@ export function FeatureCardsForm({ data, onChange }: Props) {
         cards: data?.cards ?? [],
     };
 
-    const update = (patch: Partial<FeatureCardsData>) => onChange({ ...safeData, ...patch });
+    const update = (patch: Partial<FeatureCardsData>) => onChange(stripUndefined({ ...safeData, ...patch }));
 
     const updateCard = (index: number, card: FeatureCard) => {
         const cards = [...safeData.cards];
