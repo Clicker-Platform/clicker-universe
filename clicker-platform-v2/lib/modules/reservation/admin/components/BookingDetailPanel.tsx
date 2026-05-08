@@ -38,6 +38,7 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
 
     // Service Records State
     const [srEnabled, setSrEnabled] = useState(false);
+    const [serviceUsedInSR, setServiceUsedInSR] = useState(false);
     const [showPlateModal, setShowPlateModal] = useState(false);
     const [plateInput, setPlateInput] = useState('');
     const [creatingSR, setCreatingSR] = useState(false);
@@ -150,18 +151,23 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
             try {
                 const { isModuleEnabled } = await import('@/lib/modules/registry');
                 const { findMemberByPhone } = await import('@/lib/modules/membership/api');
+                const { getServiceCatalogItem } = await import('@/lib/core/serviceCatalog/api');
 
                 // Run all checks in parallel
-                const [enabled, srEnabledVal, member] = await Promise.all([
+                const [enabled, srEnabledVal, member, catalogItem] = await Promise.all([
                     isModuleEnabled('membership'),
                     isModuleEnabled('service_records'),
                     (booking?.customerPhone && siteId)
                         ? findMemberByPhone(siteId, booking.customerPhone)
-                        : Promise.resolve(null)
+                        : Promise.resolve(null),
+                    (booking?.serviceId && siteId)
+                        ? getServiceCatalogItem(siteId, booking.serviceId)
+                        : Promise.resolve(null),
                 ]);
 
                 setMembershipEnabled(enabled);
                 setSrEnabled(srEnabledVal);
+                setServiceUsedInSR(!!catalogItem?.serviceRecordsConfig);
                 setIsMember(enabled && !!member);
             } catch (e) {
                 logger.error('reservation.booking.loyalty-check.failed', { siteId, error: e });
@@ -406,6 +412,26 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
                                     </div>
                                 </>
                             )}
+                            {(booking.totalPrice ?? 0) > 0 && (
+                                <div className="mt-3 pt-3 border-t border-gray-200 dark:border-neutral-700 space-y-1">
+                                    {booking.appliedPromo && (
+                                        <>
+                                            <div className="flex justify-between text-sm text-gray-600 dark:text-neutral-400">
+                                                <span>Subtotal</span>
+                                                <span className="line-through">{(booking.totalPrice + booking.appliedPromo.discount).toLocaleString()}</span>
+                                            </div>
+                                            <div className="flex justify-between text-sm text-emerald-700 dark:text-emerald-400">
+                                                <span>Promo: {booking.appliedPromo.label}</span>
+                                                <span>-{booking.appliedPromo.discount.toLocaleString()}</span>
+                                            </div>
+                                        </>
+                                    )}
+                                    <div className="flex justify-between font-bold text-gray-900 dark:text-neutral-100">
+                                        <span>Total</span>
+                                        <span>{booking.totalPrice.toLocaleString()}</span>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -563,7 +589,7 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
                                                 This booking will be automatically marked as completed when the Service Record is approved.
                                             </p>
                                         </div>
-                                    ) : srEnabled ? (
+                                    ) : srEnabled && serviceUsedInSR ? (
                                         <ActionButton
                                             onClick={async () => {
                                                 if ((booking as any).assetId) {

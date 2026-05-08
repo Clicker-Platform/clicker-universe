@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { useSite } from '@/lib/site-context';
 import { logger } from '@/lib/logger-edge';
 import { ThemeConfig } from '@/lib/templates/types';
+import { PromoApplicator } from '@/lib/modules/promo/components/PromoApplicator';
+import type { AppliedPromo } from '@/lib/modules/promo/api';
 
 interface DetailsStepProps {
     selectedService: Service;
@@ -42,6 +44,11 @@ export default function DetailsStep({
         preferredDate: '', id: 'guest', assetId: '', assetModel: '',
     });
     const [memberSearchPhone, setMemberSearchPhone] = useState('');
+    const [appliedPromo, setAppliedPromo] = useState<AppliedPromo | null>(null);
+    const showPromo = (selectedService.price ?? 0) > 0;
+    const finalPrice = appliedPromo
+        ? Math.max(0, selectedService.price - appliedPromo.discount)
+        : selectedService.price;
 
     const isGlass = theme.decorations?.surfaceStyle === 'glass' || theme.cardStyle === 'glass';
     const surfaceBg = theme.colors.surface || '#f9fafb';
@@ -82,7 +89,7 @@ export default function DetailsStep({
         e.preventDefault();
         if (loading) return;
         setLoading(true);
-        try { await onSubmit(customerInfo); } finally { setLoading(false); }
+        try { await onSubmit({ ...customerInfo, appliedPromo }); } finally { setLoading(false); }
     };
 
     return (
@@ -106,7 +113,37 @@ export default function DetailsStep({
                         {isRequest ? 'On Request' : `${date.toLocaleDateString()} at ${time}`}
                     </span>
                 </div>
+                {showPromo && (
+                    <div
+                        className="flex justify-between gap-3 pt-2 mt-2"
+                        style={{ borderTop: `1px dashed ${borderColor}` }}
+                    >
+                        <span className="shrink-0" style={{ color: subtleText }}>Total:</span>
+                        <span className="font-bold text-right" style={{ color: theme.colors.foreground }}>
+                            {appliedPromo && (
+                                <span className="line-through mr-2 font-normal" style={{ color: subtleText }}>
+                                    {selectedService.price.toLocaleString()}
+                                </span>
+                            )}
+                            {finalPrice.toLocaleString()}
+                        </span>
+                    </div>
+                )}
             </div>
+
+            {showPromo && siteId && (
+                <PromoApplicator
+                    siteId={siteId}
+                    subtotal={selectedService.price}
+                    source="RESERVATION"
+                    memberId={customerInfo.id !== 'guest' ? customerInfo.id : undefined}
+                    applied={appliedPromo}
+                    onApply={setAppliedPromo}
+                    onRemove={() => setAppliedPromo(null)}
+                    disabled={loading}
+                    autoCheck
+                />
+            )}
 
             {/* Membership Toggle */}
             {membershipEnabled && (
