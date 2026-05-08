@@ -10,11 +10,14 @@ import {
     ExternalLink,
     Box,
     MessageSquare,
-    Bot,
     Upload,
     ShieldCheck,
     Server,
+    Mail,
+    BarChart3,
 } from 'lucide-react';
+import { usePosthogStats } from '@/lib/monitoring/usePosthogStats';
+import { useResendStats } from '@/lib/monitoring/useResendStats';
 
 interface ServiceCard {
     id: string;
@@ -29,8 +32,8 @@ const SERVICES: ServiceCard[] = [
         id: 'modules',
         label: 'Modules',
         icon: Box,
-        description: 'POS, Reservation, Membership, Inventory',
-        eventPrefixes: ['pos.', 'reservation.', 'service-records.', 'membership.', 'inventory.', 'sales-pipeline.', 'pipeline.', 'service.'],
+        description: 'POS, Reservation, Membership, Inventory, AI Sales',
+        eventPrefixes: ['pos.', 'reservation.', 'service-records.', 'membership.', 'inventory.', 'sales-pipeline.', 'pipeline.', 'service.', 'ai.'],
     },
     {
         id: 'whatsapp',
@@ -38,13 +41,6 @@ const SERVICES: ServiceCard[] = [
         icon: MessageSquare,
         description: 'Webhook, send, command routing',
         eventPrefixes: ['wa.'],
-    },
-    {
-        id: 'ai',
-        label: 'AI Sales',
-        icon: Bot,
-        description: 'Chatbot, lead capture',
-        eventPrefixes: ['ai.'],
     },
     {
         id: 'upload',
@@ -60,14 +56,8 @@ const SERVICES: ServiceCard[] = [
         description: 'Login, claims, permissions',
         eventPrefixes: ['auth.'],
     },
-    {
-        id: 'core',
-        label: 'Platform Core',
-        icon: Server,
-        description: 'Firestore, middleware, admin',
-        eventPrefixes: ['admin.', 'analytics.', 'cache.', 'form.', 'template.', 'registry.', 'nav.', 'team.', 'crm.', 'user.', 'content.', 'knowledge.', 'firestore.', 'firebase.', 'middleware.', 'fetch.'],
-    },
 ];
+
 
 interface ErrorEntry {
     event: string;
@@ -76,11 +66,16 @@ interface ErrorEntry {
 
 interface Props {
     onSelectService?: (eventPrefix: string) => void;
+    onSelectIntegration?: (id: 'posthog' | 'resend') => void;
 }
 
-export default function HealthTab({ onSelectService }: Props) {
+type Status = 'ok' | 'warning' | 'critical';
+
+export default function HealthTab({ onSelectService, onSelectIntegration }: Props) {
     const [errors, setErrors] = useState<ErrorEntry[]>([]);
     const [loading, setLoading] = useState(true);
+    const { data: posthog } = usePosthogStats();
+    const { data: resend } = useResendStats({ window: '24h' });
 
     const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'unknown';
 
@@ -116,28 +111,80 @@ export default function HealthTab({ onSelectService }: Props) {
             const totalCount = matched.reduce((sum, e) => sum + e.count, 0);
             const topEvent = matched.sort((a, b) => b.count - a.count)[0];
 
-            let status: 'ok' | 'warning' | 'critical';
-            if (totalCount === 0) status = 'ok';
-            else if (totalCount <= 5) status = 'warning';
-            else status = 'critical';
+            // platform_logs only shows error events — can't prove service is down,
+            // so we cap at warning, never critical.
+            const status: Status = totalCount === 0 ? 'ok' : 'warning';
 
             return { ...svc, totalCount, topEvent, status };
         });
     }, [errors]);
 
+    const posthogCard = useMemo(() => {
+        if (!posthog) return { status: 'ok' as Status, summary: 'Connecting…', detail: null as string | null };
+        if (!posthog.health.reachable) {
+            const reason = posthog.health.errorCode === 'auth' ? 'auth failed'
+                : posthog.health.errorCode === 'rate_limit' ? 'rate limited'
+                : 'unreachable';
+            return {
+                status: 'critical' as Status,
+                summary: 'Disconnected',
+                detail: `${reason}${posthog.health.errorMessage ? ` — ${posthog.health.errorMessage}` : ''}`,
+            };
+        }
+        return {
+            status: 'ok' as Status,
+            summary: 'Connected',
+            detail: `${posthog.health.totalEvents24h.toLocaleString()} events`,
+        };
+    }, [posthog]);
+
+    const resendCard = useMemo(() => {
+        if (!resend) return { status: 'ok' as Status, summary: 'Connecting…', detail: null as string | null };
+        const { sent24h, failed24h, failRate } = resend.summary;
+        if (sent24h === 0 && failed24h === 0) {
+            return { status: 'ok' as Status, summary: 'No activity', detail: null };
+        }
+        if (sent24h === 0 && failed24h > 0) {
+            return { status: 'critical' as Status, summary: 'Issues', detail: `${failed24h} failed, 0 sent` };
+        }
+        const status: Status = failed24h > 0 ? 'warning' : 'ok';
+        return {
+            status,
+            summary: 'Connected',
+            detail: failed24h > 0
+                ? `${sent24h} sent, ${failed24h} failed (${(failRate * 100).toFixed(1)}%)`
+                : `${sent24h} sent`,
+        };
+    }, [resend]);
+
     const overallHealth = useMemo(() => {
-        const critical = serviceStats.filter(s => s.status === 'critical').length;
-        const warning = serviceStats.filter(s => s.status === 'warning').length;
-        if (critical > 0) return { label: 'CRITICAL', color: 'red' };
-        if (warning > 0) return { label: 'DEGRADED', color: 'amber' };
+        const allStatuses: Status[] = [
+            ...serviceStats.map(s => s.status),
+            posthogCard.status,
+            resendCard.status,
+        ];
+        if (allStatuses.includes('critical')) return { label: 'CRITICAL', color: 'red' };
+        if (allStatuses.includes('warning')) return { label: 'WARNING', color: 'yellow' };
         return { label: 'ALL HEALTHY', color: 'green' };
-    }, [serviceStats]);
+    }, [serviceStats, posthogCard, resendCard]);
 
     const handleClickService = (prefixes: string[]) => {
         if (onSelectService) {
             onSelectService(prefixes[0]);
         }
     };
+
+    const renderStatusIcon = (status: Status, isLoading = false) => {
+        if (isLoading) return <span className="w-3 h-3 rounded-full bg-gray-200 animate-pulse" />;
+        if (status === 'ok') return <CheckCircle2 className="w-5 h-5 text-green-500" />;
+        if (status === 'warning') return <AlertTriangle className="w-5 h-5 text-yellow-500" />;
+        return <XCircle className="w-5 h-5 text-red-500" />;
+    };
+
+    const statusTextClass = (status: Status) =>
+        status === 'ok' ? 'text-green-600'
+            : status === 'warning' ? 'text-yellow-600'
+            : 'text-red-600';
 
     return (
         <>
@@ -147,11 +194,11 @@ export default function HealthTab({ onSelectService }: Props) {
                     <div className="flex items-center gap-2">
                         <div className={`w-2 h-2 rounded-full ${
                             overallHealth.color === 'green' ? 'bg-green-500 animate-pulse' :
-                            overallHealth.color === 'amber' ? 'bg-amber-500' : 'bg-red-500 animate-pulse'
+                            overallHealth.color === 'yellow' ? 'bg-yellow-400' : 'bg-red-500 animate-pulse'
                         }`} />
                         <span className={`text-xs font-black uppercase tracking-widest ${
                             overallHealth.color === 'green' ? 'text-green-700' :
-                            overallHealth.color === 'amber' ? 'text-amber-700' : 'text-red-700'
+                            overallHealth.color === 'yellow' ? 'text-yellow-600' : 'text-red-700'
                         }`}>
                             {overallHealth.label}
                         </span>
@@ -164,8 +211,8 @@ export default function HealthTab({ onSelectService }: Props) {
                 <p className="text-xs text-gray-400 font-medium">Last 24 hours · Updates live</p>
             </div>
 
-            {/* Service grid */}
-            <div className="grid grid-cols-3 gap-4 mb-6">
+            {/* Service grid (platform_logs based) */}
+            <div className="grid grid-cols-3 gap-4 mb-4">
                 {serviceStats.map(svc => {
                     const Icon = svc.icon;
                     return (
@@ -178,23 +225,12 @@ export default function HealthTab({ onSelectService }: Props) {
                                 <div className="w-9 h-9 rounded-lg bg-slate-50 border border-gray-200 flex items-center justify-center text-gray-500 group-hover:text-brand-dark transition-colors">
                                     <Icon className="w-4 h-4" />
                                 </div>
-                                {loading ? (
-                                    <span className="w-3 h-3 rounded-full bg-gray-200 animate-pulse" />
-                                ) : svc.status === 'ok' ? (
-                                    <CheckCircle2 className="w-5 h-5 text-green-500" />
-                                ) : svc.status === 'warning' ? (
-                                    <AlertTriangle className="w-5 h-5 text-amber-500" />
-                                ) : (
-                                    <XCircle className="w-5 h-5 text-red-500" />
-                                )}
+                                {renderStatusIcon(svc.status, loading)}
                             </div>
                             <h3 className="font-black text-brand-dark text-sm">{svc.label}</h3>
                             <p className="text-xs text-gray-400 font-medium mt-0.5">{svc.description}</p>
                             <div className="mt-3 flex items-center justify-between text-xs">
-                                <span className={`font-bold ${
-                                    svc.status === 'ok' ? 'text-green-600' :
-                                    svc.status === 'warning' ? 'text-amber-600' : 'text-red-600'
-                                }`}>
+                                <span className={`font-bold ${statusTextClass(svc.status)}`}>
                                     {svc.totalCount === 0 ? 'No errors' : `${svc.totalCount} error${svc.totalCount > 1 ? 's' : ''}`}
                                 </span>
                                 {svc.topEvent && (
@@ -206,6 +242,49 @@ export default function HealthTab({ onSelectService }: Props) {
                         </button>
                     );
                 })}
+            </div>
+
+            {/* Integrations row (real-time data) */}
+            <div className="grid grid-cols-2 gap-4 mb-6">
+                <button
+                    onClick={() => onSelectIntegration?.('posthog')}
+                    className="bg-white rounded-2xl border-2 border-gray-200 p-5 hover:border-brand-dark transition-colors block group text-left w-full"
+                >
+                    <div className="flex items-start justify-between mb-3">
+                        <div className="w-9 h-9 rounded-lg bg-slate-50 border border-gray-200 flex items-center justify-center text-gray-500 group-hover:text-brand-dark transition-colors">
+                            <BarChart3 className="w-4 h-4" />
+                        </div>
+                        {renderStatusIcon(posthogCard.status, !posthog)}
+                    </div>
+                    <h3 className="font-black text-brand-dark text-sm">Analytics (PostHog)</h3>
+                    <p className="text-xs text-gray-400 font-medium mt-0.5">Live API health & event volume</p>
+                    <div className="mt-3 flex items-center justify-between text-xs">
+                        <span className={`font-bold ${statusTextClass(posthogCard.status)}`}>{posthogCard.summary}</span>
+                        {posthogCard.detail && (
+                            <span className="text-gray-400 truncate ml-2 max-w-[180px]" title={posthogCard.detail}>{posthogCard.detail}</span>
+                        )}
+                    </div>
+                </button>
+
+                <button
+                    onClick={() => onSelectIntegration?.('resend')}
+                    className="bg-white rounded-2xl border-2 border-gray-200 p-5 hover:border-brand-dark transition-colors block group text-left w-full"
+                >
+                    <div className="flex items-start justify-between mb-3">
+                        <div className="w-9 h-9 rounded-lg bg-slate-50 border border-gray-200 flex items-center justify-center text-gray-500 group-hover:text-brand-dark transition-colors">
+                            <Mail className="w-4 h-4" />
+                        </div>
+                        {renderStatusIcon(resendCard.status, !resend)}
+                    </div>
+                    <h3 className="font-black text-brand-dark text-sm">Email (Resend)</h3>
+                    <p className="text-xs text-gray-400 font-medium mt-0.5">Delivery success vs. failure (24h)</p>
+                    <div className="mt-3 flex items-center justify-between text-xs">
+                        <span className={`font-bold ${statusTextClass(resendCard.status)}`}>{resendCard.summary}</span>
+                        {resendCard.detail && (
+                            <span className="text-gray-400 truncate ml-2 max-w-[180px]" title={resendCard.detail}>{resendCard.detail}</span>
+                        )}
+                    </div>
+                </button>
             </div>
 
             {/* Firebase links */}
@@ -257,13 +336,13 @@ export default function HealthTab({ onSelectService }: Props) {
 
             {/* Hint */}
             <div className="mt-6 p-4 bg-blue-50 border border-blue-100 rounded-xl text-xs text-blue-700">
-                <strong>How it works:</strong> Status is computed from <code className="font-mono">platform_logs</code> in last 24h. Click any card to drill down to specific events in Logs tab.
+                <strong>How it works:</strong> Status is computed in real-time from each service. Click any card to drill down for details.
                 <span className="block mt-1.5">
-                    <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="w-3 h-3" /> OK = 0 errors</span>
+                    <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="w-3 h-3" /> OK = service running normally</span>
                     <span className="mx-2">·</span>
-                    <span className="inline-flex items-center gap-1.5"><AlertTriangle className="w-3 h-3" /> Warning = 1–5</span>
+                    <span className="inline-flex items-center gap-1.5"><AlertTriangle className="w-3 h-3" /> Warning = some anomalies, service still running</span>
                     <span className="mx-2">·</span>
-                    <span className="inline-flex items-center gap-1.5"><XCircle className="w-3 h-3" /> Critical = 6+</span>
+                    <span className="inline-flex items-center gap-1.5"><XCircle className="w-3 h-3" /> Critical = service down / unreachable</span>
                 </span>
             </div>
         </>

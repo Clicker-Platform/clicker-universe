@@ -2,8 +2,18 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { AlertCircle, AlertTriangle, RefreshCw } from 'lucide-react';
+import { AlertCircle, AlertTriangle, RefreshCw, Trash2, CheckCircle2, XCircle } from 'lucide-react';
+import { httpsCallable, getFunctions } from 'firebase/functions';
+import { app } from '@/lib/firebase';
 import { useMonitoringLogs, PlatformLog } from '@/lib/useMonitoringLogs';
+
+const monitoringFunctions = getFunctions(app, 'asia-southeast1');
+
+interface CleanupResult {
+    deletedPlatformLogs: number;
+    deletedEmailLogs: number;
+    durationMs: number;
+}
 
 function timeAgo(date: Date): string {
     const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
@@ -106,14 +116,82 @@ export default function LogsTab({ initialEvent = '', initialSiteId = '' }: Props
     const errorCount = logs.filter(l => l.level === 'error').length;
     const warnCount = logs.filter(l => l.level === 'warn').length;
 
+    const [cleanupRunning, setCleanupRunning] = useState(false);
+    const [cleanupMessage, setCleanupMessage] = useState<string | null>(null);
+
+    const handleCleanup = async () => {
+        const ok = window.confirm(
+            'Clear old event logs?\n\n' +
+            'This will permanently delete platform_logs older than 7 days from Firestore.\n\n' +
+            'Recent logs will not be affected. Email logs are not touched.'
+        );
+        if (!ok) return;
+
+        setCleanupRunning(true);
+        setCleanupMessage(null);
+        try {
+            const callable = httpsCallable<{ target: 'platform_logs' }, CleanupResult>(
+                monitoringFunctions,
+                'triggerRetentionCleanup'
+            );
+            const resp = await callable({ target: 'platform_logs' });
+            setCleanupMessage(
+                `Cleanup done — deleted ${resp.data.deletedPlatformLogs} platform logs.`
+            );
+        } catch (err) {
+            setCleanupMessage(
+                `Cleanup failed: ${err instanceof Error ? err.message : String(err)}`
+            );
+        } finally {
+            setCleanupRunning(false);
+        }
+    };
+
     return (
         <>
-            <div className="flex items-center justify-end mb-4 text-xs text-gray-400">
-                <RefreshCw className={`w-3 h-3 mr-1.5 ${loading ? 'animate-spin' : ''}`} />
-                {loading ? 'Loading...' : 'Live'}
+            <div className="flex items-center justify-between mb-4">
+                <button
+                    onClick={handleCleanup}
+                    disabled={cleanupRunning}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs border border-gray-200 rounded-md hover:border-red-300 hover:bg-red-50 hover:text-red-700 disabled:opacity-50 disabled:cursor-wait transition-colors"
+                >
+                    <Trash2 className={`w-3.5 h-3.5 ${cleanupRunning ? 'animate-pulse' : ''}`} />
+                    {cleanupRunning ? 'Running cleanup…' : 'Run cleanup'}
+                </button>
+                <div className="flex items-center text-xs text-gray-400">
+                    <RefreshCw className={`w-3 h-3 mr-1.5 ${loading ? 'animate-spin' : ''}`} />
+                    {loading ? 'Loading...' : 'Live'}
+                </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-4 mb-6">
+            {cleanupMessage && (
+                <div className="mb-4 p-3 border border-gray-200 bg-gray-50 text-sm text-gray-700 rounded-md">
+                    {cleanupMessage}
+                </div>
+            )}
+
+            <div className="grid grid-cols-4 gap-4 mb-6">
+                <div className="bg-white rounded-2xl border border-gray-200 p-4">
+                    <p className="text-xs text-gray-500 font-medium">Status</p>
+                    <div className="flex items-center gap-1.5 mt-1">
+                        {loading && !error ? (
+                            <>
+                                <span className="w-3 h-3 rounded-full bg-gray-200 animate-pulse" />
+                                <span className="text-base font-bold text-gray-500">Connecting…</span>
+                            </>
+                        ) : error ? (
+                            <>
+                                <XCircle className="w-4 h-4 text-red-600" />
+                                <span className="text-base font-bold text-red-600">Disconnected</span>
+                            </>
+                        ) : (
+                            <>
+                                <CheckCircle2 className="w-4 h-4 text-green-600" />
+                                <span className="text-base font-bold text-green-600">Connected</span>
+                            </>
+                        )}
+                    </div>
+                </div>
                 <div className="bg-white rounded-2xl border border-gray-200 p-4">
                     <p className="text-xs text-gray-500 font-medium">Total Events</p>
                     <p className="text-2xl font-black text-brand-dark">{logs.length}</p>
