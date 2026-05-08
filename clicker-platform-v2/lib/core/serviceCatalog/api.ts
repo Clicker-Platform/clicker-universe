@@ -6,6 +6,7 @@ import {
     addDoc,
     updateDoc,
     deleteDoc,
+    deleteField,
     query,
     where,
     serverTimestamp,
@@ -71,8 +72,15 @@ export async function updateServiceCatalogItem(
     id: string,
     data: Partial<Omit<ServiceCatalogItem, 'id' | 'outletId' | 'createdAt'>>
 ): Promise<void> {
-    const payload = stripUndefined({ ...data, updatedAt: serverTimestamp() });
-    await updateDoc(doc(db, 'sites', siteId, SERVICE_CATALOG, id), payload);
+    // Top-level `undefined` means "clear this field" — convert to deleteField() so
+    // Firestore actually removes it. Nested undefineds are still stripped.
+    const cleaned: Record<string, unknown> = { updatedAt: serverTimestamp() };
+    for (const [k, v] of Object.entries(data as Record<string, unknown>)) {
+        cleaned[k] = v === undefined
+            ? deleteField()
+            : (v !== null && typeof v === 'object' && !Array.isArray(v) ? stripUndefined(v) : v);
+    }
+    await updateDoc(doc(db, 'sites', siteId, SERVICE_CATALOG, id), cleaned);
 }
 
 export async function deleteServiceCatalogItem(siteId: string, id: string): Promise<void> {

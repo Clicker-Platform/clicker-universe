@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { createBooking } from '@/lib/modules/reservation/api';
 import { Service, Staff } from '@/lib/modules/reservation/types';
+import { commitPromoUsage, type AppliedPromo } from '@/lib/modules/promo/api';
 import { Check, ChevronLeft } from 'lucide-react';
 import { AlertDialog } from '@/components/common/AlertDialog';
 import { useTemplate } from '@/components/TemplateProvider';
@@ -138,6 +139,11 @@ export default function BookingForm({
                 bookingEnd = new Date(bookingStart.getTime() + (selectedService.durationMinutes ?? 60) * 60000);
             }
 
+            const appliedPromo = customerInfo.appliedPromo as AppliedPromo | null | undefined;
+            const finalPrice = appliedPromo
+                ? Math.max(0, selectedService.price - appliedPromo.discount)
+                : selectedService.price;
+
             const id = await createBooking(siteId, {
                 serviceId: selectedService.id,
                 serviceName: selectedService.name,
@@ -148,14 +154,29 @@ export default function BookingForm({
                 status: 'pending',
                 startAt: bookingStart as any,
                 endAt: bookingEnd as any,
-                totalPrice: selectedService.price,
+                totalPrice: finalPrice,
                 notes: customerInfo.notes,
                 preferredDate: customerInfo.preferredDate || undefined,
                 staffId: selectedStaff?.id,
                 staffName: selectedStaff?.name,
                 assetId: customerInfo.assetId || undefined,
                 assetModel: customerInfo.assetModel || undefined,
+                ...(appliedPromo ? { appliedPromo } : {}),
             } as any);
+
+            if (appliedPromo) {
+                try {
+                    await commitPromoUsage({
+                        siteId,
+                        applied: appliedPromo,
+                        source: 'RESERVATION',
+                        refId: id,
+                        memberId: customerInfo.id !== 'guest' ? customerInfo.id : undefined,
+                    });
+                } catch (commitErr) {
+                    logger.error('reservation.booking.promo-commit.failed', { siteId, bookingId: id, err: commitErr });
+                }
+            }
 
             setBookingRef(id);
             setStep(5);
