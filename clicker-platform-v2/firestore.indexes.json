@@ -53,6 +53,20 @@
                 {
                     "fieldPath": "createdAt",
                     "order": "ASCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "orders",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "status",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "createdAt",
+                    "order": "ASCENDING"
                 },
                 {
                     "fieldPath": "total",
@@ -506,6 +520,14 @@
                 { "fieldPath": "isPublished", "order": "ASCENDING" },
                 { "fieldPath": "createdAt", "order": "DESCENDING" }
             ]
+        },
+        {
+            "collectionGroup": "emailLog",
+            "queryScope": "COLLECTION_GROUP",
+            "fields": [
+                { "fieldPath": "status", "order": "ASCENDING" },
+                { "fieldPath": "createdAt", "order": "DESCENDING" }
+            ]
         }
     ],
     "fieldOverrides": [
@@ -529,6 +551,24 @@
                     "order": "DESCENDING",
                     "queryScope": "COLLECTION_GROUP"
                 }
+            ]
+        },
+        {
+            "collectionGroup": "emailLog",
+            "fieldPath": "createdAt",
+            "indexes": [
+                { "order": "ASCENDING", "queryScope": "COLLECTION" },
+                { "order": "DESCENDING", "queryScope": "COLLECTION" },
+                { "order": "ASCENDING", "queryScope": "COLLECTION_GROUP" },
+                { "order": "DESCENDING", "queryScope": "COLLECTION_GROUP" }
+            ]
+        },
+        {
+            "collectionGroup": "emailLog",
+            "fieldPath": "status",
+            "indexes": [
+                { "order": "ASCENDING", "queryScope": "COLLECTION" },
+                { "order": "ASCENDING", "queryScope": "COLLECTION_GROUP" }
             ]
         }
     ]

@@ -454,6 +454,13 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // emailLog (collection group) — superadmin only, for backyard Resend monitoring
+    // Writes go through admin SDK in clicker-platform-v2 (bypasses rules).
+    match /{path=**}/emailLog/{logId} {
+      allow read: if isGlobalAdmin();
+      allow write: if false;
+    }
+
     // platform_meta — seed history and future meta docs
     match /platform_meta/{docId} {
       allow read: if isGlobalAdmin();

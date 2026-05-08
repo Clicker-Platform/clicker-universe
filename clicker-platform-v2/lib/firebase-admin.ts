@@ -73,7 +73,4 @@ export const adminDb: Firestore = getFirestore(adminApp);
 export const adminStorage: Storage = getStorage(adminApp);
 export const firebaseAdmin = admin;
 
-// Re-export commonly used Firestore types via the dynamic admin reference
-// so API routes don't need their own require('firebase-admin') calls
-export const Timestamp = admin.firestore.Timestamp;
-export const FieldValue = admin.firestore.FieldValue;
+export { Timestamp, FieldValue } from 'firebase-admin/firestore';

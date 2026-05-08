@@ -166,11 +166,12 @@ function PublicContentContent({ data }: { data: any }) {
             {/* Dynamic Block Rendering */}
             {(homeBlockOrder || ['quick_actions', 'branches', 'featured', 'gallery', 'hours'])
                 .filter((blockId: string) => !(hiddenBlockIds || []).includes(blockId)) // Filter out hidden blocks
-                .map((blockId: string) => {
+                .map((blockId: string, index: number) => {
+                    const isFirst = index === 0;
                     switch (blockId) {
                         case 'hero':
                             const HeroComponent = template.components?.Blocks?.Hero || HeroBlock;
-                            return <HeroComponent key={blockId} profile={profile} theme={template.config} />;
+                            return <HeroComponent key={blockId} profile={profile} theme={template.config} isFirst={isFirst} />;
                         case 'quick_actions':
                             const QuickActionsComponent = template.components?.Blocks?.QuickActions || QuickActions;
                             return <QuickActionsComponent key={blockId} links={links} contact={contact} settings={linkSettings} />;

@@ -1,4 +1,8 @@
-import DOMPurify from 'isomorphic-dompurify';
+import DOMPurify from 'dompurify';
+
+// DOMPurify requires a browser DOM. On the server (SSR), we skip sanitization
+// because the output is rendered in the browser where client-side DOMPurify runs.
+const isServer = typeof window === 'undefined';
 
 const RICH_TEXT_CONFIG = {
     ALLOWED_TAGS: [
@@ -30,5 +34,6 @@ const RICH_TEXT_CONFIG = {
 
 export function sanitizeRichText(html: string | undefined | null): string {
     if (!html) return '';
+    if (isServer) return html;
     return DOMPurify.sanitize(html, RICH_TEXT_CONFIG) as unknown as string;
 }

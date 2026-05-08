@@ -194,7 +194,7 @@ const MODULES = [
     },
     {
         id: 'promo',
-        displayName: 'Promotions & Vouchers',
+        displayName: 'Promo & Voucher',
         description: 'Promo rules, voucher issuance, and member rewards.',
         icon: 'tag',
         version: '1.0.0',

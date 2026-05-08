@@ -1,6 +1,7 @@
 'use client';
 // Force rebuild
 
+import { useRef } from 'react';
 import { useServerInsertedHTML, usePathname } from 'next/navigation';
 import { SiteSettings } from '@/data/mockData';
 
@@ -9,8 +10,14 @@ export default function ThemeRegistry({ initialSettings }: { initialSettings: Si
     const pathname = usePathname();
     const isAdmin = pathname?.startsWith('/admin');
 
+    // useServerInsertedHTML fires once per streaming chunk in Next.js SSR.
+    // The `data-theme-registry` id ensures the browser deduplicates if injected multiple times,
+    // but we also guard with a ref so we only return content on the first call.
+    const inserted = useRef(false);
     useServerInsertedHTML(() => {
         if (!settings || isAdmin) return null;
+        if (inserted.current) return null;
+        inserted.current = true;
 
         const fontFamily = settings.fontFamily || 'var(--font-jakarta)';
         const isCustomFont = !fontFamily.startsWith('var(');
@@ -25,7 +32,7 @@ export default function ThemeRegistry({ initialSettings }: { initialSettings: Si
                         <noscript><link href={fontUrl} rel="stylesheet" /></noscript>
                     </>
                 )}
-                <style dangerouslySetInnerHTML={{
+                <style data-theme-registry dangerouslySetInnerHTML={{
                     __html: `
                     :root {
                         --color-brand-green: ${settings.themeColor || '#B6FF2E'};

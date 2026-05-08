@@ -22,6 +22,7 @@ pnpm build      # Production build
 4. **RBAC guard** — check `canEdit()` before every write in client components.
 5. **DB paths** — use constants from `lib/modules/{name}/constants.ts`, never raw strings.
 6. **Cross-module promo imports** — modules may import from `@/lib/modules/promo/api` (the facade only). Designated exception to rule 1, same as `@/lib/modules/membership/api`.
+7. **New module = seed global registry** — adding a module requires a Firestore doc at `modules/{id}` with at least `{ id, displayName, enabled: true, icon, version }`. Without it, Backyard's per-tenant toggle silently fails: `sites/{id}.modules.{moduleId} = true` is written, but the module never renders in sidebar/Overview because `subscribeToEnabledModules` queries `modules` WHERE `enabled == true`. Run `pnpm tsx scripts/seed-modules.ts` (or insert via MCP) when introducing a new module. Module IDs use **underscore** (`promo`, `ai_marketing`, `sales_pipeline`), not dash.
 
 ## Skills Available
 
