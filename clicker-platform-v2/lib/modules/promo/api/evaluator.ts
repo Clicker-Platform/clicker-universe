@@ -1,6 +1,6 @@
 // lib/modules/promo/api/evaluator.ts
 import { Timestamp } from 'firebase/firestore';
-import { findPromoByCode, findAutoPromos } from './promos';
+import { findPromoByCode, findAutoPromos, getMemberUsageCount } from './promos';
 import { findVoucherByCode } from './vouchers';
 import { getPromoSettings } from './settings';
 import { calculateDiscount } from './discount';
@@ -40,18 +40,10 @@ function audienceMatches(promo: Promo, memberId?: string): boolean {
 export async function evaluatePromo(input: EvaluateInput): Promise<EvaluationResult> {
   const { siteId, code, subtotal, source, memberId } = input;
 
-  // 1. Try to find a Promo (by code field) first, then a Voucher
-  const [promo, voucher] = await Promise.all([
-    findPromoByCode(siteId, code),
-    findVoucherByCode(siteId, code),
-  ]);
+  // 1. Try promo first — most common case, avoids unnecessary voucher query
+  const promo = await findPromoByCode(siteId, code);
 
-  // 2. If neither found → not_found
-  if (!promo && !voucher) {
-    return { ok: false, reason: 'not_found', message: 'Promo or voucher code not found.' };
-  }
-
-  // 3. Promo path
+  // 2. Promo path — return early without querying vouchers
   if (promo) {
     // Paused check
     if (promo.status === 'paused') {
@@ -90,6 +82,18 @@ export async function evaluatePromo(input: EvaluateInput): Promise<EvaluationRes
       return { ok: false, reason: 'usage_exhausted', message: 'This promo has reached its usage limit.' };
     }
 
+    // Per-member limit check — only for identified members
+    if (promo.perMemberLimit !== undefined && memberId) {
+      const memberCount = await getMemberUsageCount(siteId, promo.id, memberId);
+      if (memberCount >= promo.perMemberLimit) {
+        return {
+          ok: false,
+          reason: 'per_member_limit',
+          message: `You have already used this promo the maximum number of times (${promo.perMemberLimit}x).`,
+        };
+      }
+    }
+
     // Calculate discount
     const discount = calculateDiscount(
       { kind: promo.kind, value: promo.value, maxDiscount: promo.maxDiscount },
@@ -106,7 +110,11 @@ export async function evaluatePromo(input: EvaluateInput): Promise<EvaluationRes
     };
   }
 
-  // 4. Voucher path
+  // 4. Voucher path — only queried if no promo found
+  const voucher = await findVoucherByCode(siteId, code);
+  if (!voucher) {
+    return { ok: false, reason: 'not_found', message: 'Promo or voucher code not found.' };
+  }
   const v = voucher as Voucher;
 
   // Status check

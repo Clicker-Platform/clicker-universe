@@ -81,6 +81,17 @@ export async function deletePromo(siteId: string, promoId: string): Promise<void
   await deleteDoc(ref);
 }
 
+export async function getMemberUsageCount(
+  siteId: string,
+  promoId: string,
+  memberId: string,
+): Promise<number> {
+  const ref = doc(db, 'sites', siteId, PROMOS_COLLECTION, promoId, 'memberUsage', memberId);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return 0;
+  return (snap.data().count as number) ?? 0;
+}
+
 export async function findAutoPromos(siteId: string): Promise<Promo[]> {
   const q = query(
     collection(db, 'sites', siteId, PROMOS_COLLECTION),

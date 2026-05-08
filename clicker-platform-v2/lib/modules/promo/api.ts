@@ -14,6 +14,7 @@ export {
   setPromoStatus,
   deletePromo,
   listClaimablePromos,
+  getMemberUsageCount,
 } from './api/promos';
 
 // Vouchers

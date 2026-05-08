@@ -13,7 +13,7 @@ export interface CommitInput {
 
 // Called after payment succeeds — atomically records usage
 export async function commitPromoUsage(input: CommitInput): Promise<void> {
-  const { siteId, applied, source, refId } = input;
+  const { siteId, applied, source, refId, memberId } = input;
   const db = getFirestore();
 
   if (applied.kind === 'promo') {
@@ -22,6 +22,13 @@ export async function commitPromoUsage(input: CommitInput): Promise<void> {
       const snap = await tx.get(ref);
       const current = (snap.data()?.usageCount ?? 0) as number;
       tx.update(ref, { usageCount: current + 1 });
+
+      if (memberId) {
+        const memberUsageRef = doc(db, 'sites', siteId, PROMOS_COLLECTION, applied.refId, 'memberUsage', memberId);
+        const memberSnap = await tx.get(memberUsageRef);
+        const memberCount = (memberSnap.data()?.count ?? 0) as number;
+        tx.set(memberUsageRef, { count: memberCount + 1 }, { merge: true });
+      }
     });
   } else {
     // kind === 'voucher'
@@ -49,7 +56,7 @@ export async function commitPromoUsage(input: CommitInput): Promise<void> {
 // Called if payment fails after eval — reverses the usage record
 // This is a best-effort reversal (if the commit never happened, this is a no-op)
 export async function reversePromoUsage(input: CommitInput): Promise<void> {
-  const { siteId, applied, refId } = input;
+  const { siteId, applied, refId, memberId } = input;
   const db = getFirestore();
 
   if (applied.kind === 'promo') {
@@ -58,6 +65,13 @@ export async function reversePromoUsage(input: CommitInput): Promise<void> {
       const snap = await tx.get(ref);
       const current = (snap.data()?.usageCount ?? 0) as number;
       tx.update(ref, { usageCount: Math.max(0, current - 1) });
+
+      if (memberId) {
+        const memberUsageRef = doc(db, 'sites', siteId, PROMOS_COLLECTION, applied.refId, 'memberUsage', memberId);
+        const memberSnap = await tx.get(memberUsageRef);
+        const memberCount = (memberSnap.data()?.count ?? 0) as number;
+        tx.set(memberUsageRef, { count: Math.max(0, memberCount - 1) }, { merge: true });
+      }
     });
   } else {
     // kind === 'voucher'
