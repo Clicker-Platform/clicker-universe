@@ -99,6 +99,11 @@ const FIRESTORE_CRITICAL_EVENTS = new Set([
   // ─── Cache & infra ──────────────────────────────────────────────────────
   'cache.purge.failed',
   'knowledge.sync.failed',
+
+  // ─── Email (Resend) ─────────────────────────────────────────────────────
+  'email.send.failed',
+  'email.send.exception',
+  'email.context.fetch.failed',
 ]);
 
 export function isFirestoreCritical(event: string): boolean {
