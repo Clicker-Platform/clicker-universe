@@ -23,19 +23,12 @@
             "ignore": [
                 "firebase.json",
                 "**/.*",
+                "!.env.production.local",
                 "**/node_modules/**"
             ],
             "frameworksBackend": {
                 "region": "us-central1",
-                "memory": "2GiB",
-                "secrets": [
-                    "UPSTASH_REDIS_REST_URL",
-                    "UPSTASH_REDIS_REST_TOKEN"
-                ],
-                "environmentVariables": {
-                    "NEXT_PUBLIC_POSTHOG_KEY": "phc_CxagLBzb5nKgeG7xMDrwQjmC7WmGWarmMjUQzjgJCGjG",
-                    "NEXT_PUBLIC_POSTHOG_HOST": "https://app.posthog.com"
-                }
+                "memory": "2GiB"
             }
         },
         {
@@ -44,14 +37,12 @@
             "ignore": [
                 "firebase.json",
                 "**/.*",
+                "!.env.production.local",
                 "**/node_modules/**"
             ],
             "frameworksBackend": {
                 "region": "us-central1",
-                "memory": "1GiB",
-                "secrets": [
-                    "GCP_SERVICE_ACCOUNT_KEY"
-                ]
+                "memory": "1GiB"
             }
         },
         {
@@ -60,6 +51,7 @@
             "ignore": [
                 "firebase.json",
                 "**/.*",
+                "!.env.production.local",
                 "**/node_modules/**"
             ],
             "frameworksBackend": {

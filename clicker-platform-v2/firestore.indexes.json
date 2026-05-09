@@ -1,6 +1,22 @@
 {
     "indexes": [
         {
+            "collectionGroup": "registrationEvents",
+            "queryScope": "COLLECTION",
+            "fields": [
+                { "fieldPath": "registrationId", "order": "ASCENDING" },
+                { "fieldPath": "createdAt", "order": "DESCENDING" }
+            ]
+        },
+        {
+            "collectionGroup": "registrationEvents",
+            "queryScope": "COLLECTION",
+            "fields": [
+                { "fieldPath": "level", "order": "ASCENDING" },
+                { "fieldPath": "createdAt", "order": "DESCENDING" }
+            ]
+        },
+        {
             "collectionGroup": "analytics_shards",
             "queryScope": "COLLECTION",
             "fields": [

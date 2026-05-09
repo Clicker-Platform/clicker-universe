@@ -1,13 +1,20 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '@/lib/firebase';
 import { toast } from 'sonner';
-import { Store, Loader2, Search, ExternalLink, PowerOff, Power, Trash2, ChevronRight } from 'lucide-react';
+import { Store, Loader2, Search, ExternalLink, PowerOff, Power, Trash2, ChevronRight, Copy, RefreshCw } from 'lucide-react';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import PageShell from '@/components/PageShell';
 import Link from 'next/link';
+import { getRegistration } from '@/lib/registrations/api';
+import { suggestSlug } from '@/lib/registrations/slug';
+import { validateSlugFormat, isSlugAvailable } from '@/lib/registrations/slug-validation';
+import { generatePassword } from '@/lib/registrations/password-generator';
+import { ModuleSelector } from '@/components/tenants/ModuleSelector';
+import type { RegistrationRequest } from '@/lib/registrations/types';
 
 interface Tenant {
     id: string;
@@ -27,8 +34,11 @@ export default function TenantsPage() {
     const [ownerEmail, setOwnerEmail] = useState('');
     const [password, setPassword] = useState('');
     const [subdomain, setSubdomain] = useState('');
-    const [hostingId, setHostingId] = useState('quattro');
+    const [slugStatus, setSlugStatus] = useState<'idle' | 'checking' | 'ok' | 'error'>('idle');
+    const [slugError, setSlugError] = useState<string>('');
+    const [hostingId, setHostingId] = useState('clickerapps');
     const [seedSampleData, setSeedSampleData] = useState(true);
+    const [modules, setModules] = useState<Record<string, boolean>>({});
     const [createLoading, setCreateLoading] = useState(false);
     const [showCreate, setShowCreate] = useState(false);
 
@@ -41,6 +51,29 @@ export default function TenantsPage() {
     const [deleteTarget, setDeleteTarget] = useState<Tenant | null>(null);
     const [deleteLoading, setDeleteLoading] = useState(false);
 
+    const searchParams = useSearchParams();
+    const fromRegistration = searchParams.get('fromRegistration');
+    const [registration, setRegistration] = useState<RegistrationRequest | null>(null);
+
+    useEffect(() => {
+        if (!fromRegistration) return;
+        getRegistration(fromRegistration).then((r) => {
+            if (!r) return;
+            setRegistration(r);
+            setName(r.businessName);
+            setOwnerEmail(r.email);
+            setSubdomain(suggestSlug(r.businessName));
+            setShowCreate(true);
+
+            // Resolve modules dari registrasi
+            const initial: Record<string, boolean> = {};
+            for (const id of (r.modules ?? [])) {
+                initial[id] = true;
+            }
+            setModules(initial);
+        });
+    }, [fromRegistration]);
+
     const filteredTenants = useMemo(() =>
         tenants.filter(t =>
             t.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -49,6 +82,40 @@ export default function TenantsPage() {
         ), [tenants, searchQuery]);
 
     useEffect(() => { fetchTenants(); }, []);
+
+    useEffect(() => {
+        if (showCreate && !password) {
+            setPassword(generatePassword());
+        }
+    }, [showCreate]);
+
+    useEffect(() => {
+        if (!subdomain) { setSlugStatus('idle'); setSlugError(''); return; }
+        const fmt = validateSlugFormat(subdomain);
+        if (!fmt.ok) {
+            setSlugStatus('error');
+            setSlugError(fmt.reason ?? 'Slug tidak valid');
+            return;
+        }
+        setSlugStatus('checking');
+        setSlugError('');
+        const t = setTimeout(async () => {
+            try {
+                const available = await isSlugAvailable(subdomain);
+                if (available) {
+                    setSlugStatus('ok');
+                    setSlugError('');
+                } else {
+                    setSlugStatus('error');
+                    setSlugError(`Slug "${subdomain}" sudah dipakai`);
+                }
+            } catch {
+                setSlugStatus('error');
+                setSlugError('Gagal cek ketersediaan slug');
+            }
+        }, 400);
+        return () => clearTimeout(t);
+    }, [subdomain]);
 
     const fetchTenants = async () => {
         setLoading(true);
@@ -67,13 +134,33 @@ export default function TenantsPage() {
 
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (slugStatus !== 'ok') {
+            toast.error('Slug belum valid', { description: slugError || 'Periksa kembali subdomain.' });
+            return;
+        }
         setCreateLoading(true);
         try {
             const fn = httpsCallable(functions, 'createTenant');
-            await fn({ name, ownerEmail, password, subdomain, hostingId, modules: {}, seedSampleData });
+            const res: any = await fn({ name, ownerEmail, password, subdomain, hostingId, modules, seedSampleData });
+            const newSiteId: string | undefined = res?.data?.siteId;
             toast.success('Tenant created', { description: `${name} is ready.` });
+
+            if (fromRegistration && newSiteId) {
+                try {
+                    await fetch(`/api/registrations/${fromRegistration}/activate`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ siteId: newSiteId, tempPassword: password }),
+                    });
+                } catch (activateErr: any) {
+                    toast.error('Activate registration failed', { description: activateErr.message });
+                }
+            }
+
             setName(''); setOwnerEmail(''); setPassword(''); setSubdomain('');
-            setHostingId('quattro'); setSeedSampleData(true); setShowCreate(false);
+            setHostingId('clickerapps'); setSeedSampleData(true); setShowCreate(false);
+            setModules({});
+            setRegistration(null);
             await fetchTenants();
         } catch (err: any) {
             toast.error('Create failed', { description: err.message });
@@ -150,6 +237,15 @@ export default function TenantsPage() {
                 </button>
             }
         >
+            {showCreate && registration && (
+                <div className="rounded-2xl border border-orange-200 bg-orange-50 p-4 mb-4 text-sm text-orange-900">
+                    <p className="font-bold">Activating registration</p>
+                    <p className="mt-1">{registration.businessName} — {registration.email}</p>
+                    {registration.promoCode && (
+                        <p className="mt-1">Promo: <span className="font-mono">{registration.promoCode}</span></p>
+                    )}
+                </div>
+            )}
             {showCreate && (
                 <div className="bg-white rounded-2xl border border-gray-200 p-6 mb-6">
                     <h2 className="text-sm font-black text-brand-dark uppercase tracking-wider mb-4">New Tenant</h2>
@@ -158,30 +254,55 @@ export default function TenantsPage() {
                             <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Tenant Name</label>
                             <input required value={name} onChange={e => setName(e.target.value)}
                                 className="w-full mt-1 px-3 py-2 border-2 border-gray-200 rounded-xl text-sm font-medium outline-none focus:border-brand-dark"
-                                placeholder="Cafe Quattro" />
+                                placeholder="My Business" />
                         </div>
                         <div>
                             <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Subdomain (ID)</label>
-                            <input required value={subdomain} onChange={e => setSubdomain(e.target.value)}
-                                className="w-full mt-1 px-3 py-2 border-2 border-gray-200 rounded-xl text-sm font-mono outline-none focus:border-brand-dark"
-                                placeholder="cafe-quattro" />
+                            <input required value={subdomain} onChange={e => setSubdomain(e.target.value.toLowerCase())}
+                                className={`w-full mt-1 px-3 py-2 border-2 rounded-xl text-sm font-mono outline-none focus:border-brand-dark ${slugStatus === 'error' ? 'border-red-300' : slugStatus === 'ok' ? 'border-green-300' : 'border-gray-200'}`}
+                                placeholder="my-business" />
+                            {subdomain && slugStatus !== 'error' && (
+                                <p className="mt-1 text-xs text-gray-500 font-mono">
+                                    Preview: <span className="text-brand-dark font-semibold">{subdomain}.clicker.id</span>
+                                    {slugStatus === 'checking' && <span className="ml-2 text-gray-400">cek...</span>}
+                                    {slugStatus === 'ok' && <span className="ml-2 text-green-600">✓ tersedia</span>}
+                                </p>
+                            )}
+                            {slugStatus === 'error' && slugError && (
+                                <p className="mt-1 text-xs text-red-600 font-medium">{slugError}</p>
+                            )}
                         </div>
                         <div>
                             <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Owner Email</label>
                             <input required type="email" value={ownerEmail} onChange={e => setOwnerEmail(e.target.value)}
                                 className="w-full mt-1 px-3 py-2 border-2 border-gray-200 rounded-xl text-sm font-medium outline-none focus:border-brand-dark"
-                                placeholder="owner@cafe.com" />
+                                placeholder="owner@business.com" />
                         </div>
                         <div>
                             <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Owner Password</label>
-                            <input required type="password" value={password} onChange={e => setPassword(e.target.value)}
-                                className="w-full mt-1 px-3 py-2 border-2 border-gray-200 rounded-xl text-sm font-medium outline-none focus:border-brand-dark"
-                                placeholder="••••••••" />
+                            <div className="flex gap-2 mt-1">
+                                <input required type="text" value={password} onChange={e => setPassword(e.target.value)}
+                                    className="flex-1 px-3 py-2 border-2 border-gray-200 rounded-xl text-sm font-mono outline-none focus:border-brand-dark"
+                                    placeholder="••••••••" />
+                                <button type="button" onClick={() => setPassword(generatePassword())}
+                                    title="Regenerate"
+                                    className="px-3 py-2 rounded-xl border-2 border-gray-200 hover:border-brand-dark text-gray-500">
+                                    <RefreshCw className="w-4 h-4" />
+                                </button>
+                                <button type="button" onClick={() => {
+                                    navigator.clipboard.writeText(password);
+                                    toast.success('Password disalin');
+                                }}
+                                    title="Copy"
+                                    className="px-3 py-2 rounded-xl border-2 border-gray-200 hover:border-brand-dark text-gray-500">
+                                    <Copy className="w-4 h-4" />
+                                </button>
+                            </div>
                         </div>
                         <div>
                             <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Hosting</label>
                             <div className="flex gap-2 mt-1">
-                                {['quattro', 'aletra'].map(h => (
+                                {['clickerapps'].map(h => (
                                     <button key={h} type="button" onClick={() => setHostingId(h)}
                                         className={`flex-1 py-2 rounded-xl text-xs font-black uppercase border-2 transition-all ${hostingId === h ? 'bg-brand-dark text-white border-brand-dark' : 'border-gray-200 text-gray-400'}`}>
                                         {h}
@@ -196,9 +317,15 @@ export default function TenantsPage() {
                                 <span className="text-sm font-semibold text-gray-600">Seed sample data</span>
                             </label>
                         </div>
+                        <div className="col-span-2">
+                            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block">
+                                Modules to Enable
+                            </label>
+                            <ModuleSelector value={modules} onChange={setModules} />
+                        </div>
                         <div className="col-span-2 flex justify-end">
-                            <button type="submit" disabled={createLoading}
-                                className="flex items-center gap-2 px-6 py-2.5 bg-brand-dark text-white text-sm font-black rounded-xl hover:opacity-90 disabled:opacity-50">
+                            <button type="submit" disabled={createLoading || slugStatus !== 'ok'}
+                                className="flex items-center gap-2 px-6 py-2.5 bg-brand-dark text-white text-sm font-black rounded-xl hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed">
                                 {createLoading && <Loader2 className="w-4 h-4 animate-spin" />}
                                 {createLoading ? 'Creating...' : 'Create Tenant'}
                             </button>

@@ -29,5 +29,7 @@ export function getTemplateAliases() {
     emailVerification: process.env.RESEND_TEMPLATE_EMAIL_VERIFY ?? 'email-verification',
     formSubmission: process.env.RESEND_TEMPLATE_FORM_SUBMISSION ?? 'form-submission',
     systemAlert: process.env.RESEND_TEMPLATE_SYSTEM_ALERT ?? 'system-alert',
+    regConfirmation: process.env.RESEND_TEMPLATE_REG_CONFIRMATION ?? 'registration-confirmation',
+    regAdminNotif: process.env.RESEND_TEMPLATE_REG_ADMIN_NOTIF ?? 'registration-admin-notif',
   };
 }

@@ -18,6 +18,7 @@ const NAV_ITEMS: NavItem[] = [
     { label: 'Overview', href: '/' },
     { label: '—' as any, href: '' },
     { label: 'Tenants', href: '/tenants' },
+    { label: 'Registrations', href: '/registrations' },
     { label: 'WhatsApp', href: '/whatsapp' },
     { label: '—' as any, href: '' },
     { label: 'Audit & Roles', href: '/access' },

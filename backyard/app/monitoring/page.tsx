@@ -6,12 +6,14 @@ import HealthTab from '@/components/monitoring/HealthTab';
 import LogsTab from '@/components/monitoring/LogsTab';
 import { PostHogTab } from '@/components/monitoring/PostHogTab';
 import { ResendTab } from '@/components/monitoring/ResendTab';
+import { RegistrationsTab } from '@/components/monitoring/RegistrationsTab';
 
-type Tab = 'health' | 'logs' | 'posthog' | 'resend';
+type Tab = 'health' | 'logs' | 'registrations' | 'posthog' | 'resend';
 
 const TAB_LABELS: Record<Tab, string> = {
     health: 'System Health',
     logs: 'Event Logs',
+    registrations: 'Registrations',
     posthog: 'PostHog',
     resend: 'Resend',
 };
@@ -19,6 +21,7 @@ const TAB_LABELS: Record<Tab, string> = {
 const TAB_SUBTITLES: Record<Tab, string> = {
     health: 'Service health checks across the platform',
     logs: 'Live event logs from platform_logs',
+    registrations: 'Audit trail registrasi (retensi 7 hari)',
     posthog: 'PostHog analytics health and event activity by URL',
     resend: 'Resend email delivery, failures, and per-tenant volume',
 };
@@ -60,6 +63,7 @@ export default function MonitoringPage() {
                     <LogsTab initialEvent={logsInitialEvent} />
                 </Suspense>
             )}
+            {activeTab === 'registrations' && <RegistrationsTab />}
             {activeTab === 'posthog' && <PostHogTab />}
             {activeTab === 'resend' && <ResendTab />}
         </PageShell>
