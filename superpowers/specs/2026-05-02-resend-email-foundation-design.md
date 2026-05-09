@@ -1,8 +1,25 @@
 # Resend Email Foundation — Design Spec
 
 **Date:** 2026-05-02
-**Status:** Approved (design phase)
+**Status:** Implemented (ratified 2026-05-09 — see addendum below)
 **Scope:** Foundational email transport layer using Resend, usable by all apps in the monorepo (platform, auth-gateway, future Cloud Functions).
+
+---
+
+## Addendum (2026-05-09) — Ratified deviation: Resend-hosted templates
+
+The implementation that landed deliberately diverges from this spec on **decisions #3 and #4**:
+
+- **No React Email.** `sender.ts` calls Resend with `template: { id, variables }` — templates live in the Resend dashboard, not in code.
+- **No module-owned templates on disk.** There is no `lib/modules/{name}/emails/` directory and no `EmailLayout` shell or `render.ts`.
+
+**Why ratified:** keeps the foundation simple, lets non-devs edit copy, removes a build-time dependency. Acceptable trade for v1.
+
+**What is forwarded to every Resend template** (set in `sender.ts`): `businessName`, `logoUrl`, `primaryColor`, `siteUrl` from the resolved `EmailContext.brand`, plus all caller-supplied `variables`. Template authors can use these for tenant branding without code changes.
+
+**Templates that must exist in the Resend dashboard:** `form-submission`, `password-reset`, `email-verification`.
+
+**When to revisit React Email:** if a template needs dynamic per-tenant branding the hosted templates can't express, or if version-controlled templates become a hard requirement.
 
 ---
 

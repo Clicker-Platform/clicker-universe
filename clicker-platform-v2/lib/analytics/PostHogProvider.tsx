@@ -6,7 +6,9 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useRef, ReactNode } from 'react';
 import { useSite } from '@/lib/site-context';
 
-const POSTHOG_KEY = process.env.NEXT_PUBLIC_POSTHOG_KEY;
+const PROD_PROJECT_ID = 'clicker-universe';
+const IS_PROD = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID === PROD_PROJECT_ID;
+const POSTHOG_KEY = IS_PROD ? process.env.NEXT_PUBLIC_POSTHOG_KEY : undefined;
 const POSTHOG_HOST = process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://app.posthog.com';
 
 function PostHogPageviewTracker() {
