@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { ensureCategoryExists, getMenuItems, getPOSCategories, savePOSCategories, POSCategory } from '../../api';
+import { getMenuItems, getPOSCategories, savePOSCategories, POSCategory } from '../../api';
 import { db } from '@/lib/firebase';
 import { isModuleEnabled } from '@/lib/modules/registry';
 import { collection, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
@@ -104,9 +104,6 @@ export default function POSMenuClient({ initialItems = [] }: POSMenuClientProps)
         };
 
         try {
-            // Ensure category exists in settings for global filtering
-            if (siteId) await ensureCategoryExists(siteId, itemData.category);
-
             if (isEditing && editingId && siteId) {
                 await updateDoc(doc(db, 'sites', siteId, 'modules/byod_pos/menu_items', editingId), itemData);
                 setItems(items.map(i =>
