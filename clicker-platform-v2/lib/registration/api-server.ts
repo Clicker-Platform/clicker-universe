@@ -65,7 +65,7 @@ export async function createRegistrationRequest(
     bundle: input.bundle,
     modules: input.modules,
     customRequest: input.customRequest,
-    promoCode: input.promoCode,
+    promoCode: input.promoCode ? input.promoCode.trim().toUpperCase() : null,
     promoCodeValidAtSubmit: input.promoCodeValidAtSubmit,
     source: input.source,
     status: 'pending',

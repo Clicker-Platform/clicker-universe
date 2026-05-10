@@ -127,4 +127,16 @@ describe('createRegistrationRequest', () => {
     expect(written.name).toBe('Andi');
     expect(written.modules).toEqual(['byod_pos']);
   });
+
+  it('normalizes promoCode to trimmed uppercase before persisting', async () => {
+    await createRegistrationRequest({ ...baseInput, promoCode: '  welcome  ' });
+    const written = setMock.mock.calls[0][0];
+    expect(written.promoCode).toBe('WELCOME');
+  });
+
+  it('persists null promoCode when input is null', async () => {
+    await createRegistrationRequest({ ...baseInput, promoCode: null });
+    const written = setMock.mock.calls[0][0];
+    expect(written.promoCode).toBeNull();
+  });
 });
