@@ -44,6 +44,19 @@ export default function RegisterForm() {
     setForm((f) => ({ ...f, [field]: value }));
   }
 
+  function focusFirstError(fe: FieldErrors) {
+    if (typeof window === 'undefined') return;
+    const firstKey = Object.keys(fe)[0];
+    if (!firstKey) return;
+    const el = document.getElementById(firstKey);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (typeof (el as HTMLInputElement).focus === 'function') {
+        (el as HTMLInputElement).focus({ preventScroll: true });
+      }
+    }
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErrors({});
@@ -65,6 +78,8 @@ export default function RegisterForm() {
         (fe[key] ??= []).push(issue.message);
       }
       setErrors(fe);
+      setGlobalError('Ada beberapa isian yang perlu diperbaiki. Periksa form di atas.');
+      focusFirstError(fe);
       return;
     }
 
@@ -74,7 +89,10 @@ export default function RegisterForm() {
         setSubmittedId(r.id);
       } else {
         setGlobalError(r.error);
-        if (r.fieldErrors) setErrors(r.fieldErrors);
+        if (r.fieldErrors) {
+          setErrors(r.fieldErrors);
+          focusFirstError(r.fieldErrors);
+        }
       }
     });
   }
@@ -109,7 +127,8 @@ export default function RegisterForm() {
         expectedOutlets={form.expectedOutlets}
         errors={errors}
         onChange={(field, value) => {
-          if (field === 'expectedOutlets') update(field, value as number);
+          if (field === 'expectedOutlets')
+            update(field, (value as number | null) ?? (NaN as unknown as number));
           else if (field === 'businessType')
             update(field, value as RegistrationInput['businessType']);
           else update(field, value as string);
