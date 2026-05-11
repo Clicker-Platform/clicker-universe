@@ -65,8 +65,11 @@ export function calculateItemsSales(orders: any[]): ItemSalesSummary[] {
         if (!order.items || !Array.isArray(order.items)) continue;
 
         for (const item of order.items) {
-            // Use ID if available, otherwise fallback to name as key
-            const key = item.id || item.name;
+            // Group by (productId, variantId) so e.g. Latte Small and Latte Large
+            // appear as separate rows instead of collapsing under the base item.
+            const productKey = item.id || item.name;
+            const key = item.variantId ? `${productKey}::${item.variantId}` : productKey;
+            const displayName = item.variantName ? `${item.name} — ${item.variantName}` : item.name;
             const existing = map.get(key);
 
             if (existing) {
@@ -75,7 +78,7 @@ export function calculateItemsSales(orders: any[]): ItemSalesSummary[] {
             } else {
                 map.set(key, {
                     id: key,
-                    name: item.name,
+                    name: displayName,
                     quantity: item.quantity || 1,
                     revenue: item.price * (item.quantity || 1),
                     category: item.category
