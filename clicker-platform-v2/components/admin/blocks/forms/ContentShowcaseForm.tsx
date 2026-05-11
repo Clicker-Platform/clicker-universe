@@ -59,7 +59,17 @@ export function ContentShowcaseForm({ data, onChange }: Props) {
     };
 
     const updateRow = (id: string, patch: Partial<ShowcaseRow>) => {
-        onChange({ ...safe, rows: safe.rows.map((r) => (r.id === id ? { ...r, ...patch } : r)) });
+        onChange({
+            ...safe,
+            rows: safe.rows.map((r) => {
+                if (r.id !== id) return r;
+                const merged = { ...r, ...patch } as Record<string, unknown>;
+                for (const k of Object.keys(patch)) {
+                    if (merged[k] === undefined) delete merged[k];
+                }
+                return merged as ShowcaseRow;
+            }),
+        });
     };
 
     const addRow = () => {

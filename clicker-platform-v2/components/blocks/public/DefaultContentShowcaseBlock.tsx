@@ -13,13 +13,27 @@ import {
 } from '@/components/blocks/content-showcase/types';
 import { MediaView } from './MediaView';
 
+function normalizeRow(row: Partial<ShowcaseRow>, i: number): ShowcaseRow {
+    const base: ShowcaseRow = {
+        id: row.id ?? `row-${i}`,
+        media: row.media ?? { type: 'image', src: '', aspectRatio: '16:9', objectFit: 'cover' },
+        heading: { text: row.heading?.text ?? '' },
+        content: row.content ?? '',
+        layout: row.layout ?? 'inherit',
+    };
+    if (row.mediaColumnWidth !== undefined) base.mediaColumnWidth = row.mediaColumnWidth;
+    if (row.cta !== undefined) base.cta = row.cta;
+    return base;
+}
+
 function normalize(data: unknown): ContentShowcaseData {
     const d = (data as Partial<ContentShowcaseData>) || {};
+    const rawRows = Array.isArray(d.rows) ? d.rows : [];
     return {
         ...DEFAULT_SHOWCASE_DATA,
         ...d,
         rowBackgrounds: { ...DEFAULT_SHOWCASE_DATA.rowBackgrounds, ...(d.rowBackgrounds || {}) },
-        rows: Array.isArray(d.rows) ? d.rows : [],
+        rows: rawRows.map((r, i) => normalizeRow(r as Partial<ShowcaseRow>, i)),
     };
 }
 
@@ -123,18 +137,27 @@ function ShowcaseRowView({
 
     const contentNode = (
         <div className="space-y-4" style={contentStyle}>
-            <h3 className="text-2xl md:text-3xl font-black font-heading text-[var(--theme-foreground)] leading-tight">
+            <h3 className={`${dv(d, 'text-2xl', 'md:text-3xl')} font-black font-heading text-[var(--theme-foreground)] leading-tight`}>
                 {row.heading.text}
             </h3>
             <div
                 className="prose dark:prose-invert max-w-none prose-p:text-[var(--theme-foreground)]/80 prose-headings:text-[var(--theme-foreground)] prose-strong:text-[var(--theme-foreground)] prose-a:text-[var(--theme-primary)]"
                 dangerouslySetInnerHTML={{ __html: safeContent }}
             />
-            {row.cta?.enabled && row.cta.label && (
-                <a href={isSafeHref(row.cta.href) ? row.cta.href : '#'} className={ctaClasses(row.cta.variant)}>
-                    {row.cta.label}
-                </a>
-            )}
+            {row.cta?.enabled && row.cta.label && (() => {
+                const href = isSafeHref(row.cta.href) ? row.cta.href : '#';
+                const isExternal = /^https?:\/\//i.test(href);
+                return (
+                    <a
+                        href={href}
+                        className={ctaClasses(row.cta.variant)}
+                        target={isExternal ? '_blank' : undefined}
+                        rel={isExternal ? 'noopener noreferrer' : undefined}
+                    >
+                        {row.cta.label}
+                    </a>
+                );
+            })()}
         </div>
     );
 
