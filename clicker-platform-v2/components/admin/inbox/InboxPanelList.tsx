@@ -9,6 +9,7 @@ type FilterStatus = 'all' | 'new' | 'read' | 'archived';
 
 interface InboxPanelListProps {
     submissions: Submission[];
+    statusCounts: Record<'new' | 'read' | 'archived', number>;
     filterStatus: FilterStatus;
     onFilterChange: (status: FilterStatus) => void;
     onSelect: (id: string) => void;
@@ -34,6 +35,7 @@ function formatDate(ts: any): string {
 
 export const InboxPanelList = memo(function InboxPanelList({
     submissions,
+    statusCounts,
     filterStatus,
     onFilterChange,
     onSelect,
@@ -49,10 +51,10 @@ export const InboxPanelList = memo(function InboxPanelList({
     });
 
     const counts = {
-        all: submissions.filter(s => s.status !== 'archived').length,
-        new: submissions.filter(s => s.status === 'new').length,
-        read: submissions.filter(s => s.status === 'read').length,
-        archived: submissions.filter(s => s.status === 'archived').length,
+        all: statusCounts.new + statusCounts.read,
+        new: statusCounts.new,
+        read: statusCounts.read,
+        archived: statusCounts.archived,
     };
 
     return (

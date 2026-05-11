@@ -2,8 +2,9 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { X, Inbox } from 'lucide-react';
-import { collection, query, orderBy, limit, onSnapshot, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { collection, query, where, orderBy, limit, onSnapshot, getCountFromServer } from 'firebase/firestore';
+import { toast } from 'sonner';
+import { auth, db } from '@/lib/firebase';
 import { useSite } from '@/lib/site-context';
 import { useInboxPanel } from '@/lib/inbox-panel-context';
 import { Submission, Form } from '@/data/mockData';
@@ -20,16 +21,18 @@ export function InboxPanel() {
     const [formFieldMap, setFormFieldMap] = useState<Record<string, Record<string, string>>>({});
     const [loadingId, setLoadingId] = useState<string | null>(null);
     const [itemLimit, setItemLimit] = useState(BATCH_SIZE);
-    const formsFetched = useRef(false);
+    const [statusCounts, setStatusCounts] = useState<Record<'new' | 'read' | 'archived', number>>({
+        new: 0,
+        read: 0,
+        archived: 0,
+    });
     // Tracks optimistic status overrides while API writes are in-flight
     const pendingUpdates = useRef<Map<string, string>>(new Map());
 
-    // Fetch form field map once
+    // Live-subscribe to forms so field labels stay fresh when tenants edit form schemas
     useEffect(() => {
-        if (!isOpen || !siteId || siteId === 'default' || siteId === 'pending' || formsFetched.current) return;
-        formsFetched.current = true;
-
-        getDocs(collection(db, 'sites', siteId, 'forms')).then((snap) => {
+        if (!isOpen || !siteId || siteId === 'default' || siteId === 'pending') return;
+        const unsub = onSnapshot(collection(db, 'sites', siteId, 'forms'), (snap) => {
             const map: Record<string, Record<string, string>> = {};
             snap.docs.forEach(doc => {
                 const formData = doc.data() as Form;
@@ -45,6 +48,7 @@ export function InboxPanel() {
             });
             setFormFieldMap(map);
         });
+        return () => unsub();
     }, [isOpen, siteId]);
 
     // Real-time submissions listener
@@ -65,6 +69,52 @@ export function InboxPanel() {
         return () => unsub();
     }, [isOpen, siteId, itemLimit]);
 
+    // Refresh accurate per-status counts from the server. Uses getCountFromServer
+    // (a single aggregated query per status) so chip counts are correct even when
+    // the loaded batch is smaller than the total.
+    const refreshCounts = useCallback(async () => {
+        if (!siteId || siteId === 'default' || siteId === 'pending') return;
+        try {
+            const coll = collection(db, 'sites', siteId, 'inbox');
+            const [n, r, a] = await Promise.all([
+                getCountFromServer(query(coll, where('status', '==', 'new'))),
+                getCountFromServer(query(coll, where('status', '==', 'read'))),
+                getCountFromServer(query(coll, where('status', '==', 'archived'))),
+            ]);
+            setStatusCounts({
+                new: n.data().count,
+                read: r.data().count,
+                archived: a.data().count,
+            });
+        } catch (error) {
+            console.error('Failed to refresh inbox counts:', error);
+        }
+    }, [siteId]);
+
+    useEffect(() => {
+        if (!isOpen) return;
+        refreshCounts();
+    }, [isOpen, refreshCounts]);
+
+    // A3: if the currently-selected submission disappears from the live list
+    // (deleted by another admin, archived from a different filter, etc.),
+    // close the detail view and notify the user.
+    const lastSelectedRef = useRef<string | null>(null);
+    useEffect(() => {
+        if (!selectedSubmissionId) {
+            lastSelectedRef.current = null;
+            return;
+        }
+        // Only react after the listener has actually delivered data
+        if (submissions.length === 0) return;
+        const stillPresent = submissions.some(s => s.id === selectedSubmissionId);
+        if (!stillPresent && lastSelectedRef.current === selectedSubmissionId) {
+            toast.info('This submission was removed');
+            selectSubmission(null);
+        }
+        lastSelectedRef.current = selectedSubmissionId;
+    }, [selectedSubmissionId, submissions, selectSubmission]);
+
     // Close on Escape
     useEffect(() => {
         if (!isOpen) return;
@@ -77,27 +127,65 @@ export function InboxPanel() {
 
     const handleAction = useCallback(async (id: string, action: string) => {
         setLoadingId(id);
+
+        // Capture previous status for rollback on failure
+        let previousStatus: Submission['status'] | undefined;
+
         if (action !== 'delete') {
             pendingUpdates.current.set(id, action);
-            setSubmissions(prev => prev.map(s => s.id === id ? { ...s, status: action as Submission['status'] } : s));
+            setSubmissions(prev => prev.map(s => {
+                if (s.id !== id) return s;
+                previousStatus = s.status;
+                return { ...s, status: action as Submission['status'] };
+            }));
         }
+
         try {
+            const token = await auth.currentUser?.getIdToken();
+            if (!token || !siteId) {
+                throw new Error('Not authenticated');
+            }
             const res = await fetch('/api/submissions/update', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id, action, siteId }),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    'x-site-id': siteId,
+                },
+                body: JSON.stringify({ id, action }),
             });
-            if (res.ok && action === 'delete') {
+
+            if (!res.ok) {
+                throw new Error(`Request failed with status ${res.status}`);
+            }
+
+            if (action === 'delete') {
                 setSubmissions(prev => prev.filter(s => s.id !== id));
                 if (selectedSubmissionId === id) selectSubmission(null);
+                toast.success('Submission deleted');
+            } else if (action === 'archived') {
+                toast.success('Submission archived');
             }
+            refreshCounts();
         } catch (error) {
             console.error('Error updating submission:', error);
+            // Roll back optimistic update
+            if (action !== 'delete' && previousStatus) {
+                const restored = previousStatus;
+                setSubmissions(prev => prev.map(s => s.id === id ? { ...s, status: restored } : s));
+            }
+            const label =
+                action === 'delete' ? 'delete submission' :
+                action === 'archived' ? 'archive submission' :
+                action === 'read' ? 'mark as read' :
+                action === 'new' ? 'mark as unread' :
+                'update submission';
+            toast.error(`Failed to ${label}. Please try again.`);
         } finally {
             pendingUpdates.current.delete(id);
             setLoadingId(null);
         }
-    }, [siteId, selectedSubmissionId, selectSubmission]);
+    }, [siteId, selectedSubmissionId, selectSubmission, refreshCounts]);
 
     const handleMarkRead = useCallback(async (id: string) => {
         await handleAction(id, 'read');
@@ -113,7 +201,7 @@ export function InboxPanel() {
         ? submissions.find(s => s.id === selectedSubmissionId) ?? null
         : null;
 
-    const newCount = submissions.filter(s => s.status === 'new').length;
+    const newCount = statusCounts.new;
     // Sidebar is gone on desktop — panel always starts from the left edge
     const leftOffset = 'md:left-0';
 
@@ -159,6 +247,7 @@ export function InboxPanel() {
                     ) : (
                         <InboxPanelList
                             submissions={submissions}
+                            statusCounts={statusCounts}
                             filterStatus={filterStatus}
                             onFilterChange={setFilter}
                             onSelect={(id) => {
