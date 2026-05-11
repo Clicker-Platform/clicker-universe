@@ -6,6 +6,7 @@ import { uploadToStorage } from '@/lib/upload';
 import { useSite } from '@/lib/site-context';
 import { MediaFieldValue, MediaType, MediaAspectRatio, MediaObjectFit, DEFAULT_MEDIA } from './types';
 import { detectVideoProvider } from '@/components/admin/blocks/rich-text/VideoEmbedExtension';
+import { getRecommendedSize, isBelowRecommended } from '@/lib/media/recommendations';
 
 interface MediaFieldProps {
     value?: MediaFieldValue;
@@ -29,8 +30,11 @@ export function MediaField({ value, onChange }: MediaFieldProps) {
     const posterInputRef = useRef<HTMLInputElement>(null);
     const [uploading, setUploading] = useState<null | 'image' | 'lottie' | 'poster'>(null);
     const [error, setError] = useState('');
+    const [sizeWarning, setSizeWarning] = useState('');
     // Tab is local UI state only — does NOT write to block data until user provides new content
     const [selectedTab, setSelectedTab] = useState<MediaType>(media.type);
+
+    const recommended = getRecommendedSize(media.aspectRatio);
 
     const clean = (v: MediaFieldValue): MediaFieldValue =>
         Object.fromEntries(Object.entries(v).filter(([, val]) => val !== undefined)) as MediaFieldValue;
@@ -44,10 +48,26 @@ export function MediaField({ value, onChange }: MediaFieldProps) {
         onChange(clean({ ...media, ...extraPatch, type: selectedTab, src }));
     };
 
+    const readImageDimensions = (file: File): Promise<{ width: number; height: number } | null> =>
+        new Promise((resolve) => {
+            const url = URL.createObjectURL(file);
+            const img = new Image();
+            img.onload = () => {
+                resolve({ width: img.naturalWidth, height: img.naturalHeight });
+                URL.revokeObjectURL(url);
+            };
+            img.onerror = () => {
+                resolve(null);
+                URL.revokeObjectURL(url);
+            };
+            img.src = url;
+        });
+
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, target: 'image' | 'poster') => {
         const file = e.target.files?.[0];
         if (!file) return;
         setError('');
+        setSizeWarning('');
         if (!file.type.startsWith('image/')) {
             setError('Please select an image file.');
             return;
@@ -56,6 +76,16 @@ export function MediaField({ value, onChange }: MediaFieldProps) {
             setError('Max 10MB.');
             return;
         }
+
+        if (target === 'image') {
+            const dims = await readImageDimensions(file);
+            if (dims && isBelowRecommended(dims, media.aspectRatio)) {
+                setSizeWarning(
+                    `Uploaded ${dims.width}×${dims.height}px is smaller than recommended (${recommended.label}). The image may appear blurry.`,
+                );
+            }
+        }
+
         setUploading(target);
         try {
             const url = await uploadToStorage({ file, folder: 'content-showcase', siteId });
@@ -130,7 +160,7 @@ export function MediaField({ value, onChange }: MediaFieldProps) {
                                 <img src={media.src} alt={media.alt || ''} className="w-full h-40 object-cover rounded-lg border border-gray-200 dark:border-neutral-800" />
                                 <button
                                     type="button"
-                                    onClick={() => update({ src: '' })}
+                                    onClick={() => { update({ src: '' }); setSizeWarning(''); }}
                                     className="absolute top-2 right-2 p-1.5 bg-black/70 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
                                 >
                                     <X size={14} />
@@ -146,6 +176,12 @@ export function MediaField({ value, onChange }: MediaFieldProps) {
                                 {uploading === 'image' ? <Loader2 size={20} className="animate-spin" /> : <Upload size={20} />}
                                 <span className="text-xs font-bold">{uploading === 'image' ? 'Uploading…' : 'Click to upload'}</span>
                             </button>
+                        )}
+                        <p className="text-[10px] text-neutral-500 mt-1">
+                            Recommended: {recommended.label}px ({media.aspectRatio || '16:9'})
+                        </p>
+                        {sizeWarning && (
+                            <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-1">{sizeWarning}</p>
                         )}
                     </div>
                     <div>
