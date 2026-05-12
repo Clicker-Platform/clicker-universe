@@ -67,7 +67,7 @@ export function ContentShowcaseForm({ data, onChange }: Props) {
                 for (const k of Object.keys(patch)) {
                     if (merged[k] === undefined) delete merged[k];
                 }
-                return merged as ShowcaseRow;
+                return merged as unknown as ShowcaseRow;
             }),
         });
     };

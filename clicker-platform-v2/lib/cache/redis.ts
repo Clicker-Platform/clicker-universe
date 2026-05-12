@@ -1,21 +1,14 @@
 import { Redis } from '@upstash/redis';
 import { logger } from '@/lib/logger-edge';
-import { getSecret } from '@/lib/secrets';
 
 const URL = process.env.UPSTASH_REDIS_REST_URL;
+const TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
 let redisInstance: Redis | null = null;
-let initAttempted = false;
 
-async function getRedis(): Promise<Redis | null> {
-  if (initAttempted) return redisInstance;
-  initAttempted = true;
-  if (!URL) return null;
-  try {
-    const token = await getSecret('UPSTASH_REDIS_REST_TOKEN');
-    redisInstance = new Redis({ url: URL, token });
-  } catch {
-    redisInstance = null;
-  }
+function getRedis(): Redis | null {
+  if (redisInstance) return redisInstance;
+  if (!URL || !TOKEN) return null;
+  redisInstance = new Redis({ url: URL, token: TOKEN });
   return redisInstance;
 }
 
@@ -24,7 +17,7 @@ export async function cached<T>(
   ttl: number,
   fetcher: () => Promise<T>
 ): Promise<T> {
-  const redis = await getRedis();
+  const redis = getRedis();
   if (!redis) return fetcher();
 
   try {
@@ -46,7 +39,7 @@ export async function cached<T>(
 }
 
 export async function invalidate(pattern: string): Promise<number> {
-  const redis = await getRedis();
+  const redis = getRedis();
   if (!redis) return 0;
   let deleted = 0;
   try {
