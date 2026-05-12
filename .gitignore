@@ -54,3 +54,6 @@ logs/
 .cache/
 .turbo/
 *.tsbuildinfo
+
+# Service account keys (gitignored — never commit)
+scripts/
