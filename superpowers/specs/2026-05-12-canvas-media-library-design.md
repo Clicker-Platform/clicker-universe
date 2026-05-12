@@ -92,6 +92,22 @@ Full-screen management view:
 - **Upload** button (opens the same upload flow as the picker's Upload tab).
 - **Import existing files** button (runs `importExistingMedia`).
 
+### Navigation placement
+
+- Top-level **"Media"** entry in the admin sidebar, in the content cluster (near Pages, Links, Forms, Inbox). Registered as core nav (not a module), alongside Pages and Links.
+- Route: `/admin/media`.
+
+### Canvas Studio quick access
+
+Canvas Studio gets a **"Media"** button in its toolbar that opens a slide-over panel reusing `<MediaLibraryGrid>` in browse mode:
+
+- Read-only browse (folder dropdown, tag filter, search).
+- Click an item → copy URL to clipboard (toast confirmation).
+- If a block with a media field is currently selected → "Insert into selected block" action becomes available.
+- A "Manage library" link inside the slide-over deep-links to `/admin/media` (new tab) for rename/delete/import.
+
+The slide-over follows the existing `LeftSidebarPanels` / `SlideOverPanel` pattern in Canvas Studio. It does NOT replace `<MediaPicker>` — pickers still open from individual block fields. The slide-over is for "I want to see what I have while I'm editing."
+
 ## API Surface
 
 Location: `lib/media/library.ts`
