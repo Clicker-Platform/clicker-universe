@@ -77,6 +77,14 @@ callWithTools(request: ToolRequest): Promise<AIToolResult>
 ```
 Extract from OpenRouter response: `data.usage.prompt_tokens`, `data.usage.completion_tokens`.
 
+**Token usage fallback (missing usage field):**
+```typescript
+const inputTokens = data.usage?.prompt_tokens ?? Math.ceil((request.max_tokens ?? 2048) * 0.3);
+const outputTokens = data.usage?.completion_tokens ?? (request.max_tokens ?? 2048);
+// If fallback used: log warning with model + skillId for investigation
+```
+Upper-bound estimate prevents platform absorbing cost silently when OpenRouter omits usage.
+
 ### Updated: `lib/ai/types.ts`
 ```typescript
 // Remove creditCost field
@@ -139,9 +147,11 @@ New `withCredits` flow — deduct AFTER AI call (cost unknown until response):
 1. Call AI fn() → { content, inputTokens, outputTokens, model }
 2. calculateCost(model, inputTokens, outputTokens) → costUSD
 3. deductCredits(siteId, costUSD, { model, inputTokens, outputTokens, ... })
-   - If insufficient → throw insufficient_credits (AI already called but not charged — cost absorbed by platform)
-   - This is acceptable: cost per call is tiny ($0.0001–$0.01), undercharging is preferable to blocking users mid-request
-   - Pre-check: before calling AI, check balance > $0. If balance = 0, reject immediately without calling AI.
+   - Pre-flight gate (BEFORE calling AI):
+     - balance <= 0 → reject immediately, throw `insufficient_credits`, no AI call made
+     - balance > 0 → proceed (even if balance < estimated cost — cost per call tiny, platform absorbs rare shortfall)
+   - If deductCredits fails insufficient after AI call → log warning, do not re-throw (call already succeeded, tiny loss acceptable)
+   - This eliminates the "AI called but not charged" edge case for zero-balance tenants entirely.
 4. Return content to caller
 5. If AI call throws → no deduction (nothing to refund)
 6. If deductCredits throws for reasons other than insufficient → log + do not block caller (best-effort billing)
@@ -244,6 +254,6 @@ const SKILL_LABELS: Record<string, string> = {
 |-------|-------|----------|
 | `insufficient_credits:{bal}:{cost}` | balance < costUSD | HTTP 402, user-friendly message |
 | `model_not_priced:{model}` | model missing from pricing table | HTTP 500, log to server, tenant sees generic error |
-| OpenRouter token usage missing | OR bug / free model | Default to 0 tokens, $0 cost, log warning |
+| OpenRouter token usage missing | OR bug / free model | Estimate cost: `calculateCost(model, max_tokens * 0.3, max_tokens)` as upper-bound fallback. Log warning with model + request context. |
 
 For `model_not_priced`: do not expose model name to tenant. Log server-side, show generic "AI tidak tersedia saat ini".
