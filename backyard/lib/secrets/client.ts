@@ -1,4 +1,4 @@
-import { SecretManagerServiceClient } from '@google-cloud/secret-manager';
+import type { SecretManagerServiceClient } from '@google-cloud/secret-manager';
 import type { SecretKey } from './types';
 import { SECRET_KEYS } from './types';
 
@@ -9,8 +9,11 @@ const TTL_MS = 10 * 60 * 1000;
 
 let smClient: SecretManagerServiceClient | null = null;
 
-function getClient(): SecretManagerServiceClient {
-  if (!smClient) smClient = new SecretManagerServiceClient();
+async function getClient(): Promise<SecretManagerServiceClient> {
+  if (!smClient) {
+    const { SecretManagerServiceClient: Client } = await import('@google-cloud/secret-manager');
+    smClient = new Client();
+  }
   return smClient;
 }
 
@@ -22,11 +25,10 @@ export async function fetchSecret(key: SecretKey): Promise<string> {
   const cached = cache.get(key);
   if (cached && Date.now() < cached.expiresAt) return cached.value;
 
-  // Dev fallback: read from env var if GCP not available
   const envFallback = process.env[SECRET_KEYS[key]];
 
   try {
-    const client = getClient();
+    const client = await getClient();
     const [version] = await client.accessSecretVersion({ name: secretName(key) });
     const value = version.payload?.data?.toString() ?? '';
     if (!value) throw new Error(`Secret ${key} is empty`);
@@ -43,17 +45,16 @@ export async function fetchSecret(key: SecretKey): Promise<string> {
 
 export async function checkSecretExists(key: SecretKey): Promise<boolean> {
   try {
-    const client = getClient();
+    const client = await getClient();
     await client.getSecret({ name: `projects/${PROJECT_ID}/secrets/${SECRET_KEYS[key]}` });
     return true;
   } catch {
-    // Dev fallback: env var counts as existing
     return !!process.env[SECRET_KEYS[key]];
   }
 }
 
 export async function writeSecret(key: SecretKey, value: string): Promise<void> {
-  const client = getClient();
+  const client = await getClient();
   const parent = `projects/${PROJECT_ID}`;
   const secretId = SECRET_KEYS[key];
   const secretPath = `${parent}/secrets/${secretId}`;
@@ -77,7 +78,7 @@ export async function writeSecret(key: SecretKey, value: string): Promise<void> 
 }
 
 export async function removeSecret(key: SecretKey): Promise<void> {
-  const client = getClient();
+  const client = await getClient();
   await client.deleteSecret({
     name: `projects/${PROJECT_ID}/secrets/${SECRET_KEYS[key]}`,
   });
