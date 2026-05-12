@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
     }
 
     const { adminDb } = await import('@/lib/firebase-admin');
-    const encryptedToken = encryptToken(accessToken);
+    const encryptedToken = await encryptToken(accessToken);
     const webhookVerifyToken = randomBytes(32).toString('hex');
 
     await adminDb.doc(`sites/${siteId}/wa/config`).set({

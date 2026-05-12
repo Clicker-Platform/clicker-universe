@@ -4,7 +4,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useMemo, useRef, useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Inbox, User, Building2, Users, Sun, Moon, LogOut, LayoutGrid, Box, Star } from 'lucide-react';
+import { Inbox, User, Building2, Users, Sun, Moon, LogOut, LayoutGrid, Box, Star, Activity } from 'lucide-react';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useSite } from '@/lib/site-context';
@@ -320,6 +320,7 @@ export function AdminTopBar() {
         { icon: User, label: 'Account', href: '/admin/settings/account' },
         { icon: Building2, label: 'Business', href: '/admin/settings/business' },
         { icon: Users, label: 'Team', href: '/admin/settings/team' },
+        { icon: Activity, label: 'AI Usage', href: '/admin/ai-usage' },
     ];
 
     return (

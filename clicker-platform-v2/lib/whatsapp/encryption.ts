@@ -1,21 +1,21 @@
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'crypto';
+import { getSecret } from '@/lib/secrets';
 
-function getKey(): Buffer {
-  const secret = process.env.WA_ENCRYPTION_KEY ?? process.env.NEXTAUTH_SECRET;
-  if (!secret) throw new Error('WA_ENCRYPTION_KEY or NEXTAUTH_SECRET must be set');
+async function getKey(): Promise<Buffer> {
+  const secret = await getSecret('WA_ENCRYPTION_KEY');
   return createHash('sha256').update(secret).digest();
 }
 
-export function encryptToken(token: string): string {
-  const key = getKey();
+export async function encryptToken(token: string): Promise<string> {
+  const key = await getKey();
   const iv = randomBytes(16);
   const cipher = createCipheriv('aes-256-cbc', key, iv);
   const encrypted = Buffer.concat([cipher.update(token, 'utf8'), cipher.final()]);
   return iv.toString('hex') + ':' + encrypted.toString('hex');
 }
 
-export function decryptToken(encrypted: string): string {
-  const key = getKey();
+export async function decryptToken(encrypted: string): Promise<string> {
+  const key = await getKey();
   const [ivHex, dataHex] = encrypted.split(':');
   const iv = Buffer.from(ivHex, 'hex');
   const decipher = createDecipheriv('aes-256-cbc', key, iv);

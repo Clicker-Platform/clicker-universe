@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     }
 
     const config = configSnap.data()!;
-    const accessToken = decryptToken(config.accessToken);
+    const accessToken = await decryptToken(config.accessToken);
 
     const res = await fetch(`${META_API_BASE}/${config.phoneNumberId}`, {
       headers: { Authorization: `Bearer ${accessToken}` },

@@ -1,6 +1,6 @@
 'use client';
 
-import { Zap } from 'lucide-react';
+
 import { SkillDefinition } from '../types';
 import { AGENT_LABELS } from '../config/skills-catalog';
 
@@ -24,10 +24,6 @@ export default function SkillCard({ skill, selected, onSelect }: Props) {
     >
       <div className="flex items-start justify-between gap-2 mb-2">
         <p className="font-semibold text-gray-900 text-sm">{skill.label}</p>
-        <div className="flex items-center gap-1 shrink-0 text-xs text-amber-600">
-          <Zap className="w-3 h-3" />
-          <span>{skill.creditCost}</span>
-        </div>
       </div>
       <p className="text-xs text-gray-500 leading-relaxed mb-3">{skill.description}</p>
       <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${agent.color}`}>

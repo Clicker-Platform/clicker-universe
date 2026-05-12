@@ -1,22 +1,26 @@
-// Platform-level AI credit system — shared across all AI modules
-// Uses Firestore transactions to prevent race conditions (double-spend)
-
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
-import { CreditBalance } from './types';
+import type { Firestore } from 'firebase-admin/firestore';
+import type { CreditBalance } from './types';
 
 const CREDIT_DOC_PATH = (siteId: string) => `sites/${siteId}/platform/aiCredits`;
-const LEDGER_PATH = (siteId: string) => `sites/${siteId}/platform/aiCreditLedger`;
 
-export const DEFAULT_FREE_CREDITS = 100;
+function ledgerCol(db: Firestore, siteId: string) {
+  return db.collection('sites').doc(siteId)
+    .collection('platform').doc('aiCreditLedger')
+    .collection('entries');
+}
 
-/**
- * Atomically deducts credits. Throws if insufficient balance.
- * Throws error string format: "insufficient_credits:{balance}:{required}"
- */
 export async function deductCredits(
   siteId: string,
-  creditCost: number,
-  meta: { moduleId: string; skillId: string; uid: string; description?: string }
+  costUSD: number,
+  meta: {
+    moduleId: string;
+    skillId: string;
+    uid: string;
+    model: string;
+    inputTokens: number;
+    outputTokens: number;
+  }
 ): Promise<{ balanceAfter: number }> {
   const db = getFirestore();
   const creditRef = db.doc(CREDIT_DOC_PATH(siteId));
@@ -25,30 +29,31 @@ export async function deductCredits(
     const creditDoc = await transaction.get(creditRef);
 
     if (!creditDoc.exists) {
-      // Auto-initialize if missing (safety net)
       transaction.set(creditRef, { balance: 0, lifetimeUsed: 0 });
-      throw new Error(`insufficient_credits:0:${creditCost}`);
+      throw new Error(`insufficient_credits:0:${costUSD}`);
     }
 
-    const balance = creditDoc.data()?.balance ?? 0;
-    if (balance < creditCost) {
-      throw new Error(`insufficient_credits:${balance}:${creditCost}`);
+    const balance: number = creditDoc.data()?.balance ?? 0;
+    if (balance < costUSD) {
+      throw new Error(`insufficient_credits:${balance}:${costUSD}`);
     }
 
-    const balanceAfter = balance - creditCost;
+    const balanceAfter = Math.round((balance - costUSD) * 1_000_000) / 1_000_000;
     transaction.update(creditRef, {
       balance: balanceAfter,
-      lifetimeUsed: FieldValue.increment(creditCost),
+      lifetimeUsed: FieldValue.increment(costUSD),
     });
 
-    const ledgerRef = db.collection(LEDGER_PATH(siteId)).doc();
-    transaction.set(ledgerRef, {
+    transaction.set(ledgerCol(db, siteId).doc(), {
       type: 'debit',
-      amount: -creditCost,
+      amount: -costUSD,
       balanceAfter,
       moduleId: meta.moduleId,
       skillId: meta.skillId,
-      description: meta.description ?? `AI call: ${meta.skillId}`,
+      model: meta.model,
+      inputTokens: meta.inputTokens,
+      outputTokens: meta.outputTokens,
+      costUSD,
       performedBy: meta.uid,
       createdAt: FieldValue.serverTimestamp(),
     });
@@ -57,30 +62,25 @@ export async function deductCredits(
   });
 }
 
-/**
- * Refunds credits after a failed AI call.
- * Does NOT use a transaction (refund can be non-atomic — only adds back balance).
- */
 export async function refundCredits(
   siteId: string,
-  creditCost: number,
-  meta: { moduleId: string; skillId: string; reason: string }
+  costUSD: number,
+  meta: { moduleId: string; skillId: string; reason: string; model: string }
 ): Promise<void> {
   const db = getFirestore();
   const batch = db.batch();
 
-  const creditRef = db.doc(CREDIT_DOC_PATH(siteId));
-  batch.update(creditRef, {
-    balance: FieldValue.increment(creditCost),
-    lifetimeUsed: FieldValue.increment(-creditCost),
+  batch.update(db.doc(CREDIT_DOC_PATH(siteId)), {
+    balance: FieldValue.increment(costUSD),
+    lifetimeUsed: FieldValue.increment(-costUSD),
   });
 
-  const ledgerRef = db.collection(LEDGER_PATH(siteId)).doc();
-  batch.set(ledgerRef, {
+  batch.set(ledgerCol(db, siteId).doc(), {
     type: 'refund',
-    amount: creditCost,
+    amount: costUSD,
     moduleId: meta.moduleId,
     skillId: meta.skillId,
+    model: meta.model,
     description: `Refund: ${meta.reason}`,
     performedBy: 'system',
     createdAt: FieldValue.serverTimestamp(),
@@ -89,12 +89,9 @@ export async function refundCredits(
   await batch.commit();
 }
 
-/**
- * Adds credits to a tenant (used by Backyard admin top-up).
- */
 export async function addCredits(
   siteId: string,
-  amount: number,
+  amountUSD: number,
   meta: { performedBy: string; reason: string }
 ): Promise<{ balanceAfter: number }> {
   const db = getFirestore();
@@ -102,8 +99,8 @@ export async function addCredits(
 
   return db.runTransaction(async (transaction) => {
     const creditDoc = await transaction.get(creditRef);
-    const currentBalance = creditDoc.exists ? (creditDoc.data()?.balance ?? 0) : 0;
-    const balanceAfter = currentBalance + amount;
+    const currentBalance: number = creditDoc.exists ? (creditDoc.data()?.balance ?? 0) : 0;
+    const balanceAfter = Math.round((currentBalance + amountUSD) * 1_000_000) / 1_000_000;
 
     if (creditDoc.exists) {
       transaction.update(creditRef, { balance: balanceAfter });
@@ -111,10 +108,9 @@ export async function addCredits(
       transaction.set(creditRef, { balance: balanceAfter, lifetimeUsed: 0 });
     }
 
-    const ledgerRef = db.collection(LEDGER_PATH(siteId)).doc();
-    transaction.set(ledgerRef, {
+    transaction.set(ledgerCol(db, siteId).doc(), {
       type: 'topup',
-      amount,
+      amount: amountUSD,
       balanceAfter,
       moduleId: 'platform',
       skillId: 'manual_topup',
@@ -127,38 +123,6 @@ export async function addCredits(
   });
 }
 
-/**
- * Initializes credit balance for a new tenant.
- * Called from createTenant Cloud Function.
- */
-export async function initTenantCredits(siteId: string): Promise<void> {
-  const db = getFirestore();
-  const creditRef = db.doc(CREDIT_DOC_PATH(siteId));
-  const batch = db.batch();
-
-  batch.set(creditRef, {
-    balance: DEFAULT_FREE_CREDITS,
-    lifetimeUsed: 0,
-  });
-
-  const ledgerRef = db.collection(LEDGER_PATH(siteId)).doc();
-  batch.set(ledgerRef, {
-    type: 'topup',
-    amount: DEFAULT_FREE_CREDITS,
-    balanceAfter: DEFAULT_FREE_CREDITS,
-    moduleId: 'platform',
-    skillId: 'registration_bonus',
-    description: `Welcome bonus: ${DEFAULT_FREE_CREDITS} free credits`,
-    performedBy: 'system',
-    createdAt: FieldValue.serverTimestamp(),
-  });
-
-  await batch.commit();
-}
-
-/**
- * Gets current credit balance for a tenant.
- */
 export async function getCreditBalance(siteId: string): Promise<CreditBalance> {
   const db = getFirestore();
   const doc = await db.doc(CREDIT_DOC_PATH(siteId)).get();

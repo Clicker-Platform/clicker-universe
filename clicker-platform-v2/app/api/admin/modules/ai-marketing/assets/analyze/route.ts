@@ -3,7 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { adminAuth, adminDb, Timestamp } from '@/lib/firebase-admin';
-import { invokeAI } from '@/lib/ai/openrouter-client';
+import { invokeVision, getModel } from '@/lib/ai';
 import { buildAnalyzePrompt } from '@/lib/modules/ai-marketing/agents/visual-analyst';
 import { AssetType } from '@/lib/modules/ai-marketing/types';
 import { COLLECTION_ASSETS } from '@/lib/modules/ai-marketing/constants';
@@ -11,8 +11,6 @@ import { logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
-const CREDIT_COST = 5; // vision analysis
-const MODEL = 'google/gemini-2.0-flash';
 
 export async function POST(req: NextRequest) {
   const siteId = req.headers.get('x-site-id');
@@ -41,10 +39,11 @@ export async function POST(req: NextRequest) {
 
   try {
     const { system, user } = buildAnalyzePrompt({ assetType: assetType as AssetType, context });
+    const model = await getModel('vision');
 
-    const raw = await invokeAI(
+    const raw = await invokeVision(
       {
-        model: MODEL,
+        model,
         messages: [{
           role: 'user',
           content: [
@@ -55,7 +54,7 @@ export async function POST(req: NextRequest) {
         max_tokens: 1024,
         temperature: 0.2,
       },
-      { siteId, moduleId: 'ai_marketing', skillId: 'analyze_' + assetType, creditCost: CREDIT_COST, uid }
+      { siteId, moduleId: 'ai_marketing', skillId: 'analyze_' + assetType, uid }
     );
 
     // Parse JSON response
@@ -66,7 +65,6 @@ export async function POST(req: NextRequest) {
       analysis: {
         ...analysis,
         analyzedAt: Timestamp.now(),
-        creditsUsed: CREDIT_COST,
       },
       analysisStatus: 'complete',
     });

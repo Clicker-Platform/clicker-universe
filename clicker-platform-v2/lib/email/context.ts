@@ -13,9 +13,9 @@ export function _resetEmailContextCache() {
   cache.clear();
 }
 
-function buildSystemContext(): EmailContext {
-  const defaults = getSystemDefaults();
-  const sender = resolveDefaultSender();
+async function buildSystemContext(): Promise<EmailContext> {
+  const defaults = await getSystemDefaults();
+  const sender = await resolveDefaultSender();
   return {
     fromName: defaults.fromName,
     fromAddress: `${sender.localPart}@${sender.domain}`,
@@ -29,18 +29,18 @@ function buildSystemContext(): EmailContext {
   };
 }
 
-function buildTenantContext(
+async function buildTenantContext(
   siteId: string,
   data: Record<string, unknown>
-): EmailContext {
-  const sender = resolveDefaultSender();
+): Promise<EmailContext> {
+  const sender = await resolveDefaultSender();
   const businessName =
     (data.name as string | undefined) ??
     (data.businessName as string | undefined) ??
     'Clicker Platform';
   const slug = (data.slug as string | undefined) ?? siteId;
-  const platformUrl = getSystemDefaults().platformUrl;
-  const siteUrl = `https://${slug}.${platformUrl.replace(/^https?:\/\//, '')}`;
+  const defaults = await getSystemDefaults();
+  const siteUrl = `https://${slug}.${defaults.platformUrl.replace(/^https?:\/\//, '')}`;
   return {
     fromName: businessName,
     fromAddress: `${sender.localPart}@${sender.domain}`,
@@ -63,19 +63,19 @@ export async function getEmailContext(
 
   let value: EmailContext;
   if (siteId === null) {
-    value = buildSystemContext();
+    value = await buildSystemContext();
   } else {
     try {
       const snap = await adminDb.collection('sites').doc(siteId).get();
       if (!snap.exists) {
         logger.warn('email.context.site.missing', { siteId });
-        value = buildSystemContext();
+        value = await buildSystemContext();
       } else {
-        value = buildTenantContext(siteId, snap.data() ?? {});
+        value = await buildTenantContext(siteId, snap.data() ?? {});
       }
     } catch (error) {
       logger.warn('email.context.fetch.failed', { siteId, error });
-      value = buildSystemContext();
+      value = await buildSystemContext();
     }
   }
 

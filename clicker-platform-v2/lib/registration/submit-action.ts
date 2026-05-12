@@ -68,7 +68,7 @@ async function sendRegistrationEmails(
   data: RegistrationInput
 ): Promise<void> {
   const { sendEmail } = await import('@/lib/email/sender');
-  const aliases = (await import('@/lib/email/config')).getTemplateAliases();
+  const aliases = await (await import('@/lib/email/config')).getTemplateAliases();
   const { writeEvent } = await import('./event-log');
 
   async function trySend(
@@ -101,7 +101,7 @@ async function sendRegistrationEmails(
     trySend('confirmation', {
       to: data.email,
       siteId: 'platform',
-      templateAlias: aliases.regConfirmation,
+      templateAlias: aliases['regConfirmation'] ?? 'registration-confirmation',
       variables: {
         name: data.name,
         businessName: data.businessName,
@@ -119,7 +119,7 @@ async function sendRegistrationEmails(
       trySend('admin_notif', {
         to: adminEmail,
         siteId: 'platform',
-        templateAlias: aliases.regAdminNotif,
+        templateAlias: aliases['regAdminNotif'] ?? 'registration-admin-notif',
         variables: {
           businessName: data.businessName,
           name: data.name,

@@ -12,7 +12,6 @@ interface AgentConfig {
     enabled: boolean;
     name: string;
     personality: string;
-    model: 'gemini-2.0-flash' | 'gemini-pro' | 'gpt-4';
     temperature: number;
     systemPrompt: string;
     contextWindow: number;
@@ -28,7 +27,6 @@ const DEFAULT_CONFIG: AgentConfig = {
     enabled: false,
     name: 'Sales Agent',
     personality: 'professional',
-    model: 'gemini-2.0-flash',
     temperature: 0.7,
     systemPrompt: 'You are a helpful restaurant assistant...',
     contextWindow: 10,
@@ -204,18 +202,6 @@ export default function AgentSettingsPage() {
                                 </select>
                             </div>
 
-                            <div className="space-y-2">
-                                <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300">AI Model</label>
-                                <select
-                                    value={config.model}
-                                    onChange={(e) => updateConfig('model', e.target.value)}
-                                    className="w-full px-4 py-2.5 rounded-lg border-2 border-gray-200 dark:border-neutral-700 focus:border-brand-dark focus:ring-0 outline-none transition bg-white dark:bg-neutral-800 dark:text-neutral-200"
-                                >
-                                    <option value="gemini-2.0-flash">Gemini 2.0 Flash (Fastest)</option>
-                                    <option value="gemini-pro">Gemini Pro</option>
-                                    <option value="gpt-4">GPT-4</option>
-                                </select>
-                            </div>
                         </div>
 
                         {/* Behavior Card */}

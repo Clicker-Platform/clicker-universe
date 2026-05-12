@@ -10,6 +10,7 @@ import { InboxPanelProvider } from '@/lib/inbox-panel-context';
 import { AdminTopBar } from '@/components/admin/AdminTopBar';
 import { TopBarSlotProvider } from '@/lib/top-bar-slot-context';
 import { InboxPanel } from '@/components/admin/inbox/InboxPanel';
+import { AICreditBanner } from '@/components/admin/AICreditBanner';
 
 function AdminContentWrapper({ children }: { children: React.ReactNode }) {
     const { isDark } = useAdminTheme();
@@ -20,6 +21,7 @@ function AdminContentWrapper({ children }: { children: React.ReactNode }) {
             <TopBarSlotProvider>
                 <div className="flex-1 flex flex-col min-w-0 overflow-x-hidden">
                     <AdminTopBar />
+                    <AICreditBanner />
                     <main className="flex-1 p-4 md:p-8 pb-24 md:pb-8 text-neutral-900 dark:text-neutral-100">
                         {children}
                     </main>
