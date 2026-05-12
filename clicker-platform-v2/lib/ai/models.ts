@@ -3,20 +3,13 @@ import { logger } from '@/lib/logger';
 import { adminDb } from '@/lib/firebase-admin';
 
 const MODELS_DOC = 'modules/ai-platform/config/models';
-const TTL_MS = 5 * 60 * 1000;
 
-// Firestore stores: llm, vision
-// ModelConfig exposes: chat, tools, fast, quality (→ llm), vision (→ vision)
 interface FirestoreModelDoc {
   llm: string;
   vision: string;
 }
 
-let configCache: { value: ModelConfig; expiresAt: number } | null = null;
-
 export async function getModelConfig(): Promise<ModelConfig> {
-  if (configCache && Date.now() < configCache.expiresAt) return configCache.value;
-
   const db = adminDb;
   const doc = await db.doc(MODELS_DOC).get();
 
@@ -31,16 +24,13 @@ export async function getModelConfig(): Promise<ModelConfig> {
     throw new Error('model_config_incomplete: llm and vision slots must all be set in Backyard → AI Settings → Models');
   }
 
-  const value: ModelConfig = {
+  return {
     chat:    data.llm,
     tools:   data.llm,
     fast:    data.llm,
     quality: data.llm,
     vision:  data.vision,
   };
-
-  configCache = { value, expiresAt: Date.now() + TTL_MS };
-  return value;
 }
 
 export async function getModel(useCase: keyof ModelConfig): Promise<string> {
@@ -49,5 +39,5 @@ export async function getModel(useCase: keyof ModelConfig): Promise<string> {
 }
 
 export function invalidateModelCache(): void {
-  configCache = null;
+  // no-op: cache removed, reads are always fresh
 }
