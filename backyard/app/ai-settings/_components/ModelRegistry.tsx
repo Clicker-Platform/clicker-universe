@@ -29,33 +29,26 @@ export const MODEL_OPTIONS: {
   free: boolean;
   slots: (keyof ModelConfig)[];
 }[] = [
-  // ── Free ──────────────────────────────────────────────────────────────────
-  { value: 'google/gemma-4-27b-it:free',                label: 'Gemma 4 27B',                provider: 'Google',    free: true,  slots: ['llm', 'vision'] },
-  { value: 'deepseek/deepseek-v4-flash:free',           label: 'DeepSeek V4 Flash',          provider: 'DeepSeek',  free: true,  slots: ['llm'] },
-  { value: 'qwen/qwen3.5-9b:free',                      label: 'Qwen3.5 9B',                 provider: 'Qwen',      free: true,  slots: ['llm'] },
+  // ── Free Vision ───────────────────────────────────────────────────────────
+  { value: 'google/gemma-4-31b-it:free',                label: 'Gemma 4 31B',                provider: 'Google',    free: true,  slots: ['vision'] },
+  { value: 'meta-llama/llama-4-maverick:free',          label: 'Llama 4 Maverick',           provider: 'Meta',      free: true,  slots: ['vision'] },
+  // ── Free LLM ──────────────────────────────────────────────────────────────
+  { value: 'meta-llama/llama-3.3-70b-instruct:free',    label: 'Llama 3.3 70B',              provider: 'Meta',      free: true,  slots: ['llm'] },
+  { value: 'qwen/qwen3-coder:free',                     label: 'Qwen3 Coder',                provider: 'Qwen',      free: true,  slots: ['llm'] },
   // ── Google ────────────────────────────────────────────────────────────────
   { value: 'google/gemini-3.1-flash-lite',              label: 'Gemini 3.1 Flash Lite',      provider: 'Google',    free: false, slots: ['llm', 'vision'] },
-  { value: 'google/gemini-flash-latest',                label: 'Gemini Flash (Latest)',       provider: 'Google',    free: false, slots: ['llm', 'vision'] },
-  { value: 'google/gemini-pro-latest',                  label: 'Gemini Pro (Latest)',         provider: 'Google',    free: false, slots: ['llm', 'vision'] },
+  { value: 'google/gemini-2.0-flash',                   label: 'Gemini 2.0 Flash',           provider: 'Google',    free: false, slots: ['llm', 'vision'] },
   // ── OpenAI ────────────────────────────────────────────────────────────────
-  { value: 'openai/gpt-5.4-nano',                       label: 'GPT-5.4 Nano',               provider: 'OpenAI',    free: false, slots: ['llm'] },
-  { value: 'openai/gpt-5.4-mini',                       label: 'GPT-5.4 Mini',               provider: 'OpenAI',    free: false, slots: ['llm', 'vision'] },
-  { value: 'openai/gpt-5.4',                            label: 'GPT-5.4',                    provider: 'OpenAI',    free: false, slots: ['llm', 'vision'] },
+  { value: 'openai/gpt-4o-mini',                        label: 'GPT-4o Mini',                provider: 'OpenAI',    free: false, slots: ['llm', 'vision'] },
   { value: 'openai/gpt-5.5',                            label: 'GPT-5.5',                    provider: 'OpenAI',    free: false, slots: ['llm', 'vision'] },
   // ── Anthropic ─────────────────────────────────────────────────────────────
-  { value: 'anthropic/claude-haiku-latest',             label: 'Claude Haiku (Latest)',      provider: 'Anthropic', free: false, slots: ['llm'] },
-  { value: 'anthropic/claude-sonnet-latest',            label: 'Claude Sonnet (Latest)',     provider: 'Anthropic', free: false, slots: ['llm'] },
-  { value: 'anthropic/claude-opus-4.7',                 label: 'Claude Opus 4.7',            provider: 'Anthropic', free: false, slots: ['llm'] },
+  { value: 'anthropic/claude-haiku-4-5',                label: 'Claude Haiku 4.5',           provider: 'Anthropic', free: false, slots: ['llm'] },
+  { value: 'anthropic/claude-sonnet-4-6',               label: 'Claude Sonnet 4.6',          provider: 'Anthropic', free: false, slots: ['llm', 'vision'] },
+  // ── Meta ──────────────────────────────────────────────────────────────────
+  { value: 'meta-llama/llama-4-maverick',               label: 'Llama 4 Maverick',           provider: 'Meta',      free: false, slots: ['llm', 'vision'] },
+  { value: 'meta-llama/llama-3.3-70b-instruct',         label: 'Llama 3.3 70B',              provider: 'Meta',      free: false, slots: ['llm'] },
   // ── DeepSeek ──────────────────────────────────────────────────────────────
   { value: 'deepseek/deepseek-v4-flash',                label: 'DeepSeek V4 Flash',          provider: 'DeepSeek',  free: false, slots: ['llm'] },
-  { value: 'deepseek/deepseek-v4-pro',                  label: 'DeepSeek V4 Pro',            provider: 'DeepSeek',  free: false, slots: ['llm'] },
-  // ── Qwen ──────────────────────────────────────────────────────────────────
-  { value: 'qwen/qwen3.5-flash',                        label: 'Qwen3.5 Flash',              provider: 'Qwen',      free: false, slots: ['llm'] },
-  { value: 'qwen/qwen3.5-plus-20260420',                label: 'Qwen3.5 Plus',               provider: 'Qwen',      free: false, slots: ['llm'] },
-  { value: 'qwen/qwen3.6-max-preview',                  label: 'Qwen3.6 Max',                provider: 'Qwen',      free: false, slots: ['llm'] },
-  // ── Meta ──────────────────────────────────────────────────────────────────
-  { value: 'meta-llama/llama-4-scout',                  label: 'Llama 4 Scout',              provider: 'Meta',      free: false, slots: ['llm', 'vision'] },
-  { value: 'meta-llama/llama-4-maverick',               label: 'Llama 4 Maverick',           provider: 'Meta',      free: false, slots: ['llm', 'vision'] },
 ];
 
 const SLOTS: { key: keyof ModelConfig; label: string; description: string }[] = [

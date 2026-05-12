@@ -4,8 +4,17 @@ import type { CreditBalance } from './types';
 
 const CREDIT_DOC_PATH = (siteId: string) => `sites/${siteId}/platform/aiCredits`;
 
-function ledgerCol(siteId: string) {
-  return adminDb.collection('sites').doc(siteId)
+function dailyDoc(siteId: string) {
+  const date = new Date().toISOString().slice(0, 10);
+  return adminDb
+    .collection('sites').doc(siteId)
+    .collection('platform').doc('aiCreditLedger')
+    .collection('daily').doc(date);
+}
+
+function topupCol(siteId: string) {
+  return adminDb
+    .collection('sites').doc(siteId)
     .collection('platform').doc('aiCreditLedger')
     .collection('entries');
 }
@@ -22,10 +31,9 @@ export async function deductCredits(
     outputTokens: number;
   }
 ): Promise<{ balanceAfter: number }> {
-  const db = adminDb;
-  const creditRef = db.doc(CREDIT_DOC_PATH(siteId));
+  const creditRef = adminDb.doc(CREDIT_DOC_PATH(siteId));
 
-  return db.runTransaction(async (transaction) => {
+  const balanceAfter = await adminDb.runTransaction(async (transaction) => {
     const creditDoc = await transaction.get(creditRef);
 
     if (!creditDoc.exists) {
@@ -38,55 +46,37 @@ export async function deductCredits(
       throw new Error(`insufficient_credits:${balance}:${costUSD}`);
     }
 
-    const balanceAfter = Math.round((balance - costUSD) * 1_000_000) / 1_000_000;
+    const after = Math.round((balance - costUSD) * 1_000_000) / 1_000_000;
     transaction.update(creditRef, {
-      balance: balanceAfter,
+      balance: after,
       lifetimeUsed: FieldValue.increment(costUSD),
     });
 
-    transaction.set(ledgerCol(siteId).doc(), {
-      type: 'debit',
-      amount: -costUSD,
-      balanceAfter,
-      moduleId: meta.moduleId,
-      skillId: meta.skillId,
-      model: meta.model,
-      inputTokens: meta.inputTokens,
-      outputTokens: meta.outputTokens,
-      costUSD,
-      performedBy: meta.uid,
-      createdAt: FieldValue.serverTimestamp(),
-    });
-
-    return { balanceAfter };
+    return after;
   });
+
+  await dailyDoc(siteId).set({
+    date: new Date().toISOString().slice(0, 10),
+    totalCost: FieldValue.increment(costUSD),
+    callCount: FieldValue.increment(1),
+    inputTokens: FieldValue.increment(meta.inputTokens),
+    outputTokens: FieldValue.increment(meta.outputTokens),
+    [`byModule.${meta.moduleId}.cost`]: FieldValue.increment(costUSD),
+    [`byModule.${meta.moduleId}.calls`]: FieldValue.increment(1),
+  }, { merge: true });
+
+  return { balanceAfter };
 }
 
 export async function refundCredits(
   siteId: string,
   costUSD: number,
-  meta: { moduleId: string; skillId: string; reason: string; model: string }
+  _meta: { moduleId: string; skillId: string; reason: string; model: string }
 ): Promise<void> {
-  const db = adminDb;
-  const batch = db.batch();
-
-  batch.update(db.doc(CREDIT_DOC_PATH(siteId)), {
+  await adminDb.doc(CREDIT_DOC_PATH(siteId)).update({
     balance: FieldValue.increment(costUSD),
     lifetimeUsed: FieldValue.increment(-costUSD),
   });
-
-  batch.set(ledgerCol(siteId).doc(), {
-    type: 'refund',
-    amount: costUSD,
-    moduleId: meta.moduleId,
-    skillId: meta.skillId,
-    model: meta.model,
-    description: `Refund: ${meta.reason}`,
-    performedBy: 'system',
-    createdAt: FieldValue.serverTimestamp(),
-  });
-
-  await batch.commit();
 }
 
 export async function addCredits(
@@ -94,10 +84,9 @@ export async function addCredits(
   amountUSD: number,
   meta: { performedBy: string; reason: string }
 ): Promise<{ balanceAfter: number }> {
-  const db = adminDb;
-  const creditRef = db.doc(CREDIT_DOC_PATH(siteId));
+  const creditRef = adminDb.doc(CREDIT_DOC_PATH(siteId));
 
-  return db.runTransaction(async (transaction) => {
+  return adminDb.runTransaction(async (transaction) => {
     const creditDoc = await transaction.get(creditRef);
     const currentBalance: number = creditDoc.exists ? (creditDoc.data()?.balance ?? 0) : 0;
     const balanceAfter = Math.round((currentBalance + amountUSD) * 1_000_000) / 1_000_000;
@@ -108,12 +97,10 @@ export async function addCredits(
       transaction.set(creditRef, { balance: balanceAfter, lifetimeUsed: 0 });
     }
 
-    transaction.set(ledgerCol(siteId).doc(), {
+    transaction.set(topupCol(siteId).doc(), {
       type: 'topup',
       amount: amountUSD,
       balanceAfter,
-      moduleId: 'platform',
-      skillId: 'manual_topup',
       description: meta.reason,
       performedBy: meta.performedBy,
       createdAt: FieldValue.serverTimestamp(),
@@ -124,8 +111,7 @@ export async function addCredits(
 }
 
 export async function getCreditBalance(siteId: string): Promise<CreditBalance> {
-  const db = adminDb;
-  const doc = await db.doc(CREDIT_DOC_PATH(siteId)).get();
+  const doc = await adminDb.doc(CREDIT_DOC_PATH(siteId)).get();
   if (!doc.exists) return { balance: 0, lifetimeUsed: 0 };
   const data = doc.data()!;
   return { balance: data.balance ?? 0, lifetimeUsed: data.lifetimeUsed ?? 0 };

@@ -7,40 +7,19 @@ export async function GET(req: NextRequest) {
   const siteId = req.headers.get('x-site-id');
   if (!siteId) return NextResponse.json({ error: 'Missing siteId' }, { status: 400 });
 
-  const { searchParams } = new URL(req.url);
-  const limit = Math.min(Number(searchParams.get('limit') ?? 20), 100);
-  const cursor = searchParams.get('cursor');
-  const moduleId = searchParams.get('moduleId');
+  const limit = Math.min(Number(new URL(req.url).searchParams.get('limit') ?? 30), 90);
 
   try {
-    let query = adminDb
+    const snap = await adminDb
       .collection('sites').doc(siteId)
       .collection('platform').doc('aiCreditLedger')
-      .collection('entries')
-      .where('type', '==', 'debit')
-      .orderBy('createdAt', 'desc')
-      .limit(limit + 1);
+      .collection('daily')
+      .orderBy('date', 'desc')
+      .limit(limit)
+      .get();
 
-    if (moduleId) query = query.where('moduleId', '==', moduleId) as typeof query;
-    if (cursor) {
-      const cursorDoc = await adminDb
-        .collection('sites').doc(siteId)
-        .collection('platform').doc('aiCreditLedger')
-        .collection('entries').doc(cursor).get();
-      if (cursorDoc.exists) query = query.startAfter(cursorDoc) as typeof query;
-    }
-
-    const snap = await query.get();
-    const docs = snap.docs.slice(0, limit);
-    const nextCursor = snap.docs.length > limit ? snap.docs[limit - 1].id : null;
-
-    const entries = docs.map(d => ({
-      id: d.id,
-      ...d.data(),
-      createdAt: d.data().createdAt?.toDate?.()?.toISOString() ?? null,
-    }));
-
-    return NextResponse.json({ entries, nextCursor });
+    const days = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    return NextResponse.json({ days });
   } catch (err: unknown) {
     console.error('[ai-usage] query failed:', err);
     return NextResponse.json({ error: err instanceof Error ? err.message : 'Unknown error' }, { status: 500 });
