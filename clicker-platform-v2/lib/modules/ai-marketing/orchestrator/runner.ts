@@ -1,8 +1,8 @@
 // Orchestrator runner — server-side only (imported by API routes)
 // Handles single skill calls and multi-skill flows with context passing
 
-import { invokeAI, invokeVision } from '@/lib/ai';
-import { SKILL_MODEL_MAP, SKILL_CREDIT_COST } from '../config/model-config';
+import { invokeAI, invokeVision, getModel } from '@/lib/ai';
+import { SKILL_MODEL_MAP } from '../config/model-config';
 import { MULTI_SKILL_FLOWS } from './flows';
 import { BrandVoiceConfig, SkillId, AgentId } from '../types';
 
@@ -35,7 +35,6 @@ export interface RunnerOutput {
   variations?: string[];
   structured?: Record<string, any>;
   model: string;
-  creditsUsed: number;
 }
 
 /**
@@ -201,17 +200,17 @@ function buildPrompt(skillId: SkillId, input: RunnerInput): { system: string; us
  */
 export async function runSkill(input: RunnerInput): Promise<RunnerOutput> {
   const { skillId, siteId, uid } = input;
-  const model = SKILL_MODEL_MAP[skillId] ?? 'openai/gpt-4o-mini';
-  const creditCost = SKILL_CREDIT_COST[skillId] ?? 3;
 
   const { system, user } = buildPrompt(skillId, input);
 
-  // Vision skills need image_url content — handled by caller via formData.imageBase64
+  // Vision skills: use getModel('vision') from Backyard; text skills: use SKILL_MODEL_MAP
   let raw: string;
+  let resolvedModel: string;
   if (input.formData.imageBase64) {
+    resolvedModel = await getModel('vision');
     raw = await invokeVision(
       {
-        model,
+        model: resolvedModel,
         messages: [{
           role: 'user',
           content: [
@@ -222,12 +221,13 @@ export async function runSkill(input: RunnerInput): Promise<RunnerOutput> {
         max_tokens: 2048,
         temperature: 0.7,
       },
-      { siteId, moduleId: 'ai_marketing', skillId, creditCost, uid }
+      { siteId, moduleId: 'ai_marketing', skillId, uid }
     );
   } else {
+    resolvedModel = SKILL_MODEL_MAP[skillId] ?? 'openai/gpt-4o-mini';
     raw = await invokeAI(
       {
-        model,
+        model: resolvedModel,
         messages: [
           { role: 'system', content: system },
           { role: 'user', content: user },
@@ -235,7 +235,7 @@ export async function runSkill(input: RunnerInput): Promise<RunnerOutput> {
         max_tokens: 2048,
         temperature: 0.7,
       },
-      { siteId, moduleId: 'ai_marketing', skillId, creditCost, uid }
+      { siteId, moduleId: 'ai_marketing', skillId, uid }
     );
   }
 
@@ -251,8 +251,7 @@ export async function runSkill(input: RunnerInput): Promise<RunnerOutput> {
   return {
     content: raw,
     structured,
-    model,
-    creditsUsed: creditCost,
+    model: resolvedModel,
   };
 }
 
@@ -262,12 +261,11 @@ export async function runSkill(input: RunnerInput): Promise<RunnerOutput> {
 export async function runFlow(
   flowId: string,
   input: Omit<RunnerInput, 'skillId'>
-): Promise<{ stepOutputs: Record<string, RunnerOutput>; totalCreditsUsed: number }> {
+): Promise<{ stepOutputs: Record<string, RunnerOutput> }> {
   const flow = MULTI_SKILL_FLOWS[flowId];
   if (!flow) throw new Error(`Unknown flow: ${flowId}`);
 
   const stepOutputs: Record<string, RunnerOutput> = {};
-  let totalCreditsUsed = 0;
   const priorContext: Record<string, any> = {};
 
   for (const step of flow.steps) {
@@ -283,7 +281,6 @@ export async function runFlow(
     });
 
     stepOutputs[step.skill] = result;
-    totalCreditsUsed += result.creditsUsed;
 
     // Pass structured output as context to next steps
     if (result.structured) {
@@ -291,5 +288,5 @@ export async function runFlow(
     }
   }
 
-  return { stepOutputs, totalCreditsUsed };
+  return { stepOutputs };
 }

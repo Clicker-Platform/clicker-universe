@@ -1,5 +1,5 @@
 import { getSecret } from '@/lib/secrets';
-import type { AIRequest, VisionRequest, ToolRequest, ToolResponse } from './types';
+import type { AIRequest, VisionRequest, ToolRequest, ToolCall } from './types';
 
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
@@ -23,7 +23,14 @@ async function callOpenRouter(body: Record<string, unknown>): Promise<Response> 
   return res;
 }
 
-export async function callText(request: AIRequest): Promise<string> {
+export interface AIResult {
+  content: string;
+  inputTokens: number;
+  outputTokens: number;
+  model: string;
+}
+
+export async function callText(request: AIRequest): Promise<AIResult> {
   const res = await callOpenRouter({
     model: request.model,
     messages: request.messages,
@@ -34,10 +41,24 @@ export async function callText(request: AIRequest): Promise<string> {
   const data = await res.json();
   const content = data.choices?.[0]?.message?.content;
   if (!content) throw new Error('OpenRouter returned empty response');
-  return typeof content === 'string' ? content : JSON.stringify(content);
+
+  const inputTokens = data.usage?.prompt_tokens
+    ?? Math.ceil((request.max_tokens ?? 2048) * 0.3);
+  const outputTokens = data.usage?.completion_tokens
+    ?? (request.max_tokens ?? 2048);
+  if (!data.usage?.prompt_tokens) {
+    console.warn('[ai/client] usage missing for model:', request.model);
+  }
+
+  return {
+    content: typeof content === 'string' ? content : JSON.stringify(content),
+    inputTokens,
+    outputTokens,
+    model: request.model,
+  };
 }
 
-export async function callVision(request: VisionRequest): Promise<string> {
+export async function callVision(request: VisionRequest): Promise<AIResult> {
   const res = await callOpenRouter({
     model: request.model,
     messages: request.messages,
@@ -48,10 +69,33 @@ export async function callVision(request: VisionRequest): Promise<string> {
   const data = await res.json();
   const content = data.choices?.[0]?.message?.content;
   if (!content) throw new Error('OpenRouter returned empty vision response');
-  return typeof content === 'string' ? content : JSON.stringify(content);
+
+  const inputTokens = data.usage?.prompt_tokens
+    ?? Math.ceil((request.max_tokens ?? 2048) * 0.3);
+  const outputTokens = data.usage?.completion_tokens
+    ?? (request.max_tokens ?? 2048);
+  if (!data.usage?.prompt_tokens) {
+    console.warn('[ai/client] usage missing for model:', request.model);
+  }
+
+  return {
+    content: typeof content === 'string' ? content : JSON.stringify(content),
+    inputTokens,
+    outputTokens,
+    model: request.model,
+  };
 }
 
-export async function callWithTools(request: ToolRequest): Promise<ToolResponse> {
+export interface AIToolResult {
+  content: string | null;
+  toolCalls: ToolCall[];
+  finishReason: 'stop' | 'tool_calls' | 'length';
+  inputTokens: number;
+  outputTokens: number;
+  model: string;
+}
+
+export async function callWithTools(request: ToolRequest): Promise<AIToolResult> {
   const res = await callOpenRouter({
     model: request.model,
     messages: request.messages,
@@ -65,9 +109,20 @@ export async function callWithTools(request: ToolRequest): Promise<ToolResponse>
   const choice = data.choices?.[0];
   if (!choice) throw new Error('OpenRouter returned empty tools response');
 
+  const inputTokens = data.usage?.prompt_tokens
+    ?? Math.ceil((request.max_tokens ?? 1024) * 0.3);
+  const outputTokens = data.usage?.completion_tokens
+    ?? (request.max_tokens ?? 1024);
+  if (!data.usage?.prompt_tokens) {
+    console.warn('[ai/client] usage missing for model:', request.model);
+  }
+
   return {
     content: choice.message?.content ?? null,
     toolCalls: choice.message?.tool_calls ?? [],
     finishReason: choice.finish_reason ?? 'stop',
+    inputTokens,
+    outputTokens,
+    model: request.model,
   };
 }

@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
   try {
     if (flowId) {
       // Multi-skill flow
-      const { stepOutputs, totalCreditsUsed } = await runFlow(flowId, {
+      const { stepOutputs } = await runFlow(flowId, {
         siteId,
         uid,
         formData: formData ?? {},
@@ -63,13 +63,12 @@ export async function POST(req: NextRequest) {
           ),
         },
         model: 'multi',
-        creditsUsed: totalCreditsUsed,
         status: 'complete',
         createdAt: Timestamp.now(),
         createdBy: uid,
       });
 
-      return NextResponse.json({ ok: true, generationId: docRef.id, stepOutputs, totalCreditsUsed });
+      return NextResponse.json({ ok: true, generationId: docRef.id, stepOutputs });
     } else {
       // Single skill
       const result = await runSkill({
@@ -91,7 +90,6 @@ export async function POST(req: NextRequest) {
           structured: result.structured,
         },
         model: result.model,
-        creditsUsed: result.creditsUsed,
         status: 'complete',
         createdAt: Timestamp.now(),
         createdBy: uid,

@@ -52,7 +52,6 @@ export interface AssetAnalysis {
   generatedPrompt: string;
   recommendedUseCases: string[];
   analyzedAt: any;
-  creditsUsed: number;
 }
 
 export interface MarketingAsset {
@@ -91,7 +90,7 @@ export interface MarketingGeneration {
   input: GenerationInput;
   output: GenerationOutput;
   model: string;
-  creditsUsed: number;
+  creditsUsed?: number;
   status: 'generating' | 'complete' | 'failed';
   createdAt: any;
   createdBy: string;
@@ -138,7 +137,6 @@ export interface SkillDefinition {
   label: string;
   description: string;
   agentId: AgentId;
-  creditCost: number;
   formFields: SkillFormField[];
 }
 

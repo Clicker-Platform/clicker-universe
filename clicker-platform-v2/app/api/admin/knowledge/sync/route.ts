@@ -82,11 +82,13 @@ export async function POST(req: NextRequest) {
             max_tokens: 4096,
             temperature: 0.1,
           },
-          { siteId, moduleId: 'ai_sales_agent', skillId: 'pdf_extraction', creditCost: 5, uid: 'system' }
+          { siteId, moduleId: 'ai_sales_agent', skillId: 'pdf_extraction', uid: 'system' }
         );
 
         combinedText += `\n\n--- SOURCE: PDF BROCHURE (${pdfFile.name}) ---\n${text}\n---\n`;
       } catch (err: unknown) {
+        // insufficient_credits must bubble up — re-throw so outer catch handles it
+        if (err instanceof Error && err.message.startsWith('insufficient_credits:')) throw err;
         logger.error('knowledge.sync.pdf.failed', { siteId, error: err });
         combinedText += `\n[ERROR PROCESSING PDF: ${err instanceof Error ? err.message : String(err)}]`;
       }
@@ -105,7 +107,15 @@ export async function POST(req: NextRequest) {
       preview: combinedText.substring(0, 500) + '...',
     });
   } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (message.startsWith('insufficient_credits:')) {
+      const [, balance, required] = message.split(':');
+      return NextResponse.json(
+        { success: false, error: 'insufficient_credits', balance: Number(balance), required: Number(required) },
+        { status: 402 }
+      );
+    }
     logger.error('knowledge.sync.failed', { error });
-    return NextResponse.json({ success: false, error: error instanceof Error ? error.message : String(error) }, { status: 500 });
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }

@@ -50,7 +50,7 @@ export async function scanProductImage(
       max_tokens: 512,
       temperature: 0.1,
     },
-    { siteId, moduleId: 'stocklens', skillId: 'scan_product', creditCost: 3, uid: 'system' }
+    { siteId, moduleId: 'stocklens', skillId: 'scan_product', uid: 'system' }
   );
 
   const jsonStr = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();

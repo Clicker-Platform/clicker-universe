@@ -93,7 +93,7 @@ export async function POST(req: NextRequest) {
     const model = await getModel('tools');
     const result = await invokeWithTools(
       { model, messages, tools: TOOLS, max_tokens: 500, temperature: 0.7 },
-      { siteId, moduleId: 'ai_sales_agent', skillId: 'chat', creditCost: 1, uid: 'public' }
+      { siteId, moduleId: 'ai_sales_agent', skillId: 'chat', uid: 'public' }
     );
 
     if (result.finishReason === 'tool_calls' && result.toolCalls.length > 0) {
@@ -120,7 +120,7 @@ export async function POST(req: NextRequest) {
 
       const followUp = await invokeWithTools(
         { model, messages: followUpMessages as never, tools: TOOLS, max_tokens: 500, temperature: 0.7 },
-        { siteId, moduleId: 'ai_sales_agent', skillId: 'chat_followup', creditCost: 1, uid: 'public' }
+        { siteId, moduleId: 'ai_sales_agent', skillId: 'chat_followup', uid: 'public' }
       );
 
       return NextResponse.json({ response: followUp.content ?? '', timestamp: Date.now() });
@@ -129,6 +129,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ response: result.content ?? '', timestamp: Date.now() });
   } catch (error: unknown) {
     const siteId = req.headers.get('x-site-id') ?? 'platform';
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    if (message.startsWith('insufficient_credits:')) {
+      const [, balance, required] = message.split(':');
+      return NextResponse.json(
+        { error: 'insufficient_credits', balance: Number(balance), required: Number(required) },
+        { status: 402 }
+      );
+    }
     logger.error('ai.chat.failed', { siteId, error });
     return NextResponse.json({ error: 'Failed to generate response.' }, { status: 500 });
   }

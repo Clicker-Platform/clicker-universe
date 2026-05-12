@@ -261,7 +261,6 @@ export default function GeneratePage() {
                       content={output.content}
                       structured={output.structured}
                       model={output.model}
-                      creditsUsed={output.creditsUsed}
                       onRegenerate={handleGenerate}
                     />
                   </div>
@@ -273,7 +272,6 @@ export default function GeneratePage() {
                   content={result.content}
                   structured={result.structured}
                   model={result.model}
-                  creditsUsed={result.creditsUsed}
                   onRegenerate={handleGenerate}
                 />
               )}

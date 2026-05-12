@@ -58,8 +58,14 @@ export interface AICallOptions {
   siteId: string;
   moduleId: string;
   skillId: string;
-  creditCost: number;
   uid: string;
+}
+
+export interface AIUsageResult {
+  inputTokens: number;
+  outputTokens: number;
+  costUSD: number;
+  model: string;
 }
 
 export interface CreditBalance {
@@ -85,6 +91,7 @@ export interface ModelConfig {
   tools: string;
   fast: string;
   quality: string;
+  rag: string;
 }
 
 export interface TenantContext {

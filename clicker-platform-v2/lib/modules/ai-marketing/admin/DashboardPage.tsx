@@ -136,7 +136,7 @@ export default function DashboardPage() {
                       <p className="text-xs text-gray-400">{AGENT_LABELS[gen.agentId]?.label ?? gen.agentId}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-xs font-semibold text-amber-600">{gen.creditsUsed} credits</p>
+                      <p className="text-xs font-semibold text-gray-400">{gen.model?.split('/')[1] ?? gen.model}</p>
                       <p className="text-xs text-gray-400">{date.toLocaleDateString()}</p>
                     </div>
                   </div>

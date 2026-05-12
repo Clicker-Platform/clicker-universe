@@ -14,7 +14,6 @@ interface Props {
   content: string;
   structured?: Record<string, any>;
   model: string;
-  creditsUsed: number;
   onRegenerate?: () => void;
   onSaved?: (contentId: string) => void;
 }
@@ -84,7 +83,7 @@ const SKILL_CONTENT_TYPE: Partial<Record<SkillId, ContentType>> = {
 };
 
 export default function GenerationResult({
-  generationId, skillId, content, structured, model, creditsUsed, onRegenerate, onSaved,
+  generationId, skillId, content, structured, model, onRegenerate, onSaved,
 }: Props) {
   const { siteId } = useSite();
   const [copied, setCopied] = useState(false);
@@ -129,7 +128,6 @@ export default function GenerationResult({
         <div className="flex items-center gap-2">
           <span className="text-xs font-medium text-gray-500">Generated with</span>
           <span className="text-xs font-mono bg-gray-100 px-2 py-0.5 rounded-md text-gray-700">{model}</span>
-          <span className="text-xs text-gray-400">· {creditsUsed} credits used</span>
         </div>
         <div className="flex items-center gap-2">
           <button

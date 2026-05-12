@@ -13,7 +13,6 @@ interface GenerationResult {
   structured?: Record<string, any>;
   stepOutputs?: Record<string, any>;
   model: string;
-  creditsUsed: number;
 }
 
 interface UseGenerationReturn {
