@@ -150,6 +150,49 @@ quattro   $5.00      $0.06     $4.94        | 81.5K     [+ Topup]
 
 Topup modal Backyard: input Kredit (bukan USD).
 
+## Notifikasi Topup Sukses
+
+Dipicu setelah webhook `invoice.paid` berhasil diproses.
+
+### 1. Email ke clickerplatform@gmail.com
+Via Resend (sudah ada di platform). Template:
+```
+Subject: [Topup] {siteName} — {kreditAdded} Kredit (Rp {idrAmount})
+
+Tenant:   {siteName} ({siteId})
+Kredit:   +{kreditAdded} Kredit
+Nominal:  Rp {idrAmount}
+USD:      ${usdAdded}
+Rate:     Rp {liveRate}/$1
+Waktu:    {timestamp WIB}
+Invoice:  {xenditInvoiceId}
+```
+
+### 2. Feed di Backyard Dashboard
+- Simpan ke Firestore: `platform/notifications/topupFeed/{invoiceId}`
+```
+{
+  siteId: string,
+  siteName: string,
+  kreditAdded: number,
+  idrAmount: number,
+  usdAdded: number,
+  createdAt: Timestamp,
+  readAt: Timestamp | null,
+}
+```
+- Backyard dashboard tampilkan 10 topup terbaru, realtime via Firestore listener
+- Unread ditandai dengan dot biru
+
+### Files tambahan
+
+**Platform:**
+- `app/api/webhook/xendit/route.ts` — kirim email + tulis notif feed setelah `addCredits`
+
+**Backyard:**
+- `components/RecentTopupsFeed.tsx` — Create, tampil di dashboard
+- `app/page.tsx` — Modify, tambah RecentTopupsFeed
+
 ## Error Handling
 
 | Skenario | Handling |
