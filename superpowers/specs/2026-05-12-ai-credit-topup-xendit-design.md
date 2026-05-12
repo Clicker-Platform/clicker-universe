@@ -20,8 +20,8 @@ Tenant dapat topup AI Kredit secara mandiri via Xendit (QRIS/VA/e-wallet). Backy
 
 - Source: **frankfurter.app** — free, no API key, rate dari ECB
 - Endpoint: `https://api.frankfurter.app/latest?from=USD&to=IDR`
-- Cache: **1x per hari**, reset tengah malam WIB
-- Simpan di: memory cache server-side (key: `usd_idr_YYYY-MM-DD`)
+- Cache: **1x per hari**, reset jam **09.00 WIB (02.00 UTC)**
+- Simpan di: memory cache server-side (key: `usd_idr_YYYY-MM-DD-09`)
 - Fallback: kalau fetch gagal, pakai rate terakhir yang berhasil
 
 ## Margin Multiplier
