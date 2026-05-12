@@ -1,11 +1,11 @@
-import { getFirestore, FieldValue } from 'firebase-admin/firestore';
-import type { Firestore } from 'firebase-admin/firestore';
+import { FieldValue } from 'firebase-admin/firestore';
+import { adminDb } from '@/lib/firebase-admin';
 import type { CreditBalance } from './types';
 
 const CREDIT_DOC_PATH = (siteId: string) => `sites/${siteId}/platform/aiCredits`;
 
-function ledgerCol(db: Firestore, siteId: string) {
-  return db.collection('sites').doc(siteId)
+function ledgerCol(siteId: string) {
+  return adminDb.collection('sites').doc(siteId)
     .collection('platform').doc('aiCreditLedger')
     .collection('entries');
 }
@@ -22,7 +22,7 @@ export async function deductCredits(
     outputTokens: number;
   }
 ): Promise<{ balanceAfter: number }> {
-  const db = getFirestore();
+  const db = adminDb;
   const creditRef = db.doc(CREDIT_DOC_PATH(siteId));
 
   return db.runTransaction(async (transaction) => {
@@ -44,7 +44,7 @@ export async function deductCredits(
       lifetimeUsed: FieldValue.increment(costUSD),
     });
 
-    transaction.set(ledgerCol(db, siteId).doc(), {
+    transaction.set(ledgerCol(siteId).doc(), {
       type: 'debit',
       amount: -costUSD,
       balanceAfter,
@@ -67,7 +67,7 @@ export async function refundCredits(
   costUSD: number,
   meta: { moduleId: string; skillId: string; reason: string; model: string }
 ): Promise<void> {
-  const db = getFirestore();
+  const db = adminDb;
   const batch = db.batch();
 
   batch.update(db.doc(CREDIT_DOC_PATH(siteId)), {
@@ -75,7 +75,7 @@ export async function refundCredits(
     lifetimeUsed: FieldValue.increment(-costUSD),
   });
 
-  batch.set(ledgerCol(db, siteId).doc(), {
+  batch.set(ledgerCol(siteId).doc(), {
     type: 'refund',
     amount: costUSD,
     moduleId: meta.moduleId,
@@ -94,7 +94,7 @@ export async function addCredits(
   amountUSD: number,
   meta: { performedBy: string; reason: string }
 ): Promise<{ balanceAfter: number }> {
-  const db = getFirestore();
+  const db = adminDb;
   const creditRef = db.doc(CREDIT_DOC_PATH(siteId));
 
   return db.runTransaction(async (transaction) => {
@@ -108,7 +108,7 @@ export async function addCredits(
       transaction.set(creditRef, { balance: balanceAfter, lifetimeUsed: 0 });
     }
 
-    transaction.set(ledgerCol(db, siteId).doc(), {
+    transaction.set(ledgerCol(siteId).doc(), {
       type: 'topup',
       amount: amountUSD,
       balanceAfter,
@@ -124,7 +124,7 @@ export async function addCredits(
 }
 
 export async function getCreditBalance(siteId: string): Promise<CreditBalance> {
-  const db = getFirestore();
+  const db = adminDb;
   const doc = await db.doc(CREDIT_DOC_PATH(siteId)).get();
   if (!doc.exists) return { balance: 0, lifetimeUsed: 0 };
   const data = doc.data()!;

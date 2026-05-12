@@ -1,6 +1,6 @@
-import { getFirestore } from 'firebase-admin/firestore';
 import type { ModelConfig } from './types';
 import { logger } from '@/lib/logger';
+import { adminDb } from '@/lib/firebase-admin';
 
 const MODELS_DOC = 'modules/ai-platform/config/models';
 const TTL_MS = 5 * 60 * 1000;
@@ -17,7 +17,7 @@ let configCache: { value: ModelConfig; expiresAt: number } | null = null;
 export async function getModelConfig(): Promise<ModelConfig> {
   if (configCache && Date.now() < configCache.expiresAt) return configCache.value;
 
-  const db = getFirestore();
+  const db = adminDb;
   const doc = await db.doc(MODELS_DOC).get();
 
   if (!doc.exists) {
