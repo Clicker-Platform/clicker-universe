@@ -1,18 +1,65 @@
 // Platform-level AI types — shared across all AI modules
 
-export interface OpenRouterRequest {
+export interface AIRequest {
   model: string;
-  messages: { role: string; content: string | any[] }[];
+  messages: { role: 'system' | 'user' | 'assistant'; content: string }[];
   max_tokens?: number;
   temperature?: number;
 }
 
-export interface OpenRouterCallOptions {
+export interface VisionRequest {
+  model: string;
+  messages: {
+    role: 'user';
+    content: Array<
+      | { type: 'text'; text: string }
+      | { type: 'image_url'; image_url: { url: string } }
+    >;
+  }[];
+  max_tokens?: number;
+  temperature?: number;
+}
+
+export interface ToolDefinition {
+  type: 'function';
+  function: {
+    name: string;
+    description: string;
+    parameters: {
+      type: 'object';
+      properties: Record<string, { type: string; description: string }>;
+      required?: string[];
+    };
+  };
+}
+
+export interface ToolRequest {
+  model: string;
+  messages: { role: 'system' | 'user' | 'assistant' | 'tool'; content: string; tool_call_id?: string; name?: string }[];
+  tools: ToolDefinition[];
+  tool_choice?: 'auto' | 'none';
+  max_tokens?: number;
+  temperature?: number;
+}
+
+export interface ToolCall {
+  id: string;
+  type: 'function';
+  function: { name: string; arguments: string };
+}
+
+export interface ToolResponse {
+  content: string | null;
+  toolCalls: ToolCall[];
+  finishReason: 'stop' | 'tool_calls' | 'length';
+}
+
+export interface AICallOptions {
   siteId: string;
-  moduleId: string;    // for credit deduction & logging
-  skillId: string;     // for logging
-  creditCost: number;  // pre-calculated credit cost for this skill
-  uid: string;         // user performing the action
+  moduleId: string;
+  skillId: string;
+  creditCost: number;
+  uid: string;
 }
 
 export interface CreditBalance {
@@ -22,18 +69,34 @@ export interface CreditBalance {
 
 export interface CreditLedgerEntry {
   type: 'topup' | 'debit' | 'refund';
-  amount: number;          // positive for topup/refund, negative for debit
+  amount: number;
   balanceAfter: number;
   moduleId: string;
   skillId: string;
   description?: string;
   performedBy: string;
   createdAt: FirebaseFirestore.Timestamp;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
-export interface InsufficientCreditsError {
-  code: 'insufficient_credits';
-  balance: number;
-  required: number;
+export interface ModelConfig {
+  chat: string;
+  vision: string;
+  tools: string;
+  fast: string;
+  quality: string;
+}
+
+export interface TenantContext {
+  businessName: string;
+  businessType: string;
+  tone: string;
+  language: string;
+  knowledgeBase: string;
+  activeModules: string[];
+}
+
+export interface ContextEnrichment {
+  products?: { name: string; price?: number; description?: string }[];
+  custom?: string;
 }

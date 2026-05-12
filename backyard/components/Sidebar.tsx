@@ -27,6 +27,7 @@ const NAV_ITEMS: NavItem[] = [
     { label: 'Sync Control', href: '/sync' },
     { label: 'Seed Tools', href: '/seed' },
     { label: '—' as any, href: '' },
+    { label: 'API Keys', href: '/api-keys' },
     { label: 'Settings', href: '/settings' },
 ];
 

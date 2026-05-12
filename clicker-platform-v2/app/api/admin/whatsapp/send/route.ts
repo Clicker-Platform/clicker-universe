@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'WA not connected.' }, { status: 400 });
     }
 
-    const accessToken = decryptToken(config.accessToken);
+    const accessToken = await decryptToken(config.accessToken);
 
     const res = await fetch(META_MESSAGES_ENDPOINT(config.phoneNumberId), {
       method: 'POST',

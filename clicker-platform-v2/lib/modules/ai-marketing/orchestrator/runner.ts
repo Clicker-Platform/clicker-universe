@@ -1,7 +1,7 @@
 // Orchestrator runner — server-side only (imported by API routes)
 // Handles single skill calls and multi-skill flows with context passing
 
-import { invokeAI } from '@/lib/ai/openrouter-client';
+import { invokeAI, invokeVision } from '@/lib/ai';
 import { SKILL_MODEL_MAP, SKILL_CREDIT_COST } from '../config/model-config';
 import { MULTI_SKILL_FLOWS } from './flows';
 import { BrandVoiceConfig, SkillId, AgentId } from '../types';
@@ -207,23 +207,37 @@ export async function runSkill(input: RunnerInput): Promise<RunnerOutput> {
   const { system, user } = buildPrompt(skillId, input);
 
   // Vision skills need image_url content — handled by caller via formData.imageBase64
-  const messages = input.formData.imageBase64
-    ? [{
-        role: 'user' as const,
-        content: [
-          { type: 'text', text: `${system}\n\n${user}` },
-          { type: 'image_url', image_url: { url: `data:image/webp;base64,${input.formData.imageBase64}` } },
+  let raw: string;
+  if (input.formData.imageBase64) {
+    raw = await invokeVision(
+      {
+        model,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'text', text: `${system}\n\n${user}` },
+            { type: 'image_url', image_url: { url: `data:image/webp;base64,${input.formData.imageBase64}` } },
+          ],
+        }],
+        max_tokens: 2048,
+        temperature: 0.7,
+      },
+      { siteId, moduleId: 'ai_marketing', skillId, creditCost, uid }
+    );
+  } else {
+    raw = await invokeAI(
+      {
+        model,
+        messages: [
+          { role: 'system', content: system },
+          { role: 'user', content: user },
         ],
-      }]
-    : [
-        { role: 'system' as const, content: system },
-        { role: 'user' as const, content: user },
-      ];
-
-  const raw = await invokeAI(
-    { model, messages, max_tokens: 2048, temperature: 0.7 },
-    { siteId, moduleId: 'ai_marketing', skillId, creditCost, uid }
-  );
+        max_tokens: 2048,
+        temperature: 0.7,
+      },
+      { siteId, moduleId: 'ai_marketing', skillId, creditCost, uid }
+    );
+  }
 
   // Try to parse as JSON, fallback to raw text
   let structured: Record<string, any> | undefined;

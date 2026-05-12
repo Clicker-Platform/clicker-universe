@@ -68,7 +68,7 @@ async function sendRegistrationEmails(
   data: RegistrationInput
 ): Promise<void> {
   const { sendEmail } = await import('@/lib/email/sender');
-  const aliases = (await import('@/lib/email/config')).getTemplateAliases();
+  const aliases = await (await import('@/lib/email/config')).getTemplateAliases();
   const { writeEvent } = await import('./event-log');
 
   async function trySend(

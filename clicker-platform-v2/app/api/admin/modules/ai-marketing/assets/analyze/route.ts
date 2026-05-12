@@ -3,7 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { adminAuth, adminDb, Timestamp } from '@/lib/firebase-admin';
-import { invokeAI } from '@/lib/ai/openrouter-client';
+import { invokeVision } from '@/lib/ai';
 import { buildAnalyzePrompt } from '@/lib/modules/ai-marketing/agents/visual-analyst';
 import { AssetType } from '@/lib/modules/ai-marketing/types';
 import { COLLECTION_ASSETS } from '@/lib/modules/ai-marketing/constants';
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
   try {
     const { system, user } = buildAnalyzePrompt({ assetType: assetType as AssetType, context });
 
-    const raw = await invokeAI(
+    const raw = await invokeVision(
       {
         model: MODEL,
         messages: [{

@@ -3,7 +3,22 @@
 
 import { getFirestore } from 'firebase-admin/firestore';
 import { deductCredits, refundCredits } from './credits';
-import { OpenRouterRequest, OpenRouterCallOptions } from './types';
+
+// Legacy wrapper — migrate callers to lib/ai/index.ts invokeAI then delete this file
+interface OpenRouterRequest {
+  model: string;
+  messages: { role: string; content: string | unknown[] }[];
+  max_tokens?: number;
+  temperature?: number;
+}
+
+interface OpenRouterCallOptions {
+  siteId: string;
+  moduleId: string;
+  skillId: string;
+  creditCost: number;
+  uid: string;
+}
 
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
