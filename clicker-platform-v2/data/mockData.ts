@@ -97,6 +97,11 @@ export interface Form {
     createdAt?: any;
 }
 
+export interface SubmissionActor {
+    uid: string;
+    email: string;
+}
+
 export interface Submission {
     id: string;
     formId: string;
@@ -105,6 +110,12 @@ export interface Submission {
     fieldLabels?: Record<string, string>; // Snapshot of labels at submission time
     submittedAt?: any;
     status: 'new' | 'read' | 'archived';
+    lastActionAt?: any;
+    lastActionBy?: SubmissionActor;
+    readAt?: any;
+    readBy?: SubmissionActor;
+    archivedAt?: any;
+    archivedBy?: SubmissionActor;
 }
 
 export interface BusinessProfile {

@@ -25,6 +25,25 @@ function formatDetailDate(ts: any): string {
     return d.toLocaleString();
 }
 
+function formatRelative(ts: any): string {
+    if (!ts) return '';
+    const d: Date = ts?.toDate ? ts.toDate() : new Date(ts);
+    const diffMs = Date.now() - d.getTime();
+    const diffMin = Math.floor(diffMs / 60000);
+    if (diffMin < 1) return 'just now';
+    if (diffMin < 60) return `${diffMin}m ago`;
+    const diffH = Math.floor(diffMin / 60);
+    if (diffH < 24) return `${diffH}h ago`;
+    const diffD = Math.floor(diffH / 24);
+    if (diffD < 30) return `${diffD}d ago`;
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
+
+function actorLabel(actor?: { uid: string; email: string }): string {
+    if (!actor) return 'someone';
+    return actor.email?.split('@')[0] || actor.uid?.slice(0, 6) || 'someone';
+}
+
 export const InboxPanelDetail = memo(function InboxPanelDetail({
     submission: sub,
     formFieldMap,
@@ -122,9 +141,21 @@ export const InboxPanelDetail = memo(function InboxPanelDetail({
             </div>
 
             {/* Metadata */}
-            <div className="flex items-center gap-2 px-5 py-2.5 text-xs text-gray-400 dark:text-neutral-500 font-bold border-b border-gray-50 dark:border-neutral-800/50 shrink-0">
-                <Clock size={12} />
-                <span suppressHydrationWarning>{formatDetailDate(sub.submittedAt)}</span>
+            <div className="flex flex-col gap-1 px-5 py-2.5 text-xs text-gray-400 dark:text-neutral-500 font-bold border-b border-gray-50 dark:border-neutral-800/50 shrink-0">
+                <div className="flex items-center gap-2">
+                    <Clock size={12} />
+                    <span suppressHydrationWarning>{formatDetailDate(sub.submittedAt)}</span>
+                </div>
+                {(sub.readBy || sub.archivedBy) && (
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 pl-5 text-[10px] font-medium normal-case text-gray-400 dark:text-neutral-600">
+                        {sub.readBy && (
+                            <span suppressHydrationWarning>Read by {actorLabel(sub.readBy)} · {formatRelative(sub.readAt)}</span>
+                        )}
+                        {sub.archivedBy && (
+                            <span suppressHydrationWarning>Archived by {actorLabel(sub.archivedBy)} · {formatRelative(sub.archivedAt)}</span>
+                        )}
+                    </div>
+                )}
             </div>
 
             {/* Field data */}

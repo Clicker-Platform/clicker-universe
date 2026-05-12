@@ -121,22 +121,31 @@ function ShowcaseRowView({
     const safeContent = sanitizeRichText(row.content);
     const isPreviewMobile = d === 'mobile';
 
-    // In canvas preview use JS-driven widths; in real browser let CSS handle it via flex-basis
+    // In canvas preview use JS-driven widths; in real browser let CSS handle it via flex-basis.
+    // Tablet preview ('desktop' bucket) and real desktop use isLeft order; mobile preview always image-first.
+    const isPreviewDesktop = d === 'desktop';
     const mediaStyle: React.CSSProperties = isPreviewMobile
-        ? { width: '100%', order: 0 }
-        : { flexBasis: `${mediaWidth}%`, flexShrink: 0, order: isLeft ? 0 : 1 };
+        ? { width: '100%' }
+        : isPreviewDesktop
+            ? { flexBasis: `${mediaWidth}%`, flexShrink: 0, order: isLeft ? 0 : 1 }
+            : { flexBasis: `${mediaWidth}%`, flexShrink: 0 };
     const contentStyle: React.CSSProperties = isPreviewMobile
-        ? { width: '100%', order: 1 }
-        : { flexBasis: `${contentWidth}%`, minWidth: 0, order: isLeft ? 1 : 0 };
+        ? { width: '100%' }
+        : isPreviewDesktop
+            ? { flexBasis: `${contentWidth}%`, minWidth: 0, order: isLeft ? 1 : 0 }
+            : { flexBasis: `${contentWidth}%`, minWidth: 0 };
+    // Real browser: order only kicks in at md: (flex-row), so mobile flex-col always stacks media-first.
+    const mediaOrderClass = isLeft ? 'md:order-1' : 'md:order-2';
+    const contentOrderClass = isLeft ? 'md:order-2' : 'md:order-1';
 
     const mediaNode = (
-        <div style={mediaStyle}>
+        <div className={mediaOrderClass} style={mediaStyle}>
             <MediaView media={row.media} className="rounded-lg" priority={priority} />
         </div>
     );
 
     const contentNode = (
-        <div className="space-y-4" style={contentStyle}>
+        <div className={`space-y-4 ${contentOrderClass}`} style={contentStyle}>
             <h3 className={`${dv(d, 'text-2xl', 'md:text-3xl')} font-black font-heading text-[var(--theme-foreground)] leading-tight`}>
                 {row.heading.text}
             </h3>
@@ -163,7 +172,7 @@ function ShowcaseRowView({
 
     return (
         <div
-            className={`${dv(d, 'py-6', 'md:py-10')} rounded-xl`}
+            className={`${dv(d, 'py-6', 'md:py-10')} ${bgColor ? dv(d, 'px-5', 'md:px-8') : ''} rounded-xl`}
             style={bgColor ? { background: bgColor } : undefined}
         >
             <div

@@ -26,8 +26,26 @@ export function InboxPanel() {
         read: 0,
         archived: 0,
     });
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [bulkLoading, setBulkLoading] = useState(false);
     // Tracks optimistic status overrides while API writes are in-flight
     const pendingUpdates = useRef<Map<string, string>>(new Map());
+
+    // Clear selection when filter changes or detail view opens
+    useEffect(() => {
+        setSelectedIds(new Set());
+    }, [filterStatus, selectedSubmissionId]);
+
+    const toggleSelect = useCallback((id: string) => {
+        setSelectedIds(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id);
+            else next.add(id);
+            return next;
+        });
+    }, []);
+
+    const clearSelection = useCallback(() => setSelectedIds(new Set()), []);
 
     // Live-subscribe to forms so field labels stay fresh when tenants edit form schemas
     useEffect(() => {
@@ -191,6 +209,69 @@ export function InboxPanel() {
         await handleAction(id, 'read');
     }, [handleAction]);
 
+    const handleBulkAction = useCallback(async (action: 'read' | 'archived' | 'delete') => {
+        const ids = Array.from(selectedIds);
+        if (ids.length === 0) return;
+        setBulkLoading(true);
+
+        // Snapshot previous statuses for rollback (status changes only)
+        const previousById = new Map<string, Submission['status']>();
+        if (action !== 'delete') {
+            ids.forEach(id => pendingUpdates.current.set(id, action));
+            setSubmissions(prev => prev.map(s => {
+                if (!selectedIds.has(s.id)) return s;
+                previousById.set(s.id, s.status);
+                return { ...s, status: action as Submission['status'] };
+            }));
+        }
+
+        try {
+            const token = await auth.currentUser?.getIdToken();
+            if (!token || !siteId) throw new Error('Not authenticated');
+
+            const res = await fetch('/api/submissions/update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    'x-site-id': siteId,
+                },
+                body: JSON.stringify({ ids, action }),
+            });
+            if (!res.ok) throw new Error(`Request failed with status ${res.status}`);
+
+            if (action === 'delete') {
+                setSubmissions(prev => prev.filter(s => !selectedIds.has(s.id)));
+                if (selectedSubmissionId && selectedIds.has(selectedSubmissionId)) {
+                    selectSubmission(null);
+                }
+                toast.success(`Deleted ${ids.length} submission${ids.length === 1 ? '' : 's'}`);
+            } else if (action === 'archived') {
+                toast.success(`Archived ${ids.length} submission${ids.length === 1 ? '' : 's'}`);
+            } else if (action === 'read') {
+                toast.success(`Marked ${ids.length} as read`);
+            }
+            clearSelection();
+            refreshCounts();
+        } catch (error) {
+            console.error('Bulk action failed:', error);
+            if (action !== 'delete' && previousById.size > 0) {
+                setSubmissions(prev => prev.map(s => {
+                    const restored = previousById.get(s.id);
+                    return restored ? { ...s, status: restored } : s;
+                }));
+            }
+            const label =
+                action === 'delete' ? 'delete' :
+                action === 'archived' ? 'archive' :
+                'mark as read';
+            toast.error(`Failed to ${label} selected submissions. Please try again.`);
+        } finally {
+            ids.forEach(id => pendingUpdates.current.delete(id));
+            setBulkLoading(false);
+        }
+    }, [selectedIds, siteId, selectedSubmissionId, selectSubmission, clearSelection, refreshCounts]);
+
     const handleLoadMore = useCallback(() => {
         setItemLimit(prev => prev + BATCH_SIZE);
     }, []);
@@ -263,6 +344,11 @@ export function InboxPanel() {
                             itemLimit={itemLimit}
                             onLoadMore={handleLoadMore}
                             hasMore={submissions.length >= itemLimit}
+                            selectedIds={selectedIds}
+                            onToggleSelect={toggleSelect}
+                            onClearSelection={clearSelection}
+                            onBulkAction={handleBulkAction}
+                            bulkLoading={bulkLoading}
                         />
                     )}
                 </div>
