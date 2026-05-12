@@ -22,13 +22,23 @@ export async function fetchSecret(key: SecretKey): Promise<string> {
   const cached = cache.get(key);
   if (cached && Date.now() < cached.expiresAt) return cached.value;
 
-  const client = getClient();
-  const [version] = await client.accessSecretVersion({ name: secretName(key) });
-  const value = version.payload?.data?.toString() ?? '';
-  if (!value) throw new Error(`Secret ${key} is empty`);
+  // Dev fallback: read from env var if GCP not available
+  const envFallback = process.env[SECRET_KEYS[key]];
 
-  cache.set(key, { value, expiresAt: Date.now() + TTL_MS });
-  return value;
+  try {
+    const client = getClient();
+    const [version] = await client.accessSecretVersion({ name: secretName(key) });
+    const value = version.payload?.data?.toString() ?? '';
+    if (!value) throw new Error(`Secret ${key} is empty`);
+    cache.set(key, { value, expiresAt: Date.now() + TTL_MS });
+    return value;
+  } catch (err) {
+    if (envFallback) {
+      cache.set(key, { value: envFallback, expiresAt: Date.now() + TTL_MS });
+      return envFallback;
+    }
+    throw err;
+  }
 }
 
 export async function checkSecretExists(key: SecretKey): Promise<boolean> {
@@ -37,7 +47,8 @@ export async function checkSecretExists(key: SecretKey): Promise<boolean> {
     await client.getSecret({ name: `projects/${PROJECT_ID}/secrets/${SECRET_KEYS[key]}` });
     return true;
   } catch {
-    return false;
+    // Dev fallback: env var counts as existing
+    return !!process.env[SECRET_KEYS[key]];
   }
 }
 
