@@ -101,7 +101,7 @@ async function sendRegistrationEmails(
     trySend('confirmation', {
       to: data.email,
       siteId: 'platform',
-      templateAlias: aliases.regConfirmation,
+      templateAlias: aliases['regConfirmation'] ?? 'registration-confirmation',
       variables: {
         name: data.name,
         businessName: data.businessName,
@@ -119,7 +119,7 @@ async function sendRegistrationEmails(
       trySend('admin_notif', {
         to: adminEmail,
         siteId: 'platform',
-        templateAlias: aliases.regAdminNotif,
+        templateAlias: aliases['regAdminNotif'] ?? 'registration-admin-notif',
         variables: {
           businessName: data.businessName,
           name: data.name,

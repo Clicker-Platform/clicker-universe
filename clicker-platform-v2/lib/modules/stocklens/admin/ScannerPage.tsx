@@ -69,7 +69,16 @@ export default function ScannerPage() {
         body: JSON.stringify({ siteId, base64, mimeType: file.type || 'image/jpeg' }),
       });
       const data: unknown = await res.json();
-      if (!res.ok) throw new Error((data as Record<string, string>).error || 'Scan gagal');
+      if (!res.ok) {
+        const errData = data as Record<string, unknown>;
+        if (res.status === 402 || errData.error === 'insufficient_credits') {
+          toast.error('Kredit AI habis. Hubungi admin untuk top-up.');
+          setPhase('upload');
+          setScanning(false);
+          return;
+        }
+        throw new Error((errData.error as string) || 'Scan gagal');
+      }
       const scanData = data as ScanResult;
 
       setScanResult(scanData);

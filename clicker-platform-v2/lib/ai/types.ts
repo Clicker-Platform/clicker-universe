@@ -91,7 +91,6 @@ export interface ModelConfig {
   tools: string;
   fast: string;
   quality: string;
-  rag: string;
 }
 
 export interface TenantContext {

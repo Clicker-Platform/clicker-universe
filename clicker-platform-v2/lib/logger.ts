@@ -21,30 +21,52 @@ const FIRESTORE_CRITICAL_EVENTS = new Set([
   // ─── Uploads ────────────────────────────────────────────────────────────
   'upload.image.failed',
   'upload.avatar.failed',
+  'upload.invalid.type',
+  'upload.size.exceeded',
 
   // ─── WhatsApp ───────────────────────────────────────────────────────────
   'wa.send.failed',
   'wa.connect.failed',
   'wa.disconnect.failed',
+  'wa.test.failed',
+  'wa.webhook.get.failed',
+  'wa.webhook.post.failed',
+  'wa.webhook.invalid.signature',
   'wa.webhook.site.not.found',
   'wa.webhook.process.failed',
 
-  // ─── AI (chat & marketing) ──────────────────────────────────────────────
+  // ─── AI (chat, marketing, knowledge) ────────────────────────────────────
   'ai.chat.failed',
   'ai.agent.config.failed',
   'ai.agent.chat.send.failed',
   'ai.agent.settings.save.failed',
   'ai.marketing.generate.failed',
+  'ai.marketing.analyze.failed',
+
+  // ─── AI billing & model config ──────────────────────────────────────────
+  'ai.billing.model_config_not_set',
+  'ai.billing.model_config_incomplete',
+  'ai.billing.deduct.failed',
+  'ai.billing.insufficient',
+  'ai.pricing.model_not_priced',
 
   // ─── Forms & submissions ────────────────────────────────────────────────
   'form.submit.failed',
+  'form.create.failed',
+  'form.update.failed',
+  'form.delete.failed',
+  'form.fetch.failed',
+  'form.not.found',
+  'form.email.notify.failed',
   'admin.form.save.failed',
   'admin.form.delete.failed',
   'crm.submission.update.failed',
 
   // ─── Team & permissions ─────────────────────────────────────────────────
   'team.add.failed',
+  'team.add.auth.failed',
   'team.remove.failed',
+  'team.remove.auth.failed',
   'admin.team.members.fetch.failed',
 
   // ─── Business config ────────────────────────────────────────────────────
@@ -54,6 +76,9 @@ const FIRESTORE_CRITICAL_EVENTS = new Set([
 
   // ─── Modules: stocklens ─────────────────────────────────────────────────
   'stocklens.scan.route.failed',
+  'stocklens.scan.body.parse.failed',
+  'stocklens.settings.get.failed',
+  'stocklens.settings.post.failed',
   'stocklens.apikey.fetch.failed',
   'stocklens.scan.parse.failed',
   'stocklens.scanner.scan.failed',
@@ -99,6 +124,7 @@ const FIRESTORE_CRITICAL_EVENTS = new Set([
   // ─── Cache & infra ──────────────────────────────────────────────────────
   'cache.purge.failed',
   'knowledge.sync.failed',
+  'knowledge.sync.pdf.failed',
 
   // ─── Email (Resend) ─────────────────────────────────────────────────────
   'email.send.failed',

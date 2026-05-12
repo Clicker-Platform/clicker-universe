@@ -100,32 +100,36 @@ export function SecretCard({ secretKey, exists, onRefresh }: SecretCardProps) {
       )}
 
       {showInput && (
-        <div className="mb-3 flex gap-2">
-          <div className="relative flex-1">
+        <div className="mb-3 space-y-2">
+          <div className="relative">
             <input
               type={showValue ? 'text' : 'password'}
               value={newValue}
               onChange={e => setNewValue(e.target.value)}
               placeholder="Paste new value..."
-              className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 text-sm font-mono pr-10"
+              className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 text-sm font-mono pr-12"
+              autoFocus
             />
             <button
               onClick={() => setShowValue(v => !v)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
             >
               {showValue ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
           </div>
-          <button
-            onClick={handleSave}
-            disabled={saving || !newValue.trim()}
-            className="bg-gray-900 text-white px-3 py-2 rounded-lg text-sm font-bold disabled:opacity-50"
-          >
-            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save'}
-          </button>
-          <button onClick={() => { setShowInput(false); setNewValue(''); }} className="px-3 py-2 text-sm text-gray-500">
-            Cancel
-          </button>
+          <div className="flex gap-2 justify-end">
+            <button onClick={() => { setShowInput(false); setNewValue(''); }} className="px-4 py-2 text-sm text-gray-500 hover:text-gray-700">
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={saving || !newValue.trim()}
+              className="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-bold disabled:opacity-50 flex items-center gap-2"
+            >
+              {saving && <Loader2 className="w-4 h-4 animate-spin" />}
+              Save
+            </button>
+          </div>
         </div>
       )}
 

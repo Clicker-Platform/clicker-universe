@@ -20,11 +20,20 @@ export async function deleteSecret(key: SecretKey): Promise<void> {
   return removeSecret(key);
 }
 
+const SECRET_ORDER: SecretKey[] = [
+  'OPENROUTER_API_KEY',
+  'RESEND_API_KEY',
+  'UPSTASH_REDIS_REST_TOKEN',
+  'WA_WEBHOOK_VERIFY_TOKEN',
+  'META_APP_SECRET',
+  'WA_ENCRYPTION_KEY',
+];
+
 export async function listSecrets(): Promise<SecretStatus[]> {
   const results = await Promise.all(
-    Object.keys(SECRET_KEYS).map(async (key) => ({
-      key: key as SecretKey,
-      exists: await checkSecretExists(key as SecretKey),
+    SECRET_ORDER.map(async (key) => ({
+      key,
+      exists: await checkSecretExists(key),
     }))
   );
   return results;

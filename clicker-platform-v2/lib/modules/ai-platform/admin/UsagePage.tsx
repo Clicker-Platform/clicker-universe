@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Activity, Loader2 } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 interface UsageEntry {
   id: string;
@@ -44,13 +46,40 @@ const SKILL_LABELS: Record<string, string> = {
 };
 
 const MODEL_LABELS: Record<string, string> = {
-  'google/gemini-2.0-flash': 'Gemini Flash',
-  'google/gemini-2.0-flash:free': 'Gemini Flash (Free)',
-  'google/gemini-2.5-pro': 'Gemini 2.5 Pro',
-  'anthropic/claude-sonnet-4': 'Claude Sonnet',
-  'anthropic/claude-haiku-4-5': 'Claude Haiku',
-  'openai/gpt-4o-mini': 'GPT-4o Mini',
-  'openai/gpt-4o': 'GPT-4o',
+  // Google
+  'google/gemini-2.0-flash':               'Gemini 2.0 Flash',
+  'google/gemini-2.0-flash:free':          'Gemini 2.0 Flash (Free)',
+  'google/gemini-2.5-pro':                 'Gemini 2.5 Pro',
+  'google/gemini-3.1-flash-lite':          'Gemini 3.1 Flash Lite',
+  'google/gemini-flash-latest':            'Gemini Flash',
+  'google/gemini-pro-latest':              'Gemini Pro',
+  'google/gemma-4-27b-it:free':           'Gemma 4 27B (Free)',
+  // OpenAI
+  'openai/gpt-4o-mini':                    'GPT-4o Mini',
+  'openai/gpt-4o':                         'GPT-4o',
+  'openai/gpt-5.4-nano':                   'GPT-5.4 Nano',
+  'openai/gpt-5.4-mini':                   'GPT-5.4 Mini',
+  'openai/gpt-5.4':                        'GPT-5.4',
+  'openai/gpt-5.5':                        'GPT-5.5',
+  // Anthropic
+  'anthropic/claude-haiku-4-5':            'Claude Haiku 4.5',
+  'anthropic/claude-haiku-latest':         'Claude Haiku',
+  'anthropic/claude-sonnet-4':             'Claude Sonnet 4',
+  'anthropic/claude-sonnet-4-5':           'Claude Sonnet 4.5',
+  'anthropic/claude-sonnet-latest':        'Claude Sonnet',
+  'anthropic/claude-opus-4.7':            'Claude Opus 4.7',
+  // DeepSeek
+  'deepseek/deepseek-chat':                'DeepSeek V3',
+  'deepseek/deepseek-v4-flash':            'DeepSeek V4 Flash',
+  'deepseek/deepseek-v4-flash:free':       'DeepSeek V4 Flash (Free)',
+  'deepseek/deepseek-v4-pro':              'DeepSeek V4 Pro',
+  // Qwen
+  'qwen/qwen3.5-flash':                    'Qwen3.5 Flash',
+  'qwen/qwen3.5-plus-20260420':            'Qwen3.5 Plus',
+  'qwen/qwen3.6-max-preview':              'Qwen3.6 Max',
+  // Meta
+  'meta-llama/llama-4-scout':              'Llama 4 Scout',
+  'meta-llama/llama-4-maverick':           'Llama 4 Maverick',
 };
 
 function featureLabel(moduleId: string, skillId: string): string {
@@ -70,6 +99,13 @@ function relativeTime(iso: string | null): string {
   return `${Math.floor(diff / 86_400_000)} hari lalu`;
 }
 
+// moduleKey = key in sites/{siteId}.modules; filterId = moduleId stored in usage ledger
+const AI_MODULE_OPTIONS = [
+  { moduleKey: 'ai_sales', filterId: 'ai_sales_agent', label: 'AI Sales Agent' },
+  { moduleKey: 'stocklens', filterId: 'stocklens', label: 'Stocklens' },
+  { moduleKey: 'ai_marketing', filterId: 'ai_marketing', label: 'AI Marketing' },
+];
+
 export function UsagePage() {
   const { siteId } = useSite();
   const [entries, setEntries] = useState<UsageEntry[]>([]);
@@ -78,6 +114,7 @@ export function UsagePage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [moduleFilter, setModuleFilter] = useState('');
+  const [enabledModules, setEnabledModules] = useState<Record<string, boolean>>({});
 
   const fetchEntries = useCallback(async (cursor?: string) => {
     if (!siteId) return;
@@ -99,9 +136,20 @@ export function UsagePage() {
   }, [siteId]);
 
   useEffect(() => {
+    if (!siteId) return;
+    getDoc(doc(db, 'sites', siteId)).then(snap => {
+      if (snap.exists()) {
+        const data = snap.data();
+        const mods = { ...(data.settings?.modules ?? {}), ...(data.modules ?? {}) };
+        setEnabledModules(mods);
+      }
+    });
+  }, [siteId]);
+
+  useEffect(() => {
     setLoading(true);
     Promise.all([fetchEntries(), fetchSummary()]).then(([data]) => {
-      if (data) { setEntries(data.entries); setNextCursor(data.nextCursor); }
+      if (data?.entries) { setEntries(data.entries); setNextCursor(data.nextCursor); }
     }).finally(() => setLoading(false));
   }, [fetchEntries, fetchSummary]);
 
@@ -110,7 +158,7 @@ export function UsagePage() {
     setLoadingMore(true);
     try {
       const data = await fetchEntries(nextCursor);
-      if (data) { setEntries(prev => [...prev, ...data.entries]); setNextCursor(data.nextCursor); }
+      if (data?.entries) { setEntries(prev => [...prev, ...data.entries]); setNextCursor(data.nextCursor); }
     } finally {
       setLoadingMore(false);
     }
@@ -156,9 +204,9 @@ export function UsagePage() {
             className="border-2 border-gray-200 dark:border-neutral-600 rounded-lg px-3 py-1.5 text-xs bg-white dark:bg-neutral-800"
           >
             <option value="">Semua Fitur</option>
-            <option value="ai_sales_agent">AI Sales Agent</option>
-            <option value="stocklens">Stocklens</option>
-            <option value="ai_marketing">AI Marketing</option>
+            {AI_MODULE_OPTIONS.filter(m => enabledModules[m.moduleKey]).map(m => (
+              <option key={m.filterId} value={m.filterId}>{m.label}</option>
+            ))}
           </select>
         </div>
 

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Loader2, Plus, Trash2, Save, DollarSign } from 'lucide-react';
+import { MODEL_OPTIONS } from './ModelRegistry';
 
 interface ModelRate {
   inputPer1M: number;
@@ -12,9 +13,13 @@ export function PricingPanel() {
   const [models, setModels] = useState<Record<string, ModelRate>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [newModel, setNewModel] = useState('');
+  const [selectedModel, setSelectedModel] = useState('');
+  const [customModel, setCustomModel] = useState('');
   const [newInput, setNewInput] = useState('');
   const [newOutput, setNewOutput] = useState('');
+
+  const isCustom = selectedModel === '__custom__';
+  const effectiveModel = isCustom ? customModel.trim() : selectedModel;
 
   useEffect(() => {
     fetch('/api/ai-settings/pricing')
@@ -37,12 +42,12 @@ export function PricingPanel() {
   }
 
   function handleAdd() {
-    if (!newModel || !newInput || !newOutput) return;
+    if (!effectiveModel || !newInput || !newOutput) return;
     setModels(prev => ({
       ...prev,
-      [newModel.trim()]: { inputPer1M: Number(newInput), outputPer1M: Number(newOutput) },
+      [effectiveModel]: { inputPer1M: Number(newInput), outputPer1M: Number(newOutput) },
     }));
-    setNewModel(''); setNewInput(''); setNewOutput('');
+    setSelectedModel(''); setCustomModel(''); setNewInput(''); setNewOutput('');
   }
 
   function handleDelete(modelId: string) {
@@ -57,11 +62,14 @@ export function PricingPanel() {
 
   return (
     <div className="bg-white rounded-2xl border-[3px] border-gray-200 p-5">
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex items-center gap-2 mb-1">
         <DollarSign className="w-4 h-4 text-gray-400" />
         <span className="font-black">Model Pricing</span>
         <span className="text-xs text-gray-400 ml-1">($/1M tokens)</span>
       </div>
+      <p className="text-xs text-gray-400 mb-4">
+        Rate yang dikenakan ke balance tenant per 1 juta token. Set sama dengan rate OpenRouter untuk break-even, atau lebih tinggi untuk markup.
+      </p>
 
       <div className="overflow-x-auto mb-4">
         <table className="w-full text-sm">
@@ -107,27 +115,87 @@ export function PricingPanel() {
       </div>
 
       {/* Add row */}
-      <div className="flex gap-2 mb-4">
-        <input
-          type="text"
-          value={newModel}
-          onChange={e => setNewModel(e.target.value)}
-          placeholder="model-id (e.g. google/gemini-2.0-flash)"
-          className="flex-1 border-2 border-gray-200 rounded-lg px-3 py-2 text-sm font-mono"
-        />
-        <input type="number" step="0.01" value={newInput} onChange={e => setNewInput(e.target.value)}
-          placeholder="Input" className="w-24 border-2 border-gray-200 rounded-lg px-2 py-2 text-sm text-right" />
-        <input type="number" step="0.01" value={newOutput} onChange={e => setNewOutput(e.target.value)}
-          placeholder="Output" className="w-24 border-2 border-gray-200 rounded-lg px-2 py-2 text-sm text-right" />
-        <button onClick={handleAdd} disabled={!newModel || !newInput || !newOutput}
-          className="flex items-center gap-1 bg-gray-900 text-white px-3 py-2 rounded-xl text-sm font-bold disabled:opacity-40">
-          <Plus className="w-4 h-4" /> Add
+      <div className="border-2 border-dashed border-gray-200 rounded-xl p-4 mb-4 space-y-3">
+        <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">Tambah Markup Harga</p>
+
+        <div className="space-y-1">
+          <label className="text-xs font-semibold text-gray-500">Model</label>
+          <select
+            value={selectedModel}
+            onChange={e => { setSelectedModel(e.target.value); setCustomModel(''); }}
+            className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 text-sm bg-white"
+          >
+            <option value="">— Pilih model —</option>
+            <optgroup label="Free (rate = $0)">
+              {MODEL_OPTIONS.filter(m => m.free && !models[m.value]).map(m => (
+                <option key={m.value} value={m.value}>{m.provider} · {m.label}</option>
+              ))}
+            </optgroup>
+            <optgroup label="Paid">
+              {MODEL_OPTIONS.filter(m => !m.free && !models[m.value]).map(m => (
+                <option key={m.value} value={m.value}>{m.provider} · {m.label}</option>
+              ))}
+            </optgroup>
+            <option value="__custom__">+ Lainnya (masukkan ID manual)</option>
+          </select>
+          {isCustom && (
+            <input
+              type="text"
+              value={customModel}
+              onChange={e => setCustomModel(e.target.value)}
+              placeholder="contoh: google/gemini-2.0-flash"
+              className="w-full border-2 border-amber-300 rounded-lg px-3 py-2 text-sm font-mono mt-1"
+              autoFocus
+            />
+          )}
+          {selectedModel && !isCustom && (
+            <p className="text-xs text-gray-400 font-mono pt-0.5">{selectedModel}</p>
+          )}
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1">
+            <label className="text-xs font-semibold text-gray-500">
+              Input <span className="font-normal text-gray-400">($/1M token)</span>
+            </label>
+            <input
+              type="number" step="0.001" min="0"
+              value={newInput}
+              onChange={e => setNewInput(e.target.value)}
+              placeholder="contoh: 0.10"
+              className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 text-sm"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-semibold text-gray-500">
+              Output <span className="font-normal text-gray-400">($/1M token)</span>
+            </label>
+            <input
+              type="number" step="0.001" min="0"
+              value={newOutput}
+              onChange={e => setNewOutput(e.target.value)}
+              placeholder="contoh: 0.40"
+              className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 text-sm"
+            />
+          </div>
+        </div>
+
+        <button
+          onClick={handleAdd}
+          disabled={!effectiveModel || !newInput || !newOutput}
+          className="flex items-center gap-1.5 bg-gray-900 text-white px-4 py-2 rounded-xl text-sm font-bold disabled:opacity-40"
+        >
+          <Plus className="w-4 h-4" /> Tambah
         </button>
       </div>
 
-      <div className="flex justify-end">
+      <div className="flex items-start justify-between gap-4">
+        <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-xs text-blue-700 flex-1">
+          <p className="font-bold mb-1">ℹ️ Fallback otomatis</p>
+          <p>Model yang tidak diisi di sini akan menggunakan rate OpenRouter resmi sebagai fallback — balance tenant tetap terpotong. Isi di sini hanya jika ingin menerapkan markup atau harga kustom.</p>
+        </div>
         <button onClick={handleSave} disabled={saving}
-          className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-xl text-sm font-bold disabled:opacity-50">
+          className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-xl text-sm font-bold disabled:opacity-50 shrink-0">
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           Save Pricing
         </button>

@@ -3,6 +3,7 @@ import type { AIResult, AIToolResult } from './client';
 import { deductCredits, getCreditBalance } from './credits';
 import { calculateCost } from './pricing';
 import type { AIRequest, VisionRequest, ToolRequest, AICallOptions } from './types';
+import { logger } from '@/lib/logger';
 
 export { buildTenantContext, invalidateTenantContext } from './context';
 export { getModel, getModelConfig, invalidateModelCache } from './models';
@@ -14,6 +15,7 @@ export type { ToolCall, ToolDefinition } from './types';
 async function preflightCheck(siteId: string): Promise<void> {
   const { balance } = await getCreditBalance(siteId);
   if (balance <= 0) {
+    logger.error('ai.billing.insufficient', { siteId, balance, costUSD: 0 });
     throw new Error(`insufficient_credits:${balance}:0`);
   }
 }
@@ -30,14 +32,14 @@ async function postDeduct(
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     if (msg.startsWith('insufficient_credits:')) {
-      console.warn('[ai/index] post-call insufficient — absorbing cost:', { siteId, moduleId, skillId, model });
+      logger.error('ai.billing.insufficient', { siteId, moduleId, skillId, model, error: msg });
       return;
     }
     if (msg.startsWith('model_not_priced:')) {
-      console.error('[ai/index] model not priced:', msg, { siteId, moduleId, skillId });
+      logger.error('ai.pricing.model_not_priced', { siteId, moduleId, skillId, model, error: msg });
       return;
     }
-    console.error('[ai/index] deductCredits failed:', msg, { siteId, moduleId, skillId });
+    logger.error('ai.billing.deduct.failed', { siteId, moduleId, skillId, model, error: msg });
   }
 }
 

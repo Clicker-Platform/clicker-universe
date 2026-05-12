@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
       updatedBy?: string;
     };
 
-    await adminDb.doc('platform/email/config').set(
+    await adminDb.doc('platform/settings/email/config').set(
       {
         ...(body.templates && { templates: body.templates }),
         ...(body.sender && { sender: body.sender }),

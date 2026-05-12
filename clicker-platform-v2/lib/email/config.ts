@@ -1,17 +1,10 @@
 import { getFirestore } from 'firebase-admin/firestore';
 
-const EMAIL_CONFIG_PATH = 'platform/email/config';
+const EMAIL_CONFIG_PATH = 'platform/settings/email/config';
 const CONFIG_TTL_MS = 5 * 60 * 1000;
 
 interface EmailPlatformConfig {
-  templates: {
-    passwordReset: string;
-    emailVerification: string;
-    formSubmission: string;
-    systemAlert: string;
-    regConfirmation: string;
-    regAdminNotif: string;
-  };
+  templates: Record<string, string>;
   sender: {
     domain: string;
     localPart: string;
@@ -20,14 +13,7 @@ interface EmailPlatformConfig {
 }
 
 const DEFAULTS: EmailPlatformConfig = {
-  templates: {
-    passwordReset:     'password-reset',
-    emailVerification: 'email-verification',
-    formSubmission:    'form-submission',
-    systemAlert:       'system-alert',
-    regConfirmation:   'registration-confirmation',
-    regAdminNotif:     'registration-admin-notif',
-  },
+  templates: {},
   sender: {
     domain:    'clicker.id',
     localPart: 'noreply',
@@ -84,7 +70,7 @@ export function formatFrom(fromName: string, parts: SenderParts): string {
   return `${fromName} <${parts.localPart}@${parts.domain}>`;
 }
 
-export async function getTemplateAliases(): Promise<EmailPlatformConfig['templates']> {
+export async function getTemplateAliases(): Promise<Record<string, string>> {
   const config = await getEmailPlatformConfig();
   return config.templates;
 }

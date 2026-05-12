@@ -23,8 +23,15 @@ export async function POST(req: NextRequest) {
     const result = await scanProductImage(siteId, base64, mimeType || 'image/jpeg');
     return NextResponse.json(result);
   } catch (error: unknown) {
-    logger.error('stocklens.scan.route.failed', { error });
     const message = error instanceof Error ? error.message : 'Unknown error';
-    return NextResponse.json({ error: message }, { status: 500 });
+    if (message.startsWith('insufficient_credits:')) {
+      const [, balance, required] = message.split(':');
+      return NextResponse.json(
+        { error: 'insufficient_credits', balance: Number(balance), required: Number(required) },
+        { status: 402 }
+      );
+    }
+    logger.error('stocklens.scan.route.failed', { error });
+    return NextResponse.json({ error: 'Scan gagal. Coba lagi.' }, { status: 500 });
   }
 }

@@ -6,8 +6,6 @@ import { useUser } from '@/lib/user-context';
 import { SkillDefinition } from '../types';
 import { SKILLS_CATALOG, AGENT_LABELS } from '../config/skills-catalog';
 import { MULTI_SKILL_FLOWS } from '../orchestrator/flows';
-import { estimateSingleSkillCost, estimateFlowCost } from '../orchestrator/credit-estimator';
-import { useCredits } from '../hooks/use-credits';
 import { useGeneration } from '../hooks/use-generation';
 import SkillCard from '../components/SkillCard';
 import SkillForm from '../components/SkillForm';
@@ -20,7 +18,6 @@ const AGENT_FILTERS = ['all', 'creative_director', 'strategist', 'data_analyst']
 
 export default function GeneratePage() {
   const { canEdit } = useUser();
-  const { balance } = useCredits();
   const { generate, generating, error, insufficientCredits, clearError } = useGeneration();
 
   const [mode, setMode] = useState<Mode>('single');
@@ -33,12 +30,6 @@ export default function GeneratePage() {
   const filteredSkills = agentFilter === 'all'
     ? SKILLS_CATALOG
     : SKILLS_CATALOG.filter(s => s.agentId === agentFilter);
-
-  const estimatedCost = mode === 'single' && selectedSkill
-    ? estimateSingleSkillCost(selectedSkill.id)
-    : mode === 'flow' && selectedFlowId
-      ? estimateFlowCost(selectedFlowId)
-      : 0;
 
   const handleSelectSkill = (skill: SkillDefinition) => {
     setSelectedSkill(skill);
@@ -76,7 +67,7 @@ export default function GeneratePage() {
             <p className="text-sm text-gray-500">Pick a skill or flow, fill in the details, and let AI do the work</p>
           </div>
         </div>
-        <CreditIndicator estimatedCost={estimatedCost} showEstimate={canGenerate} />
+        <CreditIndicator />
       </div>
 
       {/* Mode Toggle */}
@@ -218,7 +209,7 @@ export default function GeneratePage() {
                   <AlertTriangle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
                   <div>
                     <p className="text-sm font-semibold text-red-700">Insufficient Credits</p>
-                    <p className="text-xs text-red-600 mt-0.5">You need ~{estimatedCost} credits. Your balance: {balance}. Contact your admin to top up.</p>
+                    <p className="text-xs text-red-600 mt-0.5">Saldo AI tidak cukup. Hubungi admin untuk top-up.</p>
                   </div>
                 </div>
               )}
@@ -236,7 +227,7 @@ export default function GeneratePage() {
               >
                 {generating
                   ? <><Loader2 className="w-4 h-4 animate-spin" /> Generating...</>
-                  : <><Bot className="w-4 h-4" /> Generate · ~{estimatedCost} credits</>
+                  : <><Bot className="w-4 h-4" /> Generate</>
                 }
               </button>
             </div>

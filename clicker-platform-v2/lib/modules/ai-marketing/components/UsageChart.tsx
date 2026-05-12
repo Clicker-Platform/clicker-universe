@@ -25,7 +25,7 @@ export default function UsageChart({ generations, days = 14 }: Props) {
   for (const gen of generations) {
     const key = getDateKey(gen.createdAt);
     if (key in buckets) {
-      buckets[key] += gen.creditsUsed ?? 0;
+      buckets[key] += 1;
     }
   }
 
@@ -41,7 +41,7 @@ export default function UsageChart({ generations, days = 14 }: Props) {
           const date = new Date(label);
           const isToday = i === labels.length - 1;
           return (
-            <div key={label} className="flex-1 flex flex-col items-center gap-1" title={`${label}: ${values[i]} credits`}>
+            <div key={label} className="flex-1 flex flex-col items-center gap-1" title={`${label}: ${values[i]} generations`}>
               <div className="w-full flex flex-col justify-end" style={{ height: '80px' }}>
                 <div
                   className={`w-full rounded-t-md transition-all ${isToday ? 'bg-brand-dark' : 'bg-gray-200'}`}
