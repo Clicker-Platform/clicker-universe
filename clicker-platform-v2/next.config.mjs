@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    // firebase-admin di serverExternalPackages — tidak di-bundle Turbopack/webpack.
     serverExternalPackages: ['firebase-admin', 'sharp', '@react-pdf/renderer'],
     allowedDevOrigins: ['192.168.0.100'],
     images: {
