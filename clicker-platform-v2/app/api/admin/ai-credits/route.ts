@@ -12,6 +12,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(balance);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';
+    console.error('[ai-credits] getCreditBalance failed:', err);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

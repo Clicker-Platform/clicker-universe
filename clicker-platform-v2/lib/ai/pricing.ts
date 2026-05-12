@@ -1,4 +1,4 @@
-import { getFirestore } from 'firebase-admin/firestore';
+import { adminDb } from '@/lib/firebase-admin';
 
 const PRICING_DOC = 'modules/ai-platform/config/pricing';
 const TTL_MS = 5 * 60 * 1000;
@@ -68,7 +68,7 @@ let pricingCache: { value: Record<string, ModelRate>; expiresAt: number } | null
 export async function getPricingTable(): Promise<Record<string, ModelRate>> {
   if (pricingCache && Date.now() < pricingCache.expiresAt) return pricingCache.value;
 
-  const db = getFirestore();
+  const db = adminDb;
   const doc = await db.doc(PRICING_DOC).get();
   const value = (doc.data()?.models as Record<string, ModelRate>) ?? {};
   pricingCache = { value, expiresAt: Date.now() + TTL_MS };

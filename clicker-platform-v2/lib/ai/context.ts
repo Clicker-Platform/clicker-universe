@@ -1,5 +1,5 @@
-import { getFirestore } from 'firebase-admin/firestore';
 import type { TenantContext, ContextEnrichment } from './types';
+import { adminDb } from '@/lib/firebase-admin';
 
 const TTL_MS = 5 * 60 * 1000;
 const contextCache = new Map<string, { value: TenantContext; expiresAt: number }>();
@@ -18,7 +18,7 @@ async function fetchTenantContext(siteId: string): Promise<TenantContext> {
   if (cached && Date.now() < cached.expiresAt) return cached.value;
 
   try {
-    const db = getFirestore();
+    const db = adminDb;
     const doc = await db.doc(`sites/${siteId}/ai/context`).get();
     if (doc.exists) {
       const value = { ...DEFAULT_CONTEXT, ...(doc.data() as Partial<TenantContext>) };

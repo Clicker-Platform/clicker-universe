@@ -42,6 +42,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ entries, nextCursor });
   } catch (err: unknown) {
+    console.error('[ai-usage] query failed:', err);
     return NextResponse.json({ error: err instanceof Error ? err.message : 'Unknown error' }, { status: 500 });
   }
 }
