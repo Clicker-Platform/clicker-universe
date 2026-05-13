@@ -426,4 +426,133 @@ The previous `generateHandoffToken` **Cloud Function** has been **replaced** by 
 
 ---
 
+## 5. RBAC & Roles
+
+The platform combines a **coarse role** (one of four) with a **granular per-module-route access map** stored on each member doc. The role gives broad access; `moduleAccess` overrides on a per-module-per-route basis.
+
+Source files:
+
+- [`lib/rbac.ts`](../lib/rbac.ts) — role enum + `PERMISSIONS` map
+- [`lib/user-context.tsx`](../lib/user-context.tsx) — runtime access resolution (`hasAccess`, `canEdit`, `getAccessLevel`)
+
+### Roles
+
+`type Role = 'owner' | 'editor' | 'viewer' | 'staff'` (`lib/rbac.ts:1`).
+
+| Role | Typical use | Default capabilities |
+|---|---|---|
+| `owner` | Tenant owner / superuser | Full access. `permissions: ['*']` bypasses all granular checks |
+| `editor` | Trusted operator | `manage_content`, `view_analytics` |
+| `viewer` | Read-only / analyst | `view_analytics` only |
+| `staff` | Frontline operator (cashier, kitchen, etc.) | Defaults to **no access** — must be granted per-module-route via `moduleAccess` |
+
+### Coarse Permissions (`PERMISSIONS` map)
+
+These are role-derived capabilities used for **non-module** features (site settings, team management, content authoring). Read via `hasPermission(role, permission)`.
+
+| Permission | Roles allowed |
+|---|---|
+| `manage_site` | `owner` |
+| `manage_users` | `owner` |
+| `manage_content` | `owner`, `editor` |
+| `view_analytics` | `owner`, `editor`, `viewer` |
+
+The exhaustive list lives in `lib/rbac.ts:3-8`. Add new coarse permissions there.
+
+### Granular `moduleAccess` Map
+
+Stored on each member doc at `sites/{siteId}/members/{uid}`:
+
+```json
+{
+  "role": "staff",
+  "moduleAccess": {
+    "byod_pos": {
+      "cashier": "full",
+      "transactions": "view",
+      "settings": "none"
+    },
+    "membership": {
+      "list": "view"
+    }
+  }
+}
+```
+
+Three access levels per route:
+
+- `full` — read + write
+- `view` — read only
+- `none` — no access (default for unlisted routes)
+
+### Access Resolution (`getAccessLevel`)
+
+`getAccessLevel(moduleId, routeId)` in `lib/user-context.tsx:53` runs this sequence:
+
+1. **If `loading`** → return `none` (don't leak access while bootstrapping).
+2. **If `isOwner`** → return `full` (owner shortcut, skip everything else).
+3. **Granular check**: if `moduleAccess[moduleId][routeId]` exists, return it. If not, check the **alias** (see below).
+4. **Backward-compatible `permissions` array**: if the user has `permissions: ['*']` or a permission matching the module (`'pos'`, `'pos:cashier'`), return `full`.
+5. Otherwise → `none`.
+
+Two derived helpers wrap this:
+
+- `hasAccess(moduleId, routeId)` → `true` if level is `full` or `view`. Use for **render gating**.
+- `canEdit(moduleId, routeId)` → `true` only if level is `full`. Use **before every write**.
+
+### Module ID Alias: `byod_pos ↔ pos`
+
+Some legacy code (and the `permissions` array format) uses `'pos'`, while the canonical module ID is `'byod_pos'`. The resolver handles both directions:
+
+```typescript
+// In getAccessLevel, lib/user-context.tsx:66-71
+if (moduleId === 'pos' && moduleAccess['byod_pos']) {
+    return moduleAccess['byod_pos'][routeId] || 'none';
+}
+if (moduleId === 'byod_pos' && moduleAccess['pos']) {
+    return moduleAccess['pos'][routeId] || 'none';
+}
+
+// And in the permissions-array fallback, lib/user-context.tsx:78-79
+if (moduleId === 'byod_pos' && (p === 'pos' || p.startsWith('pos:'))) return true;
+if (moduleId === 'pos' && (p === 'byod_pos' || p.startsWith('byod_pos:'))) return true;
+```
+
+No other module IDs are aliased.
+
+### RBAC Guard Pattern (Client Components)
+
+```tsx
+'use client';
+import { useUser } from '@/lib/user-context';
+
+export function PriceEditor() {
+    const { canEdit, hasAccess } = useUser();
+
+    if (!hasAccess('byod_pos', 'menu')) return null; // hide entirely
+
+    const handleSave = async () => {
+        if (!canEdit('byod_pos', 'menu')) {
+            // toast or alert — never call the write
+            return;
+        }
+        await saveMenuItem(/* ... */);
+    };
+
+    return /* ... */;
+}
+```
+
+### Real-Time Permission Changes
+
+`UserProvider` subscribes to `sites/{siteId}/members/{uid}` via `onSnapshot` — when an owner edits a staff member's `moduleAccess`, the change applies in the staff member's session immediately, no reload required.
+
+### Where to Guard
+
+- **Render gating** — `hasAccess()` to show/hide UI.
+- **Before every write** — `canEdit()` in any function that mutates Firestore.
+- **Server-side enforcement** — `firestore.rules` is the final line of defense. Client-side checks are for UX; server-side rules are for security.
+
+---
+
 <!-- Sections to be filled in by subsequent tasks -->
