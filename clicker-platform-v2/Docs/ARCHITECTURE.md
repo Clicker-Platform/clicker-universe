@@ -686,7 +686,53 @@ Backyard has a **WhatsApp Manager** page (`backyard/app/whatsapp/`) to view per-
 
 ---
 
-## 15. Key File Index
+## 15. AI Foundation
+
+Shared AI infrastructure di `lib/ai/` — dipakai semua modul AI (AI Sales Agent, AI Marketing, dll). Modul tidak boleh panggil model AI langsung; harus lewat layer ini.
+
+### Files
+
+| File | Fungsi |
+|------|--------|
+| `lib/ai/client.ts` | Panggil model AI — `callText`, `callVision`, `callWithTools` |
+| `lib/ai/credits.ts` | `getCreditBalance`, `deductCredits` per tenant |
+| `lib/ai/pricing.ts` | Hitung biaya USD per token per model |
+| `lib/ai/models.ts` | Resolve `ModelConfig` dari Firestore (cached) |
+| `lib/ai/context.ts` | Build `TenantContext` untuk prompt enrichment |
+| `lib/ai/types.ts` | Shared types: `AIRequest`, `VisionRequest`, `ToolRequest`, dll |
+
+### Credit System
+
+Kredit tenant disimpan di `sites/{siteId}/modules/ai-platform/credits`. Setiap AI call:
+1. Preflight check — tolak jika `balance <= 0`
+2. Panggil model
+3. Post-deduct — kurangi kredit berdasarkan token usage + harga model
+
+### Model Config
+
+Model dan harga dikonfigurasi di Firestore (dikelola via Backyard → AI Settings), bukan hardcoded. `models.ts` cache config dengan TTL.
+
+### Usage
+
+```ts
+import { callText } from '@/lib/ai';
+
+const result = await callText({
+  siteId,
+  moduleId: 'ai_sales',
+  skillId: 'reply',
+  uid,
+  prompt: '...',
+});
+```
+
+### Backyard AI Settings
+
+`backyard/app/ai-settings/` — konfigurasi model default, harga, top-up kredit per tenant.
+
+---
+
+## 16. Key File Index
 
 | File | Role |
 |---|---|
@@ -721,7 +767,7 @@ Backyard has a **WhatsApp Manager** page (`backyard/app/whatsapp/`) to view per-
 
 ---
 
-## 16. Data Flow Diagrams
+## 17. Data Flow Diagrams
 
 ### Public Page Render
 
