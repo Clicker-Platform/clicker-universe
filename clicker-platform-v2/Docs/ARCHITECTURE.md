@@ -182,4 +182,121 @@ clicker-platform-v2/
 
 ---
 
+## 3. Multi-Tenant Routing
+
+All routing decisions live in [`middleware.ts`](../middleware.ts). The middleware:
+
+1. Resolves the tenant from host or path.
+2. Bypasses tenant logic for **special routes**.
+3. Rewrites subdomains to internal `/[tenant]` paths.
+4. Gates `/admin` behind the auth gateway (`__session` cookie) — see §4.
+5. Sanitizes double-prefix URLs (`/quattro/quattro/...` → `/quattro/...`).
+6. Sets `x-site-id` (and on subdomains, `x-clicker-is-subdomain`) so Server Components know the tenant.
+
+### Tenant Identification
+
+| Scenario | URL example | How tenant resolves |
+|---|---|---|
+| Subdomain (production custom domains) | `quattro.clicker.id/about` | Host → subdomain segment |
+| Path-based (root domain) | `clicker.id/quattro/about` | First path segment |
+| Path-based (Firebase default `.web.app`) | `stg-clicker-core.web.app/stagging/admin` | First path segment (subdomains not supported here) |
+| Admin subdomain (post-auth) | `quattro.clicker.id/admin` | `__session` cookie value (overrides subdomain) |
+
+### Host Detection Precedence
+
+Cloudflare/Firebase reverse-proxy headers complicate this. The middleware checks in order:
+
+1. `x-clicker-original-host` (Cloudflare's original host before Firebase rewrites it)
+2. `x-forwarded-host`
+3. `host`
+
+A `forwardedHost` value containing `.web.app` is **discarded** (Firebase Hosting overrides the real host with its own) — the resolver falls back to the next option.
+
+### Required Environment Variables
+
+| Variable | Purpose | Behavior if missing |
+|---|---|---|
+| `NEXT_PUBLIC_BASE_DOMAIN` | Domain used for subdomain detection (`.clicker.id` in prod) | Middleware returns **HTTP 500** |
+| `NEXT_PUBLIC_AUTH_GATEWAY_URL` | Where `/admin` redirects when unauthenticated | Middleware returns **HTTP 500** on `/admin` |
+
+### Special Routes (Bypass Tenant Logic)
+
+These first-segment values are reserved — they never resolve to a tenant:
+
+```
+admin, auth, member, catalog, login, register, invite, setup, dashboard, api, _next, warranty
+```
+
+Requests starting with one of these segments skip the subdomain-rewrite branch and are routed by Next.js directly. The `x-site-id` header is still set (from `__session` cookie for `/admin`, or from the subdomain for everything else).
+
+### Subdomain Rewrite
+
+`quattro.clicker.id/about` is internally rewritten to `/quattro/about`. Three exceptions skip the rewrite:
+
+- Subdomain is `admin` or `auth` (handled by other branches).
+- Path already starts with a special route segment (so `quattro.clicker.id/api/...` stays as `/api/...`).
+- Path already starts with the subdomain name (defensive — prevents double prefix).
+
+### Firebase Default Domain Behavior (`.web.app`)
+
+Firebase Hosting default domains (e.g. `stg-clicker-core.web.app`) **do not support custom subdomains**. The middleware detects these (`isFirebaseDefaultDomain = baseDomain.includes('.web.app')`) and forces **path-based routing** in three places:
+
+1. No subdomain rewrite is performed.
+2. `/admin` strict-tenant redirect (which would push `/admin` to `tenant.clicker.id/admin`) is skipped.
+3. Tenant-admin paths like `/stagging/admin/...` are rewritten in place rather than redirected to a subdomain.
+
+The `__session` cookie is also cross-origin on `.web.app`, so the middleware lets `TokenBootstrap` (§4) set it client-side on first load rather than redirecting to the gateway.
+
+### Localhost Behavior
+
+In development, the middleware:
+
+- Treats any `localhost` or `/^\d{1,3}(\.\d{1,3}){3}(:\d+)?$/` (LAN IP) host as local.
+- Rewrites `kasisehat.localhost:3000` → `kasisehat.{baseDomain}` internally for subdomain detection.
+- Skips the gateway redirect when no `__session` cookie is present (`TokenBootstrap` handles it).
+- Skips the strict subdomain redirect (lets `localhost:3000/demo/admin` work for path-based dev flows).
+
+### Double-Prefix Sanitizer
+
+If a path arrives as `/{tenant}/{tenant}/...` (can happen if Cloudflare prepends a subdomain and the URL already contains it), the middleware redirects:
+
+- **On subdomain hosts**: drops both prefixes (`/demo/demo/admin` → `/admin`), because Cloudflare will prepend the first one again.
+- **On root domain**: drops one prefix (`/demo/demo/about` → `/demo/about`).
+
+### Admin Auth Gate (Summary)
+
+For `/admin/*` requests:
+
+- Reads `__session` cookie → that value (not subdomain) is the canonical `siteId`.
+- If missing AND not on localhost AND not on a callback path (`/admin/claim-admin*`) AND not on `.web.app` → redirects to `NEXT_PUBLIC_AUTH_GATEWAY_URL?redirect=...`.
+- If a cookie exists but the request is on the wrong host (e.g. cookie says `quattro` but URL is `clicker.id/admin`), redirects to `quattro.clicker.id/admin`.
+- `/admin/login` directly redirects to the gateway (legacy paths are not served).
+
+Full handoff flow including custom-token bootstrap is documented in §4.
+
+### Headers Injected by Middleware
+
+| Header | When set | Read by |
+|---|---|---|
+| `x-site-id` | All non-root requests | Server Components, API routes |
+| `x-tenant-slug` | Tenant routes (`/{tenant}/...`) | Server Components |
+| `x-clicker-is-subdomain` | Subdomain hosts (and tenant-admin rewrites) | Server Components |
+
+### App Router Roots
+
+| Path | Purpose |
+|---|---|
+| `app/(public)/register/page.tsx` | Public registration flow (§14) — route group, no `/(public)` segment in URL |
+| `app/[tenant]/page.tsx` | Public tenant home (biolink/website) |
+| `app/[tenant]/[...slug]/page.tsx` | Public tenant subpages (custom pages, Canvas Studio output) |
+| `app/admin/(dashboard)/layout.tsx` | Admin shell with sidebar |
+| `app/admin/(dashboard)/[...slug]/page.tsx` | Module route catch-all (§7) |
+| `app/admin/(dashboard)/{settings,forms,inbox,pages,products,canvas,…}/` | Core admin pages |
+| `app/api/.../route.ts` | All API routes (§20) |
+| `app/catalog/` | Public catalog routes |
+| `app/member/` | Public member-portal routes |
+| `app/warranty/[warrantyCode]/page.tsx` | Public warranty card view (Service Records) |
+
+---
+
 <!-- Sections to be filled in by subsequent tasks -->
