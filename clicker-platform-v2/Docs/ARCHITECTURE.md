@@ -299,4 +299,131 @@ Full handoff flow including custom-token bootstrap is documented in §4.
 
 ---
 
+## 4. Authentication & Session Handoff
+
+Authentication is split across two apps:
+
+- **Auth Gateway** (`auth-gateway/`, port 3012, deployed at `auth.clicker.id`) — owns the login UI, the `signInWithEmailAndPassword` call, and the **custom-token mint** (`/api/token`).
+- **Platform** (`clicker-platform-v2/`, port 3000) — owns the admin dashboard, reads the custom token in a URL fragment, and bootstraps the Firebase client session locally.
+
+The gateway is intentionally **thin**: it knows nothing about tenants beyond "which `siteId` does this user belong to." All tenant business logic lives in the platform.
+
+### High-Level Diagram
+
+```text
+┌────────────────────┐                   ┌──────────────────────┐
+│  auth.clicker.id   │                   │  {slug}.clicker.id   │
+│  (auth-gateway)    │                   │  (platform admin)    │
+├────────────────────┤                   ├──────────────────────┤
+│ 1. Email/password  │                   │ 5. TokenBootstrap    │
+│ 2. Firebase Auth   │                   │    reads #token      │
+│ 3. getUserSites    │                   │    sets __session    │
+│ 3. POST /api/token │── custom token ──▶│    signInWithCustom  │
+│ 4. Redirect with   │   in URL fragment │ 6. UserProvider      │
+│    #token=...&     │                   │    resolves role     │
+│    siteId=...      │                   │ 7. AdminGuard renders│
+└────────────────────┘                   └──────────────────────┘
+```
+
+### Login Flow (First Visit / Logged Out)
+
+1. **User opens the gateway** at `auth.clicker.id` (or `localhost:3012` in dev).
+2. **Gateway authenticates** via `signInWithEmailAndPassword(email, password)` — Firebase Auth verifies the credential.
+3. **Gateway runs in parallel** (`Promise.all` with timeouts — 5 s for site resolve, 10 s for token):
+   - `getUserSites(uid, email)` — Firestore lookup that resolves which tenant(s) this user owns or is a member of (see [`auth-gateway/lib/get-user-sites.ts`](../../auth-gateway/lib/get-user-sites.ts)).
+   - `POST /api/token { uid }` — mints a Firebase **custom token** via `adminAuth.createCustomToken(uid)` ([`auth-gateway/app/api/token/route.ts`](../../auth-gateway/app/api/token/route.ts)).
+4. **Gateway sets `__session` cookie** on `.clicker.id` (visible to all subdomains) with the resolved `siteId`. Cookie attributes: `path=/; max-age=30d; SameSite=Lax; Secure` (on HTTPS); `Domain=.clicker.id` (on HTTPS only — localhost stays origin-scoped).
+5. **Gateway redirects** the browser to the platform with the custom token in the **URL fragment**, not the query string:
+
+   ```
+   https://{slug}.clicker.id/admin#token={customToken}&siteId={siteId}
+   ```
+
+   - URL fragments are **not sent to the server** — so the token does not appear in HTTP access logs.
+   - Path-based variant for `.web.app`: `https://stg-clicker-core.web.app/{slug}/admin#token=...&siteId=...`.
+6. **Platform loads.** The admin layout includes [`<TokenBootstrap />`](../components/admin/TokenBootstrap.tsx) which runs its `useEffect`:
+   - Reads `token` and `siteId` from `window.location.hash`.
+   - Sets `sessionStorage.__token_bootstrapping = '1'` — a flag that tells `UserProvider` not to redirect to the gateway while the handoff is in progress (see `lib/user-context.tsx:117`).
+   - Removes the hash from the URL via `history.replaceState` so the token never enters browser history.
+   - Sets the `__session` cookie at the platform origin (necessary on localhost where ports differ; redundant but harmless in production where the gateway already set it on `.clicker.id`).
+   - Calls `setSiteId(siteId)` on `SiteContext` — updates the tenant client-side without a full reload (`lib/site-context.tsx:10`).
+   - Calls `signInWithCustomToken(auth, token)` — the Firebase client SDK exchanges the custom token for a real ID token cached in IndexedDB.
+   - On success: clears the sessionStorage flag.
+   - On failure: clears the flag and redirects back to the gateway with `?error=auth_failed`.
+7. **`onAuthStateChanged`** fires inside `UserProvider`, which then queries `sites/{siteId}/members/{uid}` to resolve the user's role. `AdminGuard` sees a user + role and renders the dashboard.
+
+### Subsequent Visits
+
+For users with a cached Firebase session in IndexedDB and a valid `__session` cookie:
+
+1. Request hits `middleware.ts` → reads `__session` cookie → sets `x-site-id` header → no redirect.
+2. Firebase client SDK rehydrates the session from IndexedDB → `onAuthStateChanged(user)` fires immediately.
+3. Dashboard renders without ever touching the gateway.
+
+If the cookie is missing AND the user has no IndexedDB session (e.g. cleared browser), middleware redirects to the gateway, which auto-runs `performHandoff()` via `onAuthStateChanged` if a session exists, or shows the login form otherwise.
+
+### Why a URL Fragment
+
+- **Fragments are client-only** — `window.location.hash` is never transmitted to the server, so the token cannot appear in HTTP access logs, CDN logs, or reverse-proxy logs.
+- Browser history is sanitized by `history.replaceState` before `signInWithCustomToken` resolves.
+
+### Why the `__token_bootstrapping` SessionStorage Flag
+
+Between steps 6 (URL parse) and 7 (`signInWithCustomToken` resolves), `UserProvider`'s `onAuthStateChanged` would otherwise see `user === null` and trigger an `AdminGuard` redirect back to the gateway — an immediate redirect loop.
+
+The flag tells `UserProvider`: "don't conclude `loading=false` yet, a handoff is in progress." Once `signInWithCustomToken` resolves (success or failure), the flag is cleared.
+
+### Cookie Details
+
+| Aspect | Value |
+|---|---|
+| Name | `__session` |
+| Why this name | Firebase Hosting strips all cookies **except** `__session` on cached responses — using any other name would break in prod |
+| Value | The active `siteId` (tenant ID) |
+| Scope | `Domain=.clicker.id` on HTTPS (all subdomains); origin-scoped on HTTP/localhost |
+| Max-age | 30 days |
+| `SameSite` | `Lax` |
+| Read by | `middleware.ts` (sets `x-site-id` header), `TokenBootstrap` (idempotent set) |
+| Cross-origin caveat | On Firebase default `.web.app` domains, the cookie cannot be set cross-origin from the gateway — `TokenBootstrap` sets it on first load |
+
+### Strict Tenant Subdomain Redirect
+
+If a user lands on `clicker.id/admin` (root domain) with a `__session` cookie pointing at `quattro`, the middleware redirects to `quattro.clicker.id/admin` to enforce that admin is always tenant-scoped. Skipped on localhost and `.web.app` domains.
+
+### Deprecation Note
+
+The previous `generateHandoffToken` **Cloud Function** has been **replaced** by `auth-gateway/app/api/token/route.ts`. The gateway now mints custom tokens directly via Firebase Admin SDK — no Cloud Function call is involved. Do not add new auth code that calls the deprecated Cloud Function.
+
+### File Index for the Auth Flow
+
+**Auth Gateway:**
+
+| File | Role |
+|---|---|
+| `auth-gateway/app/page.tsx` | Login form + `performHandoff()` orchestration |
+| `auth-gateway/app/api/token/route.ts` | `POST /api/token` → `adminAuth.createCustomToken(uid)` |
+| `auth-gateway/lib/firebase-admin.ts` | Firebase Admin init with service account |
+| `auth-gateway/lib/get-user-sites.ts` | Tenant resolution: `ownerId` ∥ `ownerEmail` → `members/{uid}` lookup |
+| `auth-gateway/lib/session.ts` | Cookie helpers (clear stale sessions) |
+| `auth-gateway/.env.development.local` | `GCP_SERVICE_ACCOUNT_KEY`, `NEXT_PUBLIC_AUTH_GATEWAY_URL` |
+
+**Platform:**
+
+| File | Role |
+|---|---|
+| `clicker-platform-v2/middleware.ts` | Reads `__session` cookie; redirects to gateway if missing on `/admin` |
+| `clicker-platform-v2/components/admin/TokenBootstrap.tsx` | Reads `#token`, sets cookie, calls `setSiteId`, `signInWithCustomToken` |
+| `clicker-platform-v2/lib/site-context.tsx` | Exposes `setSiteId()` for client-side tenant switching |
+| `clicker-platform-v2/lib/user-context.tsx` | Honors `__token_bootstrapping` flag; resolves role via `members/{uid}` |
+| `clicker-platform-v2/lib/firebase.ts` | Firebase client SDK init (IndexedDB session persistence) |
+
+### Rules
+
+- **Do not put tenant business logic in the gateway.** Its only job is authenticate + resolve minimum siteId for the cookie.
+- **Do not introduce new auth paths that bypass `TokenBootstrap`.** Any new login surface must mint a custom token and use the fragment-based handoff.
+- **Do not call the deprecated `generateHandoffToken` Cloud Function** — it is being removed.
+- **Do not log the custom token.** It is short-lived but treat it as a secret. Fragment-based delivery is mandatory.
+
+---
+
 <!-- Sections to be filled in by subsequent tasks -->
