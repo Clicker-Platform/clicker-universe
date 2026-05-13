@@ -1,7 +1,7 @@
 # Clicker Platform — Global Architecture Reference
 
 > **Purpose:** Single source of truth for the Clicker Platform architecture. Read this before adding any feature, module, or template.
-> **Last updated:** 2026-04-27
+> **Last updated:** 2026-05-13
 
 ---
 
@@ -21,8 +21,12 @@
 12. [Admin UI Conventions](#12-admin-ui-conventions)
 13. [Observability & Caching](#13-observability--caching)
 14. [WhatsApp Integration](#14-whatsapp-integration)
-15. [Key File Index](#15-key-file-index)
-16. [Data Flow Diagrams](#16-data-flow-diagrams)
+15. [AI Foundation](#15-ai-foundation)
+16. [Registration Flow](#16-registration-flow-self-service-tenant-signup)
+17. [Email System](#17-email-system)
+18. [Backyard](#18-backyard-super-admin-dashboard)
+19. [Key File Index](#19-key-file-index)
+20. [Data Flow Diagrams](#20-data-flow-diagrams)
 
 ---
 
@@ -33,7 +37,7 @@ The Clicker Platform is a **multi-tenant SaaS platform** where each tenant (busi
 - A public biolink/website at `/{tenantSlug}` or `{tenantSlug}.clicker.id`
 - An admin dashboard at `/admin` (subdomain-enforced in production)
 - Optional add-on **modules** (POS, Inventory, Membership, Reservations, AI Agent, Stocklens, etc.)
-- A **template** (theme) chosen from 5 prebuilt designs
+- A **template** (theme) chosen from 6 prebuilt designs
 
 **Tech Stack:**
 - **Framework:** Next.js App Router (v16+), React 19
@@ -62,7 +66,7 @@ clicker-universe/
 {worktree}/
 ├── clicker-platform-v2/    ← Main platform (Next.js, port 3000)
 ├── auth-gateway/           ← Centralized login service (auth.clicker.id, port 3012)
-├── backyard/               ← Super-admin dashboard (port 3011)
+├── backyard/               ← Super-admin dashboard (port 3013)
 ├── functions/              ← Firebase Cloud Functions
 └── scripts/                ← Deployment & utility scripts
 ```
@@ -143,7 +147,7 @@ This is the **most important architectural rule**.
 │  lib/modules/{module_id}/                               │
 │    byod_pos/ | membership/ | inventory/ | stocklens/   │
 │    reservation/ | ai_sales/ | service_records/          │
-│    sales_pipeline/ | ai_marketing/                      │
+│    sales_pipeline/ | promo/ | fintrack/ | ai_marketing/ │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -238,7 +242,7 @@ interface ModuleDefinition {
 
 ## 6. Template & Theme System
 
-### 5 Built-in Templates
+### 6 Built-in Templates
 
 | Template ID | Name | Style | Card Style | Layout |
 |---|---|---|---|---|
@@ -247,6 +251,7 @@ interface ModuleDefinition {
 | `sojourner` | Sojourner | Green, professional | clean + outlined | full-width, adaptive nav |
 | `shuvo` | Shuvo Real Estate | Black/orange minimal | clean + flat | tablet, adaptive + bottom nav |
 | `mrb` | Mr Brightside | Dark + neon orange glass | glass + outlined | tablet, adaptive + bottom nav |
+| `mrb-light` | Mr Brightside Light | Terracotta/warm minimalist | clean + outlined | tablet, adaptive + bottom nav |
 
 ### Template Files
 
@@ -314,6 +319,9 @@ Custom header: `components/headers/MrbHeader.tsx`
 | `branches` | Branch locations list |
 | `social_embed` | Social media embed (Instagram, TikTok, etc.) |
 | `content_showcase` | Content showcase block |
+| `inline_form` | Inline form embed |
+| `heading` | Standalone heading block |
+| `feature_cards` | Feature cards grid |
 
 ### Canvas Studio Files
 
@@ -454,7 +462,9 @@ const { setLeftSlot, setCenterSlot, setRightSlot, clearSlots } = useTopBarSlots(
 
 | Role | Access |
 |---|---|
-| `owner` | Full access to everything (`permissions: ['*']`) |
+| `owner` | Full access to everything — `isOwner = true`, all `getAccessLevel()` return `'full'` |
+| `editor` | Legacy broad access via `permissions` array (backward compat) |
+| `viewer` | Legacy read-only access via `permissions` array (backward compat) |
 | `staff` | Granular per-module-route access via `moduleAccess` map |
 
 ### `moduleAccess` Map (Firestore: `sites/{siteId}/members/{uid}`)
@@ -537,6 +547,7 @@ Pattern: `sites/{siteId}/modules/{module_id}/{collection}`
 | `slugMappings/{slug}` | Slug → siteId lookup untuk routing |
 | `templates/{templateId}` | Global template registry |
 | `users/{uid}` | User profile + subcollections |
+| `sites/{siteId}/emailLog/{id}` | Email send log per tenant |
 
 ---
 
@@ -545,16 +556,17 @@ Pattern: `sites/{siteId}/modules/{module_id}/{collection}`
 ```
 app/api/
 ├── admin/
+│   ├── ai/credits/             ← AI credit management
+│   ├── ai-credits/             ← AI credit top-up
+│   ├── ai-usage/               ← AI usage tracking
+│   ├── cache/                  ← Cache invalidation
 │   ├── knowledge/sync|verify/  ← AI knowledge base
-│   ├── modules/ai-sales-agent/ ← AI agent config
+│   ├── modules/                ← Module management
 │   ├── seed-templates/         ← Seed template data
 │   ├── team/add|remove/        ← Team management
-│   └── whatsapp/connect|disconnect|status/  ← WA admin ops
+│   └── whatsapp/connect|disconnect|send|test/  ← WA admin ops
 ├── ai-sales-agent/chat/        ← AI chat endpoint
-├── ai/                         ← AI utility routes
-├── analytics/track/            ← Analytics events
 ├── auth/check-access/          ← Auth verification
-├── cache/                      ← Cache invalidation
 ├── forms/create|delete|submit|update/  ← Form CRUD
 ├── log/
 │   └── client-error/           ← Client error beacon → platform_logs
@@ -815,7 +827,7 @@ Sama strukturnya, tapi untuk email platform-level (registrasi, notif admin).
 
 ### Email Config
 
-Konfigurasi sender (domain, localPart, fromName) dan template aliases disimpan di Firestore `platform/settings/email/config`, dikelola via **Backyard → Email Config** (`backyard/app/api/email-config/`).
+Konfigurasi sender (domain, localPart, fromName) dan template aliases disimpan di Firestore `platform/settings/email/config`, dikelola via **Backyard → API Keys → Email Config panel** (`backyard/app/api/email-config/`).
 
 ### Dev Mode
 
