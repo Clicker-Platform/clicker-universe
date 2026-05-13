@@ -46,6 +46,19 @@ POS · Membership · Inventory · Stocklens · Reservation · Sales Pipeline · 
 
 Toggle per-tenant via `sites/{siteId}.modules.{moduleId} = true`. Detail: [ARCHITECTURE.md](./clicker-platform-v2/Docs/ARCHITECTURE.md)
 
+## Static Analysis
+
+Semgrep with community rule packs (`p/default`, `p/typescript`, `p/javascript`, `p/react`, `p/nextjs`, `p/owasp-top-ten`, `p/security-audit`). Rule list pinned in `Makefile` and `.github/workflows/semgrep.yml`.
+
+```bash
+make semgrep-install   # brew install semgrep (one-time)
+make semgrep           # scan from repo root
+make semgrep-secrets   # separate p/secrets sweep
+make semgrep-sarif     # emit semgrep.sarif
+```
+
+CI runs the same scan on PRs to `main` and on merges; results land in **Security → Code scanning**. Non-blocking by default — add `--error` to the workflow's semgrep command to gate merges.
+
 ## Env
 
 ```

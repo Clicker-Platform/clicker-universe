@@ -14,6 +14,19 @@ pnpm lint       # ESLint
 pnpm build      # Production build
 ```
 
+## Static Analysis (Semgrep)
+
+Run from repo root. CI runs the same rule set on PRs to `main` and on merges.
+
+```bash
+make semgrep-install   # one-time: brew install semgrep
+make semgrep           # full scan (community rule packs)
+make semgrep-secrets   # separate sweep for leaked secrets
+make semgrep-sarif     # emit semgrep.sarif for IDE viewers
+```
+
+Rule packs are pinned in the `Makefile` (`SEMGREP_CONFIGS`) and must match `.github/workflows/semgrep.yml` so local and CI behave identically. Path exclusions live in `.semgrepignore`.
+
 ## Critical Rules
 
 1. **Core vs Module boundary** — modules cannot import from each other directly.
