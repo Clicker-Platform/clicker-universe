@@ -95,4 +95,91 @@ Versions reflect `clicker-platform-v2/package.json` as of 2026-05-14.
 
 ---
 
+## 2. Repository Structure
+
+### Monorepo Root (`clicker-universe/dev/`)
+
+```
+clicker-universe/dev/
+├── clicker-platform-v2/    ← Main platform (THIS document scopes here)
+├── auth-gateway/           ← Centralized login (auth.clicker.id, port 3012) — §4
+├── backyard/               ← Superadmin God Mode dashboard (port 3011)
+├── functions/              ← Firebase Cloud Functions (legacy + cron + email)
+├── scripts/                ← Deployment & utility scripts
+├── docs/                   ← Cross-repo notes (separate from clicker-platform-v2/docs/)
+├── superpowers/            ← Brainstorm, spec, plan, audit-note output (per CLAUDE.md)
+├── tests/                  ← Cross-repo integration tests
+├── CLAUDE.md, AGENTS.md    ← Agent guidance (defer to this doc — see CLAUDE.md preamble)
+├── Makefile, package.json, pnpm-lock.yaml, firebase.json
+```
+
+### Platform Top-Level (`clicker-platform-v2/`)
+
+```
+clicker-platform-v2/
+├── app/                    ← Next.js App Router (all routes — §3, §20)
+├── components/             ← React components
+├── lib/                    ← Business logic, contexts, modules, templates, subsystems
+├── data/                   ← Static mock/seed data
+├── hooks/                  ← Shared custom React hooks
+├── scripts/                ← DB seed & admin scripts
+├── docs/                   ← This document + related architecture notes
+├── public/                 ← Static assets
+├── patches/, legacy/       ← Migration / legacy artifacts
+├── middleware.ts           ← Multi-tenant routing logic (§3)
+├── firestore.rules         ← Firestore security rules
+├── storage.rules           ← Firebase Storage security rules
+├── next.config.mjs, tsconfig.json, eslint.config.mjs, vitest.config.ts, postcss.config.mjs
+├── package.json            ← See §1 for full dependency inventory
+```
+
+### `lib/` Subsystem Inventory
+
+`lib/` is the most fragmented part of the codebase — it holds business logic, global contexts, subsystem implementations, and module definitions. **Subdirectories** (top-level `lib/{name}/`):
+
+| Path | Purpose | Reference |
+|---|---|---|
+| `lib/admin/` | Admin-only helpers (server-action wrappers, etc.) | — |
+| `lib/ai/` | Gemini client, Kredit accounting, model selection, pricing | §10 |
+| `lib/analytics/` | PostHog provider + `useAnalytics()` | §12 |
+| `lib/cache/` | Cache invalidation helpers (Upstash + in-memory) | — |
+| `lib/core/` | Cross-module business primitives (business hours, service catalog) | §16 |
+| `lib/email/` | Resend integration (`sendEmail()`, guard, log) | §11 |
+| `lib/forms/` | Form schema/validation helpers (used by Forms + Inbox + Registration) | — |
+| `lib/hooks/` | Shared React hooks not bound to a specific subsystem | — |
+| `lib/media/` | Media recommendations (sizing/aspect guidance) | §17 |
+| `lib/modules/` | All module definitions, registry, and per-module code | §7 |
+| `lib/registration/` | Public lead capture (`/register`) — bundles, modules catalog, slug, rate-limit | §14 |
+| `lib/secrets/` | Firebase secret resolution helpers | — |
+| `lib/templates/` | Template definitions and runtime registry | §8 |
+| `lib/utils/` | Generic utilities | — |
+| `lib/whatsapp/` | WA Cloud API: gateway, webhook processor, message router, encryption | §13 |
+
+**Top-level files** (`lib/*.ts(x)`):
+
+| File | Purpose |
+|---|---|
+| `admin-auth.ts` | Admin route auth gating helpers |
+| `api-auth.ts` | API route auth (server-side identity resolution) |
+| `fetchData.ts` | Shared data-fetching helpers |
+| `firebase.ts` | Firebase client SDK init (client components) |
+| `firebase-admin.ts` | Firebase Admin SDK init (server / API routes) |
+| `imageUtils.ts` | Client-side image preview / compression |
+| `inbox-panel-context.tsx` | Global state for the right-side inbox panel (§18) |
+| `logger.ts`, `logger-edge.ts` | Structured logging (edge-safe variant for middleware) |
+| `rbac.ts` | Roles, PERMISSIONS map (§5) |
+| `resolveNavHref.ts` | Module/route nav href resolution |
+| `sanitizeHtml.ts` | Wrapper around isomorphic-dompurify |
+| `site-context.tsx` | `useSite()` provider — current tenant (§18) |
+| `systemBlocks.ts` | System block definitions (used by Homepage block layout) |
+| `top-bar-slot-context.tsx` | Admin top-bar slot injection (§18) |
+| `upload.ts` | Client-side storage upload helpers (§17) |
+| `use-admin-theme.tsx` | Admin light/dark mode (§18, §21) |
+| `use-admin-nav-groups.ts` | Sidebar nav grouping |
+| `use-admin-unread-counts.ts` | Sidebar unread badges |
+| `user-context.tsx` | `useUser()` provider — auth + RBAC (§5, §18) |
+| `utils.ts` | Generic helpers |
+
+---
+
 <!-- Sections to be filled in by subsequent tasks -->
