@@ -78,10 +78,13 @@ clicker-platform-v2/
 ├── app/                    ← Next.js App Router (all routes)
 ├── components/             ← React components
 ├── lib/                    ← Business logic, contexts, modules, templates
+│   ├── ai/                 ← Shared AI layer (client, credits, pricing, models)
 │   ├── cache/              ← Upstash Redis + memory cache layer
-│   ├── whatsapp/           ← WA integration utilities (server-side)
+│   ├── email/              ← Email send layer (Resend)
 │   ├── modules/            ← Module registry & definitions
-│   └── templates/          ← Template registry & definitions
+│   ├── registration/       ← Self-service tenant signup logic
+│   ├── templates/          ← Template registry & definitions
+│   └── whatsapp/           ← WA integration utilities (server-side)
 ├── data/                   ← Static mock/seed data
 ├── hooks/                  ← Shared custom React hooks
 ├── scripts/                ← DB seed & admin scripts
@@ -192,17 +195,17 @@ lib/modules/{module_id}/
 
 | Module ID | Display Name | Admin Routes |
 |---|---|---|
-| `byod_pos` | Self-Order POS | Cashier, KDS, Transactions, Menu Manager, Configuration, Orders |
+| `byod_pos` | Self-Order POS | Cashier, Kitchen, Transactions, Menu, Configuration, Reports |
 | `membership` | Membership & Loyalty | Members, Settings |
 | `inventory` | Inventory | Items |
 | `stocklens` | Stocklens AI Scanner | Scanner, Vault, Settings |
 | `reservation` | Reservations | Bookings, Services, Staff (hidden), Settings |
 | `ai_sales` | AI Sales Agent | Overview, Settings |
-| `service_records` | Service Records | Records, Reports, New Record (hidden), Record Detail (hidden), Vehicles, Vehicle Detail (hidden), Service Types, Reminders, Settings |
+| `service_records` | Service Records | Service, Reports, New Record (hidden), Record Detail (hidden), Vehicles, Vehicle Detail (hidden), Service Types, Reminders, Settings |
 | `sales_pipeline` | Sales Pipeline | Pipeline Board, Settings |
-| `promo` | Promotions & Vouchers | Promos, Vouchers, Settings |
-| `fintrack` | Fintrack | Wallets, Entries, Debts, Budget, Recurring, Reports |
-| `ai_marketing` | AI Marketing | Dashboard, Generate, Assets, Campaigns, Analytics, Settings |
+| `promo` | Promotions & Vouchers | Promotions, Vouchers, Settings |
+| `fintrack` | Fintrack | Dashboard, Entries, Wallets, Advanced, Settings |
+| `ai_marketing` | AI Marketing | Dashboard, Generate, Assets, Campaigns, Analytics, Settings (all hidden — module in progress) |
 
 ### How Module Routes Are Served
 
@@ -791,7 +794,7 @@ User bisa mendaftar sendiri via `/register` tanpa perlu kontak admin secara manu
 | File | Fungsi |
 |------|--------|
 | `clicker-platform-v2/app/(public)/register/` | Public register form |
-| `clicker-platform-v2/lib/registration/` | Schema, submit action, rate-limit, event-log |
+| `clicker-platform-v2/lib/registration/` | Schema, submit action, rate-limit, event-log, slug validation, modules catalog, bundles |
 | `backyard/app/registrations/` | Admin review UI |
 | `backyard/app/api/registrations/[id]/activate/` | Create tenant + generate password |
 | `backyard/app/api/registrations/[id]/send-credentials/` | Kirim email kredensial |
