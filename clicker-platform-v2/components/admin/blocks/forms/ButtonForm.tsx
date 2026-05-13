@@ -1,5 +1,7 @@
 'use client';
 
+import { LinkPicker, LinkValue } from './LinkPicker';
+
 interface ButtonFormProps {
     data: any;
     onChange: (data: any) => void;
@@ -8,9 +10,30 @@ interface ButtonFormProps {
 export const ButtonForm = ({ data, onChange }: ButtonFormProps) => {
     const safeData = data || {};
 
-    const handleChange = (field: string, value: string) => {
+    const handleChange = (field: string, value: string | boolean) => {
         onChange({ ...safeData, [field]: value });
     };
+
+    const handleLinkChange = (next: LinkValue) => {
+        onChange({
+            ...safeData,
+            linkType: next.type,
+            url: next.url || '',
+            pageId: next.pageId ?? null,
+            formId: next.formId ?? null,
+        });
+    };
+
+    const linkValue: LinkValue = {
+        type: safeData.linkType || 'url',
+        url: safeData.url || '',
+        pageId: safeData.pageId ?? null,
+        formId: safeData.formId ?? null,
+    };
+
+    const url = (safeData.url || '').trim();
+    const isExternal = /^(https?:\/\/|mailto:|tel:)/i.test(url);
+    const newTabChecked = isExternal || safeData.openInNewTab === true;
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -25,14 +48,17 @@ export const ButtonForm = ({ data, onChange }: ButtonFormProps) => {
                 />
             </div>
             <div className="md:col-span-2">
-                <label className="block text-xs font-medium text-neutral-400 dark:text-neutral-500 mb-2">Target URL</label>
-                <input
-                    type="text"
-                    value={safeData.url || ''}
-                    onChange={(e) => handleChange('url', e.target.value)}
-                    className="w-full px-4 py-2.5 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-lg text-sm text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-600 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-mono"
-                    placeholder="https://..."
-                />
+                <LinkPicker value={linkValue} onChange={handleLinkChange} />
+                <label className="mt-2 flex items-center gap-2 text-xs text-neutral-400 dark:text-neutral-500">
+                    <input
+                        type="checkbox"
+                        checked={newTabChecked}
+                        disabled={isExternal}
+                        onChange={(e) => handleChange('openInNewTab', e.target.checked)}
+                        className="rounded border-gray-300 dark:border-neutral-700"
+                    />
+                    Open in new tab{isExternal ? ' (auto for external links)' : ''}
+                </label>
             </div>
             <div>
                 <label className="block text-xs font-medium text-neutral-400 dark:text-neutral-500 mb-2">Style</label>

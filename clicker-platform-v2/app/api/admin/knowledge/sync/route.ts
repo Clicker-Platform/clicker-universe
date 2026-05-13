@@ -1,143 +1,121 @@
-
-import { NextRequest, NextResponse } from "next/server";
-import { adminDb } from "@/lib/firebase-admin";
+import { NextRequest, NextResponse } from 'next/server';
+import { adminDb } from '@/lib/firebase-admin';
 import * as cheerio from 'cheerio';
 import { logger } from '@/lib/logger';
 import { requireAuthedMember } from '@/lib/api-auth';
+import { invokeVision, getModel } from '@/lib/ai';
 
-// Force dynamic to ensure no static optimization weirdness with file uploads
 export const dynamic = 'force-dynamic';
 
+const PDF_PROMPT = `You are an expert Data Extractor for the Indonesian Automotive Market.
+I have attached a PDF brochure.
+Please extract ALL detailed technical specifications, product features, promo details, and key selling points.
+
+IMPORTANT: Output the data in Bahasa Indonesia (Indonesian).
+
+Format the output clearly for a Knowledge Base:
+- **Model Name**
+- **Key Selling Points** (Poin Penjualan Utama)
+- **Technical Specs** (Spesifikasi Teknis - e.g., Baterai, Jarak Tempuh, Dimensi, Mesin)
+- **Features** (Fitur - Interior, Eksterior, Safety, Tech)
+- **Warranty & Promo** (Garansi & Promo)
+
+Maintain English technical terms if commonly used (e.g., "Airbags", "Captain Seat"), but explain or context in Indo.
+Do NOT summarize too much, keep strict details.`;
+
 export async function POST(req: NextRequest) {
-    try {
-        const auth = await requireAuthedMember(req);
-        if (!auth.ok) return auth.res;
-        const { siteId } = auth.session;
+  try {
+    const auth = await requireAuthedMember(req);
+    if (!auth.ok) return auth.res;
+    const { siteId } = auth.session;
 
-        const formData = await req.formData();
-        const urlsString = formData.get('urls') as string;
-        const pdfFile = formData.get('pdfFile') as File | null;
+    const formData = await req.formData();
+    const urlsString = formData.get('urls') as string;
+    const pdfFile = formData.get('pdfFile') as File | null;
 
-        let combinedText = "";
+    let combinedText = '';
 
-        // 1. Process URLs (Scraping)
-        if (urlsString) {
-            const urls = urlsString.split('\n').map(u => u.trim()).filter(u => u.length > 0);
+    // Process URLs (scraping)
+    if (urlsString) {
+      const urls = urlsString.split('\n').map(u => u.trim()).filter(u => u.length > 0);
 
-            const scrapePromises = urls.map(async (url) => {
-                try {
-                    const response = await fetch(url, {
-                        headers: {
-                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-                        }
-                    });
+      const scrapePromises = urls.map(async (url) => {
+        try {
+          const response = await fetch(url, {
+            headers: { 'User-Agent': 'Mozilla/5.0 (compatible; ClickerBot/1.0)' },
+          });
+          if (!response.ok) return `[FAILED TO FETCH: ${url}]`;
 
-                    if (!response.ok) return `[FAILED TO FETCH: ${url}]`;
+          const html = await response.text();
+          const $ = cheerio.load(html);
+          $('script, style, nav, footer, .cookie-banner, .ad').remove();
+          let content = $('article').text() || $('main').text() || $('body').text();
+          content = content.replace(/\s+/g, ' ').trim();
 
-                    const html = await response.text();
-                    const $ = cheerio.load(html);
-
-                    // Remove noise
-                    $('script').remove();
-                    $('style').remove();
-                    $('nav').remove();
-                    $('footer').remove();
-                    $('.cookie-banner').remove();
-                    $('.ad').remove();
-
-                    // Extract main content
-                    let content = $('article').text() || $('main').text() || $('body').text();
-                    content = content.replace(/\s+/g, ' ').trim();
-
-                    return `
---- SOURCE: ${url} ---
-${content}
-----------------------
-`;
-                } catch (err: any) {
-                    return `[ERROR SCRAPING ${url}: ${err.message}]`;
-                }
-            });
-
-            const scrapedResults = await Promise.all(scrapePromises);
-            combinedText += scrapedResults.join('\n\n');
+          return `\n--- SOURCE: ${url} ---\n${content}\n----------------------\n`;
+        } catch (err: unknown) {
+          return `[ERROR SCRAPING ${url}: ${err instanceof Error ? err.message : String(err)}]`;
         }
+      });
 
-        if (pdfFile) {
-            try {
-                // Get Gemini Client (siteId is already validated above)
-                const { getGeminiClient } = await import("@/lib/modules/ai-sales-agent/server/gemini-client");
-                const ai = await getGeminiClient(siteId);
-                // Using Gemini 2.0 Flash (Experimental) as 1.5 might have alias issues or strict versioning
-                const model = ai.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
-
-                // Convert PDF to Base64 for Gemini
-                const arrayBuffer = await pdfFile.arrayBuffer();
-                const buffer = Buffer.from(arrayBuffer);
-                const base64Pdf = buffer.toString('base64');
-
-                // Prompt for extraction
-                const prompt = `
-                    You are an expert Data Extractor for the Indonesian Automotive Market. 
-                    I have attached a PDF brochure. 
-                    Please extract ALL detailed technical specifications, product features, promo details, and key selling points.
-                    
-                    IMPORTANT: Output the data in **Bahasa Indonesia** (Indonesian).
-                    
-                    Format the output clearly for a Knowledge Base:
-                    - **Model Name**
-                    - **Key Selling Points** (Poin Penjualan Utama)
-                    - **Technical Specs** (Spesifikasi Teknis - e.g., Baterai, Jarak Tempuh, Dimensi, Mesin)
-                    - **Features** (Fitur - Interior, Eksterior, Safety, Tech)
-                    - **Warranty & Promo** (Garansi & Promo)
-                    
-                    Maintain English technical terms if commonly used (e.g., "Airbags", "Captain Seat"), but explain or context in Indo.
-                    Do NOT summarize too much, keep strict details.
-                `;
-
-                const result = await model.generateContent([
-                    prompt,
-                    {
-                        inlineData: {
-                            data: base64Pdf,
-                            mimeType: "application/pdf",
-                        },
-                    },
-                ]);
-
-                const response = await result.response;
-                const text = response.text();
-
-                combinedText += `
-\n
---- SOURCE: PDF BROCHURE (${pdfFile.name}) [Processed by Gemini Vision] ---
-${text}
--------------------------------------------------------------------------
-`;
-            } catch (err: any) {
-                combinedText += `\n[ERROR PROCESSING PDF: ${err.message}]`;
-            }
-        }
-
-        // 3. Save to Firestore (Site-scoped)
-        await adminDb
-            .collection('sites')
-            .doc(siteId)
-            .collection('modules')
-            .doc('ai-sales-agent')
-            .set({
-                knowledgeBaseContent: combinedText,
-                knowledgeUpdatedAt: new Date().toISOString()
-            }, { merge: true });
-
-        return NextResponse.json({
-            success: true,
-            message: "Knowledge synced successfully",
-            preview: combinedText.substring(0, 500) + "..."
-        });
-
-    } catch (error: any) {
-        logger.error('knowledge.sync.failed', { error });
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+      const scrapedResults = await Promise.all(scrapePromises);
+      combinedText += scrapedResults.join('\n\n');
     }
+
+    // Process PDF
+    if (pdfFile) {
+      try {
+        const arrayBuffer = await pdfFile.arrayBuffer();
+        const base64Pdf = Buffer.from(arrayBuffer).toString('base64');
+
+        const visionModel = await getModel('vision');
+        const text = await invokeVision(
+          {
+            model: visionModel,
+            messages: [{
+              role: 'user',
+              content: [
+                { type: 'text', text: PDF_PROMPT },
+                { type: 'image_url', image_url: { url: `data:application/pdf;base64,${base64Pdf}` } },
+              ],
+            }],
+            max_tokens: 4096,
+            temperature: 0.1,
+          },
+          { siteId, moduleId: 'ai_sales_agent', skillId: 'pdf_extraction', uid: 'system' }
+        );
+
+        combinedText += `\n\n--- SOURCE: PDF BROCHURE (${pdfFile.name}) ---\n${text}\n---\n`;
+      } catch (err: unknown) {
+        // insufficient_credits must bubble up — re-throw so outer catch handles it
+        if (err instanceof Error && err.message.startsWith('insufficient_credits:')) throw err;
+        logger.error('knowledge.sync.pdf.failed', { siteId, error: err });
+        combinedText += `\n[ERROR PROCESSING PDF: ${err instanceof Error ? err.message : String(err)}]`;
+      }
+    }
+
+    await adminDb
+      .collection('sites')
+      .doc(siteId)
+      .collection('modules')
+      .doc('ai-sales-agent')
+      .set({ knowledgeBaseContent: combinedText, knowledgeUpdatedAt: new Date().toISOString() }, { merge: true });
+
+    return NextResponse.json({
+      success: true,
+      message: 'Knowledge synced successfully',
+      preview: combinedText.substring(0, 500) + '...',
+    });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (message.startsWith('insufficient_credits:')) {
+      const [, balance, required] = message.split(':');
+      return NextResponse.json(
+        { success: false, error: 'insufficient_credits', balance: Number(balance), required: Number(required) },
+        { status: 402 }
+      );
+    }
+    logger.error('knowledge.sync.failed', { error });
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
+  }
 }

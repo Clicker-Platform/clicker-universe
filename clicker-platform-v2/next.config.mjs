@@ -1,6 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    serverExternalPackages: ['firebase-admin', 'sharp', '@react-pdf/renderer'],
+    // firebase-admin di serverExternalPackages — tidak di-bundle Turbopack/webpack.
+    serverExternalPackages: [
+      'firebase-admin',
+      'sharp',
+      '@react-pdf/renderer',
+      '@google-cloud/secret-manager',
+      '@grpc/grpc-js',
+      'google-gax',
+    ],
     allowedDevOrigins: ['192.168.0.100'],
     experimental: {
         turbo: {

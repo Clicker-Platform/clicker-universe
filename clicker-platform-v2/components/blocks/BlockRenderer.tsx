@@ -112,8 +112,8 @@ export const BlockRenderer = ({
                     <ImageBlock data={block.data} isFirst={isFirst} />;
             case 'button':
                 return customBlocks?.Button ?
-                    React.createElement(customBlocks.Button, { data: block.data, previewMode }) :
-                    <ButtonBlock data={block.data} previewMode={previewMode} />;
+                    React.createElement(customBlocks.Button, { data: block.data, previewMode, siteId }) :
+                    <ButtonBlock data={block.data} previewMode={previewMode} siteId={siteId} />;
             case 'products': 
                 return customBlocks?.Products ? 
                     React.createElement(customBlocks.Products, { data: block.data, phoneNumber, whatsappSettings, siteId, products }) : 

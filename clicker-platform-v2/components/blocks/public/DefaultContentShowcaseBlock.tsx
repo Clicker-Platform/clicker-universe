@@ -13,13 +13,27 @@ import {
 } from '@/components/blocks/content-showcase/types';
 import { MediaView } from './MediaView';
 
+function normalizeRow(row: Partial<ShowcaseRow>, i: number): ShowcaseRow {
+    const base: ShowcaseRow = {
+        id: row.id ?? `row-${i}`,
+        media: row.media ?? { type: 'image', src: '', aspectRatio: '16:9', objectFit: 'cover' },
+        heading: { text: row.heading?.text ?? '' },
+        content: row.content ?? '',
+        layout: row.layout ?? 'inherit',
+    };
+    if (row.mediaColumnWidth !== undefined) base.mediaColumnWidth = row.mediaColumnWidth;
+    if (row.cta !== undefined) base.cta = row.cta;
+    return base;
+}
+
 function normalize(data: unknown): ContentShowcaseData {
     const d = (data as Partial<ContentShowcaseData>) || {};
+    const rawRows = Array.isArray(d.rows) ? d.rows : [];
     return {
         ...DEFAULT_SHOWCASE_DATA,
         ...d,
         rowBackgrounds: { ...DEFAULT_SHOWCASE_DATA.rowBackgrounds, ...(d.rowBackgrounds || {}) },
-        rows: Array.isArray(d.rows) ? d.rows : [],
+        rows: rawRows.map((r, i) => normalizeRow(r as Partial<ShowcaseRow>, i)),
     };
 }
 
@@ -107,40 +121,58 @@ function ShowcaseRowView({
     const safeContent = sanitizeRichText(row.content);
     const isPreviewMobile = d === 'mobile';
 
-    // In canvas preview use JS-driven widths; in real browser let CSS handle it via flex-basis
+    // In canvas preview use JS-driven widths; in real browser let CSS handle it via flex-basis.
+    // Tablet preview ('desktop' bucket) and real desktop use isLeft order; mobile preview always image-first.
+    const isPreviewDesktop = d === 'desktop';
     const mediaStyle: React.CSSProperties = isPreviewMobile
-        ? { width: '100%', order: 0 }
-        : { flexBasis: `${mediaWidth}%`, flexShrink: 0, order: isLeft ? 0 : 1 };
+        ? { width: '100%' }
+        : isPreviewDesktop
+            ? { flexBasis: `${mediaWidth}%`, flexShrink: 0, order: isLeft ? 0 : 1 }
+            : { flexBasis: `${mediaWidth}%`, flexShrink: 0 };
     const contentStyle: React.CSSProperties = isPreviewMobile
-        ? { width: '100%', order: 1 }
-        : { flexBasis: `${contentWidth}%`, minWidth: 0, order: isLeft ? 1 : 0 };
+        ? { width: '100%' }
+        : isPreviewDesktop
+            ? { flexBasis: `${contentWidth}%`, minWidth: 0, order: isLeft ? 1 : 0 }
+            : { flexBasis: `${contentWidth}%`, minWidth: 0 };
+    // Real browser: order only kicks in at md: (flex-row), so mobile flex-col always stacks media-first.
+    const mediaOrderClass = isLeft ? 'md:order-1' : 'md:order-2';
+    const contentOrderClass = isLeft ? 'md:order-2' : 'md:order-1';
 
     const mediaNode = (
-        <div style={mediaStyle}>
+        <div className={mediaOrderClass} style={mediaStyle}>
             <MediaView media={row.media} className="rounded-lg" priority={priority} />
         </div>
     );
 
     const contentNode = (
-        <div className="space-y-4" style={contentStyle}>
-            <h3 className="text-2xl md:text-3xl font-black font-heading text-[var(--theme-foreground)] leading-tight">
+        <div className={`space-y-4 ${contentOrderClass}`} style={contentStyle}>
+            <h3 className={`${dv(d, 'text-2xl', 'md:text-3xl')} font-black font-heading text-[var(--theme-foreground)] leading-tight`}>
                 {row.heading.text}
             </h3>
             <div
                 className="prose dark:prose-invert max-w-none prose-p:text-[var(--theme-foreground)]/80 prose-headings:text-[var(--theme-foreground)] prose-strong:text-[var(--theme-foreground)] prose-a:text-[var(--theme-primary)]"
                 dangerouslySetInnerHTML={{ __html: safeContent }}
             />
-            {row.cta?.enabled && row.cta.label && (
-                <a href={isSafeHref(row.cta.href) ? row.cta.href : '#'} className={ctaClasses(row.cta.variant)}>
-                    {row.cta.label}
-                </a>
-            )}
+            {row.cta?.enabled && row.cta.label && (() => {
+                const href = isSafeHref(row.cta.href) ? row.cta.href : '#';
+                const isExternal = /^https?:\/\//i.test(href);
+                return (
+                    <a
+                        href={href}
+                        className={ctaClasses(row.cta.variant)}
+                        target={isExternal ? '_blank' : undefined}
+                        rel={isExternal ? 'noopener noreferrer' : undefined}
+                    >
+                        {row.cta.label}
+                    </a>
+                );
+            })()}
         </div>
     );
 
     return (
         <div
-            className={`${dv(d, 'py-6', 'md:py-10')} rounded-xl`}
+            className={`${dv(d, 'py-6', 'md:py-10')} ${bgColor ? dv(d, 'px-5', 'md:px-8') : ''} rounded-xl`}
             style={bgColor ? { background: bgColor } : undefined}
         >
             <div

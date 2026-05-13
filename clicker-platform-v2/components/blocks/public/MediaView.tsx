@@ -17,9 +17,9 @@ interface MediaViewProps {
 export function MediaView({ media, className = '', style, priority = false }: MediaViewProps) {
     if (!media || !media.src) return null;
 
-    const aspectClass = ASPECT_RATIO_CLASS[media.aspectRatio || '16:9'] || '';
+    const aspectClass = ASPECT_RATIO_CLASS[media.aspectRatio || '16:9'] || 'aspect-video';
     const fitClass = media.objectFit === 'contain' ? 'object-contain' : 'object-cover';
-    const wrapperClass = `relative w-full ${aspectClass} overflow-hidden ${className}`.trim();
+    const wrapperClass = `relative w-full ${aspectClass || 'aspect-video'} overflow-hidden ${className}`.trim();
 
     if (media.type === 'image') {
         return (

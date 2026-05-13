@@ -15,7 +15,6 @@ import {
     startAfter,
     QueryDocumentSnapshot,
     runTransaction,
-    arrayUnion,
     arrayRemove
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -209,14 +208,6 @@ export async function getMenuItems(
     };
 }
 
-export async function ensureCategoryExists(siteId: string, category: string) {
-    if (!category) return;
-    const settingsRef = doc(db, 'sites', siteId, SETTINGS_DOC);
-    await setDoc(settingsRef, {
-        categories: arrayUnion(category)
-    }, { merge: true });
-}
-
 export interface POSCategory {
     id: string;
     label: string;
@@ -227,17 +218,7 @@ export async function getPOSCategories(siteId: string): Promise<POSCategory[]> {
     const settingsRef = doc(db, 'sites', siteId, SETTINGS_DOC);
     const snap = await getDoc(settingsRef);
     if (!snap.exists()) return [];
-    const data = snap.data();
-    // Support both legacy string[] and new POSCategory[]
-    const raw = data?.menuCategories ?? [];
-    if (raw.length === 0) return [];
-    if (typeof raw[0] === 'string') {
-        return raw.map((label: string) => ({
-            id: label.toLowerCase().replace(/[^a-z0-9]/g, '_'),
-            label,
-            color: 'bg-gray-100 text-gray-600'
-        }));
-    }
+    const raw = snap.data()?.menuCategories ?? [];
     return raw as POSCategory[];
 }
 

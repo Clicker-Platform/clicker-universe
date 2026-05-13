@@ -1,6 +1,22 @@
 {
     "indexes": [
         {
+            "collectionGroup": "registrationEvents",
+            "queryScope": "COLLECTION",
+            "fields": [
+                { "fieldPath": "registrationId", "order": "ASCENDING" },
+                { "fieldPath": "createdAt", "order": "DESCENDING" }
+            ]
+        },
+        {
+            "collectionGroup": "registrationEvents",
+            "queryScope": "COLLECTION",
+            "fields": [
+                { "fieldPath": "level", "order": "ASCENDING" },
+                { "fieldPath": "createdAt", "order": "DESCENDING" }
+            ]
+        },
+        {
             "collectionGroup": "analytics_shards",
             "queryScope": "COLLECTION",
             "fields": [
@@ -526,6 +542,23 @@
             "queryScope": "COLLECTION_GROUP",
             "fields": [
                 { "fieldPath": "status", "order": "ASCENDING" },
+                { "fieldPath": "createdAt", "order": "DESCENDING" }
+            ]
+        },
+        {
+            "collectionGroup": "entries",
+            "queryScope": "COLLECTION",
+            "fields": [
+                { "fieldPath": "type", "order": "ASCENDING" },
+                { "fieldPath": "createdAt", "order": "DESCENDING" }
+            ]
+        },
+        {
+            "collectionGroup": "entries",
+            "queryScope": "COLLECTION",
+            "fields": [
+                { "fieldPath": "moduleId", "order": "ASCENDING" },
+                { "fieldPath": "type", "order": "ASCENDING" },
                 { "fieldPath": "createdAt", "order": "DESCENDING" }
             ]
         }

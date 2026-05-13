@@ -271,3 +271,7 @@ export {
     syncGoStorageUpload,
     syncGoStorageDelete,
 } from './sync-to-prod';
+
+// Monitoring
+export { getPosthogStats } from './monitoring/getPosthogStats';
+export { retentionCleanup, triggerRetentionCleanup } from './scheduled/retentionCleanup';

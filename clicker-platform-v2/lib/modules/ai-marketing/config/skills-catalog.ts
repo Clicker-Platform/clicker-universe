@@ -1,7 +1,6 @@
 // Complete skill catalog — defines all skills available in the Generate page UI
 
 import { SkillDefinition, MultiSkillFlow } from '../types';
-import { SKILL_CREDIT_COST } from './model-config';
 import { MULTI_SKILL_FLOWS } from '../orchestrator/flows';
 import { PLATFORM_OPTIONS, TONE_OPTIONS, STYLE_OPTIONS } from '../constants';
 
@@ -12,7 +11,7 @@ export const SKILLS_CATALOG: SkillDefinition[] = [
     label: 'Ad Copy',
     description: 'Generate Meta/TikTok/Google ad copy with multiple variations',
     agentId: 'creative_director',
-    creditCost: SKILL_CREDIT_COST.generate_ad_copy,
+
     formFields: [
       { name: 'product', label: 'Product / Service', type: 'text', placeholder: 'e.g. Premium skincare serum', required: true },
       { name: 'platform', label: 'Platform', type: 'select', options: PLATFORM_OPTIONS, required: true },
@@ -30,7 +29,6 @@ export const SKILLS_CATALOG: SkillDefinition[] = [
     label: 'Social Caption',
     description: 'Create engaging social media captions with hashtags',
     agentId: 'creative_director',
-    creditCost: SKILL_CREDIT_COST.generate_caption,
     formFields: [
       { name: 'contentContext', label: 'Content Description', type: 'textarea', placeholder: 'Describe what the post is about...', required: true },
       { name: 'platform', label: 'Platform', type: 'select', options: PLATFORM_OPTIONS, required: true },
@@ -45,7 +43,6 @@ export const SKILLS_CATALOG: SkillDefinition[] = [
     label: 'Headlines',
     description: 'Generate 8 compelling headline variations',
     agentId: 'creative_director',
-    creditCost: SKILL_CREDIT_COST.generate_headline,
     formFields: [
       { name: 'product', label: 'Product / Service', type: 'text', placeholder: 'e.g. Online coaching program', required: true },
       { name: 'campaignContext', label: 'Campaign Context', type: 'textarea', placeholder: 'Optional: brief campaign context...' },
@@ -56,7 +53,6 @@ export const SKILLS_CATALOG: SkillDefinition[] = [
     label: 'Call to Action',
     description: 'Generate 5 CTA variations for your campaign',
     agentId: 'creative_director',
-    creditCost: SKILL_CREDIT_COST.generate_cta,
     formFields: [
       { name: 'product', label: 'Product / Service', type: 'text', required: true },
       { name: 'objective', label: 'Action You Want', type: 'select', options: [
@@ -74,7 +70,6 @@ export const SKILLS_CATALOG: SkillDefinition[] = [
     label: 'Hashtags',
     description: 'Generate relevant hashtag sets (broad + niche + branded)',
     agentId: 'creative_director',
-    creditCost: SKILL_CREDIT_COST.generate_hashtags,
     formFields: [
       { name: 'contentContext', label: 'Content Description', type: 'textarea', placeholder: 'Describe the content topic...', required: true },
       { name: 'platform', label: 'Platform', type: 'select', options: PLATFORM_OPTIONS },
@@ -85,7 +80,6 @@ export const SKILLS_CATALOG: SkillDefinition[] = [
     label: 'Translate Content',
     description: 'Translate marketing content while preserving brand tone',
     agentId: 'creative_director',
-    creditCost: SKILL_CREDIT_COST.translate_content,
     formFields: [
       { name: 'content', label: 'Content to Translate', type: 'textarea', placeholder: 'Paste the content to translate...', required: true },
       { name: 'targetLanguage', label: 'Target Language', type: 'select', options: [
@@ -100,7 +94,6 @@ export const SKILLS_CATALOG: SkillDefinition[] = [
     label: 'Adapt Tone',
     description: 'Rewrite existing content in a different brand voice',
     agentId: 'creative_director',
-    creditCost: SKILL_CREDIT_COST.adapt_tone,
     formFields: [
       { name: 'content', label: 'Original Content', type: 'textarea', placeholder: 'Paste the content to rewrite...', required: true },
       { name: 'targetTone', label: 'Target Tone', type: 'select', options: TONE_OPTIONS },
@@ -114,7 +107,6 @@ export const SKILLS_CATALOG: SkillDefinition[] = [
     label: 'Campaign Plan',
     description: 'Full campaign plan with strategy, phases, and KPIs',
     agentId: 'strategist',
-    creditCost: SKILL_CREDIT_COST.plan_campaign,
     formFields: [
       { name: 'product', label: 'Product / Service', type: 'text', required: true },
       { name: 'objective', label: 'Campaign Objective', type: 'text', placeholder: 'e.g. Launch new product, increase sales by 30%', required: true },
@@ -133,7 +125,6 @@ export const SKILLS_CATALOG: SkillDefinition[] = [
     label: 'Target Audience',
     description: 'Define detailed audience personas with demographics and messaging angles',
     agentId: 'strategist',
-    creditCost: SKILL_CREDIT_COST.define_target_audience,
     formFields: [
       { name: 'product', label: 'Product / Service', type: 'text', required: true },
       { name: 'existingData', label: 'Existing Customer Data (optional)', type: 'textarea', placeholder: 'Describe what you know about your current customers...' },
@@ -144,7 +135,6 @@ export const SKILLS_CATALOG: SkillDefinition[] = [
     label: 'Platform Recommendations',
     description: 'Get ranked platform recommendations for your audience and objective',
     agentId: 'strategist',
-    creditCost: SKILL_CREDIT_COST.suggest_platforms,
     formFields: [
       { name: 'objective', label: 'Campaign Objective', type: 'text', required: true },
       { name: 'budget', label: 'Monthly Budget', type: 'text' },
@@ -155,7 +145,6 @@ export const SKILLS_CATALOG: SkillDefinition[] = [
     label: 'Content Calendar',
     description: 'Generate a day-by-day content schedule for your campaign',
     agentId: 'strategist',
-    creditCost: SKILL_CREDIT_COST.create_content_calendar,
     formFields: [
       { name: 'campaignSummary', label: 'Campaign Summary', type: 'textarea', placeholder: 'Brief description of your campaign goal and product...', required: true },
       { name: 'duration', label: 'Duration', type: 'select', options: [
@@ -175,7 +164,6 @@ export const SKILLS_CATALOG: SkillDefinition[] = [
     label: 'Budget Allocation',
     description: 'Get recommended budget split across platforms with rationale',
     agentId: 'strategist',
-    creditCost: SKILL_CREDIT_COST.suggest_budget_allocation,
     formFields: [
       { name: 'budget', label: 'Total Budget', type: 'text', placeholder: 'e.g. Rp 5,000,000', required: true },
       { name: 'platforms', label: 'Platforms to Consider', type: 'text', placeholder: 'e.g. Meta, TikTok, Google' },
@@ -190,7 +178,6 @@ export const SKILLS_CATALOG: SkillDefinition[] = [
     label: 'Performance Analysis',
     description: 'Analyze campaign metrics and extract KPI insights',
     agentId: 'data_analyst',
-    creditCost: SKILL_CREDIT_COST.analyze_performance,
     formFields: [
       { name: 'metrics', label: 'Metrics Data', type: 'textarea', placeholder: 'Paste your metrics data (CSV or plain text):\nImpressions: 10,000\nClicks: 500\nCTR: 5%\n...', required: true },
       { name: 'period', label: 'Reporting Period', type: 'text', placeholder: 'e.g. Jan 1 – Jan 31, 2025' },
@@ -202,7 +189,6 @@ export const SKILLS_CATALOG: SkillDefinition[] = [
     label: 'ROI Calculator',
     description: 'Calculate ROI, ROAS, and profitability metrics',
     agentId: 'data_analyst',
-    creditCost: SKILL_CREDIT_COST.calculate_roi,
     formFields: [
       { name: 'spend', label: 'Total Ad Spend', type: 'text', placeholder: 'e.g. Rp 2,000,000', required: true },
       { name: 'revenue', label: 'Revenue Generated', type: 'text', placeholder: 'e.g. Rp 8,000,000', required: true },
@@ -215,7 +201,6 @@ export const SKILLS_CATALOG: SkillDefinition[] = [
     label: 'Optimization Recommendations',
     description: 'Get prioritized action items to improve campaign performance',
     agentId: 'data_analyst',
-    creditCost: SKILL_CREDIT_COST.suggest_optimizations,
     formFields: [
       { name: 'performanceData', label: 'Current Performance Data', type: 'textarea', placeholder: 'Describe or paste your current performance metrics...', required: true },
       { name: 'goals', label: 'Goals', type: 'text', placeholder: 'e.g. Reduce CPA, increase ROAS', required: true },
@@ -227,7 +212,6 @@ export const SKILLS_CATALOG: SkillDefinition[] = [
     label: 'Performance Report',
     description: 'Create an executive-ready marketing performance report',
     agentId: 'data_analyst',
-    creditCost: SKILL_CREDIT_COST.generate_report,
     formFields: [
       { name: 'metrics', label: 'Performance Data', type: 'textarea', placeholder: 'Paste all metrics and channel data...', required: true },
       { name: 'period', label: 'Reporting Period', type: 'text', required: true },

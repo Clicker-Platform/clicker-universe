@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { LayoutDashboard, LogOut, Menu, X, Palette, Inbox, Box, Users, Sun, Moon, PanelLeftClose, PanelLeftOpen, User, Building2, ChevronUp, ChevronDown, Layers, MessageCircle } from 'lucide-react';
+import { LayoutDashboard, LogOut, Menu, X, Palette, Inbox, Box, Users, Sun, Moon, PanelLeftClose, PanelLeftOpen, User, Building2, ChevronUp, ChevronDown, Layers, MessageCircle, Activity } from 'lucide-react';
 import { collection, query, where, onSnapshot, doc } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase';
 import { signOut, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
@@ -520,6 +520,7 @@ export function AdminSidebar() {
                                         { icon: User, label: 'Account', href: '/admin/settings/account' },
                                         { icon: Building2, label: 'Business', href: '/admin/settings/business' },
                                         { icon: Users, label: 'Team', href: '/admin/settings/team' },
+                                        { icon: Activity, label: 'AI Usage', href: '/admin/ai-usage' },
                                     ].map(({ icon: Icon, label, href }) => {
                                         const base = (tenantSlug && !isSubdomain) ? `/${tenantSlug}` : '';
                                         const fullHref = `${base}${href}`;

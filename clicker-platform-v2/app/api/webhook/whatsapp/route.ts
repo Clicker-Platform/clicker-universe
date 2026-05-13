@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createHmac, timingSafeEqual } from 'crypto';
 import type { MetaWebhookPayload } from '@/lib/whatsapp/types';
 import { logger } from '@/lib/logger';
+import { getSecret } from '@/lib/secrets';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,8 +21,9 @@ export async function GET(req: NextRequest) {
     return new Response('Bad Request', { status: 400 });
   }
 
-  // Fast path: global env token
-  const globalToken = process.env.WA_WEBHOOK_VERIFY_TOKEN;
+  // Fast path: global secret token
+  let globalToken: string | null = null;
+  try { globalToken = await getSecret('WA_WEBHOOK_VERIFY_TOKEN'); } catch { globalToken = null; }
   if (globalToken && verifyToken === globalToken) {
     return new Response(challenge, { status: 200 });
   }
@@ -53,7 +55,8 @@ export async function POST(req: NextRequest) {
   try {
     const rawBody = await req.text();
     const signature = req.headers.get('x-hub-signature-256') ?? '';
-    const appSecret = process.env.META_APP_SECRET ?? '';
+    let appSecret = '';
+    try { appSecret = await getSecret('META_APP_SECRET'); } catch { appSecret = ''; }
 
     if (appSecret && !validateSignature(rawBody, signature, appSecret)) {
       logger.warn('wa.webhook.invalid.signature', { siteId: 'platform' });

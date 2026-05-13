@@ -348,12 +348,15 @@ service cloud.firestore {
       match /modules/promo/promos/{promoId} {
         allow read: if true; // Public — customers need to read active promos for auto-apply and code evaluation
         allow write: if isValidUser(siteId) && hasRole(siteId, ['owner', 'staff']);
+
+        // Per-member usage tracking
+        match /memberUsage/{memberId} {
+          allow read: if true;
+          allow write: if request.auth != null;
+        }
       }
       match /modules/promo/vouchers/{voucherId} {
-        allow read: if isModuleEnabled(siteId, 'promo') && (
-          isValidUser(siteId) ||
-          (request.auth != null && resource.data.ownerMemberId != null) // member can read own vouchers
-        );
+        allow read: if true; // Public — needed for voucher code lookup during promo evaluation on public pages
         allow write: if isValidUser(siteId) && hasRole(siteId, ['owner', 'staff']);
       }
       match /modules/promo/settings/{settingId} {
@@ -465,6 +468,29 @@ service cloud.firestore {
     match /platform_meta/{docId} {
       allow read: if isGlobalAdmin();
       allow write: if isGlobalAdmin();
+    }
+
+    // registrationRequests — pre-tenant public signup
+    // Public anonymous create, superadmin-only read/update/delete.
+    match /registrationRequests/{requestId} {
+      allow create: if true;
+      allow read, update, delete: if isGlobalAdmin();
+    }
+
+    // platformConfig — module catalog dan config global
+    // Read: superadmin (Backyard) + public (form register pakai catalog).
+    // Write: superadmin only.
+    match /platformConfig/{docId} {
+      allow read: if true;
+      allow write: if isGlobalAdmin();
+    }
+
+    // registrationEvents — audit log dengan TTL 7 hari
+    // Superadmin only (read untuk dashboard, write dari API route Backyard).
+    match /registrationEvents/{eventId} {
+      allow read: if isGlobalAdmin();
+      allow create: if isGlobalAdmin();
+      allow update, delete: if false;
     }
 
     // Default Deny

@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import { getSecret } from '@/lib/secrets';
 import { getEmailContext } from './context';
 import { isAllowedInDev } from './guard';
 import { newLogDocRef, writeEmailLog } from './log';
@@ -16,7 +17,7 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
   const bccList = toArray(input.bcc);
 
   const context = await getEmailContext(input.siteId);
-  const sender = resolveDefaultSender();
+  const sender = await resolveDefaultSender();
   const fromHeader = formatFrom(context.fromName, sender);
   const replyTo = input.replyTo ?? context.replyTo ?? undefined;
 
@@ -53,8 +54,7 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
   }
 
   try {
-    const apiKey = process.env.RESEND_API_KEY;
-    if (!apiKey) throw new Error('RESEND_API_KEY is not set');
+    const apiKey = await getSecret('RESEND_API_KEY');
 
     const body: Record<string, unknown> = {
       from: fromHeader,
@@ -63,7 +63,10 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
         id: input.templateAlias,
         variables: {
           ...input.variables,
-          businessName: context.fromName,
+          businessName: context.brand.businessName,
+          logoUrl: context.brand.logoUrl ?? '',
+          primaryColor: context.brand.primaryColor ?? '',
+          siteUrl: context.brand.siteUrl,
         },
       },
       tags: input.tags ?? [],

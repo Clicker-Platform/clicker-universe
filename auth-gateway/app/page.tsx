@@ -211,6 +211,16 @@ function AdminLoginForm() {
             Enter Dashboard
           </button>
         </form>
+
+        <div className="mt-6 pt-6 border-t-2 border-dashed border-gray-200 text-center">
+          <p className="text-sm font-bold text-gray-500 mb-2">Belum punya akun?</p>
+          <a
+            href={`${process.env.NEXT_PUBLIC_PLATFORM_URL || 'http://localhost:3000'}/register`}
+            className="inline-block w-full py-2.5 rounded-xl border-2 border-gray-200 text-gray-400 font-black uppercase text-xs hover:border-brand-dark hover:text-brand-dark transition-all"
+          >
+            Daftar Sekarang
+          </a>
+        </div>
       </div>
     </div>
   );

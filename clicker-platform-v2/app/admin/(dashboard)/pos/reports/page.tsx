@@ -198,7 +198,7 @@ export default function POSReportsPage() {
                 Status: o.status,
                 PaymentStatus: o.paymentStatus || 'unknown',
                 PaymentMethod: o.paymentMethod || 'unknown',
-                Items: o.items.map(i => `${i.quantity}x ${i.name}`).join('; '),
+                Items: o.items.map(i => `${i.quantity}x ${i.name}${i.variantName ? ` (${i.variantName})` : ''}`).join('; '),
                 Table: o.tableNumber || '',
                 Customer: o.customerName || '',
                 ServerMember: o.memberName || ''
@@ -435,7 +435,7 @@ export default function POSReportsPage() {
                                         ) : orders.map(order => {
                                             const date = order.createdAt instanceof Timestamp ? order.createdAt.toDate() : new Date(order.createdAt);
                                             const isCancelled = order.status === 'cancelled';
-                                            const itemsSummary = order.items.map(i => `${i.quantity}x ${i.name}`).join(', ');
+                                            const itemsSummary = order.items.map(i => `${i.quantity}x ${i.name}${i.variantName ? ` (${i.variantName})` : ''}`).join(', ');
 
                                             return (
                                                 <tr key={order.id} className={`border-b border-gray-50 dark:border-neutral-800 last:border-0 hover:bg-gray-50/50 dark:hover:bg-neutral-800/50 ${isCancelled ? 'opacity-60 bg-gray-50 dark:bg-neutral-800/50' : ''}`}>
@@ -621,7 +621,7 @@ export default function POSReportsPage() {
                             <tbody>
                                 {orders.slice(0, 100).map(order => {
                                     const date = order.createdAt instanceof Timestamp ? order.createdAt.toDate() : new Date(order.createdAt);
-                                    const itemsSummary = order.items.map(i => `${i.quantity} ${i.name}`).join(', ');
+                                    const itemsSummary = order.items.map(i => `${i.quantity} ${i.name}${i.variantName ? ` (${i.variantName})` : ''}`).join(', ');
 
                                     return (
                                         <tr key={order.id} className="border-b border-gray-200">

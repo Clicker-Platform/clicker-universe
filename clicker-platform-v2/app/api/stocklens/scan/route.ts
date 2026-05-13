@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { scanProductImage } from '@/lib/modules/stocklens/server/gemini-scanner';
+import { scanProductImage } from '@/lib/modules/stocklens/server/scanner';
 import { logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
@@ -23,15 +23,15 @@ export async function POST(req: NextRequest) {
     const result = await scanProductImage(siteId, base64, mimeType || 'image/jpeg');
     return NextResponse.json(result);
   } catch (error: unknown) {
-    logger.error('stocklens.scan.route.failed', { error });
     const message = error instanceof Error ? error.message : 'Unknown error';
-    const isQuotaError = message.includes('429') || message.includes('quota') || message.includes('Too Many Requests');
-    if (isQuotaError) {
+    if (message.startsWith('insufficient_credits:')) {
+      const [, balance, required] = message.split(':');
       return NextResponse.json(
-        { error: 'Quota Gemini API habis. Tambahkan billing di Google AI Studio atau gunakan API Key sendiri di StockLens Settings.' },
-        { status: 429 }
+        { error: 'insufficient_credits', balance: Number(balance), required: Number(required) },
+        { status: 402 }
       );
     }
-    return NextResponse.json({ error: message }, { status: 500 });
+    logger.error('stocklens.scan.route.failed', { error });
+    return NextResponse.json({ error: 'Scan gagal. Coba lagi.' }, { status: 500 });
   }
 }

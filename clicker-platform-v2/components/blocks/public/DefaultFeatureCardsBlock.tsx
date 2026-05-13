@@ -129,11 +129,11 @@ export function DefaultFeatureCardsBlock({ data, theme: themeProp, previewMode: 
     const containerClass = dv(
         deviceView,
         'flex items-stretch gap-3 overflow-x-auto px-4 pb-2 snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
-        `md:grid md:grid-cols-1 ${desktopCols} md:gap-4 md:items-stretch md:px-4 md:max-w-6xl md:mx-auto md:overflow-visible md:pb-0`
+        `md:grid ${desktopCols} md:gap-4 md:items-stretch md:px-4 md:max-w-6xl md:mx-auto md:overflow-visible md:pb-0`
     );
 
     return (
-        <section className="w-full py-8">
+        <section className="w-full min-w-0 py-8">
             {(data.title || data.subtitle) && (
                 <div className="mb-8 px-4 text-center max-w-2xl mx-auto">
                     {data.title && (
@@ -150,11 +150,18 @@ export function DefaultFeatureCardsBlock({ data, theme: themeProp, previewMode: 
             )}
             {cards.length > 0 && (
                 <div className={containerClass}>
-                    {cards.map((card) => (
-                        <div key={card.id} className="snap-start shrink-0 w-[72vw] max-w-[280px] md:w-auto md:max-w-none flex flex-col">
-                            <CardItem card={card} cardStyle={theme?.cardStyle} />
-                        </div>
-                    ))}
+                    {cards.map((card) => {
+                        const cardWrapperClass = dv(
+                            deviceView,
+                            'snap-start shrink-0 w-[72vw] max-w-[280px] flex flex-col',
+                            'md:w-auto md:max-w-none flex flex-col'
+                        );
+                        return (
+                            <div key={card.id} className={cardWrapperClass}>
+                                <CardItem card={card} cardStyle={theme?.cardStyle} />
+                            </div>
+                        );
+                    })}
                 </div>
             )}
         </section>

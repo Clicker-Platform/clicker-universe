@@ -54,6 +54,7 @@ function catalogToService(item: ServiceCatalogItem): Service {
         durationMinutes: item.durationMinutes,
         bookingType: item.reservationConfig?.bookingType ?? 'time_slot',
         price: item.price,
+        maxPrice: item.reservationConfig?.maxPrice,
         isActive: item.isActive,
         imageUrl: item.imageUrl,
         category: item.category,
@@ -87,7 +88,10 @@ export async function createService(
         isActive: service.isActive ?? true,
         category: (service.category as any) || 'OTHER',
         imageUrl: service.imageUrl,
-        reservationConfig: { bookingType: 'time_slot' as const },   // marks as bookable
+        reservationConfig: {
+            bookingType: service.bookingType ?? 'time_slot',
+            ...(service.maxPrice !== undefined ? { maxPrice: service.maxPrice } : {}),
+        },
     });
 }
 
@@ -104,6 +108,20 @@ export async function updateService(
     if (updates.isActive !== undefined) patch.isActive = updates.isActive;
     if (updates.category !== undefined) patch.category = updates.category;
     if (updates.imageUrl !== undefined) patch.imageUrl = updates.imageUrl;
+
+    // bookingType and maxPrice live under reservationConfig — merge with current
+    // value to avoid clobbering sibling fields when only one changes.
+    if (updates.bookingType !== undefined || updates.maxPrice !== undefined) {
+        const current = await getServiceCatalogItem(siteId, id);
+        const currentConfig = current?.reservationConfig ?? { bookingType: 'time_slot' as const };
+        patch.reservationConfig = {
+            bookingType: updates.bookingType ?? currentConfig.bookingType,
+            ...(updates.maxPrice !== undefined
+                ? { maxPrice: updates.maxPrice }
+                : currentConfig.maxPrice !== undefined ? { maxPrice: currentConfig.maxPrice } : {}),
+        };
+    }
+
     await updateServiceCatalogItem(siteId, id, patch);
 }
 
@@ -119,8 +137,8 @@ export async function getBookings(
     limitCount: number = 20,
     lastDoc: QueryDocumentSnapshot | null = null
 ): Promise<{ bookings: Booking[], lastDoc: QueryDocumentSnapshot | null }> {
-    // Requires composite index: status (==) + createdAt (desc), and status (in) + createdAt (desc)
-    // Firestore index can be created at: Firebase Console > Firestore > Indexes
+    // Requires composite index on bookings: (status ASC, createdAt DESC).
+    // Declared in firestore.indexes.json — deploy via `firebase deploy --only firestore:indexes`.
     const coll = collection(db, 'sites', siteId, BOOKINGS_COLLECTION);
 
     let q = status
@@ -160,7 +178,7 @@ export async function getBookingCounts(siteId: string): Promise<{ all: number; n
             done: doneSnap.data().count
         };
     } catch (error) {
-        logger.error('reservation.create.failed', { siteId, error });
+        logger.error('reservation.counts.failed', { siteId, error });
         return { all: 0, new: 0, confirmed: 0, done: 0 };
     }
 }

@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, CheckCircle, Loader } from 'lucide-react';
 import { Form } from '@/data/mockData';
 import { useTemplate } from '@/components/TemplateProvider';
@@ -18,6 +19,11 @@ export const FormModal: React.FC<FormModalProps> = ({ form, isOpen, onClose, sit
     const { theme } = useTemplate();
     const isGlass = theme.cardStyle === 'glass';
     const [success, setSuccess] = useState(false);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const { formData, setField, submitting, handleSubmit } = useFormSubmit({
         siteId,
@@ -32,6 +38,7 @@ export const FormModal: React.FC<FormModalProps> = ({ form, isOpen, onClose, sit
     });
 
     if (!isOpen) return null;
+    if (!mounted) return null;
     if (form.isPublished === false) return null;
 
     const labelClassName = isGlass ? 'text-white/80' : 'text-gray-700';
@@ -39,16 +46,23 @@ export const FormModal: React.FC<FormModalProps> = ({ form, isOpen, onClose, sit
         ? 'bg-white/5 border-white/10 text-white placeholder-white/30 focus:border-[var(--theme-primary)]/50'
         : 'bg-gray-50 border-2 border-gray-200 focus:border-brand-dark';
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    return createPortal(
+        <div className="fixed inset-0 z-[60] flex items-end justify-center sm:items-center sm:p-4">
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose}></div>
 
             <div
-                className={`relative rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200 ${
+                className={`relative w-full sm:max-w-md overflow-hidden shadow-2xl
+                    rounded-t-3xl sm:rounded-3xl
+                    max-h-[90vh] sm:max-h-[90vh] overflow-y-auto
+                    animate-in slide-in-from-bottom sm:slide-in-from-bottom-0 sm:fade-in sm:zoom-in-95 duration-200 ${
                     isGlass ? 'border border-white/10 backdrop-blur-xl' : 'bg-white'
                 }`}
                 style={isGlass ? { background: 'rgba(26, 26, 26, 0.85)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' } : undefined}
             >
+                {/* Drag handle (mobile only) */}
+                <div className="sm:hidden flex justify-center pt-2 pb-1">
+                    <div className={`w-10 h-1 rounded-full ${isGlass ? 'bg-white/20' : 'bg-gray-300'}`} />
+                </div>
                 {!success && (
                     <button
                         onClick={onClose}
@@ -111,6 +125,7 @@ export const FormModal: React.FC<FormModalProps> = ({ form, isOpen, onClose, sit
                     </div>
                 )}
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };

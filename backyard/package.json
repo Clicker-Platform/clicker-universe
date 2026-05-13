@@ -3,14 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 3013",
+    "dev": "next dev --webpack -p 3013",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
+    "@google-cloud/secret-manager": "^6.1.2",
     "clsx": "^2.1.1",
     "firebase": "^12.7.0",
+    "firebase-admin": "^13.9.0",
     "lucide-react": "^0.562.0",
     "next": "16.1.6",
     "react": "19.2.3",

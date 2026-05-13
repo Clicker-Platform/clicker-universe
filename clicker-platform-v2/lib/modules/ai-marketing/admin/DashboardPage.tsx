@@ -58,10 +58,10 @@ export default function DashboardPage() {
         <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
           <div className="flex items-center gap-2 text-green-600 mb-2">
             <Zap className="w-4 h-4" />
-            <span className="text-xs font-medium">Credits Left</span>
+            <span className="text-xs font-medium">AI Balance</span>
           </div>
           {creditsLoading ? <div className="h-8 w-12 bg-gray-100 rounded animate-pulse" /> : (
-            <p className="text-2xl font-black text-gray-900">{balance}</p>
+            <p className="text-2xl font-black text-gray-900">${balance.toFixed(4)}</p>
           )}
         </div>
 
@@ -84,10 +84,10 @@ export default function DashboardPage() {
         <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
           <div className="flex items-center gap-2 text-amber-600 mb-2">
             <Zap className="w-4 h-4" />
-            <span className="text-xs font-medium">Credits Used</span>
+            <span className="text-xs font-medium">Total Spent</span>
           </div>
           {creditsLoading ? <div className="h-8 w-12 bg-gray-100 rounded animate-pulse" /> : (
-            <p className="text-2xl font-black text-gray-900">{lifetimeUsed}</p>
+            <p className="text-2xl font-black text-gray-900">${lifetimeUsed.toFixed(4)}</p>
           )}
         </div>
       </div>
@@ -136,7 +136,7 @@ export default function DashboardPage() {
                       <p className="text-xs text-gray-400">{AGENT_LABELS[gen.agentId]?.label ?? gen.agentId}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-xs font-semibold text-amber-600">{gen.creditsUsed} credits</p>
+                      <p className="text-xs font-semibold text-gray-400">{gen.model?.split('/')[1] ?? gen.model}</p>
                       <p className="text-xs text-gray-400">{date.toLocaleDateString()}</p>
                     </div>
                   </div>

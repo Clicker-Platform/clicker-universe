@@ -136,7 +136,7 @@ export function SharedPageLayout({
 
                 <main
                     className={`
-                        min-h-screen ${heroFirst ? 'pt-0 pb-12' : 'py-12'} relative transition-colors duration-300 overflow-x-clip selection:bg-brand-dark selection:text-brand-green
+                        min-h-screen ${heroFirst ? 'pt-0 pb-12' : 'py-12'} relative transition-colors duration-300 overflow-x-clip
                         ${template.config.layout?.navMode === 'adaptive' ? 'pt-16' : ''}
                     `}
                     suppressHydrationWarning // Prevent mismatches on dynamic styles

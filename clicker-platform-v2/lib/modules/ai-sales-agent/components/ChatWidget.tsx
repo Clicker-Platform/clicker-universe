@@ -85,6 +85,16 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ siteId, moduleId, agentN
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
+                if (response.status === 402 || errorData.error === 'insufficient_credits') {
+                    const botMsg: ChatMessage = {
+                        id: Date.now().toString() + '_err',
+                        role: 'model',
+                        text: 'Maaf, layanan AI sedang tidak tersedia. Silakan hubungi admin untuk mengisi ulang kredit.',
+                        timestamp: Date.now(),
+                    };
+                    setMessages(prev => [...prev, botMsg]);
+                    return;
+                }
                 logger.error('ai.agent.chat.api.error', { siteId, error: errorData });
                 throw new Error(errorData.details || errorData.error || "Failed to send message");
             }
@@ -101,7 +111,13 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ siteId, moduleId, agentN
 
         } catch (error) {
             logger.error('ai.agent.chat.send.failed', { siteId, error });
-            // Optional: Add error message to chat
+            const errMsg: ChatMessage = {
+                id: Date.now().toString() + '_err',
+                role: 'model',
+                text: 'Maaf, terjadi kesalahan. Silakan coba lagi.',
+                timestamp: Date.now(),
+            };
+            setMessages(prev => [...prev, errMsg]);
         } finally {
             setIsLoading(false);
         }

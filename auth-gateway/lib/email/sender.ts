@@ -63,7 +63,10 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
         id: input.templateAlias,
         variables: {
           ...input.variables,
-          businessName: context.fromName,
+          businessName: context.brand.businessName,
+          logoUrl: context.brand.logoUrl ?? '',
+          primaryColor: context.brand.primaryColor ?? '',
+          siteUrl: context.brand.siteUrl,
         },
       },
       tags: input.tags ?? [],
