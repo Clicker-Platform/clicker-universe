@@ -10,11 +10,6 @@ const nextConfig = {
       'google-gax',
     ],
     allowedDevOrigins: ['192.168.0.100'],
-    experimental: {
-        turbo: {
-            root: '..'
-        }
-    },
     images: {
         formats: ['image/avif', 'image/webp'],
         minimumCacheTTL: 2592000,
