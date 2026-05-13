@@ -1,166 +1,60 @@
 # Clicker Universe — Monorepo
 
-Repository utama **Clicker Universe** ecosystem. Monorepo berisi 3 aplikasi Next.js + Firebase Functions yang terhubung ke Firebase project production (`clicker-universe`).
+Multi-tenant SaaS platform. 3 Next.js apps + Firebase Functions → Firebase project `clicker-universe` (prod).
 
----
+## Apps
 
-## Project Structure
+| Folder | Port | Fungsi |
+|--------|------|--------|
+| `clicker-platform-v2/` | 3000 | Core platform (admin dashboard tenant) |
+| `auth-gateway/` | 3012 | Auth layer — login + handoff |
+| `backyard/` | 3013 | Super-admin God Mode |
+| `functions/` | — | Firebase Cloud Functions |
 
-| Folder | Port | Deskripsi |
-|--------|------|-----------|
-| [`clicker-platform-v2/`](./clicker-platform-v2) | **3000** | Core Multi-Tenant SaaS Platform |
-| [`auth-gateway/`](./auth-gateway) | **3012** | Thin auth layer — login + handoff ke platform |
-| [`backyard/`](./backyard) | **3013** | Super-admin "God Mode" dashboard |
-| [`functions/`](./functions) | — | Firebase Cloud Functions |
-| [`scripts/`](./scripts) | — | Deploy scripts, seeders, utilities |
-| [`superpowers/`](./superpowers) | — | Design specs, plans, audit notes |
-
----
-
-## Getting Started
+## Dev
 
 ```bash
-# Platform (port 3000)
-cd clicker-platform-v2 && pnpm dev
-
-# Auth Gateway (port 3012)
-cd auth-gateway && pnpm dev
-
-# Backyard (port 3013)
-cd backyard && pnpm dev
+cd clicker-platform-v2 && pnpm dev   # localhost:3000
+cd auth-gateway && pnpm dev           # localhost:3012
+cd backyard && pnpm dev               # localhost:3013
 ```
-
-Akses di browser:
-- **Platform admin**: http://localhost:3000
-- **Auth login**: http://localhost:3012
-- **Super-admin**: http://localhost:3013
-
----
-
-## Environment Variables
-
-Setiap app punya file env (gitignored):
-
-```
-{app}/.env.local                # shared vars semua env
-{app}/.env.development.local    # override untuk dev (staging Firebase, localhost URLs)
-```
-
-`clicker-platform-v2/.env.local` berisi prod Firebase credentials. `.env.development.local` override ke staging project untuk local dev.
-
----
 
 ## Branches
 
-| Branch | Fungsi |
-|--------|--------|
-| `main` | Production — konek ke `clicker-universe` |
-| `dev` | Development — konek ke `clicker-universe-stagging` |
-
----
+| Branch | Firebase Project | URL |
+|--------|-----------------|-----|
+| `main` | `clicker-universe` | clicker.id |
+| `dev` | `clicker-universe-stagging` | stg-clicker-core.web.app |
 
 ## Deploy
 
-### Production
-
 ```bash
-# Semua (hosting + functions + firestore)
-./scripts/deploy-prod.sh
-
-# Per target
-./scripts/deploy-prod.sh core
+./scripts/deploy-prod.sh              # semua ke prod
+./scripts/deploy-prod.sh core         # platform saja
 ./scripts/deploy-prod.sh backyard
 ./scripts/deploy-prod.sh auth
 ./scripts/deploy-prod.sh functions
 ./scripts/deploy-prod.sh firestore
-```
 
-URL production:
-- https://clicker.id (platform)
-- https://auth.clicker.id (auth gateway)
-- https://backyard.clicker.id (backyard)
-
-### Staging
-
-```bash
-./scripts/deploy-staging.sh
+./scripts/deploy-staging.sh           # semua ke staging
 ./scripts/deploy-staging.sh core
 ```
 
-URL staging:
-- https://stg-clicker-core.web.app
-- https://stg-clicker-auth.web.app
-- https://stg-clicker-backyard.web.app
+## Modules
 
----
+POS · Membership · Inventory · Stocklens · Reservation · Sales Pipeline · Service Records · Promo · Fintrack · AI Sales Agent · AI Marketing
 
-## Firebase Hosting Targets
+Toggle per-tenant via `sites/{siteId}.modules.{moduleId} = true`. Detail: [ARCHITECTURE.md](./clicker-platform-v2/Docs/ARCHITECTURE.md)
 
-```
-clicker-universe (prod):
-  core      → clickerapps           (platform-v2)
-  auth      → clicker-auth-gateway  (auth-gateway)
-  backyard  → clicker-backyard-app  (backyard)
-
-clicker-universe-stagging (staging):
-  core      → stg-clicker-core
-  auth      → stg-clicker-auth
-  backyard  → stg-clicker-backyard
-```
-
----
-
-## Architecture
-
-### Multi-tenancy
-
-Setiap tenant punya `siteId` (slug), data terisolasi di `sites/{siteId}/...` Firestore.
-
-URL pattern:
-- **Dev**: `localhost:3000/{slug}` (path-based)
-- **Production**: `{slug}.clicker.id` (subdomain)
-
-### Auth Flow
+## Env
 
 ```
-User → auth.clicker.id → custom token + siteId → redirect ke {slug}.clicker.id/admin
+{app}/.env.local                # shared (prod Firebase credentials)
+{app}/.env.development.local    # override dev (staging Firebase, localhost URLs)
 ```
 
-Detail lengkap: [`CLAUDE.md`](./CLAUDE.md)
+## Docs
 
-### Module System
-
-Modul (POS, Reservation, Membership, Promo, dll) terdaftar di `modules/{id}` Firestore, toggle per-tenant via `sites/{siteId}.modules.{moduleId} = true`.
-
-### AI Foundation
-
-Shared AI layer di `clicker-platform-v2/lib/ai/` — dipakai semua modul AI (AI Sales Agent, AI Marketing, dll).
-
-| File | Fungsi |
-|------|--------|
-| `client.ts` | Panggil model AI (text, vision, tools) |
-| `credits.ts` | Deduct & cek saldo kredit per tenant |
-| `pricing.ts` | Hitung biaya per token per model |
-| `models.ts` | Resolve model config dari Firestore |
-| `context.ts` | Build tenant context untuk prompt enrichment |
-
-Konfigurasi model & harga dikelola di Backyard → AI Settings (`backyard/app/ai-settings/`). Kredit tenant di `sites/{siteId}/modules/ai-platform/`.
-
----
-
-## Testing
-
-```bash
-cd clicker-platform-v2
-pnpm test
-pnpm test:watch
-```
-
----
-
-## Documentation
-
-- [`CLAUDE.md`](./CLAUDE.md) — Architecture rules, auth flow, module system
-- [`.agents/README.md`](./.agents/README.md) — Index semua Claude Code skills
-- [`clicker-platform-v2/Docs/ARCHITECTURE.md`](./clicker-platform-v2/Docs/ARCHITECTURE.md) — Detail arsitektur platform
-- [`superpowers/specs/`](./superpowers/specs/) — Feature design specs
+- [CLAUDE.md](./CLAUDE.md) — Rules, auth flow, skills index
+- [ARCHITECTURE.md](./clicker-platform-v2/Docs/ARCHITECTURE.md) — Full architecture reference
+- [.agents/README.md](./.agents/README.md) — Claude Code skills

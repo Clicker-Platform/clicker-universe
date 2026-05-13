@@ -196,7 +196,9 @@ lib/modules/{module_id}/
 | `ai_sales` | AI Sales Agent | Overview, Settings |
 | `service_records` | Service Records | Records, Reports, New Record (hidden), Record Detail (hidden), Vehicles, Vehicle Detail (hidden), Service Types, Reminders, Settings |
 | `sales_pipeline` | Sales Pipeline | Pipeline Board, Settings |
-| `ai_marketing` | AI Marketing | Dashboard, Generate, Assets, Asset Detail, Campaigns, Campaign Detail, Analytics, Settings (all hidden — dev only) |
+| `promo` | Promotions & Vouchers | Promos, Vouchers, Settings |
+| `fintrack` | Fintrack | Wallets, Entries, Debts, Budget, Recurring, Reports |
+| `ai_marketing` | AI Marketing | Dashboard, Generate, Assets, Campaigns, Analytics, Settings |
 
 ### How Module Routes Are Served
 
@@ -516,6 +518,9 @@ Pattern: `sites/{siteId}/modules/{module_id}/{collection}`
 | stocklens | `sites/{siteId}/modules/stocklens/vault/{itemId}` |
 | reservation | `sites/{siteId}/modules/reservation/bookings/{bookingId}` |
 | sales_pipeline | `sites/{siteId}/leads/{leadId}` (board), `sites/{siteId}/modules/sales_pipeline/settings/config` |
+| promo | `sites/{siteId}/modules/promo/promos/{promoId}`, `sites/{siteId}/modules/promo/vouchers/{voucherId}` |
+| fintrack | `sites/{siteId}/modules/fintrack/wallets/{walletId}`, `sites/{siteId}/modules/fintrack/entries/{entryId}` |
+| ai_platform | `sites/{siteId}/modules/ai-platform/credits` (credit balance), `sites/{siteId}/modules/ai-platform/usage/{docId}` |
 
 > **Rule:** Always define paths as constants in `lib/modules/{module_id}/constants.ts`. Never hardcode path strings in components or api files.
 
@@ -526,6 +531,12 @@ Pattern: `sites/{siteId}/modules/{module_id}/{collection}`
 | `modules/{module_id}` | Global module registry (enabled, version, publicRoutes) |
 | `platform_logs/{logId}` | Structured error/event logs — Backyard Monitoring (server write only) |
 | `platform_meta/{docId}` | Seed history, RBAC config, future platform meta |
+| `registrationRequests/{id}` | Self-service tenant signup requests |
+| `registrationEvents/{id}` | Audit log per registration event (TTL 7 hari) |
+| `platformConfig/modulesCatalog` | Modul catalog untuk form register publik |
+| `slugMappings/{slug}` | Slug → siteId lookup untuk routing |
+| `templates/{templateId}` | Global template registry |
+| `users/{uid}` | User profile + subcollections |
 
 ---
 

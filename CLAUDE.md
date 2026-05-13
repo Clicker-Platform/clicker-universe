@@ -43,6 +43,7 @@ This project has Claude Code skills in `.claude/commands/`. Use them:
 - `/sales_pipeline` — CRM Kanban board
 - `/service_records` — vehicle service records, warranty, reminders
 - `/ai_sales_agent` — Gemini AI chatbot, lead capture
+- `/fintrack` — personal finance tracker (wallets, entries, debts, budget, recurring)
 
 ### Core Features
 - `/core_auth_rbac` — authentication and RBAC
