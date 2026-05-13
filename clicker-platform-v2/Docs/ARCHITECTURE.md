@@ -732,7 +732,123 @@ const result = await callText({
 
 ---
 
-## 16. Key File Index
+## 16. Registration Flow (Self-Service Tenant Signup)
+
+User bisa mendaftar sendiri via `/register` tanpa perlu kontak admin secara manual.
+
+### Flow
+
+```
+[1] User submit /register (public page)
+    └─ Validasi slug availability
+    └─ Simpan ke registrationRequests/{id} (Firestore)
+    └─ Email konfirmasi → user
+    └─ Email notifikasi → admin internal
+
+[2] Admin review di Backyard → Registrations
+    └─ Lihat detail request (business info, modules diminta)
+    └─ Pilih: Activate atau Reject
+
+[3] Activate
+    └─ Create tenant (sites/{siteId}) + member owner
+    └─ Generate temp password (auto)
+    └─ Simpan tempPassword di registrationRequests doc
+
+[4] Admin click "Kirim Kredensial"
+    └─ Email kredensial → user (login URL + temp password)
+    └─ tempPassword dihapus, credentialsSent: true
+
+[5] Reject
+    └─ Email penolakan → user
+    └─ Status = 'rejected'
+```
+
+### Key Files
+
+| File | Fungsi |
+|------|--------|
+| `clicker-platform-v2/app/(public)/register/` | Public register form |
+| `clicker-platform-v2/lib/registration/` | Schema, submit action, rate-limit, event-log |
+| `backyard/app/registrations/` | Admin review UI |
+| `backyard/app/api/registrations/[id]/activate/` | Create tenant + generate password |
+| `backyard/app/api/registrations/[id]/send-credentials/` | Kirim email kredensial |
+| `backyard/app/api/registrations/[id]/reject/` | Kirim email penolakan |
+
+### Firestore Collections
+
+| Path | Isi |
+|------|-----|
+| `registrationRequests/{id}` | Request data, status, tempPassword |
+| `registrationEvents/{id}` | Audit log per event (TTL 7 hari) |
+| `platformConfig/modulesCatalog` | Daftar modul yang bisa dipilih saat register |
+
+---
+
+## 17. Email System
+
+Email dikirim via **Resend** dengan template aliases. Platform (`clicker-platform-v2`) dan Backyard punya email layer masing-masing.
+
+### Platform Email (`lib/email/`)
+
+| File | Fungsi |
+|------|--------|
+| `sender.ts` | `sendEmail()` — entry point utama |
+| `config.ts` | Resolve sender domain + template aliases dari Firestore |
+| `context.ts` | Build email context per tenant (fromName, replyTo, siteUrl) |
+| `guard.ts` | Dev allowlist — cegah kirim ke user real saat dev |
+| `log.ts` | Tulis `emailLog` ke Firestore per tenant |
+
+### Backyard Email (`backyard/lib/email/`)
+
+Sama strukturnya, tapi untuk email platform-level (registrasi, notif admin).
+
+### Email Config
+
+Konfigurasi sender (domain, localPart, fromName) dan template aliases disimpan di Firestore `platform/settings/email/config`, dikelola via **Backyard → Email Config** (`backyard/app/api/email-config/`).
+
+### Dev Mode
+
+`EMAIL_DEV_ALLOWLIST` — hanya email dengan suffix tertentu yang boleh terima email di dev mode. Default: `@clicker.id,@resend.dev,@gmail.com`.
+
+---
+
+## 18. Backyard (Super-admin Dashboard)
+
+Standalone Next.js app (`backyard/`, port 3013) — God Mode untuk superadmin. **All-client** — tidak ada Server Components, semua data via Firestore client SDK atau API routes yang panggil Firebase Admin.
+
+### Pages
+
+| Route | Fungsi |
+|-------|--------|
+| `/tenants` | List semua tenant, toggle modules, suspend |
+| `/tenants/[id]` | Detail tenant |
+| `/registrations` | Review self-service signup requests |
+| `/registrations/[id]` | Detail + activate/reject |
+| `/access` | Manage backyard user access |
+| `/api-keys` | Manage secrets via Secret Manager |
+| `/ai-settings` | Model config, pricing, kredit per tenant |
+| `/monitoring` | Platform health, logs, Resend stats, PostHog stats |
+| `/settings` | Platform-level settings |
+| `/seed` | Seed modules catalog ke Firestore |
+| `/sync` | Sync utilities |
+| `/whatsapp` | Per-tenant WA status |
+
+### Secrets Manager (`lib/secrets/`)
+
+Secrets disimpan di **Google Cloud Secret Manager**, bukan env vars. Dikelola via Backyard → API Keys.
+
+| Secret Key | Fungsi |
+|------------|--------|
+| `OPENROUTER_API_KEY` | AI model calls |
+| `RESEND_API_KEY` | Email service |
+| `UPSTASH_REDIS_REST_TOKEN` | Redis cache token |
+| `WA_WEBHOOK_VERIFY_TOKEN` | WhatsApp webhook |
+| `WA_ENCRYPTION_KEY` | Encrypt WA access token |
+| `META_APP_SECRET` | Meta/Facebook app secret |
+
+---
+
+## 19. Key File Index
 
 | File | Role |
 |---|---|
@@ -767,7 +883,7 @@ const result = await callText({
 
 ---
 
-## 17. Data Flow Diagrams
+## 20. Data Flow Diagrams
 
 ### Public Page Render
 
