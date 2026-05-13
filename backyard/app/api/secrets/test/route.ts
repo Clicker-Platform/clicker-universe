@@ -30,9 +30,10 @@ async function testResend(key: string): Promise<TestResult> {
   }
 }
 
+const UPSTASH_URL = 'https://viable-mongrel-36791.upstash.io';
+
 async function testUpstash(key: string): Promise<TestResult> {
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  if (!url) return { ok: false, message: 'UPSTASH_REDIS_REST_URL not set' };
+  const url = process.env.UPSTASH_REDIS_REST_URL ?? UPSTASH_URL;
   try {
     const res = await fetch(`${url}/ping`, {
       headers: { 'Authorization': `Bearer ${key}` },
