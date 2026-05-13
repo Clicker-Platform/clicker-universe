@@ -117,8 +117,8 @@ clicker-universe-stagging (staging):
 Setiap tenant punya `siteId` (slug), data terisolasi di `sites/{siteId}/...` Firestore.
 
 URL pattern:
-- **Dev**: `{slug}.localhost:3000`
-- **Production**: `{slug}.clicker.id`
+- **Dev**: `localhost:3000/{slug}` (path-based)
+- **Production**: `{slug}.clicker.id` (subdomain)
 
 ### Auth Flow
 
@@ -131,6 +131,20 @@ Detail lengkap: [`CLAUDE.md`](./CLAUDE.md)
 ### Module System
 
 Modul (POS, Reservation, Membership, Promo, dll) terdaftar di `modules/{id}` Firestore, toggle per-tenant via `sites/{siteId}.modules.{moduleId} = true`.
+
+### AI Foundation
+
+Shared AI layer di `clicker-platform-v2/lib/ai/` — dipakai semua modul AI (AI Sales Agent, AI Marketing, dll).
+
+| File | Fungsi |
+|------|--------|
+| `client.ts` | Panggil model AI (text, vision, tools) |
+| `credits.ts` | Deduct & cek saldo kredit per tenant |
+| `pricing.ts` | Hitung biaya per token per model |
+| `models.ts` | Resolve model config dari Firestore |
+| `context.ts` | Build tenant context untuk prompt enrichment |
+
+Konfigurasi model & harga dikelola di Backyard → AI Settings (`backyard/app/ai-settings/`). Kredit tenant di `sites/{siteId}/modules/ai-platform/`.
 
 ---
 
