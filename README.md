@@ -1,25 +1,23 @@
-# Clicker Universe — Dev Monorepo
+# Clicker Universe — Monorepo
 
-Repository pengembangan untuk seluruh **Clicker Universe** ecosystem. Monorepo berisi 3 aplikasi Next.js + Firebase Functions yang saling terhubung melalui satu Firebase project (staging: `clicker-universe-stagging`).
+Repository utama **Clicker Universe** ecosystem. Monorepo berisi 3 aplikasi Next.js + Firebase Functions yang terhubung ke Firebase project production (`clicker-universe`).
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 | Folder | Port | Deskripsi |
-|---|---|---|
-| [`clicker-platform-v2/`](./clicker-platform-v2) | **3000** | Core Multi-Tenant SaaS Platform (admin dashboard tenant) |
+|--------|------|-----------|
+| [`clicker-platform-v2/`](./clicker-platform-v2) | **3000** | Core Multi-Tenant SaaS Platform |
 | [`auth-gateway/`](./auth-gateway) | **3012** | Thin auth layer — login + handoff ke platform |
 | [`backyard/`](./backyard) | **3013** | Super-admin "God Mode" dashboard |
-| [`functions/`](./functions) | — | Firebase Cloud Functions (admin operations) |
-| [`scripts/`](./scripts) | — | Utility scripts (seeders, debug, migrations) |
-| [`superpowers/`](./superpowers) | — | Design specs, implementation plans, audit notes |
+| [`functions/`](./functions) | — | Firebase Cloud Functions |
+| [`scripts/`](./scripts) | — | Deploy scripts, seeders, utilities |
+| [`superpowers/`](./superpowers) | — | Design specs, plans, audit notes |
 
 ---
 
-## 🚀 Getting Started
-
-Setiap app punya `package.json` dan `node_modules` sendiri. Jalankan masing-masing di terminal terpisah:
+## Getting Started
 
 ```bash
 # Platform (port 3000)
@@ -34,89 +32,59 @@ cd backyard && pnpm dev
 
 Akses di browser:
 - **Platform admin**: http://localhost:3000
-- **Form register publik**: http://localhost:3000/register
 - **Auth login**: http://localhost:3012
 - **Super-admin**: http://localhost:3013
 
 ---
 
-## 🔧 Environment Variables
+## Environment Variables
 
-Setiap app punya **2 file `.env`** saja (gitignored, aman untuk secret):
+Setiap app punya file env (gitignored):
 
 ```
-{app}/.env.development.local   # untuk pnpm dev
-{app}/.env.production.local    # untuk pnpm build / deploy
+{app}/.env.local                # shared vars semua env
+{app}/.env.development.local    # override untuk dev (staging Firebase, localhost URLs)
 ```
 
-Format env file: dokumentasi inline `# VAR_NAME` + deskripsi singkat. Lihat file existing untuk template.
-
-**Variable groups:**
-- Service URLs (BASE_DOMAIN, AUTH_GATEWAY, BACKYARD)
-- Firebase Client SDK (`NEXT_PUBLIC_FIREBASE_*`)
-- Firebase Admin SDK (`GCP_SERVICE_ACCOUNT_KEY`, server-only)
-- Resend email (`RESEND_API_KEY`, template aliases)
-- Notifikasi internal (`ADMIN_NOTIFICATION_EMAIL`)
-- Feature flags (`NEXT_PUBLIC_ENABLE_WHATSAPP`, dll)
+`clicker-platform-v2/.env.local` berisi prod Firebase credentials. `.env.development.local` override ke staging project untuk local dev.
 
 ---
 
-## 🏗️ Architecture
+## Branches
 
-### Multi-tenancy
-
-Platform-v2 melayani banyak tenant dari single codebase. Setiap tenant punya `siteId` (slug) dan data terisolasi di `sites/{siteId}/...` Firestore subcollection.
-
-URL pattern:
-- **Dev**: `localhost:3000/{slug}` (path-based)
-- **Staging**: `https://stg-clicker-core.web.app/{slug}` (path-based)
-- **Production** (custom domain): `https://clicker.id/{slug}` (path-based)
-
-### Auth Flow
-
-Lihat diagram lengkap di [`CLAUDE.md`](./CLAUDE.md). Ringkasnya:
-
-```
-User → auth.clicker.id (login) → custom token + siteId → redirect ke platform/admin
-```
-
-### Module System
-
-Modul (POS, Reservation, Membership, Promo, dll) terdaftar di Firestore `modules/{id}` dan ter-toggle per-tenant via `sites/{siteId}.modules.{moduleId} = true`.
-
-Adding new module: lihat [`CLAUDE.md`](./CLAUDE.md) Critical Rule #7.
-
-### Registration Flow (added 2026-05-09)
-
-User self-service register di `/register` → Backyard activate → email kredensial:
-
-```
-[1] User submit /register
-    └─ Email konfirmasi → user (review max 3 jam)
-    └─ Email notif → admin internal
-
-[2] Admin Activate di Backyard
-    └─ Form Create Tenant prefilled (modules, password auto-generate)
-    └─ tempPassword disimpan di registrationRequests doc
-
-[3] Admin test login manual
-
-[4] Admin click "Kirim Kredensial"
-    └─ Email kredensial → user dengan login URL + password
-    └─ tempPassword dihapus, credentialsSent: true
-```
-
-Spec: [`superpowers/specs/2026-05-09-registration-email-and-modules-design.md`](./superpowers/specs/2026-05-09-registration-email-and-modules-design.md)
+| Branch | Fungsi |
+|--------|--------|
+| `main` | Production — konek ke `clicker-universe` |
+| `dev` | Development — konek ke `clicker-universe-stagging` |
 
 ---
 
-## 🌐 Firebase Hosting Targets
+## Deploy
 
+### Production
+
+```bash
+# Semua (hosting + functions + firestore)
+./scripts/deploy-prod.sh
+
+# Per target
+./scripts/deploy-prod.sh core
+./scripts/deploy-prod.sh backyard
+./scripts/deploy-prod.sh auth
+./scripts/deploy-prod.sh functions
+./scripts/deploy-prod.sh firestore
 ```
-.firebaserc → clicker-universe-stagging:
-  core      → stg-clicker-core      (platform-v2)
-  auth      → stg-clicker-auth      (auth-gateway)
-  backyard  → stg-clicker-backyard  (backyard)
+
+URL production:
+- https://clicker.id (platform)
+- https://auth.clicker.id (auth gateway)
+- https://backyard.clicker.id (backyard)
+
+### Staging
+
+```bash
+./scripts/deploy-staging.sh
+./scripts/deploy-staging.sh core
 ```
 
 URL staging:
@@ -126,67 +94,59 @@ URL staging:
 
 ---
 
-## 🚢 Deploy ke Staging
+## Firebase Hosting Targets
 
-```bash
-cd dev
-
-# Switch ke staging project (PENTING)
-firebase use staging
-
-# Deploy semua hosting + rules + indexes
-firebase deploy --only hosting,firestore:rules,firestore:indexes
-
-# Atau per-target
-firebase deploy --only hosting:core
-firebase deploy --only hosting:backyard
-firebase deploy --only hosting:auth
 ```
+clicker-universe (prod):
+  core      → clickerapps           (platform-v2)
+  auth      → clicker-auth-gateway  (auth-gateway)
+  backyard  → clicker-backyard-app  (backyard)
 
-**Catatan deploy:**
-- `.env.production.local` di-whitelist di `firebase.json` (`!.env.production.local`) — Cloud Build akan baca env saat build
-- Untuk deploy ke production, ganti ke `firebase use prod`
+clicker-universe-stagging (staging):
+  core      → stg-clicker-core
+  auth      → stg-clicker-auth
+  backyard  → stg-clicker-backyard
+```
 
 ---
 
-## 🧪 Testing
+## Architecture
+
+### Multi-tenancy
+
+Setiap tenant punya `siteId` (slug), data terisolasi di `sites/{siteId}/...` Firestore.
+
+URL pattern:
+- **Dev**: `{slug}.localhost:3000`
+- **Production**: `{slug}.clicker.id`
+
+### Auth Flow
+
+```
+User → auth.clicker.id → custom token + siteId → redirect ke {slug}.clicker.id/admin
+```
+
+Detail lengkap: [`CLAUDE.md`](./CLAUDE.md)
+
+### Module System
+
+Modul (POS, Reservation, Membership, Promo, dll) terdaftar di `modules/{id}` Firestore, toggle per-tenant via `sites/{siteId}.modules.{moduleId} = true`.
+
+---
+
+## Testing
 
 ```bash
 cd clicker-platform-v2
-pnpm test              # Vitest run all
-pnpm test lib/registration   # specific path
-pnpm test:watch        # watch mode
+pnpm test
+pnpm test:watch
 ```
-
-Backyard belum punya test runner — verifikasi via `pnpm build` + manual smoke test.
 
 ---
 
-## 📚 Documentation
+## Documentation
 
 - [`CLAUDE.md`](./CLAUDE.md) — Architecture rules, auth flow, module system
-- [`AGENTS.md`](./AGENTS.md) — Full architecture reference (kalau ada)
-- [`.agents/README.md`](./.agents/README.md) — Index dari semua Claude Code skills
-- [`superpowers/specs/`](./superpowers/specs/) — Feature design specs
-- [`superpowers/plans/`](./superpowers/plans/) — Implementation plans
+- [`.agents/README.md`](./.agents/README.md) — Index semua Claude Code skills
 - [`clicker-platform-v2/Docs/ARCHITECTURE.md`](./clicker-platform-v2/Docs/ARCHITECTURE.md) — Detail arsitektur platform
-
----
-
-## 🛠️ Common Commands
-
-```bash
-# Run seeder platform config (modules catalog)
-cd clicker-platform-v2 && pnpm dlx tsx scripts/seed-platform-config.ts
-
-# Build all
-cd clicker-platform-v2 && pnpm build
-cd backyard && pnpm build
-cd auth-gateway && pnpm build
-
-# Lint
-pnpm lint
-
-# Firestore: deploy rules & indexes
-firebase deploy --only firestore:rules,firestore:indexes
-```
+- [`superpowers/specs/`](./superpowers/specs/) — Feature design specs
