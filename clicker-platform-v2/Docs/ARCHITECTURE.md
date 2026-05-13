@@ -555,4 +555,62 @@ export function PriceEditor() {
 
 ---
 
+## 6. Core vs. Module Boundary
+
+This is the **most important architectural rule** in the codebase. Violating it produces tightly coupled module graphs that are impossible to disable per-tenant.
+
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│  CORE  (always enabled for every tenant)                        │
+│  app/admin/(dashboard)/                                         │
+│    settings/   pages/   links/   forms/   inbox/                │
+│    products/   canvas/   template/   services/                  │
+│    + module-anchored dirs: pos/ promo/ service-records/         │
+│                            whatsapp/ ai-usage/ seed-modules/    │
+├─────────────────────────────────────────────────────────────────┤
+│  MODULES  (opt-in per tenant)                                   │
+│  lib/modules/{module_id}/                                       │
+│    byod_pos/ membership/ inventory/ stocklens/                  │
+│    reservation/ ai-sales-agent/ sales-pipeline/                 │
+│    service-records/ fintrack/ promo/ ai-marketing/              │
+│    ai-platform/                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+> **Why some admin directories are named after modules.** Most modules are served entirely via the `[...slug]` catch-all (§7). A handful (`pos/`, `promo/`, `service-records/`, `whatsapp/`, `ai-usage/`, `seed-modules/`) have fixed core directories instead — typically because they need shared layouts, server actions, or routes that aren't part of the module's admin route map. These dirs live in **core space** but their contents may delegate into the module.
+
+### The Golden Rules
+
+1. **Core can import from Core.** Core NEVER imports from a module — not even via dynamic import. If core code needs module data, it consults the **module registry** (§7) to check `isModuleEnabled` first, then dispatches through the registered component or runtime API.
+
+2. **Modules MUST NOT import from other modules.** Cross-module logic uses either:
+   - `isModuleEnabled(moduleId)` from `lib/modules/registry.ts` — for conditional features.
+   - The **sanctioned facade exceptions** (rule 3) — for shared business primitives that span modules.
+
+3. **Sanctioned facade exceptions.** Two facades are explicitly allowed to be imported across module boundaries:
+
+   | Facade | Used for | Live consumers |
+   |---|---|---|
+   | `@/lib/modules/promo/api` | Discount evaluation, voucher commit, applied-promo types | `byod_pos`, `reservation` |
+   | `@/lib/modules/membership/api` | Member lookup, point accrual, member creation | `byod_pos`, `reservation`, `service-records` |
+
+   These exist because the underlying logic (promo evaluation, loyalty accrual) is genuinely cross-cutting — duplicating it per module would create drift. Both are **facade-only**: consumers may import the entry points the facade exposes, never the module's internal files. See §15 for promo facade details.
+
+   No other cross-module imports are permitted. If you need another shared primitive, promote it to `lib/core/` (§16) or `lib/{subsystem}/` (Part III).
+
+4. **Module components are registered, not imported.** Module admin pages are exposed via `lib/modules/components.tsx` (dynamic imports keyed by `{moduleId}:{ComponentKey}`). Core code that needs to render a module component looks it up by key — it never imports the file directly.
+
+5. **Module admin routes are served via the catch-all.** `app/admin/(dashboard)/[...slug]/page.tsx` resolves the route through `findModuleForAdminRoute()` and renders the matching component from the registry. Module developers do not add `app/admin/(dashboard)/{module}/page.tsx` files unless they have a justified reason (see "Why some admin directories are named after modules" above).
+
+### Enforcement
+
+There is no automated lint rule for cross-module imports today. Reviewers should check for:
+
+- `from '@/lib/modules/{other_module}/...'` in any module file (allowed only for the two facades in rule 3).
+- Module names appearing in core code outside the registry/components files.
+
+When in doubt: if removing module `X` from a tenant would break module `Y`, the import is violating rule 2.
+
+---
+
 <!-- Sections to be filled in by subsequent tasks -->
