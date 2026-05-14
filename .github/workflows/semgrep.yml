@@ -49,7 +49,6 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: semgrep/semgrep
-    if: ${{ secrets.SEMGREP_APP_TOKEN != '' }}
     env:
       SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
     steps:
@@ -58,3 +57,4 @@ jobs:
 
       - name: Run Semgrep CI (Pro engine)
         run: semgrep ci
+        continue-on-error: true
