@@ -35,7 +35,16 @@ Add layout capability to Canvas Studio by introducing three block types that can
 
 ## Data Model
 
-Children live at `block.data.children: PageBlock[]`.
+Children live at `block.data.children: ContainerChild[]`, where:
+
+```ts
+interface ContainerChild {
+  block: PageBlock; // the actual child block
+  size: number;     // 1–12, fraction of 12-column grid; default 12/N for N children (equal)
+}
+```
+
+Sizes are stored on the container, not on the child block — keeps the child block's `data` shape free of context-specific fields, so the same block can live at the page root or inside any container without schema mismatch.
 
 All containers render at 100% of the page content width by default. An optional `maxWidth` property caps the inner content width and centers it horizontally within the page band.
 
@@ -100,17 +109,29 @@ When `drilledChildId` is null:
 Reusable across all three container types. Props:
 ```ts
 {
-  children: PageBlock[];
-  onChildClick: (id: string) => void;
-  onChildrenChange: (children: PageBlock[]) => void;
+  children: ContainerChild[];
+  onChildClick: (blockId: string) => void;
+  onChildrenChange: (children: ContainerChild[]) => void;
   templateId?: string;
+  sizeMode: 'flex' | 'grid'; // controls size slider semantics + label
 }
 ```
 
 Renders:
-- `@dnd-kit/sortable` `SortableContext` with each child as a sortable row.
-- Each row: drag handle, block icon, block label, edit chevron, delete button.
+
+- `@dnd-kit/sortable` `SortableContext` with each `ContainerChild` as a sortable row.
+- Each row: drag handle, block icon, block label, **size slider (1–12)**, edit chevron, delete button.
 - "+ Add block" button → opens a mini picker that filters `BLOCK_OPTIONS` to exclude `row | column | grid`. Module blocks (from `subscribeToEnabledModules`) pass through normally.
+
+### Size slider behavior
+
+- Range 1–12, integer snap (no free-form percentages).
+- Label adapts: `sizeMode === 'flex'` shows "Width: 6/12" for row, "Height: 6/12" for column. `sizeMode === 'grid'` shows "Span: 6/12 cols".
+- Dragging updates `data.children[i].size` immediately → canvas re-renders in real time.
+- No auto-balance: if the user creates an unbalanced row (3+3+3 = 9), the remaining 3/12 is empty space governed by `justify`. This is intentional — preserves the user's intent.
+- On add: new child defaults to equal share — `size = floor(12 / N)` where N is the new count; remainder distributed left-to-right.
+- On delete: remaining children keep their sizes (no rebalance).
+- On mobile when `stackOnMobile === true`: sizes collapse to full-width (every child renders at 12/12).
 
 ### Edge cases
 - **Deleted drilled child:** clear `drilledChildId` if the child no longer exists in `data.children` (via `useEffect` watching `data.children`).
@@ -119,7 +140,14 @@ Renders:
 
 ## Public Rendering
 
-Each container render component is recursive — it calls `<BlockRenderer block={child} {...passthroughProps} />` per child, forwarding all inline-edit and context props.
+Each container render component is recursive — it iterates `data.children: ContainerChild[]` and renders each via `<BlockRenderer block={child.block} {...passthroughProps} />`, wrapped in a sized container.
+
+### Size translation
+
+- **Row** (`flex-direction: row`): each child wrapper gets `flex: 0 0 ${size/12 * 100}%`. Children sum to ≤ 12; remainder is empty space governed by `justify`.
+- **Column** (`flex-direction: column`): each child wrapper gets `flex: 0 0 ${size/12 * 100}%` of the container's height. Most columns won't have a constrained height, so size mostly acts as a min-height ratio; document this limitation in the form helper text.
+- **Grid**: each child wrapper gets `gridColumn: span ${Math.min(size, columns)}`. Overflow wraps to the next row (standard CSS grid behavior).
+- **Mobile + `stackOnMobile === true`**: ignore `size`; every child renders full-width via `dv()` overriding the size styles at base, restoring at `md`.
 
 ### Mobile stacking via `dv()` helper
 
@@ -137,10 +165,11 @@ const flexClasses = dv({
 
 ### Inline editing
 
-Children receive `onInlineChange`, `onFieldFocus`, `onFieldBlur`. The container creates a per-child handler:
+Children receive `onInlineChange`, `onFieldFocus`, `onFieldBlur`. The container creates a per-child handler that updates the `block.data` inside the `ContainerChild` wrapper (the `size` field is untouched):
+
 ```ts
-const onChildInlineChange = (childId: string) => (field: string, value: string) =>
-  updateChild(childId, { ...findChild(childId).data, [field]: value });
+const onChildInlineChange = (childBlockId: string) => (field: string, value: string) =>
+  updateChildBlockData(childBlockId, prev => ({ ...prev, [field]: value }));
 ```
 
 ### Empty state
@@ -169,19 +198,25 @@ Final icon choices for Row/Column will be picked from `lucide-react` during impl
 - Children visible in the main outline / `BlockManager`.
 - Picker grouping or categories.
 - Migrations — containers are new; no backfill needed.
+- Canvas drag-to-resize (handles on rendered children). v1 uses side-panel sliders only. Same data shape, so v2 can add canvas handles without schema changes.
 
 ## Testing
 
 ### Unit
+
 - `getDefaultData('row' | 'column' | 'grid')` returns the documented shape.
 - `NestedBlockList` reorder produces correct array order.
 - Drill-down state clears when the drilled child is deleted.
 - Mini picker excludes `row | column | grid` from its options.
+- Size slider clamps to 1–12; new child gets `floor(12/N)` with remainder distributed left-to-right.
+- Delete preserves remaining children's sizes (no auto-rebalance).
 
 ### Manual / visual
 - Row/column/grid render correctly on canvas in desktop, tablet, and mobile preview modes — verifying `dv()` works as expected.
 - Inline edit on a button inside a row updates the correct child.
-- Full UX flow: add container → add children → reorder → drill in → edit child → back out → delete child → save.
+- Full UX flow: add container → add children → reorder → resize via slider → drill in → edit child → back out → delete child → save.
+- Unbalanced row (3+3+3 = 9/12) renders with empty space on the right, governed by `justify`.
+- Mobile preview: sized row collapses to full-width children when `stackOnMobile` is on.
 - Empty container shows placeholder in editor, renders `null` on public site.
 
 ## Implementation Notes
