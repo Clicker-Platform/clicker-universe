@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Mail, Loader2, CheckCircle, Plus, Trash2 } from 'lucide-react';
+import { auth } from '@/lib/firebase';
 
 interface EmailConfig {
   templates: Record<string, string>;
@@ -22,18 +23,21 @@ export function EmailConfigPanel() {
   const [newValue, setNewValue] = useState('');
 
   useEffect(() => {
-    fetch('/api/email-config/get')
-      .then(r => r.json())
-      .then((data: EmailConfig) => setConfig(data))
-      .finally(() => setLoading(false));
+    auth.currentUser?.getIdToken().then(idToken => {
+      fetch('/api/email-config/get', { headers: { 'Authorization': `Bearer ${idToken}` } })
+        .then(r => r.json())
+        .then((data: EmailConfig) => setConfig(data))
+        .finally(() => setLoading(false));
+    });
   }, []);
 
   async function handleSave() {
     if (!config) return;
     setSaving(true);
+    const idToken = await auth.currentUser?.getIdToken() ?? '';
     await fetch('/api/email-config/update', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
       body: JSON.stringify({ ...config, updatedBy: 'superadmin' }),
     });
     setSaving(false);

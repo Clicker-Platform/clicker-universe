@@ -2,11 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { setStatus, getRegistration } from '@/lib/registrations/api';
 import { sendEmail } from '@/lib/email/send';
 import { writeEvent } from '@/lib/registrations/event-log';
+import { requireSuperadmin } from '@/lib/require-superadmin';
 
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireSuperadmin(req);
+  if (!auth.ok) return auth.res;
   try {
     const { id } = await params;
     const { reason } = await req.json();

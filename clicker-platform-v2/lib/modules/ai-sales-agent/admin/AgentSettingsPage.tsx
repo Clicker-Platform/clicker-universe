@@ -83,6 +83,8 @@ export default function AgentSettingsPage() {
             const parts = path.split('.');
             let current: any = newConfig;
             for (let i = 0; i < parts.length - 1; i++) {
+                if (!Object.prototype.hasOwnProperty.call(current, parts[i])) break;
+                // nosemgrep: javascript.lang.security.audit.prototype-pollution.prototype-pollution-loop.prototype-pollution-loop
                 current = current[parts[i]];
             }
             current[parts[parts.length - 1]] = value;

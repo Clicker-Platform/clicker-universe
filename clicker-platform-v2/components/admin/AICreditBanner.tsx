@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { AlertTriangle, XCircle, X } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
+import { auth } from '@/lib/firebase';
 
 interface CreditBalance {
   balance: number;
@@ -19,10 +20,17 @@ export function AICreditBanner() {
 
   useEffect(() => {
     if (!siteId) return;
-    fetch('/api/admin/ai-credits', { headers: { 'x-site-id': siteId } })
-      .then(r => r.ok ? r.json() : null)
-      .then((data: CreditBalance | null) => { if (data) setBalance(data); })
-      .catch(() => {});
+    auth.currentUser?.getIdToken().then(token => {
+      fetch('/api/admin/ai-credits', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'x-site-id': siteId,
+        }
+      })
+        .then(r => r.ok ? r.json() : null)
+        .then((data: CreditBalance | null) => { if (data) setBalance(data); })
+        .catch(() => {});
+    });
   }, [siteId]);
 
   if (!balance || dismissed) return null;

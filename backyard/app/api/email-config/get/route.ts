@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
+import { requireSuperadmin } from '@/lib/require-superadmin';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,7 +13,9 @@ const DEFAULTS = {
   },
 };
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const auth = await requireSuperadmin(req);
+  if (!auth.ok) return auth.res;
   try {
     const doc = await adminDb.doc('platform/settings/email/config').get();
     if (doc.exists) {

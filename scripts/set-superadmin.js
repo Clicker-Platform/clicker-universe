@@ -26,7 +26,7 @@ async function grantSuperAdmin() {
         console.log(`Looking up user ${email}...`);
         const user = await admin.auth().getUserByEmail(email);
 
-        console.log(`Found user ${user.uid}. Current claims:`, user.customClaims);
+        console.log('Found user', user.uid + '. Current claims:', user.customClaims);
 
         console.log('Granting superadmin role...');
         // Merge with existing claims if any, but ensure role is superadmin

@@ -13,7 +13,7 @@ import { seedModules } from "./modules/seeding";
 export const createTenant = functions.https.onCall(async (request) => {
     // 1. Security Check: Must be Superadmin
     if (!request.auth || request.auth.token.role !== 'superadmin') {
-        const SUPER_ADMIN_EMAIL = 'clickerplatform@gmail.com';
+        const SUPER_ADMIN_EMAIL = process.env.SUPER_ADMIN_EMAIL;
         if (!request.auth?.token.email || request.auth.token.email !== SUPER_ADMIN_EMAIL) {
             throw new functions.https.HttpsError('permission-denied', 'Only Superadmins can create tenants.');
         }
@@ -118,7 +118,7 @@ export const createTenant = functions.https.onCall(async (request) => {
  */
 export const suspendTenant = functions.https.onCall(async (request) => {
     if (!request.auth || request.auth.token.role !== 'superadmin') {
-        const SUPER_ADMIN_EMAIL = 'clickerplatform@gmail.com';
+        const SUPER_ADMIN_EMAIL = process.env.SUPER_ADMIN_EMAIL;
         if (request.auth?.token.email !== SUPER_ADMIN_EMAIL) {
             throw new functions.https.HttpsError('permission-denied', 'Only Superadmins can manage tenants.');
         }
@@ -148,7 +148,7 @@ export const suspendTenant = functions.https.onCall(async (request) => {
 export const getTenants = functions.https.onCall(async (request) => {
     // 1. Security Check: Must be Superadmin
     if (!request.auth || request.auth.token.role !== 'superadmin') {
-        const SUPER_ADMIN_EMAIL = 'clickerplatform@gmail.com';
+        const SUPER_ADMIN_EMAIL = process.env.SUPER_ADMIN_EMAIL;
         if (!request.auth?.token.email || request.auth.token.email !== SUPER_ADMIN_EMAIL) {
             throw new functions.https.HttpsError('permission-denied', 'Only Superadmins can view tenants.');
         }
@@ -173,7 +173,7 @@ export const getTenants = functions.https.onCall(async (request) => {
 export const updateTenantModules = functions.https.onCall(async (request) => {
     // 1. Security Check: Must be Superadmin
     if (!request.auth || request.auth.token.role !== 'superadmin') {
-        const SUPER_ADMIN_EMAIL = 'clickerplatform@gmail.com';
+        const SUPER_ADMIN_EMAIL = process.env.SUPER_ADMIN_EMAIL;
         if (!request.auth?.token.email || request.auth.token.email !== SUPER_ADMIN_EMAIL) {
             throw new functions.https.HttpsError('permission-denied', 'Only Superadmins can manage modules.');
         }

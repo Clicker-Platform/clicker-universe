@@ -41,8 +41,11 @@ function AdminLoginForm() {
         Promise.race([
           fetch('/api/token', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ uid: currentUser.uid }),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${await currentUser.getIdToken()}`,
+            },
+            body: JSON.stringify({}),
           }),
           new Promise<never>((_, reject) =>
             setTimeout(() => reject(new Error('Token timeout (10s).')), 10000)

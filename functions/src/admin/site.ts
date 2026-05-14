@@ -172,6 +172,14 @@ export async function performSiteSeeding(db: admin.firestore.Firestore, siteId: 
 
 
 export const seedSiteData = functions.https.onCall(async (request) => {
+    if (!request.auth) {
+        throw new functions.https.HttpsError('unauthenticated', 'Authentication required.');
+    }
+    const email = request.auth.token.email;
+    if (email !== process.env.SUPER_ADMIN_EMAIL) {
+        throw new functions.https.HttpsError('permission-denied', 'Superadmin only.');
+    }
+
     const { siteId, ownerId } = request.data;
     if (!siteId) {
         throw new functions.https.HttpsError('invalid-argument', 'siteId is required.');

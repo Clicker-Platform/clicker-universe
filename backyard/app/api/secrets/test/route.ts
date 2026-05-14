@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSecret, SECRET_KEYS } from '@/lib/secrets';
 import type { SecretKey } from '@/lib/secrets';
+import { requireSuperadmin } from '@/lib/require-superadmin';
 
 export const dynamic = 'force-dynamic';
 
@@ -51,6 +52,8 @@ function testFormatOnly(key: string, minLength: number): TestResult {
 }
 
 export async function POST(req: NextRequest) {
+  const auth = await requireSuperadmin(req);
+  if (!auth.ok) return auth.res;
   try {
     const { key } = await req.json() as { key: string };
 

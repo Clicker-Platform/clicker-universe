@@ -58,9 +58,13 @@ export async function POST(req: NextRequest) {
     let appSecret = '';
     try { appSecret = await getSecret('META_APP_SECRET'); } catch { appSecret = ''; }
 
-    if (appSecret && !validateSignature(rawBody, signature, appSecret)) {
+    if (!appSecret) {
+      logger.error('wa.webhook.secret.missing', { siteId: 'platform' });
+      return NextResponse.json({ ok: true });
+    }
+    if (!validateSignature(rawBody, signature, appSecret)) {
       logger.warn('wa.webhook.invalid.signature', { siteId: 'platform' });
-      return NextResponse.json({ ok: true }); // Still 200 to Meta
+      return NextResponse.json({ ok: true });
     }
 
     let payload: MetaWebhookPayload;

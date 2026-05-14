@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { Loader2, CheckCircle, Bot, DollarSign } from 'lucide-react';
+import { auth } from '@/lib/firebase';
+import { useAuthToken } from '@/lib/useAuthToken';
 
 interface ModelConfig {
   llm: string;
@@ -63,25 +65,29 @@ export function ModelRegistry() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const token = useAuthToken();
 
   useEffect(() => {
+    if (!token) return;
+    const headers = { 'Authorization': `Bearer ${token}` };
     Promise.all([
-      fetch('/api/ai-settings/models').then(r => r.json()),
-      fetch('/api/ai-settings/openrouter-balance').then(r => r.json()),
+      fetch('/api/ai-settings/models', { headers }).then(r => r.json()),
+      fetch('/api/ai-settings/openrouter-balance', { headers }).then(r => r.json()),
     ]).then(([modelData, balanceData]: [ModelConfig & { error?: string }, OpenRouterBalance]) => {
       if (modelData.error) { setError(modelData.error); }
       else { setConfig(modelData); }
       setBalance(balanceData);
     }).finally(() => setLoading(false));
-  }, []);
+  }, [token]);
 
   async function handleSave() {
     if (!config) return;
     setSaving(true);
     try {
+      const idToken = await auth.currentUser?.getIdToken() ?? '';
       await fetch('/api/ai-settings/models', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
         body: JSON.stringify(config),
       });
       setSaved(true);
