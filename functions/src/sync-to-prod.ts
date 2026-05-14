@@ -123,7 +123,7 @@ export const syncGoStorageUpload = onObjectFinalized(
             });
             console.log(`[sync] STORAGE UPLOAD done: ${filePath}`);
         } catch (e) {
-            console.error(`[sync] STORAGE UPLOAD error: ${filePath}`, e);
+            console.error('[sync] STORAGE UPLOAD error:', filePath, e);
         }
     }
 );
@@ -144,7 +144,7 @@ export const syncGoStorageDelete = onObjectDeleted(
             if (e.code === 404) {
                 console.log(`[sync] STORAGE DELETE skip (not found): ${filePath}`);
             } else {
-                console.error(`[sync] STORAGE DELETE error: ${filePath}`, e);
+                console.error('[sync] STORAGE DELETE error:', filePath, e);
             }
         }
     }

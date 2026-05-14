@@ -34,7 +34,8 @@ export default function MemberDashboard() {
                 await loadMember(currentUser, siteId);
             } else if (!currentUser) {
                 setLoading(false);
-                router.replace('/member/login');
+                // Defer until router is initialized after hydration
+                setTimeout(() => router.replace('/member/login'), 0);
             }
         });
         return () => unsubscribe();

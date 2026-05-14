@@ -105,6 +105,7 @@ export const getPosthogStats = onCall(
     {
         secrets: [POSTHOG_PERSONAL_API_KEY, POSTHOG_PROJECT_ID],
         region: 'asia-southeast1',
+        cors: ['https://backyard.clicker.id', 'http://localhost:3013'],
     },
     async (request) => {
         if (!request.auth) {

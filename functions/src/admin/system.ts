@@ -55,7 +55,7 @@ const MODULE_DEFINITIONS = [
  */
 export const seedModules = functions.https.onCall(async (request) => {
     // 1. Security Check
-    const SUPER_ADMIN_EMAIL = 'clickerplatform@gmail.com';
+    const SUPER_ADMIN_EMAIL = process.env.SUPER_ADMIN_EMAIL;
     if (!request.auth || (request.auth.token.role !== 'superadmin' && request.auth.token.email !== SUPER_ADMIN_EMAIL)) {
         throw new functions.https.HttpsError('permission-denied', 'Only Superadmins can seed system modules.');
     }

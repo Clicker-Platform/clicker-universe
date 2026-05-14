@@ -2,7 +2,8 @@
 // Runs vision analysis on an uploaded asset using OpenRouter + Gemini
 
 import { NextRequest, NextResponse } from 'next/server';
-import { adminAuth, adminDb, Timestamp } from '@/lib/firebase-admin';
+import { adminDb, Timestamp } from '@/lib/firebase-admin';
+import { requireAuthedMember } from '@/lib/api-auth';
 import { invokeVision, getModel } from '@/lib/ai';
 import { buildAnalyzePrompt } from '@/lib/modules/ai-marketing/agents/visual-analyst';
 import { AssetType } from '@/lib/modules/ai-marketing/types';
@@ -11,21 +12,11 @@ import { logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
-
 export async function POST(req: NextRequest) {
-  const siteId = req.headers.get('x-site-id');
-  const authHeader = req.headers.get('authorization');
-  if (!siteId || !authHeader?.startsWith('Bearer ')) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const auth = await requireAuthedMember(req);
+  if (!auth.ok) return auth.res;
 
-  let uid: string;
-  try {
-    const decoded = await adminAuth.verifyIdToken(authHeader.split('Bearer ')[1]);
-    uid = decoded.uid;
-  } catch {
-    return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
-  }
+  const { siteId, uid } = auth.session;
 
   const { assetId, assetType, imageBase64, context } = await req.json();
   if (!assetId || !assetType || !imageBase64) {
@@ -82,7 +73,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    logger.warn('ai.marketing.analyze.failed', { siteId: siteId ?? 'platform', error: err.message });
+    logger.warn('ai.marketing.analyze.failed', { siteId, error: err.message });
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

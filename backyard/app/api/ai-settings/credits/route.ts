@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb, FieldValue } from '@/lib/firebase-admin';
+import { requireSuperadmin } from '@/lib/require-superadmin';
 
 export const dynamic = 'force-dynamic';
 
 // GET /api/ai-settings/credits — list all sites with credit balance
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const auth = await requireSuperadmin(req);
+  if (!auth.ok) return auth.res;
   try {
     const sitesSnap = await adminDb.collection('sites').get();
     const results = await Promise.all(
@@ -30,6 +33,8 @@ export async function GET() {
 
 // POST /api/ai-settings/credits — top up credits for a site
 export async function POST(req: NextRequest) {
+  const auth = await requireSuperadmin(req);
+  if (!auth.ok) return auth.res;
   try {
     const { siteId, amount, reason } = await req.json() as {
       siteId: string;

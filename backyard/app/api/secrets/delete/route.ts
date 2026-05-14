@@ -2,10 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { deleteSecret, SECRET_KEYS } from '@/lib/secrets';
 import type { SecretKey } from '@/lib/secrets';
 import { adminDb, FieldValue } from '@/lib/firebase-admin';
+import { requireSuperadmin } from '@/lib/require-superadmin';
 
 export const dynamic = 'force-dynamic';
 
 export async function DELETE(req: NextRequest) {
+  const auth = await requireSuperadmin(req);
+  if (!auth.ok) return auth.res;
   try {
     const { key } = await req.json() as { key: string };
 

@@ -11,7 +11,7 @@
   "dependencies": {
     "firebase": "^12.7.0",
     "firebase-admin": "^13.8.0",
-    "next": "15.5.15",
+    "next": "15.5.18",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "sharp": "0.33.5",
@@ -24,8 +24,21 @@
     "@types/react-dom": "^19",
     "babel-plugin-react-compiler": "1.0.0",
     "eslint": "^9",
-    "eslint-config-next": "15.5.15",
+    "eslint-config-next": "15.5.18",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "pnpm": {
+    "overrides": {
+      "fast-xml-parser": "^5.8.0",
+      "node-forge": ">=1.4.0",
+      "picomatch": ">=4.0.4",
+      "protobufjs": ">=7.5.6",
+      "lodash": ">=4.18.0",
+      "brace-expansion": ">=2.0.3",
+      "postcss": ">=8.5.10",
+      "uuid": ">=13.0.1",
+      "flatted": ">=3.4.2"
+    }
   }
 }

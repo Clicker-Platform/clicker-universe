@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Loader2, CreditCard } from 'lucide-react';
+import { useAuthToken } from '@/lib/useAuthToken';
 
 interface TopupEntry {
   id: string;
@@ -18,17 +19,19 @@ export function UsageLog() {
   const [entries, setEntries] = useState<TopupEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [siteFilter, setSiteFilter] = useState('');
+  const token = useAuthToken();
 
   useEffect(() => {
+    if (!token) return;
     setLoading(true);
     const url = siteFilter
       ? `/api/ai-settings/usage?siteId=${encodeURIComponent(siteFilter)}&limit=50`
       : '/api/ai-settings/usage?limit=50';
-    fetch(url)
+    fetch(url, { headers: { 'Authorization': `Bearer ${token}` } })
       .then(r => r.json())
       .then((data: { entries: TopupEntry[] }) => setEntries(data.entries ?? []))
       .finally(() => setLoading(false));
-  }, [siteFilter]);
+  }, [token, siteFilter]);
 
   return (
     <div className="bg-white rounded-2xl border-[3px] border-gray-200 p-5">

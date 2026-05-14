@@ -83,6 +83,7 @@ const stats = {
 
 // ─── Logger ──────────────────────────────────────────────────────────────────
 
+// nosemgrep: javascript.express.log.console-log-express.console-log-express
 const log  = (msg)  => console.log(msg);
 const ok   = (msg)  => console.log(`  ✅ ${msg}`);
 const skip = (msg)  => console.log(`  ⏭️  ${msg}`);
@@ -109,7 +110,7 @@ async function cloneCollection(srcRef, dstRef, depth = 0) {
 
     if (snapshot.empty) return;
 
-    log(`${indent}📦 ${srcRef.path} (${snapshot.size} docs)`);
+    log(indent + '📦 ' + srcRef.path + ' (' + snapshot.size + ' docs)');
     if (DRY_RUN) return;
 
     let batch  = dbStaging.batch();

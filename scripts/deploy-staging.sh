@@ -14,6 +14,8 @@
 
 set -euo pipefail
 
+export IS_WEBPACK_TEST=1
+
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 WORKTREE_NAME="$(basename "$ROOT_DIR")"
 TARGET="${1:-all}"
@@ -58,6 +60,20 @@ export NO_UPDATE_NOTIFIER=true
 
 npx -y firebase-tools@latest experiments:enable webframeworks >/dev/null 2>&1 || true
 npx -y firebase-tools@latest use staging >/dev/null
+
+# ─── pnpm install untuk apps ─────────────────────────────────────────────────
+if [[ "$TARGET" == "all" || "$TARGET" == "hosting" || "$TARGET" == "core" || "$TARGET" == "auth" || "$TARGET" == "backyard" ]]; then
+  for app_dir in clicker-platform-v2 auth-gateway backyard; do
+    if [ -f "$ROOT_DIR/$app_dir/package.json" ]; then
+      echo "→ pnpm install + clean: $app_dir"
+      cd "$ROOT_DIR/$app_dir"
+      rm -rf .next
+      pnpm install --frozen-lockfile --silent
+      cd "$ROOT_DIR"
+    fi
+  done
+  echo ""
+fi
 
 # ─── Build functions jika diperlukan ─────────────────────────────────────────
 if [[ "$TARGET" == "all" || "$TARGET" == "functions" ]]; then

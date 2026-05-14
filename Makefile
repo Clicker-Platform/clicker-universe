@@ -6,7 +6,17 @@ PLATFORM_DIR = clicker-platform-v2
 AUTH_DIR     = auth-gateway
 BACKYARD_DIR = backyard
 
-.PHONY: help dev build test lint install clean setup-env check-env emulators worktree-new worktree-list
+.PHONY: help dev build test lint install clean setup-env check-env emulators worktree-new worktree-list semgrep semgrep-secrets semgrep-sarif semgrep-install
+
+# Semgrep community rule packs from https://semgrep.dev/r
+SEMGREP_CONFIGS = \
+	--config p/default \
+	--config p/typescript \
+	--config p/javascript \
+	--config p/react \
+	--config p/nextjs \
+	--config p/owasp-top-ten \
+	--config p/security-audit
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -81,3 +91,15 @@ deploy-staging-indexes: ## Deploy Firestore indexes ke staging
 
 deploy-staging-firestore: ## Deploy Firestore rules + indexes ke staging
 	./scripts/deploy-staging.sh firestore
+
+semgrep: ## Run Semgrep static analysis with community rule packs
+	semgrep scan $(SEMGREP_CONFIGS)
+
+semgrep-secrets: ## Scan for leaked secrets and credentials
+	semgrep scan --config p/secrets
+
+semgrep-sarif: ## Generate SARIF report at semgrep.sarif
+	semgrep scan $(SEMGREP_CONFIGS) --sarif --output semgrep.sarif
+
+semgrep-install: ## Install Semgrep CLI (macOS, via brew)
+	brew install semgrep

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adminAuth, adminDb, Timestamp } from '@/lib/firebase-admin';
+import { adminAuth, adminDb, FieldValue } from '@/lib/firebase-admin';
 import { logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
             displayName,
             photoURL,
             status: 'active',
-            joinedAt: Timestamp.now(),
+            joinedAt: FieldValue.serverTimestamp(),
             addedBy: 'admin', // Metadata
         }, { merge: true });
 

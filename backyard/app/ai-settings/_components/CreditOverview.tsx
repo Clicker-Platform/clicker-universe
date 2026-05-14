@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Loader2, CreditCard, Plus } from 'lucide-react';
+import { auth } from '@/lib/firebase';
+import { useAuthToken } from '@/lib/useAuthToken';
 
 interface SiteCredit {
   siteId: string;
@@ -18,10 +20,14 @@ export function CreditOverview() {
   const [topupReason, setTopupReason] = useState('');
   const [topping, setTopping] = useState(false);
 
-  const fetchCredits = useCallback(async () => {
+  const token = useAuthToken();
+
+  const fetchCredits = useCallback(async (idToken: string) => {
     setLoading(true);
     try {
-      const res = await fetch('/api/ai-settings/credits');
+      const res = await fetch('/api/ai-settings/credits', {
+        headers: { 'Authorization': `Bearer ${idToken}` },
+      });
       const data = await res.json() as { sites: SiteCredit[]; error?: string };
       setSites(data.sites ?? []);
     } finally {
@@ -29,22 +35,23 @@ export function CreditOverview() {
     }
   }, []);
 
-  useEffect(() => { fetchCredits(); }, [fetchCredits]);
+  useEffect(() => { if (token) fetchCredits(token); }, [token, fetchCredits]);
 
   async function handleTopup(siteId: string) {
     const amount = Number(topupAmount);
     if (!amount || amount <= 0) return;
     setTopping(true);
     try {
+      const idToken = token ?? await auth.currentUser?.getIdToken() ?? '';
       await fetch('/api/ai-settings/credits', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
         body: JSON.stringify({ siteId, amount, reason: topupReason || 'Manual top-up' }),
       });
       setTopupTarget(null);
       setTopupAmount('');
       setTopupReason('');
-      await fetchCredits();
+      if (idToken) await fetchCredits(idToken);
     } finally {
       setTopping(false);
     }

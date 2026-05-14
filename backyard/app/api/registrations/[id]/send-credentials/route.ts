@@ -4,11 +4,14 @@ import { db } from '@/lib/firebase';
 import { sendEmail } from '@/lib/email/send';
 import { writeEvent } from '@/lib/registrations/event-log';
 import { REGISTRATION_REQUESTS_COLLECTION } from '@/lib/registrations/constants';
+import { requireSuperadmin } from '@/lib/require-superadmin';
 
 export async function POST(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireSuperadmin(req);
+  if (!auth.ok) return auth.res;
   try {
     const { id } = await params;
     const ref = doc(db, REGISTRATION_REQUESTS_COLLECTION, id);

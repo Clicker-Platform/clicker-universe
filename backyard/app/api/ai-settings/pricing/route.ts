@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb, FieldValue } from '@/lib/firebase-admin';
+import { requireSuperadmin } from '@/lib/require-superadmin';
 
 export const dynamic = 'force-dynamic';
 
 const PRICING_DOC = 'modules/ai-platform/config/pricing';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const auth = await requireSuperadmin(req);
+  if (!auth.ok) return auth.res;
   try {
     const doc = await adminDb.doc(PRICING_DOC).get();
     const models = (doc.data()?.models as Record<string, { inputPer1M: number; outputPer1M: number }>) ?? {};
@@ -16,6 +19,8 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const auth = await requireSuperadmin(req);
+  if (!auth.ok) return auth.res;
   try {
     const { models } = await req.json() as { models: Record<string, { inputPer1M: number; outputPer1M: number }> };
     if (!models || typeof models !== 'object') {

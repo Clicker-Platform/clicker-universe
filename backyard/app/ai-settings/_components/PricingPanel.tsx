@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { Loader2, Plus, Trash2, Save, DollarSign } from 'lucide-react';
+import { auth } from '@/lib/firebase';
 import { MODEL_OPTIONS } from './ModelRegistry';
+import { useAuthToken } from '@/lib/useAuthToken';
 
 interface ModelRate {
   inputPer1M: number;
@@ -21,19 +23,23 @@ export function PricingPanel() {
   const isCustom = selectedModel === '__custom__';
   const effectiveModel = isCustom ? customModel.trim() : selectedModel;
 
+  const token = useAuthToken();
+
   useEffect(() => {
-    fetch('/api/ai-settings/pricing')
+    if (!token) return;
+    fetch('/api/ai-settings/pricing', { headers: { 'Authorization': `Bearer ${token}` } })
       .then(r => r.json())
       .then((data: { models: Record<string, ModelRate> }) => setModels(data.models ?? {}))
       .finally(() => setLoading(false));
-  }, []);
+  }, [token]);
 
   async function handleSave() {
     setSaving(true);
     try {
+      const idToken = await auth.currentUser?.getIdToken() ?? '';
       await fetch('/api/ai-settings/pricing', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
         body: JSON.stringify({ models }),
       });
     } finally {

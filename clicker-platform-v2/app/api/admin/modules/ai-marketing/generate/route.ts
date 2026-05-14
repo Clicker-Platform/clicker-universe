@@ -2,7 +2,8 @@
 // Core generation endpoint — handles single skills and multi-skill flows
 
 import { NextRequest, NextResponse } from 'next/server';
-import { adminAuth, adminDb, Timestamp } from '@/lib/firebase-admin';
+import { adminDb, Timestamp } from '@/lib/firebase-admin';
+import { requireAuthedMember } from '@/lib/api-auth';
 import { runSkill, runFlow } from '@/lib/modules/ai-marketing/orchestrator/runner';
 import { getMarketingSettings } from '@/lib/modules/ai-marketing/api-server';
 import { COLLECTION_GENERATIONS } from '@/lib/modules/ai-marketing/constants';
@@ -12,19 +13,10 @@ import { logger } from '@/lib/logger';
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
-  const siteId = req.headers.get('x-site-id');
-  const authHeader = req.headers.get('authorization');
-  if (!siteId || !authHeader?.startsWith('Bearer ')) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const auth = await requireAuthedMember(req);
+  if (!auth.ok) return auth.res;
 
-  let uid: string;
-  try {
-    const decoded = await adminAuth.verifyIdToken(authHeader.split('Bearer ')[1]);
-    uid = decoded.uid;
-  } catch {
-    return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
-  }
+  const { siteId, uid } = auth.session;
 
   const body = await req.json();
   const { skillId, flowId, formData } = body;
@@ -105,7 +97,7 @@ export async function POST(req: NextRequest) {
         { status: 402 }
       );
     }
-    logger.error('ai.marketing.generate.failed', { siteId: siteId ?? 'platform', error: err.message });
+    logger.error('ai.marketing.generate.failed', { siteId, error: err.message });
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

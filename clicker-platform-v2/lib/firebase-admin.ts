@@ -58,6 +58,4 @@ export const adminDb: Firestore = admin.firestore(adminApp);
 export const adminStorage: Storage = admin.storage(adminApp);
 export const firebaseAdmin = admin;
 
-// Re-export commonly used Firestore types
-export const Timestamp = admin.firestore.Timestamp;
-export const FieldValue = admin.firestore.FieldValue;
+export { Timestamp, FieldValue } from 'firebase-admin/firestore';

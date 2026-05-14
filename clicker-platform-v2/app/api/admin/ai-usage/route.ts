@@ -1,17 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
+import { requireAuthedMember } from '@/lib/api-auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
-  const siteId = req.headers.get('x-site-id');
-  if (!siteId) return NextResponse.json({ error: 'Missing siteId' }, { status: 400 });
+  const auth = await requireAuthedMember(req);
+  if (!auth.ok) return auth.res;
 
   const limit = Math.min(Number(new URL(req.url).searchParams.get('limit') ?? 30), 90);
 
   try {
     const snap = await adminDb
-      .collection('sites').doc(siteId)
+      .collection('sites').doc(auth.session.siteId)
       .collection('platform').doc('aiCreditLedger')
       .collection('daily')
       .orderBy('date', 'desc')
