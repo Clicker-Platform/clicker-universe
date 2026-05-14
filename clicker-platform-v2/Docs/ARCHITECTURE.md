@@ -1690,4 +1690,104 @@ Source: `grep -rn "@/lib/modules/promo/api" lib/modules/`.
 
 ---
 
+## 16. Core Business Primitives
+
+`lib/core/` hosts cross-module business primitives — tenant-level data that multiple modules need to read or write, but that doesn't belong inside any one module. Promoting these to `lib/core/` avoids the cross-module imports forbidden by §6.
+
+### What Core Primitives Owns
+
+Two primitives currently live in `lib/core/`:
+
+- **Business Hours** — week schedule (open/closed per day, time ranges, breaks). Read by public site (Hours block, Operating Hours block) and used implicitly by reservation availability and POS open/close gating.
+- **Service Catalog** — tenant-level catalog of bookable/serviceable items (`ServiceCatalogItem`) with categories. Shared by Reservation, Service Records, and the admin Services page.
+
+Both are **core-owned**: any module that needs them imports from `@/lib/core/...` — never from another module.
+
+### Core Files
+
+```text
+lib/core/
+├── types.ts                    ← Shared types: TimeRange, DaySchedule
+├── businessHours/
+│   └── utils.ts                ← isBusinessOpen(date, schedule), getOperatingWindows(date, schedule)
+└── serviceCatalog/
+    ├── types.ts                ← ServiceCatalogItem, ServiceCategoryConfig, DEFAULT_SERVICE_CATEGORIES
+    ├── api.ts                  ← Client CRUD (Firestore client SDK) + SERVICE_CATALOG = 'serviceCatalog'
+    └── serverApi.ts            ← Server-side fetcher (firebase-admin) for Server Components
+```
+
+### Shared Time Types (`lib/core/types.ts`)
+
+```typescript
+export interface TimeRange {
+    start: string;  // "09:00"
+    end: string;    // "17:00"
+}
+
+export interface DaySchedule {
+    dayOfWeek: 0 | 1 | 2 | 3 | 4 | 5 | 6; // 0 = Sunday
+    isOpen: boolean;
+    hours: TimeRange[];
+    breaks?: TimeRange[];
+}
+```
+
+A tenant's weekly schedule is `DaySchedule[]` (length 7). Stored on the site doc (consult `firestore.rules` and the actual write site).
+
+### Business Hours API
+
+`lib/core/businessHours/utils.ts`:
+
+| Function | Purpose |
+|---|---|
+| `isBusinessOpen(date: Date, schedule: DaySchedule[])` | Returns `true` if `date` falls in an open hours range and not in a break |
+| `getOperatingWindows(date: Date, schedule: DaySchedule[])` | Returns the `TimeRange[]` of open windows for that date |
+
+These are **pure functions** — no Firestore reads. Callers fetch `schedule` once and pass it in.
+
+### Service Catalog API
+
+Per-site catalog stored at `sites/{siteId}/serviceCatalog/{itemId}`. Categories live in a separate doc/collection (consult `serviceCatalog/api.ts:95`).
+
+| Function | Side | Purpose |
+|---|---|---|
+| `getServiceCatalog(siteId)` | Client | List all catalog items |
+| `getServiceCatalogItem(siteId, id)` | Client | Single item |
+| `createServiceCatalogItem(...)`, `updateServiceCatalogItem(...)`, `deleteServiceCatalogItem(siteId, id)` | Client | Mutations (admin) |
+| `getServiceCategories(siteId)` | Client | Category list |
+| `saveServiceCategories(siteId, categories)` | Client | Bulk replace |
+| `fetchServiceCatalog(...)` | Server | Server Component version using `firebase-admin` |
+
+### Core Consumers
+
+Source: `grep -rn "@/lib/core/" lib/modules/ components/ app/`.
+
+| Consumer | What it uses |
+|---|---|
+| Admin Services page (`app/admin/(dashboard)/services/`) | Full service catalog CRUD |
+| `components/blocks/public/DefaultOperatingHoursBlock.tsx` | `isBusinessOpen()` for "Open Now" badge |
+| `components/blocks/mrb/MrbOperatingHours.tsx` | Same — MRB template variant |
+| `reservation` module (`api.ts`, booking detail panel) | Service catalog lookups |
+| `service_records` module (`api.ts`, `types.ts`, Service Types page) | Service catalog + category types |
+
+Notable: `reservation` and `service_records` both depend on the **same** service catalog — exactly the use case `lib/core/` exists to handle. If this code lived inside one of the modules, the other would be forced into a cross-module import.
+
+### When to Add Something to `lib/core/`
+
+Promote logic from a module to `lib/core/` when:
+
+1. Two or more modules need to read or write the same business primitive, AND
+2. The primitive is **tenant-level data**, not a feature-specific abstraction, AND
+3. The interface is small enough to be a single API surface (a folder with `api.ts` + `types.ts`).
+
+If only one module currently needs it, leave it in that module — promote when the second consumer appears, not preemptively.
+
+### Core Primitives Rules
+
+- **No business logic that's specific to a single module** — that belongs in the module.
+- **No coupling to a module's internals** — `lib/core/` may not import from `lib/modules/`.
+- **Server vs client split is per-primitive** — Service Catalog has both `api.ts` (client) and `serverApi.ts` (server). Match whichever the consumer needs.
+
+---
+
 <!-- Sections to be filled in by subsequent tasks -->
