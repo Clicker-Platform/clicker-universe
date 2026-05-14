@@ -617,7 +617,7 @@ When in doubt: if removing module `X` from a tenant would break module `Y`, the 
 
 Modules are opt-in feature packages that add admin routes, dashboard widgets, blocks, and Firestore collections to a tenant. A module is **dynamically loaded** at runtime — disabling it for a tenant removes its admin routes and widgets without rebuilding the app.
 
-### Registration Files
+### Module Registration Files
 
 A module is wired up by editing **five** files (the fifth is new since the previous architecture doc):
 
@@ -1046,7 +1046,7 @@ Pricing lives in `modules/ai-platform/config/pricing` (Firestore), cached for 5 
 
 The terminology "Kredit" (Indonesian for "credit") is used in the admin UI and product copy. Internally everything is USD cost rounded to 6 decimals.
 
-### Admin Endpoints
+### AI Admin Endpoints
 
 | Endpoint | Purpose |
 |---|---|
@@ -1054,7 +1054,7 @@ The terminology "Kredit" (Indonesian for "credit") is used in the admin UI and p
 | `GET /api/admin/ai-usage` | Daily aggregate for charts (admin UI) |
 | `GET /api/admin/ai/credits` | Legacy alias — being consolidated into the path above |
 
-Backyard (superadmin) owns model/pricing configuration; the platform consumes it read-only.
+> Backyard (superadmin) owns model/pricing configuration; the platform consumes it read-only.
 
 ### AI Integration Points
 
@@ -1387,7 +1387,7 @@ No match → returns a help message listing available commands.
 
 > **Two-level pattern.** Config sits directly under `sites/{siteId}/wa/config`; everything else nests under an anchor doc `wa/main/...` to keep the per-site Firestore tree shallow.
 
-### Admin Endpoints
+### WhatsApp Admin Endpoints
 
 | Endpoint | Purpose |
 |---|---|
@@ -1420,6 +1420,134 @@ Modules that need to message customers (e.g. service reminders, booking confirma
 - **Encrypt access tokens** via `encryptToken()` before writing to Firestore; decrypt server-side only.
 - **Never bypass the gateway** — direct `fetch` to Meta's API skips the safeguard and the config read.
 - **Webhook auth:** Meta's webhook signature must be verified in `/api/webhook/whatsapp` before invoking `processIncomingMessage` (see route implementation).
+
+---
+
+## 14. Registration Flow
+
+Public self-service registration at `clicker.id/register`. A prospect submits a form (business profile + bundle/modules + optional promo code). The submission writes a **pending** registration request to Firestore for human review in Backyard — no site is provisioned automatically.
+
+> **Status:** Implemented end-to-end. Form, server action, validation, rate limiting, promo revalidation, dual email notifications, and event log are all live. Activation (turning a registration into a real tenant) happens in Backyard.
+
+### What Registration Does
+
+- Collect lead contact + business profile + module/bundle interest in one form.
+- Validate input with Zod, rate-limit by client IP (in-memory bucket).
+- Re-validate any promo code server-side at submit time (separate site `sites/go/modules/promo/promos` holds registration-eligible promo codes).
+- Persist to `registrationRequests` collection for human review.
+- Fire two transactional emails (fire-and-forget): confirmation to applicant, notification to admin.
+- Append events to a TTL-bounded event log for debugging.
+
+### Registration Files
+
+| File | Role |
+|---|---|
+| `lib/registration/submit-action.ts` | `submitRegistration()` server action — rate limit, validate, persist, email |
+| `lib/registration/api-server.ts` | `createRegistrationRequest()`, `validatePromoCode()` (Firebase Admin) |
+| `lib/registration/schema.ts` | Zod schemas: `registrationInputSchema`, `businessTypeSchema`; `RegistrationInput` type |
+| `lib/registration/bundles.ts` | `BUNDLES` catalogue (`restaurant-starter`, `auto-detailing`, `beauty-spa`) + `getBundleById` |
+| `lib/registration/modules-catalog.ts` | Module catalog for the picker UI |
+| `lib/registration/rate-limit.ts` | `createRateLimiter()` (in-memory) + exported `submitLimiter` (5/hr) + `validatePromoLimiter` (30/hr) |
+| `lib/registration/slug.ts` | `suggestSlug()` — slug suggestion from business name |
+| `lib/registration/event-log.ts` | `writeEvent()` with 7-day TTL — events like `email.failed`, `registration.activated`, `registration.rejected` |
+| `lib/registration/constants.ts` | `REGISTRATION_REQUESTS_COLLECTION = 'registrationRequests'` |
+| `lib/registration/types.ts` | `RegistrationRequestInput`, `Bundle`, etc. |
+
+### Public Route
+
+- `app/(public)/register/page.tsx` — the form UI (`/(public)` is a Next.js route group; the URL is `/register` per §3 special routes).
+
+### Submit Flow
+
+```text
+[Form] → server action submitRegistration(input)
+   │
+   ├── 1. Rate limit: submitLimiter.check(clientIp)
+   │      → 5 submissions per IP per hour, in-memory
+   │
+   ├── 2. Zod validation: registrationInputSchema.safeParse(input)
+   │      → on failure: return { ok: false, error, fieldErrors }
+   │      → enforces: name+email+phone, Indonesian phone regex,
+   │        businessName/Type/city/expectedOutlets, modules>0 OR customRequest
+   │
+   ├── 3. Promo revalidation (if input.promoCode provided)
+   │      → validatePromoCode() reads sites/go/modules/promo/promos
+   │      → sets promoCodeValidAtSubmit = true|false
+   │
+   ├── 4. createRegistrationRequest() → Firestore add()
+   │      → registrationRequests/{id} with full input + timestamps
+   │
+   ├── 5. Fire-and-forget email pair:
+   │      ├── Confirmation to applicant (template alias 'regConfirmation')
+   │      └── Notification to ADMIN_NOTIFICATION_EMAIL (if set)
+   │         Includes a deep link to backyard/registrations/{id}
+   │      → Failures write event 'email.failed' but don't fail the submit
+   │
+   └── Return { ok: true, id }
+```
+
+### Validation Rules
+
+`registrationInputSchema` (`schema.ts`) enforces:
+
+- `name`: 1–120 chars
+- `email`: RFC + max 200 chars
+- `phone`: `/^(\+62|62|0)[0-9]{8,13}$/` (Indonesian only)
+- `businessName`: 2–120 chars
+- `businessType`: one of `fnb`, `auto-detailing`, `beauty-spa`, `retail`, `service`, `other`
+- `city`: 1–80 chars
+- `expectedOutlets`: integer 1–10000
+- `bundle`: string or null
+- `modules`: array of strings, max 50
+- `customRequest`: string up to 2000 chars
+- `promoCode`: string up to 80 chars or null
+- `promoCodeValidAtSubmit`: boolean (re-validated server-side)
+- `source`: string up to 500 chars or null
+- **Refinement:** must have at least one module OR a non-empty `customRequest`.
+
+### Bundles Catalogue
+
+Source: `bundles.ts`.
+
+| Bundle ID | Name | Modules |
+|---|---|---|
+| `restaurant-starter` | Restaurant Starter | `byod_pos`, `inventory` |
+| `auto-detailing` | Auto Detailing Pro | `service_records`, `membership`, `promo` |
+| `beauty-spa` | Beauty / Spa | `reservation`, `membership`, `promo` |
+
+The picker UI lets a user either select a bundle (which preselects modules) or freely toggle individual modules from the catalog.
+
+### Promo Code on Registration
+
+Registration promos live in a separate "platform-site" at `sites/go/modules/promo/promos` (note: `siteId = 'go'`). This isolates platform-level promo codes (signup discounts) from per-tenant promos. The validation is server-side; client-side promoCodeValidAtSubmit is treated as a hint and always re-checked at submit time.
+
+### Rate Limiting
+
+`rate-limit.ts` uses an **in-memory token bucket** keyed by client IP — not Upstash Redis. This means rate limits are per-process: if the server is scaled horizontally, each instance has its own bucket. For low-volume registration flow this is acceptable; if abuse surfaces, swap to Upstash.
+
+| Limiter | Max | Window |
+|---|---|---|
+| `submitLimiter` | 5 | 1 hour |
+| `validatePromoLimiter` | 30 | 1 hour |
+
+### Registration Firestore Paths
+
+| Path | Purpose |
+|---|---|
+| `registrationRequests/{id}` | Pending registration; reviewed in Backyard |
+| `registrationEvents/{eventId}` | Operational events (7-day TTL): `email.failed`, `registration.activated`, `registration.credentials_sent`, `registration.rejected`, `promo.commit.failed` |
+| `sites/go/modules/promo/promos` | Platform-level promo codes valid at registration time |
+
+### Activation
+
+Activation (turning a `registrationRequest` into a real tenant) is a **Backyard-only** flow. The platform repo does not auto-provision sites from registrations.
+
+### Registration Rules
+
+- **Never auto-provision a site from a registration.** A human approves in Backyard.
+- **Always re-validate promo codes at submit.** The client's `promoCodeValidAtSubmit` is a hint, not authoritative.
+- **Emails are fire-and-forget.** A submit that creates the Firestore doc but fails to email is still considered successful — emails surface failures via `registrationEvents`.
+- **Phone regex is Indonesia-only** — if you need to expand, update both `schema.ts` and the form's client-side validation.
 
 ---
 
