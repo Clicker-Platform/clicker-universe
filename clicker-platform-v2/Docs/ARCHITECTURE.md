@@ -2456,4 +2456,133 @@ Use `lucide-react` icons throughout. Sizes default to `w-4 h-4` for inline (with
 
 ---
 
+## 22. Key File Index
+
+Architecturally significant files, with one-line role and the section that explains them. **For module-internal and template-internal files, consult the relevant section's file map.**
+
+### Routing & Auth
+
+| File | Role | §Ref |
+|---|---|---|
+| `middleware.ts` | Multi-tenant routing, auth gate, x-site-id header | §3, §4 |
+| `lib/site-context.tsx` | `useSite()` provider, `setSiteId()` setter | §3, §18 |
+| `lib/user-context.tsx` | `useUser()` provider, RBAC resolution | §5, §18 |
+| `lib/rbac.ts` | Roles + `PERMISSIONS` map | §5 |
+| `lib/admin-auth.ts` | Admin route auth helpers | §5 |
+| `lib/api-auth.ts` | API route auth (`requireAuthedMember`) | §17, §20 |
+| `components/admin/TokenBootstrap.tsx` | Reads `#token`, sets cookie, `signInWithCustomToken` | §4 |
+| `auth-gateway/app/page.tsx` | Login form + `performHandoff()` | §4 |
+| `auth-gateway/app/api/token/route.ts` | Mint custom token via `adminAuth.createCustomToken` | §4 |
+| `auth-gateway/lib/get-user-sites.ts` | Tenant resolution | §4 |
+
+### Firebase
+
+| File | Role |
+|---|---|
+| `lib/firebase.ts` | Firebase client SDK init |
+| `lib/firebase-admin.ts` | Firebase Admin SDK init |
+| `firestore.rules` | Firestore security rules |
+| `storage.rules` | Firebase Storage security rules (§17) |
+| `firestore.indexes.json` | Composite indexes |
+
+### Module System
+
+| File | Role | §Ref |
+|---|---|---|
+| `lib/modules/definitions.ts` | Static module admin routes (12 modules) | §7 |
+| `lib/modules/components.tsx` | Server/admin dynamic component registry | §7 |
+| `lib/modules/client-registry.tsx` | Client-side component registry | §7 |
+| `lib/modules/registry.ts` | Runtime module routing + `isModuleEnabled` | §7 |
+| `lib/modules/types.ts` | `ModuleDefinition`, `AdminRoute`, etc. | §7 |
+| `scripts/seed-modules.ts` | Firestore seed for module registry | §7 |
+| `app/admin/(dashboard)/[...slug]/page.tsx` | Module route catch-all | §7 |
+
+### Templates & Blocks
+
+| File | Role | §Ref |
+|---|---|---|
+| `lib/templates/definitions.ts` | 6 template configs | §8 |
+| `lib/templates/registry.ts` | Template ID → header/background/block components | §8 |
+| `lib/templates/types.ts` | `TemplateDefinition`, `ThemeColors`, etc. | §8 |
+| `lib/systemBlocks.ts` | System block definitions (homepage layout) | §9 |
+| `components/admin/blocks/blockDefinitions.ts` | `BLOCK_OPTIONS` (18 types) + `getDefaultData()` | §9 |
+| `components/admin/blocks/CanvasStudio.tsx` | Page builder editor shell | §9 |
+| `components/blocks/BlockRenderer.tsx` | Public block dispatch (template → module → default) | §9 |
+| `components/blocks/SafeBlockRenderer.tsx` | Error-boundary wrapper | §9 |
+
+### Cross-Cutting Subsystems
+
+| File | Role | §Ref |
+|---|---|---|
+| `lib/ai/index.ts` | AI public API: `invokeAI`, `invokeVision`, `invokeWithTools` | §10 |
+| `lib/ai/client.ts` | OpenRouter HTTP client | §10 |
+| `lib/ai/credits.ts` | Kredit ledger (deductCredits, getCreditBalance) | §10 |
+| `lib/ai/models.ts` | Model selection from Firestore | §10 |
+| `lib/ai/pricing.ts` | Per-model rate table | §10 |
+| `lib/ai/context.ts` | Tenant context enrichment | §10 |
+| `lib/email/index.ts` | Email public exports | §11 |
+| `lib/email/sender.ts` | `sendEmail()` orchestrator (Resend) | §11 |
+| `lib/email/config.ts` | Sender config + template aliases | §11 |
+| `lib/email/guard.ts` | Dev allowlist | §11 |
+| `lib/email/log.ts` | Firestore log writer | §11 |
+| `lib/analytics/PostHogProvider.tsx` | PostHog init + pageview tracker | §12 |
+| `lib/analytics/useAnalytics.ts` | `useAnalytics()` hook | §12 |
+| `lib/whatsapp/gateway.ts` | `WhatsAppGateway` class | §13 |
+| `lib/whatsapp/webhook-processor.ts` | Inbound message dispatch | §13 |
+| `lib/whatsapp/message-router.ts` | Owner command routing | §13 |
+| `lib/whatsapp/contact-classifier.ts` | Owner/staff/customer classification | §13 |
+| `lib/whatsapp/encryption.ts` | AES-256-CBC token encryption | §13 |
+| `lib/whatsapp/phone.ts` | Phone normalization + E.164 | §13 |
+| `lib/whatsapp/constants.ts` | Firestore paths + Meta API endpoints | §13 |
+| `lib/registration/submit-action.ts` | Server action: validate + persist + email | §14 |
+| `lib/registration/api-server.ts` | `createRegistrationRequest`, `validatePromoCode` | §14 |
+| `lib/registration/schema.ts` | Zod schemas (Indonesian phone, business types) | §14 |
+| `lib/registration/bundles.ts` | `BUNDLES` catalogue | §14 |
+| `lib/registration/rate-limit.ts` | In-memory bucket | §14 |
+| `lib/modules/promo/api.ts` | Promo facade (cross-module-importable) | §15 |
+| `lib/modules/promo/api/{claim,commit,discount,evaluator,promos,settings,vouchers}.ts` | Facade implementation | §15 |
+| `lib/core/types.ts` | Shared `TimeRange`, `DaySchedule` | §16 |
+| `lib/core/businessHours/utils.ts` | `isBusinessOpen`, `getOperatingWindows` | §16 |
+| `lib/core/serviceCatalog/api.ts` | Client catalog CRUD | §16 |
+| `lib/core/serviceCatalog/serverApi.ts` | Server catalog fetcher | §16 |
+| `lib/upload.ts` | Client-side direct-to-storage helper | §17 |
+| `lib/imageUtils.ts` | Client image conversion/validation | §17 |
+| `lib/media/recommendations.ts` | Recommended sizes per aspect ratio | §17 |
+| `app/api/upload/avatar/route.ts` | Server avatar upload | §17 |
+| `app/api/upload/image/route.ts` | Server image upload (sharp) | §17 |
+
+### Contexts (Admin UI)
+
+| File | Role | §Ref |
+|---|---|---|
+| `lib/use-admin-theme.tsx` | Light/dark mode toggle | §18, §21 |
+| `lib/inbox-panel-context.tsx` | Inbox panel state | §18 |
+| `lib/top-bar-slot-context.tsx` | Admin top-bar slot injection | §18 |
+| `lib/use-admin-nav-groups.ts` | Sidebar nav grouping | — |
+| `lib/use-admin-unread-counts.ts` | Sidebar unread badges | — |
+
+### Logging, Sanitization, Utilities
+
+| File | Role |
+|---|---|
+| `lib/logger.ts` | Structured logger (Node) |
+| `lib/logger-edge.ts` | Edge-safe logger for `middleware.ts` |
+| `lib/sanitizeHtml.ts` | Wrapper around isomorphic-dompurify |
+| `lib/resolveNavHref.ts` | Module/route nav href resolution |
+| `lib/fetchData.ts` | Shared Firestore data-fetching helpers |
+| `lib/secrets/` | Secret resolution (Google Secret Manager in prod, env in dev) |
+
+### Configuration
+
+| File | Role |
+|---|---|
+| `next.config.mjs` | Next.js config (webpack build, image domains) |
+| `tsconfig.json` | TypeScript config |
+| `eslint.config.mjs` | ESLint config |
+| `postcss.config.mjs` | PostCSS + Tailwind config |
+| `vitest.config.ts` | Vitest config |
+| `package.json` | Dependencies — see §1 for canonical inventory |
+
+---
+
 <!-- Sections to be filled in by subsequent tasks -->
