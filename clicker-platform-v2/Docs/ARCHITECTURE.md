@@ -950,14 +950,14 @@ A small set of blocks (`quick_actions`, `hours`, `branches`, `featured_product`,
 
 A unified server-side AI invocation layer used by every AI-powered feature (AI Sales, AI Marketing, Stocklens knowledge sync, etc.). All AI calls go through `lib/ai/index.ts`, which performs **preflight credit check → upstream call → post-deduct ledger write**. The platform calls AI providers via **OpenRouter** (not the Google SDK directly, despite `@google/generative-ai` being in `package.json`).
 
-### Purpose
+### What AI Platform Does
 
 - One call site (`invokeAI`, `invokeVision`, `invokeWithTools`) for every AI feature.
 - Per-tenant Kredit (USD-denominated) accounting — every call deducts cost, every topup is logged.
 - Model selection centralized in Firestore, configurable per environment via Backyard.
 - Daily aggregate of cost per site for analytics.
 
-### File Map
+### AI Files
 
 | File | Role |
 |---|---|
@@ -969,7 +969,7 @@ A unified server-side AI invocation layer used by every AI-powered feature (AI S
 | `lib/ai/context.ts` | Tenant context enrichment (`buildTenantContext`, cache invalidation) |
 | `lib/ai/types.ts` | `AIRequest`, `VisionRequest`, `ToolRequest`, `AICallOptions`, `ModelConfig`, etc. |
 
-### Public API
+### AI Public API
 
 All three call modes follow the same shape: a **request** (model + messages + parameters) and an **options** object that carries billing metadata (`siteId`, `moduleId`, `skillId`, `uid`).
 
@@ -995,7 +995,7 @@ const result = await invokeWithTools(
 );
 ```
 
-### Call Lifecycle
+### AI Call Lifecycle
 
 ```text
 1. preflightCheck(siteId)
@@ -1063,12 +1063,131 @@ Backyard (superadmin) owns model/pricing configuration; the platform consumes it
 - `stocklens` module — image-based SKU scanning, knowledge sync
 - Anywhere else that needs AI — call `invokeAI` directly with appropriate `moduleId` and `skillId`
 
-### Rules
+### AI Rules
 
 - **Never call OpenRouter / Gemini directly.** Always go through `lib/ai/index.ts` so credit accounting stays consistent.
 - **Always pass `moduleId` and `skillId`** in `AICallOptions` — they drive per-feature usage analytics.
 - **Use `getModel(useCase)` not hardcoded model slugs.** Model upgrades happen via Backyard, not code changes.
 - **`OPENROUTER_API_KEY`** is read from `lib/secrets/` (Google Secret Manager in prod; env var in dev).
+
+---
+
+## 11. Email (Resend)
+
+Transactional email is delivered via **Resend**, using **hosted templates** identified by alias (not React Email components rendered server-side). Every send goes through one function — `sendEmail()` — which orchestrates context enrichment, dev-allowlist gating, the Resend API call, and a Firestore log write.
+
+### What Email Does
+
+- One call site (`sendEmail`) for every email — registration confirmations, AI follow-ups, etc.
+- Resend's hosted-template system keeps copy editable by non-engineers (no redeploy).
+- Per-tenant `emailLog` for delivery auditing and debugging.
+- Dev safety: outbound email is allowlisted by recipient domain in non-prod.
+
+### Email Files
+
+| File | Role |
+|---|---|
+| `lib/email/index.ts` | Public exports: `sendEmail`, `getEmailContext`, `getTemplateAliases` |
+| `lib/email/sender.ts` | The `sendEmail()` function — orchestrator |
+| `lib/email/config.ts` | Platform email config (Firestore-cached): sender domain, fromName, template aliases |
+| `lib/email/context.ts` | Per-site context: tenant brand (businessName, logoUrl, primaryColor, siteUrl) |
+| `lib/email/guard.ts` | `isAllowedInDev()` — recipient allowlist gate |
+| `lib/email/log.ts` | Firestore writer: `newLogDocRef`, `writeEmailLog` |
+| `lib/email/types.ts` | `SendEmailInput`, `SendEmailResult`, `EmailContext`, `EmailLogDoc`, `EmailTag` |
+
+### Email Public API
+
+```typescript
+import { sendEmail } from '@/lib/email';
+
+const result = await sendEmail({
+    to: 'user@example.com',                 // string or string[]
+    templateAlias: 'welcome',               // Resend hosted-template alias
+    variables: { firstName: 'Andre' },      // template-specific vars
+    siteId: 'quattro',                      // null for platform-level emails
+    cc: ['team@example.com'],               // optional
+    bcc: undefined,                          // optional
+    replyTo: 'support@example.com',          // optional — overrides context.replyTo
+    tags: [{ name: 'flow', value: 'onboarding' }], // optional Resend tags
+});
+
+if (result.ok) {
+    // result.id = Resend message ID, result.logId = Firestore doc ID
+} else {
+    // result.error = string, result.logId = Firestore doc ID (still written)
+}
+```
+
+`sendEmail` **never throws** — failures resolve to `{ ok: false, error, logId }`.
+
+### Email Send Lifecycle
+
+```text
+1. Resolve EmailContext via getEmailContext(siteId)
+   └── Pulls tenant brand: businessName, logoUrl, primaryColor, siteUrl
+
+2. Resolve default sender via resolveDefaultSender()
+   └── From platform/settings/email/config { sender: { domain, localPart, fromName } }
+   └── Format: "fromName <localPart@domain>"  (e.g. "Quattro <noreply@clicker.id>")
+
+3. Pre-write a Firestore log doc (status undetermined yet)
+   └── sites/{siteId}/emailLog/{logId}   OR   system/email/emailLog/{logId} if siteId is null
+
+4. Dev guard: isAllowedInDev(toList)
+   └── In production: always allowed
+   └── In dev: recipients must end with a suffix in EMAIL_DEV_ALLOWLIST
+       (default: '@clicker.id,@resend.dev')
+   └── If blocked: write log with tag 'dev_blocked', return { ok: true, id: 'dev_blocked' }
+       — caller sees success but no email goes out
+
+5. POST https://api.resend.com/emails
+   └── Bearer RESEND_API_KEY (from lib/secrets — Google Secret Manager in prod)
+   └── Body uses Resend's hosted template: { template: { id: alias, variables } }
+   └── Auto-injected variables: businessName, logoUrl, primaryColor, siteUrl
+
+6. Write final log status
+   └── Success: status='sent', resendId, sentAt=now
+   └── Failure: status='failed', error, errorCode, sentAt=null
+```
+
+### Firestore Paths
+
+| Path | Purpose |
+|---|---|
+| `sites/{siteId}/emailLog/{logId}` | Per-tenant email log |
+| `system/email/emailLog/{logId}` | Platform-level emails (when `siteId === null`) |
+| `platform/settings/email/config` | Sender domain + localPart + fromName + template aliases (5-min cache) |
+
+### Template Aliases
+
+Resend templates are referenced by **alias**, not by template body. The aliases live in `platform/settings/email/config.templates` as `{ aliasKey: resendTemplateId }`. Code passes the alias key:
+
+```typescript
+sendEmail({ ..., templateAlias: 'welcome' });
+```
+
+Operators add/edit templates in Resend, then update the alias map in Backyard — no code change.
+
+### Dev Allowlist
+
+Set `EMAIL_DEV_ALLOWLIST` (comma-separated suffixes) to control which recipient domains can actually receive mail in development:
+
+```bash
+EMAIL_DEV_ALLOWLIST=@clicker.id,@resend.dev,@example.com
+```
+
+Default is `@clicker.id,@resend.dev`. Blocked recipients still get a log entry tagged `dev_blocked`, so test runs are auditable.
+
+### Cross-App Usage
+
+The Resend integration code in `clicker-platform-v2/lib/email/` is the **canonical implementation**. `auth-gateway/` and `functions/` each maintain their own thin Resend clients for emails they own (e.g. password reset, registration confirmation). The contract documented here applies to platform code; sibling apps follow the same shape but live independently.
+
+### Email Rules
+
+- **Always go through `sendEmail()`** — never call the Resend API directly from feature code.
+- **Use `templateAlias`, not raw HTML.** Hosted templates are the unit of versioning.
+- **Pass `siteId` whenever an email is tenant-scoped.** Use `null` only for cross-tenant/platform-level emails.
+- **`RESEND_API_KEY`** is read from `lib/secrets/` — never inline.
 
 ---
 
