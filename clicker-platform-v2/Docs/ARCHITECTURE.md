@@ -2719,4 +2719,89 @@ For any other module pair, use `isModuleEnabled` + dispatch through the registry
 
 ---
 
-<!-- Sections to be filled in by subsequent tasks -->
+## 24. Appendices
+
+Operational checklists. Use these when adding extension points or new infrastructure.
+
+### Appendix A: Adding a New Module
+
+A working module is wired up across **at least seven** touch points (the new 5 files + Backyard parity + permission grants). Follow this order to avoid half-registered states.
+
+1. **Create `lib/modules/{module_id}/`** with the minimum file set:
+   - `types.ts` (always required)
+   - At least one of `api.ts` (client) or `api-server.ts` (server)
+   - `constants.ts` if the module reads/writes Firestore (define all collection paths here)
+   - `admin/` directory with the page components
+2. **Add the module to `lib/modules/definitions.ts`**:
+   - `id` (snake_case canonical), `adminRoutes` (each with `componentKey`), `dashboardAction`, `adminDashboardWidget` if applicable.
+3. **Register components in `lib/modules/components.tsx`** — one entry per `componentKey` from step 2, using `dynamic(() => import(...))`.
+4. **If the module exposes client-only components**, also register them in `lib/modules/client-registry.tsx`.
+5. **Mirror in `scripts/seed-modules.ts`** — same `id` and route paths. Run the seed against each Firestore project (dev / staging / prod).
+6. **Mirror in `backyard/lib/modules/definitions.ts`** — same `id` and `path` + `componentKey`, plus a human-readable `displayName` and `description` for the Backyard module list. **All three (platform definitions, Backyard definitions, seed script) must agree** — see §7's 3-way parity rule.
+7. **Define DB paths as constants** in `lib/modules/{module_id}/constants.ts`. Never hardcode `'sites/...'` strings elsewhere.
+8. **Guard every write with `canEdit('{module_id}', '{routeId}')`** in client components — see §5.
+9. **Always use `useSite()` for `siteId`** — never hardcode.
+10. **If the module needs cross-module data**:
+    - Use `isModuleEnabled()` from `lib/modules/registry.ts` for conditional features, OR
+    - Use the sanctioned facade exceptions (`@/lib/modules/promo/api`, `@/lib/modules/membership/api`) — see §6.
+    - Do NOT promote your module's API to a facade without an explicit architecture review.
+11. **Add Firestore composite indexes** to `firestore.indexes.json` if your queries need them — deploy before enabling the query in production.
+12. **(Optional) Member dashboard widgets** — declare via `dashboardWidgets[]` in the module definition with `componentKey` matching an entry in `components.tsx`.
+
+### Appendix B: Adding a New Template
+
+1. **Add an entry to `lib/templates/definitions.ts`** with the full `TemplateConfig` (colors, fonts, layout, cardStyle, cardVariant, decorations).
+2. **Register components in `lib/templates/registry.ts`** — pick (or create) a `Header`, optionally a `Background`, and optionally `Blocks` overrides for any custom block renderers.
+3. **Create the header component** in `components/headers/` if not reusing an existing one.
+4. **Create any custom block renderers** under `components/blocks/{templateId}/` (e.g. `MrbHero`, `MrbQuickActions`).
+5. **Seed entry** if your template needs initial pages/blocks for new tenants — add to the relevant seed script.
+
+### Appendix C: Adding a New Cross-Cutting Subsystem
+
+When something is **too foundational to be a module** but also **not specific to a single feature**, promote it to `lib/{subsystem}/` and document it as a new Part III section.
+
+Examples that qualify: AI Platform (§10), Email (§11), Analytics (§12), WhatsApp (§13), Registration (§14).
+Examples that do **not** qualify: a helper used by one module (keep it in the module); UI primitives (keep in `components/`).
+
+Checklist:
+
+1. **Create `lib/{subsystem}/` directory** with:
+   - A single public API surface — typically `index.ts` re-exporting the canonical functions.
+   - One file per major responsibility (e.g. `sender.ts`, `guard.ts`, `log.ts`).
+   - `types.ts` for the public type vocabulary.
+   - `__tests__/` for the public API.
+2. **Document in a new Part III section** of this file. Use the same template as §10–§17:
+   - Purpose
+   - File map
+   - Public API
+   - Lifecycle / data flow
+   - Firestore paths
+   - Integration points
+   - Rules
+3. **Add file entries to §22 Key File Index**.
+4. **If the subsystem introduces new Firestore collections**, add them to §19 Database Paths.
+5. **If the subsystem introduces new API routes**, add them to §20 API Routes.
+6. **If the subsystem needs a global context or provider**, add it to §18 Global Contexts and document the provider stack order.
+7. **Secrets** (API keys, encryption keys): read from `lib/secrets/` — never inline, never from `process.env` directly in feature code.
+
+### Appendix D: Promoting a Sanctioned Facade Exception
+
+The two existing exceptions (`promo`, `membership`) are sufficient as of 2026-05-14. Before adding a third, the proposal must:
+
+1. **Identify ≥3 distinct consuming modules** that would otherwise duplicate the same evaluator/lookup logic.
+2. **Have a stable, minimal public API** that won't churn — facade consumers depend on shape, not implementation.
+3. **Be reviewed by the architecture owner.** Sanctioned exceptions accrete coupling; they are a deliberate trade-off, not a default option.
+
+If you're tempted to add a facade for two consumers, the answer is usually: keep the logic in one module and use `isModuleEnabled` + dynamic dispatch from the other.
+
+### Appendix E: When to Add Something to `lib/core/`
+
+Promote logic from a module to `lib/core/` when:
+
+1. Two or more modules need the same business primitive, AND
+2. It's tenant-level data, not feature-specific abstraction, AND
+3. The interface fits in a single API surface.
+
+If only one module needs it today, leave it there. Promote when the second consumer appears — not preemptively. See §16.
+
+---
