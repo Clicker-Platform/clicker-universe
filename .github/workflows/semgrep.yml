@@ -2,14 +2,13 @@ name: Semgrep
 
 on:
   pull_request:
-    branches: [main, dev]
+    branches: [main , dev]
   push:
-    branches: [main, dev]
+    branches: [main , dev]
 
 permissions:
   contents: read
   security-events: write
-  actions: read
 
 concurrency:
   group: semgrep-${{ github.ref }}
@@ -38,20 +37,9 @@ jobs:
             --config p/owasp-top-ten \
             --config p/security-audit
 
-      - name: Install GitHub CLI
-        if: always()
-        run: apk add --no-cache github-cli
-
       - name: Upload SARIF to GitHub Security
         if: always()
-        run: |
-          gh api \
-            --method POST \
-            -H "Accept: application/vnd.github+json" \
-            /repos/${{ github.repository }}/code-scanning/sarifs \
-            --field commit_sha=${{ github.sha }} \
-            --field ref=${{ github.ref }} \
-            --field sarif=@semgrep.sarif \
-            --field tool_name=semgrep
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: semgrep.sarif
+          category: semgrep
