@@ -2037,4 +2037,172 @@ The expected admin provider order (outer → inner):
 
 ---
 
+## 19. Database Paths
+
+Firestore is the only operational database. Paths follow two patterns:
+
+- **Core data:** `sites/{siteId}/{collection}/{docId}` — top-level per-tenant.
+- **Module data:** `sites/{siteId}/modules/{module_id}/{collection}/{docId}` — namespaced under the module ID.
+
+**Path constants live in module `constants.ts` (or `api.ts` for modules without a dedicated constants file).** Never hardcode path strings in components or random files. See per-module breakdown below for the canonical constants.
+
+### Core Data (Tenant-Level)
+
+| Path | Constant location | Purpose |
+|---|---|---|
+| `sites/{siteId}` | — | Tenant root doc (template choice, business profile, etc.) |
+| `sites/{siteId}/members/{uid}` | — | Member records (role, moduleAccess) — see §5 |
+| `sites/{siteId}/pages/{pageId}` | — | Custom pages (Canvas Studio output) |
+| `sites/{siteId}/pages/{pageId}/blocks/{blockId}` | — | Block array for a page |
+| `sites/{siteId}/links/{linkId}` | — | Link-in-bio items |
+| `sites/{siteId}/products/{productId}` | — | Base product catalog (used by Products block, POS menu) |
+| `sites/{siteId}/forms/{formId}` | `lib/fetchData.ts` references | Form definitions |
+| `sites/{siteId}/submissions/{subId}` | — | Form submissions |
+| `sites/{siteId}/serviceCatalog/{itemId}` | `lib/core/serviceCatalog/api.ts` (`SERVICE_CATALOG = 'serviceCatalog'`) | Tenant-level service catalog (§16) |
+| `sites/{siteId}/emailLog/{logId}` | `lib/email/log.ts` | Email log (§11) |
+| `sites/{siteId}/platform/aiCredits` | `lib/ai/credits.ts` | AI Kredit balance (§10) |
+| `sites/{siteId}/platform/aiCreditLedger/daily/{YYYY-MM-DD}` | `lib/ai/credits.ts` | AI daily usage aggregate (§10) |
+| `sites/{siteId}/platform/aiCreditLedger/entries/{entryId}` | `lib/ai/credits.ts` | AI topup log (append-only) (§10) |
+| `sites/{siteId}/wa/config` | `lib/whatsapp/constants.ts` | WhatsApp config (§13) |
+| `sites/{siteId}/wa/main/...` | `lib/whatsapp/constants.ts` | WhatsApp threads, contacts, raw messages, etc. (§13) |
+
+### Platform-Level (Not Per-Tenant)
+
+| Path | Purpose |
+|---|---|
+| `modules/{module_id}` | Global module enable/version/publicRoutes registry — read by `lib/modules/registry.ts` |
+| `modules/ai-platform/config/models` | AI model selection (§10) |
+| `modules/ai-platform/config/pricing` | AI per-model pricing (§10) |
+| `platform/settings/email/config` | Email sender + template aliases (§11) |
+| `registrationRequests/{id}` | Pending registrations from `/register` (§14) |
+| `registrationEvents/{eventId}` | Registration operational events (7-day TTL) (§14) |
+| `system/email/emailLog/{logId}` | Email log for platform-level emails (`siteId === null`) (§11) |
+
+### Module Data
+
+All modules namespace under `sites/{siteId}/modules/{module_id}/...`. The `{module_id}` uses underscores when multi-word (e.g. `byod_pos`, `service_records`, `sales_pipeline`) — see §7 for the naming convention.
+
+#### `byod_pos` (Self-Order POS)
+
+| Path | Constant |
+|---|---|
+| `sites/{siteId}/modules/byod_pos/orders/{orderId}` | `ORDERS_COLLECTION` in `byod_pos/constants.ts` |
+| `sites/{siteId}/modules/byod_pos/menu_items/{itemId}` | (inline in `api-admin.ts`, `api-server.ts`) |
+| `sites/{siteId}/modules/byod_pos/settings/config` | `SETTINGS_DOC` |
+
+#### `membership`
+
+| Path | Constant |
+|---|---|
+| `sites/{siteId}/modules/membership/members/{memberId}` | `MEMBERS_COLLECTION` in `membership/api.ts` |
+| `sites/{siteId}/modules/membership/transactions/{txnId}` | `TRANSACTIONS_COLLECTION` |
+| `sites/{siteId}/modules/membership/settings/config` | `SETTINGS_DOC` |
+| `sites/{siteId}/modules/membership/settings/counter` | `COUNTER_DOC` (member code counter) |
+
+#### `inventory`
+
+| Path | Constant |
+|---|---|
+| `sites/{siteId}/modules/inventory/items/{itemId}` | `INVENTORY_COLLECTION` in `inventory/api.ts` |
+| `sites/{siteId}/modules/inventory/transactions/{txnId}` | `TRANSACTIONS_COLLECTION` |
+
+#### `reservation`
+
+| Path | Constant |
+|---|---|
+| `sites/{siteId}/modules/reservation/bookings/{bookingId}` | `BOOKINGS_COLLECTION` in `reservation/api.ts` |
+| `sites/{siteId}/modules/reservation/settings/config` | `SETTINGS_DOC` |
+
+#### `sales_pipeline`
+
+| Path | Constant |
+|---|---|
+| `sites/{siteId}/modules/sales_pipeline/leads/{leadId}` | `MODULE_ID + COLLECTION_LEADS` in `sales-pipeline/constants.ts` (`MODULE_ID = 'sales_pipeline'`, `COLLECTION_LEADS = 'leads'`) |
+| `sites/{siteId}/modules/sales_pipeline/settings/{...}` | `COLLECTION_CONFIG = 'settings'` |
+
+#### `service_records`
+
+All paths prefixed `sites/{siteId}/modules/service_records/...`. From `service-records/constants.ts`:
+
+| Path (suffix) | Constant |
+|---|---|
+| `serviceRecords/{recordId}` | `SR_RECORDS` |
+| `vehicles/{vehicleId}` | `SR_VEHICLES` |
+| `serviceTypes/{typeId}` | `SR_SERVICE_TYPES` |
+| `warrantyCards/{cardId}` | `SR_WARRANTY_CARDS` (also indexed for collection-group lookup by warrantyCode) |
+| `reminderQueue/{reminderId}` | `SR_REMINDER_QUEUE` |
+| `serviceConfig` | `SR_CONFIG` |
+| `carCatalog/{carId}` | `SR_CAR_CATALOG` |
+
+> **Multi-outlet readiness.** Service Records uses an `outletId` field on records (see `OUTLET_ID_V1(siteId) = siteId`). In v1 single-outlet, `outletId === siteId`. When multi-outlet ships, replace with actual outlet resolution.
+
+#### `promo`
+
+| Path | Constant |
+|---|---|
+| `sites/{siteId}/modules/promo/promos/{promoId}` | `PROMOS_COLLECTION` in `promo/constants.ts` |
+| `sites/{siteId}/modules/promo/vouchers/{voucherId}` | `VOUCHERS_COLLECTION` |
+| `sites/{siteId}/modules/promo/settings/config` | `SETTINGS_DOC` |
+| `sites/go/modules/promo/promos/{promoId}` | Platform-level registration promos (siteId = `'go'`) — see §14 |
+
+#### `fintrack`
+
+From `fintrack/constants.ts` (8 collections):
+
+| Path (under `sites/{siteId}/`) | Constant |
+|---|---|
+| `modules/fintrack/wallets/{walletId}` | `FT_WALLETS` |
+| `modules/fintrack/entries/{entryId}` | `FT_ENTRIES` |
+| `modules/fintrack/transfers/{transferId}` | `FT_TRANSFERS` |
+| `modules/fintrack/categories/{categoryId}` | `FT_CATEGORIES` |
+| `modules/fintrack/budgets/{budgetId}` | `FT_BUDGETS` |
+| `modules/fintrack/goals/{goalId}` | `FT_GOALS` |
+| `modules/fintrack/debts/{debtId}` | `FT_DEBTS` |
+| `modules/fintrack/recurring/{recurringId}` | `FT_RECURRING` |
+| `modules/fintrack/private/config` | `FT_CONFIG` |
+
+#### `stocklens`
+
+| Path | Constant |
+|---|---|
+| `sites/{siteId}/modules/stocklens/skus/{skuId}` | `STOCKLENS_SKUS` |
+| `sites/{siteId}/modules/stocklens/private/config` | `STOCKLENS_CONFIG` |
+
+#### `ai_marketing`
+
+From `ai-marketing/constants.ts` (5 collections, all using underscored module ID `ai_marketing`):
+
+| Path (under `sites/{siteId}/`) | Constant |
+|---|---|
+| `modules/ai_marketing/settings` | `COLLECTION_SETTINGS` |
+| `modules/ai_marketing/assets/{assetId}` | `COLLECTION_ASSETS` |
+| `modules/ai_marketing/generations/{genId}` | `COLLECTION_GENERATIONS` |
+| `modules/ai_marketing/saved_content/{savedId}` | `COLLECTION_SAVED` |
+| `modules/ai_marketing/campaigns/{campaignId}` | `COLLECTION_CAMPAIGNS` |
+
+#### `ai_sales`
+
+No dedicated `constants.ts` — module has no Firestore data of its own (configuration lives at site-level / member-level; chat history is ephemeral in the AI conversation).
+
+### Required Composite Indexes
+
+`service-records/constants.ts` documents the required composite indexes. Index changes must be deployed via `firestore.indexes.json`:
+
+- `serviceRecords`: `outletId + status + updatedAt`, `outletId + status + createdAt`, `outletId + updatedAt`
+- `vehicles`: `outletId + plateNumber`
+- `reminderQueue`: `status + scheduledAt`
+- `warrantyCards` (collection-group): `warrantyCode`
+
+Other modules' index requirements are documented per-module (consult each module's `__tests__/` and any `firestore.indexes.json` entries).
+
+### Path Constants Rules
+
+- **Always define paths in `lib/modules/{module}/constants.ts`** (or for modules without a constants file, at the top of `api.ts` as `const X = '...'`).
+- **Never hardcode `'sites/...'` strings** in components, hooks, or pages.
+- **Module IDs in paths use underscores** (`byod_pos`, `ai_marketing`). Directory names may differ (e.g. `ai-marketing/`) — the path uses the canonical ID.
+- **Composite indexes must be in `firestore.indexes.json`** and deployed before the query is enabled in production.
+- **Top-level platform paths (`modules/`, `platform/`, `registrationRequests/`, `system/`)** are global, not per-tenant — handle access control accordingly in `firestore.rules`.
+
+---
+
 <!-- Sections to be filled in by subsequent tasks -->
