@@ -123,8 +123,11 @@ service cloud.firestore {
       
       // SITE METADATA
       allow get: if true; // Public read needed for middleware/routing
-      allow list: if isGlobalAdmin() || (request.auth != null && (resource.data.ownerId == request.auth.uid || resource.data.ownerEmail == request.auth.token.email)); 
+      allow list: if isGlobalAdmin() || (request.auth != null && (resource.data.ownerId == request.auth.uid || resource.data.ownerEmail == request.auth.token.email));
       allow write: if isGlobalAdmin();
+      // Narrow carve-out: members with site access may update dashboardOverview (overview widget visibility)
+      allow update: if hasSiteAccess(siteId)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['dashboardOverview']);
 
       // === SYSTEM COLLECTIONS ===
 
