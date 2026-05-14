@@ -65,7 +65,7 @@ export function CreditOverview() {
           <span className="font-black">Credit Overview</span>
         </div>
         <button
-          onClick={fetchCredits}
+          onClick={() => token && fetchCredits(token)}
           disabled={loading}
           className="text-xs text-gray-400 hover:text-gray-600 disabled:opacity-50"
         >

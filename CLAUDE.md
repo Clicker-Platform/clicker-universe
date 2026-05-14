@@ -2,6 +2,8 @@
 
 Project instructions for Claude Code. Read `AGENTS.md` for the full architecture reference.
 
+> **For platform architecture details:** [`clicker-platform-v2/docs/ARCHITECTURE.md`](clicker-platform-v2/docs/ARCHITECTURE.md) is the **source of truth**. CLAUDE.md is a quick reference for Claude Code sessions; if anything here conflicts with ARCHITECTURE.md, **ARCHITECTURE.md wins**.
+
 ---
 
 ## Quick Start
@@ -13,6 +15,19 @@ pnpm test       # Run Vitest
 pnpm lint       # ESLint
 pnpm build      # Production build
 ```
+
+## Static Analysis (Semgrep)
+
+Run from repo root. CI runs the same rule set on PRs to `main` and on merges.
+
+```bash
+make semgrep-install   # one-time: brew install semgrep
+make semgrep           # full scan (community rule packs)
+make semgrep-secrets   # separate sweep for leaked secrets
+make semgrep-sarif     # emit semgrep.sarif for IDE viewers
+```
+
+Rule packs are pinned in the `Makefile` (`SEMGREP_CONFIGS`) and must match `.github/workflows/semgrep.yml` so local and CI behave identically. Path exclusions live in `.semgrepignore`.
 
 ## Critical Rules
 
@@ -77,44 +92,16 @@ Always save skill outputs to the appropriate folder under `superpowers/`:
 Use today's date and a short kebab-case topic name for the filename.
 ## Auth Gateway — Flow & Rules
 
+> **Source of truth:** Full canonical flow is documented in [`clicker-platform-v2/docs/ARCHITECTURE.md` §4 Authentication & Session Handoff](clicker-platform-v2/docs/ARCHITECTURE.md#4-authentication--session-handoff). The summary below is a quick reference for Claude Code sessions. If it conflicts with ARCHITECTURE.md, **ARCHITECTURE.md wins**.
+
 Gateway (`auth-gateway/`, port **3012**) adalah thin auth layer. Tugasnya hanya autentikasi, bukan tenant logic.
 
-**Login flow — step by step:**
+**Quick reference (full version in ARCHITECTURE.md §4):**
 
-```
-[1] User buka auth-gateway (localhost:3012 / auth.clicker.id)
-    └─ Isi email + password → klik Enter Dashboard
-
-[2] Gateway: signInWithEmailAndPassword(email, password)
-    └─ Firebase Auth verify credential
-
-[3] Gateway: parallel fetch
-    ├─ getUserSites(uid, email) → Firestore: cari site milik user
-    └─ POST /api/token { uid } → Firebase Admin createCustomToken(uid)
-
-[4] Gateway: redirect browser ke platform
-    └─ http://slug.clicker.id/admin#token=CUSTOM_TOKEN&siteId=SITE_ID
-       (token di URL fragment — tidak masuk server log)
-
-[5] Platform: layout.tsx render → TokenBootstrap useEffect jalan
-    ├─ Baca #token + #siteId dari URL hash
-    ├─ Set sessionStorage.__token_bootstrapping = '1'  (cegah AdminGuard redirect)
-    ├─ Set __session=SITE_ID cookie (di platform origin)
-    ├─ setSiteId(SITE_ID) → update SiteContext tanpa reload halaman
-    └─ signInWithCustomToken(auth, token) → Firebase client SDK
-
-[6] Platform: onAuthStateChanged → UserProvider
-    ├─ Remove sessionStorage flag
-    └─ Query Firestore: sites/{siteId}/members/{uid} → dapat role
-
-[7] AdminGuard: user ada + role ada → render dashboard ✓
-
---- Subsequent visits (sudah login) ---
-[A] Browser → platform/admin (cookie __session masih ada)
-[B] Middleware: baca __session → inject x-site-id header
-[C] Firebase cached session di IndexedDB → onAuthStateChanged(user) langsung
-[D] Dashboard tanpa redirect ke gateway ✓
-```
+- Gateway (`auth.clicker.id` / port 3012) authenticates → mints custom token via `/api/token` (Firebase Admin) → redirects to `{slug}.clicker.id/admin#token=...&siteId=...` (token in URL fragment, not query).
+- Platform's `TokenBootstrap.tsx` reads the fragment, sets `__session` cookie + `__token_bootstrapping` sessionStorage flag, calls `setSiteId()`, then `signInWithCustomToken()`.
+- `UserProvider` resolves `sites/{siteId}/members/{uid}` → role; `AdminGuard` renders dashboard.
+- Subsequent visits: cookie + IndexedDB session bypass the gateway entirely.
 
 **File penting auth-gateway:**
 | File | Fungsi |
@@ -144,4 +131,4 @@ Gateway (`auth-gateway/`, port **3012**) adalah thin auth layer. Tugasnya hanya 
 - Auth service: `auth-gateway/` (port 3012)
 - Super-admin: `backyard/`
 - Firebase functions: `functions/`
-- Architecture docs: `clicker-platform-v2/Docs/ARCHITECTURE.md`
+- Architecture docs: `clicker-platform-v2/docs/ARCHITECTURE.md` ← single source of truth

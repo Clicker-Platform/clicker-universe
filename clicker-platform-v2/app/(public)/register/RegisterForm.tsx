@@ -41,7 +41,7 @@ export default function RegisterForm() {
   const [pending, startTransition] = useTransition();
 
   function update<K extends keyof RegistrationInput>(field: K, value: RegistrationInput[K]) {
-    setForm((f) => ({ ...f, [field]: value }));
+    setForm((f: RegistrationInput) => ({ ...f, [field]: value }));
   }
 
   function focusFirstError(fe: FieldErrors) {

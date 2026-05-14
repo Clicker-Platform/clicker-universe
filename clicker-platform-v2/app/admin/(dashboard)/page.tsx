@@ -6,18 +6,23 @@ import { db } from '@/lib/firebase';
 import { useSite } from '@/lib/site-context';
 import { subscribeToEnabledModules } from '@/lib/modules/registry';
 import { STATIC_MODULE_DEFINITIONS } from '@/lib/modules/definitions';
-import { ModuleDefinition } from '@/lib/modules/types';
-import { QuickActionsHero } from '@/components/admin/dashboard/QuickActionsHero';
-import { PagesGrid } from '@/components/admin/dashboard/PagesGrid';
-import { ModuleCards } from '@/components/admin/dashboard/ModuleCards';
-import { ModuleConnectionMap } from '@/components/admin/dashboard/ModuleConnectionMap';
+import type { ModuleDefinition } from '@/lib/modules/types';
+import {
+  subscribeToDashboardOverview,
+  filterVisibleWidgets,
+  defaultVisibleWidgets,
+} from '@/lib/modules/dashboard-overview';
+import { OverviewLayout } from '@/components/admin/dashboard/OverviewLayout';
+import { InboxColumn } from '@/components/admin/dashboard/InboxColumn';
+import { PagesColumn } from '@/components/admin/dashboard/PagesColumn';
+import { ModulesColumn } from '@/components/admin/dashboard/ModulesColumn';
 import { DashboardSkeletonNew } from '@/components/skeletons/DashboardSkeletonNew';
 
 export default function AdminDashboard() {
   const { siteId, tenantSlug, isSubdomain } = useSite();
   const [allModules, setAllModules] = useState<ModuleDefinition[]>([]);
   const [siteEnabledModules, setSiteEnabledModules] = useState<Record<string, boolean>>({});
-  const [businessName, setBusinessName] = useState('');
+  const [storedVisible, setStoredVisible] = useState<string[] | null>(null);
   const [loading, setLoading] = useState(true);
 
   const baseUrl = tenantSlug && !isSubdomain ? `/${tenantSlug}` : '';
@@ -38,35 +43,43 @@ export default function AdminDashboard() {
         const legacy = data.settings?.modules ?? {};
         const root = data.modules ?? {};
         setSiteEnabledModules({ ...legacy, ...root });
-        setBusinessName(data.name ?? data.businessName ?? '');
       }
     });
     return () => unsub();
   }, [siteId]);
 
-  const activeModules = useMemo<ModuleDefinition[]>(() =>
-    allModules
-      .filter(m => siteEnabledModules[m.id] === true)
-      .map(m => ({ ...m, ...(STATIC_MODULE_DEFINITIONS[m.id] ?? {}) })),
-    [allModules, siteEnabledModules]
+  useEffect(() => {
+    if (!siteId) return;
+    return subscribeToDashboardOverview(siteId, setStoredVisible);
+  }, [siteId]);
+
+  const enabledModules = useMemo<ModuleDefinition[]>(
+    () =>
+      allModules
+        .filter(m => siteEnabledModules[m.id] === true)
+        .map(m => ({ ...m, ...(STATIC_MODULE_DEFINITIONS[m.id] ?? {}) })),
+    [allModules, siteEnabledModules],
   );
+
+  const visibleIds = useMemo(() => {
+    if (storedVisible === null) return defaultVisibleWidgets(enabledModules);
+    return filterVisibleWidgets(storedVisible, enabledModules);
+  }, [storedVisible, enabledModules]);
 
   if (loading) return <DashboardSkeletonNew />;
 
   return (
-    <div>
-      <QuickActionsHero
-        businessName={businessName}
-        activeModules={activeModules}
-        baseUrl={baseUrl}
-      />
-      <PagesGrid baseUrl={baseUrl} />
-      <ModuleCards
-        activeModules={activeModules}
-        siteId={siteId}
-        baseUrl={baseUrl}
-      />
-      <ModuleConnectionMap activeModules={activeModules} />
-    </div>
+    <OverviewLayout
+      inbox={<InboxColumn siteId={siteId} />}
+      pages={<PagesColumn siteId={siteId} baseUrl={baseUrl} />}
+      modules={
+        <ModulesColumn
+          siteId={siteId}
+          baseUrl={baseUrl}
+          enabledModules={enabledModules}
+          visibleIds={visibleIds}
+        />
+      }
+    />
   );
 }
