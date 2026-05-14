@@ -773,4 +773,89 @@ This is the canonical pattern when one module's behavior depends on whether anot
 
 ---
 
+## 8. Template & Theme System
+
+A **template** is the visual skin applied to a tenant's public site (biolink/website). Each template ships with a color palette, font pair, layout config, card style, and (optionally) custom header + block renderers. Tenants pick one in admin → Appearance.
+
+### Six Built-in Templates
+
+Source: [`lib/templates/definitions.ts`](../lib/templates/definitions.ts).
+
+| ID | Name | Card style | Card variant | Container width | Nav mode | Bottom nav | Header component |
+|---|---|---|---|---|---|---|---|
+| `classic` | Sunnyside Original | `brutalist` | `shadow` | narrow | mobile-only | — | `ClassicProfileHeader` |
+| `modern` | Modern Clean | `clean` | `shadow` | boxed | adaptive | — | `ModernProfileHeader` |
+| `sojourner` | Sojourner | `clean` | `outlined` | full | adaptive | — | `ModernProfileHeader` (reused) |
+| `shuvo` | Shuvo Real Estate | `clean` | `flat` | tablet | adaptive | ✓ | `ShuvoHeader` |
+| `mrb` | Mr Brightside | `glass` | `outlined` | boxed | adaptive | ✓ | `MrbHeader` |
+| `mrb-light` | Mr Brightside Light | `clean` | `shadow` | boxed | adaptive | ✓ | `MrbHeader` (reused) |
+
+> **Header reuse.** Only 4 distinct header components exist (`ClassicProfileHeader`, `ModernProfileHeader`, `ShuvoHeader`, `MrbHeader`). `sojourner` reuses `ModernProfileHeader`; `mrb-light` reuses `MrbHeader`. The header is selected by the template's entry in `templateComponents` in `lib/templates/registry.ts`, not by template ID convention.
+
+### Template Files
+
+```text
+lib/templates/
+├── definitions.ts   ← TemplateDefinition objects for all 6 templates
+├── registry.ts      ← Maps template ID → header/background/block components
+├── layoutUtils.ts   ← containerWidth, navMode, grid helpers
+├── service.ts       ← Template load/merge logic (used by Server Components)
+└── types.ts         ← TemplateDefinition, ThemeColors, ThemeFonts, etc.
+```
+
+### `TemplateConfig` Shape
+
+Excerpted from `lib/templates/types.ts` — the canonical type:
+
+```typescript
+interface TemplateConfig {
+    colors: ThemeColors;          // primary, accent, background, foreground, surface, border, +extended tokens
+    fonts: ThemeFonts;            // heading, body
+    borderRadius: string;
+    cardStyle: 'brutalist' | 'clean' | 'glass';        // Deprecated in favor of cardVariant
+    cardVariant: 'shadow' | 'outlined' | 'flat';        // Explicit card surface treatment
+    backgroundElements?: BackgroundElement[];           // Decorative icons (classic only)
+    allowThemeColorOverride?: boolean;                  // Default true — user-picked theme color wins
+    headerLayout: 'center' | 'left' | 'minimal';
+    homeButtonStyle: 'pill' | 'text' | 'icon';
+    homeButtonColor: 'primary' | 'foreground' | 'glass';
+    taglineStyle: 'contrast' | 'gentle' | 'outline';
+    layout?: TemplateLayoutConfig;                      // { containerWidth, navMode, showBottomNav, grid }
+    defaultBlockLayouts?: Record<string, string>;       // Per-block default layout variant
+    custom?: Record<string, any>;                       // Template-specific options (e.g. Shuvo, MRB)
+    decorations?: {
+        surfaceStyle?: 'glass' | 'soft' | 'outline' | 'solid';
+        accentGlow?: boolean;
+        neutralTone?: 'warm' | 'cool' | 'neutral';
+    };
+}
+```
+
+### Template-Specific Block Overrides
+
+A template can replace the default renderer for a block type. Registered in `templateComponents` in `lib/templates/registry.ts`:
+
+**MRB and MRB-Light** override three blocks:
+
+- `hero` → `MrbHero` (`components/blocks/mrb/MrbHero.tsx`)
+- `quick_actions` → `MrbQuickActions`
+- `hours` → `MrbOperatingHours`
+
+The override chain (template → module → default) is described in §9.
+
+### Background Decorations
+
+`backgroundElements` is a list of decorative icons positioned with Tailwind classes — used only by `classic`. Other templates pass `[]` (or a `Background: () => null` component) to suppress decorations entirely.
+
+### Adding a New Template
+
+Quick checklist (full version in §24):
+
+1. Append a `TemplateDefinition` entry to `lib/templates/definitions.ts`.
+2. Register components (header, background, optional block overrides) in `lib/templates/registry.ts`.
+3. Create the header component under `components/headers/` if not reusing an existing one.
+4. Create any custom block renderers under `components/blocks/{templateId}/`.
+
+---
+
 <!-- Sections to be filled in by subsequent tasks -->
