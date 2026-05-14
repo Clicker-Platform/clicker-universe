@@ -21,7 +21,7 @@ function loadEnv(filePath: string) {
             });
         }
     } catch (e) {
-        console.error(`Error loading ${filePath}:`, e);
+        console.error('Error loading', filePath + ':', e);
     }
 }
 

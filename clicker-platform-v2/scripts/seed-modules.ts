@@ -255,7 +255,7 @@ async function seedModules() {
             await db.collection('modules').doc(moduleDef.id).set(moduleDef);
             console.log(`✅ Seeded ${moduleDef.id}`);
         } catch (error: any) {
-            console.error(`❌ Error seeding ${moduleDef.id}:`, error.message);
+            console.error('❌ Error seeding', moduleDef.id + ':', error.message);
         }
     }
 

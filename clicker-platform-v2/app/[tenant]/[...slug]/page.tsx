@@ -1,4 +1,5 @@
 import { fetchPageBySlug, fetchPublicData, fetchLightweightPublicData, hydratePageBlocks } from '@/lib/fetchData';
+import DOMPurify from 'isomorphic-dompurify';
 import { logger } from '@/lib/logger';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
@@ -258,7 +259,7 @@ export default async function TenantCatchAllPage({ params, searchParams }: Props
                     {page.content && (
                         <div
                             className="prose prose-stone max-w-none text-theme-foreground/80 font-medium"
-                            dangerouslySetInnerHTML={{ __html: page.content }}
+                            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(page.content) }}
                         />
                     )}
                 </article>

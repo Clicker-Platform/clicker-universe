@@ -8,6 +8,8 @@ const nextConfig = {
       '@google-cloud/secret-manager',
       '@grpc/grpc-js',
       'google-gax',
+      'isomorphic-dompurify',
+      'jsdom',
     ],
     allowedDevOrigins: ['192.168.0.100'],
     images: {

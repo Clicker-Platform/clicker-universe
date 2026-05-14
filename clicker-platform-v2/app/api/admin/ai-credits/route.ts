@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCreditBalance } from '@/lib/ai/credits';
+import { requireAuthedMember } from '@/lib/api-auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
-  const siteId = req.headers.get('x-site-id');
-  if (!siteId) return NextResponse.json({ error: 'Missing siteId' }, { status: 400 });
+  const auth = await requireAuthedMember(req);
+  if (!auth.ok) return auth.res;
 
   try {
-    const balance = await getCreditBalance(siteId);
+    const balance = await getCreditBalance(auth.session.siteId);
     return NextResponse.json(balance);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';

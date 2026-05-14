@@ -41,4 +41,5 @@ function initializeAdminApp(): App {
 
 export const adminApp: App = initializeAdminApp();
 export const adminDb: Firestore = admin.firestore(adminApp);
+export const adminAuth = admin.auth(adminApp);
 export const FieldValue = admin.firestore.FieldValue;

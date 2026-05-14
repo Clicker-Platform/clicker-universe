@@ -116,7 +116,7 @@ async function seedContent() {
                 console.log(`ℹ️ ${item.col}/${item.doc} already exists. Skipping.`);
             }
         } catch (error: any) {
-            console.error(`❌ Error seeding ${item.doc}:`, error.message);
+            console.error('❌ Error seeding', item.doc + ':', error.message);
         }
     }
 

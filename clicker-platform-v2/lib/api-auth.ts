@@ -34,7 +34,11 @@ async function resolveSession(req: NextRequest): Promise<AuthResult> {
     }
 
     try {
-        const siteDoc = await adminDb.collection('sites').doc(siteId).get();
+        const [siteDoc, memberDoc] = await Promise.all([
+            adminDb.collection('sites').doc(siteId).get(),
+            adminDb.collection('sites').doc(siteId).collection('members').doc(decoded.uid).get(),
+        ]);
+
         if (!siteDoc.exists) {
             return { ok: false, res: NextResponse.json({ error: 'Site not found' }, { status: 404 }) };
         }
@@ -58,11 +62,6 @@ async function resolveSession(req: NextRequest): Promise<AuthResult> {
                 },
             };
         }
-
-        const memberDoc = await adminDb
-            .collection('sites').doc(siteId)
-            .collection('members').doc(decoded.uid)
-            .get();
 
         if (!memberDoc.exists || memberDoc.data()?.status !== 'active') {
             return { ok: false, res: NextResponse.json({ error: 'Forbidden' }, { status: 403 }) };

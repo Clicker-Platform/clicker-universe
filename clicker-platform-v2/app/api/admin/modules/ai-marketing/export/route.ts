@@ -2,23 +2,17 @@
 // Exports a campaign and its saved content as markdown
 
 import { NextRequest, NextResponse } from 'next/server';
-import { adminAuth, adminDb } from '@/lib/firebase-admin';
+import { adminDb } from '@/lib/firebase-admin';
+import { requireAuthedMember } from '@/lib/api-auth';
 import { COLLECTION_CAMPAIGNS, COLLECTION_SAVED } from '@/lib/modules/ai-marketing/constants';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
-  const siteId = req.headers.get('x-site-id');
-  const authHeader = req.headers.get('authorization');
-  if (!siteId || !authHeader?.startsWith('Bearer ')) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-  try {
-    await adminAuth.verifyIdToken(authHeader.split('Bearer ')[1]);
-  } catch {
-    return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
-  }
+  const auth = await requireAuthedMember(req);
+  if (!auth.ok) return auth.res;
 
+  const { siteId } = auth.session;
   const campaignId = req.nextUrl.searchParams.get('campaignId');
   if (!campaignId) return NextResponse.json({ error: 'campaignId required' }, { status: 400 });
 

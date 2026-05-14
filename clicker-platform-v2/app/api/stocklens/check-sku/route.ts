@@ -1,19 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
+import { requireAuthedMember } from '@/lib/api-auth';
 import { logger } from '@/lib/logger';
 import { STOCKLENS_SKUS } from '@/lib/modules/stocklens/constants';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
+  const auth = await requireAuthedMember(req);
+  if (!auth.ok) return auth.res;
+
   try {
-    const { siteId, sku } = await req.json();
-    if (!siteId || !sku) {
-      return NextResponse.json({ error: 'siteId and sku required' }, { status: 400 });
+    const { sku } = await req.json();
+    if (!sku) {
+      return NextResponse.json({ error: 'sku required' }, { status: 400 });
     }
 
     const snap = await adminDb
-      .collection(`sites/${siteId}/${STOCKLENS_SKUS}`)
+      .collection(`sites/${auth.session.siteId}/${STOCKLENS_SKUS}`)
       .where('sku', '==', sku)
       .limit(1)
       .get();

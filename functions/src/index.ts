@@ -68,7 +68,7 @@ export const generateHandoffToken = functions.https.onCall(async (request) => {
 export const createUser = functions.https.onCall(async (request) => {
     // Basic security: Ensure requester is authenticated (and ideally is an admin)
     const { email, password, displayName, role, siteId, permissions, moduleAccess } = request.data;
-    const SUPER_ADMIN_EMAIL = 'clickerplatform@gmail.com';
+    const SUPER_ADMIN_EMAIL = process.env.SUPER_ADMIN_EMAIL;
 
     // Basic security: Ensure requester is authenticated (and ideally is an admin)
     // EXCEPTION: Allow creating the specific super admin user without auth (Bootstrap)
@@ -158,7 +158,7 @@ export const createUser = functions.https.onCall(async (request) => {
 
 
             // Log for debugging
-            console.log(`[createUser] Syncing to Firestore: sites/${siteId}/members/${userRecord.uid}`, memberData);
+            console.log('[createUser] Syncing to Firestore:', `sites/${siteId}/members/${userRecord.uid}`, memberData);
 
             await admin.firestore()
                 .collection('sites')

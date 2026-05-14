@@ -1,9 +1,12 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { listSecrets } from '@/lib/secrets';
+import { requireSuperadmin } from '@/lib/require-superadmin';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const auth = await requireSuperadmin(req);
+  if (!auth.ok) return auth.res;
   try {
     const secrets = await listSecrets();
     return NextResponse.json({ secrets });

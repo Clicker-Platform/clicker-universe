@@ -8,7 +8,7 @@ import * as admin from "firebase-admin";
 export const setCustomClaims = functions.https.onCall(async (request) => {
     // 1. Security Check: Must be Superadmin
     if (!request.auth || request.auth.token.role !== 'superadmin') {
-        const SUPER_ADMIN_EMAIL = 'clickerplatform@gmail.com';
+        const SUPER_ADMIN_EMAIL = process.env.SUPER_ADMIN_EMAIL;
         if (!request.auth?.token.email || request.auth.token.email !== SUPER_ADMIN_EMAIL) {
             throw new functions.https.HttpsError('permission-denied', 'Only Superadmins can manage roles.');
         }
@@ -22,7 +22,7 @@ export const setCustomClaims = functions.https.onCall(async (request) => {
     // 2. Security Check: Prevent modification of the Root Superadmin
     try {
         const targetUser = await admin.auth().getUser(uid);
-        const SUPER_ADMIN_EMAIL = 'clickerplatform@gmail.com';
+        const SUPER_ADMIN_EMAIL = process.env.SUPER_ADMIN_EMAIL;
         if (targetUser.email === SUPER_ADMIN_EMAIL) {
             throw new functions.https.HttpsError('permission-denied', 'The Root Superadmin cannot be modified.');
         }
@@ -46,7 +46,7 @@ export const setCustomClaims = functions.https.onCall(async (request) => {
  */
 export const getUserByEmail = functions.https.onCall(async (request) => {
     if (!request.auth || request.auth.token.role !== 'superadmin') {
-        const SUPER_ADMIN_EMAIL = 'clickerplatform@gmail.com';
+        const SUPER_ADMIN_EMAIL = process.env.SUPER_ADMIN_EMAIL;
         if (!request.auth?.token.email || request.auth.token.email !== SUPER_ADMIN_EMAIL) {
             throw new functions.https.HttpsError('permission-denied', 'Access denied.');
         }

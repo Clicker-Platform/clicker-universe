@@ -3,26 +3,17 @@
 // Also enforces 100MB per-tenant storage quota
 
 import { NextRequest, NextResponse } from 'next/server';
-import { adminAuth, adminDb, Timestamp } from '@/lib/firebase-admin';
+import { adminDb, Timestamp } from '@/lib/firebase-admin';
+import { requireAuthedMember } from '@/lib/api-auth';
 import { COLLECTION_ASSETS, MAX_STORAGE_BYTES } from '@/lib/modules/ai-marketing/constants';
-import { FieldValue } from 'firebase-admin/firestore';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
-  const siteId = req.headers.get('x-site-id');
-  const authHeader = req.headers.get('authorization');
-  if (!siteId || !authHeader?.startsWith('Bearer ')) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const auth = await requireAuthedMember(req);
+  if (!auth.ok) return auth.res;
 
-  let uid: string;
-  try {
-    const decoded = await adminAuth.verifyIdToken(authHeader.split('Bearer ')[1]);
-    uid = decoded.uid;
-  } catch {
-    return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
-  }
+  const { siteId, uid } = auth.session;
 
   const { fileName, fileUrl, thumbnailUrl, fileSizeMB, mimeType, type, tags } = await req.json();
   if (!fileName || !fileUrl || !type || fileSizeMB === undefined) {
@@ -62,21 +53,12 @@ export async function POST(req: NextRequest) {
 
 // DELETE /api/admin/modules/ai-marketing/assets/upload?assetId=xxx
 export async function DELETE(req: NextRequest) {
-  const siteId = req.headers.get('x-site-id');
-  const authHeader = req.headers.get('authorization');
-  if (!siteId || !authHeader?.startsWith('Bearer ')) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  try {
-    await adminAuth.verifyIdToken(authHeader.split('Bearer ')[1]);
-  } catch {
-    return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
-  }
+  const auth = await requireAuthedMember(req);
+  if (!auth.ok) return auth.res;
 
   const assetId = req.nextUrl.searchParams.get('assetId');
   if (!assetId) return NextResponse.json({ error: 'assetId required' }, { status: 400 });
 
-  await adminDb.doc(`sites/${siteId}/${COLLECTION_ASSETS}/${assetId}`).delete();
+  await adminDb.doc(`sites/${auth.session.siteId}/${COLLECTION_ASSETS}/${assetId}`).delete();
   return NextResponse.json({ ok: true });
 }

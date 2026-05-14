@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Key, CheckCircle, XCircle, Loader2, Eye, EyeOff } from 'lucide-react';
+import { auth } from '@/lib/firebase';
 
 const KEY_LABELS: Record<string, { label: string; description: string }> = {
   OPENROUTER_API_KEY:       { label: 'OpenRouter API Key',      description: 'AI model gateway (all AI features)' },
@@ -33,9 +34,10 @@ export function SecretCard({ secretKey, exists, onRefresh }: SecretCardProps) {
     setTesting(true);
     setTestResult(null);
     try {
+      const idToken = await auth.currentUser?.getIdToken() ?? '';
       const res = await fetch('/api/secrets/test', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
         body: JSON.stringify({ key: secretKey }),
       });
       const data = await res.json() as { ok: boolean; message: string };
@@ -51,9 +53,10 @@ export function SecretCard({ secretKey, exists, onRefresh }: SecretCardProps) {
     if (!newValue.trim()) return;
     setSaving(true);
     try {
+      const idToken = await auth.currentUser?.getIdToken() ?? '';
       await fetch('/api/secrets/set', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
         body: JSON.stringify({ key: secretKey, value: newValue.trim() }),
       });
       setNewValue('');
@@ -68,9 +71,10 @@ export function SecretCard({ secretKey, exists, onRefresh }: SecretCardProps) {
     if (!confirm(`Delete ${meta.label}? This will break dependent features.`)) return;
     setDeleting(true);
     try {
+      const idToken = await auth.currentUser?.getIdToken() ?? '';
       await fetch('/api/secrets/delete', {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
         body: JSON.stringify({ key: secretKey }),
       });
       onRefresh();

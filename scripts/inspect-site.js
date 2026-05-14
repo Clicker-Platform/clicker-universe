@@ -28,7 +28,7 @@ async function inspectSites() {
                 console.log(`\nSite: [${siteId}] - Not Found`);
             }
         } catch (error) {
-            console.error(`Error checking site ${siteId}:`, error);
+            console.error('Error checking site', siteId + ':', error);
         }
     }
 }

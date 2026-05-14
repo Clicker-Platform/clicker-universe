@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Sidebar from '@/components/Sidebar';
 import { KeyRound, RefreshCw } from 'lucide-react';
+import { auth } from '@/lib/firebase';
 import { SecretCard } from './_components/SecretCard';
 import { EmailConfigPanel } from './_components/EmailConfigPanel';
 
@@ -37,7 +38,10 @@ export default function ApiKeysPage() {
   const fetchSecrets = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/secrets/list');
+      const idToken = await auth.currentUser?.getIdToken() ?? '';
+      const res = await fetch('/api/secrets/list', {
+        headers: { 'Authorization': `Bearer ${idToken}` },
+      });
       const data = await res.json() as { secrets: SecretStatus[] };
       setSecrets(data.secrets ?? []);
     } finally {

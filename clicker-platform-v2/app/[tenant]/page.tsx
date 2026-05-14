@@ -1,5 +1,6 @@
 import { fetchPublicData, fetchPageBySlug, hydratePageBlocks, fetchNavigationData } from "@/lib/fetchData";
 import { headers } from "next/headers";
+import DOMPurify from 'isomorphic-dompurify';
 import { findModuleForRoute } from '@/lib/modules/registry';
 import { ModuleLoader } from '@/components/modules/ModuleLoader';
 import { BlockRenderer } from "@/components/blocks/BlockRenderer";
@@ -207,7 +208,7 @@ export default async function TenantPage({ params, searchParams }: TenantPagePro
                     {homePage?.content && (
                         <div
                             className="prose prose-stone max-w-none text-theme-foreground/80 font-medium"
-                            dangerouslySetInnerHTML={{ __html: homePage.content }}
+                            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(homePage.content) }}
                         />
                     )}
                 </article>

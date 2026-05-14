@@ -5,11 +5,14 @@ import { getRegistration, setStatus } from '@/lib/registrations/api';
 import { commitRegistrationPromo } from '@/lib/promo/api';
 import { writeEvent } from '@/lib/registrations/event-log';
 import { REGISTRATION_REQUESTS_COLLECTION } from '@/lib/registrations/constants';
+import { requireSuperadmin } from '@/lib/require-superadmin';
 
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireSuperadmin(req);
+  if (!auth.ok) return auth.res;
   try {
     const { id } = await params;
     const { siteId, tempPassword } = await req.json();

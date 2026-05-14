@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
+import { requireSuperadmin } from '@/lib/require-superadmin';
 
 export const dynamic = 'force-dynamic';
 
 // GET /api/ai-settings/usage?siteId=xxx&limit=50
 // Returns topup entries only — debit is aggregated in daily/ collection
 export async function GET(req: NextRequest) {
+  const auth = await requireSuperadmin(req);
+  if (!auth.ok) return auth.res;
   try {
     const { searchParams } = new URL(req.url);
     const siteId = searchParams.get('siteId');
