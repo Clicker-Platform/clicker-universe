@@ -2205,4 +2205,150 @@ Other modules' index requirements are documented per-module (consult each module
 
 ---
 
+## 20. API Routes
+
+Full inventory of `app/api/` route handlers as of 2026-05-14. Generated from `find clicker-platform-v2/app/api -type d`. Authentication conventions: admin routes use `requireAuthedMember(req)` from `lib/api-auth.ts` (returns `{ siteId }` from the `__session` cookie). Public routes are unauthenticated. Webhook routes verify a provider-supplied signature.
+
+### Admin — Authenticated
+
+#### AI Credits & Usage
+
+| Endpoint | Purpose | §Ref |
+|---|---|---|
+| `GET /api/admin/ai-credits` | Balance + recent ledger entries | §10 |
+| `GET /api/admin/ai/credits` | Legacy alias | §10 |
+| `GET /api/admin/ai-usage` | Daily aggregate for charts | §10 |
+
+#### Cache
+
+| Endpoint | Purpose |
+|---|---|
+| `POST /api/admin/cache/purge` | Invalidate per-tenant caches (Upstash + in-memory) |
+
+#### Knowledge Base (AI ingestion)
+
+| Endpoint | Purpose |
+|---|---|
+| `POST /api/admin/knowledge/sync` | Re-crawl tenant's site/links to refresh AI knowledge |
+| `GET /api/admin/knowledge/verify` | Verify what AI has indexed (debug) |
+
+#### Module Admin: AI Marketing
+
+| Endpoint | Purpose |
+|---|---|
+| `POST /api/admin/modules/ai-marketing/generate` | Content generation (LLM) |
+| `POST /api/admin/modules/ai-marketing/assets/upload` | Asset upload + analysis |
+| `POST /api/admin/modules/ai-marketing/assets/analyze` | Asset analysis (Vision) |
+| `GET\|POST /api/admin/modules/ai-marketing/campaigns` | Campaigns CRUD |
+| `GET\|PATCH\|DELETE /api/admin/modules/ai-marketing/campaigns/[id]` | Per-campaign ops |
+| `GET\|POST /api/admin/modules/ai-marketing/config` | Module config |
+| `POST /api/admin/modules/ai-marketing/export` | Export assets/campaigns |
+| `GET /api/admin/modules/ai-marketing/saved` | Saved content list |
+
+#### Module Admin: AI Sales Agent
+
+| Endpoint | Purpose |
+|---|---|
+| `GET\|PUT /api/admin/modules/ai-sales-agent/config` | Module config (system prompt, agent params) |
+
+#### Templates
+
+| Endpoint | Purpose |
+|---|---|
+| `POST /api/admin/seed-templates` | Seed template data into a tenant |
+
+#### Team Management
+
+| Endpoint | Purpose |
+|---|---|
+| `POST /api/admin/team/add` | Add a member (sends invite email via Resend) |
+| `POST /api/admin/team/remove` | Remove a member |
+
+#### WhatsApp
+
+| Endpoint | Purpose | §Ref |
+|---|---|---|
+| `POST /api/admin/whatsapp/connect` | Save Meta credentials (encrypts accessToken) | §13 |
+| `POST /api/admin/whatsapp/disconnect` | Mark disconnected, clear sensitive fields | §13 |
+| `POST /api/admin/whatsapp/send` | Admin-initiated send (`human_triggered: true`) | §13 |
+| `POST /api/admin/whatsapp/test` | Sandbox/test send | §13 |
+
+### Public — Unauthenticated
+
+| Endpoint | Purpose | §Ref |
+|---|---|---|
+| `POST /api/ai-sales-agent/chat` | Public chat with the AI sales agent | §10 |
+| `POST /api/public/validate-promo` | Cart-side promo validation | §15 |
+| `GET /api/warranty/[warrantyCode]/pdf` | Service Records warranty card PDF (uses `@react-pdf/renderer`) | — |
+
+### Forms & Submissions
+
+| Endpoint | Purpose |
+|---|---|
+| `POST /api/forms/create` | Create a form definition |
+| `POST /api/forms/update` | Update form |
+| `POST /api/forms/delete` | Delete form |
+| `POST /api/forms/submit` | Submit a form (public — produces a `submissions/{id}`) |
+| `POST /api/submissions/update` | Update submission status (admin) |
+
+### Uploads
+
+| Endpoint | Purpose | §Ref |
+|---|---|---|
+| `POST /api/upload/avatar` | Avatar upload (MIME validation, no resize) | §17 |
+| `POST /api/upload/image` | Generic image upload (sharp resize pipeline) | §17 |
+
+### Auth
+
+| Endpoint | Purpose |
+|---|---|
+| `GET\|POST /api/auth/check-access` | Server-side access verification utility |
+
+### Webhooks
+
+| Endpoint | Purpose | §Ref |
+|---|---|---|
+| `POST /api/webhook/whatsapp` | Meta WA Cloud API webhook (handshake on GET, events on POST) | §13 |
+
+### Stocklens (Module-Public Routes)
+
+These live at `/api/stocklens/*` (not under `/api/admin/...`) because they're called from the Stocklens scanner UI, which is admin-side but uses its own route shape.
+
+| Endpoint | Purpose |
+|---|---|
+| `POST /api/stocklens/check-sku` | Verify a scanned SKU exists in vault |
+| `POST /api/stocklens/scan` | Vision-based scan + recognize |
+| `GET\|POST /api/stocklens/settings` | Stocklens config |
+| `POST /api/stocklens/test-key` | Test API key for Stocklens-specific provider |
+
+### Infrastructure
+
+| Endpoint | Purpose |
+|---|---|
+| `POST /api/analytics/track` | **Not implemented.** Empty directory; reserved for server-side analytics — see §12 |
+| `POST /api/log/client-error` | Client-side error logging (forwards to `logger.error`) |
+| `GET /api/proxy/lottie` | Proxy for Lottie animations (CORS workaround) |
+| `GET /api/debug-firebase` | Debug endpoint for Firebase connectivity (dev-only) |
+
+### Server Component vs Client SDK Rule
+
+Same rule applies across all of `app/api/`:
+
+| Context | Firebase SDK | Import from |
+|---|---|---|
+| Server Components / API Routes | `firebase-admin` | `@/lib/firebase-admin` |
+| Client Components | Firebase client | `@/lib/firebase`, `firebase/firestore` |
+
+Mixing them produces auth and security bugs — `firebase-admin` operates as the service account and bypasses `firestore.rules`. Always use `firebase-admin` from server-side code so reads/writes are explicit and auditable; use the client SDK only in `'use client'` components where rules enforce per-user access.
+
+### API Route Rules
+
+- **Admin endpoints must call `requireAuthedMember(req)`** before any read/write.
+- **Public endpoints** (`/api/public/...`, `/api/ai-sales-agent/chat`, `/api/forms/submit`, `/api/warranty/...`) are intentionally unauthenticated — but must validate input (Zod) and rate-limit if abusable.
+- **Server-side AI calls go through `lib/ai/`** — never call OpenRouter directly from a route handler.
+- **Webhook endpoints must verify provider signatures** before processing (Meta for WA, etc.).
+- **`/api/debug-firebase` is dev-only** — guard with `NODE_ENV` or remove before promotion to production.
+
+---
+
 <!-- Sections to be filled in by subsequent tasks -->
