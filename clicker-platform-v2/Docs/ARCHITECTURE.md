@@ -2351,4 +2351,109 @@ Mixing them produces auth and security bugs — `firebase-admin` operates as the
 
 ---
 
+## 21. Admin UI Conventions
+
+Visual primitives and class patterns for admin pages. These conventions evolved by example — there is no central design system component library; consistency comes from copying these snippets.
+
+### Card / Container
+
+```tsx
+<div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-gray-200 dark:border-neutral-700 shadow-sm">
+    {/* content */}
+</div>
+```
+
+### Input Field
+
+```tsx
+<input className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:border-gray-400 dark:focus:border-neutral-500 outline-none" />
+```
+
+### Primary Action Button
+
+```tsx
+<button className="bg-brand-dark text-white px-6 py-3 rounded-xl font-bold hover:bg-brand-dark/90 shadow-sm transition-all">
+    Save Changes
+</button>
+```
+
+### Status Badge
+
+```tsx
+<div className={`px-3 py-1 rounded-full text-xs font-semibold border ${
+    isActive
+        ? 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-800 text-green-700 dark:text-green-400'
+        : 'bg-gray-100 dark:bg-neutral-800 border-gray-200 dark:border-neutral-700 text-gray-400 dark:text-neutral-500'
+}`}>
+    {isActive ? 'Active' : 'Inactive'}
+</div>
+```
+
+### Dark Mode Pattern
+
+`useAdminTheme()` (§18) returns `{ isDark, toggle }` and persists to `localStorage` under `'admin_dark_mode'`. The actual styling is handled entirely via Tailwind's `dark:` prefix — the provider doesn't apply a class to `<html>` itself; that's done in the admin layout.
+
+Conventional dark mode pairings (from `components/admin/AdminTopBar.tsx` and others):
+
+| Light token | Dark equivalent |
+|---|---|
+| `bg-white` | `dark:bg-neutral-900` (cards) or `dark:bg-neutral-800` (inputs) |
+| `bg-gray-50` / `bg-gray-100` | `dark:bg-neutral-800` / `dark:bg-neutral-900` |
+| `border-gray-200` | `dark:border-neutral-700` |
+| `border-gray-100` (subtle dividers) | `dark:border-neutral-700` (same — divider tone) |
+| `text-gray-700` (body) | `dark:text-neutral-200` |
+| `text-gray-600` | `dark:text-neutral-300` |
+| `text-gray-400` (subdued) | `dark:text-neutral-500` |
+| `hover:bg-gray-50` | `dark:hover:bg-neutral-800` |
+| Brand accent (`text-studio-blue`, `bg-studio-blue/10`) | Keep or use `dark:` muted variant (e.g. `dark:text-studio-blue-muted`) |
+
+**Rule:** any new admin component **must** include `dark:` pairings for its background, border, and text colors. If you can't see your component clearly in both modes, ship it both modes — don't punt to "we'll fix dark mode later."
+
+### Quick Smoke Test
+
+Before merging an admin UI change:
+
+1. Click the dark mode toggle (top-right of admin top bar).
+2. Verify every card, input, and button has visible borders and readable text.
+3. Look specifically at: empty states, error messages, modals, dropdowns, hover states.
+
+### Anti-Patterns (NEVER use in admin UI)
+
+| Pattern | Why it's banned |
+|---|---|
+| `border-[2px]` or `border-[3px]` on cards | Admin uses thin 1px borders — heavy borders are public-site styling |
+| `border-brand-dark` on admin containers | Brand accent borders are public-site; admin uses neutral grays |
+| `shadow-sticker` | Public-site shadow style |
+| `hover:-translate-y-1` lift on cards | Admin is dense and functional — no playful hover transforms |
+| Dividers with `border-t-2` | Use `border-t border-gray-200 dark:border-neutral-700` (1px) |
+| Hardcoded `bg-white` without `dark:` pairing | Breaks dark mode silently |
+| Inline hex colors (`text-[#333]`) | Use Tailwind tokens so dark mode pairing exists |
+
+### Typography
+
+Admin typography uses Tailwind defaults — no custom font scale. Common sizes:
+
+| Class | Use |
+|---|---|
+| `text-xs font-semibold` | Status badges, labels |
+| `text-sm` | Body in dense lists/tables |
+| `text-base` | Default body |
+| `text-lg font-semibold` | Section subheadings |
+| `text-xl font-bold` | Page subheadings |
+| `text-2xl font-bold` | Page titles |
+
+### Icons
+
+Use `lucide-react` icons throughout. Sizes default to `w-4 h-4` for inline (with text), `w-5 h-5` for buttons, `w-6 h-6` for large UI affordances.
+
+### Admin UI Rules
+
+- **Always include `dark:` pairings.** No exceptions.
+- **Don't introduce new shadow utilities.** Stick to `shadow-sm` for cards.
+- **Don't introduce new border weights.** 1px borders only on admin surfaces.
+- **Use neutral grays, not warm grays.** Admin = `gray-*` / `neutral-*`; public-site templates use their own palette.
+- **Test both themes before merging.** A 30-second toggle catches 90% of dark mode regressions.
+
+---
+
 <!-- Sections to be filled in by subsequent tasks -->
