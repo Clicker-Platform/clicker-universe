@@ -1056,7 +1056,7 @@ The terminology "Kredit" (Indonesian for "credit") is used in the admin UI and p
 
 Backyard (superadmin) owns model/pricing configuration; the platform consumes it read-only.
 
-### Integration Points
+### AI Integration Points
 
 - `ai_sales` module — chat agent (`/api/ai-sales-agent/chat`)
 - `ai_marketing` module — content generation, asset analysis
@@ -1283,6 +1283,143 @@ Until either is added, **only client-side code can emit events.** Module API fun
 - **Always pass `siteId`.** Hook callers get it automatically; direct callers must include it.
 - **Event names use dot.snake_case:** `module_id.action_past_tense`.
 - **Don't track PII.** No emails, no phone numbers, no full names in event properties — use Firestore IDs (`uid`, `memberId`, `orderId`).
+
+---
+
+## 13. WhatsApp Integration
+
+A bidirectional WhatsApp Cloud API integration (via Meta Graph API v19) that handles:
+
+- **Outbound** messages from admin UI and from modules (with a safeguard against accidental customer auto-replies).
+- **Inbound** webhook → actor classification → split routing into staff command threads or customer threads.
+- **Owner commands** — natural-language regex matching (sales report, stock query, booking, member info) replied in-thread.
+
+### What WhatsApp Integration Does
+
+- Per-tenant WA connection (each site provides its own Meta Phone Number ID, WABA ID, access token, webhook verify token).
+- Encrypted access tokens at rest (AES-256-CBC with key from Google Secret Manager).
+- Three-actor model: **owner / staff / customer** — first two route to a "staff commands" thread, customers route to a per-contact "customer threads" inbox.
+- Owner/staff commands are pattern-matched against a small handler map (Indonesian + English keywords).
+- Customer-targeted outbound sends **require `human_triggered: true`** — a deliberate safeguard against modules accidentally messaging customers.
+
+### WhatsApp Files
+
+| File | Role |
+|---|---|
+| `lib/whatsapp/constants.ts` | Firestore subcollection paths under `sites/{siteId}/wa/main/...`; Meta API base + messages endpoint |
+| `lib/whatsapp/types.ts` | `WAConfig`, `WAContact`, `WAMessage`, `WAThread`, `WACommand`, `WATemplate`, `OutboundMessage`, Meta webhook payload shapes, `WAActorType` |
+| `lib/whatsapp/gateway.ts` | `WhatsAppGateway` class implementing `MessagingGateway` (send, getThread, markRead); `getWAConfig()` reader |
+| `lib/whatsapp/webhook-processor.ts` | `processIncomingMessage()` — fan-out from Meta payload to raw store + classifier + router |
+| `lib/whatsapp/contact-classifier.ts` | `classifyActor(siteId, phone)` → `'owner' \| 'staff' \| 'customer' \| 'unknown'` |
+| `lib/whatsapp/message-router.ts` | `routeCommand()` — regex-pattern command dispatch; calls handler then replies via gateway |
+| `lib/whatsapp/encryption.ts` | `encryptToken()` / `decryptToken()` — AES-256-CBC, key from `WA_ENCRYPTION_KEY` secret |
+| `lib/whatsapp/phone.ts` | `normalizePhone()`, `formatPhoneE164()`, `isValidE164()` |
+
+### WhatsApp Outbound Flow
+
+```text
+Caller (admin UI / module)
+   │
+   ├── getWAConfig(siteId) → WAConfig (status must be 'connected')
+   ├── new WhatsAppGateway(siteId, config)
+   └── gateway.send({ to, type, content, human_triggered })
+         │
+         ├── SAFEGUARD: customer target AND !human_triggered → throw
+         │   (Prevents modules from leaking internal data to customers)
+         │
+         └── POST graph.facebook.com/v19.0/{phoneNumberId}/messages
+               Authorization: Bearer {decrypted accessToken}
+```
+
+### WhatsApp Inbound Flow
+
+```text
+Meta → POST /api/webhook/whatsapp (Next.js route, see §20)
+   │
+   └── processIncomingMessage(siteId, MetaWebhookPayload)
+         │
+         For each inbound message:
+         │
+         ├── 1. storeRawMessage()                ← antifragility: write raw first
+         │      → sites/{siteId}/wa/main/raw_messages/{id}
+         │
+         ├── 2. classifyActor(siteId, msg.from)
+         │      ├── Match config.ownerPhone     → 'owner'
+         │      ├── Match config.staffPhones[]  → 'staff'
+         │      ├── Match contacts (by phone)   → contact.type
+         │      └── Otherwise                    → 'unknown'
+         │
+         └── 3. Route by actor type:
+                │
+                ├── owner | staff → routeToStaffCommands()
+                │      → sites/{siteId}/wa/main/staff_commands/{threadId}
+                │      → routeCommand() pattern-matches against COMMAND_MAP
+                │      → replies via gateway.send()
+                │
+                └── customer | unknown → ensureContact() + routeToCustomerThread()
+                       → sites/{siteId}/wa/main/customer_threads/{contactId}/messages
+                       → surfaces in admin Inbox (no auto-reply)
+```
+
+### Owner Command Patterns
+
+From `message-router.ts:COMMAND_MAP`:
+
+| Regex pattern | Handler |
+|---|---|
+| `/laporan\s*(penjualan\|sales\|harian)?/i` | `handleSalesReport` |
+| `/stok\|stock\|inventory\|gudang/i` | `handleStockQuery` |
+| `/booking\|reservasi\|jadwal\|appointment/i` | `handleBookingQuery` |
+| `/member\|membership\|poin\|points\|loyalty/i` | `handleMemberQuery` |
+
+No match → returns a help message listing available commands.
+
+### Firestore Layout (under `sites/{siteId}/wa/main/...`)
+
+| Path | Purpose |
+|---|---|
+| `sites/{siteId}/wa/config` | `WAConfig` — phoneNumberId, wabaId, encrypted accessToken, webhookVerifyToken, ownerPhone, staffPhones, status |
+| `sites/{siteId}/wa/main/raw_messages/{id}` | Every inbound payload, written before any processing |
+| `sites/{siteId}/wa/main/customer_threads/{contactId}` | Per-customer thread doc; `messages` subcollection holds the conversation |
+| `sites/{siteId}/wa/main/staff_commands/{threadId}` | Per-staff-actor command thread; `messages` subcollection holds command + response pairs |
+| `sites/{siteId}/wa/main/contacts/{contactId}` | Known contacts (linked to CRM via `linkedCrmId`) |
+| `sites/{siteId}/wa/main/templates/{templateId}` | Approved Meta templates (HEADER / BODY / FOOTER / BUTTONS components) |
+
+> **Two-level pattern.** Config sits directly under `sites/{siteId}/wa/config`; everything else nests under an anchor doc `wa/main/...` to keep the per-site Firestore tree shallow.
+
+### Admin Endpoints
+
+| Endpoint | Purpose |
+|---|---|
+| `POST /api/admin/whatsapp/connect` | Save Meta credentials (encrypts `accessToken` before write); set `status: 'connected'` |
+| `POST /api/admin/whatsapp/disconnect` | Mark `status: 'disconnected'`; clear sensitive fields |
+| `POST /api/admin/whatsapp/send` | Send a one-off message from admin (always sets `human_triggered: true`) |
+| `POST /api/admin/whatsapp/test` | Send a sandbox/test message to verify connection |
+| `POST /api/webhook/whatsapp` | Meta webhook receiver (verify-token GET handshake + POST event delivery) |
+
+### Phone Number Handling
+
+All phone comparisons use `normalizePhone()` which strips everything except digits — so `+62 812-3456-7890` and `628123456789` and `08123456789` (after E.164 formatting) compare equal. Always pass through `formatPhoneE164()` before storing.
+
+### Customer-Target Safeguard
+
+The `WhatsAppGateway.send()` method **throws** if the target is a customer and `human_triggered` is not `true`. This is a deliberate guard:
+
+```typescript
+if (isCustomerTarget && !message.human_triggered) {
+    throw new Error('Cannot send to customer without human_triggered: true. ...');
+}
+```
+
+Modules that need to message customers (e.g. service reminders, booking confirmations) must set `human_triggered: true` explicitly — which forces the author to reason about whether the message is appropriate. Internal messages to owner/staff don't need the flag.
+
+### WhatsApp Rules
+
+- **Always read `WAConfig` first** and check `status === 'connected'` before sending.
+- **Set `human_triggered: true`** on every customer-targeted send.
+- **Encrypt access tokens** via `encryptToken()` before writing to Firestore; decrypt server-side only.
+- **Never bypass the gateway** — direct `fetch` to Meta's API skips the safeguard and the config read.
+- **Webhook auth:** Meta's webhook signature must be verified in `/api/webhook/whatsapp` before invoking `processIncomingMessage` (see route implementation).
 
 ---
 
