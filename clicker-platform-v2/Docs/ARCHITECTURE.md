@@ -1551,4 +1551,143 @@ Activation (turning a `registrationRequest` into a real tenant) is a **Backyard-
 
 ---
 
+## 15. Promo Engine Facade
+
+The Promo Engine is a **sanctioned cross-module facade** (§6) — one of two modules whose `api/` is explicitly importable from other modules. It owns promo/voucher CRUD, evaluation (does this cart qualify for this code?), and commit/reverse (record usage at checkout / undo on void).
+
+### What Promo Engine Does
+
+- Tenant-owned promos and vouchers — codes, auto-apply rules, conditions (min subtotal, audience targeting, expiry, max usage per member).
+- Evaluates a cart context against a code or auto-rule → returns either a discount preview or an `EvaluationFailure` with a reason.
+- Tracks per-member usage counts to enforce limits.
+- Commits a redemption record at checkout; supports reversing on order void.
+- Generates and grants vouchers to specific members (e.g. loyalty redemption).
+
+### Why a Facade Exception
+
+Promo logic touches POS (cashier subtotals), Reservation (booking fees), and Service Records (service totals). Duplicating the evaluator in each module would create drift between how a `WEEKEND20` code applies on each surface. The facade keeps evaluation in one place; consumers pass a cart/booking context in and get a single discount number out.
+
+### Promo Files
+
+```text
+lib/modules/promo/
+├── api.ts                   ← Public facade — the ONLY file other modules may import
+├── api/
+│   ├── claim.ts             ← claimVoucher(), grantVoucher()
+│   ├── commit.ts            ← commitPromoUsage(), reversePromoUsage()
+│   ├── discount.ts          ← calculateDiscount(input, subtotal) → number
+│   ├── evaluator.ts         ← evaluatePromo(), findAutoApplicable()
+│   ├── promos.ts            ← Promo CRUD + getMemberUsageCount, listClaimablePromos
+│   ├── settings.ts          ← getPromoSettings, updatePromoSettings
+│   └── vouchers.ts          ← Voucher CRUD + revokeVoucher, findVoucherByUsedRef
+├── components/              ← Admin UI + PromoApplicator client component
+├── code-generator.ts        ← Voucher code generator (4-char alphanumeric blocks)
+├── sources.ts               ← Promo source/audience helpers
+├── constants.ts             ← PROMOS_COLLECTION, VOUCHERS_COLLECTION, SETTINGS_DOC, defaults
+├── types.ts                 ← Promo, Voucher, PromoSettings, EvaluationResult, AppliedPromo
+└── __tests__/
+```
+
+### Facade Public API
+
+The complete surface exported by `lib/modules/promo/api.ts`. Other modules import only from this file (or its directory equivalent `@/lib/modules/promo/api`).
+
+| Export | Type | Purpose |
+|---|---|---|
+| `getPromoSettings(siteId)` | `() => Promise<PromoSettings>` | Read site-level promo config |
+| `updatePromoSettings(siteId, patch)` | `() => Promise<void>` | Partial update |
+| `listPromos(siteId)` | `() => Promise<Promo[]>` | All promos for a site |
+| `getPromo(siteId, promoId)` | `() => Promise<Promo \| null>` | By ID |
+| `findPromoByCode(siteId, code)` | `() => Promise<Promo \| null>` | Lookup by user-entered code |
+| `createPromo`, `updatePromo`, `setPromoStatus`, `deletePromo` | CRUD | Admin operations |
+| `listClaimablePromos(siteId, memberId)` | `() => Promise<Promo[]>` | Promos a member can claim |
+| `getMemberUsageCount(...)` | `() => Promise<number>` | Per-member redemption count |
+| `listAllVouchers(siteId)` | `() => Promise<Voucher[]>` | All vouchers |
+| `listMemberVouchers(siteId, memberId)` | `() => Promise<Voucher[]>` | Member's vouchers |
+| `findVoucherByCode`, `getVoucher`, `findVoucherByUsedRef` | Lookups | |
+| `setVoucherStatus(siteId, voucherId, status)`, `revokeVoucher(...)` | Mutations | |
+| `calculateDiscount(input, subtotal)` | `(DiscountInput, number) => number` | Pure discount math (percent vs fixed, max-cap) |
+| `evaluatePromo(input)` | `(EvaluateInput) => Promise<EvaluationResult>` | Evaluate code+context → discount preview or failure |
+| `findAutoApplicable(...)` | Discover | Returns auto-apply promos that match cart context |
+| `commitPromoUsage(input)` | `(CommitInput) => Promise<void>` | Record redemption at checkout |
+| `reversePromoUsage(input)` | `(CommitInput) => Promise<void>` | Undo on void/refund |
+| `claimVoucher(input)` | `(ClaimVoucherInput) => Promise<Voucher>` | Member-initiated claim |
+| `grantVoucher(input)` | Admin-initiated grant | |
+
+Re-exported types: `Promo`, `Voucher`, `PromoSettings`, `PromoSource`, `PromoKind`, `PromoStatus`, `PromoTrigger`, `PromoAudience`, `PromoConditions`, `VoucherStatus`, `VoucherIssuedVia`, `EvaluationResult`, `EvaluationFailure`, `AppliedPromo`.
+
+### Typical Consumer Pattern
+
+A POS checkout flow:
+
+```typescript
+import { evaluatePromo, commitPromoUsage, reversePromoUsage, type AppliedPromo } from '@/lib/modules/promo/api';
+
+// 1. User enters code at cart
+const result = await evaluatePromo({
+    siteId,
+    code,
+    subtotal,
+    memberId,        // optional
+    moduleContext: { kind: 'pos', orderId },
+});
+
+if (result.ok) {
+    // result.applied: AppliedPromo — show discount preview in UI
+} else {
+    // result.reason: EvaluationFailure — show error message
+}
+
+// 2. On payment success, record the usage
+await commitPromoUsage({
+    siteId, promoId: result.applied.promoId,
+    voucherId: result.applied.voucherId,
+    memberId, moduleContext: { kind: 'pos', orderId },
+});
+
+// 3. On void, reverse
+await reversePromoUsage({ siteId, promoId, voucherId, memberId, moduleContext });
+```
+
+### Current Consumers (Cross-Module Imports)
+
+Source: `grep -rn "@/lib/modules/promo/api" lib/modules/`.
+
+| Module | What it uses |
+|---|---|
+| `byod_pos` | `evaluatePromo`, `commitPromoUsage`, `reversePromoUsage`, `AppliedPromo` (cashier + POS client + payment dialog) |
+| `reservation` | `commitPromoUsage`, `AppliedPromo` (booking wizard, public booking form, details step) |
+
+`service_records` does not currently consume the promo facade (per current grep results) but may in the future.
+
+### Public Endpoint
+
+| Endpoint | Purpose |
+|---|---|
+| `POST /api/public/validate-promo` | Unauthenticated cart-side validation (called from public booking, etc.) |
+
+### Promo Firestore Paths
+
+| Path | Purpose |
+|---|---|
+| `sites/{siteId}/modules/promo/promos/{promoId}` | Promo definitions |
+| `sites/{siteId}/modules/promo/vouchers/{voucherId}` | Vouchers (per-member or guest) |
+| `sites/{siteId}/modules/promo/settings/config` | Site-level promo settings |
+
+> The `sites/go/modules/promo/promos` collection is **separate** — used by registration (§14) for platform-level signup promos. Same shape, different site ID.
+
+### Voucher Code Generation
+
+`code-generator.ts` generates 4-character alphanumeric blocks (e.g. `VCH-A3K7-9MZQ`). The prefix (`VCH` by default) comes from `PromoSettings.voucherCodePrefix`. Default voucher expiry is 30 days (`defaultVoucherExpiryDays`).
+
+### Promo Engine Rules
+
+- **Import from `@/lib/modules/promo/api`, never from internal files.** The facade is the contract.
+- **Always `evaluatePromo` before showing a discount.** Client-side `calculateDiscount` alone misses condition checks (audience, member limits, expiry).
+- **Always `commitPromoUsage` on successful payment** — without it, usage counts drift and members can over-redeem.
+- **Reverse on void/refund** — otherwise a returned order still counts against the member's limit.
+- **Member-targeted promos require `memberId`** in the evaluate/commit calls — anonymous carts can only redeem `allowGuestCodes` promos.
+
+---
+
 <!-- Sections to be filled in by subsequent tasks -->
