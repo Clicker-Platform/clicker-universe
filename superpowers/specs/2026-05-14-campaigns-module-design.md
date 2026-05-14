@@ -57,6 +57,7 @@ interface Banner {
   title: string;            // admin label
   image: string;            // Firebase Storage URL
   altText?: string;
+  aspectRatio: '3:2' | '3:1';  // default '3:2'. '3:1' is wider hero format. Determines upload crop guide.
 
   // Click target
   target: BannerTarget;
@@ -107,22 +108,30 @@ interface PromoConditions {
 
 ### 4.4 Banner image specs
 
-- **Aspect ratio:** 3:2 (enforced via CSS `aspect-ratio: 3 / 2` on the shared `<BannerImage />` component)
-- **Recommended minimum:** 1200 × 800 px (warn but do not block smaller uploads)
+- **Aspect ratio:** per-banner choice between `3:2` (default, card-friendly) and `3:1` (wide hero). Enforced via CSS `aspect-ratio` on the shared `<BannerImage />` component.
+- **Recommended minimum:** 1200 × 800 px (3:2) or 1500 × 500 px (3:1). Warn but do not block smaller uploads.
 - **Max file size:** 2 MB
 - **Formats:** JPG, PNG, WebP
 - **Storage path:** `sites/{siteId}/campaigns/banners/{bannerId}.{ext}` via Firebase Storage
-- **Upload component:** reuse existing `MultiImageUpload` (single-image mode) with aspect-ratio guide overlay
+- **Upload component:** reuse existing `MultiImageUpload` (single-image mode). Aspect-ratio guide overlay updates based on the banner's `aspectRatio` value.
 
-**Rendering model — uniform across surfaces:** all three surfaces render banners as a horizontal **card strip**, never as a single full-width hero. Card count per surface and viewport:
+**Rendering model:** card strip is the default everywhere; hero is opt-in on the Canvas Studio block only.
+
+| Surface | Default | Hero option | Notes |
+| --- | --- | --- | --- |
+| POS strip | Strip (3:2 cards) | ❌ no | Always strip — POS is too cramped for a hero above the menu grid |
+| Site block | Strip (3:2 cards) | ✅ yes | Block config picks `'strip'` or `'hero'`; hero supports 3:1 banners + auto-rotate |
+| Link-in-bio | Full-width card | ❌ no | Column is naturally narrow (~380 px), no hero needed |
+
+**Card strip — count per surface and viewport:**
 
 | Surface | Mobile (<640px) | Tablet (640–1024px) | Desktop (>1024px) |
 | --- | --- | --- | --- |
 | POS strip | 2 cards visible + scroll | 3 cards | 3 cards |
-| Site block | scroll | 2 cards | 3 cards |
-| Link-in-bio | full-width card | full-width card (column is constrained) | full-width card (column is constrained) |
+| Site block (strip) | scroll | 2 cards | 3 cards |
+| Link-in-bio | full-width card | full-width card | full-width card |
 
-This eliminates the "stretched hero" problem entirely — no surface lets a banner exceed ~370 px wide on desktop. Tenant uploads one 3:2 image and the same image renders cleanly everywhere.
+**Hero (Canvas Studio block only):** one banner at a time, full container width up to `max-width: 960px`, auto-rotates through active banners with a configurable interval. Tenant should upload banners with `aspectRatio: '3:1'` for hero layout; `3:2` banners are letterboxed if used in hero.
 
 ### 4.5 Path constants
 
@@ -226,12 +235,16 @@ All three call `getActiveBanners(siteId, placement)` and share the same click ha
   - target.type === 'none' → no-op
 - Impression tracking: fires once per banner per render lifecycle (dedupe via `Set<bannerId>` ref)
 
-### 7.2 `<BannerStripBlock />` (Canvas Studio block)
+### 7.2 `<BannerBlock />` (Canvas Studio block)
 
-- New block type `banner_strip` in the Canvas Studio block system
-- Renders as a horizontal card row (same pattern as POS), never a single full-width hero. Each card is 3:2.
-- Card count per surface width: 3 on desktop, 2 on tablet, horizontal scroll on mobile.
-- Block config: `{ maxBanners: number }` — caps how many active banners render in this block instance. Default 6.
+- New block type `banner` in the Canvas Studio block system
+- Two layout variants, tenant picks per block instance:
+  - `layout: 'strip'` (default) — horizontal card row. 3 on desktop, 2 on tablet, scroll on mobile. Each card 3:2.
+  - `layout: 'hero'` — single banner full-container-width, `max-width: 960px`, auto-rotates if multiple active banners. Best paired with banners that have `aspectRatio: '3:1'`.
+- Block config:
+  - `{ layout: 'strip' \| 'hero'; maxBanners: number; rotationIntervalMs?: number }`
+  - `rotationIntervalMs` applies only to `layout: 'hero'`. Default 6000.
+  - `maxBanners` caps how many active banners render. Default 6 for strip, 5 for hero.
 - Server-rendered via `api-server.ts` for SSR (reads active banners via admin SDK).
 - Tap behavior:
   - target.type === 'promo' → `router.push('/promo/' + promoId)` (dedicated page)
@@ -307,7 +320,7 @@ Dynamic imports + `MODULE_COMPONENTS` entries for the 3 admin component keys.
 Register `BannerCarouselBlock` for Canvas Studio block system.
 
 ### 9.4 Canvas Studio block registry
-Register new `banner_carousel` block type (Form + Renderer, follows existing block pattern).
+Register new `banner` block type (Form + Renderer, follows existing block pattern). Block config: `{ layout: 'strip' | 'hero'; maxBanners: number; rotationIntervalMs?: number }`.
 
 ### 9.5 `dev/backyard/lib/modules/definitions.ts`
 Mirror with displayName + description.
@@ -347,17 +360,20 @@ lib/modules/campaigns/
       PlacementChips.tsx
       ScheduleFields.tsx
   components/
-    POSBannerStrip.tsx        — used by byod_pos
-    BannerStripBlock.tsx      — Canvas Studio block renderer (horizontal card row)
-    LinkBannerItem.tsx        — Links page renderer
+    POSBannerStrip.tsx        — used by byod_pos (strip-only)
+    BannerBlock.tsx           — Canvas Studio block renderer (delegates to BannerStrip or BannerHero based on config)
+    BannerStrip.tsx           — horizontal card row variant
+    BannerHero.tsx            — single-banner auto-rotating hero variant
+    LinkBannerItem.tsx        — Links page renderer (full-width card)
     PromoBannerSheet.tsx      — shared bottom sheet for POS taps
-    BannerImage.tsx           — shared image + alt fallback (3:2 enforced via aspect-ratio)
+    BannerImage.tsx           — shared image + alt fallback (reads banner.aspectRatio)
   hooks/
     useImpressionTracker.ts   — dedup'd impression firing
+    useHeroRotation.ts        — auto-rotate timing for hero layout
 
-lib/blocks/banner-strip/
-  form.tsx
-  renderer.tsx              — thin wrapper around <BannerStripBlock />
+lib/blocks/banner/
+  form.tsx                  — block config form (layout, maxBanners, rotationIntervalMs)
+  renderer.tsx              — thin wrapper around <BannerBlock />
 
 app/admin/(dashboard)/campaigns/settings/page.tsx  — static page
 app/promo/[promoId]/page.tsx                       — public promo detail page
