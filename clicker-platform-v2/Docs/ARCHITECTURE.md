@@ -1191,4 +1191,99 @@ The Resend integration code in `clicker-platform-v2/lib/email/` is the **canonic
 
 ---
 
+## 12. Analytics (PostHog)
+
+Client-side product analytics via PostHog. **Production-only** — analytics is a no-op in staging and dev. Every event is automatically tagged with the active `siteId` as a super-property so PostHog dashboards can filter by tenant without per-call wiring.
+
+### What Analytics Does
+
+- Per-tenant funnel and feature usage tracking, identified by `siteId`.
+- Manual pageview capture on route changes (auto-capture is disabled to avoid duplicate events from Next.js client-side nav).
+- Module-scoped event names (e.g. `pos.order_completed`, `reservation.booking_created`).
+
+### Analytics Files
+
+| File | Role |
+|---|---|
+| `lib/analytics/PostHogProvider.tsx` | Provider + pageview tracker (mounted in root layout) |
+| `lib/analytics/useAnalytics.ts` | `useAnalytics()` hook — returns `{ capture(event, properties?) }` |
+
+### Provider Mount
+
+`<PostHogProvider>` wraps the app in the root layout. It:
+
+1. Initializes `posthog` with `capture_pageview: false` and `persistence: 'localStorage'` — **only if `NEXT_PUBLIC_POSTHOG_KEY` is set**, which gates on `NEXT_PUBLIC_FIREBASE_PROJECT_ID === 'clicker-universe'` (production project).
+2. Registers `siteId` as a super-property whenever the site context resolves: `posthog.register({ siteId })`.
+3. Renders `<PostHogPageviewTracker />` — fires `$pageview` events on `usePathname()` changes, with `siteId` and full URL.
+
+In non-prod environments, the provider returns `<>{children}</>` without ever loading PostHog. No events are emitted; no network calls happen.
+
+### Two Capture Patterns
+
+Two call patterns are used in the codebase. **Both are valid**, but they differ in where `siteId` comes from:
+
+**1. Hook-based (`useAnalytics`) — client components only**
+
+```tsx
+'use client';
+import { useAnalytics } from '@/lib/analytics/useAnalytics';
+
+function CashierClient() {
+    const { capture } = useAnalytics();
+    useEffect(() => { capture('pos.cashier_opened'); }, []);
+}
+```
+
+The hook injects `siteId` from `useSite()` automatically. Use this from React components.
+
+**2. Direct `posthog.capture` — non-component code (api.ts, helpers)**
+
+```typescript
+import posthog from 'posthog-js';
+
+export async function createOrder(siteId: string, ...) {
+    // ...
+    posthog.capture('pos.order_completed', { siteId, orderId, paymentMethod });
+}
+```
+
+Pass `siteId` explicitly — there is no hook context outside React. Always include `siteId` in the properties payload.
+
+> **Either way, `siteId` ends up on the event** — directly via the hook or explicitly via the second-arg properties (which override or add to the super-property scope).
+
+### Event Catalogue
+
+Source: `grep -rn "capture(" lib/modules/ lib/analytics/`. Current events:
+
+| Event name | Site (where fired) | Properties (beyond `siteId`) |
+|---|---|---|
+| `$pageview` | `PostHogPageviewTracker` (every route change) | `$current_url` |
+| `pos.cashier_opened` | `lib/modules/byod_pos/admin/CashierClient.tsx` | — |
+| `pos.order_completed` | `lib/modules/byod_pos/api.ts` | `orderId`, `paymentMethod` |
+| `inventory.stock_updated` | `lib/modules/inventory/admin/AdjustStockDialog.tsx` | — |
+| `reservation.booking_created` | `lib/modules/reservation/api.ts` | `bookingId`, `serviceId` |
+| `sales_pipeline.deal_moved` | `lib/modules/sales-pipeline/api.ts` | `leadId`, `toStage`, `fromStage` |
+| `membership.member_added` | `lib/modules/membership/api.ts` | — |
+| `promo.code_applied` | `lib/modules/promo/components/PromoApplicator.tsx` | `promoCode` |
+
+**Naming convention:** `{moduleId}.{action_past_tense}` — `pos.order_completed`, not `pos_complete_order` or `PosOrderCompleted`. Keep new events consistent.
+
+### Server-Side Tracking
+
+There is currently **no server-side analytics endpoint**. `app/api/analytics/track/` exists as an empty directory; no `route.ts` is implemented. Server-side capture would require either:
+
+- A Next.js Server Action that imports a server-only PostHog client (`posthog-node`, not currently in deps), or
+- A POST endpoint that fan-outs to PostHog's `/capture` HTTP API.
+
+Until either is added, **only client-side code can emit events.** Module API functions that `import posthog from 'posthog-js'` and call `capture` rely on being invoked from client components — they will be no-ops if called from Server Components.
+
+### Analytics Rules
+
+- **Production only.** Never expect events in dev/staging dashboards — the provider doesn't initialize.
+- **Always pass `siteId`.** Hook callers get it automatically; direct callers must include it.
+- **Event names use dot.snake_case:** `module_id.action_past_tense`.
+- **Don't track PII.** No emails, no phone numbers, no full names in event properties — use Firestore IDs (`uid`, `memberId`, `orderId`).
+
+---
+
 <!-- Sections to be filled in by subsequent tasks -->
