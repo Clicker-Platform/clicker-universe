@@ -1919,4 +1919,122 @@ Always call this before `uploadToStorage` in admin forms to give the user a fast
 
 ---
 
+## 18. Global Contexts
+
+Five React contexts wrap the admin tree. All are mounted at or near the admin layout root. Two (`useSite`, `useUser`) are detailed in earlier sections (§3, §5) and summarized here; three (`useAdminTheme`, `useInboxPanel`, `useTopBarSlots`) are admin-UI specific.
+
+### `useSite()` — `lib/site-context.tsx`
+
+Current tenant. See §3 for tenant resolution, §4 for the `setSiteId` setter used in the auth handoff.
+
+| Property / Method | Type | Purpose |
+|---|---|---|
+| `siteId` | `string` | Canonical tenant ID |
+| `tenantSlug` | `string` | URL slug |
+| `isPending` | `boolean` | True until `siteId` resolves |
+| `isSubdomain` | `boolean` | Accessed via subdomain (vs path-based) |
+| `setSiteId(id)` | `(string) => void` | Client-side tenant switch without reload — used by `TokenBootstrap` (§4) |
+
+### `useUser()` — `lib/user-context.tsx`
+
+Auth state + RBAC. See §5 for full role/permission semantics.
+
+| Property / Method | Type | Purpose |
+|---|---|---|
+| `user` | `User \| null` | Firebase Auth user |
+| `role` | `Role \| null` | `'owner' \| 'editor' \| 'viewer' \| 'staff'` |
+| `permissions` | `string[]` | Legacy permission strings (`['*']` for owner shortcut) |
+| `moduleAccess` | `Record<string, ModuleAccess>` | Granular per-module-route grants |
+| `loading` | `boolean` | Auth state still resolving |
+| `isOwner` | `boolean` | Shortcut for `role === 'owner'` |
+| `hasAccess(moduleId, routeId)` | `(string, string) => boolean` | `true` if `full` or `view` — for render gating |
+| `canEdit(moduleId, routeId)` | `(string, string) => boolean` | `true` only if `full` — for write gating |
+| `getAccessLevel(moduleId, routeId)` | `(string, string) => 'full' \| 'view' \| 'none'` | Raw access level |
+
+`UserProvider` uses `onSnapshot` on `sites/{siteId}/members/{uid}` — permission changes apply in real time.
+
+### `useAdminTheme()` — `lib/use-admin-theme.tsx`
+
+Admin dashboard light/dark mode. The toggle persists to `localStorage`.
+
+```typescript
+const { isDark, toggle } = useAdminTheme();
+```
+
+| Property / Method | Type |
+|---|---|
+| `isDark` | `boolean` |
+| `toggle()` | `() => void` |
+
+Consumed by admin components via the `dark:` Tailwind prefix pattern — see §21.
+
+### `useInboxPanel()` — `lib/inbox-panel-context.tsx`
+
+Global state for the right-side **Inbox panel** (admin-wide drawer for form submissions, etc.).
+
+```typescript
+const {
+    isOpen,
+    activeTab, setActiveTab,           // 'inbox' | ...
+    filterStatus, setFilterStatus,     // 'all' | ...
+    selectedSubmissionId, setSelectedSubmissionId,
+    openPanel, closePanel, togglePanel,
+} = useInboxPanel();
+```
+
+The state lives at the layout level so any admin page can open the inbox without prop-drilling. Initial state: closed, tab `'inbox'`, filter `'all'`, no submission selected.
+
+### `useTopBarSlots()` — `lib/top-bar-slot-context.tsx`
+
+Slot-based injection into the admin **top bar**. Any page can set the left / center / right slot content from inside its own component tree without reaching into the layout.
+
+```typescript
+const { slots, setLeftSlot, setCenterSlot, setRightSlot, clearSlots } = useTopBarSlots();
+
+// In a page:
+useEffect(() => {
+    setRightSlot(<SaveButton />);
+    return clearSlots;
+}, []);
+```
+
+| Slot | Typical contents |
+|---|---|
+| `left` | Page title, back button |
+| `center` | Mode switcher, breadcrumbs |
+| `right` | Primary action button(s) |
+
+Always `clearSlots()` on unmount so slot contents don't leak into the next page.
+
+### Provider Stack
+
+The expected admin provider order (outer → inner):
+
+```text
+<SiteProvider>          ← from middleware-injected x-site-id
+  <UserProvider>        ← needs siteId to query members/{uid}
+    <AdminThemeProvider>
+      <PostHogProvider> ← needs siteId for super-property (§12)
+        <InboxPanelProvider>
+          <TopBarSlotProvider>
+            {children}
+          </TopBarSlotProvider>
+        </InboxPanelProvider>
+      </PostHogProvider>
+    </AdminThemeProvider>
+  </UserProvider>
+</SiteProvider>
+```
+
+`SiteProvider` and `UserProvider` are also used outside `/admin` (public tenant pages and member portal) — but they hydrate from URL/cookie rather than from the auth handoff.
+
+### Global Contexts Rules
+
+- **Never hardcode `siteId`.** Always read from `useSite()`.
+- **Never gate writes on `hasAccess` alone.** Use `canEdit` — `view` access must not call writes.
+- **Provider order matters.** `UserProvider` reads `siteId` from `SiteProvider`; PostHog needs both. If you reshuffle providers, verify the dependency chain.
+- **Top-bar slots are page-scoped.** Clear them on unmount.
+
+---
+
 <!-- Sections to be filled in by subsequent tasks -->
