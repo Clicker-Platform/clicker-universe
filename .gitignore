@@ -37,6 +37,9 @@ functions/node_modules/
 **/service-account-prod.json
 clicker-universe-firebase-adminsdk-*.json
 
+# Docs containing Firebase config / API keys — public keys but keep out of git
+docs/env-staging.md
+
 # OS
 .DS_Store
 **/.DS_Store

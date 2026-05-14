@@ -1,2 +1,5 @@
 # Legacy static demo file — not production code
 clicker-platform-v2/legacy/index.html
+
+# Documentation file — Firebase web API keys are public by design (client-side config)
+docs/env-staging.md
