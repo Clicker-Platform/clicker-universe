@@ -858,4 +858,92 @@ Quick checklist (full version in §24):
 
 ---
 
+## 9. Block System (Canvas Studio)
+
+**Blocks** are the unit of content composition for tenant pages. The admin renders them in **Canvas Studio** (the WYSIWYG page builder); the public site renders them through `BlockRenderer`. Every page in `sites/{siteId}/pages/{pageId}` stores an ordered array of blocks.
+
+### Block Types (18)
+
+Source: `BLOCK_OPTIONS` in [`components/admin/blocks/blockDefinitions.ts`](../components/admin/blocks/blockDefinitions.ts).
+
+| Type | Purpose |
+|---|---|
+| `hero` | Hero / banner section (often the LCP element — see "LCP rule" below) |
+| `text` | Rich-text content (Tiptap) |
+| `content_showcase` | Two-column image + text showcase (one of the newer blocks) |
+| `image` | Single image with optional caption |
+| `button` | CTA button |
+| `products` | Product list (pulls from core product catalog) |
+| `faq` | Accordion FAQ |
+| `link` | Link card (single link tile) |
+| `map` | Google Maps embed |
+| `image_gallery` | Photo gallery |
+| `social_embed` | Embedded social media post (Instagram, TikTok, YouTube) |
+| `quick_actions` | Grid of action buttons (call, WhatsApp, directions, etc.) |
+| `hours` | Operating hours display (consumes `lib/core/businessHours/` — §16) |
+| `featured_product` | Featured product card |
+| `branches` | Branch locations list |
+| `inline_form` | Inline form embed (consumes a `forms/{formId}`) |
+| `heading` | Section heading |
+| `feature_cards` | Grid of feature cards |
+
+> **Orphan renderer.** `components/blocks/public/DefaultProductGalleryBlock.tsx` exists on disk but is **not** referenced by `BlockRenderer` or `BLOCK_OPTIONS`. Treat it as legacy/dead code pending confirmation from the block-system owner before removing.
+> **Module-injected blocks.** `ReservationBlock` is dispatched by `BlockRenderer` but does not appear in `BLOCK_OPTIONS` — it is contributed by the `reservation` module via its `blocks` array (see `ModuleBlockDefinition` in §7). Module-contributed blocks are rendered through `<ModuleBlockLoader />` and don't need a `BLOCK_OPTIONS` entry.
+
+### Canvas Studio File Layout
+
+```text
+components/admin/blocks/
+├── CanvasStudio.tsx        ← Main editor shell
+├── BlockManager.tsx        ← Block list + drag-to-reorder (@dnd-kit)
+├── BlockFormRenderer.tsx   ← Right-panel property editor (per-block form)
+├── EditorContext.tsx       ← Editor state (selected block, page, etc.)
+├── PageStudioContext.tsx   ← Page-level state
+├── StudioTopBar.tsx        ← Save / publish controls
+├── blockDefinitions.ts     ← BLOCK_OPTIONS + getDefaultData()
+├── forms/                  ← Per-block-type property forms
+└── panels/                 ← Left sidebar panels (links, products, etc.)
+```
+
+### Public Block Renderer File Layout
+
+```text
+components/blocks/
+├── BlockRenderer.tsx          ← Main switch — dispatches block.type → renderer
+├── SafeBlockRenderer.tsx      ← Error-boundary wrapper
+├── PageBackground.tsx         ← Page-wide background (template-driven)
+├── content-showcase/          ← Subcomponents for content_showcase block
+├── feature-cards/             ← Subcomponents for feature_cards block
+├── mrb/                       ← MRB-template-specific block overrides
+├── shared/                    ← Shared block subcomponents (cards, etc.)
+└── public/                    ← Default block renderers (Default{Type}Block.tsx)
+    ├── DefaultHeroBlock.tsx, DefaultTextBlock.tsx, ...
+    ├── LinkBlockClient.tsx, LinkCard.tsx           ← Client-side helpers
+    ├── MediaView.tsx                                ← Shared media renderer
+    ├── ProductsBlockClient.tsx                      ← Client-side products
+    ├── ReservationBlock.tsx                         ← Module-injected (reservation)
+    ├── cardStyles.ts                                ← Shared card style tokens
+    └── __tests__/                                   ← Vitest suites
+```
+
+### Override Chain
+
+When rendering a block, `BlockRenderer.tsx` resolves the component in this order:
+
+1. **Template-specific override** — `templateComponents[templateId].Blocks.{Name}` (§8). E.g. MRB's `MrbHero` replaces the default `hero` renderer.
+2. **Module-contributed block** — modules can register block types via `ModuleBlockDefinition.blocks[]` (§7). Rendered through `<ModuleBlockLoader />`.
+3. **Default renderer** — `components/blocks/public/Default{Type}Block.tsx`.
+
+Source: switch statement in `BlockRenderer.tsx` reads `fullTemplate.components?.Blocks` first, then falls back to defaults.
+
+### LCP Rule
+
+If a block can render the page's largest contentful element (typically `hero` and the first `image`/`image_gallery`), it accepts an `isFirst` prop. The block component is responsible for forwarding `priority` / `fetchPriority` to its `next/image` calls only when `isFirst === true`. New blocks that render above-the-fold images **must** follow this pattern — otherwise LCP regresses.
+
+### System Blocks vs Page Blocks
+
+A small set of blocks (`quick_actions`, `hours`, `branches`, `featured_product`, `link`-list) are also rendered on the homepage outside of Canvas Studio (driven by `lib/systemBlocks.ts`). The same default renderers serve both contexts, but page-block instances carry per-tenant configuration while system blocks pull from core data (business hours, links, branches).
+
+---
+
 <!-- Sections to be filled in by subsequent tasks -->
