@@ -214,10 +214,11 @@ The only entry point other modules use.
 
 ### 6.3 RBAC
 
-- New permission key: `manage_campaigns`
-- Default role mapping: owner ✓, admin ✓, editor ✓ (campaigns are content), staff ✗
+Existing roles: `owner`, `editor`, `viewer`, `staff`. Campaigns are content (not money), so they fit under the existing `manage_content` permission rather than adding a new key.
+
+- **Permission used:** `manage_content` (existing key in `lib/rbac.ts`) — granted to `owner` and `editor`
 - `CampaignEditorClient` reads `usePermission().isViewOnly` to disable writes
-- All write API functions check the permission server-side (where applicable in client SDK pattern: rules + `getCanEdit` gate before action)
+- This matches how the rest of the content surfaces (Pages, Links, Forms) gate their editors
 
 ---
 
