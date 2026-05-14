@@ -613,4 +613,164 @@ When in doubt: if removing module `X` from a tenant would break module `Y`, the 
 
 ---
 
+## 7. Module System
+
+Modules are opt-in feature packages that add admin routes, dashboard widgets, blocks, and Firestore collections to a tenant. A module is **dynamically loaded** at runtime — disabling it for a tenant removes its admin routes and widgets without rebuilding the app.
+
+### Registration Files
+
+A module is wired up by editing **five** files (the fifth is new since the previous architecture doc):
+
+| File | Purpose |
+|---|---|
+| `lib/modules/definitions.ts` | Static admin route map per module (`adminRoutes`, `dashboardAction`, widgets) |
+| `lib/modules/components.tsx` | Server/admin dynamic-import registry (`MODULE_COMPONENTS[{moduleId}:{Key}]`) |
+| `lib/modules/client-registry.tsx` | Client-side component registry (used by client-only renderers) |
+| `lib/modules/registry.ts` | Runtime resolution: `findModuleForAdminRoute()`, `isModuleEnabled()` (merges Firestore module docs with static defs) |
+| `scripts/seed-modules.ts` | Firestore seed (run once per environment) |
+
+### Three-Way Parity Rule
+
+When adding or renaming a module route, **three files must change together**:
+
+1. `clicker-platform-v2/lib/modules/definitions.ts`
+2. `backyard/lib/modules/definitions.ts`
+3. `clicker-platform-v2/scripts/seed-modules.ts`
+
+All three must agree on `path`, `componentKey`, and `id`. The Backyard superadmin tool reads its own copy of `definitions.ts` to render module-management UI; the seed script writes the Firestore doc that the runtime registry merges with the static defs.
+
+### Module Folder Structure
+
+The aspirational layout for `lib/modules/{module_id}/`:
+
+```text
+lib/modules/{module_id}/
+├── admin/          ← Admin page components (loaded via registry)
+├── public/         ← Public-facing pages/widgets
+├── components/     ← Shared UI within this module
+├── api.ts          ← Client-side Firestore operations
+├── api-admin.ts    ← Admin-specific operations (not all modules)
+├── api-server.ts   ← Server-side operations (uses firebase-admin)
+├── api-reports.ts  ← Reporting queries (byod_pos, service-records, etc.)
+├── constants.ts    ← DB path strings (NEVER hardcode paths inline)
+├── types.ts        ← TypeScript types for this module
+└── utils.ts        ← Helpers
+```
+
+**Not every module has every file** — only `byod_pos` implements all of them. Minimum: `types.ts` + at least one of `api.ts` or `api-server.ts`.
+
+### Facade Pattern (Promo)
+
+Modules that expose a **cross-module API** (the sanctioned facade exceptions in §6) replace the flat `api.ts` with an `api/` subdirectory:
+
+```text
+lib/modules/promo/
+├── api/
+│   ├── claim.ts        ← Voucher claim
+│   ├── commit.ts       ← commitPromoUsage()
+│   ├── discount.ts     ← Discount math
+│   ├── evaluator.ts    ← evaluatePromo()
+│   ├── promos.ts       ← CRUD
+│   ├── settings.ts     ← CRUD
+│   └── vouchers.ts     ← CRUD
+├── constants.ts
+├── types.ts
+└── ...
+```
+
+Consumers import from `@/lib/modules/promo/api` (the directory, resolved to `index.ts` if present, or via explicit per-file paths). See §15 for the full facade contract.
+
+### Module ID Naming
+
+- **Canonical IDs** use underscores when multi-word: `byod_pos`, `ai_sales`, `ai_marketing`, `service_records`, `sales_pipeline`, `manage_users`. Single-word IDs have no separator: `promo`, `fintrack`, `stocklens`, `inventory`, `membership`, `reservation`.
+- **Directory names** sometimes use hyphens or longer forms for readability: `lib/modules/ai-sales-agent/` hosts module ID `ai_sales`; `lib/modules/service-records/` hosts `service_records`; `lib/modules/sales-pipeline/` hosts `sales_pipeline`.
+- The **canonical identifier** used in Firestore (`sites/{siteId}/modules/{module_id}/...`), in RBAC `moduleAccess` keys, and in `componentKey` prefixes is always the module ID, not the directory name.
+
+### Registered Modules (12)
+
+Source: [`lib/modules/definitions.ts`](../lib/modules/definitions.ts). Hidden routes (`hidden: true`) are not shown in the sidebar but resolvable directly.
+
+| Module ID | Directory | Admin routes |
+|---|---|---|
+| `byod_pos` | `byod_pos/` | Cashier, Kitchen, Transactions, Menu, Configuration (`permission: settings`), Reports (`permission: view_reports`) |
+| `membership` | `membership/` | Members, Settings |
+| `inventory` | `inventory/` | Items |
+| `stocklens` | `stocklens/` | Scanner, Vault, Settings |
+| `reservation` | `reservation/` | Bookings, Services, Staff (hidden), Settings |
+| `ai_sales` | `ai-sales-agent/` | Overview, Settings |
+| `sales_pipeline` | `sales-pipeline/` | Pipeline Board, Settings |
+| `service_records` | `service-records/` | Service, Reports, New Record (hidden), Record Detail (hidden), Vehicles, Vehicle Detail (hidden), Service Types, Reminders, Settings |
+| `fintrack` | `fintrack/` | Dashboard, Entries, Wallets, New Entry (hidden), Advanced, Settings |
+| `promo` | `promo/` | Promotions, Vouchers, Settings — plus member-dashboard widgets `MemberRewardsWidget`, `MyVouchersWidget` |
+| `ai_marketing` | `ai-marketing/` | Dashboard, Generate, Assets, Asset Detail, Campaigns, Campaign Detail, Analytics, Settings (**all hidden** — feature is dashboard-launched, not sidebar-navigated) |
+
+> **`ai-platform`** exists on the filesystem (`lib/modules/ai-platform/admin/`) but is **not** registered in `definitions.ts`. It is either in-progress scaffolding or has been intentionally excluded — confirm with the module owner before adding routes.
+
+### `ModuleDefinition` Type
+
+Source: [`lib/modules/types.ts`](../lib/modules/types.ts).
+
+```typescript
+interface ModuleDefinition {
+    id: string;
+    displayName: string;
+    description?: string;
+    icon: string;
+    version: string;
+    enabled: boolean;
+
+    adminRoutes?: AdminRoute[];
+    publicRoutes?: PublicRouteDefinition[];
+
+    // Capabilities
+    collections?: string[];          // Firestore collections this module owns
+    requires?: string[];             // Other module IDs this depends on
+    blocks?: ModuleBlockDefinition[];           // Custom blocks (§9)
+    dashboardWidgets?: ModuleWidgetDefinition[]; // Member dashboard widgets
+    settings?: Record<string, any>;             // Module-specific config
+    dashboardAction?: { label: string; href: string };
+    adminDashboardWidget?: { componentKey: string };
+}
+
+interface AdminRoute {
+    path: string;
+    label: string;
+    icon?: string;
+    componentKey?: string;
+    hidden?: boolean;
+    permission?: string;            // e.g. 'settings', 'view_reports'
+}
+```
+
+### How Module Routes Are Served
+
+```text
+Request: /admin/pos/cashier
+  │
+  └─► app/admin/(dashboard)/[...slug]/page.tsx
+        │
+        └─► findModuleForAdminRoute('/admin/pos/cashier')
+              │  (merges Firestore module doc with STATIC_MODULE_DEFINITIONS)
+              └─► Returns componentKey: 'byod_pos:Cashier'
+                    │
+                    └─► MODULE_COMPONENTS['byod_pos:Cashier']
+                          └─► dynamic(() => import('.../CashierClient'))
+```
+
+### Module Enable Check (Cross-Module Dispatch)
+
+```typescript
+import { isModuleEnabled } from '@/lib/modules/registry';
+
+const inventoryOn = await isModuleEnabled(siteId, 'inventory');
+if (inventoryOn) {
+    // deduct stock via dynamic import — but only via the inventory module's
+    // public API, not by reaching into its internals
+}
+```
+
+This is the canonical pattern when one module's behavior depends on whether another is enabled. Combine with the facade exceptions (§6) only if the target module is `promo` or `membership`.
+
+---
+
 <!-- Sections to be filled in by subsequent tasks -->
