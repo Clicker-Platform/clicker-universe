@@ -1790,4 +1790,133 @@ If only one module currently needs it, leave it in that module — promote when 
 
 ---
 
+## 17. Storage & Upload
+
+File and image uploads to **Firebase Storage**. Two parallel paths exist — a **client-direct** upload (preferred for most cases) and a **server-side route** (used when sharp-based processing is needed). Both write to tenant-scoped paths under `sites/{siteId}/...`.
+
+### What Storage & Upload Owns
+
+- Client-side image conversion to WebP/AVIF before upload (smaller files, no server round-trip).
+- Server-side image processing with `sharp` for resize/format pipelines.
+- Tenant-scoped storage paths.
+- Size and MIME validation (10 MB cap, image-only for image endpoints).
+
+### Upload Files
+
+| File | Role |
+|---|---|
+| `lib/upload.ts` | Client direct-to-storage helper: `uploadToStorage({ file, folder, siteId, convertToWebP })` |
+| `lib/imageUtils.ts` | Client image processing helpers: `resizeAndConvert`, `convertToWebP`, `validateImageFile` |
+| `lib/media/recommendations.ts` | Recommended dimensions per aspect ratio (16:9, 4:3, square, 3:4, free) + `isBelowRecommended()` quality check |
+| `app/api/upload/avatar/route.ts` | Server upload — avatar (no resize, MIME validation, auth required) |
+| `app/api/upload/image/route.ts` | Server upload — generic image (sharp resize, auth required) |
+| `storage.rules` | Firebase Storage security rules |
+
+### Client-Direct Upload (Preferred)
+
+```typescript
+import { uploadToStorage } from '@/lib/upload';
+
+const downloadUrl = await uploadToStorage({
+    file,                       // File object from <input type="file">
+    folder: 'gallery',          // Subfolder under the storage prefix
+    siteId,                     // Required for tenant scoping; omit for platform-level
+    convertToWebP: true,        // Default true for images
+    webpQuality: 0.85,          // 0–1
+});
+```
+
+**Storage path:** `sites/{siteId}/{folder}/{timestamp}_{random}.{ext}` (or `{folder}/...` if no siteId).
+
+**Why client-direct exists.** The server-side `firebase-admin` SDK has a Turbopack hashing issue that breaks dev builds. The client direct path bypasses this entirely.
+
+### Client-Side Image Conversion
+
+In `uploadToStorage`, images are converted before upload:
+
+1. Draw the source image to an off-screen canvas.
+2. `canvas.toBlob('image/webp', quality)` — preferred.
+3. Fallback to `canvas.toBlob('image/avif', quality)` if WebP unsupported.
+4. Reject if neither is supported.
+5. Non-image files and GIFs are uploaded as-is.
+
+This pushes encoding to the client (no server CPU cost) and produces files 30–60% smaller than the source JPEG/PNG.
+
+### Server Upload Routes
+
+Used when the client cannot easily produce the right output (server-side resize, document/PDF processing, etc.).
+
+| Endpoint | Sharp? | Folder | Notes |
+|---|---|---|---|
+| `POST /api/upload/avatar` | No | implicit avatar folder | MIME allowlist `image/jpeg`, `image/png`, `image/webp`, `image/gif`; 10 MB cap |
+| `POST /api/upload/image?folder={folder}` | Yes | configurable via query | Same MIME + size caps; sharp pipeline for resize/format |
+
+Both routes:
+
+- Require authentication via `requireAuthedMember(req)` from `lib/api-auth.ts` → returns `{ siteId }` from the session.
+- Validate MIME against an allowlist.
+- Reject files over **10 MB**.
+- Log failures via `logger.warn('upload.invalid.type', ...)` / `'upload.size.exceeded'`.
+
+### Media Recommendations
+
+`lib/media/recommendations.ts` provides per-aspect-ratio recommended sizes for the admin Canvas Studio's media picker:
+
+| Aspect ratio | Recommended | Label |
+|---|---|---|
+| `16:9` | 1280×720 | `1280×720` |
+| `4:3` | 1024×768 | `1024×768` |
+| `square` | 1024×1024 | `1024×1024` |
+| `3:4` | 768×1024 | `768×1024` |
+| `free` | 1280×960 | `1280×960` |
+
+`isBelowRecommended(natural, aspectRatio)` — returns `true` if either dimension is below 50% of the recommended size. Used to surface a "low quality" warning in the editor.
+
+### Storage Rules (`storage.rules`)
+
+```text
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isAuthenticated() { return request.auth != null; }
+
+    // Default: public read
+    match /{allPaths=**} {
+      allow read: if true;
+    }
+
+    // Tenant paths: public read, authenticated write
+    match /sites/{siteId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // Legacy paths
+    match /products/{allPaths=**} { allow write: if isAuthenticated(); }
+    match /uploads/{allPaths=**}  { allow write: if isAuthenticated(); }
+  }
+}
+```
+
+> **Tenant isolation is NOT enforced at the rules layer.** Any authenticated user could write to any tenant's path. Tenant scoping is enforced in application code via `requireAuthedMember(req)` (server routes) and via the `siteId` in `useSite()` (client uploads). If a stronger guarantee is needed, tighten `storage.rules` to require `request.auth.token.siteId == siteId` (only works once custom claims are set).
+
+### Image Validation (Client Side)
+
+`validateImageFile(file, maxSizeMB = 10)` from `lib/imageUtils.ts`:
+
+- Rejects files > `maxSizeMB`.
+- Rejects non-image MIME.
+- Returns an error string or `null`.
+
+Always call this before `uploadToStorage` in admin forms to give the user a fast error path.
+
+### Storage Rules of Thumb
+
+- **Use client-direct (`uploadToStorage`) by default.** Falls back to native browser encoding; no server CPU.
+- **Use server routes** when you need sharp's pipeline (resize-to-fit, generate thumbnails, convert from DOC/PDF) or when the upload must happen as part of a server action.
+- **Pass `siteId` whenever the file is tenant-owned.** Forgetting it puts the file at the bucket root, where it'll never be cleaned up if the tenant is deleted.
+- **Stick to the 10 MB cap.** Larger files should use direct Firebase Storage uploads with a resumable session, not the standard helpers.
+- **Watch the storage rules.** Today they are intentionally permissive — any change should preserve public read but consider tightening write scoping.
+
+---
+
 <!-- Sections to be filled in by subsequent tasks -->
