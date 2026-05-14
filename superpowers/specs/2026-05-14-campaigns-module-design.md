@@ -105,7 +105,26 @@ interface PromoConditions {
 
 **Behavior:** absent or empty = promo applies to whole cart (today's behavior, fully preserved). When populated, the campaigns module reads this to render an eligible-products list when a banner targets the promo. This field is forward-compatible with future POS UI (e.g. "this item qualifies for X promo" badges in checkout).
 
-### 4.4 Path constants
+### 4.4 Banner image specs
+
+- **Aspect ratio:** 3:2 (enforced via CSS `aspect-ratio: 3 / 2` on the shared `<BannerImage />` component)
+- **Recommended minimum:** 1200 × 800 px (warn but do not block smaller uploads)
+- **Max file size:** 2 MB
+- **Formats:** JPG, PNG, WebP
+- **Storage path:** `sites/{siteId}/campaigns/banners/{bannerId}.{ext}` via Firebase Storage
+- **Upload component:** reuse existing `MultiImageUpload` (single-image mode) with aspect-ratio guide overlay
+
+**Rendering model — uniform across surfaces:** all three surfaces render banners as a horizontal **card strip**, never as a single full-width hero. Card count per surface and viewport:
+
+| Surface | Mobile (<640px) | Tablet (640–1024px) | Desktop (>1024px) |
+| --- | --- | --- | --- |
+| POS strip | 2 cards visible + scroll | 3 cards | 3 cards |
+| Site block | scroll | 2 cards | 3 cards |
+| Link-in-bio | full-width card | full-width card (column is constrained) | full-width card (column is constrained) |
+
+This eliminates the "stretched hero" problem entirely — no surface lets a banner exceed ~370 px wide on desktop. Tenant uploads one 3:2 image and the same image renders cleanly everywhere.
+
+### 4.5 Path constants
 
 `lib/modules/campaigns/constants.ts`:
 
@@ -207,10 +226,13 @@ All three call `getActiveBanners(siteId, placement)` and share the same click ha
   - target.type === 'none' → no-op
 - Impression tracking: fires once per banner per render lifecycle (dedupe via `Set<bannerId>` ref)
 
-### 7.2 `<BannerCarouselBlock />` (Canvas Studio block)
-- New block type `banner_carousel` in the Canvas Studio block system
-- Block config: `{ maxBanners: number; autoRotate: boolean; rotationIntervalMs: number }`
-- Server-rendered via `api-server.ts` for SSR (reads `getActiveBannersAdmin` with admin SDK)
+### 7.2 `<BannerStripBlock />` (Canvas Studio block)
+
+- New block type `banner_strip` in the Canvas Studio block system
+- Renders as a horizontal card row (same pattern as POS), never a single full-width hero. Each card is 3:2.
+- Card count per surface width: 3 on desktop, 2 on tablet, horizontal scroll on mobile.
+- Block config: `{ maxBanners: number }` — caps how many active banners render in this block instance. Default 6.
+- Server-rendered via `api-server.ts` for SSR (reads active banners via admin SDK).
 - Tap behavior:
   - target.type === 'promo' → `router.push('/promo/' + promoId)` (dedicated page)
   - target.type === 'page' → `router.push('/' + pageSlug)`
@@ -326,16 +348,16 @@ lib/modules/campaigns/
       ScheduleFields.tsx
   components/
     POSBannerStrip.tsx        — used by byod_pos
-    BannerCarouselBlock.tsx   — Canvas Studio block renderer
+    BannerStripBlock.tsx      — Canvas Studio block renderer (horizontal card row)
     LinkBannerItem.tsx        — Links page renderer
     PromoBannerSheet.tsx      — shared bottom sheet for POS taps
-    BannerImage.tsx           — shared image + alt fallback
+    BannerImage.tsx           — shared image + alt fallback (3:2 enforced via aspect-ratio)
   hooks/
     useImpressionTracker.ts   — dedup'd impression firing
 
-lib/blocks/banner-carousel/
+lib/blocks/banner-strip/
   form.tsx
-  renderer.tsx              — thin wrapper around <BannerCarouselBlock />
+  renderer.tsx              — thin wrapper around <BannerStripBlock />
 
 app/admin/(dashboard)/campaigns/settings/page.tsx  — static page
 app/promo/[promoId]/page.tsx                       — public promo detail page
