@@ -1,5 +1,46 @@
-# Legacy static demo file — not production code
-clicker-platform-v2/legacy/index.html
+# Dependencies
+node_modules/
+**/node_modules/
 
-# Documentation file — Firebase web API keys are public by design (client-side config)
+# Build outputs
+.next/
+**/.next/
+out/
+**/out/
+dist/
+**/dist/
+build/
+**/build/
+functions/lib/
+
+# Firebase artifacts
+.firebase/
+**/.firebase/
+*-debug.log
+
+# Tooling caches
+.turbo/
+.cache/
+*.tsbuildinfo
+
+# Lockfiles
+pnpm-lock.yaml
+**/pnpm-lock.yaml
+package-lock.json
+**/package-lock.json
+yarn.lock
+**/yarn.lock
+
+# Legacy & generated
+clicker-platform-v2/legacy/
+clicker-platform-v2/patches/
+
+# Worktrees
+.worktrees/
+worktrees/
+
+# Semgrep output
+semgrep.sarif
+
+# Documentation — Firebase web API keys are public by design (client-side config)
 docs/env-staging.md

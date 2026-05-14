@@ -163,5 +163,7 @@ When adding a new module, touch ALL of these — missing any one causes routing,
 - **Location:** `backyard/` — standalone Next.js app, port `3011`
 - Every page is `'use client'` — no Server Components
 - No `useSite()` / `useUser()` — superadmin sees all tenants
-- All data ops via `httpsCallable(functions, 'functionName')` — never direct Firestore writes
-- Key functions: `getTenants`, `createTenant`, `suspendTenant`, `updateTenantModules`, `hardDeleteTenant`, `updateTenantSlug`, `createUser`, `removeUserFromSite`, `seedSiteData`, `getUsers`
+- **Destructive ops** (createTenant, suspendTenant, hardDeleteTenant, seedSiteData) use `httpsCallable(functions, 'functionName')` — Cloud Functions as authority layer
+- **Read & management ops** (access control, monitoring, sync, WA manager) use Firebase client SDK directly against Firestore
+- Key Cloud Functions: `getTenants`, `createTenant`, `suspendTenant`, `hardDeleteTenant`, `seedSiteData`
+- Key pages: Overview, Tenants, Access Control (Users + Roles), Monitoring (Health + Logs), Seed Tools, Sync Control, WhatsApp Manager

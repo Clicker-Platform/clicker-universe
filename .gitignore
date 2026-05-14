@@ -58,5 +58,8 @@ logs/
 .turbo/
 *.tsbuildinfo
 
+# Semgrep output
+semgrep.sarif
+
 # Service account keys (gitignored — never commit)
 scripts/

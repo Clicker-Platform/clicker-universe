@@ -36,6 +36,7 @@ export function PostHogProvider({ children }: { children: ReactNode }) {
             api_host: POSTHOG_HOST,
             capture_pageview: false,
             persistence: 'localStorage',
+            disable_session_recording: true,
         });
     }, []);
 

@@ -8,22 +8,53 @@ on:
 
 permissions:
   contents: read
+  security-events: write
 
 concurrency:
   group: semgrep-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  semgrep:
-    name: Static analysis
+  semgrep-oss:
+    name: Static analysis (OSS)
     runs-on: ubuntu-latest
     container:
       image: semgrep/semgrep
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Semgrep OSS
+        run: |
+          semgrep scan \
+            --sarif --output semgrep.sarif \
+            --metrics off \
+            --config p/default \
+            --config p/typescript \
+            --config p/javascript \
+            --config p/react \
+            --config p/nextjs \
+            --config p/owasp-top-ten \
+            --config p/security-audit
+
+      - name: Upload SARIF to GitHub Security
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: semgrep.sarif
+          category: semgrep-oss
+
+  semgrep-pro:
+    name: Static analysis (Pro)
+    runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep
+    if: ${{ secrets.SEMGREP_APP_TOKEN != '' }}
     env:
       SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Run Semgrep
+      - name: Run Semgrep CI (Pro engine)
         run: semgrep ci

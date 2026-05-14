@@ -14,6 +14,19 @@ pnpm lint       # ESLint
 pnpm build      # Production build
 ```
 
+## Static Analysis (Semgrep)
+
+Run from repo root. CI runs the same rule set on PRs to `main` and on merges.
+
+```bash
+make semgrep-install   # one-time: brew install semgrep
+make semgrep           # full scan (community rule packs)
+make semgrep-secrets   # separate sweep for leaked secrets
+make semgrep-sarif     # emit semgrep.sarif for IDE viewers
+```
+
+Rule packs are pinned in the `Makefile` (`SEMGREP_CONFIGS`) and must match `.github/workflows/semgrep.yml` so local and CI behave identically. Path exclusions live in `.semgrepignore`.
+
 ## Critical Rules
 
 1. **Core vs Module boundary** — modules cannot import from each other directly.
@@ -22,6 +35,7 @@ pnpm build      # Production build
 4. **RBAC guard** — check `canEdit()` before every write in client components.
 5. **DB paths** — use constants from `lib/modules/{name}/constants.ts`, never raw strings.
 6. **Cross-module promo imports** — modules may import from `@/lib/modules/promo/api` (the facade only). Designated exception to rule 1, same as `@/lib/modules/membership/api`.
+7. **New module = seed global registry** — adding a module requires a Firestore doc at `modules/{id}` with at least `{ id, displayName, enabled: true, icon, version }`. Without it, Backyard's per-tenant toggle silently fails: `sites/{id}.modules.{moduleId} = true` is written, but the module never renders in sidebar/Overview because `subscribeToEnabledModules` queries `modules` WHERE `enabled == true`. Run `pnpm tsx scripts/seed-modules.ts` (or insert via MCP) when introducing a new module. Module IDs use **underscore** (`promo`, `ai_marketing`, `sales_pipeline`), not dash.
 
 ## Skills Available
 
@@ -42,6 +56,7 @@ This project has Claude Code skills in `.claude/commands/`. Use them:
 - `/sales_pipeline` — CRM Kanban board
 - `/service_records` — vehicle service records, warranty, reminders
 - `/ai_sales_agent` — Gemini AI chatbot, lead capture
+- `/fintrack` — personal finance tracker (wallets, entries, debts, budget, recurring)
 
 ### Core Features
 - `/core_auth_rbac` — authentication and RBAC
@@ -63,16 +78,14 @@ See `.agents/README.md` for the full skill index.
 
 ## Superpowers Output Convention
 
-Always save skill outputs to the appropriate folder under `dev/superpowers/`:
+Always save skill outputs to the appropriate folder under `superpowers/`:
 
-| Activity               | Save to                                                      |
-| ---------------------- | ------------------------------------------------------------ |
-| Brainstorming sessions | `dev/superpowers/brainstorm/YYYY-MM-DD-topic.md`             |
-| Feature specs          | `dev/superpowers/specs/YYYY-MM-DD-topic.md`                  |
-| Implementation plans   | `dev/superpowers/plans/YYYY-MM-DD-topic.md`                  |
-| Audit & research notes | `dev/superpowers/notes/YYYY-MM-DD-topic.md`                  |
-
-Full path dari repo root: `/Users/andre/Repository/clicker-universe/dev/superpowers/`
+| Activity               | Save to                                              |
+| ---------------------- | ---------------------------------------------------- |
+| Brainstorming sessions | `superpowers/brainstorm/YYYY-MM-DD-topic.md`         |
+| Feature specs          | `superpowers/specs/YYYY-MM-DD-topic.md`              |
+| Implementation plans   | `superpowers/plans/YYYY-MM-DD-topic.md`              |
+| Audit & research notes | `superpowers/notes/YYYY-MM-DD-topic.md`              |
 
 Use today's date and a short kebab-case topic name for the filename.
 ## Auth Gateway — Flow & Rules
