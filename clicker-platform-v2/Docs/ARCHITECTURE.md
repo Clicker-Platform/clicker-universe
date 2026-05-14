@@ -946,4 +946,130 @@ A small set of blocks (`quick_actions`, `hours`, `branches`, `featured_product`,
 
 ---
 
+## 10. AI Platform & Kredit
+
+A unified server-side AI invocation layer used by every AI-powered feature (AI Sales, AI Marketing, Stocklens knowledge sync, etc.). All AI calls go through `lib/ai/index.ts`, which performs **preflight credit check → upstream call → post-deduct ledger write**. The platform calls AI providers via **OpenRouter** (not the Google SDK directly, despite `@google/generative-ai` being in `package.json`).
+
+### Purpose
+
+- One call site (`invokeAI`, `invokeVision`, `invokeWithTools`) for every AI feature.
+- Per-tenant Kredit (USD-denominated) accounting — every call deducts cost, every topup is logged.
+- Model selection centralized in Firestore, configurable per environment via Backyard.
+- Daily aggregate of cost per site for analytics.
+
+### File Map
+
+| File | Role |
+|---|---|
+| `lib/ai/index.ts` | Public API: `invokeAI`, `invokeVision`, `invokeWithTools` + re-exports |
+| `lib/ai/client.ts` | OpenRouter HTTP client: `callText`, `callVision`, `callWithTools` |
+| `lib/ai/credits.ts` | Ledger: `deductCredits`, `getCreditBalance`, daily aggregate, topup entries |
+| `lib/ai/models.ts` | Model selection from Firestore (`modules/ai-platform/config/models`) |
+| `lib/ai/pricing.ts` | Per-model rate table (Firestore + OpenRouter fallback rates) |
+| `lib/ai/context.ts` | Tenant context enrichment (`buildTenantContext`, cache invalidation) |
+| `lib/ai/types.ts` | `AIRequest`, `VisionRequest`, `ToolRequest`, `AICallOptions`, `ModelConfig`, etc. |
+
+### Public API
+
+All three call modes follow the same shape: a **request** (model + messages + parameters) and an **options** object that carries billing metadata (`siteId`, `moduleId`, `skillId`, `uid`).
+
+```typescript
+import { invokeAI, invokeVision, invokeWithTools } from '@/lib/ai';
+
+// Text generation
+const text = await invokeAI(
+    { model, messages, max_tokens, temperature },
+    { siteId, moduleId: 'ai_sales', skillId: 'greet', uid }
+);
+
+// Vision (image + prompt)
+const result = await invokeVision(
+    { model, messages /* with image parts */ },
+    { siteId, moduleId, skillId, uid }
+);
+
+// Tool/function-calling
+const result = await invokeWithTools(
+    { model, messages, tools },
+    { siteId, moduleId, skillId, uid }
+);
+```
+
+### Call Lifecycle
+
+```text
+1. preflightCheck(siteId)
+   └── getCreditBalance → throw 'insufficient_credits:{balance}:0' if <= 0
+
+2. callText / callVision / callWithTools
+   └── POST openrouter.ai/api/v1/chat/completions
+       └── Bearer OPENROUTER_API_KEY (from lib/secrets)
+       └── Returns: { content, inputTokens, outputTokens, model }
+
+3. postDeduct(result, options)
+   ├── calculateCost(model, inputTokens, outputTokens)  ← from Firestore pricing or fallback
+   └── deductCredits(siteId, costUSD, meta)
+       ├── Firestore transaction on sites/{siteId}/platform/aiCredits
+       │   ├── reads balance
+       │   ├── re-throws 'insufficient_credits' if balance < costUSD
+       │   └── writes balance = balance - costUSD (rounded to 6 decimals)
+       │       and lifetimeUsed = lifetimeUsed + costUSD
+       └── Updates daily aggregate (sites/{siteId}/platform/aiCreditLedger/daily/{YYYY-MM-DD})
+```
+
+If the upstream call succeeds but `deductCredits` fails (e.g. another concurrent call exhausted the balance), the response is still returned to the caller — but `ai.billing.deduct.failed` is logged. This is intentional: a one-off over-spend is preferable to throwing away a paid AI response.
+
+### Model Configuration
+
+`getModel(useCase)` returns a model slug like `'google/gemini-2.5-pro'` from a Firestore doc at `modules/ai-platform/config/models`:
+
+```json
+{
+  "llm":    "google/gemini-2.5-pro",
+  "vision": "google/gemini-2.5-pro"
+}
+```
+
+`ModelConfig` exposes five use cases (`chat`, `tools`, `fast`, `quality`, `vision`) but currently all non-vision slots point at the same `llm` slug. If the doc is missing, the call throws `model_config_not_set` — operators must configure models in **Backyard → AI Settings → Models** before any AI call works.
+
+### Pricing
+
+Pricing lives in `modules/ai-platform/config/pricing` (Firestore), cached for 5 minutes. If a model isn't in the Firestore table, `lib/ai/pricing.ts` falls back to a hardcoded `OPENROUTER_FALLBACK_RATES` map covering Google, OpenAI, Anthropic, DeepSeek, Qwen, and Meta models. If neither has the model, `calculateCost` throws `model_not_priced:{model}` — the upstream call has already succeeded, so this just skips the ledger write.
+
+### Credit Ledger (Firestore Paths)
+
+| Path | Purpose |
+|---|---|
+| `sites/{siteId}/platform/aiCredits` | `{ balance, lifetimeUsed }` — single doc, transactionally updated |
+| `sites/{siteId}/platform/aiCreditLedger/daily/{YYYY-MM-DD}` | Per-day aggregate: `{ date, totalCost, totalCalls, byModule[] }` (etc.) |
+| `sites/{siteId}/platform/aiCreditLedger/entries` | Topup-only log (one doc per topup, append-only) |
+
+The terminology "Kredit" (Indonesian for "credit") is used in the admin UI and product copy. Internally everything is USD cost rounded to 6 decimals.
+
+### Admin Endpoints
+
+| Endpoint | Purpose |
+|---|---|
+| `GET /api/admin/ai-credits` | Current balance + recent ledger entries (admin UI) |
+| `GET /api/admin/ai-usage` | Daily aggregate for charts (admin UI) |
+| `GET /api/admin/ai/credits` | Legacy alias — being consolidated into the path above |
+
+Backyard (superadmin) owns model/pricing configuration; the platform consumes it read-only.
+
+### Integration Points
+
+- `ai_sales` module — chat agent (`/api/ai-sales-agent/chat`)
+- `ai_marketing` module — content generation, asset analysis
+- `stocklens` module — image-based SKU scanning, knowledge sync
+- Anywhere else that needs AI — call `invokeAI` directly with appropriate `moduleId` and `skillId`
+
+### Rules
+
+- **Never call OpenRouter / Gemini directly.** Always go through `lib/ai/index.ts` so credit accounting stays consistent.
+- **Always pass `moduleId` and `skillId`** in `AICallOptions` — they drive per-feature usage analytics.
+- **Use `getModel(useCase)` not hardcoded model slugs.** Model upgrades happen via Backyard, not code changes.
+- **`OPENROUTER_API_KEY`** is read from `lib/secrets/` (Google Secret Manager in prod; env var in dev).
+
+---
+
 <!-- Sections to be filled in by subsequent tasks -->
