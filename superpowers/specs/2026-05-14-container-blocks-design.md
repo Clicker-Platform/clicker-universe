@@ -37,6 +37,10 @@ Add layout capability to Canvas Studio by introducing three block types that can
 
 Children live at `block.data.children: PageBlock[]`.
 
+All containers render at 100% of the page content width by default. An optional `maxWidth` property caps the inner content width and centers it horizontally within the page band.
+
+`maxWidth` values: `'sm' | 'md' | 'lg' | 'xl' | 'full'` (default `'full'` = no cap). Pixel mapping resolved at render time (e.g., `sm`=640, `md`=768, `lg`=1024, `xl`=1280; final values aligned to existing Tailwind breakpoints during implementation).
+
 ```ts
 // row default
 {
@@ -47,6 +51,7 @@ Children live at `block.data.children: PageBlock[]`.
   justify: 'start', // 'start' | 'center' | 'end' | 'between' | 'around'
   wrap: false,      // boolean toggle (maps to flex-wrap: wrap / nowrap)
   stackOnMobile: true,
+  maxWidth: 'full', // 'sm' | 'md' | 'lg' | 'xl' | 'full'
 }
 
 // column default
@@ -55,6 +60,7 @@ Children live at `block.data.children: PageBlock[]`.
   gap: 16,
   padding: 16,
   align: 'stretch',
+  maxWidth: 'full',
   // No stackOnMobile — column is already vertical.
 }
 
@@ -66,6 +72,7 @@ Children live at `block.data.children: PageBlock[]`.
   gapY: 16,
   padding: 16,
   stackOnMobile: true,
+  maxWidth: 'full',
 }
 ```
 
