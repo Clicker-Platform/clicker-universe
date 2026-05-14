@@ -2585,4 +2585,138 @@ Architecturally significant files, with one-line role and the section that expla
 
 ---
 
+## 23. Data Flow Diagrams
+
+Five end-to-end flows. Each diagram is intentionally simplified — full details live in the cited sections.
+
+### Public Page Render
+
+```text
+Request: quattro.clicker.id/about
+  │
+  middleware.ts (§3)
+    → detect subdomain → rewrite to /quattro/about
+    → set x-site-id=quattro header
+  │
+  app/[tenant]/[...slug]/page.tsx
+    │
+    ├── Fetch site doc (sites/quattro)
+    ├── Resolve template (sites/quattro.templateId) — see §8
+    ├── Fetch page blocks (sites/quattro/pages/about/blocks)
+    │
+    └── PublicPageRenderer
+          └── BlockRenderer (per block — §9)
+                ├── Template override?    → e.g. MrbHero
+                ├── Module-contributed?   → ModuleBlockLoader
+                └── Default renderer      → Default{Type}Block
+```
+
+### Admin Module Route
+
+```text
+Request: /admin/pos/cashier
+  │
+  middleware.ts (§3)
+    → verify __session cookie
+    → set x-site-id (from cookie)
+  │
+  app/admin/(dashboard)/[...slug]/page.tsx (§7)
+    │
+    ├── findModuleForAdminRoute('/admin/pos/cashier')
+    │     → merge STATIC_MODULE_DEFINITIONS + Firestore module doc
+    │     → returns componentKey: 'byod_pos:Cashier'
+    │
+    ├── User permissions check: hasAccess('byod_pos', 'cashier') (§5)
+    │
+    └── MODULE_COMPONENTS['byod_pos:Cashier']
+          → dynamic import → CashierClient.tsx
+```
+
+### Auth Handoff (§4 in Diagram Form)
+
+```text
+Logged-out user → tenant.clicker.id/admin
+  │
+  middleware.ts: no __session cookie → redirect to gateway
+  │
+  auth.clicker.id/?redirect=https://tenant.clicker.id/admin
+    │
+    │ User enters email + password
+    │
+    ├── signInWithEmailAndPassword (Firebase Auth)
+    ├── parallel:
+    │   ├── getUserSites(uid, email)  → [{ siteId, slug }, ...]
+    │   └── POST /api/token { uid }   → custom token
+    │
+    ├── set __session=siteId cookie on .clicker.id
+    │
+    └── redirect:  tenant.clicker.id/admin#token=...&siteId=...
+  │
+  Platform: TokenBootstrap.tsx (admin layout)
+    ├── Read #token + #siteId from URL fragment
+    ├── sessionStorage.__token_bootstrapping = '1'
+    ├── history.replaceState (strip fragment)
+    ├── Set __session cookie at platform origin
+    ├── setSiteId(siteId)        → SiteContext updates
+    └── signInWithCustomToken    → Firebase client session
+  │
+  onAuthStateChanged → UserProvider
+    ├── clear __token_bootstrapping
+    └── query sites/{siteId}/members/{uid} → role
+  │
+  AdminGuard sees user + role → render dashboard ✓
+```
+
+### AI Request Lifecycle (§10)
+
+```text
+Feature code (e.g. ai-sales-agent/chat route)
+  │
+  invokeAI({ model, messages }, { siteId, moduleId, skillId, uid })
+    │
+    ├── preflightCheck(siteId)
+    │     → getCreditBalance → throw if <= 0
+    │
+    ├── callText(request)
+    │     POST openrouter.ai/api/v1/chat/completions
+    │       Bearer OPENROUTER_API_KEY (from Secret Manager)
+    │     → { content, inputTokens, outputTokens, model }
+    │
+    └── postDeduct(result, options)
+          ├── calculateCost(model, inputTokens, outputTokens)
+          │     → from Firestore pricing OR fallback rates
+          │
+          └── deductCredits(siteId, costUSD, meta)
+                ├── Firestore transaction on sites/{siteId}/platform/aiCredits
+                │     → balance = balance - costUSD
+                │     → lifetimeUsed += costUSD
+                │
+                └── update sites/{siteId}/platform/aiCreditLedger/daily/{YYYY-MM-DD}
+                      → totalCost += costUSD
+  │
+  return result.content to caller
+```
+
+### Cross-Module Dispatch (Diagram)
+
+```text
+// In byod_pos — before deducting stock for an order
+import { isModuleEnabled } from '@/lib/modules/registry';
+
+if (await isModuleEnabled(siteId, 'inventory')) {
+    // dispatch into inventory's module API
+    // (NOT a direct import — use the dynamic-import pattern, §6)
+}
+```
+
+For modules with a sanctioned facade (`promo`, `membership` — §6), cross-module imports are allowed directly:
+
+```text
+import { commitPromoUsage } from '@/lib/modules/promo/api'; // OK
+```
+
+For any other module pair, use `isModuleEnabled` + dispatch through the registry — never a direct import.
+
+---
+
 <!-- Sections to be filled in by subsequent tasks -->
