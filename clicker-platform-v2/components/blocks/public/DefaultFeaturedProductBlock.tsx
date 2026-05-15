@@ -22,7 +22,6 @@ interface WhatsAppSettings {
 
 interface DefaultFeaturedProductBlockProps {
     product: Product;
-    theme?: any;
     previewMode?: boolean;
     badgeText?: string;
     showBadge?: boolean;
@@ -33,7 +32,6 @@ interface DefaultFeaturedProductBlockProps {
 
 export function DefaultFeaturedProductBlock({
     product,
-    theme: themeProp,
     previewMode,
     badgeText = 'Featured',
     showBadge = true,
@@ -45,8 +43,7 @@ export function DefaultFeaturedProductBlock({
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isFullScreenOpen, setIsFullScreenOpen] = useState(false);
 
-    const { theme: contextTheme } = useTemplate();
-    const theme = themeProp ?? contextTheme;
+    const { theme } = useTemplate();
 
     const isClean = theme?.cardStyle === 'clean';
     const isGlass = theme?.cardStyle === 'glass';
