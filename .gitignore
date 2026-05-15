@@ -36,6 +36,14 @@ functions/node_modules/
 **/service-account*.json
 **/service-account-prod.json
 clicker-universe-firebase-adminsdk-*.json
+clicker-universe-*-firebase-adminsdk-*.json
+**/scripts/*firebase-adminsdk*.json
+**/*firebase-adminsdk*.json
+**/*service-account*.json
+*-firebase-adminsdk-*.json
+
+# Sentry CLI config (may contain auth tokens)
+.sentryclirc
 
 # Docs containing Firebase config / API keys — public keys but keep out of git
 docs/env-staging.md

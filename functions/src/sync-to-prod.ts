@@ -30,7 +30,17 @@ function getProdApp(): admin.app.App {
     const existing = admin.apps.find(a => a?.name === "prod-mirror");
     if (existing) { _prodApp = existing; return _prodApp; }
 
-    const prodSA = require("../service-account-prod.json");
+    // Load production service account from env var (Cloud Secret Manager / Firebase Functions config).
+    // Set via: firebase functions:secrets:set PROD_SERVICE_ACCOUNT_KEY
+    // Never commit the key file — pre-commit hook + .gitignore enforce this.
+    const prodSaRaw = process.env.PROD_SERVICE_ACCOUNT_KEY;
+    if (!prodSaRaw) {
+        throw new Error(
+            "[sync-to-prod] PROD_SERVICE_ACCOUNT_KEY env var not set. " +
+            "Configure via: firebase functions:secrets:set PROD_SERVICE_ACCOUNT_KEY"
+        );
+    }
+    const prodSA = JSON.parse(prodSaRaw);
     _prodApp = admin.initializeApp({
         credential:    admin.credential.cert(prodSA),
         storageBucket: "clicker-universe.firebasestorage.app",
