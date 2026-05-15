@@ -74,8 +74,8 @@ export default function RolesTab() {
             await setDoc(doc(db, 'platform_meta', 'rbac_config'), { roles: customOnly }, { merge: true });
             toast.success('Roles saved');
             setDirty(false);
-        } catch (err: any) {
-            toast.error('Save failed', { description: err.message });
+        } catch (err: unknown) {
+            toast.error('Save failed', { description: err instanceof Error ? err.message : String(err) });
         } finally {
             setSaving(false);
         }

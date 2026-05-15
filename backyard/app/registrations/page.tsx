@@ -19,9 +19,12 @@ const FILTERS: { value: FilterValue; label: string }[] = [
     { value: 'rejected', label: 'Rejected' },
 ];
 
-function formatDate(ts: any): string {
+function formatDate(ts: unknown): string {
     try {
-        const d = ts?.toDate?.() ?? (ts instanceof Date ? ts : null);
+        const tsAny = ts as { toDate?: () => Date } | Date | null | undefined;
+        const d = typeof (tsAny as { toDate?: () => Date })?.toDate === 'function'
+            ? (tsAny as { toDate: () => Date }).toDate()
+            : tsAny instanceof Date ? tsAny : null;
         if (!d) return '—';
         return d.toLocaleString(undefined, {
             year: 'numeric', month: 'short', day: '2-digit',
@@ -45,8 +48,8 @@ export default function RegistrationsPage() {
             try {
                 const list = await listRegistrations(filterStatus === 'all' ? undefined : filterStatus);
                 if (!cancelled) setRegistrations(list);
-            } catch (err: any) {
-                if (!cancelled) toast.error('Failed to load registrations', { description: err.message });
+            } catch (err: unknown) {
+                if (!cancelled) toast.error('Failed to load registrations', { description: err instanceof Error ? err.message : String(err) });
             } finally {
                 if (!cancelled) setLoading(false);
             }

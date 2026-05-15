@@ -20,29 +20,43 @@ function formatDiscount(d: PromoDetail): string | null {
   return `Diskon Rp${d.value.toLocaleString('id-ID')}`;
 }
 
+type PromoStatus = 'idle' | 'checking' | 'valid' | 'invalid';
+
+interface PromoResult {
+  status: PromoStatus;
+  reason: string;
+  detail: PromoDetail | null;
+}
+
+const IDLE: PromoResult = { status: 'idle', reason: '', detail: null };
+
 export function PromoCard({ code, platformBaseUrl }: Props) {
-  const [status, setStatus] = useState<'idle' | 'checking' | 'valid' | 'invalid'>('idle');
-  const [reason, setReason] = useState<string>('');
-  const [detail, setDetail] = useState<PromoDetail | null>(null);
+  const [result, setResult] = useState<PromoResult>(IDLE);
 
   useEffect(() => {
-    if (!code) { setStatus('idle'); return; }
-    setStatus('checking');
-    fetch(`${platformBaseUrl}/api/public/validate-promo?code=${encodeURIComponent(code)}`)
-      .then((r) => r.json())
-      .then((d) => {
+    if (!code) return;
+    let cancelled = false;
+    Promise.resolve()
+      .then(() => { if (!cancelled) setResult({ status: 'checking', reason: '', detail: null }); })
+      .then(() => fetch(`${platformBaseUrl}/api/public/validate-promo?code=${encodeURIComponent(code)}`))
+      .then(r => r.json())
+      .then((d: { valid: boolean; name?: string; kind?: string; value?: number; maxDiscount?: number; reason?: string }) => {
+        if (cancelled) return;
         if (d.valid) {
-          setStatus('valid');
-          setReason(d.name ?? '');
-          setDetail({ name: d.name, kind: d.kind, value: d.value, maxDiscount: d.maxDiscount });
+          setResult({
+            status: 'valid',
+            reason: d.name ?? '',
+            detail: { name: d.name, kind: d.kind as PromoDetail['kind'], value: d.value, maxDiscount: d.maxDiscount },
+          });
         } else {
-          setStatus('invalid');
-          setReason(d.reason ?? '');
-          setDetail(null);
+          setResult({ status: 'invalid', reason: d.reason ?? '', detail: null });
         }
       })
-      .catch(() => { setStatus('invalid'); setReason('error'); setDetail(null); });
+      .catch(() => { if (!cancelled) setResult({ status: 'invalid', reason: 'error', detail: null }); });
+    return () => { cancelled = true; };
   }, [code, platformBaseUrl]);
+
+  const { status, reason, detail } = result;
 
   if (!code) return <p className="text-gray-500">No promo code</p>;
   return (

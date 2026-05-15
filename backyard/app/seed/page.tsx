@@ -25,8 +25,8 @@ export default function SeedPage() {
     useEffect(() => {
         const fetchTenants = async () => {
             try {
-                const fn = httpsCallable(functions, 'getTenants');
-                const res: any = await fn();
+                const fn = httpsCallable<unknown, { list?: { id: string; name: string }[] }>(functions, 'getTenants');
+                const res = await fn();
                 const list = res.data.list ?? [];
                 setTenants(list);
                 if (list.length > 0) setSelectedTenant(list[0].id);
@@ -88,8 +88,8 @@ export default function SeedPage() {
                 )
             );
             toast.success(`Synced ${SYSTEM_MODULES.length} modules to global registry`);
-        } catch (err: any) {
-            toast.error('Sync failed', { description: err.message });
+        } catch (err: unknown) {
+            toast.error('Sync failed', { description: err instanceof Error ? err.message : String(err) });
         } finally {
             setSyncingRegistry(false);
         }
@@ -115,8 +115,8 @@ export default function SeedPage() {
             };
             await setDoc(doc(db, 'platform_meta', 'seed_history'), { entries: arrayUnion(record) }, { merge: true });
             setHistory(prev => [record, ...prev].slice(0, 20));
-        } catch (err: any) {
-            toast.error('Seed failed', { description: err.message });
+        } catch (err: unknown) {
+            toast.error('Seed failed', { description: err instanceof Error ? err.message : String(err) });
             const record: SeedRecord = {
                 tenantId: selectedTenant,
                 tenantName: tenant?.name ?? selectedTenant,

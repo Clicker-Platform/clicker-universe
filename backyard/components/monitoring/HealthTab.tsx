@@ -322,7 +322,7 @@ export default function HealthTab({ onSelectService, onSelectIntegration }: Prop
                         </span>
                     </div>
                     <h3 className="font-black text-brand-dark text-sm">Firebase Status</h3>
-                    <p className="text-xs text-gray-400 font-medium mt-0.5 mb-3">Google's official status — check for service outages</p>
+                    <p className="text-xs text-gray-400 font-medium mt-0.5 mb-3">Google&apos;s official status — check for service outages</p>
                     <a
                         href="https://status.firebase.google.com"
                         target="_blank"

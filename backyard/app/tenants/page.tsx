@@ -120,13 +120,13 @@ export default function TenantsPage() {
     const fetchTenants = async () => {
         setLoading(true);
         try {
-            const fn = httpsCallable(functions, 'getTenants');
-            const res: any = await fn();
-            const seen = new Set();
-            const unique = (res.data.list ?? []).filter((t: any) => seen.has(t.id) ? false : seen.add(t.id));
+            const fn = httpsCallable<unknown, { list?: Tenant[] }>(functions, 'getTenants');
+            const res = await fn();
+            const seen = new Set<string>();
+            const unique = (res.data.list ?? []).filter(t => seen.has(t.id) ? false : seen.add(t.id));
             setTenants(unique);
-        } catch (err: any) {
-            toast.error('Failed to load tenants', { description: err.message });
+        } catch (err: unknown) {
+            toast.error('Failed to load tenants', { description: err instanceof Error ? err.message : String(err) });
         } finally {
             setLoading(false);
         }
@@ -140,9 +140,9 @@ export default function TenantsPage() {
         }
         setCreateLoading(true);
         try {
-            const fn = httpsCallable(functions, 'createTenant');
-            const res: any = await fn({ name, ownerEmail, password, subdomain, hostingId, modules, seedSampleData });
-            const newSiteId: string | undefined = res?.data?.siteId;
+            const fn = httpsCallable<unknown, { siteId?: string }>(functions, 'createTenant');
+            const res = await fn({ name, ownerEmail, password, subdomain, hostingId, modules, seedSampleData });
+            const newSiteId: string | undefined = res.data?.siteId;
             toast.success('Tenant created', { description: `${name} is ready.` });
 
             if (fromRegistration && newSiteId) {
@@ -152,8 +152,8 @@ export default function TenantsPage() {
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ siteId: newSiteId, tempPassword: password }),
                     });
-                } catch (activateErr: any) {
-                    toast.error('Activate registration failed', { description: activateErr.message });
+                } catch (activateErr: unknown) {
+                    toast.error('Activate registration failed', { description: activateErr instanceof Error ? activateErr.message : String(activateErr) });
                 }
             }
 
@@ -162,8 +162,8 @@ export default function TenantsPage() {
             setModules({});
             setRegistration(null);
             await fetchTenants();
-        } catch (err: any) {
-            toast.error('Create failed', { description: err.message });
+        } catch (err: unknown) {
+            toast.error('Create failed', { description: err instanceof Error ? err.message : String(err) });
         } finally {
             setCreateLoading(false);
         }
@@ -186,8 +186,8 @@ export default function TenantsPage() {
             ));
             toast.success(`Tenant ${actionType === 'suspend' ? 'suspended' : 'activated'}`);
             setConfirmOpen(false);
-        } catch (err: any) {
-            toast.error('Action failed', { description: err.message });
+        } catch (err: unknown) {
+            toast.error('Action failed', { description: err instanceof Error ? err.message : String(err) });
         } finally {
             setActionLoading(false);
         }
@@ -216,8 +216,8 @@ export default function TenantsPage() {
             await fn({ siteId: deleteTarget.id });
             setTenants(prev => prev.filter(t => t.id !== deleteTarget.id));
             toast.success('Tenant deleted', { description: `${deleteTarget.name} has been permanently removed.` });
-        } catch (err: any) {
-            toast.error('Delete failed', { description: err.message });
+        } catch (err: unknown) {
+            toast.error('Delete failed', { description: err instanceof Error ? err.message : String(err) });
         } finally {
             setDeleteLoading(false);
             setDeleteTarget(null);

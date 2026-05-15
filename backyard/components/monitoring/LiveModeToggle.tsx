@@ -11,7 +11,10 @@ interface Props {
 export function LiveModeToggle({ onTick, intervalMs, paused }: Props) {
   const [enabled, setEnabled] = useState(false);
   const tickRef = useRef(onTick);
-  tickRef.current = onTick;
+
+  useEffect(() => {
+    tickRef.current = onTick;
+  });
 
   useEffect(() => {
     if (!enabled || paused) return;

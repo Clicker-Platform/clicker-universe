@@ -10,7 +10,6 @@ import {
     AlertCircle,
     AlertTriangle,
     ChevronRight,
-    Loader2,
     MessageSquare,
     PowerOff,
     Store,
@@ -54,8 +53,10 @@ export default function DashboardContent() {
                     httpsCallable(functions, 'getTenants')(),
                     httpsCallable(functions, 'listUsers')(),
                 ]);
-                setTenants(((tenantsRes.data as any)?.list ?? []) as Tenant[]);
-                setUsersCount(((usersRes.data as any)?.users ?? []).filter((u: any) => u.email).length);
+                const tenantsData = tenantsRes.data as { list?: Tenant[] };
+                const usersData = usersRes.data as { users?: { email?: string }[] };
+                setTenants(tenantsData.list ?? []);
+                setUsersCount((usersData.users ?? []).filter(u => u.email).length);
             } catch { /* non-critical */ }
             finally { setLoading(false); }
         };

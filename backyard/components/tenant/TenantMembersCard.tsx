@@ -61,7 +61,7 @@ export default function TenantMembersCard({ siteId, siteModules }: Props) {
         const unsub = onSnapshot(
             collection(db, 'sites', siteId, 'members'),
             snap => {
-                setMembers(snap.docs.map(d => ({ uid: d.id, ...(d.data() as any) })));
+                setMembers(snap.docs.map(d => ({ uid: d.id, ...(d.data() as Omit<Member, 'uid'>) })));
                 setLoading(false);
             },
             () => setLoading(false)
@@ -73,8 +73,8 @@ export default function TenantMembersCard({ siteId, siteModules }: Props) {
         e.preventDefault();
         setAdding(true);
         try {
-            const fn = httpsCallable(functions, 'createUser');
-            const result: any = await fn({
+            const fn = httpsCallable<unknown, { userId?: string }>(functions, 'createUser');
+            const result = await fn({
                 email,
                 password: password || undefined,
                 displayName: name,
@@ -98,8 +98,8 @@ export default function TenantMembersCard({ siteId, siteModules }: Props) {
                 setPermTarget({ uid: newUid, email: addedEmail, displayName: addedName, role: addedRole });
                 setCheckedModules(new Set());
             }
-        } catch (err: any) {
-            toast.error('Add failed', { description: err.message });
+        } catch (err: unknown) {
+            toast.error('Add failed', { description: err instanceof Error ? err.message : String(err) });
         } finally {
             setAdding(false);
         }
@@ -111,8 +111,8 @@ export default function TenantMembersCard({ siteId, siteModules }: Props) {
             const fn = httpsCallable(functions, 'removeUserFromSite');
             await fn({ uid: removeUid, siteId });
             toast.success('Member removed');
-        } catch (err: any) {
-            toast.error('Remove failed', { description: err.message });
+        } catch (err: unknown) {
+            toast.error('Remove failed', { description: err instanceof Error ? err.message : String(err) });
         } finally {
             setRemoveOpen(false);
             setRemoveUid(null);
@@ -146,8 +146,8 @@ export default function TenantMembersCard({ siteId, siteModules }: Props) {
             );
             toast.success('Permissions saved');
             setPermTarget(null);
-        } catch (err: any) {
-            toast.error('Save failed', { description: err.message });
+        } catch (err: unknown) {
+            toast.error('Save failed', { description: err instanceof Error ? err.message : String(err) });
         } finally {
             setSavingPerm(false);
         }

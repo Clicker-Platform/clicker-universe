@@ -60,8 +60,9 @@ export async function GET(req: NextRequest) {
       })
     );
 
-    allEntries.sort((a: any, b: any) =>
-      (b.createdAt ?? '').localeCompare(a.createdAt ?? '')
+    interface SortableEntry { createdAt?: string | null }
+    allEntries.sort((a, b) =>
+      ((b as SortableEntry).createdAt ?? '').localeCompare((a as SortableEntry).createdAt ?? '')
     );
 
     return NextResponse.json({ entries: allEntries.slice(0, pageLimit) });

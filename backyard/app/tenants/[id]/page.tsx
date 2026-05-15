@@ -28,13 +28,13 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
     useEffect(() => {
         const fetch = async () => {
             try {
-                const fn = httpsCallable(functions, 'getTenants');
-                const res: any = await fn();
-                const found = (res.data.list ?? []).find((t: any) => t.id === id);
+                const fn = httpsCallable<unknown, { list?: Tenant[] }>(functions, 'getTenants');
+                const res = await fn();
+                const found = (res.data.list ?? []).find(t => t.id === id);
                 if (found) setTenant(found);
                 else toast.error('Tenant not found');
-            } catch (err: any) {
-                toast.error('Failed to load tenant', { description: err.message });
+            } catch (err: unknown) {
+                toast.error('Failed to load tenant', { description: err instanceof Error ? err.message : String(err) });
             } finally {
                 setLoading(false);
             }

@@ -32,8 +32,8 @@ export default function WhatsAppPage() {
     useEffect(() => {
         const fetch = async () => {
             try {
-                const fn = httpsCallable(functions, 'getTenants');
-                const res: any = await fn();
+                const fn = httpsCallable<unknown, { list?: Tenant[] }>(functions, 'getTenants');
+                const res = await fn();
                 const list: Tenant[] = res.data.list ?? [];
                 setTenantList(list);
 
@@ -55,8 +55,8 @@ export default function WhatsAppPage() {
                     };
                 });
                 setWaData(map);
-            } catch (err: any) {
-                toast.error('Failed to load tenants', { description: err.message });
+            } catch (err: unknown) {
+                toast.error('Failed to load tenants', { description: err instanceof Error ? err.message : String(err) });
             } finally {
                 setLoading(false);
             }

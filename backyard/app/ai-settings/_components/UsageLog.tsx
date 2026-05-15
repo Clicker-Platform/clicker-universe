@@ -23,14 +23,17 @@ export function UsageLog() {
 
   useEffect(() => {
     if (!token) return;
-    setLoading(true);
+    let cancelled = false;
     const url = siteFilter
       ? `/api/ai-settings/usage?siteId=${encodeURIComponent(siteFilter)}&limit=50`
       : '/api/ai-settings/usage?limit=50';
     fetch(url, { headers: { 'Authorization': `Bearer ${token}` } })
       .then(r => r.json())
-      .then((data: { entries: TopupEntry[] }) => setEntries(data.entries ?? []))
-      .finally(() => setLoading(false));
+      .then((data: { entries: TopupEntry[] }) => {
+        if (!cancelled) { setEntries(data.entries ?? []); setLoading(false); }
+      })
+      .catch(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
   }, [token, siteFilter]);
 
   return (

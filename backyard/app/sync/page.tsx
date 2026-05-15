@@ -79,8 +79,8 @@ export default function SyncControlPage() {
             toast.success('Sync triggered', {
                 description: 'syncGoFirestore should pick this up within seconds.',
             });
-        } catch (err: any) {
-            toast.error('Trigger failed', { description: err.message });
+        } catch (err: unknown) {
+            toast.error('Trigger failed', { description: err instanceof Error ? err.message : String(err) });
         } finally {
             setTriggering(false);
         }
@@ -166,7 +166,7 @@ export default function SyncControlPage() {
 
             <div className="mt-6 p-4 bg-amber-50 border border-amber-100 rounded-xl text-xs text-amber-700 max-w-2xl">
                 <strong>Note:</strong> Sync runs automatically when documents change in <code className="font-mono">sites/go/*</code>.
-                Use "Force Manual Sync" only when production data appears stale and you suspect a missed event.
+                Use &quot;Force Manual Sync&quot; only when production data appears stale and you suspect a missed event.
             </div>
         </PageShell>
     );

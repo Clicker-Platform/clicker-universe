@@ -45,11 +45,11 @@ export default function UsersTab() {
     const fetchUsers = async () => {
         setLoading(true);
         try {
-            const fn = httpsCallable(functions, 'listUsers');
-            const res: any = await fn();
-            setUsers((res.data?.users || []).filter((u: any) => u.email));
-        } catch (err: any) {
-            toast.error('Failed to load users', { description: err.message });
+            const fn = httpsCallable<unknown, { users?: AuthUser[] }>(functions, 'listUsers');
+            const res = await fn();
+            setUsers((res.data?.users || []).filter(u => u.email));
+        } catch (err: unknown) {
+            toast.error('Failed to load users', { description: err instanceof Error ? err.message : String(err) });
         } finally {
             setLoading(false);
         }
@@ -59,8 +59,8 @@ export default function UsersTab() {
         fetchUsers();
         const fetchTenants = async () => {
             try {
-                const fn = httpsCallable(functions, 'getTenants');
-                const res: any = await fn();
+                const fn = httpsCallable<unknown, { list?: Tenant[] }>(functions, 'getTenants');
+                const res = await fn();
                 setTenants(res.data.list ?? []);
             } catch { /* non-critical */ }
         };
@@ -91,8 +91,8 @@ export default function UsersTab() {
             toast.success('Member added', { description: `${assignTarget.email} → ${assignTenant}` });
             setAssignTarget(null);
             await fetchUsers();
-        } catch (err: any) {
-            toast.error('Assign failed', { description: err.message });
+        } catch (err: unknown) {
+            toast.error('Assign failed', { description: err instanceof Error ? err.message : String(err) });
         } finally {
             setAssignSaving(false);
         }
@@ -109,8 +109,8 @@ export default function UsersTab() {
             await claimsFn({ uid: user.uid, claims: {} });
             toast.success('Member removed', { description: `${user.email} removed from ${user.customClaims.siteId}` });
             await fetchUsers();
-        } catch (err: any) {
-            toast.error('Revoke failed', { description: err.message });
+        } catch (err: unknown) {
+            toast.error('Revoke failed', { description: err instanceof Error ? err.message : String(err) });
         } finally {
             setRevoking(false);
             setRevokeTarget(null);
@@ -276,7 +276,7 @@ export default function UsersTab() {
             </div>
 
             <div className="mt-6 p-4 bg-blue-50 border border-blue-100 rounded-xl text-xs text-blue-700 max-w-2xl">
-                <strong>Audit view.</strong> Use "Assign to tenant" to onboard users without a tenant. For existing members, click "Manage in tenant" to edit role and per-module permissions.
+                <strong>Audit view.</strong> Use &quot;Assign to tenant&quot; to onboard users without a tenant. For existing members, click &quot;Manage in tenant&quot; to edit role and per-module permissions.
             </div>
 
             {/* Assign to tenant modal */}

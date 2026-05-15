@@ -1,11 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { httpsCallable } from 'firebase/functions';
-import { functions, auth, emailLinkSettings } from '@/lib/firebase';
+import { auth, emailLinkSettings } from '@/lib/firebase';
 import {
     onAuthStateChanged,
-    signOut,
+    type User,
     sendSignInLinkToEmail,
     isSignInWithEmailLink,
     signInWithEmailLink,
@@ -18,7 +17,7 @@ import { toast } from 'sonner';
 type Step = 'login' | 'check-email';
 
 export default function Home() {
-    const [user, setUser] = useState<any>(null);
+    const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
     const [step, setStep] = useState<Step>('login');
 
@@ -78,11 +77,12 @@ export default function Home() {
             window.localStorage.setItem('backyardSignInEmail', loginEmail);
             toast.success('Check your email', { description: `A verification link was sent to ${loginEmail}` });
             setStep('check-email');
-        } catch (error: any) {
-            if (error.code === 'auth/unauthorized-domain') {
+        } catch (error: unknown) {
+            const firebaseError = error as { code?: string; message?: string };
+            if (firebaseError.code === 'auth/unauthorized-domain') {
                 setLoginError('Unauthorized domain. Add this domain to Firebase Auth authorized domains.');
             } else {
-                setLoginError(`Error: ${error.code || error.message}`);
+                setLoginError(`Error: ${firebaseError.code || firebaseError.message}`);
             }
         } finally {
             setActionLoading(false);
@@ -100,13 +100,6 @@ export default function Home() {
         } finally {
             setActionLoading(false);
         }
-    };
-
-    const handleLogout = async () => {
-        await signOut(auth);
-        setStep('login');
-        setLoginEmail('');
-        toast.info('Signed out');
     };
 
     if (loading) return (

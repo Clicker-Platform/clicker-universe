@@ -29,8 +29,8 @@ export default function SeedTool() {
             await seedFn({ siteId });
             toast.success('Seeding Complete', { description: `Data for ${siteId} has been reset/seeded.` });
             setSiteId('');
-        } catch (error: any) {
-            toast.error('Seeding Failed', { description: error.message });
+        } catch (error: unknown) {
+            toast.error('Seeding Failed', { description: error instanceof Error ? error.message : String(error) });
         } finally {
             setLoading(false);
         }

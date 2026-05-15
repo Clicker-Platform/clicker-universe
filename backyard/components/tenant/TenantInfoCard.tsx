@@ -37,8 +37,8 @@ export default function TenantInfoCard({ tenant, onSlugUpdate }: Props) {
             onSlugUpdate(value.trim());
             toast.success('Slug updated');
             setEditing(false);
-        } catch (err: any) {
-            toast.error('Update failed', { description: err.message });
+        } catch (err: unknown) {
+            toast.error('Update failed', { description: err instanceof Error ? err.message : String(err) });
         } finally {
             setSaving(false);
         }

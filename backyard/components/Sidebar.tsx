@@ -16,19 +16,19 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
     { label: 'Overview', href: '/' },
-    { label: '—' as any, href: '' },
+    { label: '—', href: '' },
     { label: 'Tenants', href: '/tenants' },
     { label: 'Registrations', href: '/registrations' },
     { label: 'Audit & Roles', href: '/access' },
-    { label: '—' as any, href: '' },
+    { label: '—', href: '' },
     { label: 'AI Settings', href: '/ai-settings' },
     { label: 'API Keys', href: '/api-keys' },
     { label: 'WhatsApp', href: '/whatsapp' },
-    { label: '—' as any, href: '' },
+    { label: '—', href: '' },
     { label: 'Monitoring', href: '/monitoring' },
     { label: 'Sync Control', href: '/sync' },
     { label: 'Seed Tools', href: '/seed' },
-    { label: '—' as any, href: '' },
+    { label: '—', href: '' },
     { label: 'Settings', href: '/settings' },
 ];
 
@@ -69,9 +69,9 @@ export default function Sidebar() {
             await signOut(auth);
             toast.success('Logged Out Successfully');
             router.push('/');
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('[backyard] logout.failed', { error: error instanceof Error ? error.message : String(error) });
-            toast.error('Logout Failed', { description: error.message });
+            toast.error('Logout Failed', { description: error instanceof Error ? error.message : String(error) });
         }
     };
 

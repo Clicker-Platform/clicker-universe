@@ -32,9 +32,9 @@ export default function TenantModulesCard({ tenant, onModulesUpdate }: Props) {
             const fn = httpsCallable(functions, 'updateTenantModules');
             await fn({ siteId: tenant.id, modules: newModules });
             toast.success(`${moduleId} ${!current ? 'enabled' : 'disabled'}`);
-        } catch (err: any) {
+        } catch (err: unknown) {
             onModulesUpdate({ ...tenant.modules, [moduleId]: current });
-            toast.error('Update failed', { description: err.message });
+            toast.error('Update failed', { description: err instanceof Error ? err.message : String(err) });
         } finally {
             setUpdating(null);
         }
