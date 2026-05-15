@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "next dev --webpack -p 3000",
-    "dev:clean": "rm -rf .next && next dev --webpack -p 3000",
+    "dev:clean": "rm -rf .next && next dev -p 3000",
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
@@ -71,7 +71,7 @@
     "jsdom": "^29.0.1",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "vitest": "^4.1.6"
+    "vitest": "^4.1.1"
   },
   "pnpm": {
     "overrides": {
@@ -83,7 +83,7 @@
       "fast-uri": ">=3.1.2",
       "fast-xml-builder": ">=1.1.7",
       "lodash": ">=4.18.0",
-      "vite": "8.0.12",
+      "vite": ">=8.0.5",
       "minimatch": ">=9.0.7",
       "brace-expansion": ">=2.0.3",
       "postcss": ">=8.5.10",

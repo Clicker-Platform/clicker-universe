@@ -1,0 +1,104 @@
+name: CI
+
+on:
+  push:
+    branches: [dev]
+  pull_request:
+    branches: [main]
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      platform: ${{ steps.filter.outputs.platform }}
+      backyard: ${{ steps.filter.outputs.backyard }}
+      gateway: ${{ steps.filter.outputs.gateway }}
+      functions: ${{ steps.filter.outputs.functions }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            platform:
+              - 'clicker-platform-v2/**'
+            backyard:
+              - 'backyard/**'
+            gateway:
+              - 'auth-gateway/**'
+            functions:
+              - 'functions/**'
+
+  platform:
+    needs: changes
+    if: needs.changes.outputs.platform == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - name: Install
+        run: cd clicker-platform-v2 && pnpm install
+      - name: Lint
+        run: cd clicker-platform-v2 && pnpm lint
+      - name: Typecheck
+        run: cd clicker-platform-v2 && pnpm exec tsc --noEmit
+
+  backyard:
+    needs: changes
+    if: needs.changes.outputs.backyard == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - name: Install
+        run: cd backyard && pnpm install
+      - name: Lint
+        run: cd backyard && pnpm lint
+      - name: Typecheck
+        run: cd backyard && pnpm exec tsc --noEmit
+
+  gateway:
+    needs: changes
+    if: needs.changes.outputs.gateway == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - name: Install
+        run: cd auth-gateway && pnpm install
+      - name: Lint
+        run: cd auth-gateway && pnpm lint
+      - name: Typecheck
+        run: cd auth-gateway && pnpm exec tsc --noEmit
+
+  functions:
+    needs: changes
+    if: needs.changes.outputs.functions == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - name: Install
+        run: cd functions && pnpm install
+      - name: Build
+        run: cd functions && pnpm build
