@@ -45,7 +45,7 @@ export const DefaultButtonBlock = ({ data, previewMode, siteId: siteIdProp }: { 
         }
         if (isClean) {
             switch (data.variant) {
-                case 'secondary': return 'bg-white border-2 border-gray-200 text-gray-800 hover:border-[var(--theme-primary)] hover:text-[var(--theme-primary)]';
+                case 'secondary': return 'bg-[var(--theme-surface)] border-2 border-[var(--theme-border)] text-[var(--theme-foreground)] hover:border-[var(--theme-primary)] hover:text-[var(--theme-primary)]';
                 case 'outline': return 'bg-transparent border-2 border-[var(--theme-foreground)] text-[var(--theme-foreground)] hover:bg-[var(--theme-foreground)] hover:text-[var(--theme-background)]';
                 default: return 'bg-[var(--theme-foreground)] text-[var(--theme-background)] hover:bg-[var(--theme-primary)] hover:shadow-lg';
             }

@@ -17,11 +17,19 @@ export const DefaultBranchesBlock: React.FC<BranchesListProps> = ({ contact, bra
     const { theme } = useTemplate();
     const cardStyle = theme.cardStyle;
     const isGlass = cardStyle === 'glass';
+    const colors = theme.colors;
 
     if (!contact.address && branches.length === 0) return null;
 
     const textPrimary = getTextColor(cardStyle);
     const textMuted = getTextColor(cardStyle, true);
+
+    // Contrast color for text/icons on top of theme.primary.
+    const primaryContrastColor =
+        colors.accentForeground ??
+        (colors.accent && colors.accent !== colors.primary ? colors.accent : undefined) ??
+        colors.background ??
+        '#ffffff';
 
     return (
         <div className="w-full">
@@ -32,7 +40,14 @@ export const DefaultBranchesBlock: React.FC<BranchesListProps> = ({ contact, bra
                     style={{ borderRadius: 'var(--theme-radius)', ...(isGlass ? getGlassStyle(theme.colors.surface) : {}) }}
                 >
                     <div className="flex items-start gap-4">
-                        <div className={`p-3 rounded-xl shrink-0 ${isGlass ? 'bg-white/10 text-white' : 'bg-green-50 text-brand-green'}`}>
+                        <div
+                            className="p-3 shrink-0"
+                            style={{
+                                borderRadius: 'calc(var(--theme-radius) * 0.75)',
+                                backgroundColor: isGlass ? 'rgba(255,255,255,0.10)' : `${colors.primary}1a`, // primary @ 10% opacity
+                                color: isGlass ? 'rgba(255,255,255,0.95)' : colors.primary,
+                            }}
+                        >
                             <MapPin size={24} />
                         </div>
                         <div className="flex-1">
@@ -46,7 +61,12 @@ export const DefaultBranchesBlock: React.FC<BranchesListProps> = ({ contact, bra
                                         href={contact.mapUrl}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase bg-brand-dark text-white hover:bg-brand-green hover:text-brand-dark transition-colors"
+                                        className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase hover:opacity-80 transition-opacity"
+                                        style={{
+                                            backgroundColor: colors.primary,
+                                            color: primaryContrastColor,
+                                            borderRadius: 'calc(var(--theme-radius) * 0.6)',
+                                        }}
                                     >
                                         <Navigation size={14} /> Get Directions
                                     </a>
@@ -84,8 +104,13 @@ export const DefaultBranchesBlock: React.FC<BranchesListProps> = ({ contact, bra
                                     <p className={`text-sm whitespace-pre-line mb-3 ${textMuted}`}>{branch.address}</p>
                                     <div className="flex gap-3">
                                         {branch.mapUrl && (
-                                            <a href={branch.mapUrl} target="_blank" rel="noopener noreferrer"
-                                                className="flex items-center gap-1 text-xs font-bold text-blue-600 hover:underline">
+                                            <a
+                                                href={branch.mapUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="flex items-center gap-1 text-xs font-bold hover:underline"
+                                                style={{ color: 'var(--theme-primary)' }}
+                                            >
                                                 <ExternalLink size={12} /> Map
                                             </a>
                                         )}

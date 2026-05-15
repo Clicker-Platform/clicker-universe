@@ -38,7 +38,10 @@ export const DefaultImageBlock = ({ data, isFirst = false }: { data: any; isFirs
                     priority={isFirst}
                 />
                 {data.caption && (
-                    <p className={`text-center text-sm font-bold mt-4 italic ${isGlass ? 'text-white/50' : 'text-gray-500'}`}>
+                    <p
+                        className="text-center text-sm font-bold mt-4 italic"
+                        style={{ color: isGlass ? 'rgba(255,255,255,0.5)' : 'var(--theme-foreground)', opacity: isGlass ? 1 : 0.6 }}
+                    >
                         {data.caption}
                     </p>
                 )}
@@ -65,7 +68,10 @@ export const DefaultImageBlock = ({ data, isFirst = false }: { data: any; isFirs
                     />
                 </div>
                 {data.caption && (
-                    <p className={`text-center text-sm font-bold mt-3 px-4 italic ${isGlass ? 'text-white/50' : 'text-gray-500'}`}>
+                    <p
+                        className="text-center text-sm font-bold mt-3 px-4 italic"
+                        style={{ color: isGlass ? 'rgba(255,255,255,0.5)' : 'var(--theme-foreground)', opacity: isGlass ? 1 : 0.6 }}
+                    >
                         {data.caption}
                     </p>
                 )}
@@ -89,8 +95,17 @@ export const DefaultImageBlock = ({ data, isFirst = false }: { data: any; isFirs
                         style={{ width: '100%', height: 'auto' }}
                     />
                     {data.caption && (
-                        <div className={`p-4 backdrop-blur border-t ${isGlass ? 'bg-white/5 border-white/10' : 'bg-white/50 border-gray-100'}`}>
-                            <p className={`text-center text-sm font-medium ${isGlass ? 'text-white/70' : 'text-gray-600'}`}>
+                        <div
+                            className="p-4 backdrop-blur border-t"
+                            style={{
+                                backgroundColor: isGlass ? 'rgba(255,255,255,0.05)' : `${theme.colors.surface || theme.colors.background}80`,
+                                borderColor: isGlass ? 'rgba(255,255,255,0.10)' : (theme.colors.border || `${theme.colors.foreground}1a`),
+                            }}
+                        >
+                            <p
+                                className="text-center text-sm font-medium"
+                                style={{ color: isGlass ? 'rgba(255,255,255,0.7)' : 'var(--theme-foreground)', opacity: isGlass ? 1 : 0.7 }}
+                            >
                                 {data.caption}
                             </p>
                         </div>
@@ -118,8 +133,11 @@ export const DefaultImageBlock = ({ data, isFirst = false }: { data: any; isFirs
                 </div>
                 {data.caption && (
                     <div className={`${dv(d, 'w-full', 'md:w-1/3')} flex items-center p-4`}>
-                        <div className={`border-l-4 pl-6 py-2 ${isGlass ? 'border-[var(--theme-primary)]' : 'border-brand-dark'}`}>
-                            <p className={`text-lg font-medium italic leading-relaxed ${isGlass ? 'text-white/70' : 'text-gray-700'}`}>
+                        <div className="border-l-4 pl-6 py-2" style={{ borderColor: 'var(--theme-primary)' }}>
+                            <p
+                                className="text-lg font-medium italic leading-relaxed"
+                                style={{ color: isGlass ? 'rgba(255,255,255,0.7)' : 'var(--theme-foreground)', opacity: isGlass ? 1 : 0.8 }}
+                            >
                                 {data.caption}
                             </p>
                         </div>
@@ -146,7 +164,10 @@ export const DefaultImageBlock = ({ data, isFirst = false }: { data: any; isFirs
                 />
             </div>
             {data.caption && (
-                <p className={`text-center text-sm font-bold mt-4 italic ${isGlass ? 'text-white/50' : 'text-gray-500'}`}>
+                <p
+                    className="text-center text-sm font-bold mt-4 italic"
+                    style={{ color: isGlass ? 'rgba(255,255,255,0.5)' : 'var(--theme-foreground)', opacity: isGlass ? 1 : 0.6 }}
+                >
                     {data.caption}
                 </p>
             )}

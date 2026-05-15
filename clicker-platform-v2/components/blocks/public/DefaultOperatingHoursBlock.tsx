@@ -6,6 +6,7 @@ import { useTemplate } from '@/components/TemplateProvider';
 import { DaySchedule } from '@/lib/core/types';
 import { isBusinessOpen } from '@/lib/core/businessHours/utils';
 import { Clock } from 'lucide-react';
+import { getCardClasses, getGlassStyle } from './cardStyles';
 
 interface OperatingHoursProps {
     data: BusinessHours;
@@ -21,7 +22,6 @@ function getHoursStr(dayConfig?: DaySchedule): string {
 
 function buildRows(schedule: DaySchedule[]): { label: string; hours: string }[] {
     const rows: { label: string; hours: string }[] = [];
-    // Group consecutive days with identical hours
     const sorted = [...schedule].sort((a, b) => {
         const order = [1, 2, 3, 4, 5, 6, 0];
         return order.indexOf(a.dayOfWeek) - order.indexOf(b.dayOfWeek);
@@ -45,7 +45,12 @@ function buildRows(schedule: DaySchedule[]): { label: string; hours: string }[] 
 
 export const DefaultOperatingHoursBlock: React.FC<OperatingHoursProps> = ({ data, schedule }) => {
     const { theme } = useTemplate();
-    const isClean = theme.cardStyle === 'clean';
+    const cardStyle = theme.cardStyle;
+    const isGlass = cardStyle === 'glass';
+    const isClean = cardStyle === 'clean';
+    const isBold = !isClean && !isGlass;
+    const colors = theme.colors;
+
     const [isOpen, setIsOpen] = React.useState(false);
     const [isMounted, setIsMounted] = React.useState(false);
 
@@ -62,30 +67,44 @@ export const DefaultOperatingHoursBlock: React.FC<OperatingHoursProps> = ({ data
         { label: 'Sat – Sun', hours: data.satSun || '' },
     ];
 
+    // Status badge: use theme primary/foreground; semantic colors only for open/closed status
+    const statusStyle: React.CSSProperties = isOpen
+        ? { backgroundColor: 'rgba(34,197,94,0.15)', color: 'rgb(22,163,74)' }   // green-ish for "open"
+        : { backgroundColor: 'rgba(239,68,68,0.15)', color: 'rgb(220,38,38)' };   // red-ish for "closed"
+
+    const cardClasses = `px-5 py-4 ${getCardClasses(cardStyle)} ${isBold ? 'transform -rotate-1' : ''}`;
+    const cardInlineStyle: React.CSSProperties = {
+        borderRadius: 'var(--theme-radius)',
+        ...(isGlass ? getGlassStyle(colors.surface) : {}),
+    };
+
     return (
-        <div
-            className={`px-5 py-4 ${isClean
-                ? 'border border-gray-200 shadow-sm bg-white'
-                : 'border-[3px] border-brand-dark shadow-sticker bg-white transform -rotate-1'
-            }`}
-            style={{ borderRadius: 'var(--theme-radius)' }}
-        >
+        <div className={cardClasses} style={cardInlineStyle}>
             {/* Header row */}
             <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                    <Clock size={14} className={isClean ? 'text-gray-400' : 'text-brand-dark'} />
-                    <h3 className={`text-sm font-black uppercase tracking-wide ${isClean ? 'text-gray-900' : 'text-brand-dark'}`}>
+                    <Clock
+                        size={14}
+                        style={{ color: isGlass ? 'rgba(255,255,255,0.6)' : colors.foreground, opacity: isClean ? 0.6 : 1 }}
+                    />
+                    <h3
+                        className="text-sm font-black uppercase tracking-wide"
+                        style={{
+                            color: isGlass ? 'rgba(255,255,255,0.95)' : colors.foreground,
+                            fontFamily: theme.fonts?.heading,
+                        }}
+                    >
                         {data.label}
                     </h3>
                 </div>
                 {statusText && isMounted && (
-                    <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${
-                        isClean
-                            ? isOpen
-                                ? 'bg-green-100 text-green-700'
-                                : 'bg-red-100 text-red-700'
-                            : 'bg-brand-dark text-brand-green'
-                    }`}>
+                    <span
+                        className="text-[10px] font-black uppercase px-2 py-0.5"
+                        style={{
+                            ...statusStyle,
+                            borderRadius: 'calc(var(--theme-radius) * 0.4)',
+                        }}
+                    >
                         {statusText}
                     </span>
                 )}
@@ -93,20 +112,31 @@ export const DefaultOperatingHoursBlock: React.FC<OperatingHoursProps> = ({ data
 
             {/* Hours table */}
             <div className="space-y-1">
-                {rows.map(({ label, hours }) => (
-                    <div key={label} className="flex items-baseline justify-between gap-4">
-                        <span className={`text-xs ${isClean ? 'text-gray-500' : 'font-bold text-brand-dark/70'}`}>
-                            {label}
-                        </span>
-                        <span className={`text-xs font-bold tabular-nums ${
-                            hours === 'Closed'
-                                ? isClean ? 'text-red-400' : 'text-brand-dark/50'
-                                : isClean ? 'text-gray-900' : 'text-brand-dark'
-                        }`}>
-                            {hours}
-                        </span>
-                    </div>
-                ))}
+                {rows.map(({ label, hours }) => {
+                    const isClosed = hours === 'Closed';
+                    return (
+                        <div key={label} className="flex items-baseline justify-between gap-4">
+                            <span
+                                className="text-xs font-bold"
+                                style={{
+                                    color: isGlass ? 'rgba(255,255,255,0.6)' : colors.foreground,
+                                    opacity: isGlass ? 1 : 0.7,
+                                }}
+                            >
+                                {label}
+                            </span>
+                            <span
+                                className="text-xs font-bold tabular-nums"
+                                style={{
+                                    color: isGlass ? 'rgba(255,255,255,0.95)' : colors.foreground,
+                                    opacity: isClosed ? 0.5 : 1,
+                                }}
+                            >
+                                {hours}
+                            </span>
+                        </div>
+                    );
+                })}
             </div>
         </div>
     );
