@@ -1,12 +1,13 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { BlockFormRenderer } from '../BlockFormRenderer';
 import { NestedBlockList } from './container/NestedBlockList';
 import type { ColumnSlot } from './container/types';
 import { clampSize, defaultNewColumnSize, distributeSizes, newId } from './container/types';
 import type { PageBlock } from '@/data/mockData';
 import { ChevronLeft, Plus, X } from 'lucide-react';
+import { useEditor } from '../EditorContext';
 
 // Returns true when the columns' sizes match the distributeSizes(N) pattern,
 // i.e., they look "untouched" (default equal share). Used to decide whether
@@ -40,6 +41,15 @@ export function ColumnsForm({ data, onChange, templateId, onOpenSlideOver }: Col
   const [drilledBlockId, setDrilledBlockId] = useState<string | null>(null);
 
   const safeActiveIdx = Math.min(activeIdx, Math.max(0, columns.length - 1));
+  const activeColumnId = columns[safeActiveIdx]?.id ?? null;
+
+  // Mirror the active column's id to EditorContext so DefaultColumnsBlock can
+  // highlight that column on the canvas. Cleared on unmount/blur.
+  const { setActiveContainerSlotId } = useEditor();
+  useEffect(() => {
+    setActiveContainerSlotId(activeColumnId);
+    return () => setActiveContainerSlotId(null);
+  }, [activeColumnId, setActiveContainerSlotId]);
 
   const drilledLocation = useMemo(() => {
     if (!drilledBlockId) return null;

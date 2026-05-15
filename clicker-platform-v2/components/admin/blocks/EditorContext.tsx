@@ -14,6 +14,11 @@ interface EditorContextType {
     setDeviceView: (view: 'desktop' | 'tablet' | 'mobile') => void;
     showGuides: boolean;
     setShowGuides: (v: boolean) => void;
+    // Slot id (ColumnSlot.id or GridCell.id) the user is currently editing inside a
+    // container block. Used by container renderers to highlight the active region
+    // on canvas, so the form ↔ canvas relationship is visually obvious.
+    activeContainerSlotId: string | null;
+    setActiveContainerSlotId: (id: string | null) => void;
     updateBlockData: (id: string, data: any) => void;
     addBlock: (block: PageBlock) => void;
     removeBlock: (id: string) => void;
@@ -26,6 +31,7 @@ export function EditorProvider({ children, blocks, onChange }: { children: React
     const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
     const [hoveredBlockId, setHoveredBlockId] = useState<string | null>(null);
     const [showGuides, setShowGuides] = useState(true);
+    const [activeContainerSlotId, setActiveContainerSlotId] = useState<string | null>(null);
     const [deviceView, setDeviceView] = useState<'desktop' | 'tablet' | 'mobile'>(() => {
         if (typeof window === 'undefined') return 'desktop';
         const saved = localStorage.getItem('canvas_studio_device_view');
@@ -72,6 +78,8 @@ export function EditorProvider({ children, blocks, onChange }: { children: React
             setDeviceView,
             showGuides,
             setShowGuides,
+            activeContainerSlotId,
+            setActiveContainerSlotId,
             updateBlockData,
             addBlock,
             removeBlock,

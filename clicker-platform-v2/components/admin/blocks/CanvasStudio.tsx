@@ -45,7 +45,7 @@ export function CanvasStudio({
     pageSlug?: string;
     pageTitle?: string;
 }) {
-    const { blocks, setBlocks, selectedBlockId, setSelectedBlockId, updateBlockData, deviceView, showGuides } = useEditor();
+    const { blocks, setBlocks, selectedBlockId, setSelectedBlockId, updateBlockData, deviceView, showGuides, activeContainerSlotId } = useEditor();
     const { tenantSlug, siteId } = useSite();
     const {
         activePageId,
@@ -65,6 +65,7 @@ export function CanvasStudio({
         updateFooterText,
         pageLoading,
         hydratedData,
+        isHydrating,
         saving,
         isDirty,
         savePage,
@@ -424,6 +425,8 @@ export function CanvasStudio({
                                                             siteId={siteId}
                                                             previewMode={true}
                                                             showGuides={showGuides}
+                                                            isHydrating={isHydrating}
+                                                            activeContainerSlotId={activeContainerSlotId}
                                                             tenantSlug={tenantSlug || ''}
                                                             links={hydratedData.links || []}
                                                             products={hydratedData.products || []}

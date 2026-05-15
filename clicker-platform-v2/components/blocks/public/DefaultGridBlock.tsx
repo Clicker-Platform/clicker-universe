@@ -17,10 +17,11 @@ interface DefaultGridBlockProps {
   data: any;
   previewMode?: boolean;
   showGuides?: boolean;
+  activeContainerSlotId?: string | null;
   passthroughProps?: Record<string, any>;
 }
 
-export function DefaultGridBlock({ data, previewMode, showGuides, passthroughProps = {} }: DefaultGridBlockProps) {
+export function DefaultGridBlock({ data, previewMode, showGuides, activeContainerSlotId, passthroughProps = {} }: DefaultGridBlockProps) {
   const deviceView = useDeviceView();
   const cells: GridCell[] = Array.isArray(data?.cells) ? data.cells : [];
   const {
@@ -88,10 +89,17 @@ export function DefaultGridBlock({ data, previewMode, showGuides, passthroughPro
         }
         style={gridStyle}
       >
-        {displayed.map((cell, idx) => (
+        {displayed.map((cell, idx) => {
+          const isActive = !!(previewMode && activeContainerSlotId === cell.id);
+          const outlineClass = isActive
+            ? 'outline outline-2 outline-blue-500 [background-color:color-mix(in_srgb,var(--theme-primary)_3%,transparent)] min-h-[40px]'
+            : showCellGuides
+              ? 'outline outline-1 outline-dashed outline-blue-300/60 min-h-[40px]'
+              : '';
+          return (
           <div
             key={cell.id}
-            className={`relative ${showCellGuides ? 'outline outline-1 outline-dashed outline-blue-300/60 min-h-[40px]' : ''}`}
+            className={`relative transition-[outline] duration-150 ${outlineClass}`}
           >
             {cell.block ? (
               <BlockRenderer block={cell.block} previewMode={previewMode} {...passthroughProps} />
@@ -101,7 +109,8 @@ export function DefaultGridBlock({ data, previewMode, showGuides, passthroughPro
               </span>
             ) : null}
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

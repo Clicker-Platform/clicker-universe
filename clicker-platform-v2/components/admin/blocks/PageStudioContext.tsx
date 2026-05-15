@@ -89,6 +89,11 @@ interface PageStudioContextType {
     // Hydrated data (links, products, etc.) — lifted from CanvasStudio for caching
     hydratedData: Record<string, any>;
 
+    // True while hydratePageBlocks is in flight (e.g. after adding a data-dependent
+    // block). Consumers can use this to suppress "empty" diagnostics until the
+    // fetch resolves.
+    isHydrating: boolean;
+
     // Global settings
     globalSettings: any;
 
@@ -186,6 +191,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
 
     // Hydrated data (lifted from CanvasStudio for caching)
     const [hydratedData, setHydratedData] = useState<Record<string, any>>({});
+    const [isHydrating, setIsHydrating] = useState(false);
 
     // Links sync
     const [linksVersion, setLinksVersion] = useState(0);
@@ -319,21 +325,26 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
         if (!formData.blocks.length || !siteId) return;
 
         let isMounted = true;
+        setIsHydrating(true);
 
-        hydratePageBlocks(siteId, formData.blocks).then(data => {
-            if (isMounted) {
-                setHydratedData(data);
-                // Update cache entry with hydrated data
-                const pageId = activePageIdRef.current;
-                if (pageId) {
-                    const cached = pageCacheRef.current.get(pageId);
-                    if (cached) {
-                        cached.hydratedData = { ...data };
-                        cached.blockTypesKey = collectAllBlockTypes(formData.blocks).sort().join(',');
+        hydratePageBlocks(siteId, formData.blocks)
+            .then(data => {
+                if (isMounted) {
+                    setHydratedData(data);
+                    // Update cache entry with hydrated data
+                    const pageId = activePageIdRef.current;
+                    if (pageId) {
+                        const cached = pageCacheRef.current.get(pageId);
+                        if (cached) {
+                            cached.hydratedData = { ...data };
+                            cached.blockTypesKey = collectAllBlockTypes(formData.blocks).sort().join(',');
+                        }
                     }
                 }
-            }
-        });
+            })
+            .finally(() => {
+                if (isMounted) setIsHydrating(false);
+            });
 
         return () => { isMounted = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -998,6 +1009,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
             pageLoading,
             isDirty,
             hydratedData,
+            isHydrating,
             globalSettings,
             saving,
             setTitle,

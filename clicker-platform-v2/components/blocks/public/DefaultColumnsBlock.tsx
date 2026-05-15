@@ -17,10 +17,11 @@ interface DefaultColumnsBlockProps {
   data: any;
   previewMode?: boolean;
   showGuides?: boolean;
+  activeContainerSlotId?: string | null;
   passthroughProps?: Record<string, any>;
 }
 
-export function DefaultColumnsBlock({ data, previewMode, showGuides, passthroughProps = {} }: DefaultColumnsBlockProps) {
+export function DefaultColumnsBlock({ data, previewMode, showGuides, activeContainerSlotId, passthroughProps = {} }: DefaultColumnsBlockProps) {
   const deviceView = useDeviceView();
   const columns: ColumnSlot[] = Array.isArray(data?.columns) ? data.columns : [];
   const {
@@ -53,10 +54,12 @@ export function DefaultColumnsBlock({ data, previewMode, showGuides, passthrough
   return (
     <div
       style={{
+        width: '100%',
         maxWidth: maxW,
         marginLeft: maxW ? 'auto' : undefined,
         marginRight: maxW ? 'auto' : undefined,
         padding,
+        boxSizing: 'border-box',
       }}
     >
       <div
@@ -64,24 +67,44 @@ export function DefaultColumnsBlock({ data, previewMode, showGuides, passthrough
         style={{
           gap,
           flexDirection: inlineFlexDirection,
+          width: '100%',
+          boxSizing: 'border-box',
         }}
       >
-        {columns.map(col => (
+        {columns.map(col => {
+          // Subtract this column's share of the inter-column gap so total width
+          // (sum of basis + (N-1)*gap) stays within 100%. Each column "donates"
+          // ((N-1)*gap / N) to make room. Skips when stacked (1-col layout has no
+          // inter-column gap consuming horizontal width).
+          const N = columns.length;
+          const gapDeduction = N > 1 ? `${((N - 1) * gap) / N}px` : '0px';
+          const flexBasis = isStackedMobile
+            ? '100%'
+            : `calc(${(col.size / 12) * 100}% - ${gapDeduction})`;
+          const isActive = !!(previewMode && activeContainerSlotId === col.id);
+          // Active column gets a stronger solid outline + faint tint to anchor the user's
+          // attention. Inactive columns keep the existing dashed guide (when on).
+          const outlineClass = isActive
+            ? 'outline outline-2 outline-blue-500 [background-color:color-mix(in_srgb,var(--theme-primary)_3%,transparent)]'
+            : showColumnGuides
+              ? 'outline outline-1 outline-dashed outline-blue-300/60'
+              : '';
+          return (
           <div
             key={col.id}
             style={{
-              flex: isStackedMobile
-                ? '0 0 100%'
-                : `0 0 ${(col.size / 12) * 100}%`,
+              flex: `0 0 ${flexBasis}`,
               minWidth: 0,
+              boxSizing: 'border-box',
             }}
-            className={`flex flex-col ${showColumnGuides ? 'outline outline-1 outline-dashed outline-blue-300/60' : ''}`}
+            className={`flex flex-col transition-[outline] duration-150 ${outlineClass}`}
           >
             {col.blocks.map(block => (
               <BlockRenderer key={block.id} block={block} previewMode={previewMode} {...passthroughProps} />
             ))}
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

@@ -64,6 +64,8 @@ export const BlockRenderer = ({
     reservationStaff,
     reservationSettings,
     showGuides,
+    isHydrating,
+    activeContainerSlotId,
 }: {
     block: PageBlock,
     isFirst?: boolean,
@@ -91,6 +93,8 @@ export const BlockRenderer = ({
     reservationStaff?: any[],
     reservationSettings?: any,
     showGuides?: boolean,
+    isHydrating?: boolean,
+    activeContainerSlotId?: string | null,
 }) => {
     const fullTemplate = getTemplate(templateId || 'classic');
 
@@ -121,7 +125,7 @@ export const BlockRenderer = ({
                     <ButtonBlock data={block.data} previewMode={previewMode} siteId={siteId} />;
             case 'products': {
                 if (!siteId) return <EmptyBlockHint previewMode={previewMode} blockLabel="Product List" reason="siteId not provided (rendering context issue)." />;
-                if (!products || products.length === 0) return <EmptyBlockHint previewMode={previewMode} blockLabel="Product List" reason="No products in this site. Add products in Products settings." />;
+                if (!products || products.length === 0) return <EmptyBlockHint previewMode={previewMode} isHydrating={isHydrating} blockLabel="Product List" reason="No products in this site. Add products in Products settings." />;
                 return customBlocks?.Products ?
                     React.createElement(customBlocks.Products, { data: block.data, phoneNumber, whatsappSettings, siteId, products }) :
                     <ProductsBlock data={block.data} phoneNumber={phoneNumber} whatsappSettings={whatsappSettings} siteId={siteId} products={products} />;
@@ -134,7 +138,7 @@ export const BlockRenderer = ({
                 if (!siteId) return <EmptyBlockHint previewMode={previewMode} blockLabel="Link Card" reason="siteId not provided (rendering context issue)." />;
                 if (!block.data?.linkId) return <EmptyBlockHint previewMode={previewMode} blockLabel="Link Card" reason="No link selected. Pick a link in this block's properties." />;
                 const linkExists = (links || []).some(l => l.id === block.data.linkId);
-                if (!linkExists) return <EmptyBlockHint previewMode={previewMode} blockLabel="Link Card" reason="Selected link no longer exists. Pick another link." />;
+                if (!linkExists) return <EmptyBlockHint previewMode={previewMode} isHydrating={isHydrating} blockLabel="Link Card" reason="Selected link no longer exists. Pick another link." />;
                 return customBlocks?.Link ?
                     React.createElement(customBlocks.Link, { data: block.data, siteId, links }) :
                     <LinkBlock data={block.data} siteId={siteId} links={links} />;
@@ -150,7 +154,7 @@ export const BlockRenderer = ({
 
             case 'quick_actions': {
                 if (!links || links.length === 0) {
-                    return <EmptyBlockHint previewMode={previewMode} blockLabel="Quick Actions" reason="No links configured. Add links in the Links section." />;
+                    return <EmptyBlockHint previewMode={previewMode} isHydrating={isHydrating} blockLabel="Quick Actions" reason="No links configured. Add links in the Links section." />;
                 }
                 return customBlocks?.QuickActions ?
                     React.createElement(customBlocks.QuickActions, { links: links || [], contact, settings: linkSettings, siteId, tenantSlug, blockData: block.data }) :
@@ -169,7 +173,7 @@ export const BlockRenderer = ({
 
             case 'featured_product': {
                 if (!featuredProduct) {
-                    return <EmptyBlockHint previewMode={previewMode} blockLabel="Featured Product" reason="No featured product set. Pick one in Products settings." />;
+                    return <EmptyBlockHint previewMode={previewMode} isHydrating={isHydrating} blockLabel="Featured Product" reason="No featured product set. Pick one in Products settings." />;
                 }
                 const featuredSettings = productSettings || {};
                 const featuredProps = {
@@ -211,9 +215,9 @@ export const BlockRenderer = ({
                 return <FeatureCardsBlock data={block.data} theme={theme} previewMode={previewMode} />;
 
             case 'columns':
-                return <ColumnsContainerBlock data={block.data} previewMode={previewMode} showGuides={showGuides} passthroughProps={{ theme, siteId, tenantSlug, templateId, phoneNumber, whatsappSettings, onInlineChange, onFieldFocus, onFieldBlur, links, contact, branches, featuredProduct, products, businessHours, businessSchedule, linkSettings, productSettings, profile, reservationServices, reservationStaff, reservationSettings, showGuides }} />;
+                return <ColumnsContainerBlock data={block.data} previewMode={previewMode} showGuides={showGuides} activeContainerSlotId={activeContainerSlotId} passthroughProps={{ theme, siteId, tenantSlug, templateId, phoneNumber, whatsappSettings, onInlineChange, onFieldFocus, onFieldBlur, links, contact, branches, featuredProduct, products, businessHours, businessSchedule, linkSettings, productSettings, profile, reservationServices, reservationStaff, reservationSettings, showGuides, isHydrating }} />;
             case 'grid':
-                return <GridContainerBlock data={block.data} previewMode={previewMode} showGuides={showGuides} passthroughProps={{ theme, siteId, tenantSlug, templateId, phoneNumber, whatsappSettings, onInlineChange, onFieldFocus, onFieldBlur, links, contact, branches, featuredProduct, products, businessHours, businessSchedule, linkSettings, productSettings, profile, reservationServices, reservationStaff, reservationSettings, showGuides }} />;
+                return <GridContainerBlock data={block.data} previewMode={previewMode} showGuides={showGuides} activeContainerSlotId={activeContainerSlotId} passthroughProps={{ theme, siteId, tenantSlug, templateId, phoneNumber, whatsappSettings, onInlineChange, onFieldFocus, onFieldBlur, links, contact, branches, featuredProduct, products, businessHours, businessSchedule, linkSettings, productSettings, profile, reservationServices, reservationStaff, reservationSettings, showGuides, isHydrating }} />;
 
             default:
                 return <ModuleBlockLoader type={block.type} data={block.data} siteId={siteId} />;

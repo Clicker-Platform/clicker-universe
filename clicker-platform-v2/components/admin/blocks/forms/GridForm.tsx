@@ -1,15 +1,15 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { BlockFormRenderer } from '../BlockFormRenderer';
 import { MiniBlockPicker } from './container/MiniBlockPicker';
 import { BLOCK_OPTIONS } from '../blockDefinitions';
 import { subscribeToEnabledModules } from '@/lib/modules/registry';
-import { useEffect } from 'react';
 import type { GridCell } from './container/types';
 import { newId } from './container/types';
 import type { PageBlock } from '@/data/mockData';
 import { ChevronLeft, X } from 'lucide-react';
+import { useEditor } from '../EditorContext';
 
 interface GridFormProps {
   data: any;
@@ -48,6 +48,14 @@ export function GridForm({ data, onChange, templateId, onOpenSlideOver }: GridFo
   );
 
   const [activeCellId, setActiveCellId] = useState<string | null>(null);
+
+  // Mirror the active cell's id to EditorContext so DefaultGridBlock can highlight
+  // it on the canvas. Cleared on unmount/blur.
+  const { setActiveContainerSlotId } = useEditor();
+  useEffect(() => {
+    setActiveContainerSlotId(activeCellId);
+    return () => setActiveContainerSlotId(null);
+  }, [activeCellId, setActiveContainerSlotId]);
   const [drilledCellId, setDrilledCellId] = useState<string | null>(null);
 
   // Resolve the active cell from id; fall back to first visible cell if missing/stale.
