@@ -16,17 +16,6 @@ vi.mock('firebase-admin/firestore', () => ({
   },
 }));
 
-function makeLedgerDoc() {
-  return { id: 'ledger-entry' };
-}
-
-function makeNestedCollection() {
-  return { doc: vi.fn(() => makeLedgerDoc()) };
-}
-
-function makeNestedDoc() {
-  return { collection: vi.fn(() => makeNestedCollection()) };
-}
 
 function makeDb(balanceData: { exists: boolean; balance?: number; lifetimeUsed?: number }) {
   const creditDoc = {

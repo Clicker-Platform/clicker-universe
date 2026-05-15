@@ -77,15 +77,15 @@ export default function AgentSettingsPage() {
         }
     };
 
-    const updateConfig = (path: string, value: any) => {
+    const updateConfig = (path: string, value: unknown) => {
         setConfig((prev) => {
             const newConfig = { ...prev };
             const parts = path.split('.');
-            let current: any = newConfig;
+            let current: Record<string, unknown> = newConfig as Record<string, unknown>;
             for (let i = 0; i < parts.length - 1; i++) {
                 if (!Object.prototype.hasOwnProperty.call(current, parts[i])) break;
                 // nosemgrep: javascript.lang.security.audit.prototype-pollution.prototype-pollution-loop.prototype-pollution-loop
-                current = current[parts[i]];
+                current = current[parts[i]] as Record<string, unknown>;
             }
             current[parts[parts.length - 1]] = value;
             return newConfig;

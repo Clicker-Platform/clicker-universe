@@ -14,7 +14,7 @@ const mocks = vi.hoisted(() => {
   const goSiteDocMock = vi.fn(() => ({ collection: modulesCollectionMock }));
 
   // Registration path: collection('registrationRequests').doc()
-  const setMock = vi.fn(async () => undefined);
+  const setMock = vi.fn(async (_data: Record<string, unknown>) => undefined);
   const regDocMock = vi.fn(() => ({ id: 'reg-abc123', set: setMock }));
 
   // Top-level collection() router — returns different shape based on collection name

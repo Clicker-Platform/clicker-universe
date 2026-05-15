@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { POSOrder, POSSettings } from '@/lib/modules/byod_pos/types';
 import { subscribeToRecentOrders, confirmPayment } from '@/lib/modules/byod_pos/api';
-import { commitPromoUsage, reversePromoUsage } from '@/lib/modules/promo/api';
+import { commitPromoUsage } from '@/lib/modules/promo/api';
 import type { AppliedPromo } from '@/lib/modules/promo/api';
 import { ShoppingBag } from 'lucide-react';
 import { toast } from 'sonner';
@@ -160,8 +160,8 @@ export default function CashierClient({ initialOrders = [] }: { initialOrders?: 
 
         return Object.values(groups).sort((a, b) => b.updatedAt - a.updatedAt).map(g => ({
             ...g,
-            aggregatedStatus: g.orders.some(o => o.paymentStatus === 'pending_confirmation') ? 'pending_confirmation' : 'unpaid'
-        })) as any[]; // using any for BillCard props compatibility
+            aggregatedStatus: (g.orders.some(o => o.paymentStatus === 'pending_confirmation') ? 'pending_confirmation' : 'unpaid') as 'unpaid' | 'pending_confirmation' | 'paid' | 'partial'
+        }));
     }, [orders]);
 
     return (

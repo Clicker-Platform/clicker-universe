@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { ICON_MAP, ICON_NAMES } from '@/data/icons';
 import { Search, X, ArrowLeft } from 'lucide-react';
@@ -15,7 +15,7 @@ export function IconSelector({ selectedIcon, onSelect, onClose }: IconSelectorPr
     const [search, setSearch] = useState('');
     const [mounted, setMounted] = useState(false);
 
-    useEffect(() => { setMounted(true); }, []);
+    useEffect(() => { Promise.resolve().then(() => setMounted(true)); }, []);
 
     const filteredIcons = ICON_NAMES.filter(name =>
         name.toLowerCase().includes(search.toLowerCase())

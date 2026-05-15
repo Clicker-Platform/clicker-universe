@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Monitor, Tablet, Smartphone, Home, Loader2, Save, FileText, Frame } from 'lucide-react';
 import { usePageStudio } from './PageStudioContext';
 import { useEditor } from './EditorContext';
@@ -27,13 +27,13 @@ export function StudioTopBarSlot() {
     const homepageSlug = globalSettings?.homepageSlug || 'home';
     const isHomepage = formData.slug === homepageSlug && activePageId !== null;
 
-    const handleHomepageToggle = async () => {
+    const handleHomepageToggle = useCallback(async () => {
         if (isHomepage) {
             await unsetHomepage();
         } else {
             await setHomepage();
         }
-    };
+    }, [isHomepage, unsetHomepage, setHomepage]);
 
     // Left slot — editable page name
     useEffect(() => {
@@ -150,7 +150,7 @@ export function StudioTopBarSlot() {
                 )}
             </>
         );
-    }, [activePageId, isHomepage, saving, isDirty, savePage, tooltip, setRightSlot]);
+    }, [activePageId, isHomepage, saving, isDirty, savePage, tooltip, setRightSlot, handleHomepageToggle]);
 
     // Clear all slots on unmount (navigating away from Canvas Studio)
     useEffect(() => {

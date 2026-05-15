@@ -99,7 +99,7 @@ export default function ReservationSettingsPage() {
                     <div>
                         <p className="text-sm font-medium text-gray-800 dark:text-neutral-200">Allow {label} Selection</p>
                         <p className="text-xs text-gray-500 dark:text-neutral-500 mt-0.5">
-                            Customers can choose a specific {label.toLowerCase()} during booking, or select "Any Available".
+                            Customers can choose a specific {label.toLowerCase()} during booking, or select &quot;Any Available&quot;.
                         </p>
                     </div>
                     <button
@@ -122,7 +122,7 @@ export default function ReservationSettingsPage() {
                             What do you call your staff?
                         </label>
                         <p className="text-xs text-gray-500 dark:text-neutral-500 mt-0.5">
-                            This label appears throughout the booking flow. E.g. "Technician", "Therapist", "Stylist".
+                            This label appears throughout the booking flow. E.g. &quot;Technician&quot;, &quot;Therapist&quot;, &quot;Stylist&quot;.
                         </p>
                     </div>
                     <input
@@ -134,7 +134,7 @@ export default function ReservationSettingsPage() {
                     />
                     {label && (
                         <p className="text-xs text-gray-400 dark:text-neutral-600 mt-2">
-                            Preview: customers will see <span className="font-medium text-gray-600 dark:text-neutral-400">"Any Available {label}"</span> and <span className="font-medium text-gray-600 dark:text-neutral-400">"Select a {label}"</span>.
+                            Preview: customers will see <span className="font-medium text-gray-600 dark:text-neutral-400">&quot;Any Available {label}&quot;</span> and <span className="font-medium text-gray-600 dark:text-neutral-400">&quot;Select a {label}&quot;</span>.
                         </p>
                     )}
                 </div>
@@ -146,7 +146,7 @@ export default function ReservationSettingsPage() {
                             Booking Page Title
                         </label>
                         <p className="text-xs text-gray-500 dark:text-neutral-500 mt-0.5">
-                            The heading shown on Step 1 of the booking form. Defaults to "Select Service".
+                            The heading shown on Step 1 of the booking form. Defaults to &quot;Select Service&quot;.
                         </p>
                     </div>
                     <input
@@ -158,7 +158,7 @@ export default function ReservationSettingsPage() {
                     />
                     {settings.bookingTitle?.trim() && (
                         <p className="text-xs text-gray-400 dark:text-neutral-600 mt-2">
-                            Preview: Step 1 will show <span className="font-medium text-gray-600 dark:text-neutral-400">"{settings.bookingTitle.trim()}"</span> instead of "Select Service".
+                            Preview: Step 1 will show <span className="font-medium text-gray-600 dark:text-neutral-400">&quot;{settings.bookingTitle.trim()}&quot;</span> instead of &quot;Select Service&quot;.
                         </p>
                     )}
                 </div>

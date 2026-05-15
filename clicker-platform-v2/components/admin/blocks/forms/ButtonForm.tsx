@@ -3,12 +3,21 @@
 import { LinkPicker, LinkValue } from './LinkPicker';
 
 interface ButtonFormProps {
-    data: any;
-    onChange: (data: any) => void;
+    data: Record<string, unknown>;
+    onChange: (data: Record<string, unknown>) => void;
 }
 
 export const ButtonForm = ({ data, onChange }: ButtonFormProps) => {
-    const safeData = data || {};
+    const safeData = (data || {}) as {
+        linkType?: LinkValue['type'];
+        url?: string;
+        pageId?: string | null;
+        formId?: string | null;
+        label?: string;
+        variant?: string;
+        align?: string;
+        openInNewTab?: boolean;
+    };
 
     const handleChange = (field: string, value: string | boolean) => {
         onChange({ ...safeData, [field]: value });

@@ -60,11 +60,11 @@ export default function MemberRewardsWidget({ memberId, memberPoints }: MemberRe
                 ...prev,
                 [promo.id]: { type: 'success', text: 'Voucher claimed! Check My Vouchers.' },
             }));
-        } catch (err: any) {
+        } catch (err: unknown) {
             logger.error('promo.rewards.widget.claim.failed', { siteId, promoId: promo.id, error: err });
             setMessages(prev => ({
                 ...prev,
-                [promo.id]: { type: 'error', text: err?.message ?? 'Failed to claim voucher. Please try again.' },
+                [promo.id]: { type: 'error', text: err instanceof Error ? err.message : 'Failed to claim voucher. Please try again.' },
             }));
         } finally {
             setClaimingId(null);

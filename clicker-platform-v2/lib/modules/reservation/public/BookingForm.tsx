@@ -62,7 +62,7 @@ export default function BookingForm({
 
     // Set date on mount
     useEffect(() => {
-        setDate(new Date());
+        Promise.resolve().then(() => setDate(new Date()));
     }, []);
 
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
@@ -119,7 +119,7 @@ export default function BookingForm({
         });
     };
 
-    const handleSubmit = async (customerInfo: any) => {
+    const handleSubmit = async (customerInfo: Record<string, unknown>) => {
         const isRequest = selectedService?.bookingType === 'request';
         if (!selectedService || (!isRequest && !selectedTime)) return;
 
@@ -152,8 +152,8 @@ export default function BookingForm({
                 customerEmail: customerInfo.email,
                 customerPhone: customerInfo.phone,
                 status: 'pending',
-                startAt: bookingStart as any,
-                endAt: bookingEnd as any,
+                startAt: bookingStart as Date & { toDate?: () => Date },
+                endAt: bookingEnd as Date & { toDate?: () => Date },
                 totalPrice: finalPrice,
                 notes: customerInfo.notes,
                 preferredDate: customerInfo.preferredDate || undefined,
@@ -162,7 +162,7 @@ export default function BookingForm({
                 assetId: customerInfo.assetId || undefined,
                 assetModel: customerInfo.assetModel || undefined,
                 ...(appliedPromo ? { appliedPromo } : {}),
-            } as any);
+            } as unknown as Parameters<typeof createBooking>[1]);
 
             if (appliedPromo) {
                 try {
@@ -171,7 +171,7 @@ export default function BookingForm({
                         applied: appliedPromo,
                         source: 'RESERVATION',
                         refId: id,
-                        memberId: customerInfo.id !== 'guest' ? customerInfo.id : undefined,
+                        memberId: customerInfo.id !== 'guest' ? (customerInfo.id as string | undefined) : undefined,
                     });
                 } catch (commitErr) {
                     logger.error('reservation.booking.promo-commit.failed', { siteId, bookingId: id, err: commitErr });
@@ -282,7 +282,7 @@ export default function BookingForm({
                         services={services}
                         onSelect={handleServiceSelect}
                         theme={theme}
-                        pricingDisplay={(settings.pricingDisplay as any) || 'fixed'}
+                        pricingDisplay={(settings.pricingDisplay as 'fixed' | 'starting_from' | 'range' | 'hidden' | undefined) || 'fixed'}
                     />
                 )}
 

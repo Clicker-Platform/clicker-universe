@@ -32,7 +32,7 @@ export type BlockType = 'hero' | 'text' | 'image' | 'button' | 'products' | 'faq
 export interface PageBlock {
     id: string;
     type: BlockType;
-    data: any;
+    data: Record<string, unknown>;
 }
 
 export interface BackgroundMediaBase {
@@ -59,8 +59,8 @@ export interface Page {
     content: string; // Legacy support
     blocks?: PageBlock[]; // New block-based content
     background?: BackgroundMedia;
-    createdAt?: any;
-    updatedAt?: any;
+    createdAt?: { toMillis?: () => number } | string | number;
+    updatedAt?: { toMillis?: () => number } | string | number;
     seo?: {
         title?: string;
         description?: string;
@@ -74,7 +74,7 @@ export interface Page {
     };
     templateConfig?: {
         activeTemplateId?: string;
-        customConfig?: any; // Partial<ThemeConfig>
+        customConfig?: Record<string, unknown>; // Partial<ThemeConfig>
     };
 }
 
@@ -94,7 +94,7 @@ export interface Form {
     isPublished: boolean;
     fields: FormField[];
     emailNotificationTo?: string;
-    createdAt?: any;
+    createdAt?: { toMillis?: () => number } | string | number;
 }
 
 export interface SubmissionActor {
@@ -106,15 +106,15 @@ export interface Submission {
     id: string;
     formId: string;
     formTitle: string;
-    data: Record<string, any>;
+    data: Record<string, unknown>;
     fieldLabels?: Record<string, string>; // Snapshot of labels at submission time
-    submittedAt?: any;
+    submittedAt?: { toMillis?: () => number } | string | number;
     status: 'new' | 'read' | 'archived';
-    lastActionAt?: any;
+    lastActionAt?: { toMillis?: () => number } | string | number;
     lastActionBy?: SubmissionActor;
-    readAt?: any;
+    readAt?: { toMillis?: () => number } | string | number;
     readBy?: SubmissionActor;
-    archivedAt?: any;
+    archivedAt?: { toMillis?: () => number } | string | number;
     archivedBy?: SubmissionActor;
 }
 
@@ -125,7 +125,7 @@ export interface BusinessProfile {
     avatarUrl: string;
     templateConfig?: {
         activeTemplateId?: string;
-        customConfig?: any;
+        customConfig?: Record<string, unknown>;
     };
 }
 
@@ -146,6 +146,8 @@ export interface Product {
     isActive?: boolean;
     showPrice?: boolean;
     showLabel?: boolean;
+    ctaMode?: 'whatsapp' | 'url' | 'both';
+    ctaUrl?: string;
 }
 
 export interface SiteSettings {

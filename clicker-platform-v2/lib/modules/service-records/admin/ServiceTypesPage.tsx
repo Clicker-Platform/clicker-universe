@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ExternalLink, Wrench } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
 import { logger } from '@/lib/logger-edge';
@@ -23,13 +23,7 @@ export default function ServiceTypesPage() {
     const [loading, setLoading] = useState(true);
     const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
-    useEffect(() => {
-        if (!siteId) return;
-        loadTypes();
-        getServiceCategories(siteId).then(setCategories).catch(e => logger.error('service-records.service-types.categories.failed', { siteId, error: e }));
-    }, [siteId]);
-
-    async function loadTypes() {
+    const loadTypes = useCallback(async () => {
         setLoading(true);
         try {
             const types = await getServiceTypes(siteId);
@@ -39,7 +33,13 @@ export default function ServiceTypesPage() {
         } finally {
             setLoading(false);
         }
-    }
+    }, [siteId]);
+
+    useEffect(() => {
+        if (!siteId) return;
+        loadTypes();
+        getServiceCategories(siteId).then(setCategories).catch(e => logger.error('service-records.service-types.categories.failed', { siteId, error: e }));
+    }, [siteId, loadTypes]);
 
     function showToast(type: 'success' | 'error', message: string) {
         setToast({ type, message });

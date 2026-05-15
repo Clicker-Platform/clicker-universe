@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { BusinessProfile, BusinessContact } from '@/data/mockData';
-import { MapPin, Star } from 'lucide-react';
+import { Star } from 'lucide-react';
 import Image from 'next/image';
 import { useTemplate } from '@/components/TemplateProvider';
 import { useSite } from '@/lib/site-context';
@@ -14,7 +14,7 @@ interface HeaderProps {
     showAddress?: boolean;
 }
 
-export const ClassicProfileHeader: React.FC<HeaderProps> = ({ profile, contact, showAddress }) => {
+export const ClassicProfileHeader: React.FC<HeaderProps> = ({ profile }) => {
     const { theme } = useTemplate();
     const { siteId } = useSite();
 

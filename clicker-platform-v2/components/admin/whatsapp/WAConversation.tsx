@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { collection, onSnapshot, query, orderBy, addDoc, serverTimestamp, doc, updateDoc } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useSite } from '@/lib/site-context';
 import { useUser } from '@/lib/user-context';
@@ -172,7 +172,7 @@ export function WAConversation({ threadId, thread, onBack }: WAConversationProps
 function MessageBubble({ message }: { message: WAMessage }) {
   const isOutbound = message.direction === 'outbound';
   const time = message.sentAt
-    ? formatTime(message.sentAt instanceof Date ? message.sentAt : (message.sentAt as any).toDate?.())
+    ? formatTime(message.sentAt instanceof Date ? message.sentAt : (message.sentAt as { toDate?: () => Date }).toDate?.())
     : '';
 
   return (

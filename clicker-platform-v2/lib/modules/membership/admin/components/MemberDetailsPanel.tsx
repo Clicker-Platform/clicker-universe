@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { MEMBERS_COLLECTION, getMemberHistory, awardPoints, updateMemberProfile } from '../../api';
-import { Member, LoyaltyTransaction, getTier, TIER_COLORS, DEFAULT_TIER_THRESHOLDS, TierThreshold } from '../../types';
-import { PlusCircle, MinusCircle, Lock, User, Menu } from 'lucide-react';
+import { Member, LoyaltyTransaction, getTier, TIER_COLORS, DEFAULT_TIER_THRESHOLDS } from '../../types';
+import { PlusCircle, MinusCircle, Lock, User } from 'lucide-react';
 import { toast } from 'sonner';
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 import { usePermission } from '@/lib/hooks/use-permission';
@@ -19,7 +19,7 @@ function useMediaQuery(query: string) {
     const [matches, setMatches] = useState(false);
     useEffect(() => {
         const media = window.matchMedia(query);
-        if (media.matches !== matches) setMatches(media.matches);
+        if (media.matches !== matches) Promise.resolve().then(() => setMatches(media.matches));
         const listener = () => setMatches(media.matches);
         media.addEventListener('change', listener);
         return () => media.removeEventListener('change', listener);
@@ -65,7 +65,7 @@ export function MemberDetailsPanel({ memberId, isOpen, onClose }: MemberDetailsP
         isDestructive: false
     });
 
-    const refreshData = async () => {
+    const refreshData = useCallback(async () => {
         if (!memberId || !siteId) return;
         setLoading(true);
         try {
@@ -84,13 +84,13 @@ export function MemberDetailsPanel({ memberId, isOpen, onClose }: MemberDetailsP
         } finally {
             setLoading(false);
         }
-    };
+    }, [memberId, siteId]);
 
     useEffect(() => {
         if (isOpen && memberId && siteId) {
             refreshData();
         }
-    }, [isOpen, memberId, siteId]);
+    }, [isOpen, memberId, siteId, refreshData]);
 
     // Reset state after panel finishes closing (avoids flash of loading spinner on reopen)
     useEffect(() => {

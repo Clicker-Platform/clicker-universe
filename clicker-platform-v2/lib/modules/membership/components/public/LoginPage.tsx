@@ -38,9 +38,9 @@ export default function LoginPage() {
             // if they open the link on the same device.
             window.localStorage.setItem('emailForSignIn', email);
             setStep('SENT');
-        } catch (error: any) {
+        } catch (error: unknown) {
             logger.error('membership.login.email-link.failed', { siteId: 'platform', error });
-            setError(error.message || "Failed to send login link. Please try again.");
+            setError((error instanceof Error ? error.message : null) || "Failed to send login link. Please try again.");
         } finally {
             setIsLoading(false);
         }

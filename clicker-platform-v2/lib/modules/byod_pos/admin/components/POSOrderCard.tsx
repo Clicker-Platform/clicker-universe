@@ -21,7 +21,7 @@ interface POSOrderCardProps {
     kds?: boolean;
 }
 
-export function POSOrderCard({ order, onUpdateStatus, onCancel, onProcessPayment, minimal, expanded, onClick, kds }: POSOrderCardProps) {
+export function POSOrderCard({ order, onUpdateStatus, onCancel, onProcessPayment, minimal, onClick, kds }: POSOrderCardProps) {
     const { siteId } = useSite();
 
     const getStatusColor = (status: string) => {
@@ -71,7 +71,7 @@ export function POSOrderCard({ order, onUpdateStatus, onCancel, onProcessPayment
         const updateTimer = () => {
             const now = new Date();
             // Handle Firebase Timestamp or standard number/date
-            const created = order.createdAt.seconds ? new Date(order.createdAt.seconds * 1000) : new Date(order.createdAt as any);
+            const created = order.createdAt.seconds ? new Date(order.createdAt.seconds * 1000) : new Date(order.createdAt as unknown as number);
             const diff = Math.floor((now.getTime() - created.getTime()) / 1000);
 
             const mm = Math.floor(diff / 60).toString().padStart(2, '0');
@@ -119,7 +119,7 @@ export function POSOrderCard({ order, onUpdateStatus, onCancel, onProcessPayment
                     {!kds && (
                         <div suppressHydrationWarning className="text-xs text-gray-500 dark:text-neutral-500 mt-1 flex items-center gap-1">
                             <Clock size={12} />
-                            {new Date((order.createdAt as any).seconds * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            {new Date((order.createdAt as { seconds: number }).seconds * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </div>
                     )}
                 </div>

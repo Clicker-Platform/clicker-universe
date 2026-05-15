@@ -25,6 +25,41 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
+interface NavItem {
+    id: string;
+    label?: string;
+    type?: string;
+    value?: string;
+    icon?: string;
+    pageId?: string;
+    formId?: string;
+    url?: string;
+}
+
+interface FabConfig {
+    id?: string;
+    label?: string;
+    type?: string;
+    value?: string;
+    icon?: string;
+    enabled?: boolean;
+    formId?: string | null;
+    pageId?: string | null;
+    [key: string]: unknown;
+}
+
+interface BottomNavStyle {
+    bgColor?: string;
+    showBorder?: boolean;
+    [key: string]: unknown;
+}
+
+interface NavData {
+    bottomNav?: NavItem[];
+    fab?: FabConfig | null;
+    bottomNavStyle?: BottomNavStyle;
+}
+
 function SortableNavItem({
     item,
     onRemove,
@@ -34,12 +69,12 @@ function SortableNavItem({
     pages,
     homepageSlug,
 }: {
-    item: any;
+    item: NavItem;
     onRemove: () => void;
     onUpdate: (field: string, val: string) => void;
     onOpenIconPicker: (currentIcon: string, onSelect: (icon: string) => void) => void;
-    forms: any[];
-    pages: any[];
+    forms: Array<{ id: string; title?: string; name?: string }>;
+    pages: Array<{ id: string; title?: string; slug?: string }>;
     homepageSlug: string;
 }) {
     const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: item.id });
@@ -144,7 +179,7 @@ function SortableNavItem({
                                         onUpdate('value', resolvedValue);
                                         // Auto-fill label if still the default placeholder
                                         if (!item.label || item.label === 'New Link') {
-                                            onUpdate('label', page.title);
+                                            onUpdate('label', page.title ?? '');
                                         }
                                     }
                                 }}
@@ -232,9 +267,9 @@ type PanelView =
 
 export function ChromeBottomNavProperties() {
     const { siteId } = useSite();
-    const [navigation, setNavigation] = useState<any>({ bottomNav: [], fab: null, bottomNavStyle: {} });
-    const [forms, setForms] = useState<any[]>([]);
-    const [pages, setPages] = useState<any[]>([]);
+    const [navigation, setNavigation] = useState<NavData>({ bottomNav: [], fab: null, bottomNavStyle: {} });
+    const [forms, setForms] = useState<Array<{ id: string; title?: string; name?: string }>>([]);
+    const [pages, setPages] = useState<Array<{ id: string; title?: string; slug?: string }>>([]);
     const [homepageSlug, setHomepageSlug] = useState<string>('home');
     const [loading, setLoading] = useState(true);
     const [hydrated, setHydrated] = useState(false);
@@ -271,7 +306,7 @@ export function ChromeBottomNavProperties() {
                 if (cancelled) return;
                 setForms(formsSnap.docs.map(d => ({ id: d.id, ...d.data() })));
                 setPages(pagesSnap.docs.map(d => ({ id: d.id, ...d.data() })));
-                let loaded: any;
+                let loaded: NavData;
                 if (settingsSnap.exists()) {
                     const data = settingsSnap.data();
                     if (data.homepageSlug) setHomepageSlug(data.homepageSlug);
@@ -300,7 +335,7 @@ export function ChromeBottomNavProperties() {
         return () => { cancelled = true; };
     }, [siteId]);
 
-    const saveToFirestore = useCallback(async (nav: any) => {
+    const saveToFirestore = useCallback(async (nav: NavData) => {
         const sid = siteIdRef.current;
         if (!sid) return;
         if (hydratedSiteIdRef.current !== sid) return;
@@ -339,23 +374,23 @@ export function ChromeBottomNavProperties() {
     const generateId = () => Math.random().toString(36).substr(2, 9);
 
     const handleAddItem = () => {
-        setNavigation((prev: any) => ({
+        setNavigation((prev) => ({
             ...prev,
             bottomNav: [...(prev.bottomNav || []), { id: generateId(), label: 'New Link', type: 'page', value: '', icon: 'Link' }],
         }));
     };
 
     const handleRemoveItem = (id: string) => {
-        setNavigation((prev: any) => ({
+        setNavigation((prev) => ({
             ...prev,
-            bottomNav: (prev.bottomNav || []).filter((i: any) => i.id !== id),
+            bottomNav: (prev.bottomNav || []).filter((i) => i.id !== id),
         }));
     };
 
     const handleUpdateItem = (id: string, field: string, value: string) => {
-        setNavigation((prev: any) => ({
+        setNavigation((prev) => ({
             ...prev,
-            bottomNav: (prev.bottomNav || []).map((item: any) =>
+            bottomNav: (prev.bottomNav || []).map((item) =>
                 item.id === id ? { ...item, [field]: value } : item
             ),
         }));
@@ -364,17 +399,17 @@ export function ChromeBottomNavProperties() {
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
         if (over && active.id !== over.id) {
-            setNavigation((prev: any) => {
+            setNavigation((prev) => {
                 const list = prev.bottomNav || [];
-                const oldIndex = list.findIndex((i: any) => i.id === active.id);
-                const newIndex = list.findIndex((i: any) => i.id === over.id);
+                const oldIndex = list.findIndex((i) => i.id === active.id);
+                const newIndex = list.findIndex((i) => i.id === over.id);
                 return { ...prev, bottomNav: arrayMove(list, oldIndex, newIndex) };
             });
         }
     };
 
-    const setFab = (updater: (prev: any) => any) => {
-        setNavigation((prev: any) => ({ ...prev, fab: updater(prev.fab) }));
+    const setFab = (updater: (prev: FabConfig | null | undefined) => FabConfig | null) => {
+        setNavigation((prev) => ({ ...prev, fab: updater(prev.fab) }));
     };
 
     const fab = navigation?.fab;
@@ -439,10 +474,10 @@ export function ChromeBottomNavProperties() {
                 ) : (
                     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                         <SortableContext
-                            items={(navigation?.bottomNav || []).map((i: any) => i.id)}
+                            items={(navigation?.bottomNav || []).map((i) => i.id)}
                             strategy={verticalListSortingStrategy}
                         >
-                            {(navigation?.bottomNav || []).map((item: any) => (
+                            {(navigation?.bottomNav || []).map((item) => (
                                 <SortableNavItem
                                     key={item.id}
                                     item={item}
@@ -472,21 +507,21 @@ export function ChromeBottomNavProperties() {
                             <input
                                 type="color"
                                 value={navigation.bottomNavStyle?.bgColor || '#ffffff'}
-                                onChange={(e) => setNavigation((prev: any) => ({ ...prev, bottomNavStyle: { ...prev.bottomNavStyle, bgColor: e.target.value } }))}
+                                onChange={(e) => setNavigation((prev) => ({ ...prev, bottomNavStyle: { ...prev.bottomNavStyle, bgColor: e.target.value } }))}
                                 className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
                             />
                         </label>
                         <input
                             type="text"
                             value={navigation.bottomNavStyle?.bgColor || ''}
-                            onChange={(e) => setNavigation((prev: any) => ({ ...prev, bottomNavStyle: { ...prev.bottomNavStyle, bgColor: e.target.value } }))}
+                            onChange={(e) => setNavigation((prev) => ({ ...prev, bottomNavStyle: { ...prev.bottomNavStyle, bgColor: e.target.value } }))}
                             placeholder="e.g. #ffffff  (empty = theme default)"
                             className="flex-1 px-3 py-1.5 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-lg text-xs text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-600 outline-none focus:border-blue-500 font-mono"
                         />
                         {navigation.bottomNavStyle?.bgColor && (
                             <button
                                 type="button"
-                                onClick={() => setNavigation((prev: any) => ({ ...prev, bottomNavStyle: { ...prev.bottomNavStyle, bgColor: undefined } }))}
+                                onClick={() => setNavigation((prev) => ({ ...prev, bottomNavStyle: { ...prev.bottomNavStyle, bgColor: undefined } }))}
                                 className="text-neutral-400 hover:text-red-400 transition-colors text-xs px-1 font-bold"
                             >×</button>
                         )}
@@ -504,7 +539,7 @@ export function ChromeBottomNavProperties() {
                                 type="checkbox"
                                 className="sr-only"
                                 checked={!!navigation.bottomNavStyle?.showBorder}
-                                onChange={(e) => setNavigation((prev: any) => ({ ...prev, bottomNavStyle: { ...prev.bottomNavStyle, showBorder: e.target.checked } }))}
+                                onChange={(e) => setNavigation((prev) => ({ ...prev, bottomNavStyle: { ...prev.bottomNavStyle, showBorder: e.target.checked } }))}
                             />
                             <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition duration-200 ${navigation.bottomNavStyle?.showBorder ? 'translate-x-4' : 'translate-x-0'}`} />
                         </div>

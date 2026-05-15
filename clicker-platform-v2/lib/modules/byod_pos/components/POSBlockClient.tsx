@@ -10,15 +10,15 @@ import { logger } from '@/lib/logger-edge';
 
 export default function POSBlockClient() {
     const { siteId } = useSite();
-    const [items, setItems] = useState<any[]>([]);
+    const [items, setItems] = useState<Record<string, unknown>[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (siteId) {
-            getProducts(siteId).then((data: any[]) => {
+            getProducts(siteId).then((data) => {
                 setItems(data);
                 setLoading(false);
-            }).catch((err: any) => {
+            }).catch((err: unknown) => {
                 logger.error('pos.block.items.load.failed', { siteId, error: err });
                 setLoading(false);
             });

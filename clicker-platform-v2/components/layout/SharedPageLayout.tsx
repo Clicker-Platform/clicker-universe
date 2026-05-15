@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { Form, BusinessProfile, BusinessContact, SocialLinkItem } from '@/data/mockData';
 import { ResponsiveNavBar } from '@/components/layout/ResponsiveNavBar';
 import { BottomNavBar } from '@/components/layout/BottomNavBar';
 import { NavigationProvider } from '@/components/layout/NavigationProvider';
@@ -13,17 +14,35 @@ import { BackgroundDecorations } from "@/components/BackgroundDecorations";
 import { Footer } from "@/components/Footer";
 import { PageBackground } from '@/components/blocks/PageBackground';
 
+export interface SharedLayoutData {
+    profile?: BusinessProfile | null;
+    themeColor?: string;
+    accentColor?: string;
+    borderRadius?: 'small' | 'medium' | 'large' | 'none' | 'custom';
+    customBorderRadius?: string;
+    cardVariant?: string;
+    footerText?: string;
+    contact?: BusinessContact;
+    socialLinks?: SocialLinkItem[];
+    showHeaderAddress?: boolean;
+    hideFooterContact?: boolean;
+    backgroundColor?: string;
+    surfaceColor?: string;
+    globalBackground?: Record<string, unknown>;
+    [key: string]: unknown;
+}
+
 export interface SharedLayoutProps {
     templateId: string;
     // We pass the Full Data object because Header, Footer, etc need various parts.
-    data: any; // Using any to avoid complex type duplication until centralized types file is verified.
+    data: SharedLayoutData;
     children: React.ReactNode;
     pageOverrides?: {
         borderRadius?: 'small' | 'medium' | 'large' | 'none' | 'custom';
         customBorderRadius?: string;
         themeColor?: string;
-        customConfig?: any;
-        backgroundConfig?: any;
+        customConfig?: Record<string, unknown>;
+        backgroundConfig?: Record<string, unknown>;
     };
     showFooter?: boolean;
     siteId: string;
@@ -31,7 +50,7 @@ export interface SharedLayoutProps {
     isSubPage?: boolean;
     pageTitle?: string;
     heroFirst?: boolean;
-    initialFormCache?: Record<string, any>;
+    initialFormCache?: Record<string, Form>;
     initialNavData?: InitialNavData;
 }
 
@@ -114,10 +133,10 @@ export function SharedPageLayout({
             templateId={activeTemplateId}
             themeOverrides={{
                 borderRadius: radiusValue,
-                ...(data?.cardVariant ? { cardVariant: data.cardVariant } : {}),
+                ...(data?.cardVariant ? { cardVariant: data.cardVariant as string } : {}),
                 ...(Object.keys(colorOverrides).length > 0 ? { colors: colorOverrides } : {}),
                 ...pageOverrides?.customConfig
-            }}
+            } as Parameters<typeof TemplateProvider>[0]['themeOverrides']}
         >
             <NavigationProvider siteId={siteId} initialFormCache={initialFormCache} initialNavData={initialNavData}>
             <div className="contents">
@@ -144,7 +163,7 @@ export function SharedPageLayout({
                     {/* Base Background Fallback */}
                     <div className="absolute inset-0 -z-20 pointer-events-none" style={{ backgroundColor: pageBackgroundColor }} />
                     {/* User Custom Background (Page or Global) */}
-                    <PageBackground config={pageOverrides?.backgroundConfig || data.globalBackground} />
+                    <PageBackground config={(pageOverrides?.backgroundConfig || data.globalBackground) as Parameters<typeof PageBackground>[0]['config']} />
 
                     {/* Background — use absolute instead of fixed to avoid iPadOS WebKit layout quirks */}
                     <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
@@ -174,7 +193,7 @@ export function SharedPageLayout({
                         {showFooter && (
                             <div className="col-span-full">
                                 <Footer
-                                    socialLinks={socialLinks}
+                                    socialLinks={socialLinks || []}
                                     footerText={footerText}
                                     contact={contact}
                                     hideContact={hideFooterContact}

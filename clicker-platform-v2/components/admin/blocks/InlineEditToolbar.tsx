@@ -8,12 +8,12 @@ export interface InlineFieldFocus {
     blockId: string;
     field: string;         // 'tagline' | 'title' | 'subtitle'
     rect: DOMRect;
-    currentData: Record<string, any>;
+    currentData: Record<string, unknown>;
 }
 
 interface Props {
     focus: InlineFieldFocus | null;
-    onAction: (blockId: string, patch: Record<string, any>) => void;
+    onAction: (blockId: string, patch: Record<string, unknown>) => void;
     onDismiss?: () => void;
 }
 
@@ -28,7 +28,7 @@ export function InlineEditToolbar({ focus, onAction, onDismiss }: Props) {
     const [pos, setPos] = useState({ top: 0, left: 0 });
     const toolbarRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => { setMounted(true); }, []);
+    useEffect(() => { Promise.resolve().then(() => setMounted(true)); }, []);
 
     // Recompute position whenever focus rect changes
     useEffect(() => {
@@ -38,7 +38,7 @@ export function InlineEditToolbar({ focus, onAction, onDismiss }: Props) {
         const MARGIN = 6;
         const top = r.top + window.scrollY - TOOLBAR_H - MARGIN;
         const left = r.left + window.scrollX + r.width / 2;
-        setPos({ top, left });
+        Promise.resolve().then(() => setPos({ top, left }));
     }, [focus]);
 
     // Dismiss whenever the click target is not inside the toolbar AND not on a contentEditable

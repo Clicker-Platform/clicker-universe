@@ -4,7 +4,7 @@
 import { invokeAI, invokeVision, getModel } from '@/lib/ai';
 import { SKILL_MODEL_MAP } from '../config/model-config';
 import { MULTI_SKILL_FLOWS } from './flows';
-import { BrandVoiceConfig, SkillId, AgentId } from '../types';
+import { BrandVoiceConfig, SkillId } from '../types';
 
 // Agent prompt builders
 import { buildAnalyzePrompt } from '../agents/visual-analyst';
@@ -25,23 +25,72 @@ export interface RunnerInput {
   siteId: string;
   uid: string;
   skillId: SkillId;
-  formData: Record<string, any>;
+  formData: Record<string, unknown>;
   brandVoice: BrandVoiceConfig;
-  priorContext?: Record<string, any>; // outputs from previous steps in a flow
+  priorContext?: Record<string, unknown>; // outputs from previous steps in a flow
 }
 
 export interface RunnerOutput {
   content: string;
   variations?: string[];
-  structured?: Record<string, any>;
+  structured?: Record<string, unknown>;
   model: string;
 }
 
 /**
  * Builds the prompt for a given skill using the appropriate agent template.
  */
+type AnyFormData = {
+  context?: string;
+  platform?: string;
+  objective?: string;
+  product?: string;
+  visualContext?: string;
+  contentContext?: string;
+  includeHashtags?: boolean;
+  campaignContext?: string;
+  count?: number;
+  content?: string;
+  targetLanguage?: string;
+  targetTone?: string;
+  targetStyle?: string;
+  budget?: string;
+  duration?: string;
+  platforms?: string[];
+  postsPerWeek?: number;
+  existingData?: string;
+  campaignSummary?: string;
+  metrics?: string;
+  period?: string;
+  data?: string;
+  performanceData?: string;
+  currentStrategy?: string;
+  goals?: string;
+  spend?: string;
+  revenue?: string;
+  channel?: string;
+  brandName?: string;
+  imageBase64?: string;
+  userPrompt?: string;
+  industry?: string;
+  competitors?: string;
+  currentPerformance?: string;
+  historicalData?: string;
+  plannedChanges?: string;
+  myMetrics?: string;
+  [key: string]: unknown;
+};
+
+type AnyPriorContext = {
+  analyze_model_photo?: { mood?: string; [key: string]: unknown };
+  plan_campaign?: { executive_summary?: string; [key: string]: unknown };
+  [key: string]: { [key: string]: unknown } | undefined;
+};
+
 function buildPrompt(skillId: SkillId, input: RunnerInput): { system: string; user: string } {
-  const { formData, brandVoice, priorContext } = input;
+  const formData = input.formData as AnyFormData;
+  const brandVoice = input.brandVoice;
+  const priorContext = input.priorContext as AnyPriorContext | undefined;
 
   switch (skillId) {
     // Visual Analyst
@@ -240,7 +289,7 @@ export async function runSkill(input: RunnerInput): Promise<RunnerOutput> {
   }
 
   // Try to parse as JSON, fallback to raw text
-  let structured: Record<string, any> | undefined;
+  let structured: Record<string, unknown> | undefined;
   try {
     const jsonStr = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
     structured = JSON.parse(jsonStr);
@@ -266,7 +315,7 @@ export async function runFlow(
   if (!flow) throw new Error(`Unknown flow: ${flowId}`);
 
   const stepOutputs: Record<string, RunnerOutput> = {};
-  const priorContext: Record<string, any> = {};
+  const priorContext: Record<string, unknown> = {};
 
   for (const step of flow.steps) {
     // Skip conditional steps if condition not met

@@ -5,7 +5,7 @@ interface MapFormProps {
     data: {
         address?: string;
     };
-    onChange: (data: any) => void;
+    onChange: (data: Record<string, unknown>) => void;
 }
 
 export const MapForm = ({ data, onChange }: MapFormProps) => {

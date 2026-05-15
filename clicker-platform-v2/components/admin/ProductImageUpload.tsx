@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import NextImage from 'next/image';
 import { Upload, X, Loader2, Image as ImageIcon } from 'lucide-react';
 import { uploadToStorage } from '@/lib/upload';
 import { useSite } from '@/lib/site-context';
@@ -40,9 +41,9 @@ export function ProductImageUpload({ currentImageUrl, onUpload, onRemove }: Prod
         try {
             const url = await uploadToStorage({ file, folder: 'products', siteId });
             onUpload(url);
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(err);
-            setError(err.message || 'Error uploading');
+            setError(err instanceof Error ? err.message : 'Error uploading');
         } finally {
             setUploading(false);
             if (fileInputRef.current) {
@@ -77,10 +78,12 @@ export function ProductImageUpload({ currentImageUrl, onUpload, onRemove }: Prod
                     </div>
                 ) : currentImageUrl ? (
                     <>
-                        <img
+                        <NextImage
                             src={currentImageUrl}
                             alt="Product"
-                            className="w-full h-full object-cover"
+                            fill
+                            className="object-cover"
+                            unoptimized
                         />
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center flex-col text-white">
                             <Upload size={24} className="mb-1" />

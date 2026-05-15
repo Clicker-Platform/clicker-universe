@@ -3,10 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import { getMemberHistory } from '../../api';
 import { LoyaltyTransaction } from '../../types';
-import { Calendar, CreditCard, ChevronRight } from 'lucide-react';
+import { Calendar, CreditCard } from 'lucide-react';
 
-// Types are fine
-import { POSOrder } from '@/lib/modules/byod_pos/types';
 import { FileText, X } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
 import { logger } from '@/lib/logger-edge';

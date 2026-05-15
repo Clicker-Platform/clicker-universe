@@ -5,7 +5,6 @@ import {
     getDoc,
     addDoc,
     updateDoc,
-    deleteDoc,
     setDoc,
     query,
     where,
@@ -34,12 +33,6 @@ import {
 import type { ServiceCatalogItem } from '@/lib/core/serviceCatalog/types';
 export { getStaffMembers };
 
-// Helper to sanitize data for Firestore (replaces undefined with null or removes them)
-const sanitize = (data: any) => {
-    return Object.fromEntries(
-        Object.entries(data).map(([k, v]) => [k, v === undefined ? null : v])
-    );
-};
 
 // Collection References
 const BOOKINGS_COLLECTION = 'modules/reservation/bookings';
@@ -86,7 +79,7 @@ export async function createService(
         durationMinutes: service.durationMinutes,
         price: service.price,
         isActive: service.isActive ?? true,
-        category: (service.category as any) || 'OTHER',
+        category: (service.category as string) || 'OTHER',
         imageUrl: service.imageUrl,
         reservationConfig: {
             bookingType: service.bookingType ?? 'time_slot',
@@ -100,7 +93,7 @@ export async function updateService(
     id: string,
     updates: Partial<Omit<Service, 'id' | 'createdAt' | 'updatedAt'>>
 ): Promise<void> {
-    const patch: Record<string, any> = {};
+    const patch: Record<string, unknown> = {};
     if (updates.name !== undefined) patch.name = updates.name;
     if (updates.description !== undefined) patch.description = updates.description;
     if (updates.durationMinutes !== undefined) patch.durationMinutes = updates.durationMinutes;
@@ -231,7 +224,7 @@ export async function updateBookingStatus(siteId: string, bookingId: string, sta
     if (!bookingSnap.exists()) return;
     const booking = bookingSnap.data() as Booking;
 
-    const updateData: Record<string, any> = { status };
+    const updateData: Record<string, unknown> = { status };
     if (cancellationReason) updateData.cancellationReason = cancellationReason;
     await updateDoc(docRef, updateData);
 
@@ -353,7 +346,7 @@ export async function getGlobalSchedule(siteId: string): Promise<DaySchedule[]> 
     const docRef = doc(db, 'sites', siteId, 'content', 'business');
     const snap = await getDoc(docRef);
     if (snap.exists()) {
-        return (snap.data() as any).schedule || [];
+        return (snap.data() as { schedule?: DaySchedule[] }).schedule || [];
     }
     return [];
 }

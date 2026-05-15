@@ -3,7 +3,7 @@ import { getFirestore, collection, doc, setDoc, Timestamp } from 'firebase/fires
 import { generateVoucherCode } from '../code-generator';
 import { getPromo } from './promos';
 import { getPromoSettings } from './settings';
-import { PROMOS_COLLECTION, VOUCHERS_COLLECTION } from '../constants';
+import { VOUCHERS_COLLECTION } from '../constants';
 import type { Voucher, VoucherIssuedVia } from '../types';
 import { awardPoints } from '@/lib/modules/membership/api';
 

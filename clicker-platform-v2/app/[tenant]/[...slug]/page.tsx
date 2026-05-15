@@ -10,7 +10,7 @@ import { findModuleForRoute } from '@/lib/modules/registry';
 import { ModuleLoader } from '@/components/modules/ModuleLoader';
 import { TemplateProvider } from '@/components/TemplateProvider';
 import { getBlockSpan } from '@/lib/templates/layoutUtils';
-import { headers } from 'next/headers';
+import type { InitialNavData } from '@/lib/hooks/useNavigationConfig';
 
 type Props = {
     params: Promise<{ tenant: string; slug: string[] }>;
@@ -130,25 +130,14 @@ export default async function TenantCatchAllPage({ params, searchParams }: Props
 
     const {
         profile,
-        socialLinks,
         templateId,
-        footerText,
         contact,
-        hideFooterContact,
-        showHeaderAddress,
         themeColor,
         borderRadius,
-        globalPixels,
         linkSettings,
         productSettings,
         businessHours
     } = publicData;
-
-    const effectivePixels = {
-        facebookPixelId: page.pixels?.facebookPixelId || globalPixels?.facebookPixelId,
-        googleAnalyticsId: page.pixels?.googleAnalyticsId || globalPixels?.googleAnalyticsId,
-        tiktokPixelId: page.pixels?.tiktokPixelId || globalPixels?.tiktokPixelId,
-    };
 
     const overrideTemplate = typeof t === 'string' ? t : undefined;
     const safeTemplateId = overrideTemplate || templateId || 'classic';
@@ -156,8 +145,8 @@ export default async function TenantCatchAllPage({ params, searchParams }: Props
 
     const heroFirst = (page.blocks?.[0]?.type === 'hero');
 
-    const navSettings = (publicData.navigation ?? {}) as any;
-    const initialNavData = {
+    const navSettings = (publicData.navigation ?? {}) as Partial<InitialNavData>;
+    const initialNavData: InitialNavData = {
         topNav: navSettings.topNav ?? [],
         topNavActions: navSettings.topNavActions ?? null,
         bottomNav: navSettings.bottomNav ?? [],
@@ -167,10 +156,11 @@ export default async function TenantCatchAllPage({ params, searchParams }: Props
     };
 
     const firstBlock = page.blocks?.[0];
+    const firstBlockData = (firstBlock?.data ?? {}) as { imageUrl?: string; media?: { src?: string }; url?: string };
     const lcpImageUrl: string | null =
-        firstBlock?.data?.imageUrl ||
-        firstBlock?.data?.media?.src ||
-        firstBlock?.data?.url ||
+        firstBlockData.imageUrl ||
+        firstBlockData.media?.src ||
+        firstBlockData.url ||
         null;
 
     return (
@@ -195,7 +185,7 @@ export default async function TenantCatchAllPage({ params, searchParams }: Props
                 borderRadius: borderRadius,
                 themeColor: themeColor,
                 customConfig: page.templateConfig?.customConfig,
-                backgroundConfig: page.background?.mode !== 'inherit' ? page.background : undefined,
+                backgroundConfig: page.background?.mode !== 'inherit' ? (page.background as Record<string, unknown> | undefined) : undefined,
             }}
         >
             {page.blocks && Array.isArray(page.blocks) && page.blocks.length > 0 ? (
@@ -219,7 +209,7 @@ export default async function TenantCatchAllPage({ params, searchParams }: Props
                                         ctaUrl: hydratedData.productSettings?.ctaUrl || productSettings?.ctaUrl,
                                         ctaUrlLabel: hydratedData.productSettings?.ctaUrlLabel || productSettings?.ctaUrlLabel,
                                     }}
-                                    theme={template.config}
+                                    theme={template.config as unknown as Record<string, unknown>}
                                     siteId={siteId}
                                     templateId={safeTemplateId}
                                     links={hydratedData.links}
@@ -233,7 +223,7 @@ export default async function TenantCatchAllPage({ params, searchParams }: Props
                                     reservationStaff={hydratedData.reservationStaff}
                                     reservationSettings={hydratedData.reservationSettings}
                                     businessHours={businessHours}
-                                    businessSchedule={page.templateConfig?.customConfig?.businessSchedule || publicData.businessSchedule || {}}
+                                    businessSchedule={(page.templateConfig?.customConfig?.businessSchedule as never) || publicData.businessSchedule || []}
                                     contact={contact}
                                 />
                             </div>

@@ -1,19 +1,28 @@
 'use client';
 
+import Image from 'next/image';
 import { ShoppingBag } from 'lucide-react';
 import { usePageStudio } from '@/components/admin/blocks/PageStudioContext';
 
 interface ProductsFormProps {
-    data: any;
-    onChange: (data: any) => void;
+    data: Record<string, unknown>;
+    onChange: (data: Record<string, unknown>) => void;
     onOpenProducts?: () => void;
 }
 
 export const ProductsForm = ({ data, onChange, onOpenProducts }: ProductsFormProps) => {
-    const safeData = data || {};
+    const safeData = (data || {}) as { title?: string; productIds?: string[] };
     const { hydratedData } = usePageStudio();
 
-    const products: any[] = hydratedData.products || [];
+    type ProductLite = {
+        id: string;
+        name?: string;
+        title?: string;
+        price?: string | number;
+        imageUrl?: string;
+        image?: string;
+    };
+    const products = ((hydratedData.products as ProductLite[]) || []);
     const selectedIds: string[] = safeData.productIds || [];
 
     const toggleProduct = (id: string) => {
@@ -70,7 +79,7 @@ export const ProductsForm = ({ data, onChange, onOpenProducts }: ProductsFormPro
                                 >
                                     <div className="w-8 h-8 bg-gray-100 dark:bg-neutral-800/50 rounded-md flex-shrink-0 overflow-hidden border border-gray-200 dark:border-neutral-700/30">
                                         {(product.imageUrl || product.image) && (
-                                            <img src={product.imageUrl || product.image} className="w-full h-full object-cover" alt={product.name} />
+                                            <Image src={(product.imageUrl || product.image) as string} className="w-full h-full object-cover" alt={(product.name as string) || ''} width={32} height={32} unoptimized />
                                         )}
                                     </div>
                                     <div className="min-w-0 flex-1 overflow-hidden">

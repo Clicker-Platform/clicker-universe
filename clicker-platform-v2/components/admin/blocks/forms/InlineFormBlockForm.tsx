@@ -7,12 +7,18 @@ import { useSite } from '@/lib/site-context';
 import { Form } from '@/data/mockData';
 
 interface Props {
-    data: any;
-    onChange: (data: any) => void;
+    data: Record<string, unknown>;
+    onChange: (data: Record<string, unknown>) => void;
 }
 
 export function InlineFormBlockForm({ data, onChange }: Props) {
-    const safe = data || {};
+    const safe = (data || {}) as {
+        formId?: string;
+        heading?: string;
+        subheading?: string;
+        successMessage?: string;
+        redirectUrl?: string;
+    };
     const { siteId } = useSite();
     const [forms, setForms] = useState<Form[]>([]);
     const [loading, setLoading] = useState(true);

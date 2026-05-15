@@ -32,7 +32,7 @@ beforeEach(() => {
       siteUrl: 'https://acme.clicker.id',
     },
   });
-  process.env.NODE_ENV = 'production';
+  (process.env as Record<string, string | undefined>).NODE_ENV = 'production';
   process.env.RESEND_API_KEY = 'test-key';
 });
 
@@ -103,7 +103,7 @@ describe('sendEmail', () => {
   });
 
   it('blocks dev allowlist violations and tags log', async () => {
-    process.env.NODE_ENV = 'development';
+    (process.env as Record<string, string | undefined>).NODE_ENV = 'development';
     process.env.EMAIL_DEV_ALLOWLIST = '@clicker.id';
     const { sendEmail } = await import('../sender');
     const result = await sendEmail({

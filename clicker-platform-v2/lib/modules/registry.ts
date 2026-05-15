@@ -11,7 +11,6 @@ import {
     Calendar,
     CreditCard,
     Box,
-    Utensils,
     QrCode,
     Store,
     ClipboardList,
@@ -106,7 +105,7 @@ export async function isModuleEnabled(moduleId: string): Promise<boolean> {
 
 // Map string keys to actual Icon components
 // This allows we to store "icon": "calendar" in Firestore
-export const MODULE_ICONS: Record<string, any> = {
+export const MODULE_ICONS: Record<string, unknown> = {
     'dashboard': LayoutDashboard,
     'inbox': Inbox,
     'link': LinkIcon,

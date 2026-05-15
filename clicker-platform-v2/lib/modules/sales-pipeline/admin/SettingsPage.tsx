@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { getPipelineConfig, savePipelineConfig, getAvailableForms } from '@/lib/modules/sales-pipeline/api';
 import { FormIntegration, PipelineConfig, PipelineStage } from '@/lib/modules/sales-pipeline/types';
 import { useSite } from '@/lib/site-context';
@@ -23,23 +23,23 @@ export default function SettingsPage() {
 
     const selectedFormFields = availableForms.find(f => f.id === newIntegration.formId)?.fields || [];
 
-    useEffect(() => {
-        if (siteId) loadData();
-    }, [siteId]);
-
-    async function loadData() {
+    const loadData = useCallback(async () => {
         if (!siteId) return;
         setIsLoading(true);
         try {
             const [fetchedConfig, forms] = await Promise.all([getPipelineConfig(siteId), getAvailableForms(siteId)]);
             setConfig(fetchedConfig);
             setAvailableForms(forms);
-        } catch (error) {
+        } catch {
             toast.error("Failed to load settings");
         } finally {
             setIsLoading(false);
         }
-    }
+    }, [siteId]);
+
+    useEffect(() => {
+        if (siteId) loadData();
+    }, [siteId, loadData]);
 
     async function handleSaveIntegration() {
         if (!newIntegration.formId || !newIntegration.targetStageId || !newIntegration.fieldMapping?.name || !newIntegration.fieldMapping?.contact) {

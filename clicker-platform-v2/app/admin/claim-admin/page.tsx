@@ -9,20 +9,9 @@ import { toast } from 'sonner';
 import { logger } from '@/lib/logger-edge';
 
 export default function ClaimAdminPage() {
-    const [user, setUser] = useState<any>(null);
+    const [user, setUser] = useState<{ uid: string; email?: string | null } | null>(null);
     const [status, setStatus] = useState<'idle' | 'checking' | 'claiming' | 'success' | 'error'>('idle');
     const [message, setMessage] = useState('');
-
-    useEffect(() => {
-        const auth = getAuth();
-        const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-            setUser(currentUser);
-            if (currentUser) {
-                checkExistingStatus(currentUser.uid);
-            }
-        });
-        return () => unsubscribe();
-    }, []);
 
     const checkExistingStatus = async (uid: string) => {
         setStatus('checking');
@@ -35,12 +24,24 @@ export default function ClaimAdminPage() {
             } else {
                 setStatus('idle');
             }
-        } catch (e: any) {
+        } catch (e: unknown) {
             logger.error('pos.admin.claim.check.failed', { siteId: 'platform', error: e });
             setStatus('error');
-            setMessage(e.message);
+            setMessage(e instanceof Error ? e.message : String(e));
         }
     };
+
+    useEffect(() => {
+        const auth = getAuth();
+        const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+            setUser(currentUser);
+            if (currentUser) {
+                checkExistingStatus(currentUser.uid);
+            }
+        });
+        return () => unsubscribe();
+         
+    }, []);
 
     const handleClaim = async () => {
         if (!user) return;
@@ -55,10 +56,10 @@ export default function ClaimAdminPage() {
             setStatus('success');
             setMessage('Successfully granted Admin access!');
             toast.success('Admin access granted');
-        } catch (e: any) {
+        } catch (e: unknown) {
             logger.error('pos.admin.claim.failed', { siteId: 'platform', error: e });
             setStatus('error');
-            setMessage('Failed: ' + e.message);
+            setMessage('Failed: ' + (e instanceof Error ? e.message : String(e)));
             toast.error('Failed to claim admin access');
         }
     };

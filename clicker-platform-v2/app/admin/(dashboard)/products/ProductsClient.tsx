@@ -54,7 +54,18 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
     // Settings State
     const [showSettings, setShowSettings] = useState(false);
     const [isSavingSettings, setIsSavingSettings] = useState(false);
-    const [settings, setSettings] = useState<{ galleryTitle: string; showSectionTitle: boolean; itemsToShow: number }>({
+    const [settings, setSettings] = useState<{
+        galleryTitle: string;
+        showSectionTitle: boolean;
+        itemsToShow: number;
+        featuredTitle?: string;
+        featuredBtnText?: string;
+        showFeaturedTitle?: boolean;
+        whatsappBtnLabel?: string;
+        whatsappMessageTemplate?: string;
+        whatsappBtnColor?: string;
+        whatsappBtnTextColor?: string;
+    }>({
         galleryTitle: 'More Treats',
         showSectionTitle: true,
         itemsToShow: 6
@@ -101,15 +112,16 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
         setIsFormOpen(true);
     };
 
-    const handleProductSubmit = async (e: React.FormEvent, formData: any) => {
+    const handleProductSubmit = async (e: React.FormEvent, formData: Record<string, unknown>) => {
         // formData comes from the modal
-        if (!formData.title || formData.images.length === 0) {
+        const images = (formData.images as string[] | undefined) || [];
+        if (!formData.title || images.length === 0) {
             alert("Please include a title and at least one image.");
             return;
         }
 
         setIsSubmitting(true);
-        const mainImage = formData.images[0];
+        const mainImage = images[0];
 
         const productData = {
             title: formData.title,
@@ -117,7 +129,7 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
             showPrice: formData.showPrice,
             image: mainImage,
             imageUrl: mainImage,
-            images: formData.images,
+            images: images,
             category: formData.category,
             showLabel: formData.showLabel,
             description: formData.description,
@@ -129,11 +141,11 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
             if (isEditing && editingId) {
                 await updateDoc(doc(db, 'sites', siteId, 'products', editingId), productData);
                 setProducts(products.map(p =>
-                    p.id === editingId ? { ...p, ...productData, id: editingId } : p
+                    p.id === editingId ? ({ ...p, ...productData, id: editingId } as unknown as Product) : p
                 ));
             } else {
                 const docRef = await addDoc(collection(db, 'sites', siteId, 'products'), productData);
-                const newProduct: Product = { id: docRef.id, ...productData } as Product;
+                const newProduct: Product = { id: docRef.id, ...productData } as unknown as Product;
                 setProducts([...products, newProduct]);
             }
             setIsFormOpen(false); // Close modal
@@ -275,7 +287,7 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
                                 className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-brand-dark focus:ring-0"
                                 min={1}
                             />
-                            <p className="text-xs text-gray-400 dark:text-neutral-600 mt-1">If you have more active products than this limit, a "View More" button will appear.</p>
+                            <p className="text-xs text-gray-400 dark:text-neutral-600 mt-1">If you have more active products than this limit, a &quot;View More&quot; button will appear.</p>
                         </div>
 
                         <label className="flex items-center gap-3 cursor-pointer">
@@ -301,8 +313,8 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
                                 <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">Badge Text (Section Title)</label>
                                 <input
                                     type="text"
-                                    value={(settings as any).featuredTitle || 'Star Pick'}
-                                    onChange={(e) => setSettings({ ...settings, featuredTitle: e.target.value } as any)}
+                                    value={settings.featuredTitle || 'Star Pick'}
+                                    onChange={(e) => setSettings({ ...settings, featuredTitle: e.target.value })}
                                     className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-brand-dark focus:ring-0"
                                     placeholder="e.g. Star Pick"
                                 />
@@ -312,8 +324,8 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
                                 <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">Button Text</label>
                                 <input
                                     type="text"
-                                    value={(settings as any).featuredBtnText || 'Order This Now'}
-                                    onChange={(e) => setSettings({ ...settings, featuredBtnText: e.target.value } as any)}
+                                    value={settings.featuredBtnText || 'Order This Now'}
+                                    onChange={(e) => setSettings({ ...settings, featuredBtnText: e.target.value })}
                                     className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-brand-dark focus:ring-0"
                                     placeholder="e.g. Order This Now"
                                 />
@@ -322,13 +334,13 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
                             <label className="flex items-center gap-3 cursor-pointer">
                                 <input
                                     type="checkbox"
-                                    checked={(settings as any).showFeaturedTitle !== false} // Default true
-                                    onChange={(e) => setSettings({ ...settings, showFeaturedTitle: e.target.checked } as any)}
+                                    checked={settings.showFeaturedTitle !== false} // Default true
+                                    onChange={(e) => setSettings({ ...settings, showFeaturedTitle: e.target.checked })}
                                     className="w-5 h-5 rounded text-brand-dark focus:ring-brand-dark border-gray-300 dark:border-neutral-700"
                                 />
                                 <div>
                                     <span className="block font-bold text-sm text-gray-900 dark:text-neutral-100">Show Badge/Title</span>
-                                    <span className="block text-xs text-gray-500 dark:text-neutral-500">If unchecked, the "Star Pick" badge will be hidden.</span>
+                                    <span className="block text-xs text-gray-500 dark:text-neutral-500">If unchecked, the &quot;Star Pick&quot; badge will be hidden.</span>
                                 </div>
                             </label>
                         </div>
@@ -342,8 +354,8 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
                                 <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">Button Label</label>
                                 <input
                                     type="text"
-                                    value={(settings as any).whatsappBtnLabel || 'Order on WhatsApp'}
-                                    onChange={(e) => setSettings({ ...settings, whatsappBtnLabel: e.target.value } as any)}
+                                    value={settings.whatsappBtnLabel || 'Order on WhatsApp'}
+                                    onChange={(e) => setSettings({ ...settings, whatsappBtnLabel: e.target.value })}
                                     className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-brand-dark focus:ring-0"
                                     placeholder="e.g. Order on WhatsApp"
                                 />
@@ -352,8 +364,8 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
                             <div>
                                 <label className="block text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">Message Template</label>
                                 <textarea
-                                    value={(settings as any).whatsappMessageTemplate || "Hi! I'd like to order the ${productName} for ${productPrice}."}
-                                    onChange={(e) => setSettings({ ...settings, whatsappMessageTemplate: e.target.value } as any)}
+                                    value={settings.whatsappMessageTemplate || "Hi! I'd like to order the ${productName} for ${productPrice}."}
+                                    onChange={(e) => setSettings({ ...settings, whatsappMessageTemplate: e.target.value })}
                                     className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-brand-dark focus:ring-0 min-h-[80px]"
                                     placeholder="Use ${productName} and ${productPrice} as placeholders."
                                 />
@@ -366,14 +378,14 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
                                     <div className="flex items-center gap-2">
                                         <input
                                             type="color"
-                                            value={(settings as any).whatsappBtnColor || '#25D366'}
-                                            onChange={(e) => setSettings({ ...settings, whatsappBtnColor: e.target.value } as any)}
+                                            value={settings.whatsappBtnColor || '#25D366'}
+                                            onChange={(e) => setSettings({ ...settings, whatsappBtnColor: e.target.value })}
                                             className="h-10 w-10 rounded cursor-pointer border-0 p-0"
                                         />
                                         <input
                                             type="text"
-                                            value={(settings as any).whatsappBtnColor || '#25D366'}
-                                            onChange={(e) => setSettings({ ...settings, whatsappBtnColor: e.target.value } as any)}
+                                            value={settings.whatsappBtnColor || '#25D366'}
+                                            onChange={(e) => setSettings({ ...settings, whatsappBtnColor: e.target.value })}
                                             className="flex-1 px-4 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-brand-dark focus:ring-0 uppercase"
                                         />
                                     </div>
@@ -383,14 +395,14 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
                                     <div className="flex items-center gap-2">
                                         <input
                                             type="color"
-                                            value={(settings as any).whatsappBtnTextColor || '#FFFFFF'}
-                                            onChange={(e) => setSettings({ ...settings, whatsappBtnTextColor: e.target.value } as any)}
+                                            value={settings.whatsappBtnTextColor || '#FFFFFF'}
+                                            onChange={(e) => setSettings({ ...settings, whatsappBtnTextColor: e.target.value })}
                                             className="h-10 w-10 rounded cursor-pointer border-0 p-0"
                                         />
                                         <input
                                             type="text"
-                                            value={(settings as any).whatsappBtnTextColor || '#FFFFFF'}
-                                            onChange={(e) => setSettings({ ...settings, whatsappBtnTextColor: e.target.value } as any)}
+                                            value={settings.whatsappBtnTextColor || '#FFFFFF'}
+                                            onChange={(e) => setSettings({ ...settings, whatsappBtnTextColor: e.target.value })}
                                             className="flex-1 px-4 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-brand-dark focus:ring-0 uppercase"
                                         />
                                     </div>
@@ -418,8 +430,8 @@ export default function ProductsManager({ initialProducts, initialFeaturedId }: 
             <div className={viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"}>
                 {products.map(product => {
                     const isFeatured = featuredId === product.id;
-                    const displayTitle = product.title || (product as any).name;
-                    const displayImage = (product.images && product.images[0]) || product.image || (product as any).imageUrl;
+                    const displayTitle = product.title || (product as Product & { name?: string }).name || '';
+                    const displayImage = (product.images && product.images[0]) || product.image || (product as Product & { imageUrl?: string }).imageUrl || '';
                     const isActive = product.isActive !== false; // Default true
                     const showPrice = product.showPrice !== false;
                     const showLabel = product.showLabel !== false;

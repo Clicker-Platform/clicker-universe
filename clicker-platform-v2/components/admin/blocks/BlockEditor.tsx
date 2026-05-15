@@ -1,9 +1,9 @@
 'use client';
 
-import { PageBlock, BlockType } from '@/data/mockData';
+import { PageBlock } from '@/data/mockData';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Trash2, ChevronDown, ChevronUp, Lock, Settings, ExternalLink } from 'lucide-react';
+import { GripVertical, Trash2, ChevronDown, ChevronUp, Settings, ExternalLink } from 'lucide-react';
 import { useState, useEffect, memo } from 'react';
 import Link from 'next/link';
 import { subscribeToEnabledModules } from '@/lib/modules/registry';
@@ -12,7 +12,6 @@ import { useSite } from '@/lib/site-context';
 import { MODULE_COMPONENTS } from '@/lib/modules/components';
 
 import dynamic from 'next/dynamic';
-import { Skeleton } from '@/components/ui/skeleton';
 
 const FormSkeleton = () => (
     <div className="space-y-4 animate-pulse">
@@ -36,11 +35,11 @@ const ImageGalleryBlockForm = dynamic(() => import('./forms/ImageGalleryBlockFor
 
 interface BlockEditorProps {
     block: PageBlock;
-    onChange: (id: string, data: any) => void;
+    onChange: (id: string, data: Record<string, unknown>) => void;
     onDelete: (id: string) => void;
 }
 
-export const BlockEditor = memo(({ block, onChange, onDelete }: BlockEditorProps) => {
+const BlockEditorComponent = ({ block, onChange, onDelete }: BlockEditorProps) => {
     const { tenantSlug } = useSite();
     const [label, setLabel] = useState('Block');
     const [isExpanded, setIsExpanded] = useState(true);
@@ -63,8 +62,7 @@ export const BlockEditor = memo(({ block, onChange, onDelete }: BlockEditorProps
         };
 
         if (coreLabels[block.type]) {
-            setLabel(coreLabels[block.type]);
-            setModuleInfo(null);
+            Promise.resolve().then(() => { setLabel(coreLabels[block.type]); setModuleInfo(null); });
             return;
         }
 
@@ -127,7 +125,7 @@ export const BlockEditor = memo(({ block, onChange, onDelete }: BlockEditorProps
         transition,
     };
 
-    const handleDataChange = (newData: any) => {
+    const handleDataChange = (newData: Record<string, unknown>) => {
         onChange(block.id, newData);
     };
 
@@ -135,7 +133,10 @@ export const BlockEditor = memo(({ block, onChange, onDelete }: BlockEditorProps
         switch (block.type) {
             case 'hero': return <HeroForm data={block.data} onChange={handleDataChange} />;
             case 'text': return <TextForm data={block.data} onChange={handleDataChange} />;
-            case 'content_showcase': return <ContentShowcaseForm data={block.data} onChange={handleDataChange} />;
+            case 'content_showcase': {
+                const Form = ContentShowcaseForm as unknown as React.ComponentType<{ data: unknown; onChange: (data: unknown) => void }>;
+                return <Form data={block.data} onChange={handleDataChange as (d: unknown) => void} />;
+            }
             case 'image': return <ImageForm data={block.data} onChange={handleDataChange} />;
             case 'button': return <ButtonForm data={block.data} onChange={handleDataChange} />;
             case 'products': return <ProductsForm data={block.data} onChange={handleDataChange} />;
@@ -145,7 +146,7 @@ export const BlockEditor = memo(({ block, onChange, onDelete }: BlockEditorProps
             case 'image_gallery': return <ImageGalleryBlockForm data={block.data} onChange={handleDataChange} />;
             default:
                 if (moduleInfo) {
-                    const ModuleComponent = moduleInfo.componentKey ? MODULE_COMPONENTS[moduleInfo.componentKey] : null;
+                    const ModuleComponent = (moduleInfo.componentKey ? MODULE_COMPONENTS[moduleInfo.componentKey] : null) as React.ComponentType | null;
 
                     return (
                         <div className="space-y-4">
@@ -233,7 +234,9 @@ export const BlockEditor = memo(({ block, onChange, onDelete }: BlockEditorProps
             )}
         </div>
     );
-}, (prevProps: BlockEditorProps, nextProps: BlockEditorProps) => {
+};
+
+export const BlockEditor = memo(BlockEditorComponent, (prevProps: BlockEditorProps, nextProps: BlockEditorProps) => {
     // Custom comparison to ensure stability even if parent re-renders
     return (
         prevProps.block === nextProps.block && // Usually object reference is enough if immutable

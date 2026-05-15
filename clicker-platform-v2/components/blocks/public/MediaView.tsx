@@ -96,7 +96,7 @@ function LottieView({ media, wrapperClass, style }: { media: MediaFieldValue; wr
     useEffect(() => {
         let cancelled = false;
         if (!media.src.startsWith('https://')) {
-            setState({ kind: 'error' });
+            Promise.resolve().then(() => setState({ kind: 'error' }));
             return;
         }
         const proxyUrl = `/api/proxy/lottie?url=${encodeURIComponent(media.src)}`;

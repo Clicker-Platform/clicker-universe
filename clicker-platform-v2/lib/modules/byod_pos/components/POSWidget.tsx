@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { createPortal } from 'react-dom';
 import { ShoppingBag, X, Plus, Minus } from 'lucide-react';
 import { useCart } from '@/lib/modules/byod_pos/cart-context';
@@ -12,7 +13,7 @@ import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { POSMemberLookup } from './POSMemberLookup';
 import { Member } from '@/lib/modules/membership/types';
 import { auth } from '@/lib/firebase';
-import { getPOSSettings, addToOrder, requestPayment } from '@/lib/modules/byod_pos/api';
+import { getPOSSettings } from '@/lib/modules/byod_pos/api';
 import { logger } from '@/lib/logger-edge';
 import { POSSettings } from '@/lib/modules/byod_pos/types';
 import { useSearchParams } from 'next/navigation';
@@ -22,7 +23,7 @@ import { useSite } from '@/lib/site-context'; // New import
 import { useTemplate } from '@/components/TemplateProvider';
 
 interface POSWidgetProps {
-    initialItems?: any[];
+    initialItems?: unknown[];
     settings?: POSSettings;
     onCartOpenChange?: (open: boolean) => void;
 }
@@ -30,7 +31,7 @@ interface POSWidgetProps {
 export function POSWidget({ initialItems, settings: propSettings, onCartOpenChange }: POSWidgetProps) {
     const { siteId } = useSite();
     const { theme } = useTemplate();
-    const { items, total, itemCount, removeFromCart, updateQuantity, clearCart, taxBreakdown } = useCart();
+    const { items, total, itemCount, updateQuantity, clearCart, taxBreakdown } = useCart();
 
     const isGlass = theme.decorations?.surfaceStyle === 'glass' || theme.cardStyle === 'glass';
     const surfaceBg = isGlass ? 'rgba(20,20,20,0.9)' : (theme.colors.surfaceElevated || theme.colors.surface || '#ffffff');
@@ -39,9 +40,9 @@ export function POSWidget({ initialItems, settings: propSettings, onCartOpenChan
     const subtleText = theme.colors.textSubtle || theme.colors.muted || theme.colors.foreground;
     const primaryColor = theme.colors.primary;
     const accentFg = theme.colors.accentForeground || '#ffffff';
-    const { trackOrder, activeOrderIds, orders, clearCompletedOrders, user } = useOrderTracker();
+    const { trackOrder, activeOrderIds, orders, clearCompletedOrders } = useOrderTracker();
     const { printReceipt } = useReceiptPrinter();
-    const [successOrder, setSuccessOrder] = useState<any | null>(null);
+    const [successOrder, setSuccessOrder] = useState<Record<string, unknown> | null>(null);
 
     const [mounted, setMounted] = useState(false);
     const [isCartOpen, setIsCartOpenRaw] = useState(false);
@@ -96,16 +97,6 @@ export function POSWidget({ initialItems, settings: propSettings, onCartOpenChan
         // and ensure correct tax calculations per batch.
         await handleCheckout();
     }
-
-    const handleRequestPayment = async () => {
-        if (!activeOrderDetection || !siteId) return;
-        try {
-            await requestPayment(siteId, activeOrderDetection);
-            toast.success("Payment Requested", { description: "Please proceed to the cashier." });
-        } catch (e) {
-            toast.error("Failed to request payment");
-        }
-    };
 
     const handleCheckout = async () => {
         if (!siteId) return;
@@ -163,7 +154,7 @@ export function POSWidget({ initialItems, settings: propSettings, onCartOpenChan
 
             // Success Handling
             // Construct full order object for receipt
-            const fullOrder = { id: docRef.id, ...payload, createdAt: { seconds: Date.now() / 1000 } } as any;
+            const fullOrder = { id: docRef.id, ...payload, createdAt: { seconds: Date.now() / 1000 } } as Record<string, unknown>;
 
             // If open-bill mode, regular toast is fine usually, but maybe they want to print the "ticket" for the kitchen/customer?
             // Let's show the success dialog for BOTH modes to allow printing.
@@ -182,10 +173,10 @@ export function POSWidget({ initialItems, settings: propSettings, onCartOpenChan
             setManualTableNumber('');
             setMember(null);
 
-        } catch (e: any) {
+        } catch (e: unknown) {
             logger.error('pos.order.failed', { siteId, error: e });
             toast.error('Checkout Failed', {
-                description: e.message
+                description: e instanceof Error ? e.message : undefined
             });
         } finally {
             setIsCheckingOut(false);
@@ -196,7 +187,7 @@ export function POSWidget({ initialItems, settings: propSettings, onCartOpenChan
         <div className="relative">
             {/* Content */}
             <div>
-                <MenuGrid initialItems={initialItems} initialSettings={settings} />
+                <MenuGrid initialItems={initialItems as import('@/lib/modules/byod_pos/types').POSItem[] | undefined} initialSettings={settings} />
             </div>
 
             {/* Floating Cart Button — portaled to escape <main> stacking context */}
@@ -266,7 +257,7 @@ export function POSWidget({ initialItems, settings: propSettings, onCartOpenChan
                                 <div key={`${item.productId}-${item.variantId || 'base'}-${idx}`} className="flex gap-4 items-center">
                                     <div className="w-16 h-16 overflow-hidden flex-shrink-0"
                                         style={{ backgroundColor: isGlass ? 'rgba(255,255,255,0.08)' : (theme.colors.surface || '#f3f4f6'), borderRadius: 'calc(var(--theme-radius) * 0.65)' }}>
-                                        {item.image && <img src={item.image} className="w-full h-full object-cover" />}
+                                        {item.image && <Image src={item.image} alt={item.name ?? ''} width={64} height={64} className="w-full h-full object-cover" />}
                                     </div>
                                     <div className="flex-1">
                                         <h4 className="font-bold line-clamp-1" style={{ color: theme.colors.foreground }}>
@@ -373,12 +364,12 @@ export function POSWidget({ initialItems, settings: propSettings, onCartOpenChan
                         </div>
                         <h3 className="text-2xl font-black mb-2" style={{ color: theme.colors.foreground }}>Order Placed!</h3>
                         <p className="mb-6" style={{ color: subtleText }}>
-                            Order #{successOrder.id.slice(-4)} has been successfully created.
+                            Order #{String(successOrder.id ?? '').slice(-4)} has been successfully created.
                         </p>
 
                         <div className="space-y-3">
                             <button
-                                onClick={() => printReceipt(successOrder, settings || undefined)}
+                                onClick={() => printReceipt(successOrder as unknown as import('@/lib/modules/byod_pos/types').POSOrder, settings || undefined)}
                                 className="w-full py-3 font-bold text-sm flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
                                 style={{ backgroundColor: primaryColor, color: accentFg, borderRadius: 'calc(var(--theme-radius) * 0.75)' }}
                             >

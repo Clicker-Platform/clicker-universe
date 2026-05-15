@@ -181,7 +181,7 @@ export function FormBuilderClient({ initialForm }: FormBuilderClientProps) {
                                         <label className="block text-xs font-bold text-gray-500 dark:text-neutral-500 mb-1 uppercase">Type</label>
                                         <select
                                             value={field.type}
-                                            onChange={e => updateField(field.id, { type: e.target.value as any })}
+                                            onChange={e => updateField(field.id, { type: e.target.value as 'text' | 'email' | 'tel' | 'textarea' | 'select' | 'file' })}
                                             className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 bg-gray-50 font-medium"
                                         >
                                             <option value="text">Text Input</option>

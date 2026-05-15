@@ -1,5 +1,5 @@
 
-export function downloadAsCSV(data: any[], filename: string) {
+export function downloadAsCSV(data: Record<string, unknown>[], filename: string) {
     if (!data || !data.length) return;
 
     const separator = ',';
@@ -17,7 +17,7 @@ export function downloadAsCSV(data: any[], filename: string) {
                     : cell.toString().replace(/"/g, '""');
 
                 // Escape commas and quotes
-                if (cell.search(/("|,|\n)/g) >= 0) {
+                if ((cell as string).search(/("|,|\n)/g) >= 0) {
                     cell = `"${cell}"`;
                 }
                 return cell;

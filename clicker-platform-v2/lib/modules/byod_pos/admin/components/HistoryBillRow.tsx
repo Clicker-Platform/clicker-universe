@@ -1,8 +1,7 @@
 'use client';
 
-import { useState } from 'react';
 import { POSOrder } from '@/lib/modules/byod_pos/types';
-import { ChevronDown, ChevronRight, CheckCircle, Clock, XCircle, User, CreditCard, Receipt, Tag } from 'lucide-react';
+import { ChevronRight, Clock, CreditCard, Receipt, Tag } from 'lucide-react';
 
 interface HistoryBillRowProps {
     group: {
@@ -39,14 +38,11 @@ export function HistoryBillRow({ group, onClick }: HistoryBillRowProps) {
     };
 
     // Determine aggregate status color/icon
-    let StatusIcon = CheckCircle;
     let statusColor = 'text-green-500 dark:text-green-400 bg-green-50 dark:bg-green-950/30';
 
     if (group.status === 'cancelled') {
-        StatusIcon = XCircle;
         statusColor = 'text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-950/30';
     } else if (group.status === 'mixed') {
-        StatusIcon = Clock; // Or some other icon for mixed
         statusColor = 'text-orange-500 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/30';
     }
 

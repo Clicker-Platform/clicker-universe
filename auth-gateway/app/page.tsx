@@ -86,8 +86,9 @@ function AdminLoginForm() {
 
       window.location.href = `${targetOrigin}${nextPath}#token=${encodeURIComponent(token)}&siteId=${encodeURIComponent(site.siteId)}`;
 
-    } catch (err: any) {
-      setError(`Gagal login: ${err.message}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      setError(`Gagal login: ${message}`);
       setIsChecking(false);
     } finally {
       handoffInProgress.current = false;
@@ -127,6 +128,7 @@ function AdminLoginForm() {
       }
     });
     return () => unsubscribe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -138,12 +140,13 @@ function AdminLoginForm() {
       setIsChecking(true);
       // onAuthStateChanged listener will fire and call performHandoff
 
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const fbErr = err as { code?: string; message?: string };
       let errorMessage = 'Email atau password salah.';
-      if (err.code === 'auth/too-many-requests') {
+      if (fbErr.code === 'auth/too-many-requests') {
         errorMessage = 'Terlalu banyak percobaan gagal. Silakan coba lagi nanti.';
-      } else if (err.code && err.code !== 'auth/invalid-credential' && err.code !== 'auth/user-not-found' && err.code !== 'auth/wrong-password') {
-        errorMessage = err.message;
+      } else if (fbErr.code && fbErr.code !== 'auth/invalid-credential' && fbErr.code !== 'auth/user-not-found' && fbErr.code !== 'auth/wrong-password') {
+        errorMessage = fbErr.message ?? errorMessage;
       }
       setError(`⚠️ Login Gagal: ${errorMessage}`);
       setIsChecking(false);

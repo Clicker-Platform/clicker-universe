@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Bell, Clock, Mail } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { Bell, Clock } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
 import { logger } from '@/lib/logger-edge';
 import { useUser } from '@/lib/user-context';
@@ -46,12 +46,7 @@ export default function RemindersPage() {
     const [activeTemplate, setActiveTemplate] = useState<'r0' | 'r1' | 'r2' | 'r3'>('r0');
     const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
-    useEffect(() => {
-        if (!siteId) return;
-        loadData();
-    }, [siteId]);
-
-    async function loadData() {
+    const loadData = useCallback(async () => {
         setLoading(true);
         try {
             const [cfg, queueItems] = await Promise.all([
@@ -65,7 +60,12 @@ export default function RemindersPage() {
         } finally {
             setLoading(false);
         }
-    }
+    }, [siteId]);
+
+    useEffect(() => {
+        if (!siteId) return;
+        loadData();
+    }, [siteId, loadData]);
 
     function showToast(type: 'success' | 'error', message: string) {
         setToast({ type, message });
@@ -76,7 +76,7 @@ export default function RemindersPage() {
         setConfig(prev => prev ? { ...prev, ...updates } : prev);
     }
 
-    function updateReminder(field: string, value: any) {
+    function updateReminder(field: string, value: unknown) {
         setConfig(prev => prev ? {
             ...prev,
             reminders: { ...prev.reminders, [field]: value }

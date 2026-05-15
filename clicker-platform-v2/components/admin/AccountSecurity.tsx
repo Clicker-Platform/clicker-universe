@@ -41,12 +41,13 @@ export function AccountSecurity() {
             setEmailState({ loading: false, message: { type: 'success', text: 'Verification email sent. Please check your inbox to confirm.' } });
             setNewEmail('');
             setEmailPassword('');
-        } catch (error: any) {
+        } catch (error: unknown) {
+            const err = error as { code?: string; message?: string };
             const text =
-                error.code === 'auth/wrong-password' ? 'Incorrect password.' :
-                error.code === 'auth/email-already-in-use' ? 'Email already in use.' :
-                error.code === 'auth/requires-recent-login' ? 'Please log out and log in again.' :
-                'Failed to update email. ' + error.message;
+                err.code === 'auth/wrong-password' ? 'Incorrect password.' :
+                err.code === 'auth/email-already-in-use' ? 'Email already in use.' :
+                err.code === 'auth/requires-recent-login' ? 'Please log out and log in again.' :
+                'Failed to update email. ' + err.message;
             setEmailState({ loading: false, message: { type: 'error', text } });
         }
     }, [newEmail, emailPassword]);
@@ -77,11 +78,12 @@ export function AccountSecurity() {
             setCurrentPassword('');
             setNewPassword('');
             setConfirmPassword('');
-        } catch (error: any) {
+        } catch (error: unknown) {
+            const err = error as { code?: string; message?: string };
             const text =
-                error.code === 'auth/wrong-password' ? 'Incorrect current password.' :
-                error.code === 'auth/requires-recent-login' ? 'Please log out and log in again.' :
-                'Failed to update password. ' + error.message;
+                err.code === 'auth/wrong-password' ? 'Incorrect current password.' :
+                err.code === 'auth/requires-recent-login' ? 'Please log out and log in again.' :
+                'Failed to update password. ' + err.message;
             setPasswordState({ loading: false, message: { type: 'error', text } });
         }
     }, [currentPassword, newPassword, confirmPassword]);

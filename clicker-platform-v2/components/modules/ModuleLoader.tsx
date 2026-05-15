@@ -4,11 +4,11 @@ import { MODULE_COMPONENTS } from '@/lib/modules/components';
 
 interface ModuleLoaderProps {
     componentKey: string;
-    [key: string]: any; // Allow passing through other props
+    [key: string]: unknown; // Allow passing through other props
 }
 
 export function ModuleLoader({ componentKey, ...props }: ModuleLoaderProps) {
-    const Component = MODULE_COMPONENTS[componentKey];
+    const Component = MODULE_COMPONENTS[componentKey] as React.ComponentType<Record<string, unknown>> | undefined;
 
     if (!Component) {
         return (

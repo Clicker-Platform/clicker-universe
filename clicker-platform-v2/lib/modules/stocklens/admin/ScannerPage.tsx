@@ -13,7 +13,7 @@ import { ScanUploader } from './ScanUploader';
 import { ScanResultCard } from './ScanResultCard';
 import { ConditionSelector } from './ConditionSelector';
 import { DuplicatePrompt } from './DuplicatePrompt';
-import { Vault, Save, RotateCcw, ScanLine, Sparkles, Settings as SettingsIcon, AlertCircle, CheckCircle2, Box, Zap } from 'lucide-react';
+import { Vault, Save, RotateCcw, Sparkles, AlertCircle, CheckCircle2, Box, Zap } from 'lucide-react';
 import Link from 'next/link';
 
 type Phase = 'upload' | 'result' | 'saved';

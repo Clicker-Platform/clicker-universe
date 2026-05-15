@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Upload, X, Loader2, Image as ImageIcon } from 'lucide-react';
+import Image from 'next/image';
+import { Upload, X, Loader2 } from 'lucide-react';
 import { uploadToStorage } from '@/lib/upload';
 import { useSite } from '@/lib/site-context';
 
@@ -41,9 +42,9 @@ export function CompactImageUpload({ currentUrl, onUpload, onRemove, label = "Up
         try {
             const url = await uploadToStorage({ file, folder: 'assets', siteId });
             onUpload(url);
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(err);
-            setError(err.message || 'Error uploading');
+            setError(err instanceof Error ? err.message : 'Error uploading');
         } finally {
             setUploading(false);
             if (fileInputRef.current) {
@@ -66,7 +67,7 @@ export function CompactImageUpload({ currentUrl, onUpload, onRemove, label = "Up
                 <div className="flex items-center gap-3 p-2 bg-gray-50 dark:bg-neutral-800/50 border border-gray-200 dark:border-neutral-800 rounded-lg group hover:border-brand-dark dark:hover:border-neutral-700 transition-colors">
                     {/* Thumbnail */}
                     <div className="w-10 h-10 rounded-lg bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 overflow-hidden flex-shrink-0 flex items-center justify-center">
-                        <img src={currentUrl} alt="Preview" className="w-full h-full object-cover" />
+                        <Image src={currentUrl} alt="Preview" width={40} height={40} className="w-full h-full object-cover" unoptimized />
                     </div>
 
                     {/* URL / Info */}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { collection, query, where, orderBy, getDocs, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Loader2 } from 'lucide-react';
@@ -54,7 +54,7 @@ export function EventLogList({ registrationId }: { registrationId: string }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  async function load() {
+  const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -81,11 +81,11 @@ export function EventLogList({ registrationId }: { registrationId: string }) {
     } finally {
       setLoading(false);
     }
-  }
+  }, [registrationId]);
 
   useEffect(() => {
     load();
-  }, [registrationId]);
+  }, [load]);
 
   if (loading) {
     return (

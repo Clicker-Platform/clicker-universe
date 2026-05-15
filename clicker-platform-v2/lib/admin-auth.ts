@@ -35,14 +35,14 @@ export async function getUserSites(userId: string, email?: string | null): Promi
             emailSnap = await getDocs(emailQuery);
         }
 
-        const processDoc = (doc: any) => {
+        const processDoc = (doc: { id: string; data: () => Record<string, unknown> }) => {
             const data = doc.data();
             if (!seenSiteIds.has(doc.id)) {
                 sites.push({
                     siteId: doc.id,
-                    slug: data.slug || doc.id,
+                    slug: (data.slug as string | undefined) || doc.id,
                     role: 'owner', // Assume owner if matched by these fields
-                    name: data.name || data.title || 'Untitled Site'
+                    name: (data.name as string | undefined) || (data.title as string | undefined) || 'Untitled Site'
                 });
                 seenSiteIds.add(doc.id);
             }
@@ -115,7 +115,7 @@ export async function getUserSites(userId: string, email?: string | null): Promi
                 });
             }
 
-        } catch (e: any) {
+        } catch {
             logger.warn('auth.membership.index.missing', { siteId: 'platform', error: 'Missing Collection Group Index on members.email' });
         }
 

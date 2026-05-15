@@ -6,7 +6,7 @@
 import { db } from '@/lib/firebase';
 import {
   collection, doc, onSnapshot, query, orderBy, limit,
-  Unsubscribe, getDoc, getDocs,
+  Unsubscribe, getDoc,
 } from 'firebase/firestore';
 import {
   MarketingSettings, MarketingAsset, MarketingGeneration,
@@ -26,7 +26,7 @@ function siteCol(siteId: string, col: string) {
 export async function getMarketingSettings(siteId: string): Promise<MarketingSettings | null> {
   const snap = await getDoc(doc(db, siteCol(siteId, COLLECTION_SETTINGS), SETTINGS_DOC_ID));
   if (!snap.exists()) return null;
-  return { id: snap.id, ...snap.data() } as any;
+  return { id: snap.id, ...snap.data() } as unknown as MarketingSettings;
 }
 
 // ─── Assets ──────────────────────────────────────────────────────────────────
@@ -124,7 +124,7 @@ export function subscribeCreditBalance(
 
 // ─── HTTP Helpers ─────────────────────────────────────────────────────────────
 
-export async function apiPost(url: string, body: any, token: string, siteId: string) {
+export async function apiPost(url: string, body: unknown, token: string, siteId: string) {
   const res = await fetch(url, {
     method: 'POST',
     headers: {

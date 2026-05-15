@@ -27,7 +27,7 @@ export function MobileModuleTabBar({ items, activeHref }: MobileModuleTabBarProp
 
     // If active item is in overflow, swap it into the last visible slot
     const activeIsOverflow = overflowItems.some(i => i.href === activeHref);
-    let displayItems = [...visibleItems];
+    const displayItems = [...visibleItems];
     let displayOverflow = [...overflowItems];
 
     if (activeIsOverflow) {

@@ -2,7 +2,6 @@
 
 import { CartProvider } from '@/lib/modules/byod_pos/cart-context';
 import { POSWidget } from '@/lib/modules/byod_pos/components/POSWidget';
-import { useSite } from '@/lib/site-context';
 import { useTemplate } from '@/components/TemplateProvider';
 
 import { useEffect, useState } from 'react';
@@ -14,7 +13,7 @@ interface POSInterfaceProps {
     settings: POSSettings | null;
 }
 
-function POSInterface({ siteId, settings }: POSInterfaceProps) {
+function POSInterface({ settings }: POSInterfaceProps) {
     const { theme } = useTemplate();
     const businessName = settings?.businessName || 'Self Order';
 
@@ -22,7 +21,6 @@ function POSInterface({ siteId, settings }: POSInterfaceProps) {
     const surfaceBg = isGlass ? 'rgba(20,20,20,0.9)' : (theme.colors.surfaceElevated || '#ffffff');
     const borderColor = isGlass ? 'rgba(255,255,255,0.1)' : (theme.colors.border || '#e5e7eb');
     const primaryColor = theme.colors.primary;
-    const accentFg = theme.colors.accentForeground || '#ffffff';
     const subtleText = theme.colors.textSubtle || theme.colors.muted || theme.colors.foreground;
 
     return (
@@ -57,25 +55,20 @@ interface Props {
     initialSettings?: POSSettings;
 }
 
-export default function OrderPage({ params, searchParams, initialSettings }: Props) {
+export default function OrderPage({ params, initialSettings }: Props) {
     const siteId = params.tenant;
 
     // Check if initialSettings provided, if not fetch them client-side
     const [settings, setSettings] = useState<POSSettings | null>(initialSettings || null);
-    const [loadingSettings, setLoadingSettings] = useState(!initialSettings);
 
     // Fetch Settings if not provided (Client-side Fallback)
     useEffect(() => {
         if (!initialSettings) {
             getPOSSettings(siteId).then(s => {
                 setSettings(s);
-                setLoadingSettings(false);
             });
         }
     }, [siteId, initialSettings]);
-
-    // Use settings or fallback
-    const businessName = settings?.businessName || 'Loading...';
     // Logo is inside settings too now.
 
     if (!siteId) {

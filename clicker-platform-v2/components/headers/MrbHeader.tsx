@@ -11,7 +11,7 @@ interface HeaderProps {
     showAddress?: boolean;
 }
 
-export const MrbHeader: React.FC<HeaderProps> = ({ profile, contact, showAddress }) => {
+export const MrbHeader: React.FC<HeaderProps> = ({ profile: _profile, contact, showAddress }) => {
     const { theme } = useTemplate();
 
     return (

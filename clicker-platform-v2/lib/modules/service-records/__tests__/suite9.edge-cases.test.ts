@@ -2,7 +2,6 @@ import { vi, describe, it, expect, beforeEach, Mock } from 'vitest';
 import { createServiceRecord, approveRecord } from '../api';
 import { getReservationSettings } from '@/lib/modules/reservation/api';
 import { updateStock } from '@/lib/modules/inventory/api';
-import { db } from '@/lib/firebase';
 import { getDoc, getDocs, addDoc, writeBatch, doc } from 'firebase/firestore';
 
 vi.mock('@/lib/modules/registry', () => ({
@@ -22,7 +21,7 @@ vi.mock('@/lib/modules/membership/api', () => ({
 
 describe('Suite 9 — Edge Cases & Error Boundaries', () => {
 
-  let mockBatch: any;
+  let mockBatch: Record<string, unknown>;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -81,7 +80,7 @@ describe('Suite 9 — Edge Cases & Error Boundaries', () => {
 
   describe('Scenario 9.4 — approveRecord: memberId is null, award skipped', () => {
     it('does not call awardPointsWithSpend if memberId is missing', async () => {
-      (getDoc as Mock).mockImplementation((ref: any) => {
+      (getDoc as Mock).mockImplementation((ref: { path?: string }) => {
         const path = ref.path || '';
         if (path.includes('serviceRecords')) {
           return Promise.resolve({
@@ -117,7 +116,7 @@ describe('Suite 9 — Edge Cases & Error Boundaries', () => {
 
   describe('Scenario 9.6 — updateStock: item does not exist', () => {
     it('catches error and still completes the record', async () => {
-      (getDoc as Mock).mockImplementation((ref: any) => {
+      (getDoc as Mock).mockImplementation((ref: { path?: string }) => {
         const path = ref.path || '';
         if (path.includes('serviceRecords')) {
           return Promise.resolve({
@@ -159,7 +158,7 @@ describe('Suite 9 — Edge Cases & Error Boundaries', () => {
 
   describe('Scenario 9.7 — Warranty card creation: warrantyMonths=0 fallback', () => {
     it('defaults to 12 months when warrantyMonths is 0', async () => {
-      (getDoc as Mock).mockImplementation((ref: any) => {
+      (getDoc as Mock).mockImplementation((ref: { path?: string }) => {
         const path = ref.path || '';
         if (path.includes('serviceRecords')) {
           return Promise.resolve({
@@ -188,8 +187,8 @@ describe('Suite 9 — Edge Cases & Error Boundaries', () => {
 
       await approveRecord('site_1', 'sr3', 'admin@test.com');
 
-      const setCall = mockBatch.set.mock.calls.find((call: any) => 
-        call[1] && call[1].warrantyCode
+      const setCall = (mockBatch.set as ReturnType<typeof vi.fn>).mock.calls.find((call: unknown[]) => 
+        call[1] && (call[1] as { warrantyCode?: unknown }).warrantyCode
       );
       
       expect(setCall).toBeDefined();

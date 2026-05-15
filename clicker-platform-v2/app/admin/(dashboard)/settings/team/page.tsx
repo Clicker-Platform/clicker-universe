@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import { useSite } from '@/lib/site-context';
 import { db, auth } from '@/lib/firebase';
 import { logger } from '@/lib/logger-edge';
-import { collection, onSnapshot, query, where, doc, getDoc } from 'firebase/firestore'; // Removed deleteDoc/setDoc as we use API
-import { Plus, Mail, Shield, Trash2, X, Loader2, User, Clock } from 'lucide-react';
+import { collection, onSnapshot, doc } from 'firebase/firestore'; // Removed deleteDoc/setDoc as we use API
+import { Plus, Shield, Trash2, X, Loader2, User } from 'lucide-react';
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 import { toast } from 'sonner';
 import { ModuleDefinition } from '@/lib/modules/types';
@@ -20,16 +20,7 @@ interface Member {
     displayName?: string;
     photoURL?: string;
     status: 'active' | 'suspended';
-    joinedAt: any;
-}
-
-interface Invitation {
-    id: string; // Email is ID
-    email: string;
-    role: string;
-    status: 'pending';
-    createdAt: any;
-    invitedBy?: string;
+    joinedAt: unknown;
 }
 
 const MODULE_LABELS: Record<string, string> = {
@@ -47,7 +38,6 @@ const HIDDEN_MODULES = ['pos']; // Keys to hide from selection
 export default function TeamPage() {
     const { siteId } = useSite();
     const [members, setMembers] = useState<Member[]>([]);
-    const [invitations, setInvitations] = useState<Invitation[]>([]);
     const [loading, setLoading] = useState(true);
 
     // Create/Edit Member Modal State
@@ -147,7 +137,7 @@ export default function TeamPage() {
         const fromPermissions = new Set(member.permissions || []);
         const fromModuleAccess = new Set(
             Object.entries(member.moduleAccess || {})
-                .filter(([_, routes]) => Object.values(routes).some(v => v === 'full' || v === 'view'))
+                .filter(([, routes]) => Object.values(routes).some(v => v === 'full' || v === 'view'))
                 .map(([moduleId]) => moduleId)
         );
         setMemberPermissions(Array.from(new Set([...fromPermissions, ...fromModuleAccess])));
@@ -190,8 +180,8 @@ export default function TeamPage() {
             await res.json();
             toast.success(editingMember ? 'Member updated successfully' : 'Member added successfully');
             setIsMemberModalOpen(false);
-        } catch (error: any) {
-            toast.error(error.message);
+        } catch (error: unknown) {
+            toast.error(error instanceof Error ? error.message : 'An error occurred');
         } finally {
             setIsSaving(false);
         }
@@ -221,8 +211,8 @@ export default function TeamPage() {
 
             toast.success('User removed successfully');
             setItemToDelete(null);
-        } catch (error: any) {
-            toast.error(error.message);
+        } catch (error: unknown) {
+            toast.error(error instanceof Error ? error.message : 'An error occurred');
         }
     };
 

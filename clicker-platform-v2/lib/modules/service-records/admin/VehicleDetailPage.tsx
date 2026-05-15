@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useCallback, useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ChevronLeft, Car, User, ExternalLink, X } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
@@ -18,9 +18,11 @@ import type { Vehicle, CarCatalogEntry, ServiceRecord } from '../types';
 import { RecordStatusBadge } from './components/RecordStatusBadge';
 import { PaymentStatusBadge } from './components/PaymentStatusBadge';
 
-function formatDate(ts: any): string {
+function formatDate(ts: { toDate?: () => Date } | Date | string | null | undefined): string {
     if (!ts) return '—';
-    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    const d = typeof ts === 'object' && ts !== null && 'toDate' in ts && typeof ts.toDate === 'function'
+        ? ts.toDate()
+        : new Date(ts as string | number | Date);
     return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
@@ -187,12 +189,7 @@ function VehicleDetailContent() {
     const [loading, setLoading] = useState(true);
     const [memberPanelId, setMemberPanelId] = useState<string | null>(null);
 
-    useEffect(() => {
-        if (!siteId || !vehicleId) return;
-        load();
-    }, [siteId, vehicleId]);
-
-    async function load() {
+    const load = useCallback(async () => {
         setLoading(true);
         try {
             const [v, cat] = await Promise.all([
@@ -210,7 +207,12 @@ function VehicleDetailContent() {
         } finally {
             setLoading(false);
         }
-    }
+    }, [siteId, vehicleId]);
+
+    useEffect(() => {
+        if (!siteId || !vehicleId) return;
+        load();
+    }, [siteId, vehicleId, load]);
 
     if (loading) {
         return (

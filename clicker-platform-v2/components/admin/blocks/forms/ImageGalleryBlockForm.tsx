@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import NextImage from 'next/image';
 import { Loader2, Plus, X, Image as ImageIcon, Star } from 'lucide-react';
 import { resizeAndConvert, validateImageFile } from '@/lib/imageUtils';
 import { storage } from '@/lib/firebase';
@@ -13,7 +14,7 @@ interface ImageGalleryBlockFormProps {
         thumbnails?: string[];
         coverImage?: string;
     };
-    onChange: (data: any) => void;
+    onChange: (data: Record<string, unknown>) => void;
 }
 
 export const ImageGalleryBlockForm = ({ data, onChange }: ImageGalleryBlockFormProps) => {
@@ -84,9 +85,9 @@ export const ImageGalleryBlockForm = ({ data, onChange }: ImageGalleryBlockFormP
                 });
             }
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error(error);
-            alert(`Upload Error: ${error.message}`);
+            alert(`Upload Error: ${error instanceof Error ? error.message : String(error)}`);
         } finally {
             setUploading(false);
             if (fileInputRef.current) fileInputRef.current.value = '';
@@ -154,10 +155,12 @@ export const ImageGalleryBlockForm = ({ data, onChange }: ImageGalleryBlockFormP
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                     {images.map((url, index) => (
                         <div key={index} className="group relative aspect-square bg-gray-100 dark:bg-neutral-900 rounded-lg overflow-hidden border border-gray-200 dark:border-neutral-800 shadow-inner">
-                            <img
+                            <NextImage
                                 src={thumbnails[index] || url}
                                 alt={`Gallery ${index + 1}`}
-                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                fill
+                                className="object-cover transition-transform duration-500 group-hover:scale-110"
+                                unoptimized
                             />
 
                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">

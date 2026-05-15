@@ -34,9 +34,9 @@ export default function SeedPOSTest() {
             });
 
             setStatus('Success: TEst Data Created (Stock: 10)');
-        } catch (e: any) {
+        } catch (e: unknown) {
             logger.error('pos.seed.data.failed', { siteId: 'platform', error: e });
-            setStatus('Error: ' + e.message);
+            setStatus('Error: ' + (e instanceof Error ? e.message : String(e)));
         }
     };
 
@@ -52,9 +52,9 @@ export default function SeedPOSTest() {
                 updatedAt: serverTimestamp()
             });
             setStatus('Success: Registered as Admin. Please refresh POS pages.');
-        } catch (e: any) {
+        } catch (e: unknown) {
             logger.error('pos.admin.register.failed', { siteId: 'platform', error: e });
-            setStatus('Error: ' + e.message);
+            setStatus('Error: ' + (e instanceof Error ? e.message : String(e)));
         }
     };
 

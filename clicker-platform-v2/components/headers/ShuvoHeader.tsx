@@ -15,7 +15,7 @@ interface HeaderProps {
 }
 
 export const ShuvoHeader: React.FC<HeaderProps> = ({ profile, contact, showAddress }) => {
-    const { theme } = useTemplate();
+    useTemplate();
     const { siteId } = useSite();
 
 

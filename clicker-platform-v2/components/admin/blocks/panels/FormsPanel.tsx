@@ -213,7 +213,7 @@ export function FormsPanel() {
             const snap = await getDocs(formsQuery);
             const fetched = snap.docs.map(d => {
                 const data = d.data();
-                const serializeDate = (ts: any) => {
+                const serializeDate = (ts: { toMillis?: () => number; toDate?: () => Date; seconds?: number } | null | undefined) => {
                     if (!ts) return null;
                     if (typeof ts.toMillis === 'function') return ts.toMillis();
                     if (typeof ts.toDate === 'function') return ts.toDate().getTime();
@@ -260,7 +260,7 @@ export function FormsPanel() {
         if (!siteId || !editingForm.title) return;
         setSaving(true);
         try {
-            const { id, createdAt, updatedAt, ...data } = editingForm as any;
+            const { id: _id, createdAt: _createdAt, updatedAt: _updatedAt, ...data } = editingForm as Record<string, unknown>;
             if (editingId) {
                 await updateDoc(doc(db, 'sites', siteId, 'forms', editingId), {
                     ...data,
@@ -412,7 +412,7 @@ export function FormsPanel() {
 
                             {(editingForm.fields?.length || 0) === 0 ? (
                                 <div className="text-center py-8 text-neutral-400 dark:text-neutral-600 text-xs">
-                                    No fields yet. Click "Add Field" to start building your form.
+                                    No fields yet. Click &quot;Add Field&quot; to start building your form.
                                 </div>
                             ) : (
                                 <div className="space-y-2">

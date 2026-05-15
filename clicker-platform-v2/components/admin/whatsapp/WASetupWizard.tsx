@@ -56,8 +56,8 @@ export function WASetupWizard({ onComplete }: { onComplete: () => void }) {
         throw new Error(data.error ?? 'Gagal menyimpan konfigurasi.');
       }
       setStep(5);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setSaving(false);
     }
@@ -123,8 +123,8 @@ export function WASetupWizard({ onComplete }: { onComplete: () => void }) {
           >
             <ol className="space-y-2 text-sm text-gray-600 dark:text-neutral-400 list-decimal list-inside">
               <li>Buka <a href="https://developers.facebook.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline inline-flex items-center gap-1">developers.facebook.com <ExternalLink size={12} /></a></li>
-              <li>Buat App baru → pilih "Business" type</li>
-              <li>Tambahkan produk "WhatsApp"</li>
+              <li>Buat App baru → pilih &ldquo;Business&rdquo; type</li>
+              <li>Tambahkan produk &ldquo;WhatsApp&rdquo;</li>
               <li>Di menu WhatsApp → Getting Started, catat <strong>Phone Number ID</strong> dan <strong>WhatsApp Business Account ID</strong></li>
             </ol>
             <StepNavigation onBack={() => setStep(1)} onNext={() => setStep(3)} />
@@ -139,7 +139,7 @@ export function WASetupWizard({ onComplete }: { onComplete: () => void }) {
             <ol className="space-y-2 text-sm text-gray-600 dark:text-neutral-400 list-decimal list-inside">
               <li>Di Meta Business Suite → Settings → System Users</li>
               <li>Buat System User baru (role: Admin)</li>
-              <li>Klik "Add Assets" → tambahkan WhatsApp account kamu</li>
+              <li>Klik &ldquo;Add Assets&rdquo; → tambahkan WhatsApp account kamu</li>
               <li>Generate token dengan permission: <code className="bg-gray-100 dark:bg-neutral-800 px-1 rounded text-xs">whatsapp_business_messaging</code> dan <code className="bg-gray-100 dark:bg-neutral-800 px-1 rounded text-xs">whatsapp_business_management</code></li>
               <li>Copy token — simpan aman, tidak bisa dilihat lagi setelah ditutup</li>
             </ol>

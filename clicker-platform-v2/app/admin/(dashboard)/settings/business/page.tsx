@@ -1,7 +1,7 @@
 import { db } from '@/lib/firebase';
 import { doc, getDoc, collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
 import { logger } from '@/lib/logger';
-import { BusinessHours, BusinessContact, Branch, initialBusinessHours, initialBusinessContact } from '@/data/mockData';
+import { Branch, initialBusinessHours, initialBusinessContact } from '@/data/mockData';
 import BusinessSettingsClient from './BusinessSettingsClient';
 import { headers } from 'next/headers';
 

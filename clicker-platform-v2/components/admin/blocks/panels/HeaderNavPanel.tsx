@@ -25,6 +25,40 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
+interface NavItem {
+    id: string;
+    label?: string;
+    type?: string;
+    value?: string;
+    icon?: string;
+    pageId?: string;
+    url?: string;
+    formId?: string;
+    linkType?: string;
+    linkValue?: string;
+}
+
+interface CtaConfig {
+    enabled?: boolean;
+    label?: string;
+    linkType?: string;
+    linkValue?: string;
+    formId?: string | null;
+    pageId?: string | null;
+}
+
+interface HeaderStyle {
+    bgColor?: string;
+    showBorder?: boolean;
+    [key: string]: unknown;
+}
+
+interface NavData {
+    topNav?: NavItem[];
+    topNavActions?: { cta?: CtaConfig | null; [key: string]: unknown };
+    headerStyle?: HeaderStyle;
+}
+
 function SortableNavItem({
     item,
     onRemove,
@@ -34,12 +68,12 @@ function SortableNavItem({
     pages,
     homepageSlug,
 }: {
-    item: any;
+    item: NavItem;
     onRemove: () => void;
     onUpdate: (field: string, val: string) => void;
     onOpenIconPicker: (currentIcon: string, onSelect: (icon: string) => void) => void;
-    forms: any[];
-    pages: any[];
+    forms: Array<{ id: string; title?: string; name?: string }>;
+    pages: Array<{ id: string; title?: string; slug?: string }>;
     homepageSlug: string;
 }) {
     const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: item.id });
@@ -142,7 +176,7 @@ function SortableNavItem({
                                         const resolvedValue = page.slug === homepageSlug ? 'action:homepage' : `/${page.slug}`;
                                         onUpdate('value', resolvedValue);
                                         if (!item.label || item.label === 'New Link') {
-                                            onUpdate('label', page.title);
+                                            onUpdate('label', page.title || '');
                                         }
                                     }
                                 }}
@@ -210,9 +244,9 @@ type PanelView =
 
 export function HeaderNavPanel() {
     const { siteId } = useSite();
-    const [navigation, setNavigation] = useState<any>({ topNav: [], topNavActions: {}, headerStyle: {} });
-    const [forms, setForms] = useState<any[]>([]);
-    const [pages, setPages] = useState<any[]>([]);
+    const [navigation, setNavigation] = useState<NavData>({ topNav: [], topNavActions: {}, headerStyle: {} });
+    const [forms, setForms] = useState<Array<{ id: string; title?: string; name?: string }>>([]);
+    const [pages, setPages] = useState<Array<{ id: string; title?: string; slug?: string }>>([]);
     const [homepageSlug, setHomepageSlug] = useState<string>('home');
     const [loading, setLoading] = useState(true);
     const [hydrated, setHydrated] = useState(false);
@@ -249,7 +283,7 @@ export function HeaderNavPanel() {
                 if (cancelled) return;
                 setForms(formsSnap.docs.map(d => ({ id: d.id, ...d.data() })));
                 setPages(pagesSnap.docs.map(d => ({ id: d.id, ...d.data() })));
-                let loaded: any;
+                let loaded: NavData;
                 if (settingsSnap.exists()) {
                     const data = settingsSnap.data();
                     if (data.homepageSlug) setHomepageSlug(data.homepageSlug);
@@ -278,7 +312,7 @@ export function HeaderNavPanel() {
         return () => { cancelled = true; };
     }, [siteId]);
 
-    const saveToFirestore = useCallback(async (nav: any) => {
+    const saveToFirestore = useCallback(async (nav: NavData) => {
         const sid = siteIdRef.current;
         if (!sid) return;
         if (hydratedSiteIdRef.current !== sid) return;
@@ -317,23 +351,23 @@ export function HeaderNavPanel() {
     const generateId = () => Math.random().toString(36).substr(2, 9);
 
     const handleAddItem = () => {
-        setNavigation((prev: any) => ({
+        setNavigation((prev) => ({
             ...prev,
             topNav: [...(prev.topNav || []), { id: generateId(), label: 'New Link', type: 'page', value: '', icon: 'Link' }],
         }));
     };
 
     const handleRemoveItem = (id: string) => {
-        setNavigation((prev: any) => ({
+        setNavigation((prev) => ({
             ...prev,
-            topNav: (prev.topNav || []).filter((i: any) => i.id !== id),
+            topNav: (prev.topNav || []).filter((i) => i.id !== id),
         }));
     };
 
     const handleUpdateItem = (id: string, field: string, value: string) => {
-        setNavigation((prev: any) => ({
+        setNavigation((prev) => ({
             ...prev,
-            topNav: (prev.topNav || []).map((item: any) =>
+            topNav: (prev.topNav || []).map((item) =>
                 item.id === id ? { ...item, [field]: value } : item
             ),
         }));
@@ -342,18 +376,18 @@ export function HeaderNavPanel() {
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
         if (over && active.id !== over.id) {
-            setNavigation((prev: any) => {
+            setNavigation((prev) => {
                 const list = prev.topNav || [];
-                const oldIndex = list.findIndex((i: any) => i.id === active.id);
-                const newIndex = list.findIndex((i: any) => i.id === over.id);
+                const oldIndex = list.findIndex((i) => i.id === active.id);
+                const newIndex = list.findIndex((i) => i.id === over.id);
                 return { ...prev, topNav: arrayMove(list, oldIndex, newIndex) };
             });
         }
     };
 
-    const cta = navigation?.topNavActions?.cta;
-    const setCta = (updater: (prev: any) => any) => {
-        setNavigation((prev: any) => ({
+    const cta: CtaConfig | null | undefined = navigation?.topNavActions?.cta;
+    const setCta = (updater: (prev: CtaConfig | null | undefined) => CtaConfig | null) => {
+        setNavigation((prev) => ({
             ...prev,
             topNavActions: { ...prev.topNavActions, cta: updater(prev.topNavActions?.cta) },
         }));
@@ -419,10 +453,10 @@ export function HeaderNavPanel() {
                 ) : (
                     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                         <SortableContext
-                            items={(navigation?.topNav || []).map((i: any) => i.id)}
+                            items={(navigation?.topNav || []).map((i) => i.id)}
                             strategy={verticalListSortingStrategy}
                         >
-                            {(navigation?.topNav || []).map((item: any) => (
+                            {(navigation?.topNav || []).map((item) => (
                                 <SortableNavItem
                                     key={item.id}
                                     item={item}
@@ -452,21 +486,21 @@ export function HeaderNavPanel() {
                             <input
                                 type="color"
                                 value={navigation.headerStyle?.bgColor || '#ffffff'}
-                                onChange={(e) => setNavigation((prev: any) => ({ ...prev, headerStyle: { ...prev.headerStyle, bgColor: e.target.value } }))}
+                                onChange={(e) => setNavigation((prev) => ({ ...prev, headerStyle: { ...prev.headerStyle, bgColor: e.target.value } }))}
                                 className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
                             />
                         </label>
                         <input
                             type="text"
                             value={navigation.headerStyle?.bgColor || ''}
-                            onChange={(e) => setNavigation((prev: any) => ({ ...prev, headerStyle: { ...prev.headerStyle, bgColor: e.target.value } }))}
+                            onChange={(e) => setNavigation((prev) => ({ ...prev, headerStyle: { ...prev.headerStyle, bgColor: e.target.value } }))}
                             placeholder="e.g. #ffffff  (empty = theme default)"
                             className="flex-1 px-3 py-1.5 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-lg text-xs text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-600 outline-none focus:border-blue-500 font-mono"
                         />
                         {navigation.headerStyle?.bgColor && (
                             <button
                                 type="button"
-                                onClick={() => setNavigation((prev: any) => ({ ...prev, headerStyle: { ...prev.headerStyle, bgColor: undefined } }))}
+                                onClick={() => setNavigation((prev) => ({ ...prev, headerStyle: { ...prev.headerStyle, bgColor: undefined } }))}
                                 className="text-neutral-400 hover:text-red-400 transition-colors text-xs px-1 font-bold"
                             >×</button>
                         )}
@@ -484,7 +518,7 @@ export function HeaderNavPanel() {
                                 type="checkbox"
                                 className="sr-only"
                                 checked={!!navigation.headerStyle?.showBorder}
-                                onChange={(e) => setNavigation((prev: any) => ({ ...prev, headerStyle: { ...prev.headerStyle, showBorder: e.target.checked } }))}
+                                onChange={(e) => setNavigation((prev) => ({ ...prev, headerStyle: { ...prev.headerStyle, showBorder: e.target.checked } }))}
                             />
                             <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition duration-200 ${navigation.headerStyle?.showBorder ? 'translate-x-4' : 'translate-x-0'}`} />
                         </div>

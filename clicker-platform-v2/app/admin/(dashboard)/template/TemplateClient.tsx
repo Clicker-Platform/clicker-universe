@@ -2,18 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
-// @ts-ignore
 import { doc, getDoc } from 'firebase/firestore';
 import { writeSiteSettings } from '@/lib/admin/siteSettings';
-import { SiteSettings, NavigationItem } from '@/data/mockData';
-import { Save, Search, Globe, ImageIcon, Palette, GripVertical, DownloadCloud, ChevronDown, ChevronUp, Trash2, Link as LinkIcon, Plus } from 'lucide-react';
+import { SiteSettings } from '@/data/mockData';
+import { Palette, DownloadCloud } from 'lucide-react';
 import { FormSkeleton } from '@/components/skeletons/FormSkeleton';
 import { SubmitButton } from '@/components/admin/SubmitButton';
 import { templateDefinitions } from '@/lib/templates/definitions';
 import { getAvailableTemplates, saveTemplate } from '@/lib/templates/service';
 import { TemplateDocument } from '@/lib/templates/types';
-import { IconSelector } from '@/components/admin/IconSelector';
-import { ICON_MAP } from '@/data/icons';
 import { useSite } from '@/lib/site-context';
 import { purgeTenantCache } from '@/lib/admin/purgeCache';
 import { logger } from '@/lib/logger-edge';
@@ -50,7 +47,8 @@ export default function TemplateClient() {
         if (!siteId) return;
         fetchSettings();
         fetchTemplates();
-    }, [siteId]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [siteId]); // fetchSettings and fetchTemplates are defined below and only depend on siteId
 
     const fetchTemplates = async () => {
         const fetched = await getAvailableTemplates();
@@ -154,8 +152,6 @@ export default function TemplateClient() {
         }
     };
 
-    const [activeTab, setActiveTab] = useState<'template' | 'layout' | 'navigation'>('template');
-
     if (loading) return <FormSkeleton />;
 
     const templatesToDisplay = templates.length > 0
@@ -212,7 +208,7 @@ export default function TemplateClient() {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         {templatesToDisplay.map((template) => {
                                             const isSelected = (settings.templateId || 'classic') === template.id;
-                                            const getLayoutDescription = (id: string, config: any) => {
+                                            const getLayoutDescription = (id: string, config: { cardStyle?: string }) => {
                                                 if (config.cardStyle) return config.cardStyle.charAt(0).toUpperCase() + config.cardStyle.slice(1);
                                                 return 'Standard';
                                             };
@@ -224,7 +220,7 @@ export default function TemplateClient() {
                                                     onClick={() => {
                                                         setSettings({
                                                             ...settings,
-                                                            templateId: template.id as any,
+                                                            templateId: template.id as SiteSettings['templateId'],
                                                             themeColor: template.config.colors.primary,
                                                             accentColor: template.config.colors.foreground,
                                                             fontFamily: template.config.fonts.heading

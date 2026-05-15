@@ -136,7 +136,7 @@ function EmbedTile({ item, previewMode }: { item: SocialEmbedItem; previewMode?:
     const [isVisible, setIsVisible] = useState(false);
 
     useEffect(() => {
-        if (previewMode) { setIsVisible(true); return; }
+        if (previewMode) { Promise.resolve().then(() => setIsVisible(true)); return; }
         const el = containerRef.current;
         if (!el || !embedUrl) return;
         const observer = new IntersectionObserver(

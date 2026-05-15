@@ -31,9 +31,15 @@ export default function AnalyticsPage() {
     agentBreakdown[agent].count++;
   }
 
+  const toDate = (v: unknown): Date => {
+    if (v && typeof v === 'object' && 'toDate' in v && typeof (v as { toDate?: () => Date }).toDate === 'function') {
+      return (v as { toDate: () => Date }).toDate();
+    }
+    return new Date(v as string | number | Date);
+  };
   const totalGenerations = generations.length;
   const countThisMonth = generations.filter(g => {
-    const d = g.createdAt?.toDate?.() ?? new Date(g.createdAt);
+    const d = toDate(g.createdAt);
     const now = new Date();
     return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
   }).length;
@@ -109,7 +115,7 @@ export default function AnalyticsPage() {
             ) : (
               <div className="space-y-2">
                 {generations.slice(0, 20).map(gen => {
-                  const date = gen.createdAt?.toDate?.() ?? new Date(gen.createdAt);
+                  const date = toDate(gen.createdAt);
                   return (
                     <div key={gen.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
                       <div>

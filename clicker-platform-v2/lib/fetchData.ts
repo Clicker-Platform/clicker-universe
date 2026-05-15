@@ -3,30 +3,27 @@ import { cached, siteKey } from '@/lib/cache/redis';
 import { db } from "@/lib/firebase";
 import { logger } from '@/lib/logger-edge';
 import { doc, getDoc, collection, getDocs, query, where, orderBy } from "firebase/firestore";
-import { BusinessProfile, LinkItem, Product, SocialLink, SiteSettings, SocialLinkItem, initialBusinessHours, BusinessHours, Page, PageBlock, BusinessContact, Branch, initialBusinessContact, LinkSettings, ProductSettings } from "@/data/mockData";
+import { BusinessProfile, LinkItem, Product, SiteSettings, initialBusinessHours, BusinessHours, Page, PageBlock, Branch, initialBusinessContact, LinkSettings, ProductSettings } from "@/data/mockData";
 import { TemplateId } from "@/lib/templates/types";
-import { ICON_MAP } from "@/data/icons";
-
-// Helper to map icon names string back to Lucide components
-const IconMap = ICON_MAP;
 
 /** Recursively converts Firestore Timestamp objects (and anything with toJSON/toMillis) to plain values so they can be passed to Client Components. */
-function stripFirestoreTypes(obj: any): any {
+function stripFirestoreTypes(obj: unknown): unknown {
     if (obj === null || obj === undefined) return obj;
-    if (typeof obj?.toMillis === 'function') return obj.toMillis();
-    if (typeof obj?.toJSON === 'function') return obj.toJSON();
+    if (typeof (obj as { toMillis?: unknown }).toMillis === 'function') return (obj as { toMillis: () => number }).toMillis();
+    if (typeof (obj as { toJSON?: unknown }).toJSON === 'function') return (obj as { toJSON: () => unknown }).toJSON();
     if (Array.isArray(obj)) return obj.map(stripFirestoreTypes);
     if (obj instanceof Date) return obj.toISOString();
     if (typeof obj === 'object') {
-        const out: Record<string, any> = {};
-        for (const k in obj) out[k] = stripFirestoreTypes(obj[k]);
+        const out: Record<string, unknown> = {};
+        for (const k in obj) out[k] = stripFirestoreTypes((obj as Record<string, unknown>)[k]);
         return out;
     }
     return obj;
 }
 
-function logDebug(_msg: string) {
+function logDebug(_message?: string) {
     // debug-only traces removed; use structured logger for errors
+    void _message;
 }
 
 export const fetchPublicData = cache(async function fetchPublicData(siteId: string, options: { includeProducts?: boolean } = { includeProducts: true }) {
@@ -50,8 +47,11 @@ export const fetchPublicData = cache(async function fetchPublicData(siteId: stri
             linkSettings: { sectionTitle: '', showOnHome: false },
             productSettings: { galleryTitle: '', showSectionTitle: false, itemsToShow: 0 },
             homepageSlug: undefined,
-            businessSchedule: initialBusinessHours.schedule
-        } as any;
+            businessSchedule: initialBusinessHours.schedule,
+            globalSeo: undefined as { title?: string; description?: string; image?: string } | undefined,
+            globalPixels: undefined as { facebookPixelId?: string; googleAnalyticsId?: string; tiktokPixelId?: string } | undefined,
+            navigation: null,
+        };
     }
     const cacheKey = siteKey(siteId, `public:${options.includeProducts ? 'full' : 'light'}`);
     const [cachedData, freshTheme] = await Promise.all([
@@ -74,10 +74,10 @@ async function _fetchPublicDataInner(siteId: string, options: { includeProducts?
         linkSettings,
         productSettings
     ] = await Promise.all([
-        getDoc(doc(db, "sites", siteId, "content", "profile")).then(r => { logDebug('Profile: Success'); return r; }).catch(e => { logDebug(`Profile: Error ${e}`); return { exists: () => false, data: () => null } as any; }),
-        getDocs(collection(db, "sites", siteId, "links")).then(r => { logDebug('Links: Success'); return r; }).catch(e => { logDebug(`Links: Error ${e}`); return { docs: [] } as any; }),
-        options.includeProducts ? getDocs(collection(db, "sites", siteId, "products")).then(r => { logDebug('Products: Success'); return r; }).catch(e => { logDebug(`Products: Error ${e}`); return { docs: [] } as any; }) : Promise.resolve(null),
-        getDoc(doc(db, "sites", siteId, "content", "featuredProduct")).then(r => { logDebug('Featured: Success'); return r; }).catch(e => { logDebug(`Featured: Error ${e}`); return { exists: () => false, data: () => null } as any; }),
+        getDoc(doc(db, "sites", siteId, "content", "profile")).then(r => { logDebug('Profile: Success'); return r; }).catch(() => { return { exists: () => false, data: () => null } as unknown as Awaited<ReturnType<typeof getDoc>>; }),
+        getDocs(collection(db, "sites", siteId, "links")).then(r => { logDebug('Links: Success'); return r; }).catch(() => { return { docs: [] } as unknown as Awaited<ReturnType<typeof getDocs>>; }),
+        options.includeProducts ? getDocs(collection(db, "sites", siteId, "products")).then(r => { logDebug('Products: Success'); return r; }).catch(() => { return { docs: [] } as unknown as Awaited<ReturnType<typeof getDocs>>; }) : Promise.resolve(null),
+        getDoc(doc(db, "sites", siteId, "content", "featuredProduct")).then(r => { logDebug('Featured: Success'); return r; }).catch(() => { return { exists: () => false, data: () => null } as unknown as Awaited<ReturnType<typeof getDoc>>; }),
         fetchSiteSettings(siteId).then(r => { logDebug('Settings: Success'); return r; }).catch(e => { logDebug(`Settings: Error ${e}`); return null; }),
         getDoc(doc(db, "sites", siteId, "content", "business")).then(snap => ({ success: true, snap } as const)).catch(error => { logDebug(`Business: Error ${error}`); return { success: false, error } as const; }),
         getDocs(query(collection(db, "sites", siteId, "branches"), orderBy("order", "asc"))).then(snap => ({ success: true, snap } as const)).catch(error => { logDebug(`Branches: Error ${error}`); return { success: false, error } as const; }),
@@ -89,8 +89,8 @@ async function _fetchPublicDataInner(siteId: string, options: { includeProducts?
     const profile = profileSnap.exists() ? profileSnap.data() as BusinessProfile : null;
 
     // Process Links
-    const links = (linksSnap.docs || []).map((doc: any) =>
-        stripFirestoreTypes({ ...doc.data(), id: doc.id }) as LinkItem
+    const links = (linksSnap.docs || []).map((doc) =>
+        stripFirestoreTypes({ ...(doc.data() as Record<string, unknown>), id: doc.id }) as LinkItem
     );
     // Sort links by order
     links.sort((a: LinkItem, b: LinkItem) => (a.order || 0) - (b.order || 0));
@@ -99,8 +99,8 @@ async function _fetchPublicDataInner(siteId: string, options: { includeProducts?
     let products: Product[] = [];
     if (productsSnap) {
         products = (productsSnap.docs || [])
-            .map((doc: any) => {
-                const data = doc.data();
+            .map((doc) => {
+                const data = doc.data() as Record<string, unknown>;
                 return {
                     id: doc.id,
                     name: data.name || data.title || 'Untitled Product',
@@ -121,9 +121,9 @@ async function _fetchPublicDataInner(siteId: string, options: { includeProducts?
     // Process Featured Product
     let featuredProduct: Product | null = null;
     if (featuredSnap.exists()) {
-        const featuredData = featuredSnap.data();
+        const featuredData = featuredSnap.data() as Record<string, unknown>;
         // Support both old format (full object with originalId) and new format (just productId)
-        const featuredId = featuredData.productId || featuredData.originalId;
+        const featuredId = (featuredData.productId || featuredData.originalId) as string | undefined;
 
         if (featuredId) {
             if (products.length > 0) {
@@ -136,7 +136,7 @@ async function _fetchPublicDataInner(siteId: string, options: { includeProducts?
                 // Optimally, includeProducts=true is the common case, so this is fast.
                 const pSnap = await getDoc(doc(db, "sites", siteId, "products", featuredId));
                 if (pSnap.exists()) {
-                    const data = pSnap.data();
+                    const data = pSnap.data() as Record<string, unknown>;
                     featuredProduct = {
                         id: pSnap.id,
                         name: data.name || data.title || 'Untitled Product',
@@ -164,12 +164,12 @@ async function _fetchPublicDataInner(siteId: string, options: { includeProducts?
     if (businessResult.success && businessResult.snap && businessResult.snap.exists()) {
         const businessSnap = businessResult.snap;
         businessHours = stripFirestoreTypes(businessSnap.data()) as BusinessHours;
-        const data = businessSnap.data();
+        const data = businessSnap.data() as Record<string, unknown>;
         contact = {
-            whatsapp: data.whatsapp || "",
-            email: data.email || "",
-            address: data.address || "",
-            mapUrl: data.mapUrl || ""
+            whatsapp: (data.whatsapp as string) || "",
+            email: (data.email as string) || "",
+            address: (data.address as string) || "",
+            mapUrl: (data.mapUrl as string) || ""
         };
     } else if (!businessResult.success) {
         logger.error('fetch.business.settings.failed', { siteId, error: businessResult.error });
@@ -238,16 +238,16 @@ export const fetchThemeSettings = cache(async function fetchThemeSettings(siteId
     try {
         const snap = await getDoc(doc(db, "sites", siteId, "content", "siteSettings"));
         if (!snap.exists()) return null;
-        const data = snap.data() as SiteSettings;
+        const data = snap.data() as SiteSettings & Record<string, unknown>;
         return {
-            templateId: (data.templateId || (data as any).layoutStyle || 'classic') as TemplateId,
+            templateId: (data.templateId || (data.layoutStyle as string | undefined) || 'classic') as TemplateId,
             themeColor: data.themeColor,
-            accentColor: (data as any).accentColor,
-            backgroundColor: (data as any).backgroundColor,
-            surfaceColor: (data as any).surfaceColor,
+            accentColor: data.accentColor as string | undefined,
+            backgroundColor: data.backgroundColor as string | undefined,
+            surfaceColor: data.surfaceColor as string | undefined,
             borderRadius: data.borderRadius || 'large',
-            customBorderRadius: (data as any).customBorderRadius,
-            cardVariant: (data as any).cardVariant,
+            customBorderRadius: data.customBorderRadius as string | undefined,
+            cardVariant: data.cardVariant as string | undefined,
         };
     } catch (e) {
         logDebug(`fetchThemeSettings: Error ${e}`);
@@ -308,16 +308,16 @@ export async function fetchProductSettings(siteId: string) {
 }
 export const fetchLightweightPublicData = cache(async function fetchLightweightPublicData(siteId: string) {
     // Fetch only essential data for content pages (Profile, Settings, Contact)
-    const nullSnap = { exists: () => false, data: () => null } as any;
+    const nullSnap = { exists: () => false, data: () => null } as unknown as Awaited<ReturnType<typeof getDoc>>;
     const [
         profileSnap,
         settings,
         businessSnap,
         freshTheme,
     ] = await Promise.all([
-        getDoc(doc(db, "sites", siteId, "content", "profile")).catch(e => { logDebug(`fetchLightweightPublicData profile: Error ${e}`); return nullSnap; }),
+        getDoc(doc(db, "sites", siteId, "content", "profile")).catch(() => nullSnap),
         fetchSiteSettings(siteId),
-        getDoc(doc(db, "sites", siteId, "content", "business")).catch(e => { logDebug(`fetchLightweightPublicData business: Error ${e}`); return nullSnap; }),
+        getDoc(doc(db, "sites", siteId, "content", "business")).catch(() => nullSnap),
         fetchThemeSettings(siteId),
     ]);
 
@@ -329,14 +329,14 @@ export const fetchLightweightPublicData = cache(async function fetchLightweightP
     let contact = initialBusinessContact;
 
     if (businessSnap.exists()) {
-        const data = businessSnap.data();
-        businessHours = data as BusinessHours; // Assuming structure matches or we map it
+        const data = businessSnap.data() as Record<string, unknown>;
+        businessHours = data as unknown as BusinessHours; // Assuming structure matches or we map it
         // Re-map contact fields just in case
         contact = {
-            whatsapp: data.whatsapp || "",
-            email: data.email || "",
-            address: data.address || "",
-            mapUrl: data.mapUrl || ""
+            whatsapp: (data.whatsapp as string) || "",
+            email: (data.email as string) || "",
+            address: (data.address as string) || "",
+            mapUrl: (data.mapUrl as string) || ""
         };
     }
 
@@ -389,15 +389,15 @@ export const fetchLightweightPublicData = cache(async function fetchLightweightP
 // Canvas editor always fetches fresh — no Redis cache. Admin-only endpoint,
 // consistency with Firestore source of truth matters more than cache savings.
 export const fetchCanvasData = cache(async function fetchCanvasData(siteId: string) {
-    const nullSnap = { exists: () => false, data: () => null } as any;
+    const nullSnap = { exists: () => false, data: () => null } as unknown as Awaited<ReturnType<typeof getDoc>>;
     const [
         profileSnap,
         settingsSnap,
         businessSnap,
     ] = await Promise.all([
-        getDoc(doc(db, "sites", siteId, "content", "profile")).catch(e => { logDebug(`fetchCanvasData profile: Error ${e}`); return nullSnap; }),
-        getDoc(doc(db, "sites", siteId, "content", "siteSettings")).catch(e => { logDebug(`fetchCanvasData settings: Error ${e}`); return nullSnap; }),
-        getDoc(doc(db, "sites", siteId, "content", "business")).catch(e => { logDebug(`fetchCanvasData business: Error ${e}`); return nullSnap; }),
+        getDoc(doc(db, "sites", siteId, "content", "profile")).catch(() => nullSnap),
+        getDoc(doc(db, "sites", siteId, "content", "siteSettings")).catch(() => nullSnap),
+        getDoc(doc(db, "sites", siteId, "content", "business")).catch(() => nullSnap),
     ]);
 
     const profile = profileSnap.exists() ? profileSnap.data() as BusinessProfile : null;
@@ -407,13 +407,13 @@ export const fetchCanvasData = cache(async function fetchCanvasData(siteId: stri
     let contact = initialBusinessContact;
 
     if (businessSnap.exists()) {
-        const data = businessSnap.data();
-        businessHours = data as BusinessHours;
+        const data = businessSnap.data() as Record<string, unknown>;
+        businessHours = data as unknown as BusinessHours;
         contact = {
-            whatsapp: data.whatsapp || "",
-            email: data.email || "",
-            address: data.address || "",
-            mapUrl: data.mapUrl || ""
+            whatsapp: (data.whatsapp as string) || "",
+            email: (data.email as string) || "",
+            address: (data.address as string) || "",
+            mapUrl: (data.mapUrl as string) || ""
         };
     }
 
@@ -426,20 +426,20 @@ export const fetchCanvasData = cache(async function fetchCanvasData(siteId: stri
         businessHours,
         contact,
         branches: [],
-        templateId: (settings?.templateId || (settings as any)?.layoutStyle || 'classic') as TemplateId,
+        templateId: (settings?.templateId || ((settings as unknown as Record<string, unknown>)?.layoutStyle as string | undefined) || 'classic') as TemplateId,
         footerText: settings?.footerText || '© 2024 SunnySide',
         hideFooterContact: settings?.hideFooterContact ?? true,
         showHeaderAddress: settings?.showHeaderAddress || false,
         homeBlockOrder: settings?.homeBlockOrder || [],
         themeColor: settings?.themeColor,
-        accentColor: (settings as any)?.accentColor,
-        backgroundColor: (settings as any)?.backgroundColor,
-        surfaceColor: (settings as any)?.surfaceColor,
+        accentColor: ((settings as unknown as Record<string, unknown>)?.accentColor as string | undefined),
+        backgroundColor: ((settings as unknown as Record<string, unknown>)?.backgroundColor as string | undefined),
+        surfaceColor: ((settings as unknown as Record<string, unknown>)?.surfaceColor as string | undefined),
         hiddenBlockIds: settings?.hiddenBlockIds || [],
         galleryTitle: settings?.galleryTitle,
         borderRadius: settings?.borderRadius || 'large',
-        customBorderRadius: (settings as any)?.customBorderRadius,
-        cardVariant: (settings as any)?.cardVariant,
+        customBorderRadius: ((settings as unknown as Record<string, unknown>)?.customBorderRadius as string | undefined),
+        cardVariant: ((settings as unknown as Record<string, unknown>)?.cardVariant as string | undefined),
         globalSeo: settings?.seo,
         globalPixels: settings?.pixels,
         linkSettings: { sectionTitle: '', showOnHome: false },
@@ -472,9 +472,9 @@ export async function hydratePageBlocks(siteId: string, blocks: PageBlock[]) {
         branches?: Branch[];
         linkSettings?: LinkSettings;
         productSettings?: ProductSettings;
-        reservationServices?: any[];
-        reservationStaff?: any[];
-        reservationSettings?: any;
+        reservationServices?: unknown[];
+        reservationStaff?: unknown[];
+        reservationSettings?: unknown;
     } = {};
 
     if (!blocks || blocks.length === 0) return data;
@@ -567,21 +567,21 @@ export async function hydratePageBlocks(siteId: string, blocks: PageBlock[]) {
                 .then(([services, staff, settings]) => {
                     // Strip Firestore Timestamps (toJSON converts them to { seconds, nanoseconds })
                     // without the cost of a full JSON.parse(JSON.stringify()) round-trip.
-                    const stripTimestamps = (obj: any): any => {
+                    const stripTimestamps = (obj: unknown): unknown => {
                         if (obj === null || obj === undefined) return obj;
-                        if (typeof obj?.toJSON === 'function') return obj.toJSON();
+                        if (typeof (obj as { toJSON?: unknown }).toJSON === 'function') return (obj as { toJSON: () => unknown }).toJSON();
                         if (Array.isArray(obj)) return obj.map(stripTimestamps);
                         if (typeof obj === 'object') {
-                            const out: Record<string, any> = {};
-                            for (const k in obj) out[k] = stripTimestamps(obj[k]);
+                            const out: Record<string, unknown> = {};
+                            for (const k in obj) out[k] = stripTimestamps((obj as Record<string, unknown>)[k]);
                             return out;
                         }
                         return obj;
                     };
                     data.reservationServices = stripTimestamps(
-                        services.filter((s: any) => s.isActive !== false)
-                    );
-                    data.reservationStaff = stripTimestamps(staff);
+                        services.filter((s: { isActive?: boolean }) => s.isActive !== false)
+                    ) as typeof services;
+                    data.reservationStaff = stripTimestamps(staff) as unknown[];
                     data.reservationSettings = stripTimestamps(settings);
                 })
                 .catch(e => {
@@ -599,10 +599,10 @@ export async function hydratePageBlocks(siteId: string, blocks: PageBlock[]) {
 
 export const fetchNavigationData = cache(async function fetchNavigationData(
     siteId: string,
-    navigationItems: any[]
-): Promise<Record<string, any>> {
+    navigationItems: Array<{ type?: string; id?: string; formId?: string }>
+): Promise<Record<string, unknown>> {
     const formIds = navigationItems
-        .flatMap((item: any) => {
+        .flatMap((item) => {
             const ids: string[] = [];
             if (item.type === 'form' && item.id) ids.push(item.id);
             if (item.formId) ids.push(item.formId);
@@ -617,7 +617,7 @@ export const fetchNavigationData = cache(async function fetchNavigationData(
         const snaps = await Promise.allSettled(
             formIds.map((id) => getDoc(doc(db, 'sites', siteId, 'forms', id)))
         );
-        return snaps.reduce<Record<string, any>>((acc, result, i) => {
+        return snaps.reduce<Record<string, unknown>>((acc, result, i) => {
             if (result.status === 'fulfilled') {
                 const snap = result.value;
                 if (snap.exists() && snap.data().isPublished !== false) {

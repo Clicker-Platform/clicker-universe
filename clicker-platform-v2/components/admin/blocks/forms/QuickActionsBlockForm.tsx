@@ -12,8 +12,8 @@ import { ICON_MAP } from '@/data/icons';
 import { ShoppingBag } from 'lucide-react';
 
 interface QuickActionsBlockFormProps {
-    data: any;
-    onChange: (data: any) => void;
+    data: Record<string, unknown>;
+    onChange: (data: Record<string, unknown>) => void;
     onOpenLinks?: () => void;
 }
 
@@ -52,7 +52,13 @@ function LinkRow({ link, isHidden, onToggle }: { link: LinkItem; isHidden: boole
 // ── Main form ───────────────────────────────────────────────────────────────
 
 export function QuickActionsBlockForm({ data, onChange, onOpenLinks }: QuickActionsBlockFormProps) {
-    const safeData = data || {};
+    const safeData = (data || {}) as {
+        title?: string;
+        layout?: 'list' | 'grid';
+        hiddenLinkIds?: string[];
+        cardBgColor?: string;
+        cardBorderColor?: string;
+    };
     const { siteId } = useSite();
     const { linksVersion } = usePageStudio();
     const templateCtx = React.useContext(TemplateContext);
@@ -61,7 +67,7 @@ export function QuickActionsBlockForm({ data, onChange, onOpenLinks }: QuickActi
     const [loading, setLoading] = useState(true);
 
     const hiddenLinkIds: string[] = safeData.hiddenLinkIds || [];
-    const layout: 'list' | 'grid' = safeData.layout || 'list';
+    const layout: 'list' | 'grid' = (safeData.layout as 'list' | 'grid') || 'list';
 
     const fetchLinks = useCallback(async () => {
         if (!siteId) return;
@@ -69,7 +75,7 @@ export function QuickActionsBlockForm({ data, onChange, onOpenLinks }: QuickActi
             const q = query(collection(db, 'sites', siteId, 'links'), orderBy('order', 'asc'));
             const snapshot = await getDocs(q);
             setLinks(snapshot.docs
-                .map(d => ({ id: d.id, ...d.data() }) as LinkItem & { deletedAt?: any })
+                .map(d => ({ id: d.id, ...d.data() }) as LinkItem & { deletedAt?: unknown })
                 .filter(l => !l.deletedAt));
         } catch (err) {
             console.error('Error fetching links:', err);
@@ -195,7 +201,7 @@ export function QuickActionsBlockForm({ data, onChange, onOpenLinks }: QuickActi
                         {safeData.cardBgColor && (
                             <button
                                 type="button"
-                                onClick={() => { const { cardBgColor, ...rest } = safeData; onChange(rest); }}
+                                onClick={() => { const { cardBgColor: _cardBgColor, ...rest } = safeData; onChange(rest); }}
                                 className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
                                 title="Reset to template default"
                             >
@@ -215,7 +221,7 @@ export function QuickActionsBlockForm({ data, onChange, onOpenLinks }: QuickActi
                         {safeData.cardBorderColor && (
                             <button
                                 type="button"
-                                onClick={() => { const { cardBorderColor, ...rest } = safeData; onChange(rest); }}
+                                onClick={() => { const { cardBorderColor: _cardBorderColor, ...rest } = safeData; onChange(rest); }}
                                 className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
                                 title="Reset to template default"
                             >

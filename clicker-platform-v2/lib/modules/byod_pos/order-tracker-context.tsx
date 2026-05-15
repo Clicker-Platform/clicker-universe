@@ -39,7 +39,7 @@ export function OrderTrackerProvider({ children, siteId }: { children: React.Rea
     useEffect(() => {
         try {
             const saved = localStorage.getItem('byod_active_orders');
-            if (saved) setActiveOrderIds(JSON.parse(saved));
+            if (saved) Promise.resolve().then(() => setActiveOrderIds(JSON.parse(saved)));
         } catch (e) {
             logger.error('pos.order.tracker.load.failed', { siteId: 'platform', error: e });
         }
@@ -141,8 +141,9 @@ export function OrderTrackerProvider({ children, siteId }: { children: React.Rea
 
     // Tear down all listeners on unmount
     useEffect(() => {
+        const unsubs = unsubsRef.current;
         return () => {
-            Object.values(unsubsRef.current).forEach(unsub => unsub());
+            Object.values(unsubs).forEach(unsub => unsub());
         };
     }, []);
 

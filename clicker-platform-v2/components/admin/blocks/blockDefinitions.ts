@@ -26,10 +26,10 @@ export const BLOCK_OPTIONS: { type: BlockType; label: string; icon: React.Elemen
     { type: 'feature_cards', label: 'Feature Cards', icon: LayoutGrid },
 ];
 
-export function getDefaultData(type: BlockType, templateId = 'classic'): any {
+export function getDefaultData(type: BlockType, templateId = 'classic'): Record<string, unknown> {
     const template = getTemplate(templateId);
     const defaultLayoutVariant = template.config.defaultBlockLayouts?.[type];
-    const baseData: any = {};
+    const baseData: Record<string, unknown> = {};
 
     if (defaultLayoutVariant) {
         baseData.layoutVariant = defaultLayoutVariant;

@@ -14,7 +14,7 @@ vi.mock('@/components/DeviceViewContext', () => ({
 }));
 
 vi.mock('../MediaView', () => ({
-    MediaView: ({ media }: any) =>
+    MediaView: ({ media }: { media?: { src?: string } }) =>
         media?.src ? <div data-testid="media-view" data-src={media.src} /> : null,
 }));
 
@@ -25,7 +25,7 @@ const BASE_DATA: FeatureCardsData = {
     cards: [],
 };
 
-function makeCard(overrides: Partial<any> = {}) {
+function makeCard(overrides: Partial<Record<string, unknown>> = {}) {
     return { id: 'card-1', headline: 'Test Headline', ...overrides };
 }
 
@@ -33,7 +33,7 @@ describe('Suite 2 — DefaultFeatureCardsBlock', () => {
     beforeEach(() => { vi.clearAllMocks(); });
 
     it('2.1 — renders nothing when data is null', () => {
-        const { container } = render(<DefaultFeatureCardsBlock data={null as any} />);
+        const { container } = render(<DefaultFeatureCardsBlock data={null as unknown as import('@/components/blocks/feature-cards/types').FeatureCardsData} />);
         expect(container.firstChild).toBeNull();
     });
 

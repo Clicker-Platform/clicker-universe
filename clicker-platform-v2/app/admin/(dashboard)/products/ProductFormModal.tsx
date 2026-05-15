@@ -22,7 +22,7 @@ export interface Product {
 interface ProductFormModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: (e: React.FormEvent, formData: any) => Promise<void>;
+    onSubmit: (e: React.FormEvent, formData: Record<string, unknown>) => Promise<void>;
     initialData?: Product | null;
     isSubmitting: boolean;
 }
@@ -49,8 +49,8 @@ export function ProductFormModal({ isOpen, onClose, onSubmit, initialData, isSub
             // But here we rely on what was passed from ProductsClient which likely already mapped it or is the raw doc.
             // ProductsClient map: title: product.title || product.name
 
-            setFormData({
-                title: initialData.title || (initialData as any).name || '',
+            const nextData = {
+                title: initialData.title || (initialData as Product & { name?: string }).name || '',
                 price: initialData.price ? String(initialData.price) : '',
                 showPrice: initialData.showPrice !== false,
                 category: initialData.category || '',
@@ -58,21 +58,23 @@ export function ProductFormModal({ isOpen, onClose, onSubmit, initialData, isSub
                 description: initialData.description || '',
                 images: existingImages,
                 isActive: initialData.isActive !== false
-            });
+            };
+            Promise.resolve().then(() => setFormData(nextData));
         } else {
             // Reset
-            setFormData({
+            const resetData = {
                 title: '',
                 price: '',
                 showPrice: true,
                 category: '',
                 showLabel: true,
                 description: '',
-                images: [],
+                images: [] as string[],
                 isActive: true
-            });
+            };
+            Promise.resolve().then(() => setFormData(resetData));
         }
-    }, [initialData?.id, isOpen]);
+    }, [initialData, isOpen]);
 
     const handleFormSubmit = (e: React.FormEvent) => {
         e.preventDefault();

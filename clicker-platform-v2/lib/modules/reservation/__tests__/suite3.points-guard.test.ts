@@ -7,7 +7,7 @@ import { findMemberByPhone, awardPointsWithSpend, getMembershipSettings } from '
 vi.mock('firebase/firestore', async (importOriginal) => {
   const actual = await importOriginal();
   return {
-    ...actual as any,
+    ...actual as Record<string, unknown>,
     doc: vi.fn(),
     getDoc: vi.fn(),
     updateDoc: vi.fn(),
@@ -28,7 +28,7 @@ describe('Suite 3 — Reservation: Double Points Guard', () => {
   const siteId = 'site_123';
   const bookingId = 'bk_001';
 
-  let mockBooking: any;
+  let mockBooking: Record<string, unknown>;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -50,7 +50,7 @@ describe('Suite 3 — Reservation: Double Points Guard', () => {
     );
     (updateDoc as Mock).mockResolvedValue(undefined);
 
-    (isModuleEnabled as Mock).mockImplementation((mod) => Promise.resolve(true)); // both enabled by default
+    (isModuleEnabled as Mock).mockImplementation((_mod) => Promise.resolve(true)); // both enabled by default
 
     (getMembershipSettings as Mock).mockResolvedValue({
       enableLoyalty: true,

@@ -57,7 +57,7 @@ export interface Member {
     templateConfig?: {
         activeTemplateId: string; // The ID of the generic template to use
         hasCustomConfig: boolean; // If true, look for 'customConfig'
-        customConfig?: any;
+        customConfig?: Record<string, unknown>;
         unlockedTemplates: string[]; // List of IDs (e.g., ['classic', 'modern', 'premium-gold'])
     };
 }

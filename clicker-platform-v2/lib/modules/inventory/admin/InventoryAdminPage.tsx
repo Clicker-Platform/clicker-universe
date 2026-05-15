@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Plus, Search, AlertTriangle, Pencil, Archive, PackageOpen, History } from 'lucide-react';
 import { getInventory, createInventoryItem, updateStock, archiveInventoryItem } from '@/lib/modules/inventory/api';
 import { InventoryItem, TransactionReason } from '@/lib/modules/inventory/types';
@@ -38,11 +38,7 @@ export default function InventoryPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [posItems, setPosItems] = useState<{ id: string, name: string }[]>([]);
 
-    useEffect(() => {
-        if (siteId) fetchData();
-    }, [siteId]);
-
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         try {
             // Check if POS module is enabled
             let posItemsData: { id: string, name: string }[] = [];
@@ -52,7 +48,7 @@ export default function InventoryPage() {
             const { isModuleEnabled } = await import('@/lib/modules/registry');
             const posEnabled = await isModuleEnabled('byod_pos');
 
-            const promises: Promise<any>[] = [getInventory(siteId)];
+            const promises: Promise<unknown>[] = [getInventory(siteId)];
 
             if (posEnabled) {
                 // Use siteId for menu items fetch too if needed, but direct query needs update
@@ -65,11 +61,11 @@ export default function InventoryPage() {
             const inventoryData = results[0];
 
             if (posEnabled && results[1]) {
-                const posSnap = results[1] as any; // Firestore QuerySnapshot
-                posItemsData = posSnap.docs.map((d: any) => ({ id: d.id, name: d.data().name }));
+                const posSnap = results[1] as { docs: { id: string; data: () => { name: string } }[] }; // Firestore QuerySnapshot
+                posItemsData = posSnap.docs.map((d) => ({ id: d.id, name: d.data().name }));
             }
 
-            setItems(inventoryData);
+            setItems(inventoryData as import('../types').InventoryItem[]);
             setPosItems(posItemsData);
         } catch (error) {
             logger.error('inventory.history.fetch.failed', { siteId, error });
@@ -77,7 +73,11 @@ export default function InventoryPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [siteId]);
+
+    useEffect(() => {
+        if (siteId) fetchData();
+    }, [siteId, fetchData]);
 
     // --- Actions ---
 
@@ -87,7 +87,7 @@ export default function InventoryPage() {
         try {
             if (editingItem) {
                 // currentStock is intentionally excluded — stock moves only through updateStock()
-                const { currentStock, ...metadataOnly } = formData;
+                const { currentStock: _currentStock, ...metadataOnly } = formData;
                 await updateDoc(doc(db, 'sites', siteId, 'modules/inventory/items', editingItem.id), {
                     ...metadataOnly,
                     lowStockThreshold: Number(metadataOnly.lowStockThreshold),
@@ -105,7 +105,7 @@ export default function InventoryPage() {
             fetchData();
         } catch (error) {
             logger.error('inventory.adjust.failed', { siteId, error });
-            const isPermissionError = (error as any)?.code === 'permission-denied' || (error as any)?.message?.includes('Missing or insufficient permissions');
+            const isPermissionError = (error as { code?: string; message?: string })?.code === 'permission-denied' || (error as { code?: string; message?: string })?.message?.includes('Missing or insufficient permissions');
             if (isPermissionError) {
                 toast.info("View Only Mode", {
                     description: "You strictly have view-only access based on your role."
@@ -132,8 +132,8 @@ export default function InventoryPage() {
             toast.success(`Stock adjusted by ${quantity} (${reason})`);
             setAdjustItem(null);
             fetchData();
-        } catch (error: any) {
-            toast.error('Error updating stock: ' + error.message);
+        } catch (error: unknown) {
+            toast.error('Error updating stock: ' + (error instanceof Error ? error.message : String(error)));
             throw error; // Re-throw to let the dialog know if needed, though mostly handled here
         }
     };
@@ -152,7 +152,7 @@ export default function InventoryPage() {
             );
             const snapshot = await getDocs(activeOrdersQ);
             const conflictingOrder = snapshot.docs.find(d =>
-                d.data().items?.some((item: any) => item.inventoryId === archiveId)
+                d.data().items?.some((item: { inventoryId?: string }) => item.inventoryId === archiveId)
             );
 
             if (conflictingOrder) {
@@ -396,7 +396,7 @@ export default function InventoryPage() {
                             </div>
                             <h3 className="text-xl font-bold text-gray-800 dark:text-neutral-200 mb-2">No items found</h3>
                             <p className="text-gray-500 dark:text-neutral-500 max-w-md mx-auto mb-6">
-                                We couldn't find any inventory items matching your search. Try adjusting your filters or create a new item.
+                                We couldn&apos;t find any inventory items matching your search. Try adjusting your filters or create a new item.
                             </p>
                             <button
                                 onClick={openAddModal}

@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
         const form = await req.json();
 
         // Remove id and siteId from data to avoid storing them as fields
-        const { id, siteId: _siteId, ...data } = form;
+        const { id, siteId: _siteId, ...data } = form; // siteId excluded from data intentionally
 
         let docRef;
         if (id) {

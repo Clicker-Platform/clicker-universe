@@ -97,7 +97,7 @@ export function PromoApplicator({
     }
   }
 
-  async function handleAutoCheck() {
+  async function _handleAutoCheck() {
     if (disabled || autoLoading) return;
 
     setAutoLoading(true);

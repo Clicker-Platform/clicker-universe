@@ -1,3 +1,4 @@
+import type React from 'react';
 import {
     // Socials
     Instagram, Facebook, Twitter, Linkedin, Youtube, Github,
@@ -26,7 +27,7 @@ import {
     Croissant, Sparkles
 } from 'lucide-react';
 
-export const ICON_MAP: { [key: string]: any } = {
+export const ICON_MAP: { [key: string]: React.ElementType } = {
     // Socials
     Instagram, Facebook, Twitter, Linkedin, Youtube, Github,
     Twitch, Globe, Mail, Phone, MessageCircle, Send,

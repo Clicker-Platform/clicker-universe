@@ -20,7 +20,7 @@ export function ChromeFooterPanel({
 
     // Sync if the external value changes (e.g. initial load)
     useEffect(() => {
-        setLocalValue(footerText || '');
+        Promise.resolve().then(() => setLocalValue(footerText || ''));
     }, [footerText]);
 
     return (

@@ -67,7 +67,7 @@ export default function MemberServiceHistoryWidget({ siteId, memberPhone, member
                 <h3 className="text-sm font-bold text-gray-700">Service History</h3>
             </div>
             {records.map(record => {
-                const updatedAt = record.updatedAt?.toDate ? record.updatedAt.toDate() : new Date(record.updatedAt as any);
+                const updatedAt = record.updatedAt?.toDate ? record.updatedAt.toDate() : new Date(record.updatedAt as unknown as string);
                 const badge = STATUS_LABELS[record.status] || { label: record.status, color: 'bg-gray-100 text-gray-500' };
 
                 return (

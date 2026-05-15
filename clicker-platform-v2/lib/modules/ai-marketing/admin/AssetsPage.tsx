@@ -5,7 +5,6 @@ import { ImageIcon, Plus, HardDrive, Loader2 } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
 import { useUser } from '@/lib/user-context';
 import { useRouter } from 'next/navigation';
-import { auth } from '@/lib/firebase';
 import { subscribeAssets } from '../api';
 import { MarketingAsset } from '../types';
 import { MAX_STORAGE_MB, ROUTES } from '../constants';
@@ -89,7 +88,7 @@ export default function AssetsPage() {
       {showUpload && (
         <AssetUploadModal
           onClose={() => setShowUpload(false)}
-          onUploaded={(assetId) => {
+          onUploaded={(_assetId) => {
             setShowUpload(false);
           }}
         />

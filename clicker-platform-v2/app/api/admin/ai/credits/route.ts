@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
       balance: fields.balance?.integerValue ?? fields.balance?.doubleValue ?? 0,
       lifetimeUsed: fields.lifetimeUsed?.integerValue ?? fields.lifetimeUsed?.doubleValue ?? 0,
     });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (err: unknown) {
+    return NextResponse.json({ error: err instanceof Error ? err.message : String(err) }, { status: 500 });
   }
 }

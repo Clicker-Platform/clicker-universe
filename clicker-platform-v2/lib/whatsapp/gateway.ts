@@ -55,7 +55,7 @@ export class WhatsAppGateway implements MessagingGateway {
   }
 
   async getThread(threadId: string): Promise<WAThread | null> {
-    const { doc: fsDoc, getDoc: fsGetDoc, collection } = await import('firebase/firestore');
+    const { doc: fsDoc, getDoc: fsGetDoc } = await import('firebase/firestore');
     const ref = fsDoc(db, 'sites', this.siteId, WA_ROOT, WA_MAIN_DOC, WA_CUSTOMER_THREADS, threadId);
     const snap = await fsGetDoc(ref);
     if (!snap.exists()) return null;

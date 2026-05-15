@@ -27,7 +27,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const { id } = await params;
   const body = await req.json();
   const allowed = ['name', 'platform', 'objective', 'status', 'strategy', 'savedContentIds', 'assetIds', 'performanceData'];
-  const updates: Record<string, any> = { updatedAt: Timestamp.now() };
+  const updates: Record<string, unknown> = { updatedAt: Timestamp.now() };
   for (const key of allowed) {
     if (body[key] !== undefined) updates[key] = body[key];
   }

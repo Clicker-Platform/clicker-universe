@@ -22,7 +22,7 @@ export const FormModal: React.FC<FormModalProps> = ({ form, isOpen, onClose, sit
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        setMounted(true);
+        Promise.resolve().then(() => setMounted(true));
     }, []);
 
     const { formData, setField, submitting, handleSubmit } = useFormSubmit({

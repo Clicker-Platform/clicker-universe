@@ -109,7 +109,7 @@ function CardItem({ card, cardStyle }: CardItemProps) {
 
 interface DefaultFeatureCardsBlockProps {
     data: FeatureCardsData;
-    theme?: any;
+    theme?: Record<string, unknown>;
     previewMode?: boolean;
 }
 
@@ -158,7 +158,7 @@ export function DefaultFeatureCardsBlock({ data, theme: themeProp, previewMode: 
                         );
                         return (
                             <div key={card.id} className={cardWrapperClass}>
-                                <CardItem card={card} cardStyle={theme?.cardStyle} />
+                                <CardItem card={card} cardStyle={theme?.cardStyle as string | undefined} />
                             </div>
                         );
                     })}

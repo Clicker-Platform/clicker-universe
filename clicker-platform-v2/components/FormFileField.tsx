@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useRef, useState } from 'react';
-import { Upload, X, Loader2, Image as ImageIcon, Check } from 'lucide-react';
+import Image from 'next/image';
+import { Upload, X, Loader2, Check } from 'lucide-react';
 import { convertToWebP, validateImageFile } from '@/lib/imageUtils';
 import { uploadToStorage } from '@/lib/upload';
 import { useSite } from '@/lib/site-context';
@@ -60,7 +61,7 @@ export const FormFileField: React.FC<FormFileFieldProps> = ({ label, required, o
 
             {value ? (
                 <div className="relative group rounded-xl overflow-hidden border-2 border-brand-green/30 bg-gray-50 max-w-[200px]">
-                    <img src={value} alt="Uploaded" className="w-full h-32 object-cover" />
+                    <Image src={value} alt="Uploaded" width={200} height={128} className="w-full h-32 object-cover" unoptimized />
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                         <a href={value} target="_blank" rel="noreferrer" className="p-2 bg-white rounded-full text-brand-dark hover:scale-110 transition-transform">
                             <Check size={16} />

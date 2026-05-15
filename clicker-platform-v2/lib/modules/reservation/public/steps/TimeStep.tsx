@@ -38,7 +38,7 @@ export default function TimeStep({
     const isGlass = theme.decorations?.surfaceStyle === 'glass' || theme.cardStyle === 'glass';
     const surfaceBg = theme.colors.surface || '#f9fafb';
     const borderColor = isGlass ? 'rgba(255,255,255,0.1)' : (theme.colors.border || '#e5e7eb');
-    const mutedText = theme.colors.textMuted || theme.colors.foreground;
+    const _mutedText = theme.colors.textMuted || theme.colors.foreground;
     const subtleText = theme.colors.textSubtle || theme.colors.muted || theme.colors.foreground;
 
     const formattedDate = date.toLocaleDateString('en-CA');
@@ -75,7 +75,7 @@ export default function TimeStep({
                 const maxCapacity = selectedStaff ? 1 : (activeStaffCount || 1);
                 const candidates: SlotStatus[] = [];
                 const parseTime = (t: string) => t.split(':').map(Number);
-                const globalDay = globalSchedule.find((d: any) => d.dayOfWeek === dayOfWeek);
+                const globalDay = globalSchedule.find((d: { dayOfWeek: number; isOpen: boolean; hours: { start: string; end: string }[] }) => d.dayOfWeek === dayOfWeek);
 
                 if (!globalDay || !globalDay.isOpen || globalDay.hours.length === 0) {
                     setGeneratedSlots([]);
@@ -83,7 +83,7 @@ export default function TimeStep({
                 }
 
                 let minTime = 24 * 60, maxTime = 0;
-                globalDay.hours.forEach((h: any) => {
+                globalDay.hours.forEach((h: { start: string; end: string }) => {
                     const [sH, sM] = parseTime(h.start);
                     const [eH, eM] = parseTime(h.end);
                     const startMins = sH * 60 + sM;
@@ -92,7 +92,7 @@ export default function TimeStep({
                     if (endMins > maxTime) maxTime = endMins;
                 });
 
-                let current = new Date(date);
+                const current = new Date(date);
                 current.setHours(Math.floor(minTime / 60), minTime % 60, 0, 0);
                 const closeTime = new Date(date);
                 closeTime.setHours(Math.floor(maxTime / 60), maxTime % 60, 0, 0);
@@ -144,7 +144,7 @@ export default function TimeStep({
             }
         }
         fetchAvailability();
-    }, [date, selectedService, selectedStaff, staffList]);
+    }, [date, selectedService, selectedStaff, staffList, siteId]);
 
     return (
         <div>
@@ -201,7 +201,7 @@ export default function TimeStep({
                         No slots available for this date.
                     </div>
                 ) : (
-                    generatedSlots.map((slot: any) => {
+                    generatedSlots.map((slot: string | { time: string; available: boolean }) => {
                         const time = typeof slot === 'string' ? slot : slot.time;
                         const available = typeof slot === 'string' ? true : slot.available;
                         let isPast = false;

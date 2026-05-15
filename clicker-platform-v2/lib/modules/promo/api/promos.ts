@@ -36,15 +36,16 @@ export async function findPromoByCode(siteId: string, code: string): Promise<Pro
 }
 
 // Recursively remove undefined values from an object before writing to Firestore
-function stripUndefined<T extends Record<string, any>>(obj: T): T {
-  const out: any = {};
+function stripUndefined<T extends Record<string, unknown>>(obj: T): T {
+  const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(obj)) {
     if (v === undefined) continue;
-    out[k] = v !== null && typeof v === 'object' && !Array.isArray(v) && typeof v.toDate !== 'function'
-      ? stripUndefined(v)
+    const isPlainObject = v !== null && typeof v === 'object' && !Array.isArray(v) && typeof (v as { toDate?: unknown }).toDate !== 'function';
+    out[k] = isPlainObject
+      ? stripUndefined(v as Record<string, unknown>)
       : v;
   }
-  return out;
+  return out as T;
 }
 
 export async function createPromo(
@@ -66,9 +67,9 @@ export async function createPromo(
 
 export async function updatePromo(siteId: string, promoId: string, patch: Partial<Promo>): Promise<void> {
   const ref = doc(db, 'sites', siteId, PROMOS_COLLECTION, promoId);
-  const { id: _id, siteId: _siteId, createdAt: _createdAt, ...rest } = patch as any;
+  const { id: _id, siteId: _siteId, createdAt: _createdAt, ...rest } = patch as Partial<Promo> & Record<string, unknown>;
   const cleaned = stripUndefined({ ...rest, updatedAt: serverTimestamp() });
-  if (patch.code !== undefined) cleaned.code = patch.code ? patch.code.trim().toUpperCase() : null;
+  if (patch.code !== undefined) cleaned.code = patch.code ? patch.code.trim().toUpperCase() : undefined;
   await updateDoc(ref, cleaned);
 }
 

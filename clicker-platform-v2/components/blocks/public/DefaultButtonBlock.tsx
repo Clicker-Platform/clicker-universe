@@ -16,7 +16,7 @@ function isExternalProtocol(href: string): boolean {
     return /^(https?:\/\/|mailto:|tel:)/i.test(href);
 }
 
-export const DefaultButtonBlock = ({ data, previewMode, siteId: siteIdProp }: { data: any; previewMode?: boolean; siteId?: string }) => {
+export const DefaultButtonBlock = ({ data, previewMode, siteId: siteIdProp }: { data: Record<string, unknown>; previewMode?: boolean; siteId?: string }) => {
     const { theme } = useTemplate();
     const { siteId: ctxSiteId, tenantSlug, isSubdomain } = useSite();
     const siteId = siteIdProp || ctxSiteId;
@@ -24,7 +24,7 @@ export const DefaultButtonBlock = ({ data, previewMode, siteId: siteIdProp }: { 
     const isGlass = theme.cardStyle === 'glass';
 
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [formData, setFormData] = useState<any>(null);
+    const [formData, setFormData] = useState<Record<string, unknown> | null>(null);
     const [isLoadingForm, setIsLoadingForm] = useState(false);
     const [formError, setFormError] = useState<string | null>(null);
 
@@ -60,8 +60,8 @@ export const DefaultButtonBlock = ({ data, previewMode, siteId: siteIdProp }: { 
     const className = `inline-block py-3 px-6 font-bold transition-all transform ${isClean ? 'shadow-sm hover:-translate-y-0.5' : isGlass ? 'hover:-translate-y-0.5 hover:shadow-lg' : 'hover:-translate-y-1 hover:shadow-lg'} ${getVariantClass()} ${data.align === 'full' ? 'w-full block' : ''}`;
 
     const buttonStyle = { borderRadius: 'calc(var(--theme-radius) * 0.75)' };
-    const label = data.label || 'Click Here';
-    const linkType = data.linkType || 'url';
+    const label = (data.label as string | undefined) || 'Click Here';
+    const linkType = (data.linkType as string | undefined) || 'url';
     const isFormLink = linkType === 'form' && !!data.formId;
 
     // Resolve href:
@@ -166,7 +166,7 @@ export const DefaultButtonBlock = ({ data, previewMode, siteId: siteIdProp }: { 
                 )}
             </div>
             {isFormLink && isModalOpen && formData && (
-                <FormModal form={formData} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} siteId={siteId} />
+                <FormModal form={formData as unknown as import('@/data/mockData').Form} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} siteId={siteId} />
             )}
         </>
     );

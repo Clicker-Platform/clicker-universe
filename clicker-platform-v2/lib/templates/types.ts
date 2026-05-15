@@ -57,7 +57,7 @@ export interface TemplateConfig {
 
     // --- Template-Specific Configuration (Phase 3) ---
     // Flexible bucket for settings specific to a single template (e.g. Shuvo-only options)
-    custom?: Record<string, any>;
+    custom?: Record<string, unknown>;
 
     // --- Decoration Tokens ---
     decorations?: {
@@ -97,28 +97,28 @@ export type ThemeConfig = TemplateConfig;
 
 export interface TemplateComponents {
     // We will type these more strictly as we create the specific component props
-    Header: React.ElementType<any>;
-    Background: React.ElementType<any>;
+    Header: React.ElementType<Record<string, unknown>>;
+    Background: React.ElementType<Record<string, unknown>>;
     // Optional overrides for system and custom page blocks
     Blocks?: {
         // System Blocks
-        QuickActions?: React.ElementType<any>;
-        OperatingHours?: React.ElementType<any>;
-        Branches?: React.ElementType<any>;
-        FeaturedProduct?: React.ElementType<any>;
+        QuickActions?: React.ElementType<Record<string, unknown>>;
+        OperatingHours?: React.ElementType<Record<string, unknown>>;
+        Branches?: React.ElementType<Record<string, unknown>>;
+        FeaturedProduct?: React.ElementType<Record<string, unknown>>;
 
         // Custom Page Content Blocks
-        Hero?: React.ElementType<any>;
-        Text?: React.ElementType<any>;
-        Image?: React.ElementType<any>;
-        Button?: React.ElementType<any>;
-        Products?: React.ElementType<any>;
-        FAQ?: React.ElementType<any>;
-        Link?: React.ElementType<any>;
-        Map?: React.ElementType<any>;
-        ImageGallery?: React.ElementType<any>;
-        InlineFormBlock?: React.ElementType<any>;
-        HeadingBlock?: React.ElementType<any>;
+        Hero?: React.ElementType<Record<string, unknown>>;
+        Text?: React.ElementType<Record<string, unknown>>;
+        Image?: React.ElementType<Record<string, unknown>>;
+        Button?: React.ElementType<Record<string, unknown>>;
+        Products?: React.ElementType<Record<string, unknown>>;
+        FAQ?: React.ElementType<Record<string, unknown>>;
+        Link?: React.ElementType<Record<string, unknown>>;
+        Map?: React.ElementType<Record<string, unknown>>;
+        ImageGallery?: React.ElementType<Record<string, unknown>>;
+        InlineFormBlock?: React.ElementType<Record<string, unknown>>;
+        HeadingBlock?: React.ElementType<Record<string, unknown>>;
     };
 }
 
@@ -145,6 +145,6 @@ export interface TemplateDocument {
     config: ThemeConfig;
     thumbnailUrl?: string;
     ownerId?: string | null; // Null for system templates
-    createdAt?: any; // Timestamp
-    updatedAt?: any; // Timestamp
+    createdAt?: { toDate?: () => Date } | Date | string; // Timestamp
+    updatedAt?: { toDate?: () => Date } | Date | string; // Timestamp
 }

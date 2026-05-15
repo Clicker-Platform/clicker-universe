@@ -20,16 +20,19 @@ function initializeAdminApp(): App {
 
     // LOCAL FALLBACK: Check for Service Account Key in env
     const serviceAccountKey = process.env.GCP_SERVICE_ACCOUNT_KEY;
+    console.log('[firebase-admin] GCP_SERVICE_ACCOUNT_KEY present:', !!serviceAccountKey, 'cwd:', process.cwd());
 
     if (serviceAccountKey) {
         try {
             let credential;
 
-            // Check if it's a file path (starts with / or ./ or ends with .json)
-            if (serviceAccountKey.endsWith('.json') || serviceAccountKey.startsWith('/') || serviceAccountKey.startsWith('./')) {
+            // Check if it's a file path (starts with /, ./, ../ or ends with .json)
+            if (serviceAccountKey.endsWith('.json') || serviceAccountKey.startsWith('/') || serviceAccountKey.startsWith('./') || serviceAccountKey.startsWith('../')) {
                 const keyPath = path.resolve(process.cwd(), serviceAccountKey);
+                console.log('[firebase-admin] Loading service account from:', keyPath);
                 const keyContent = fs.readFileSync(keyPath, 'utf-8');
                 credential = JSON.parse(keyContent);
+                console.log('[firebase-admin] Loaded service account for project:', credential.project_id);
             } else {
                 credential = JSON.parse(serviceAccountKey);
             }

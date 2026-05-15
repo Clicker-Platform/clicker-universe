@@ -6,7 +6,8 @@ import { useTemplate } from '@/components/TemplateProvider';
 import { getCardClasses, getTextColor } from './cardStyles';
 import { useDeviceView, dv } from '@/components/DeviceViewContext';
 
-export const DefaultFAQBlock = ({ data }: { data: any }) => {
+interface FAQItem { question: string; answer: string; }
+export const DefaultFAQBlock = ({ data }: { data: Record<string, unknown> }) => {
     const { theme } = useTemplate();
     const d = useDeviceView();
     const cardStyle = theme.cardStyle;
@@ -21,7 +22,7 @@ export const DefaultFAQBlock = ({ data }: { data: any }) => {
             <section className={`${dv(d, 'p-6', 'md:p-10')} ${getCardClasses(cardStyle)}`} style={{ borderRadius: 'var(--theme-radius)' }}>
                 <h2 className={`text-2xl mb-8 font-black ${getTextColor(cardStyle)}`}>FAQ</h2>
                 <div className={`grid ${dv(d, 'grid-cols-1', 'md:grid-cols-2')} gap-6`}>
-                    {items.map((item: any, i: number) => (
+                    {(items as FAQItem[]).map((item, i: number) => (
                         <div
                             key={i}
                             className={`p-6 border ${isGlass ? 'bg-white/10 border-white/10' : 'bg-transparent border-gray-100'}`}
@@ -46,7 +47,7 @@ export const DefaultFAQBlock = ({ data }: { data: any }) => {
             <section className={`${dv(d, 'p-6', 'md:p-10')} max-w-3xl mx-auto`}>
                 <h2 className={`text-2xl mb-8 font-black ${getTextColor(cardStyle)}`}>FAQ</h2>
                 <div className="space-y-6">
-                    {items.map((item: any, i: number) => (
+                    {(items as FAQItem[]).map((item, i: number) => (
                         <div key={i} className="border-l-4 border-[var(--theme-primary)] pl-6 py-1">
                             <p className={`font-bold text-lg mb-2 ${getTextColor(cardStyle)}`}>{item.question}</p>
                             <p className={`leading-relaxed ${getTextColor(cardStyle, true)}`}>{item.answer}</p>
@@ -62,7 +63,7 @@ export const DefaultFAQBlock = ({ data }: { data: any }) => {
         <section className={`${dv(d, 'p-6', 'md:p-10')} ${getCardClasses(cardStyle)}`} style={{ borderRadius: 'var(--theme-radius)' }}>
             <h2 className={`text-2xl mb-6 font-black ${getTextColor(cardStyle)}`}>FAQ</h2>
             <div className="space-y-4">
-                {items.map((item: any, i: number) => (
+                {(items as FAQItem[]).map((item, i: number) => (
                     <div key={i} className={`border-b-2 last:border-0 pb-4 last:pb-0 ${isGlass ? 'border-white/10' : 'border-gray-100'}`}>
                         <details className="group">
                             <summary className={`flex justify-between items-center cursor-pointer list-none font-bold text-lg hover:opacity-80 transition-opacity ${getTextColor(cardStyle)}`}>

@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { POSOrder } from '@/lib/modules/byod_pos/types';
 import { subscribeToRecentOrders, updateOrderStatus, cancelOrder, confirmPayment } from '@/lib/modules/byod_pos/api';
-import { commitPromoUsage, reversePromoUsage } from '@/lib/modules/promo/api';
+import { commitPromoUsage } from '@/lib/modules/promo/api';
 import type { AppliedPromo } from '@/lib/modules/promo/api';
 import { ShoppingBag, Grid, List } from 'lucide-react';
 import { toast } from 'sonner';
@@ -53,9 +53,9 @@ export default function POSClient({ initialOrders = [] }: { initialOrders?: POSO
         try {
             await updateOrderStatus(siteId, order, newStatus);
             toast.success(`Order moved to ${newStatus}`);
-        } catch (error: any) {
+        } catch (error: unknown) {
             logger.error('pos.admin.status.failed', { siteId, error });
-            if (error.message?.includes("Item does not exist")) {
+            if (error instanceof Error && error.message?.includes("Item does not exist")) {
                 toast.error("Inventory Item Deleted! Cannot process stock.");
             } else {
                 toast.error("Failed to update status");
@@ -216,8 +216,8 @@ export default function POSClient({ initialOrders = [] }: { initialOrders?: POSO
 
         return Object.values(groups).sort((a, b) => b.updatedAt - a.updatedAt).map(g => ({
             ...g,
-            aggregatedStatus: g.orders.some(o => o.paymentStatus === 'pending_confirmation') ? 'pending_confirmation' : 'unpaid'
-        })) as any[];
+            aggregatedStatus: (g.orders.some(o => o.paymentStatus === 'pending_confirmation') ? 'pending_confirmation' : 'unpaid') as 'unpaid' | 'pending_confirmation' | 'paid' | 'partial'
+        }));
     }, [orders]);
 
 

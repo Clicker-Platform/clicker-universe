@@ -8,7 +8,7 @@ import { SubmitButton } from '@/components/admin/SubmitButton';
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 import { ScheduleEditor } from './components/ScheduleEditor';
 import { SettingsSubNav } from '@/components/admin/SettingsSubNav';
-import { Map, Clock, Eye, EyeOff, Tag, Phone, Mail, MapPin, ExternalLink, Plus, Trash2, Edit2, Save, GitBranch } from 'lucide-react';
+import { Map, Clock, Tag, Phone, Mail, MapPin, ExternalLink, Plus, Trash2, Edit2, GitBranch } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useSite } from '@/lib/site-context';
@@ -126,7 +126,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
             let updatedBranches = [...branches];
 
             if (editingBranch.id === 'new') {
-                const { id, ...data } = editingBranch;
+                const { id: _id, ...data } = editingBranch;
                 const docRef = await addDoc(collection(db, 'sites', siteId, 'branches'), data);
                 const newBranch: Branch = { ...editingBranch, id: docRef.id };
                 updatedBranches.push(newBranch);
@@ -354,7 +354,7 @@ export default function BusinessSettingsClient({ initialHours, initialContact, i
                                     className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent"
                                     placeholder="Opening Hours"
                                 />
-                                <p className="text-xs text-gray-400 dark:text-neutral-600 mt-1">e.g. "Jam Buka" or "Opening Hours" — displayed above the schedule on your public page.</p>
+                                <p className="text-xs text-gray-400 dark:text-neutral-600 mt-1">e.g. &quot;Jam Buka&quot; or &quot;Opening Hours&quot; — displayed above the schedule on your public page.</p>
                             </div>
                         </div>
 

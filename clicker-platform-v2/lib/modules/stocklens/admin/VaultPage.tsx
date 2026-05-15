@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Search, ScanLine, Vault as VaultIcon, Box, Package } from 'lucide-react';
+import { Search, ScanLine, Box, Package } from 'lucide-react';
 import Link from 'next/link';
 import { useSite } from '@/lib/site-context';
 import { logger } from '@/lib/logger-edge';

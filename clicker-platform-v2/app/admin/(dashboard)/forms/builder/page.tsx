@@ -26,20 +26,21 @@ export default function BuilderPage() {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
 
-                    const serializeDate = (ts: any) => {
+                    const serializeDate = (ts: unknown) => {
                         if (!ts) return null;
-                        if (typeof ts.toMillis === 'function') return ts.toMillis();
-                        if (typeof ts.toDate === 'function') return ts.toDate().getTime();
-                        if (ts.seconds) return ts.seconds * 1000;
+                        const t = ts as { toMillis?: () => number; toDate?: () => Date; seconds?: number };
+                        if (typeof t.toMillis === 'function') return t.toMillis();
+                        if (typeof t.toDate === 'function') return t.toDate().getTime();
+                        if (t.seconds) return t.seconds * 1000;
                         return null;
                     };
 
                     const form = {
                         id: docSnap.id,
-                        ...(data as any),
+                        ...(data as Record<string, unknown>),
                         createdAt: serializeDate(data?.createdAt),
                         updatedAt: serializeDate(data?.updatedAt)
-                    } as Form;
+                    } as unknown as Form;
 
                     setInitialForm(form);
                 }

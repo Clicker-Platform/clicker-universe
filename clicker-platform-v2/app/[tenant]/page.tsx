@@ -9,6 +9,8 @@ import { SharedPageLayout } from '@/components/layout/SharedPageLayout';
 import { PixelTracker } from "@/components/PixelTracker";
 import { generateSystemBlocks } from '@/lib/systemBlocks';
 import { notFound } from 'next/navigation';
+import type { InitialNavData } from '@/lib/hooks/useNavigationConfig';
+import type { NavigationItem, Form } from '@/data/mockData';
 
 export const revalidate = 30;
 
@@ -25,8 +27,7 @@ export default async function TenantPage({ params, searchParams }: TenantPagePro
     const siteId = tenant;
 
     // Also set from header if middleware provides it (for consistency)
-    const headersList = await headers();
-    const headerSiteId = headersList.get('x-site-id');
+    await headers();
 
     // Module Routing Check
     const moduleMatch = await findModuleForRoute('/');
@@ -57,8 +58,8 @@ export default async function TenantPage({ params, searchParams }: TenantPagePro
         : generateSystemBlocks(homeBlockOrder || [], hiddenBlockIds || []);
 
     // Build initialNavData from SSR siteSettings — eliminates onSnapshot on public pages
-    const navSettings = (publicData.navigation ?? {}) as any;
-    const initialNavData = {
+    const navSettings = (publicData.navigation ?? {}) as Partial<InitialNavData>;
+    const initialNavData: InitialNavData = {
         topNav: navSettings.topNav ?? [],
         topNavActions: navSettings.topNavActions ?? null,
         bottomNav: navSettings.bottomNav ?? [],
@@ -70,17 +71,13 @@ export default async function TenantPage({ params, searchParams }: TenantPagePro
     // Hydrate block-specific data and nav form cache in parallel
     const [hydratedData, navFormCache] = await Promise.all([
         hydratePageBlocks(siteId, blocksToRender),
-        fetchNavigationData(siteId, navSettings.topNav || []),
+        fetchNavigationData(siteId, (navSettings.topNav || []) as Array<NavigationItem & { type?: string; id?: string; formId?: string }>),
     ]);
 
     const {
         profile,
-        socialLinks,
         templateId,
-        footerText,
         contact,
-        hideFooterContact,
-        showHeaderAddress,
         themeColor,
         borderRadius,
         globalPixels,
@@ -97,30 +94,17 @@ export default async function TenantPage({ params, searchParams }: TenantPagePro
     const safeTemplateId = overrideTemplate || templateId || 'classic';
     const template = getTemplate(safeTemplateId);
 
-    const pageBackgroundColor = template.config.allowThemeColorOverride === false
-        ? template.config.colors.background
-        : (themeColor || template.config.colors.background);
-
-    const getRadiusValue = (size: 'small' | 'medium' | 'large' = 'large') => {
-        switch (size) {
-            case 'small': return '12px';
-            case 'medium': return '16px';
-            case 'large': return '24px';
-            default: return '24px';
-        }
-    };
-    const radiusValue = getRadiusValue(borderRadius);
-
     const heroFirst = blocksToRender[0]?.type === 'hero';
 
     // Emit a server-side preload hint for the LCP image.
     // SharedPageLayout is 'use client', so next/image priority cannot inject <link rel="preload">
     // at SSR time from inside the client tree. We do it here instead, from the Server Component.
     const firstBlock = blocksToRender[0];
+    const firstBlockData = (firstBlock?.data ?? {}) as { imageUrl?: string; media?: { src?: string }; url?: string };
     const lcpImageUrl: string | null =
-        firstBlock?.data?.imageUrl ||
-        firstBlock?.data?.media?.src ||
-        firstBlock?.data?.url ||
+        firstBlockData.imageUrl ||
+        firstBlockData.media?.src ||
+        firstBlockData.url ||
         null;
 
     return (
@@ -139,12 +123,12 @@ export default async function TenantPage({ params, searchParams }: TenantPagePro
             siteId={siteId}
             isSubPage={false}
             heroFirst={heroFirst}
-            initialFormCache={navFormCache}
+            initialFormCache={navFormCache as Record<string, Form>}
             initialNavData={initialNavData}
             pageOverrides={{
                 borderRadius: borderRadius,
                 themeColor: themeColor,
-                backgroundConfig: homePage?.background?.mode !== 'inherit' ? homePage?.background : undefined,
+                backgroundConfig: homePage?.background?.mode !== 'inherit' ? (homePage?.background as Record<string, unknown> | undefined) : undefined,
             }}
         >
             <PixelTracker pixels={effectivePixels} />

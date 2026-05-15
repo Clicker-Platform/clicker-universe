@@ -57,14 +57,14 @@ const ReservationWidget = dynamic(
     }
 );
 
-export const ReservationBlock = ({ data, siteId, initialServices, initialStaff, initialSettings }: { data: any, siteId?: string, initialServices?: any, initialStaff?: any, initialSettings?: any }) => {
+export const ReservationBlock = ({ data, siteId, initialServices, initialStaff, initialSettings }: { data: Record<string, unknown>, siteId?: string, initialServices?: Record<string, unknown>[], initialStaff?: Record<string, unknown>[], initialSettings?: Record<string, unknown> }) => {
     const { theme } = useTemplate();
     const isClean = theme.cardStyle === 'clean';
     const isGlass = theme.cardStyle === 'glass';
 
     // Button Mode — returns before the widget JS chunk is ever referenced.
     if (data.mode === 'button') {
-        const buttonText = data.buttonText || "Book Now";
+        const buttonText = (data.buttonText as string) || "Book Now";
 
         const buttonStyle = isGlass
             ? 'bg-[var(--theme-primary)] text-black rounded-xl hover:opacity-90 shadow-lg'
@@ -75,7 +75,7 @@ export const ReservationBlock = ({ data, siteId, initialServices, initialStaff, 
         return (
             <div className="py-8 text-center">
                 <Link
-                    href={data.href || "/book"}
+                    href={(data.href as string) || "/book"}
                     className={`
                         inline-flex items-center gap-2 px-8 py-4 font-bold transition-all text-lg
                         ${buttonStyle}
@@ -105,12 +105,12 @@ export const ReservationBlock = ({ data, siteId, initialServices, initialStaff, 
                 ...(isGlass ? getGlassStyle(theme.colors.surface) : {}),
             }}
         >
-            {data.title && (
+            {Boolean(data.title) && (
                 <h2 className={`
                     text-3xl mb-8 text-center
                     ${isGlass ? 'font-bold text-white' : isClean ? 'font-bold text-gray-900' : 'font-black text-theme-foreground'}
                 `}>
-                    {data.title}
+                    {data.title as string}
                 </h2>
             )}
             <ReservationWidget

@@ -80,8 +80,8 @@ export async function POST(req: NextRequest) {
             displayName = userRecord.displayName || '';
             photoURL = userRecord.photoURL || '';
             isNewUser = true;
-        } catch (error: any) {
-            if (error.code === 'auth/email-already-exists') {
+        } catch (error: unknown) {
+            if ((error as { code?: string }).code === 'auth/email-already-exists') {
                 // Fetch existing user
                 const userRecord = await adminAuth.getUserByEmail(email);
                 uid = userRecord.uid;
@@ -122,8 +122,8 @@ export async function POST(req: NextRequest) {
             message: isNewUser ? 'User created and added to team.' : 'Existing user added to team.'
         });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         logger.error('team.add.failed', { siteId: req.headers.get('x-site-id') ?? 'platform', error });
-        return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ error: error instanceof Error ? error.message : 'Internal Server Error' }, { status: 500 });
     }
 }

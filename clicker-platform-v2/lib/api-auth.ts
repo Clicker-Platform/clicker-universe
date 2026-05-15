@@ -77,7 +77,8 @@ async function resolveSession(req: NextRequest): Promise<AuthResult> {
                 isOwner: false,
             },
         };
-    } catch {
+    } catch (err) {
+        console.error('[api-auth] resolveSession failed:', err);
         return { ok: false, res: NextResponse.json({ error: 'Internal server error' }, { status: 500 }) };
     }
 }

@@ -29,7 +29,7 @@ export function InventoryItemForm({ isOpen, onClose, onSubmit, initialData, posI
 
     useEffect(() => {
         if (initialData) {
-            setFormData({
+            const next = {
                 name: initialData.name,
                 sku: initialData.sku,
                 unit: initialData.unit,
@@ -37,9 +37,10 @@ export function InventoryItemForm({ isOpen, onClose, onSubmit, initialData, posI
                 lowStockThreshold: initialData.lowStockThreshold,
                 currentStock: initialData.currentStock,
                 linkedPosItemId: initialData.linkedPosItemId || ''
-            });
+            };
+            Promise.resolve().then(() => setFormData(next));
         } else {
-            setFormData({ name: '', sku: '', unit: 'pcs', costPrice: 0, lowStockThreshold: 5, currentStock: 0, linkedPosItemId: '' });
+            Promise.resolve().then(() => setFormData({ name: '', sku: '', unit: 'pcs', costPrice: 0, lowStockThreshold: 5, currentStock: 0, linkedPosItemId: '' }));
         }
     }, [initialData, isOpen]);
 

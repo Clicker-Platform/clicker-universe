@@ -35,7 +35,7 @@ export function ProductDetailModal({ product, isOpen, onClose, phoneNumber = '15
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        setMounted(true);
+        Promise.resolve().then(() => setMounted(true));
         return () => setMounted(false);
     }, []);
 
@@ -60,8 +60,8 @@ export function ProductDetailModal({ product, isOpen, onClose, phoneNumber = '15
     const showGallery = images.length > 1;
 
     // Visibility Checks
-    const showPrice = (product as any).showPrice !== false;
-    const showLabel = (product as any).showLabel !== false;
+    const showPrice = product.showPrice !== false;
+    const showLabel = product.showLabel !== false;
 
     const nextImage = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -248,9 +248,8 @@ export function ProductDetailModal({ product, isOpen, onClose, phoneNumber = '15
 
                     {/* CTA */}
                     {(() => {
-                        const productAny = product as any;
-                        const effectiveMode = productAny.ctaMode || whatsappSettings?.ctaMode || 'whatsapp';
-                        const effectiveUrl = productAny.ctaUrl || '';
+                        const effectiveMode = product.ctaMode || whatsappSettings?.ctaMode || 'whatsapp';
+                        const effectiveUrl = product.ctaUrl || '';
                         const waMessage = whatsappSettings?.messageTemplate
                             ? whatsappSettings.messageTemplate
                                 .replace('${productName}', product.name)
@@ -286,7 +285,7 @@ export function ProductDetailModal({ product, isOpen, onClose, phoneNumber = '15
                             />
                         );
 
-                        if (effectiveMode === 'none') return null;
+                        if ((effectiveMode as string) === 'none') return null;
                         if (effectiveMode === 'url') return urlBtn;
                         if (effectiveMode === 'both') return <div className="flex flex-col gap-2">{urlBtn}{waBtn}</div>;
                         return waBtn;

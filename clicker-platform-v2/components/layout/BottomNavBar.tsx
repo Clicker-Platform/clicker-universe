@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useCallback, useMemo } from 'react';
+import { NavigationItem, Form } from '@/data/mockData';
 import { useTemplate } from '@/components/TemplateProvider';
 import Link from 'next/link';
 import { FormModal } from '@/components/FormModal';
@@ -24,7 +25,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({ previewMode = false 
 
     const { bottomNav, fab, bottomNavStyle, loading, formCache } = useNavigation();
 
-    const [selectedForm, setSelectedForm] = useState<any>(null);
+    const [selectedForm, setSelectedForm] = useState<Form | null>(null);
     const [isFormOpen, setIsFormOpen] = useState(false);
 
     const getIcon = (name: string) => ICON_MAP[name as keyof typeof ICON_MAP] || Home;
@@ -37,8 +38,8 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({ previewMode = false 
         }
     };
 
-    const handleItemClick = useCallback(async (e: React.MouseEvent, item: any) => {
-        if (item.type === 'chat' || item.type === 'action-chat' || item.value === 'action:chat') {
+    const handleItemClick = useCallback(async (e: React.MouseEvent, item: NavigationItem) => {
+        if ((item.type as string) === 'chat' || (item.type as string) === 'action-chat' || item.value === 'action:chat') {
             e.preventDefault();
             openChat();
             return;
@@ -56,7 +57,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({ previewMode = false 
                     const { db } = await import('@/lib/firebase');
                     const snap = await getDoc(doc(db, 'sites', siteId, 'forms', item.formId));
                     if (snap.exists() && snap.data().isPublished !== false) {
-                        setSelectedForm({ id: snap.id, ...snap.data() });
+                        setSelectedForm({ id: snap.id, ...snap.data() } as Form);
                         setIsFormOpen(true);
                     }
                 } catch (err) {
@@ -148,7 +149,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({ previewMode = false 
             <FormModal
                 isOpen={isFormOpen}
                 onClose={() => setIsFormOpen(false)}
-                form={selectedForm}
+                form={selectedForm as Form}
                 siteId={siteId}
             />
         </>

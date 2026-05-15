@@ -22,8 +22,8 @@ interface LinkPickerProps {
 
 export const LinkPicker = ({ value, onChange, label = 'Link Type' }: LinkPickerProps) => {
     const { siteId } = useSite();
-    const [pages, setPages] = useState<any[]>([]);
-    const [forms, setForms] = useState<any[]>([]);
+    const [pages, setPages] = useState<Array<{ id: string; title?: string; slug?: string }>>([]);
+    const [forms, setForms] = useState<Array<{ id: string; title?: string; name?: string }>>([]);
 
     useEffect(() => {
         if (!siteId) return;
@@ -31,8 +31,8 @@ export const LinkPicker = ({ value, onChange, label = 'Link Type' }: LinkPickerP
             getDocs(collection(db, 'sites', siteId, 'pages')),
             getDocs(collection(db, 'sites', siteId, 'forms')),
         ]).then(([pSnap, fSnap]) => {
-            setPages(pSnap.docs.map(d => ({ id: d.id, ...(d.data() as any) })));
-            setForms(fSnap.docs.map(d => ({ id: d.id, ...(d.data() as any) })));
+            setPages(pSnap.docs.map(d => ({ id: d.id, ...d.data() } as { id: string; title?: string; slug?: string })));
+            setForms(fSnap.docs.map(d => ({ id: d.id, ...d.data() } as { id: string; title?: string; name?: string })));
         });
     }, [siteId]);
 

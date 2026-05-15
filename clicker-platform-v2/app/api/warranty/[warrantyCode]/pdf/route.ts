@@ -49,9 +49,9 @@ export async function GET(
     const warrantyUrl = `${origin}/warranty/${code}`;
 
     // Render PDF to buffer
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const buffer = await renderToBuffer(
-        createElement(WarrantyCardPdf, { card, warrantyUrl }) as any
+        createElement(WarrantyCardPdf, { card, warrantyUrl }) as Parameters<typeof renderToBuffer>[0]
     );
 
     return new NextResponse(new Uint8Array(buffer), {

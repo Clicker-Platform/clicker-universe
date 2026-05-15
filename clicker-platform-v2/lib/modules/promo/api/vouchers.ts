@@ -1,7 +1,7 @@
 // lib/modules/promo/api/vouchers.ts
 import {
   collection, doc, getDoc, getDocs, query, where, orderBy, limit,
-  setDoc, updateDoc, deleteDoc, serverTimestamp, Timestamp
+  updateDoc, deleteDoc
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Voucher, VoucherStatus } from '../types';

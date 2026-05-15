@@ -1,6 +1,6 @@
 // lib/modules/promo/__tests__/commit.test.ts
 import { vi, describe, it, expect, beforeEach } from 'vitest';
-import { runTransaction } from 'firebase/firestore';
+import { runTransaction, type Transaction } from 'firebase/firestore';
 
 vi.mock('firebase/firestore', () => ({
   getFirestore: vi.fn(() => ({})),
@@ -19,7 +19,7 @@ const mockSet = vi.fn();
 beforeEach(() => {
   vi.clearAllMocks();
   vi.mocked(runTransaction).mockImplementation(async (_db, fn) => {
-    await fn({ get: mockGet, update: mockUpdate, set: mockSet });
+    await fn({ get: mockGet, update: mockUpdate, set: mockSet } as unknown as Transaction);
   });
 });
 

@@ -3,9 +3,11 @@ import { Booking } from '@/lib/modules/reservation/types';
 import { Calendar, Clock } from 'lucide-react';
 import { StatusBadge } from './StatusBadge';
 
-const getDate = (date: any): Date => {
+const getDate = (date: { toDate?: () => Date } | Date | string | null | undefined): Date => {
     if (!date) return new Date();
-    return date.toDate ? date.toDate() : new Date(date);
+    return typeof date === 'object' && date !== null && 'toDate' in date && typeof date.toDate === 'function'
+        ? date.toDate()
+        : new Date(date as string | Date);
 };
 
 interface BookingListProps {

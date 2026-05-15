@@ -9,15 +9,15 @@ import type { FeatureCard, FeatureCardsData } from '@/components/blocks/feature-
 
 function stripUndefined<T>(value: T): T {
     if (Array.isArray(value)) {
-        return value.map(stripUndefined) as any;
+        return value.map(stripUndefined) as unknown as T;
     }
     if (value && typeof value === 'object') {
-        const out: any = {};
+        const out: Record<string, unknown> = {};
         for (const [k, v] of Object.entries(value)) {
             if (v === undefined) continue;
             out[k] = stripUndefined(v);
         }
-        return out;
+        return out as unknown as T;
     }
     return value;
 }
@@ -84,12 +84,12 @@ function CardItem({ card, index, total, onChange, onDelete, onMove }: {
     const [expanded, setExpanded] = useState(true);
     const [showMedia, setShowMedia] = useState(!!card.media?.src);
 
-    const set = (field: keyof FeatureCard, value: any) => {
+    const set = (field: keyof FeatureCard, value: unknown) => {
         const next = { ...card };
         if (value === undefined || value === null) {
             delete next[field];
         } else {
-            (next as any)[field] = value;
+            (next as Record<string, unknown>)[field] = value;
         }
         onChange(next);
     };

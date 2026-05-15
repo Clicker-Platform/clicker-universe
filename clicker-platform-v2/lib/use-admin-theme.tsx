@@ -14,7 +14,7 @@ export function AdminThemeProvider({ children }: { children: ReactNode }): React
 
     useEffect(() => {
         const saved = localStorage.getItem('admin_dark_mode');
-        if (saved === 'true') setIsDark(true);
+        if (saved === 'true') Promise.resolve().then(() => setIsDark(true));
     }, []);
 
     const toggle = () => {

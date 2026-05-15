@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { ImageIcon, Loader2, CheckCircle2, AlertCircle, Clock } from 'lucide-react';
 import { MarketingAsset } from '../types';
 
@@ -42,10 +43,11 @@ export default function AssetGrid({ assets, onSelect }: Props) {
           >
             {/* Thumbnail */}
             <div className="relative aspect-square bg-gray-50">
-              <img
+              <Image
                 src={asset.thumbnailUrl || asset.fileUrl}
                 alt={asset.fileName}
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
               />
               <div className="absolute top-2 left-2">
                 <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-black/60 text-white">

@@ -16,14 +16,14 @@ interface PageListItem {
     id: string;
     title: string;
     slug: string;
-    updatedAt?: any;
+    updatedAt?: { toMillis?: () => number };
 }
 
 interface TrashedPageListItem {
     id: string;
     title: string;
     slug: string;
-    deletedAt?: any;
+    deletedAt?: { toMillis?: () => number };
 }
 
 interface PageFormData {
@@ -65,10 +65,10 @@ const emptyFormData: PageFormData = {
 interface CachedPage {
     formData: PageFormData;
     savedSnapshot: string;
-    hydratedData: Record<string, any>;
+    hydratedData: Record<string, unknown>;
     blockTypesKey: string;
     cachedAt: number;
-    updatedAt?: any;
+    updatedAt?: { toMillis?: () => number };
 }
 
 const MAX_CACHED_PAGES = 10;
@@ -87,10 +87,10 @@ interface PageStudioContextType {
     isDirty: boolean;
 
     // Hydrated data (links, products, etc.) — lifted from CanvasStudio for caching
-    hydratedData: Record<string, any>;
+    hydratedData: Record<string, unknown>;
 
     // Global settings
-    globalSettings: any;
+    globalSettings: Record<string, unknown> | null;
 
     // Saving state
     saving: boolean;
@@ -121,7 +121,7 @@ interface PageStudioContextType {
     unsetHomepage: () => Promise<void>;
     updateFooterText: (val: string) => Promise<void>;
     refreshGlobalSettings: () => Promise<void>;
-    updateGlobalSettings: (partial: Record<string, any>) => void;
+    updateGlobalSettings: (partial: Record<string, unknown>) => void;
     refreshHydratedData: () => Promise<void>;
 
     // Links sync — increment to signal LinksPanel to re-fetch
@@ -172,7 +172,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
     const savedSnapshotRef = useRef<string>('');
 
     // Global settings
-    const [globalSettings, setGlobalSettings] = useState<any>(null);
+    const [globalSettings, setGlobalSettings] = useState<Record<string, unknown> | null>(null);
 
     // Saving
     const [saving, setSaving] = useState(false);
@@ -185,7 +185,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
     const [pendingSwitch, setPendingSwitch] = useState<string | null>(null);
 
     // Hydrated data (lifted from CanvasStudio for caching)
-    const [hydratedData, setHydratedData] = useState<Record<string, any>>({});
+    const [hydratedData, setHydratedData] = useState<Record<string, unknown>>({});
 
     // Links sync
     const [linksVersion, setLinksVersion] = useState(0);
@@ -278,8 +278,8 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
         pageId: string,
         data: PageFormData,
         snapshot: string,
-        hydrated: Record<string, any>,
-        updatedAt?: any,
+        hydrated: Record<string, unknown>,
+        updatedAt?: { toMillis?: () => number },
     ) => {
         const cache = pageCacheRef.current;
         cache.set(pageId, {
@@ -393,7 +393,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
 
     // ── Build formData from Firestore doc ──────────────────────────────────
 
-    const buildFormData = useCallback(async (data: Page, settingsOverride?: any): Promise<PageFormData> => {
+    const buildFormData = useCallback(async (data: Page, settingsOverride?: Record<string, unknown> | null): Promise<PageFormData> => {
         let pageBlocks = data.blocks && Array.isArray(data.blocks) && data.blocks.length > 0
             ? data.blocks
             : [];
@@ -403,7 +403,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
             const settings = settingsOverride || globalSettings;
             if (data.slug === (settings?.homepageSlug || 'home')) {
                 const { generateSystemBlocks } = await import('@/lib/systemBlocks');
-                pageBlocks = generateSystemBlocks(settings?.homeBlockOrder || [], settings?.hiddenBlockIds || []);
+                pageBlocks = generateSystemBlocks((settings?.homeBlockOrder as string[] | undefined) || [], (settings?.hiddenBlockIds as string[] | undefined) || []);
             } else if (data.blocks && Array.isArray(data.blocks)) {
                 pageBlocks = data.blocks;
             }
@@ -453,7 +453,14 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
             const cached = pageCacheRef.current.get(pageId);
             if (!cached) return;
 
-            const remoteUpdatedAt = data.updatedAt?.toMillis?.() ?? 0;
+            const toMillis = (v: typeof data.updatedAt): number => {
+                if (!v) return 0;
+                if (typeof v === 'object' && 'toMillis' in v && typeof v.toMillis === 'function') return v.toMillis();
+                if (typeof v === 'number') return v;
+                if (typeof v === 'string') return new Date(v).getTime();
+                return 0;
+            };
+            const remoteUpdatedAt = toMillis(data.updatedAt);
             const cachedUpdatedAt = cached.updatedAt?.toMillis?.() ?? 0;
 
             if (remoteUpdatedAt > cachedUpdatedAt) {
@@ -462,7 +469,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
                 const freshSnapshot = getSnapshot(freshFormData);
 
                 // Update cache
-                cacheCurrentPage(pageId, freshFormData, freshSnapshot, cached.hydratedData, data.updatedAt);
+                cacheCurrentPage(pageId, freshFormData, freshSnapshot, cached.hydratedData, typeof data.updatedAt === 'object' ? data.updatedAt : undefined);
 
                 // If still the active page and user hasn't edited, silently update
                 if (activePageIdRef.current === pageId) {
@@ -479,7 +486,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
 
     // ── Load a single page ─────────────────────────────────────────────────
 
-    const loadPage = useCallback(async (pageId: string, settingsOverride?: any) => {
+    const loadPage = useCallback(async (pageId: string, settingsOverride?: Record<string, unknown> | null) => {
         if (!siteId) return;
         // ── CACHE HIT: instant restore ──
         const cached = pageCacheRef.current.get(pageId);
@@ -510,7 +517,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
             restorePageState(pageId, newFormData, snapshot);
 
             // Cache the freshly loaded page (hydratedData will be added by hydration effect)
-            cacheCurrentPage(pageId, newFormData, snapshot, {}, data.updatedAt);
+            cacheCurrentPage(pageId, newFormData, snapshot, {}, typeof data.updatedAt === 'object' ? data.updatedAt : undefined);
         } catch (err) {
             console.error('Error loading page:', err);
             toast.error('Failed to load page');
@@ -571,6 +578,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
             await savePageInternal();
             await executeSwitchPage(target);
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- savePageInternal declared below; stable via useCallback
     }, [pendingSwitch, executeSwitchPage]);
 
     const cancelSwitch = useCallback(() => {
@@ -860,7 +868,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
             }
 
             // Strip trash-only fields
-            const { originalSlug, deletedAt, ...restoredData } = pageData;
+            const { originalSlug: _originalSlug, deletedAt: _deletedAt, ...restoredData } = pageData;
             const finalData = { ...restoredData, slug, updatedAt: serverTimestamp() };
 
             // Write back to pages
@@ -929,7 +937,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
         try {
             await writeSiteSettings(siteId, { homepageSlug: formData.slug });
 
-            setGlobalSettings((prev: any) => prev ? { ...prev, homepageSlug: formData.slug } : { homepageSlug: formData.slug });
+            setGlobalSettings((prev) => prev ? { ...prev, homepageSlug: formData.slug } : { homepageSlug: formData.slug });
             purgeTenantCache(siteId);
         } catch (err) {
             console.error('Error setting homepage:', err);
@@ -943,7 +951,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
         try {
             await writeSiteSettings(siteId, { homepageSlug: 'home' });
 
-            setGlobalSettings((prev: any) => prev ? { ...prev, homepageSlug: 'home' } : { homepageSlug: 'home' });
+            setGlobalSettings((prev) => prev ? { ...prev, homepageSlug: 'home' } : { homepageSlug: 'home' });
             purgeTenantCache(siteId);
         } catch (err) {
             console.error('Error unsetting homepage:', err);
@@ -961,8 +969,8 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
         }
     }, [siteId]);
 
-    const updateGlobalSettings = useCallback((partial: Record<string, any>) => {
-        setGlobalSettings((prev: any) => prev ? { ...prev, ...partial } : partial);
+    const updateGlobalSettings = useCallback((partial: Record<string, unknown>) => {
+        setGlobalSettings((prev) => prev ? { ...prev, ...partial } : partial);
     }, []);
 
     const refreshHydratedData = useCallback(async () => {
@@ -980,7 +988,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
         if (!siteId) return;
         try {
             await writeSiteSettings(siteId, { footerText: val });
-            setGlobalSettings((prev: any) => prev ? { ...prev, footerText: val } : { footerText: val });
+            setGlobalSettings((prev) => prev ? { ...prev, footerText: val } : { footerText: val });
             purgeTenantCache(siteId);
         } catch (err) {
             console.error('Error updating footer text:', err);

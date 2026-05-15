@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Lead, PipelineStage } from '@/lib/modules/sales-pipeline/types';
 import { updateLead } from '@/lib/modules/sales-pipeline/api';
-import { Loader2, Trash2, X, Calendar, User } from 'lucide-react';
+import { Loader2, X, User } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useSite } from '@/lib/site-context';

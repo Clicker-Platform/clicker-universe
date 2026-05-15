@@ -4,13 +4,13 @@ import { Type, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 
 interface SystemBlockFormProps {
-    data: any;
-    onChange: (data: any) => void;
+    data: Record<string, unknown>;
+    onChange: (data: Record<string, unknown>) => void;
     blockType: string;
 }
 
 export function SystemBlockForm({ data, onChange, blockType }: SystemBlockFormProps) {
-    const handleChange = (field: string, value: any) => {
+    const handleChange = (field: string, value: unknown) => {
         onChange({ ...data, [field]: value });
     };
 
@@ -47,7 +47,7 @@ export function SystemBlockForm({ data, onChange, blockType }: SystemBlockFormPr
                     </label>
                     <input
                         type="text"
-                        value={data.title || ''}
+                        value={(data.title as string | undefined) || ''}
                         onChange={(e) => handleChange('title', e.target.value)}
                         placeholder="Leave blank for default"
                         className="w-full px-4 py-2 bg-gray-50 dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-lg text-sm font-bold text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-600 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none"

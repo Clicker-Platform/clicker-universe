@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
+import Image from 'next/image';
 import { getMenuItems, getPOSCategories, savePOSCategories, POSCategory } from '../../api';
 import { db } from '@/lib/firebase';
 import { isModuleEnabled } from '@/lib/modules/registry';
@@ -12,6 +13,7 @@ import { POSMenuItemDialog } from './components/POSMenuItemDialog';
 import { POSCategoryManagerModal } from './components/POSCategoryManagerModal';
 import { useSite } from '@/lib/site-context';
 import { logger } from '@/lib/logger-edge';
+import type { InventoryItem } from '@/lib/modules/inventory/types';
 
 interface POSItem {
     id: string;
@@ -31,7 +33,7 @@ interface POSMenuClientProps {
 export default function POSMenuClient({ initialItems = [] }: POSMenuClientProps) {
     const { siteId } = useSite();
     const [items, setItems] = useState<POSItem[]>(initialItems);
-    const [inventoryItems, setInventoryItems] = useState<any[]>([]);
+    const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
     const [isLoading, setIsLoading] = useState(initialItems.length === 0);
 
     // Category state
@@ -87,7 +89,15 @@ export default function POSMenuClient({ initialItems = [] }: POSMenuClientProps)
         return true;
     }), [items, selectedCategory]);
 
-    const handleSaveItem = async (data: any) => {
+    const handleSaveItem = async (data: {
+        name: string;
+        price: string;
+        category: string;
+        description: string;
+        images: string[];
+        isActive: boolean;
+        variants?: unknown[];
+    }) => {
         setIsSubmitting(true);
         const mainImage = data.images && data.images.length > 0 ? data.images[0] : '';
         const numericPrice = Number(data.price);
@@ -111,7 +121,7 @@ export default function POSMenuClient({ initialItems = [] }: POSMenuClientProps)
                 ));
             } else if (siteId) {
                 const docRef = await addDoc(collection(db, 'sites', siteId, 'modules/byod_pos/menu_items'), itemData);
-                const newItem: POSItem = { id: docRef.id, ...itemData } as POSItem;
+                const newItem: POSItem = { id: docRef.id, ...itemData } as unknown as POSItem;
                 setItems([...items, newItem]);
             }
             setIsEditing(false);
@@ -119,7 +129,7 @@ export default function POSMenuClient({ initialItems = [] }: POSMenuClientProps)
         } catch (error) {
             logger.error('pos.menu.item.save.failed', { siteId, error });
             // Check for permission error (code usually 'permission-denied' or message 'Missing or insufficient permissions')
-            const isPermissionError = (error as any)?.code === 'permission-denied' || (error as any)?.message?.includes('Missing or insufficient permissions');
+            const isPermissionError = (error as { code?: string; message?: string })?.code === 'permission-denied' || (error as { code?: string; message?: string })?.message?.includes('Missing or insufficient permissions');
 
             if (isPermissionError) {
                 toast.info("View Only Mode", {
@@ -299,7 +309,7 @@ export default function POSMenuClient({ initialItems = [] }: POSMenuClientProps)
                                             <div className="flex items-center gap-3 flex-1 w-full">
                                                 <div className="w-10 h-10 bg-gray-100 dark:bg-neutral-800 rounded-lg overflow-hidden flex-shrink-0 border border-gray-200 dark:border-neutral-700">
                                                     {displayImage ? (
-                                                        <img src={displayImage} alt={item.name} className={`w-full h-full object-cover ${!isActive ? 'grayscale' : ''}`} />
+                                                        <Image src={displayImage} alt={item.name} width={40} height={40} className={`w-full h-full object-cover ${!isActive ? 'grayscale' : ''}`} />
                                                     ) : (
                                                         <div className={`w-full h-full flex items-center justify-center bg-gray-100 dark:bg-neutral-800 text-gray-400 dark:text-neutral-600 font-bold text-lg ${!isActive ? 'grayscale' : ''}`}>
                                                             {item.name.slice(0, 2).toUpperCase()}
@@ -356,7 +366,7 @@ export default function POSMenuClient({ initialItems = [] }: POSMenuClientProps)
 
                                         <div className="aspect-square bg-gray-100 dark:bg-neutral-800 rounded-lg mb-3 overflow-hidden text-brand-dark border border-gray-100 dark:border-neutral-800">
                                             {displayImage ? (
-                                                <img src={displayImage} alt={item.name} className={`w-full h-full object-cover ${!isActive ? 'grayscale' : ''}`} />
+                                                <Image src={displayImage} alt={item.name} width={80} height={80} className={`w-full h-full object-cover ${!isActive ? 'grayscale' : ''}`} />
                                             ) : (
                                                 <div className={`w-full h-full flex items-center justify-center bg-gray-100 dark:bg-neutral-800 text-gray-400 dark:text-neutral-600 font-bold text-3xl ${!isActive ? 'grayscale' : ''}`}>
                                                     {item.name.slice(0, 2).toUpperCase()}
@@ -401,7 +411,7 @@ export default function POSMenuClient({ initialItems = [] }: POSMenuClientProps)
                     description: formData.description,
                     images: formData.images,
                     isActive: formData.isActive,
-                    variants: (items.find(i => i.id === editingId) as any)?.variants || []
+                    variants: ((items.find(i => i.id === editingId) as (POSItem & { variants?: unknown[] }))?.variants || []) as unknown as never
                 } : undefined}
             />
 

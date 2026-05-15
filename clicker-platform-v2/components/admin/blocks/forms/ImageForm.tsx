@@ -4,12 +4,16 @@ import { MediaField } from '../media-field/MediaField';
 import { MediaFieldValue, DEFAULT_MEDIA } from '../media-field/types';
 
 interface ImageFormProps {
-    data: any;
-    onChange: (data: any) => void;
+    data: Record<string, unknown>;
+    onChange: (data: Record<string, unknown>) => void;
 }
 
 export const ImageForm = ({ data, onChange }: ImageFormProps) => {
-    const safeData = data || {};
+    const safeData = (data || {}) as {
+        media?: MediaFieldValue;
+        url?: string;
+        caption?: string;
+    };
 
     // Migrate legacy url-only data to MediaFieldValue shape
     const mediaValue: MediaFieldValue = safeData.media ?? (

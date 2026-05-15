@@ -1,7 +1,8 @@
 import React from 'react';
+import '@testing-library/jest-dom/vitest';
 import { vi, describe, it, expect, beforeEach, Mock } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
-import { collection, query, where, orderBy, getDocs, limit } from 'firebase/firestore';
+import { getDocs, where } from 'firebase/firestore';
 import MemberWarrantyWidget from '../public/MemberWarrantyWidget';
 import MemberServiceHistoryWidget from '../public/MemberServiceHistoryWidget';
 

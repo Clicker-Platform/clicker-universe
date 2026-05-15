@@ -1,7 +1,6 @@
 // Complete skill catalog — defines all skills available in the Generate page UI
 
-import { SkillDefinition, MultiSkillFlow } from '../types';
-import { MULTI_SKILL_FLOWS } from '../orchestrator/flows';
+import { SkillDefinition } from '../types';
 import { PLATFORM_OPTIONS, TONE_OPTIONS, STYLE_OPTIONS } from '../constants';
 
 export const SKILLS_CATALOG: SkillDefinition[] = [

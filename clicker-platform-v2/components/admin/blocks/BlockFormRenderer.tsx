@@ -3,9 +3,8 @@
 import { PageBlock, BlockType } from '@/data/mockData';
 import { useState, useEffect, memo } from 'react';
 import dynamic from 'next/dynamic';
-import { Skeleton } from '@/components/ui/skeleton';
 import { subscribeToEnabledModules } from '@/lib/modules/registry';
-import { Settings, ExternalLink, Box } from 'lucide-react';
+import { Settings, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { getTemplate } from '@/lib/templates/registry';
 import { LayoutVariantPicker } from './forms/LayoutVariantPicker';
@@ -38,7 +37,7 @@ const FeatureCardsForm = dynamic(() => import('./forms/FeatureCardsForm').then(m
 
 interface BlockFormRendererProps {
     block: PageBlock;
-    onChange: (id: string, data: any) => void;
+    onChange: (id: string, data: Record<string, unknown>) => void;
     templateId?: string;
     onOpenSlideOver?: (panel: 'links' | 'forms' | 'products' | 'siteinfo' | 'branding') => void;
 }
@@ -61,7 +60,7 @@ export const BlockFormRenderer = memo(({ block, onChange, templateId = 'classic'
         };
 
         if (coreLabels[block.type]) {
-            setModuleInfo(null);
+            Promise.resolve().then(() => setModuleInfo(null));
             return;
         }
 
@@ -97,7 +96,7 @@ export const BlockFormRenderer = memo(({ block, onChange, templateId = 'classic'
         return () => unsubscribe();
     }, [block.type]);
 
-    const handleDataChange = (newData: any) => {
+    const handleDataChange = (newData: Record<string, unknown>) => {
         onChange(block.id, newData);
     };
 
@@ -107,7 +106,7 @@ export const BlockFormRenderer = memo(({ block, onChange, templateId = 'classic'
 
     const template = getTemplate(templateId);
     const defaultVariant = template.config.defaultBlockLayouts?.[block.type] || 'default';
-    const currentVariant = block.data.layoutVariant || defaultVariant;
+    const currentVariant = (block.data.layoutVariant as string | undefined) || defaultVariant;
 
     const renderWithLayoutPicker = (FormContent: React.ReactNode) => (
         <div className="space-y-6">
@@ -124,7 +123,10 @@ export const BlockFormRenderer = memo(({ block, onChange, templateId = 'classic'
     switch (block.type) {
         case 'hero': return renderWithLayoutPicker(<HeroForm data={block.data} onChange={handleDataChange} />);
         case 'text': return renderWithLayoutPicker(<TextForm data={block.data} onChange={handleDataChange} />);
-        case 'content_showcase': return <ContentShowcaseForm data={block.data} onChange={handleDataChange} />;
+        case 'content_showcase': {
+            const Form = ContentShowcaseForm as unknown as React.ComponentType<{ data: unknown; onChange: (data: unknown) => void }>;
+            return <Form data={block.data} onChange={handleDataChange as (d: unknown) => void} />;
+        }
         case 'image': return renderWithLayoutPicker(<ImageForm data={block.data} onChange={handleDataChange} />);
         case 'button': return renderWithLayoutPicker(<ButtonForm data={block.data} onChange={handleDataChange} />);
         case 'products': return renderWithLayoutPicker(<ProductsForm data={block.data} onChange={handleDataChange} onOpenProducts={onOpenSlideOver ? () => onOpenSlideOver('products') : undefined} />);
@@ -136,7 +138,10 @@ export const BlockFormRenderer = memo(({ block, onChange, templateId = 'classic'
         case 'inline_form': return renderWithLayoutPicker(<InlineFormBlockForm data={block.data} onChange={handleDataChange} />);
 
         case 'heading': return <HeadingForm data={block.data} onChange={handleDataChange} />;
-        case 'feature_cards': return <FeatureCardsForm data={block.data} onChange={handleDataChange} />;
+        case 'feature_cards': {
+            const Form = FeatureCardsForm as unknown as React.ComponentType<{ data: unknown; onChange: (data: unknown) => void }>;
+            return <Form data={block.data} onChange={handleDataChange as (d: unknown) => void} />;
+        }
 
         case 'quick_actions':
             return <QuickActionsBlockForm data={block.data} onChange={handleDataChange} onOpenLinks={onOpenSlideOver ? () => onOpenSlideOver('links') : undefined} />;

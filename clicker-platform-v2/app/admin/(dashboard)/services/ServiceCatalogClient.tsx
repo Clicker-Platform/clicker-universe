@@ -360,7 +360,7 @@ function ServiceForm({ form, set, categories, pricingDisplay, isSubmitting, edit
                         className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-brand-dark dark:bg-neutral-800 dark:text-neutral-200"
                     />
                     {form.bookable && pricingDisplay === 'starting_from' && (
-                        <p className="text-xs text-indigo-600 dark:text-indigo-500 mt-1">Shown as "Mulai dari" on the booking page.</p>
+                        <p className="text-xs text-indigo-600 dark:text-indigo-500 mt-1">Shown as &quot;Mulai dari&quot; on the booking page.</p>
                     )}
                 </div>
                 <div>

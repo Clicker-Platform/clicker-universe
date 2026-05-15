@@ -48,9 +48,9 @@ const mockBooking = {
   customerPhone: '+628123456789',
   status: 'confirmed' as const,
   totalPrice: 500000,
-  startAt: { toDate: () => new Date() } as any,
-  endAt: { toDate: () => new Date() } as any,
-  createdAt: { toDate: () => new Date() } as any,
+  startAt: { toDate: () => new Date() } as unknown as { toDate: () => Date },
+  endAt: { toDate: () => new Date() } as unknown as { toDate: () => Date },
+  createdAt: { toDate: () => new Date() } as unknown as { toDate: () => Date },
   staffName: 'John',
   notes: ''
 };
@@ -72,8 +72,8 @@ describe('Suite 1 — Reservation Booking → Service Record Bridge', () => {
     });
     
     // Mock window.location
-    delete (window as any).location;
-    window.location = { href: '' } as any;
+    delete (window as unknown as { location?: Location }).location;
+    (window as unknown as { location: Location }).location = { href: '' } as Location;
     
     // Mock alert
     vi.spyOn(window, 'alert').mockImplementation(() => {});
@@ -86,11 +86,11 @@ describe('Suite 1 — Reservation Booking → Service Record Bridge', () => {
     const onClose = vi.fn();
     
     render(
-      <BookingDetailPanel 
-        booking={booking} 
-        onClose={onClose} 
-        onStatusUpdate={onStatusUpdate} 
-        onUpdateDetails={onUpdateDetails} 
+      <BookingDetailPanel
+        booking={booking as unknown as Parameters<typeof BookingDetailPanel>[0]['booking']}
+        onClose={onClose}
+        onStatusUpdate={onStatusUpdate}
+        onUpdateDetails={onUpdateDetails}
       />
     );
     return { onStatusUpdate, onUpdateDetails, onClose };

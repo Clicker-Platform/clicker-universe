@@ -67,13 +67,13 @@ const DEFAULT_SETTINGS: PromoSettings = {
 describe('evaluatePromo', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (settingsApi.getPromoSettings as any).mockResolvedValue(DEFAULT_SETTINGS);
-    (vouchersApi.findVoucherByCode as any).mockResolvedValue(null);
+    vi.mocked(settingsApi.getPromoSettings).mockResolvedValue(DEFAULT_SETTINGS);
+    vi.mocked(vouchersApi.findVoucherByCode).mockResolvedValue(null);
   });
 
   // Test 1: Happy path — active promo
   it('1. happy path: returns ok=true with correct discount for active promo', async () => {
-    (promosApi.findPromoByCode as any).mockResolvedValue(
+    vi.mocked(promosApi.findPromoByCode).mockResolvedValue(
       makePromo({ code: 'SUMMER20', kind: 'percent', value: 20, maxDiscount: 100_000 })
     );
 
@@ -91,8 +91,8 @@ describe('evaluatePromo', () => {
 
   // Test 2: not_found — neither promo nor voucher found
   it('2. not_found: returns ok=false when both promo and voucher lookups return null', async () => {
-    (promosApi.findPromoByCode as any).mockResolvedValue(null);
-    (vouchersApi.findVoucherByCode as any).mockResolvedValue(null);
+    vi.mocked(promosApi.findPromoByCode).mockResolvedValue(null);
+    vi.mocked(vouchersApi.findVoucherByCode).mockResolvedValue(null);
 
     const r = await evaluatePromo({
       siteId: 's1', source: 'POS', subtotal: 100_000, code: 'INVALID',
@@ -106,10 +106,10 @@ describe('evaluatePromo', () => {
 
   // Test 3: Guest blocked — allowGuestCodes = false
   it('3. audience_mismatch: blocks guest when allowGuestCodes=false', async () => {
-    (promosApi.findPromoByCode as any).mockResolvedValue(
+    vi.mocked(promosApi.findPromoByCode).mockResolvedValue(
       makePromo({ conditions: { eligibleSources: [], audience: 'public' } })
     );
-    (settingsApi.getPromoSettings as any).mockResolvedValue({
+    vi.mocked(settingsApi.getPromoSettings).mockResolvedValue({
       ...DEFAULT_SETTINGS,
       allowGuestCodes: false,
     });
@@ -127,7 +127,7 @@ describe('evaluatePromo', () => {
 
   // Test 4: Expired window
   it('4. expired: returns ok=false when validUntil is in the past', async () => {
-    (promosApi.findPromoByCode as any).mockResolvedValue(
+    vi.mocked(promosApi.findPromoByCode).mockResolvedValue(
       makePromo({
         conditions: {
           eligibleSources: [],
@@ -149,7 +149,7 @@ describe('evaluatePromo', () => {
 
   // Test 5: Wrong source
   it('5. wrong_source: returns ok=false when source not in eligibleSources', async () => {
-    (promosApi.findPromoByCode as any).mockResolvedValue(
+    vi.mocked(promosApi.findPromoByCode).mockResolvedValue(
       makePromo({
         conditions: {
           eligibleSources: ['RESERVATION'],
@@ -170,7 +170,7 @@ describe('evaluatePromo', () => {
 
   // Test 6: Min subtotal unmet
   it('6. min_subtotal_unmet: returns ok=false when subtotal < minSubtotal', async () => {
-    (promosApi.findPromoByCode as any).mockResolvedValue(
+    vi.mocked(promosApi.findPromoByCode).mockResolvedValue(
       makePromo({
         conditions: {
           eligibleSources: [],
@@ -192,7 +192,7 @@ describe('evaluatePromo', () => {
 
   // Test 7: Usage exhausted
   it('7. usage_exhausted: returns ok=false when usageCount >= maxUses', async () => {
-    (promosApi.findPromoByCode as any).mockResolvedValue(
+    vi.mocked(promosApi.findPromoByCode).mockResolvedValue(
       makePromo({ maxUses: 10, usageCount: 10 })
     );
 
@@ -208,7 +208,7 @@ describe('evaluatePromo', () => {
 
   // Test 8: Paused promo
   it('8. paused: returns ok=false when promo status is paused', async () => {
-    (promosApi.findPromoByCode as any).mockResolvedValue(
+    vi.mocked(promosApi.findPromoByCode).mockResolvedValue(
       makePromo({ status: 'paused' })
     );
 
@@ -224,8 +224,8 @@ describe('evaluatePromo', () => {
 
   // Test 9: Voucher — wrong owner
   it('9. audience_mismatch: returns ok=false when voucher owner != memberId', async () => {
-    (promosApi.findPromoByCode as any).mockResolvedValue(null);
-    (vouchersApi.findVoucherByCode as any).mockResolvedValue(
+    vi.mocked(promosApi.findPromoByCode).mockResolvedValue(null);
+    vi.mocked(vouchersApi.findVoucherByCode).mockResolvedValue(
       makeVoucher({ ownerMemberId: 'member-A' })
     );
 
@@ -242,8 +242,8 @@ describe('evaluatePromo', () => {
 
   // Test 10: Voucher — already used
   it('10. already_used: returns ok=false when voucher status is used', async () => {
-    (promosApi.findPromoByCode as any).mockResolvedValue(null);
-    (vouchersApi.findVoucherByCode as any).mockResolvedValue(
+    vi.mocked(promosApi.findPromoByCode).mockResolvedValue(null);
+    vi.mocked(vouchersApi.findVoucherByCode).mockResolvedValue(
       makeVoucher({ status: 'used' })
     );
 

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useSite } from '@/lib/site-context';
-import { Bot, Power, Settings, MessageSquare, ArrowRight } from 'lucide-react';
+import { Bot, Settings, MessageSquare, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AgentDashboard() {
@@ -36,7 +36,7 @@ export default function AgentDashboard() {
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight">AI Sales Overview</h1>
-                    <p className="text-gray-500 dark:text-neutral-500 mt-1">Monitor your AI assistant's performance</p>
+                    <p className="text-gray-500 dark:text-neutral-500 mt-1">Monitor your AI assistant&apos;s performance</p>
                 </div>
                 <Link
                     href={`/${siteId}/admin/ai-sales/settings`}

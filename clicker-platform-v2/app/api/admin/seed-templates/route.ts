@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
         }
 
         return NextResponse.json({ success: true, seeded: results });
-    } catch (error: any) {
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    } catch (error: unknown) {
+        return NextResponse.json({ success: false, error: error instanceof Error ? error.message : String(error) }, { status: 500 });
     }
 }

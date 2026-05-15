@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { auth } from '@/lib/firebase';
 import { useSite } from '@/lib/site-context';
@@ -52,9 +53,9 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
                         This usually happens if you access <code>/admin</code> directly.
                     </p>
                     <div className="flex flex-col gap-3">
-                        <a href="/demo/admin" className="px-6 py-3 bg-brand-dark dark:bg-neutral-100 text-white dark:text-neutral-900 rounded-lg font-bold hover:bg-black dark:hover:bg-white transition-colors">
+                        <Link href="/demo/admin" className="px-6 py-3 bg-brand-dark dark:bg-neutral-100 text-white dark:text-neutral-900 rounded-lg font-bold hover:bg-black dark:hover:bg-white transition-colors">
                             Go to Demo Store
-                        </a>
+                        </Link>
                         <p className="text-xs text-gray-400 dark:text-neutral-500 mt-2">
                             Current Site ID: {siteId}<br />
                             User: {user?.email}

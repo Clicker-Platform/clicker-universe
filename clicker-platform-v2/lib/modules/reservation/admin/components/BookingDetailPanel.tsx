@@ -1,16 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Booking, ReservationSettings } from '@/lib/modules/reservation/types';
+
+type BookingWithAsset = Booking & { assetId?: string; assetModel?: string };
 import { User, Calendar, Clock, X, CheckCircle, ClipboardList, ExternalLink, Car, Loader2 } from 'lucide-react';
 import type { Vehicle, CarCatalogEntry } from '@/lib/modules/service-records/types';
-import { StatusBadge, getStatusLabel } from './StatusBadge';
+import { StatusBadge } from './StatusBadge';
 import { useSite } from '@/lib/site-context'; // New import
 import { logger } from '@/lib/logger-edge';
 
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 
-const getDate = (date: any): Date => {
+const getDate = (date: { toDate?: () => Date } | Date | string | null | undefined): Date => {
     if (!date) return new Date();
-    return date.toDate ? date.toDate() : new Date(date);
+    if (typeof date === 'object' && 'toDate' in date && typeof date.toDate === 'function') {
+        return date.toDate();
+    }
+    return new Date(date as string | Date);
 };
 
 interface BookingDetailPanelProps {
@@ -176,7 +181,9 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
             }
         }
         if (booking) checkMembership();
-    }, [booking?.id, booking?.customerPhone]);
+    // Run only when the booking identity or customer phone changes (not every re-render)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [booking?.id, booking?.customerPhone, siteId]);
 
     // Enrollment State
     const [enrollEmail, setEnrollEmail] = useState('');
@@ -257,8 +264,8 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
                 const originalDuration = booking.endAt.toDate().getTime() - booking.startAt.toDate().getTime();
                 const newEnd = new Date(newStart.getTime() + originalDuration);
 
-                (updates as any).startAt = newStart;
-                (updates as any).endAt = newEnd;
+                (updates as Record<string, unknown>).startAt = newStart;
+                (updates as Record<string, unknown>).endAt = newEnd;
                 delete updates.startString;
             }
 
@@ -501,15 +508,15 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
                             )}
 
                             {/* Vehicle / Asset Info — only shown when the booking has assetId */}
-                            {(booking as any).assetId && (
+                            {(booking as BookingWithAsset).assetId && (
                                 <div>
                                     <label className="text-xs font-bold text-gray-400 dark:text-neutral-500 uppercase tracking-wider block mb-3">Vehicle Info</label>
                                     <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-neutral-800/50 rounded-lg border border-gray-100 dark:border-neutral-800">
                                         <Car size={18} className="text-brand-dark/60 flex-shrink-0" />
                                         <div>
-                                            <p className="font-bold text-gray-900 dark:text-neutral-100 font-mono tracking-wider">{(booking as any).assetId}</p>
-                                            {(booking as any).assetModel && (
-                                                <p className="text-sm text-gray-500 dark:text-neutral-500">{(booking as any).assetModel}</p>
+                                            <p className="font-bold text-gray-900 dark:text-neutral-100 font-mono tracking-wider">{(booking as BookingWithAsset).assetId}</p>
+                                            {(booking as BookingWithAsset).assetModel && (
+                                                <p className="text-sm text-gray-500 dark:text-neutral-500">{(booking as BookingWithAsset).assetModel}</p>
                                             )}
                                         </div>
                                     </div>
@@ -592,8 +599,8 @@ export function BookingDetailPanel({ booking, onClose, onStatusUpdate, onUpdateD
                                     ) : srEnabled && serviceUsedInSR ? (
                                         <ActionButton
                                             onClick={async () => {
-                                                if ((booking as any).assetId) {
-                                                    setPlateInput((booking as any).assetId);
+                                                if ((booking as BookingWithAsset).assetId) {
+                                                    setPlateInput((booking as BookingWithAsset).assetId ?? '');
                                                 }
                                                 setSelectedCatalogId('');
                                                 setNewVehicleColor('');

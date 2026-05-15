@@ -54,7 +54,7 @@ export async function getAvailableForms(siteId: string): Promise<{ id: string, t
             return {
                 id: doc.id,
                 title: data.title || 'Untitled Form',
-                fields: Array.isArray(data.fields) ? data.fields.map((f: any) => ({
+                fields: Array.isArray(data.fields) ? data.fields.map((f: { id: string; label: string }) => ({
                     id: f.id,
                     label: f.label
                 })) : []
@@ -114,7 +114,7 @@ export async function updateLeadStage(siteId: string, leadId: string, stageId: s
 
 export async function updateLead(siteId: string, leadId: string, updates: Partial<Lead>): Promise<void> {
     // Prevent overwriting immutable fields if accidentally passed
-    const { id, createdAt, ...safeUpdates } = updates;
+    const { id: _id, createdAt: _createdAt, ...safeUpdates } = updates;
 
     await updateDoc(leadDoc(siteId, leadId), {
         ...safeUpdates,

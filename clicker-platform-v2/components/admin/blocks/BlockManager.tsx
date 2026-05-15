@@ -31,7 +31,7 @@ interface BlockManagerProps {
     onAddClick?: () => void;
 }
 
-export const BlockManager = ({ blocks, onChange, templateId, onAddClick }: BlockManagerProps) => {
+export const BlockManager = ({ blocks, onChange, onAddClick }: BlockManagerProps) => {
     const { selectedBlockId, setSelectedBlockId } = useEditor();
     const [blockToDelete, setBlockToDelete] = useState<string | null>(null);
     const [moduleBlockLabels, setModuleBlockLabels] = useState<Record<string, string>>({});

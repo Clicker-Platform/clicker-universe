@@ -10,7 +10,7 @@ import {
     startAfter,
     QueryConstraint,
     QueryDocumentSnapshot,
-    getCountFromServer,
+
     getAggregateFromServer,
     sum,
     count
@@ -19,7 +19,7 @@ import { db } from '@/lib/firebase';
 import { POSOrder } from './types';
 import { getPOSSettings } from './api';
 import { ORDERS_COLLECTION } from './constants';
-import { getBusinessDayStart, RESTAURANT_TIMEZONE } from '@/lib/utils/date-timezone';
+import { RESTAURANT_TIMEZONE } from '@/lib/utils/date-timezone';
 import { fromZonedTime } from 'date-fns-tz';
 
 /**
@@ -160,7 +160,7 @@ export { calculateReportSummary };
  * Legacy Client-Side Aggregation (Kept for fallback or detailed breakdown if needed)
  */
 export function generateReportSummary(orders: POSOrder[]): ReportSummary {
-    const validOrders = orders.filter(o => o.status === 'completed' || o.status === 'ready' || (o.status as any) === 'served');
+    const validOrders = orders.filter(o => o.status === 'completed' || o.status === 'ready' || (o.status as string) === 'served');
     const cancelledOrders = orders.filter(o => o.status === 'cancelled');
 
     const totalSales = validOrders.reduce((acc, o) => acc + o.total, 0);

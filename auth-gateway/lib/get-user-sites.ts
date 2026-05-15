@@ -1,5 +1,5 @@
 import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs, collectionGroup, getDoc, doc } from 'firebase/firestore';
+import { collection, query, where, getDocs, collectionGroup, getDoc, doc, QuerySnapshot, QueryDocumentSnapshot, DocumentSnapshot } from 'firebase/firestore';
 
 export interface UserSite {
     siteId: string;
@@ -7,8 +7,15 @@ export interface UserSite {
     name: string;
 }
 
-function toSite(d: { id: string; data: () => Record<string, any> }): UserSite {
-    return { siteId: d.id, slug: d.data().slug || d.id, name: d.data().name || 'My Site' };
+type SiteLike = { id: string; data: () => Record<string, unknown> };
+
+function toSite(d: SiteLike): UserSite {
+    const data = d.data();
+    return {
+        siteId: d.id,
+        slug: (data.slug as string) || d.id,
+        name: (data.name as string) || 'My Site',
+    };
 }
 
 export async function getUserSites(uid: string, email: string | null): Promise<UserSite[]> {
@@ -16,17 +23,17 @@ export async function getUserSites(uid: string, email: string | null): Promise<U
     const sites: UserSite[] = [];
 
     // 1+2. Query ownerId & ownerEmail in parallel — saves ~200ms for email-based fallback
-    const queries: Promise<any>[] = [
+    const queries: Promise<QuerySnapshot | null>[] = [
         getDocs(query(collection(db, 'sites'), where('ownerId', '==', uid))),
         email ? getDocs(query(collection(db, 'sites'), where('ownerEmail', '==', email))) : Promise.resolve(null),
     ];
     const [ownerSnap, emailSnap] = await Promise.all(queries);
 
-    ownerSnap.forEach((d: any) => {
+    ownerSnap?.forEach((d: QueryDocumentSnapshot) => {
         if (!seen.has(d.id)) { seen.add(d.id); sites.push(toSite(d)); }
     });
     if (emailSnap) {
-        emailSnap.forEach((d: any) => {
+        emailSnap.forEach((d: QueryDocumentSnapshot) => {
             if (!seen.has(d.id)) { seen.add(d.id); sites.push(toSite(d)); }
         });
     }
@@ -41,8 +48,8 @@ export async function getUserSites(uid: string, email: string | null): Promise<U
                 const siteRef = memberDoc.ref.parent.parent;
                 if (!siteRef || seen.has(siteRef.id)) return;
                 seen.add(siteRef.id);
-                const siteDoc = await getDoc(doc(db, 'sites', siteRef.id));
-                if (siteDoc.exists()) sites.push(toSite(siteDoc as any));
+                const siteDoc: DocumentSnapshot = await getDoc(doc(db, 'sites', siteRef.id));
+                if (siteDoc.exists()) sites.push(toSite(siteDoc as SiteLike));
             }));
         } catch { /* missing index — graceful skip */ }
     }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import Image from 'next/image';
 import { Upload, X, Loader2 } from 'lucide-react';
 import { uploadToStorage } from '@/lib/upload';
 import { useSite } from '@/lib/site-context';
@@ -57,9 +58,9 @@ export function AvatarUpload({ currentAvatarUrl, onUploadComplete }: AvatarUploa
         try {
             const url = await uploadToStorage({ file, folder: 'profile', siteId });
             onUploadComplete(url);
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('[AvatarUpload] Error:', err);
-            setError(err.message || 'Error uploading image');
+            setError(err instanceof Error ? err.message : 'Error uploading image');
         } finally {
             setUploading(false);
             if (fileInputRef.current) {
@@ -99,10 +100,13 @@ export function AvatarUpload({ currentAvatarUrl, onUploadComplete }: AvatarUploa
                     <>
                         {currentAvatarUrl ? (
                             <div className="relative group w-full h-full flex items-center justify-center p-4">
-                                <img
+                                <Image
                                     src={currentAvatarUrl}
                                     alt="Current Avatar"
+                                    width={128}
+                                    height={128}
                                     className="w-32 h-32 rounded-full object-cover border-[3px] border-white shadow-md"
+                                    unoptimized
                                 />
                                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 dark:bg-neutral-900/80 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl">
                                     <Upload size={32} className="text-brand-dark mb-2" />

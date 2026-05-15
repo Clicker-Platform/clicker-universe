@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
     getBookings,
     getServices,
@@ -15,7 +15,6 @@ import { Booking, Service, Staff } from '@/lib/modules/reservation/types';
 import { useSite } from '@/lib/site-context';
 import { logger } from '@/lib/logger-edge';
 
-import Link from 'next/link';
 import { toast } from 'sonner';
 import { Plus } from 'lucide-react';
 
@@ -28,7 +27,7 @@ import { ReservationSkeleton } from '@/components/skeletons/ReservationSkeleton'
 export default function ReservationDashboard() {
     const { siteId } = useSite();
     const [bookings, setBookings] = useState<Booking[]>([]);
-    const [lastDoc, setLastDoc] = useState<any>(null);
+    const [lastDoc, setLastDoc] = useState<unknown>(null);
     const [loadingMore, setLoadingMore] = useState(false);
     const [hasMore, setHasMore] = useState(false);
     const [counts, setCounts] = useState({ all: 0, new: 0, confirmed: 0, done: 0 });
@@ -68,19 +67,7 @@ export default function ReservationDashboard() {
         loadStaticData();
     }, [siteId]);
 
-    // Fetch Bookings when Link Tab changes or Reload
-    useEffect(() => {
-        if (!siteId) return;
-        loadBookings(false); // Reset list
-    }, [activeTab, siteId]);
-
-    const refreshCounts = async () => {
-        if (!siteId) return;
-        const _counts = await getBookingCounts(siteId);
-        setCounts(_counts);
-    }
-
-    const loadBookings = async (isLoadMore: boolean = false) => {
+    const loadBookings = useCallback(async (isLoadMore: boolean = false) => {
         try {
             if (isLoadMore) setLoadingMore(true);
             else setLoading(true);
@@ -91,9 +78,10 @@ export default function ReservationDashboard() {
                         activeTab === 'confirmed' ? 'confirmed' :
                             ['completed', 'cancelled'];
 
+            // lastDoc intentionally excluded from deps — only read when isLoadMore=true
             const cursor = isLoadMore ? lastDoc : null;
 
-            // @ts-ignore
+            // @ts-expect-error — getBookings cursor param type is loose
             const { bookings: newBookings, lastDoc: newLastDoc } = await getBookings(siteId, statusFilter, 20, cursor);
 
             if (isLoadMore) {
@@ -111,6 +99,19 @@ export default function ReservationDashboard() {
             setLoading(false);
             setLoadingMore(false);
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeTab, siteId]);
+
+    // Fetch Bookings when Link Tab changes or Reload
+    useEffect(() => {
+        if (!siteId) return;
+        loadBookings(false); // Reset list
+    }, [activeTab, siteId, loadBookings]);
+
+    const refreshCounts = async () => {
+        if (!siteId) return;
+        const _counts = await getBookingCounts(siteId);
+        setCounts(_counts);
     };
 
     // Handlers
@@ -132,13 +133,13 @@ export default function ReservationDashboard() {
         }
     };
 
-    const handleCreateBooking = async (formData: any) => {
+    const handleCreateBooking = async (_formData: Record<string, unknown>) => {
         try {
             // Refresh
             loadBookings(false);
             refreshCounts();
-        } catch (error) {
-            logger.error('reservation.admin.booking.create.failed', { siteId, error });
+        } catch (err) {
+            logger.error('reservation.admin.booking.create.failed', { siteId, error: err });
             toast.error("Failed to create booking");
         }
     };
@@ -174,7 +175,7 @@ export default function ReservationDashboard() {
         try {
             await updateBookingDetails(siteId, id, data);
             toast.success("Booking updated");
-        } catch (error) {
+        } catch {
             toast.error("Failed to update booking");
         }
     };

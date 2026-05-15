@@ -9,14 +9,18 @@ import { useSite } from '@/lib/site-context';
 import { TemplateContext } from '@/components/TemplateProvider';
 
 interface LinkBlockFormProps {
-    data: any;
-    onChange: (data: any) => void;
+    data: Record<string, unknown>;
+    onChange: (data: Record<string, unknown>) => void;
 }
 
 const labelClass = "flex items-center gap-2 text-xs font-medium text-neutral-400 dark:text-neutral-500 mb-2";
 
 export const LinkBlockForm = ({ data, onChange }: LinkBlockFormProps) => {
-    const safeData = data || {};
+    const safeData = (data || {}) as {
+        linkId?: string;
+        cardBgColor?: string;
+        cardBorderColor?: string;
+    };
     const { siteId } = useSite();
     const templateCtx = React.useContext(TemplateContext);
     const theme = templateCtx?.theme;
@@ -72,7 +76,7 @@ export const LinkBlockForm = ({ data, onChange }: LinkBlockFormProps) => {
                 {links.length === 0 && (
                     <div className="mt-3 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
                         <p className="text-xs font-bold text-red-400 leading-relaxed">
-                            No links found. Please create some links in the "Links" menu first.
+                            No links found. Please create some links in the &quot;Links&quot; menu first.
                         </p>
                     </div>
                 )}
@@ -99,7 +103,7 @@ export const LinkBlockForm = ({ data, onChange }: LinkBlockFormProps) => {
                         {safeData.cardBgColor && (
                             <button
                                 type="button"
-                                onClick={() => { const { cardBgColor, ...rest } = safeData; onChange(rest); }}
+                                onClick={() => { const { cardBgColor: _cardBgColor, ...rest } = safeData; onChange(rest); }}
                                 className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
                                 title="Reset to template default"
                             >
@@ -118,7 +122,7 @@ export const LinkBlockForm = ({ data, onChange }: LinkBlockFormProps) => {
                         {safeData.cardBorderColor && (
                             <button
                                 type="button"
-                                onClick={() => { const { cardBorderColor, ...rest } = safeData; onChange(rest); }}
+                                onClick={() => { const { cardBorderColor: _cardBorderColor, ...rest } = safeData; onChange(rest); }}
                                 className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
                                 title="Reset to template default"
                             >

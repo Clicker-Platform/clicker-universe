@@ -89,16 +89,17 @@ export async function POST(req: NextRequest) {
 
       return NextResponse.json({ ok: true, generationId: docRef.id, ...result });
     }
-  } catch (err: any) {
-    if (err.message?.startsWith('insufficient_credits:')) {
-      const [, balance, required] = err.message.split(':');
+  } catch (err: unknown) {
+    const errMsg = err instanceof Error ? err.message : String(err);
+    if (errMsg?.startsWith('insufficient_credits:')) {
+      const [, balance, required] = errMsg.split(':');
       return NextResponse.json(
         { error: 'insufficient_credits', balance: Number(balance), required: Number(required) },
         { status: 402 }
       );
     }
-    logger.error('ai.marketing.generate.failed', { siteId, error: err.message });
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    logger.error('ai.marketing.generate.failed', { siteId, error: errMsg });
+    return NextResponse.json({ error: errMsg }, { status: 500 });
   }
 }
 

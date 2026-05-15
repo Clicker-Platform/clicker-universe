@@ -10,23 +10,31 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { NextRequest } from 'next/server';
 
 // ─── Mocks ───────────────────────────────────────────────────────
 
 // Store the last response so assertions can inspect it
-let lastResponse: any = null;
+interface MockResponseShape {
+  type?: string;
+  status?: number;
+  body?: string;
+  url?: string | null;
+  headers?: { get?: (key: string) => string | null | undefined };
+}
+let lastResponse: MockResponseShape | null = null;
 let lastRewriteUrl: string | null = null;
 let lastRedirectUrl: string | null = null;
 
 // Minimal NextResponse mock
-const mockNextResponseNext = vi.fn((...args: any[]) => {
-  const opts = args[0] || {};
+const mockNextResponseNext = vi.fn((...args: unknown[]) => {
+  const opts = args[0] as { request?: { headers?: { get?: (key: string) => string | null | undefined } } } | undefined;
   lastResponse = { type: 'next', headers: opts?.request?.headers };
   return lastResponse;
 });
 
-const mockNextResponseRewrite = vi.fn((url: any, opts?: any) => {
-  lastRewriteUrl = typeof url === 'string' ? url : url.pathname || url.toString();
+const mockNextResponseRewrite = vi.fn((url: unknown, opts?: { request?: { headers?: { get?: (key: string) => string | null | undefined } } }) => {
+  lastRewriteUrl = typeof url === 'string' ? url : (url as { pathname?: string })?.pathname || String(url);
   lastResponse = { type: 'rewrite', url: lastRewriteUrl, headers: opts?.request?.headers };
   return lastResponse;
 });
@@ -42,9 +50,9 @@ class MockNextResponse {
   type = 'error';
   body: string;
   status: number;
-  constructor(body: string, init: any) {
+  constructor(body: string, init: { status?: number }) {
     this.body = body;
-    this.status = init?.status;
+    this.status = init?.status ?? 200;
     lastResponse = { type: 'error', body, status: init?.status };
   }
 }
@@ -102,7 +110,7 @@ function makeRequest(
         return opts.cookies?.[name] ? { value: opts.cookies[name] } : undefined;
       },
     },
-  } as any;
+  } as unknown as NextRequest;
 }
 
 // ─── Import middleware (after mocks are set up) ──────────────────
@@ -123,15 +131,15 @@ beforeEach(() => {
 // Dynamic import so env vars are available
 async function getMiddleware() {
   // Clear module cache to pick up fresh env vars
-  const mod = await import('../middleware');
-  return mod.middleware;
+  const mod = await import('../proxy');
+  return mod.proxy;
 }
 
 // ─── Tests ───────────────────────────────────────────────────────
 
 describe('Middleware: Config', () => {
   it('exports a matcher config', async () => {
-    const mod = await import('../middleware');
+    const mod = await import('../proxy');
     expect(mod.config).toBeDefined();
     expect(mod.config.matcher).toBeDefined();
     expect(Array.isArray(mod.config.matcher)).toBe(true);

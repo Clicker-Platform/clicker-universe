@@ -22,7 +22,7 @@ interface FooterProps {
     hideContact?: boolean;
 }
 
-const ICON_MAP: Record<string, any> = {
+const ICON_MAP: Record<string, React.ComponentType<{ size?: number; strokeWidth?: number }>> = {
     'Instagram': Instagram,
     'Facebook': Facebook,
     'Twitter': Twitter,
@@ -33,7 +33,7 @@ const ICON_MAP: Record<string, any> = {
 };
 
 export const Footer: React.FC<FooterProps> = ({ socialLinks, footerText, contact, hideContact }) => {
-    const { templateId, theme } = useTemplate();
+    const { theme } = useTemplate();
     const isClean = theme.cardStyle === 'clean';
     const isGlass = theme.cardStyle === 'glass';
 

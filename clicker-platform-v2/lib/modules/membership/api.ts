@@ -14,9 +14,6 @@ import {
     limit,
     startAfter,
     QueryDocumentSnapshot,
-    arrayUnion,
-    arrayRemove,
-    deleteDoc
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Member, LoyaltyTransaction, MembershipSettings, MembershipStaffMember } from './types';
@@ -420,15 +417,15 @@ export async function getMembershipStaff(siteId: string): Promise<MembershipStaf
 
     const staffMap = new Map<string, MembershipStaffMember>();
 
-    const processDoc = (docSnap: any, defaultRole: string = 'staff') => {
-        const data = docSnap.data();
+    const processDoc = (docSnap: { id: string; data: () => Record<string, unknown> }, defaultRole: string = 'staff') => {
+        const data = docSnap.data() as { email?: string; displayName?: string; name?: string; role?: string; joinedAt?: { toDate?: () => Date } | string };
         if (!staffMap.has(docSnap.id)) {
             staffMap.set(docSnap.id, {
                 userId: docSnap.id,
                 email: data.email || '',
                 name: data.displayName || data.name || 'Unknown',
                 role: data.role === 'owner' ? 'manager' : defaultRole,
-                assignedAt: data.joinedAt ? (data.joinedAt.toDate ? data.joinedAt.toDate() : new Date(data.joinedAt)) : new Date()
+                assignedAt: data.joinedAt ? (typeof data.joinedAt === 'object' && data.joinedAt.toDate ? data.joinedAt.toDate() : new Date(data.joinedAt as string)) : new Date()
             });
         }
     };
@@ -442,14 +439,14 @@ export async function getMembershipStaff(siteId: string): Promise<MembershipStaf
 /**
  * @deprecated Use Global Team Management (/admin/settings/team)
  */
-export async function assignMembershipRole(siteId: string, email: string, role: string): Promise<void> {
+export async function assignMembershipRole(siteId: string, _email: string, _role: string): Promise<void> {
     logger.warn('membership.role.deprecated', { siteId });
 }
 
 /**
  * @deprecated Use Global Team Management (/admin/settings/team)
  */
-export async function removeMembershipRole(siteId: string, userId: string): Promise<void> {
+export async function removeMembershipRole(siteId: string, _userId: string): Promise<void> {
     logger.warn('membership.role.deprecated', { siteId });
 }
 

@@ -20,14 +20,14 @@ export default function DashboardPage() {
   const now = new Date();
   const [bulan, setBulan] = useState(now.getMonth() + 1);
   const [tahun, setTahun] = useState(now.getFullYear());
-  const [wallets, setWallets] = useState<Wallet[]>([]);
+  const [_wallets, setWallets] = useState<Wallet[]>([]);
   const [entries, setEntries] = useState<FintrackEntry[]>([]);
   const [totalSaldo, setTotalSaldo] = useState(0);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
     if (!siteId) return;
-    setLoading(true);
+    await Promise.resolve().then(() => setLoading(true));
     const [ws, es] = await Promise.all([getWallets(siteId), getEntries(siteId, { bulan, tahun })]);
     setWallets(ws);
     setEntries(es);
@@ -36,7 +36,7 @@ export default function DashboardPage() {
     setLoading(false);
   }, [siteId, bulan, tahun]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { Promise.resolve().then(() => load()); }, [load]);
 
   const pemasukan = entries.filter(e => e.jenis === 'pemasukan').reduce((a, e) => a + e.jumlah, 0);
   const pengeluaran = entries.filter(e => e.jenis === 'pengeluaran').reduce((a, e) => a + e.jumlah, 0);

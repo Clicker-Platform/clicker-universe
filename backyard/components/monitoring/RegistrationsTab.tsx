@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
   collection,
@@ -57,7 +57,7 @@ export function RegistrationsTab() {
   const [error, setError] = useState<string | null>(null);
   const [levelFilter, setLevelFilter] = useState<LevelFilter>('all');
 
-  async function load() {
+  const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -87,11 +87,11 @@ export function RegistrationsTab() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [levelFilter]);
 
   useEffect(() => {
     load();
-  }, [levelFilter]);
+  }, [load]);
 
   const errorCount = events.filter((e) => e.level === 'error').length;
   const infoCount = events.length - errorCount;

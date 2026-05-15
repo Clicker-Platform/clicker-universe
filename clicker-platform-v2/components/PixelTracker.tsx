@@ -12,14 +12,14 @@ interface PixelTrackerProps {
 }
 
 export const PixelTracker = ({ pixels }: PixelTrackerProps) => {
-    if (!pixels) return null;
-
-    const { facebookPixelId, googleAnalyticsId, tiktokPixelId } = pixels;
+    const facebookPixelId = pixels?.facebookPixelId;
+    const googleAnalyticsId = pixels?.googleAnalyticsId;
+    const tiktokPixelId = pixels?.tiktokPixelId;
 
     useEffect(() => {
         // Facebook Pixel PageView
-        if (facebookPixelId && (window as any).fbq) {
-            (window as any).fbq('track', 'PageView');
+        if (facebookPixelId && (window as Window & { fbq?: (...args: unknown[]) => void }).fbq) {
+            (window as Window & { fbq?: (...args: unknown[]) => void }).fbq!('track', 'PageView');
         }
     }, [facebookPixelId]);
 
@@ -59,6 +59,8 @@ export const PixelTracker = ({ pixels }: PixelTrackerProps) => {
         }
     }, [tiktokPixelId]);
 
+    if (!pixels) return null;
+
     return (
         <>
             {/* Facebook Pixel */}
@@ -86,9 +88,11 @@ export const PixelTracker = ({ pixels }: PixelTrackerProps) => {
                         src={`https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsId}`}
                         strategy="lazyOnload"
                         onLoad={() => {
-                            (window as any).dataLayer = (window as any).dataLayer || [];
-                            function gtag(...args: any[]) { (window as any).dataLayer.push(arguments); }
-                            (window as any).gtag = gtag; // Make globally available
+                            type GtagWindow = Window & { dataLayer: unknown[]; gtag?: (...args: unknown[]) => void };
+                            const win = window as unknown as GtagWindow;
+                            win.dataLayer = win.dataLayer || [];
+                            function gtag(...args: unknown[]) { win.dataLayer.push(args); }
+                            win.gtag = gtag; // Make globally available
                             gtag('js', new Date());
                             gtag('config', googleAnalyticsId);
                         }}

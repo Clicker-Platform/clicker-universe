@@ -15,28 +15,6 @@ export default function VerifyPage() {
     const [user, setUser] = useState<User | null>(null);
     const hasAttempted = React.useRef(false);
 
-    useEffect(() => {
-        if (hasAttempted.current) return;
-        hasAttempted.current = true;
-
-        // 1. Check if it's a valid email link
-        if (!isSignInWithEmailLink(auth, window.location.href)) {
-            setStatus('ERROR');
-            setError('Invalid or expired login link.');
-            return;
-        }
-
-        // 2. Get email from storage
-        let storedEmail = window.localStorage.getItem('emailForSignIn');
-
-        if (!storedEmail) {
-            // User opened link on different device/browser
-            setStatus('PROMPT_EMAIL');
-        } else {
-            verifyLogin(storedEmail);
-        }
-    }, []);
-
     const verifyLogin = async (emailToVerify: string) => {
         setStatus('VERIFYING');
         try {
@@ -53,12 +31,35 @@ export default function VerifyPage() {
                 router.replace('/member/dashboard');
             }, 1500);
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             logger.error('membership.verify.link.failed', { siteId: 'platform', error });
             setStatus('ERROR');
-            setError(error.message || "Could not verify login. The link may be expired.");
+            setError((error instanceof Error ? error.message : null) || "Could not verify login. The link may be expired.");
         }
     };
+
+    useEffect(() => {
+        if (hasAttempted.current) return;
+        hasAttempted.current = true;
+
+        // 1. Check if it's a valid email link
+        if (!isSignInWithEmailLink(auth, window.location.href)) {
+            setStatus('ERROR');
+            setError('Invalid or expired login link.');
+            return;
+        }
+
+        // 2. Get email from storage
+        const storedEmail = window.localStorage.getItem('emailForSignIn');
+
+        if (!storedEmail) {
+            // User opened link on different device/browser
+            setStatus('PROMPT_EMAIL');
+        } else {
+            verifyLogin(storedEmail);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const handleEmailSubmit = (e: React.FormEvent) => {
         e.preventDefault();

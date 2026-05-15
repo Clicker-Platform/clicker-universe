@@ -6,7 +6,7 @@ import { useUser } from '@/lib/user-context';
 import { useSite } from '@/lib/site-context';
 
 interface AuthDiagnostics {
-    claims: Record<string, any> | null;
+    claims: Record<string, unknown> | null;
     sessionCookie: string | null;
     tenantCookie: string | null;
     currentHost: string;
@@ -22,6 +22,14 @@ function getCookie(name: string): string | null {
     return match ? decodeURIComponent(match[1]) : null;
 }
 
+function StatusBadge({ ok, label }: { ok: boolean; label: string }) {
+    return (
+        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold ${ok ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+            {ok ? '✓' : '✗'} {label}
+        </span>
+    );
+}
+
 export default function DebugAuthPage() {
     const { user, role, permissions, moduleAccess, hasAccess, getAccessLevel } = useUser();
     const { siteId } = useSite();
@@ -33,13 +41,13 @@ export default function DebugAuthPage() {
             const auth = getAuth();
             const currentUser = auth.currentUser;
 
-            let claims: Record<string, any> | null = null;
+            let claims: Record<string, unknown> | null = null;
             let tokenExpiry: string | null = null;
 
             if (currentUser) {
                 try {
                     const result = await currentUser.getIdTokenResult();
-                    claims = result.claims as Record<string, any>;
+                    claims = result.claims as Record<string, unknown>;
                     tokenExpiry = new Date(result.expirationTime).toLocaleString();
                 } catch {
                     claims = null;
@@ -75,12 +83,6 @@ export default function DebugAuthPage() {
             setTimeout(() => setCopied(false), 2000);
         });
     };
-
-    const StatusBadge = ({ ok, label }: { ok: boolean; label: string }) => (
-        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold ${ok ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-            {ok ? '✓' : '✗'} {label}
-        </span>
-    );
 
     return (
         <div className="p-6 max-w-3xl space-y-4">
@@ -195,23 +197,23 @@ export default function DebugAuthPage() {
                     </thead>
                     <tbody>
                         <tr>
-                            <td className="py-1 font-mono text-xs">hasAccess('byod_pos', 'settings')</td>
+                            <td className="py-1 font-mono text-xs">hasAccess(&apos;byod_pos&apos;, &apos;settings&apos;)</td>
                             <td>{hasAccess('byod_pos', 'settings') ? '✓ TRUE' : '✗ FALSE'}</td>
                         </tr>
                         <tr>
-                            <td className="py-1 font-mono text-xs">getAccessLevel('byod_pos', 'settings')</td>
+                            <td className="py-1 font-mono text-xs">getAccessLevel(&apos;byod_pos&apos;, &apos;settings&apos;)</td>
                             <td>{getAccessLevel('byod_pos', 'settings')}</td>
                         </tr>
                         <tr>
-                            <td className="py-1 font-mono text-xs">hasAccess('pos', 'settings')</td>
+                            <td className="py-1 font-mono text-xs">hasAccess(&apos;pos&apos;, &apos;settings&apos;)</td>
                             <td>{hasAccess('pos', 'settings') ? '✓ TRUE' : '✗ FALSE'}</td>
                         </tr>
                         <tr>
-                            <td className="py-1 font-mono text-xs">getAccessLevel('pos', 'settings')</td>
+                            <td className="py-1 font-mono text-xs">getAccessLevel(&apos;pos&apos;, &apos;settings&apos;)</td>
                             <td>{getAccessLevel('pos', 'settings')}</td>
                         </tr>
                         <tr>
-                            <td className="py-1 font-mono text-xs">hasAccess('byod_pos', 'configuration')</td>
+                            <td className="py-1 font-mono text-xs">hasAccess(&apos;byod_pos&apos;, &apos;configuration&apos;)</td>
                             <td>{hasAccess('byod_pos', 'configuration') ? '✓ TRUE' : '✗ FALSE'}</td>
                         </tr>
                     </tbody>

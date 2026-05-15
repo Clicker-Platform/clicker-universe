@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { collection, query, where, getDocs, orderBy, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Calendar, Clock, MapPin } from 'lucide-react';
+import { Calendar, Clock } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
 import { logger } from '@/lib/logger-edge';
 
@@ -11,7 +11,7 @@ import { logger } from '@/lib/logger-edge';
 interface WidgetBooking {
     id: string;
     serviceName: string;
-    startAt: any; // Timestamp
+    startAt: { toDate: () => Date }; // Firestore Timestamp
     status: string;
     totalPrice: number;
 }

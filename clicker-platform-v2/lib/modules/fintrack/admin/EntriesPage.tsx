@@ -25,14 +25,14 @@ export default function EntriesPage() {
 
   const load = useCallback(async () => {
     if (!siteId) return;
-    setLoading(true);
+    await Promise.resolve().then(() => setLoading(true));
     const [es, ws] = await Promise.all([getEntries(siteId, { bulan, tahun }), getWallets(siteId)]);
     setEntries(es);
     setWallets(ws);
     setLoading(false);
   }, [siteId, bulan, tahun]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { Promise.resolve().then(() => load()); }, [load]);
 
   const walletMap = Object.fromEntries(wallets.map(w => [w.id, w]));
 

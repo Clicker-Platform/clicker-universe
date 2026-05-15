@@ -1,4 +1,3 @@
-import { ComponentType } from 'react';
 import dynamic from 'next/dynamic';
 
 // Server Components: must be imported statically — dynamic() strips async/await capability
@@ -83,7 +82,7 @@ const UpcomingReservationsWidget = dynamic(() => import('@/lib/modules/reservati
 
 // 1. Universal / Server Components (Default)
 // Use this for Server Pages (Admin, Public Site SSR)
-export const MODULE_COMPONENTS: Record<string, any> = {
+export const MODULE_COMPONENTS: Record<string, unknown> = {
     // POS Module
     'byod_pos:OrderPage': OrderPage,
     'byod_pos:AdminOrders': POSOrdersPage,

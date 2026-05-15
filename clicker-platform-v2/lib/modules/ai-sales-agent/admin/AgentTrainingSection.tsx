@@ -74,8 +74,8 @@ export function AgentTrainingSection({ siteId }: AgentTrainingSectionProps) {
             } else {
                 toast.error("Sync Failed: " + (data.error || 'Unknown error'));
             }
-        } catch (err: any) {
-            toast.error("Error: " + err.message);
+        } catch (err: unknown) {
+            toast.error("Error: " + (err instanceof Error ? err.message : String(err)));
         } finally {
             setIsSyncing(false);
         }

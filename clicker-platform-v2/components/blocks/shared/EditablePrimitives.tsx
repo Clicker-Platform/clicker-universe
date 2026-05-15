@@ -43,7 +43,11 @@ export function EditableText({
     const elRef = useRef<HTMLElement | null>(null);
     const chromeRef = useRef<HTMLDivElement>(null);
     const valueRef = useRef(value);
-    valueRef.current = value;
+
+    // Keep valueRef in sync with latest prop value (done in effect to avoid render-time ref mutation).
+    useEffect(() => {
+        valueRef.current = value;
+    }, [value]);
 
     // Ref callback: fires whenever the contentEditable element mounts/unmounts.
     // Populates initial textContent on every (re)mount — covers the case where
@@ -64,11 +68,11 @@ export function EditableText({
     }, [value]);
 
     if (!onInlineChange) {
-        const El = Tag as any;
+        const El = Tag as React.ElementType;
         return <El className={className} style={style}>{value}</El>;
     }
 
-    const El = Tag as any;
+    const El = Tag as React.ElementType;
     return (
         <div className="relative w-full">
             <El
@@ -98,7 +102,7 @@ export function EditableText({
                     if (e.key === 'Enter') { e.preventDefault(); (e.target as HTMLElement).blur(); }
                     if (e.key === 'v' && (e.metaKey || e.ctrlKey)) {
                         e.preventDefault();
-                        const text = (e.nativeEvent as any).clipboardData?.getData('text/plain') ?? '';
+                        const text = (e.nativeEvent as unknown as ClipboardEvent).clipboardData?.getData('text/plain') ?? '';
                         document.execCommand('insertText', false, text);
                     }
                 }}

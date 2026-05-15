@@ -20,7 +20,7 @@ interface DetailsStepProps {
         requireAssetModel: boolean;
         assetModelLabel: string;
     };
-    onSubmit: (customerInfo: any) => Promise<void>;
+    onSubmit: (customerInfo: Record<string, unknown>) => Promise<void>;
     onShowDialog: (title: string, message: string, variant: 'info' | 'error' | 'success') => void;
     theme: ThemeConfig;
 }

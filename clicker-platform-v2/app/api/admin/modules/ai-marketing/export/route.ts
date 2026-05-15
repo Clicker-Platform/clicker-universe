@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
   const savedContentIds: string[] = campaign.savedContentIds ?? [];
 
   // Fetch linked saved content
-  const contentItems: any[] = [];
+  const contentItems: Array<Record<string, unknown>> = [];
   for (const contentId of savedContentIds) {
     const snap = await adminDb.doc(`sites/${siteId}/${COLLECTION_SAVED}/${contentId}`).get();
     if (snap.exists) contentItems.push({ id: snap.id, ...snap.data() });
@@ -44,10 +44,10 @@ export async function GET(req: NextRequest) {
   ];
 
   for (const item of contentItems) {
-    lines.push(`### ${item.type?.replace(/_/g, ' ').toUpperCase()}`);
+    lines.push(`### ${(item.type as string | undefined)?.replace(/_/g, ' ').toUpperCase()}`);
     if (item.platform) lines.push(`*Platform: ${item.platform}*`);
     lines.push(``);
-    lines.push(item.content);
+    lines.push(item.content as string);
     lines.push(``);
     lines.push(`---`);
     lines.push(``);

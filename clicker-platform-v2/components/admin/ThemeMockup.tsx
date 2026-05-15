@@ -15,29 +15,40 @@ import {
 import { TemplateDocument } from '@/lib/templates/types';
 import { PublicPageRenderer } from '@/components/PublicPageRenderer';
 
+interface RealDataShape {
+    links?: unknown[];
+    featuredProduct?: { productId?: string; originalId?: string };
+    products?: Array<Record<string, unknown>>;
+    contact?: { socialLinks?: unknown; businessHours?: unknown; businessSchedule?: unknown } & Record<string, unknown>;
+    branches?: unknown[];
+    linkSettings?: Record<string, unknown>;
+    productSettings?: Record<string, unknown>;
+}
+
 interface ThemeMockupProps {
-    template: TemplateDocument | any;
+    template: TemplateDocument | Record<string, unknown>;
     settings?: Partial<SiteSettings>;
     isMini?: boolean;
-    realData?: any;
+    realData?: RealDataShape;
     siteId?: string;
 }
 
 export const ThemeMockup: React.FC<ThemeMockupProps> = ({ template, settings: customSettings, isMini = false, realData, siteId }) => {
-    const config = template.config;
+    const templateAny = template as { config?: { colors?: { primary?: string; accent?: string; background?: string } }; id?: string; name?: string };
+    const config = templateAny.config;
     if (!config) return null;
 
     // Combine base settings with custom overrides
     const displaySettings: SiteSettings = {
-        title: customSettings?.title || template.name,
+        title: customSettings?.title || templateAny.name || '',
         description: customSettings?.description || 'Your tagline here',
-        themeColor: customSettings?.themeColor || config.colors.primary,
-        accentColor: customSettings?.accentColor || config.colors.accent,
-        fontFamily: customSettings?.fontFamily || (template.id === 'shuvo' ? 'Playfair Display' : 'Plus Jakarta Sans'),
+        themeColor: customSettings?.themeColor || config.colors?.primary || '#000',
+        accentColor: customSettings?.accentColor || config.colors?.accent || '#000',
+        fontFamily: customSettings?.fontFamily || (templateAny.id === 'shuvo' ? 'Playfair Display' : 'Plus Jakarta Sans'),
         borderRadius: customSettings?.borderRadius || 'large',
         faviconUrl: customSettings?.faviconUrl || '',
         ogImageUrl: customSettings?.ogImageUrl || '',
-        templateId: template.id as any,
+        templateId: (templateAny.id as string) || '',
         backgroundImageUrl: customSettings?.backgroundImageUrl || '',
         footerText: customSettings?.footerText || '© 2024 Your Company',
         homeBlockOrder: customSettings?.homeBlockOrder || ['quick_actions', 'branches', 'featured', 'gallery', 'hours'],
@@ -53,34 +64,36 @@ export const ThemeMockup: React.FC<ThemeMockupProps> = ({ template, settings: cu
             description: displaySettings.description,
             avatarUrl: displaySettings.faviconUrl || profile.avatarUrl
         },
-        links: (realData?.links?.length > 0 ? realData.links : links),
+        links: (realData?.links && realData.links.length > 0 ? realData.links : links),
         featuredProduct: (() => {
             if (realData?.featuredProduct) {
                 const productId = realData.featuredProduct.productId || realData.featuredProduct.originalId;
-                const p = realData.products?.find((prod: any) => prod.id === productId);
+                const p = realData.products?.find((prod) => prod.id === productId);
                 if (p) {
+                    const images = p.images as unknown[] | undefined;
                     return {
                         ...p,
-                        name: p.title || p.name,
-                        imageUrl: p.imageUrl || p.image || (p.images && p.images[0])
+                        name: (p.title as string | undefined) || (p.name as string | undefined),
+                        imageUrl: (p.imageUrl as string | undefined) || (p.image as string | undefined) || (images && images[0])
                     };
                 }
             }
             return featuredProduct;
         })(),
-        products: (realData?.products?.length > 0 ? realData.products.map((p: any) => ({
-            ...p,
-            name: p.title || p.name,
-            imageUrl: p.imageUrl || p.image || (p.images && p.images[0])
-        })) : products),
+        products: (realData?.products && realData.products.length > 0
+            ? realData.products.map((p) => ({
+                ...p,
+                name: (p.title as string | undefined) || (p.name as string | undefined),
+                imageUrl: (p.imageUrl as string | undefined) || (p.image as string | undefined) || (Array.isArray(p.images) && p.images[0])
+            })) : products),
         socialLinks: realData?.contact?.socialLinks || socialLinks,
-        templateId: template.id as any,
+        templateId: (templateAny.id as string) || '',
         businessHours: realData?.contact?.businessHours || initialBusinessHours,
         footerText: displaySettings.footerText || '',
         hideFooterContact: displaySettings.hideFooterContact ?? true,
         showHeaderAddress: displaySettings.showHeaderAddress || false,
         contact: realData?.contact || initialBusinessContact,
-        branches: (realData?.branches?.length > 0 ? realData.branches : []),
+        branches: (realData?.branches && realData.branches.length > 0 ? realData.branches : []),
         homeBlockOrder: displaySettings.homeBlockOrder || [],
         themeColor: displaySettings.themeColor,
         accentColor: displaySettings.accentColor,
@@ -100,7 +113,7 @@ export const ThemeMockup: React.FC<ThemeMockupProps> = ({ template, settings: cu
             style={{
                 borderColor: isMini ? 'transparent' : displaySettings.accentColor,
                 borderRadius: isMini ? '0px' : '1.5rem',
-                backgroundColor: config.colors.background || displaySettings.themeColor,
+                backgroundColor: config.colors?.background || displaySettings.themeColor,
             }}
         >
             {/* The wrapper creates a CSS stacking context and transform basis for fixed elements */}
@@ -122,7 +135,7 @@ export const ThemeMockup: React.FC<ThemeMockupProps> = ({ template, settings: cu
                         pointerEvents: isMini ? 'none' : 'auto'
                     }}
                 >
-                    <PublicPageRenderer data={mockDataPayload} forceMobile={true} siteId={siteId || 'preview'} />
+                    <PublicPageRenderer data={mockDataPayload as unknown as React.ComponentProps<typeof PublicPageRenderer>['data']} forceMobile={true} siteId={siteId || 'preview'} />
                 </div>
              </div>
         </div>

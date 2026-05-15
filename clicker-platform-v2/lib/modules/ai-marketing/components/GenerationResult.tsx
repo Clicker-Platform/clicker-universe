@@ -12,13 +12,13 @@ interface Props {
   generationId: string;
   skillId: SkillId;
   content: string;
-  structured?: Record<string, any>;
+  structured?: Record<string, unknown>;
   model: string;
   onRegenerate?: () => void;
   onSaved?: (contentId: string) => void;
 }
 
-function renderStructured(data: Record<string, any>): React.ReactNode {
+function renderStructured(data: Record<string, unknown>): React.ReactNode {
   return (
     <div className="space-y-3">
       {Object.entries(data).map(([key, val]) => {
@@ -30,7 +30,7 @@ function renderStructured(data: Record<string, any>): React.ReactNode {
             <div key={key}>
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">{label}</p>
               <ul className="space-y-1">
-                {val.map((item: any, i: number) => (
+                {val.map((item: unknown, i: number) => (
                   <li key={i} className="text-sm text-gray-800">
                     {typeof item === 'string' ? (
                       <span className="flex gap-2"><span className="text-gray-400">•</span>{item}</span>
@@ -114,8 +114,8 @@ export default function GenerationResult({
       );
       setSavedId(contentId);
       onSaved?.(contentId);
-    } catch (err: any) {
-      alert(err.message);
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : String(err));
     } finally {
       setSaving(false);
     }

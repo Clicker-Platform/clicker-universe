@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { X, History, TrendingUp, TrendingDown } from 'lucide-react';
 import { InventoryItem, StockTransaction } from '@/lib/modules/inventory/types';
 import { getInventoryTransactions } from '@/lib/modules/inventory/api';
@@ -17,15 +17,7 @@ export function StockHistoryDrawer({ isOpen, onClose, item }: StockHistoryDrawer
     const [transactions, setTransactions] = useState<StockTransaction[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        if (isOpen && item && siteId) {
-            fetchHistory(item.id);
-        } else {
-            setTransactions([]); // Clear on close
-        }
-    }, [isOpen, item, siteId]);
-
-    const fetchHistory = async (itemId: string) => {
+    const fetchHistory = useCallback(async (itemId: string) => {
         setLoading(true);
         try {
             if (!siteId) return;
@@ -37,7 +29,15 @@ export function StockHistoryDrawer({ isOpen, onClose, item }: StockHistoryDrawer
         } finally {
             setLoading(false);
         }
-    };
+    }, [siteId]);
+
+    useEffect(() => {
+        if (isOpen && item && siteId) {
+            fetchHistory(item.id);
+        } else {
+            setTransactions([]); // Clear on close
+        }
+    }, [isOpen, item, siteId, fetchHistory]);
 
     if (!isOpen || !item) return null;
 

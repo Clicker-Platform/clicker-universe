@@ -27,7 +27,7 @@ vi.mock('@/lib/site-context', () => ({
 }));
 
 vi.mock('@/components/admin/IconSelector', () => ({
-    InlinePanelIconPicker: ({ onBack }: any) => (
+    InlinePanelIconPicker: ({ onBack }: { onBack: () => void }) => (
         <button data-testid="icon-picker-back" onClick={onBack}>back</button>
     ),
 }));
@@ -38,7 +38,7 @@ vi.mock('@/data/icons', () => ({
 
 // dnd-kit pulls in ResizeObserver / DOMRect — replace with passthroughs.
 vi.mock('@dnd-kit/core', () => ({
-    DndContext: ({ children }: any) => <>{children}</>,
+    DndContext: ({ children }: { children: React.ReactNode }) => <>{children}</>,
     closestCenter: vi.fn(),
     KeyboardSensor: vi.fn(),
     PointerSensor: vi.fn(),
@@ -46,7 +46,7 @@ vi.mock('@dnd-kit/core', () => ({
     useSensors: () => [],
 }));
 vi.mock('@dnd-kit/sortable', () => ({
-    SortableContext: ({ children }: any) => <>{children}</>,
+    SortableContext: ({ children }: { children: React.ReactNode }) => <>{children}</>,
     arrayMove: <T,>(arr: T[], from: number, to: number) => {
         const next = arr.slice();
         next.splice(to, 0, next.splice(from, 1)[0]);
@@ -68,9 +68,23 @@ import { ChromeBottomNavProperties } from '../ChromeBottomNavProperties';
 
 // ─── Firestore mock helpers ───────────────────────────────────────────────────
 
-type SettingsBySite = Record<string, any>;
+interface NavItem { id: string; label: string; type: string; value: string; pageId?: string }
+interface FabConfig { id: string; enabled: boolean; type: string; value: string; icon: string; pageId?: string }
+interface NavigationShape {
+    topNav?: NavItem[];
+    topNavActions?: { cta?: { enabled?: boolean; label?: string } };
+    headerStyle?: { bgColor?: string };
+    bottomNav?: NavItem[];
+    bottomNavStyle?: Record<string, unknown>;
+    fab?: FabConfig;
+}
+interface SettingsShape extends Record<string, unknown> {
+    navigation?: NavigationShape;
+}
+type SettingsBySite = Record<string, SettingsShape>;
 let storedSettings: SettingsBySite;
-let setDocCalls: Array<{ path: string; siteId: string; data: any; options: any }>;
+interface WriteData extends Record<string, unknown> { navigation?: NavigationShape }
+let setDocCalls: Array<{ path: string; siteId: string; data: WriteData; options: { merge?: boolean } | undefined }>;
 
 function mockDoc(siteId: string) {
     return { __siteId: siteId, __path: `sites/${siteId}/content/siteSettings` };
@@ -83,35 +97,35 @@ beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllMocks();
 
-    (firestore.doc as any).mockImplementation((...args: any[]) => {
+    (firestore.doc as unknown as { mockImplementation: (...args: unknown[]) => void }).mockImplementation((...args: unknown[]) => {
         const [, , siteId, segment, name] = args;
         if (segment === 'content' && name === 'siteSettings') {
-            return mockDoc(siteId);
+            return mockDoc(siteId as string);
         }
         return { __other: true };
     });
 
-    (firestore.collection as any).mockImplementation((...args: any[]) => {
+    (firestore.collection as unknown as { mockImplementation: (...args: unknown[]) => void }).mockImplementation((...args: unknown[]) => {
         const [, , siteId, name] = args;
         return { __collection: name, __siteId: siteId };
     });
 
-    (firestore.getDocs as any).mockImplementation(async () => ({ docs: [] }));
+    (firestore.getDocs as unknown as { mockImplementation: (fn: () => Promise<{ docs: unknown[] }>) => void }).mockImplementation(async () => ({ docs: [] }));
 
-    (firestore.getDoc as any).mockImplementation(async (ref: any) => {
+    (firestore.getDoc as unknown as { mockImplementation: (fn: (ref: { __siteId: string }) => Promise<unknown>) => void }).mockImplementation(async (ref: { __siteId: string }) => {
         const data = storedSettings[ref.__siteId];
         return data === undefined
             ? { exists: () => false, data: () => undefined }
             : { exists: () => true, data: () => data };
     });
 
-    (firestore.setDoc as any).mockImplementation(async (ref: any, data: any, options: any) => {
+    (firestore.setDoc as unknown as { mockImplementation: (fn: (ref: { __path?: string; __siteId: string }, data: WriteData, options?: { merge?: boolean }) => Promise<void>) => void }).mockImplementation(async (ref: { __path?: string; __siteId: string }, data: WriteData, options?: { merge?: boolean }) => {
         setDocCalls.push({ path: ref.__path || 'unknown', siteId: ref.__siteId, data, options });
         if (options?.merge) {
             const existing = storedSettings[ref.__siteId] || {};
-            storedSettings[ref.__siteId] = deepMerge(existing, data);
+            storedSettings[ref.__siteId] = deepMerge(existing, data) as SettingsShape;
         } else {
-            storedSettings[ref.__siteId] = data;
+            storedSettings[ref.__siteId] = data as SettingsShape;
         }
     });
 });
@@ -120,11 +134,11 @@ afterEach(() => {
     vi.useRealTimers();
 });
 
-function deepMerge(a: any, b: any): any {
+function deepMerge(a: Record<string, unknown> | unknown, b: Record<string, unknown> | unknown): unknown {
     if (Array.isArray(b)) return b;
     if (b && typeof b === 'object') {
-        const out = { ...(a || {}) };
-        for (const k of Object.keys(b)) out[k] = deepMerge(a?.[k], b[k]);
+        const out: Record<string, unknown> = { ...((a as Record<string, unknown>) || {}) };
+        for (const k of Object.keys(b as Record<string, unknown>)) out[k] = deepMerge((a as Record<string, unknown>)?.[k], (b as Record<string, unknown>)[k]);
         return out;
     }
     return b;
@@ -159,8 +173,8 @@ describe('HeaderNavPanel — data-loss regression', () => {
 
     it('does not write to Firestore before hydration completes', async () => {
         // Make the read hang so hydration never resolves.
-        let resolveGetDoc: (v: any) => void;
-        (firestore.getDoc as any).mockImplementation(
+        let resolveGetDoc: (v: unknown) => void;
+        (firestore.getDoc as unknown as { mockImplementation: (fn: () => Promise<unknown>) => void }).mockImplementation(
             () => new Promise(r => { resolveGetDoc = r; })
         );
 
@@ -191,8 +205,8 @@ describe('HeaderNavPanel — data-loss regression', () => {
 
         expect(navWritesFor('site-A').length).toBe(0);
         // Existing data is intact.
-        expect(storedSettings['site-A'].navigation.topNav).toHaveLength(1);
-        expect(storedSettings['site-A'].navigation.topNavActions.cta.enabled).toBe(true);
+        expect(storedSettings['site-A']!.navigation!.topNav).toHaveLength(1);
+        expect(storedSettings['site-A']!.navigation!.topNavActions!.cta!.enabled).toBe(true);
     });
 
     it('saves only the keys this panel owns (does not overwrite bottomNav / fab)', async () => {
@@ -221,16 +235,16 @@ describe('HeaderNavPanel — data-loss regression', () => {
         const lastWrite = writes[writes.length - 1];
         // The write payload must NOT contain bottomNav / fab.
         expect(lastWrite.data.navigation).toBeDefined();
-        expect(lastWrite.data.navigation.bottomNav).toBeUndefined();
-        expect(lastWrite.data.navigation.fab).toBeUndefined();
+        expect(lastWrite.data.navigation!.bottomNav).toBeUndefined();
+        expect(lastWrite.data.navigation!.fab).toBeUndefined();
         expect(lastWrite.options).toEqual({ merge: true });
 
         // After applying the recursive merge, bottomNav and fab survive.
-        expect(storedSettings['site-A'].navigation.bottomNav).toHaveLength(1);
-        expect(storedSettings['site-A'].navigation.fab.enabled).toBe(true);
-        expect(storedSettings['site-A'].navigation.fab.icon).toBe('PlusCircle');
+        expect(storedSettings['site-A']!.navigation!.bottomNav).toHaveLength(1);
+        expect(storedSettings['site-A']!.navigation!.fab!.enabled).toBe(true);
+        expect(storedSettings['site-A']!.navigation!.fab!.icon).toBe('PlusCircle');
         // And the new top-nav entry is appended.
-        expect(storedSettings['site-A'].navigation.topNav.length).toBe(2);
+        expect(storedSettings['site-A']!.navigation!.topNav!.length).toBe(2);
     });
 
     it('does not save to a site after siteId changes (no cross-site bleed)', async () => {
@@ -255,8 +269,8 @@ describe('HeaderNavPanel — data-loss regression', () => {
         expect(navWritesFor('site-A').length).toBe(0);
         expect(navWritesFor('site-B').length).toBe(0);
 
-        expect(storedSettings['site-A'].navigation.topNav[0].label).toBe('Home');
-        expect(storedSettings['site-B'].navigation.topNav[0].label).toBe('Shop');
+        expect(storedSettings['site-A']!.navigation!.topNav![0].label).toBe('Home');
+        expect(storedSettings['site-B']!.navigation!.topNav![0].label).toBe('Shop');
     });
 
     it('flushes a pending save when the panel unmounts mid-debounce', async () => {
@@ -278,7 +292,7 @@ describe('HeaderNavPanel — data-loss regression', () => {
 
         const writes = navWritesFor('site-A');
         expect(writes.length).toBeGreaterThan(0);
-        expect(writes[writes.length - 1].data.navigation.topNav.length).toBe(1);
+        expect(writes[writes.length - 1].data.navigation!.topNav!.length).toBe(1);
     });
 
     it('handles a missing siteSettings document by writing only after edit', async () => {
@@ -298,7 +312,7 @@ describe('HeaderNavPanel — data-loss regression', () => {
 
         const writes = navWritesFor('site-A');
         expect(writes.length).toBe(1);
-        expect(writes[0].data.navigation.topNav.length).toBe(1);
+        expect(writes[0].data.navigation!.topNav!.length).toBe(1);
     });
 });
 
@@ -307,8 +321,8 @@ describe('HeaderNavPanel — data-loss regression', () => {
 describe('ChromeBottomNavProperties — data-loss regression', () => {
 
     it('does not write before hydration', async () => {
-        let resolveGetDoc: (v: any) => void;
-        (firestore.getDoc as any).mockImplementation(
+        let resolveGetDoc: (v: unknown) => void;
+        (firestore.getDoc as unknown as { mockImplementation: (fn: () => Promise<unknown>) => void }).mockImplementation(
             () => new Promise(r => { resolveGetDoc = r; })
         );
 
@@ -333,8 +347,8 @@ describe('ChromeBottomNavProperties — data-loss regression', () => {
         await flushDebounce();
 
         expect(navWritesFor('site-A').length).toBe(0);
-        expect(storedSettings['site-A'].navigation.bottomNav).toHaveLength(1);
-        expect(storedSettings['site-A'].navigation.fab.enabled).toBe(true);
+        expect(storedSettings['site-A']!.navigation!.bottomNav).toHaveLength(1);
+        expect(storedSettings['site-A']!.navigation!.fab!.enabled).toBe(true);
     });
 
     it('saves only bottomNav / fab / bottomNavStyle (does not overwrite topNav)', async () => {
@@ -359,16 +373,16 @@ describe('ChromeBottomNavProperties — data-loss regression', () => {
         expect(writes.length).toBeGreaterThan(0);
         const lastWrite = writes[writes.length - 1].data;
 
-        expect(lastWrite.navigation.topNav).toBeUndefined();
-        expect(lastWrite.navigation.topNavActions).toBeUndefined();
-        expect(lastWrite.navigation.headerStyle).toBeUndefined();
+        expect(lastWrite.navigation!.topNav).toBeUndefined();
+        expect(lastWrite.navigation!.topNavActions).toBeUndefined();
+        expect(lastWrite.navigation!.headerStyle).toBeUndefined();
 
         // After merge: topNav, CTA, headerStyle still intact.
-        expect(storedSettings['site-A'].navigation.topNav).toHaveLength(1);
-        expect(storedSettings['site-A'].navigation.topNavActions.cta.enabled).toBe(true);
-        expect(storedSettings['site-A'].navigation.headerStyle.bgColor).toBe('#ffffff');
+        expect(storedSettings['site-A']!.navigation!.topNav).toHaveLength(1);
+        expect(storedSettings['site-A']!.navigation!.topNavActions!.cta!.enabled).toBe(true);
+        expect(storedSettings['site-A']!.navigation!.headerStyle!.bgColor).toBe('#ffffff');
         // BottomNav was added.
-        expect(storedSettings['site-A'].navigation.bottomNav.length).toBe(1);
+        expect(storedSettings['site-A']!.navigation!.bottomNav!.length).toBe(1);
     });
 
     it('preserves FAB config when toggling enabled off then on', async () => {
@@ -397,7 +411,7 @@ describe('ChromeBottomNavProperties — data-loss regression', () => {
         fireEvent.click(fabToggle!);
         await flushDebounce();
 
-        const fab = storedSettings['site-A'].navigation.fab;
+        const fab = storedSettings['site-A']!.navigation!.fab!;
         expect(fab.enabled).toBe(true);
         // Crucially, the existing FAB config (pageId, value, icon) was NOT wiped
         // by the disable→enable cycle. The toggle handler must not reset to defaults.

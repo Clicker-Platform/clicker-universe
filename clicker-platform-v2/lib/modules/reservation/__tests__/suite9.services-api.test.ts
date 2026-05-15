@@ -5,6 +5,9 @@ import {
     getServices,
     getService,
 } from '@/lib/modules/reservation/api';
+import type { Service } from '@/lib/modules/reservation/types';
+
+type CreateServiceInput = Omit<Service, 'id' | 'createdAt' | 'updatedAt'>;
 import {
     getServiceCatalog,
     getServiceCatalogItem,
@@ -84,7 +87,7 @@ describe('Suite 9 — Reservation Services API (catalog projection)', () => {
                 price: 0,
                 isActive: true,
                 bookingType: 'request',
-            } as any);
+            } as CreateServiceInput);
 
             const payload = (createServiceCatalogItem as Mock).mock.calls[0][1];
             expect(payload.reservationConfig.bookingType).toBe('request');
@@ -97,7 +100,7 @@ describe('Suite 9 — Reservation Services API (catalog projection)', () => {
                 name: 'Wash',
                 price: 50000,
                 isActive: true,
-            } as any);
+            } as CreateServiceInput);
 
             const payload = (createServiceCatalogItem as Mock).mock.calls[0][1];
             expect(payload.reservationConfig.bookingType).toBe('time_slot');
@@ -112,7 +115,7 @@ describe('Suite 9 — Reservation Services API (catalog projection)', () => {
                 maxPrice: 500000,
                 isActive: true,
                 bookingType: 'time_slot',
-            } as any);
+            } as CreateServiceInput);
 
             const payload = (createServiceCatalogItem as Mock).mock.calls[0][1];
             expect(payload.reservationConfig.maxPrice).toBe(500000);
@@ -125,7 +128,7 @@ describe('Suite 9 — Reservation Services API (catalog projection)', () => {
                 name: 'Wash',
                 price: 50000,
                 isActive: true,
-            } as any);
+            } as CreateServiceInput);
 
             const payload = (createServiceCatalogItem as Mock).mock.calls[0][1];
             expect('maxPrice' in payload.reservationConfig).toBe(false);

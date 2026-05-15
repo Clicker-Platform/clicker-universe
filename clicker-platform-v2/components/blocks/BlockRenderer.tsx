@@ -1,6 +1,7 @@
 import React from 'react';
 import dynamic from 'next/dynamic';
-import { PageBlock } from '@/data/mockData';
+import { PageBlock, Product, LinkItem, Branch, BusinessHours, BusinessContact, LinkSettings, BusinessProfile, ProductSettings } from '@/data/mockData';
+import { DaySchedule } from '@/lib/core/types';
 
 // Static imports for LCP-critical above-the-fold blocks
 import { DefaultHeroBlock as HeroBlock } from './public/DefaultHeroBlock';
@@ -64,8 +65,8 @@ export const BlockRenderer = ({
     block: PageBlock,
     isFirst?: boolean,
     phoneNumber?: string,
-    whatsappSettings?: any,
-    theme?: any,
+    whatsappSettings?: Record<string, unknown>,
+    theme?: Record<string, unknown>,
     siteId?: string,
     tenantSlug?: string,
     templateId?: string,
@@ -73,19 +74,19 @@ export const BlockRenderer = ({
     onInlineChange?: (field: string, value: string) => void,
     onFieldFocus?: (field: string, rect: DOMRect) => void,
     onFieldBlur?: () => void,
-    links?: any[],
-    contact?: any,
-    branches?: any[],
-    featuredProduct?: any,
-    products?: any[],
-    businessHours?: any,
-    businessSchedule?: any,
-    linkSettings?: any,
-    productSettings?: any,
-    profile?: any,
-    reservationServices?: any[],
-    reservationStaff?: any[],
-    reservationSettings?: any,
+    links?: LinkItem[],
+    contact?: BusinessContact,
+    branches?: Branch[],
+    featuredProduct?: Product | null,
+    products?: Product[],
+    businessHours?: BusinessHours,
+    businessSchedule?: DaySchedule[],
+    linkSettings?: LinkSettings | null,
+    productSettings?: ProductSettings | null,
+    profile?: BusinessProfile | null,
+    reservationServices?: unknown[],
+    reservationStaff?: unknown[],
+    reservationSettings?: unknown,
 }) => {
     const fullTemplate = getTemplate(templateId || 'classic');
 
@@ -117,7 +118,7 @@ export const BlockRenderer = ({
             case 'products': 
                 return customBlocks?.Products ? 
                     React.createElement(customBlocks.Products, { data: block.data, phoneNumber, whatsappSettings, siteId, products }) : 
-                    <ProductsBlock data={block.data} phoneNumber={phoneNumber} whatsappSettings={whatsappSettings} siteId={siteId} products={products} />;
+                    <ProductsBlock data={block.data} phoneNumber={phoneNumber} whatsappSettings={whatsappSettings} siteId={siteId} products={products as unknown as Product[] | undefined} />;
             case 'faq': 
                 return customBlocks?.FAQ ? 
                     React.createElement(customBlocks.FAQ, { data: block.data }) : 
@@ -125,7 +126,7 @@ export const BlockRenderer = ({
             case 'link': 
                 return customBlocks?.Link ? 
                     React.createElement(customBlocks.Link, { data: block.data, siteId, links }) : 
-                    <LinkBlock data={block.data} siteId={siteId} links={links} />;
+                    <LinkBlock data={block.data} siteId={siteId} links={links as unknown as Record<string, unknown>[] | undefined} />;
             case 'map': 
                 return customBlocks?.Map ? 
                     React.createElement(customBlocks.Map, { data: block.data }) : 
@@ -138,24 +139,24 @@ export const BlockRenderer = ({
             case 'quick_actions':
                 return customBlocks?.QuickActions ?
                     React.createElement(customBlocks.QuickActions, { links: links || [], contact, settings: linkSettings, siteId, tenantSlug, blockData: block.data }) :
-                    <QuickActions links={links || []} contact={contact} settings={linkSettings} siteId={siteId} tenantSlug={tenantSlug} blockData={block.data} />;
+                    <QuickActions links={(links || []) as unknown as LinkItem[]} contact={contact as unknown as BusinessContact | undefined} settings={linkSettings as unknown as LinkSettings | undefined} siteId={siteId} tenantSlug={tenantSlug} blockData={block.data} />;
 
             case 'hours':
                 return customBlocks?.OperatingHours ?
                     React.createElement(customBlocks.OperatingHours, { data: businessHours, schedule: businessSchedule }) :
-                    <OperatingHours data={businessHours} schedule={businessSchedule} />;
+                    <OperatingHours data={(businessHours || {}) as unknown as BusinessHours} schedule={businessSchedule as unknown as never} />;
 
             case 'branches':
                 return customBlocks?.Branches ? 
                     React.createElement(customBlocks.Branches, { contact, branches: branches || [] }) : 
-                    <BranchesList contact={contact} branches={branches || []} />;
+                    <BranchesList contact={(contact || {}) as unknown as BusinessContact} branches={(branches || []) as unknown as Branch[]} />;
 
             case 'featured_product': {
                 if (!featuredProduct) return null;
-                const featuredSettings = productSettings || {};
+                const featuredSettings: Partial<ProductSettings> & { featuredTitle?: string; showFeaturedTitle?: boolean } = productSettings || {};
                 const featuredProps = {
-                    product: featuredProduct,
-                    theme,
+                    product: featuredProduct as unknown as Product,
+                    theme: theme as unknown as import('@/lib/templates/types').TemplateConfig | undefined,
                     previewMode,
                     badgeText: featuredSettings.featuredTitle || 'Star Pick',
                     showBadge: featuredSettings.showFeaturedTitle !== false,
@@ -174,7 +175,7 @@ export const BlockRenderer = ({
             }
 
             case 'reservation':
-                return <ReservationBlock data={block.data} siteId={siteId} initialServices={reservationServices} initialStaff={reservationStaff} initialSettings={reservationSettings} />;
+                return <ReservationBlock data={block.data} siteId={siteId} initialServices={reservationServices as Record<string, unknown>[] | undefined} initialStaff={reservationStaff as Record<string, unknown>[] | undefined} initialSettings={reservationSettings as Record<string, unknown> | undefined} />;
 
             case 'social_embed':
                 return <SocialEmbedBlock data={block.data} previewMode={previewMode} />;
@@ -190,7 +191,7 @@ export const BlockRenderer = ({
                     : <HeadingBlock data={block.data} onInlineChange={onInlineChange} onFieldFocus={onFieldFocus} onFieldBlur={onFieldBlur} />;
 
             case 'feature_cards':
-                return <FeatureCardsBlock data={block.data} theme={theme} previewMode={previewMode} />;
+                return <FeatureCardsBlock data={block.data as unknown as import('@/components/blocks/feature-cards/types').FeatureCardsData} theme={theme} previewMode={previewMode} />;
 
             default:
                 return <ModuleBlockLoader type={block.type} data={block.data} siteId={siteId} />;

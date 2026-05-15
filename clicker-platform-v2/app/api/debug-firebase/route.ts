@@ -21,7 +21,7 @@ export async function GET() {
     });
 
     try {
-        const apps = (firebaseAdmin.apps || []).map((a: any) => a.name);
+        const apps = (firebaseAdmin.apps || []).map((a) => a?.name ?? '');
         const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
         const envKey = process.env.GCP_SERVICE_ACCOUNT_KEY ? 'Present (Length ' + process.env.GCP_SERVICE_ACCOUNT_KEY.length + ')' : 'Missing';
 
@@ -35,9 +35,10 @@ export async function GET() {
                 await adminAuth.createCustomToken('test-health-check');
                 tokenTest = 'Success: keys are valid';
             }
-        } catch (e: any) {
-            authStatus = 'Error: ' + e.message;
-            tokenTest = 'Failed: ' + e.message;
+        } catch (e: unknown) {
+            const eMsg = e instanceof Error ? e.message : String(e);
+            authStatus = 'Error: ' + eMsg;
+            tokenTest = 'Failed: ' + eMsg;
         }
 
         return NextResponse.json({
@@ -51,11 +52,11 @@ export async function GET() {
             tokenTest,
             nodeEnv: process.env.NODE_ENV
         });
-    } catch (error: any) {
+    } catch (error: unknown) {
         return NextResponse.json({
             status: 'error',
-            message: error.message,
-            stack: error.stack
+            message: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined
         }, { status: 500 });
     }
 }

@@ -56,7 +56,7 @@ export function InboxPanel() {
                 const formData = doc.data() as Form;
                 if (formData.fields && Array.isArray(formData.fields)) {
                     const fieldMap: Record<string, string> = {};
-                    formData.fields.forEach((field: any) => {
+                    formData.fields.forEach((field: { id?: string; label?: string }) => {
                         if (field.id && field.label) {
                             fieldMap[field.id] = field.label;
                         }

@@ -31,7 +31,7 @@ export const DefaultQuickActionsBlock: React.FC<QuickActionsProps> = ({
     const effectiveTenantSlug = tenantSlug || contextTenantSlug || '';
 
     const [isModalOpen, setIsModalOpen] = React.useState(false);
-    const [formData, setFormData] = React.useState<any>(null);
+    const [formData, setFormData] = React.useState<Record<string, unknown> | null>(null);
     const [isLoadingForm, setIsLoadingForm] = React.useState(false);
 
     const isGlass = theme.cardStyle === 'glass';
@@ -122,9 +122,9 @@ export const DefaultQuickActionsBlock: React.FC<QuickActionsProps> = ({
                     {processedLinks.map(link => {
                         const Icon = link.iconName && ICON_MAP[link.iconName] ? ICON_MAP[link.iconName] : ShoppingBag;
                         const Wrapper = link.type === 'form' ? 'button' : 'a';
-                        const wrapperProps: any = link.type === 'form'
-                            ? { onClick: (e: any) => handleClick(e, link), type: 'button' }
-                            : { href: getTenantAwareUrl(link.url), target: link.openInNewTab ? '_blank' : undefined, rel: link.openInNewTab ? 'noopener noreferrer' : undefined, onClick: (e: any) => handleClick(e, link) };
+                        const wrapperProps: Record<string, unknown> = link.type === 'form'
+                            ? { onClick: (e: React.MouseEvent) => handleClick(e, link), type: 'button' }
+                            : { href: getTenantAwareUrl(link.url), target: link.openInNewTab ? '_blank' : undefined, rel: link.openInNewTab ? 'noopener noreferrer' : undefined, onClick: (e: React.MouseEvent) => handleClick(e, link) };
 
                         return (
                             <Wrapper
@@ -170,7 +170,7 @@ export const DefaultQuickActionsBlock: React.FC<QuickActionsProps> = ({
             )}
 
             {isModalOpen && formData && (
-                <FormModal form={formData} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} siteId={effectiveSiteId} />
+                <FormModal form={formData as unknown as import('@/data/mockData').Form} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} siteId={effectiveSiteId} />
             )}
         </section>
     );

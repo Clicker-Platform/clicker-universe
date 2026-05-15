@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { LayoutDashboard, LogOut, Menu, X, Palette, Inbox, Box, Users, Sun, Moon, PanelLeftClose, PanelLeftOpen, User, Building2, ChevronUp, ChevronDown, Layers, MessageCircle, Activity } from 'lucide-react';
+import { LayoutDashboard, LogOut, Menu, X, Palette, Box, Users, Sun, Moon, User, Building2, ChevronUp, ChevronDown, Layers, MessageCircle, Activity } from 'lucide-react';
 import { collection, query, where, onSnapshot, doc } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase';
 import { signOut, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
@@ -19,7 +19,7 @@ import { useIsMobile } from '@/hooks/useIsMobile';
 import { MobileModuleTabBar } from '@/components/admin/MobileModuleTabBar';
 
 interface NavItem {
-    icon: any;
+    icon: React.ComponentType<{ size?: number; className?: string }>;
     label: string;
     href: string;
 }
@@ -28,10 +28,8 @@ interface SidebarGroup {
     title: string;
     items: NavItem[];
     isModule?: boolean;
-    moduleIcon?: any;
+    moduleIcon?: React.ComponentType<{ size?: number; className?: string }>;
 }
-
-const CORE_GROUPS = ['Core'];
 
 export function AdminSidebar() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -178,7 +176,7 @@ export function AdminSidebar() {
                 .filter(r => {
                     if (r.permission) {
                         if (hasFullAccess) return true;
-                        return userPermissions.includes(r.permission as any);
+                        return userPermissions.includes(r.permission as string);
                     }
                     const routeId = getRouteIdFromPath(m.id, r.path);
                     return hasAccess(m.id, routeId);
@@ -245,11 +243,13 @@ export function AdminSidebar() {
         ));
 
         if (activeGroup) {
-            setExpandedGroups(prev => {
-                if (prev.has(activeGroup.title)) return prev;
-                const next = new Set(prev);
-                next.add(activeGroup.title);
-                return next;
+            queueMicrotask(() => {
+                setExpandedGroups(prev => {
+                    if (prev.has(activeGroup.title)) return prev;
+                    const next = new Set(prev);
+                    next.add(activeGroup.title);
+                    return next;
+                });
             });
             return;
         }
@@ -259,11 +259,13 @@ export function AdminSidebar() {
             pathname === prefix || pathname.startsWith(prefix)
         );
         if (match) {
-            setExpandedGroups(prev => {
-                if (prev.has(match.groupTitle)) return prev;
-                const next = new Set(prev);
-                next.add(match.groupTitle);
-                return next;
+            queueMicrotask(() => {
+                setExpandedGroups(prev => {
+                    if (prev.has(match.groupTitle)) return prev;
+                    const next = new Set(prev);
+                    next.add(match.groupTitle);
+                    return next;
+                });
             });
         }
     }, [pathname, groupedNavItems, hiddenRouteGroupMap]);

@@ -37,6 +37,7 @@ import {
     createServiceCatalogItem,
     updateServiceCatalogItem,
 } from '@/lib/core/serviceCatalog/api';
+import type { ServiceCatalogItem } from '@/lib/core/serviceCatalog/types';
 import type {
     ServiceRecord,
     Vehicle,
@@ -590,7 +591,7 @@ export async function updateVehicle(
 
 // ─── Service Types (reads from shared serviceCatalog) ─────────────────────────
 
-function catalogToServiceType(item: any): ServiceType {
+function catalogToServiceType(item: ServiceCatalogItem): ServiceType {
     const src = item.serviceRecordsConfig;
     return {
         id: item.id,
@@ -636,7 +637,7 @@ export async function updateServiceType(
     id: string,
     data: Partial<Omit<ServiceType, 'id' | 'outletId' | 'createdAt'>>
 ): Promise<void> {
-    const patch: Record<string, any> = {};
+    const patch: Record<string, unknown> = {};
     if (data.name !== undefined) patch.name = data.name;
     if (data.category !== undefined) patch.category = data.category;
     if (data.isActive !== undefined) patch.isActive = data.isActive;

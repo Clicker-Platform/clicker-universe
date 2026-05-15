@@ -12,10 +12,10 @@ const BLUR_PLACEHOLDER =
     'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxIiBoZWlnaHQ9IjEiPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNlNWU3ZWIiLz48L3N2Zz4=';
 
 interface ProductsBlockClientProps {
-    data: any;
+    data: Record<string, unknown>;
     products: Product[];
     phoneNumber?: string;
-    whatsappSettings?: any;
+    whatsappSettings?: Record<string, unknown>;
 }
 
 function ProductTile({ product, onClick, priority, cardStyle }: {
@@ -28,9 +28,9 @@ function ProductTile({ product, onClick, priority, cardStyle }: {
     const { theme } = useTemplate();
     const isGlass = theme.cardStyle === 'glass';
 
-    const imageUrl = product.imageUrl || (product as any).image;
-    const showPrice = (product as any).showPrice !== false;
-    const showLabel = (product as any).showLabel !== false;
+    const imageUrl = product.imageUrl;
+    const showPrice = product.showPrice !== false;
+    const showLabel = product.showLabel !== false;
 
     return (
         <div
@@ -81,7 +81,7 @@ function ProductTile({ product, onClick, priority, cardStyle }: {
                     className={`font-bold text-sm leading-tight mb-1 group-hover:opacity-80 transition-opacity truncate ${getTextColor(theme.cardStyle)}`}
                     style={{ fontFamily: theme.fonts.heading }}
                 >
-                    {product.name || (product as any).title}
+                    {product.name}
                 </h3>
                 {showPrice && (
                     <p
@@ -103,12 +103,12 @@ export const ProductsBlockClient = ({ data, products, phoneNumber, whatsappSetti
 
     return (
         <section>
-            {data.title && (
+            {Boolean(data.title) && (
                 <h2
                     className="text-xs font-bold uppercase tracking-[0.2em] mb-6 opacity-60"
                     style={{ fontFamily: theme.fonts.heading, color: theme.colors.foreground }}
                 >
-                    {data.title}
+                    {data.title as string}
                 </h2>
             )}
 

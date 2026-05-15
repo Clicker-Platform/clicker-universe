@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { db } from '@/lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { writeSiteSettings } from '@/lib/admin/siteSettings';
@@ -56,7 +57,7 @@ function GoogleSearchPreview({ title, description, faviconUrl }: { title: string
             <div className="flex items-center gap-1.5 mb-1">
                 <div className="w-4 h-4 rounded-full bg-gray-200 dark:bg-neutral-700 overflow-hidden flex items-center justify-center flex-shrink-0">
                     {faviconUrl
-                        ? <img src={faviconUrl} className="w-full h-full object-cover" alt="" />
+                        ? <Image src={faviconUrl} className="w-full h-full object-cover" alt="" width={16} height={16} unoptimized />
                         : <Globe size={9} className="text-neutral-400 dark:text-neutral-500" />
                     }
                 </div>
@@ -77,7 +78,7 @@ function SocialSharePreview({ title, description, ogImageUrl }: { title: string;
         <div className="rounded-lg overflow-hidden bg-gray-100 dark:bg-neutral-800/50 border border-gray-200 dark:border-neutral-700/50">
             <div className="aspect-[1.91/1] bg-gray-200 dark:bg-neutral-700/50 flex items-center justify-center">
                 {ogImageUrl
-                    ? <img src={ogImageUrl} className="w-full h-full object-cover" alt="" />
+                    ? <Image src={ogImageUrl} className="w-full h-full object-cover" alt="" width={600} height={314} unoptimized />
                     : <div className="flex flex-col items-center text-neutral-400 dark:text-neutral-600 gap-1">
                         <ImageIcon size={28} />
                         <span className="text-[10px]">No Image Set</span>
@@ -136,7 +137,7 @@ export function SiteInfoPanel() {
         if (!siteId) return;
         setSaving(true);
         try {
-            await writeSiteSettings(siteId, settings);
+            await writeSiteSettings(siteId, settings as unknown as Record<string, unknown>);
             purgeTenantCache(siteId);
             await refreshGlobalSettings();
             setSaved(true);

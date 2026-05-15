@@ -42,11 +42,11 @@ beforeEach(() => {
   vi.clearAllMocks();
 
   vi.mocked(setDoc).mockImplementation(mockSetDoc);
-  vi.mocked(doc).mockImplementation(mockDoc);
+  vi.mocked(doc).mockImplementation(mockDoc as unknown as typeof doc);
   vi.mocked(collection).mockImplementation(mockCollection);
-  vi.mocked(getFirestore).mockReturnValue({} as any);
-  vi.mocked(Timestamp.now).mockReturnValue({ seconds: 1000, nanoseconds: 0, toDate: () => new Date(1000000) } as any);
-  vi.mocked(Timestamp.fromDate).mockImplementation((d: Date) => ({ seconds: Math.floor(d.getTime() / 1000), nanoseconds: 0 } as any));
+  vi.mocked(getFirestore).mockReturnValue({} as ReturnType<typeof getFirestore>);
+  vi.mocked(Timestamp.now).mockReturnValue({ seconds: 1000, nanoseconds: 0, toDate: () => new Date(1000000) } as ReturnType<typeof Timestamp.now>);
+  vi.mocked(Timestamp.fromDate).mockImplementation((d: Date) => ({ seconds: Math.floor(d.getTime() / 1000), nanoseconds: 0 } as ReturnType<typeof Timestamp.fromDate>));
 
   vi.mocked(generateVoucherCode).mockReturnValue('VCH-ABCD-EFGH');
 
@@ -73,8 +73,8 @@ const basePromo: Promo = {
   costInPoints: 100,
   voucherExpiryDays: 14,
   status: 'active',
-  createdAt: { seconds: 900, nanoseconds: 0 } as any,
-  updatedAt: { seconds: 900, nanoseconds: 0 } as any,
+  createdAt: { seconds: 900, nanoseconds: 0 } as ReturnType<typeof Timestamp.now>,
+  updatedAt: { seconds: 900, nanoseconds: 0 } as ReturnType<typeof Timestamp.now>,
 };
 
 describe('claimVoucher', () => {

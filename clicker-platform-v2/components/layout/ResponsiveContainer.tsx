@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { cn } from '@/lib/utils'; // Assuming standard shadcn utils exist, or I will use template literal
 
 interface ResponsiveContainerProps {
     children: React.ReactNode;

@@ -3,10 +3,11 @@
 import NextImage from 'next/image';
 
 import { useEffect, useState } from 'react';
+import { QueryDocumentSnapshot } from 'firebase/firestore';
 import { useCart } from '../cart-context';
 import { Plus, Search } from 'lucide-react';
 import { InventoryItem } from '@/lib/modules/inventory/types';
-import { getMenuItems, getPOSSettings } from '@/lib/modules/byod_pos/api';
+import { getMenuItems } from '@/lib/modules/byod_pos/api';
 import { POSItem } from '@/lib/modules/byod_pos/types';
 
 import { VariantSelectionDialog } from './VariantSelectionDialog';
@@ -71,7 +72,7 @@ export function MenuGrid({ initialItems, initialSettings }: MenuGridProps) {
     const [searchQuery, setSearchQuery] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
 
-    const [lastDoc, setLastDoc] = useState<any>(null);
+    const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot | null>(null);
     const [hasMore, setHasMore] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
 
@@ -91,6 +92,7 @@ export function MenuGrid({ initialItems, initialSettings }: MenuGridProps) {
             const derived = Array.from(new Set(initialItems.map(i => i.category))).filter(Boolean).sort();
             if (derived.length > 0) setCategories(['All', ...derived]);
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);  // intentionally empty — runs once on mount with prop values
 
     // Fetch Items on Filter Change
@@ -121,7 +123,7 @@ export function MenuGrid({ initialItems, initialSettings }: MenuGridProps) {
             }
         }
         fetchItems();
-    }, [activeCategory, debouncedSearch, siteId]);
+    }, [activeCategory, debouncedSearch, siteId, categories.length]);
 
     const loadMore = async () => {
         if (!lastDoc || loadingMore || !siteId) return;
@@ -162,8 +164,8 @@ export function MenuGrid({ initialItems, initialSettings }: MenuGridProps) {
                     });
                     setLookupMaps({ byLink, byName });
                     setInventoryById(byId);
-                } catch (err: any) {
-                    logger.warn('pos.menu.inventory.access-restricted', { siteId, code: err.code });
+                } catch (err: unknown) {
+                    logger.warn('pos.menu.inventory.access-restricted', { siteId, code: (err as { code?: string })?.code });
                 }
             }
         }

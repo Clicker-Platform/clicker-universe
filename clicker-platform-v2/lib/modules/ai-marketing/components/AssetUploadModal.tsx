@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import Image from 'next/image';
 import { X, Upload, Loader2, ImageIcon } from 'lucide-react';
 import { uploadToStorage } from '@/lib/upload';
 import { useSite } from '@/lib/site-context';
 import { auth } from '@/lib/firebase';
 import { logger } from '@/lib/logger-edge';
-import { apiPost, apiGet } from '../api';
+import { apiPost } from '../api';
 import { API, STORAGE_FOLDER } from '../constants';
 import { AssetType } from '../types';
 
@@ -91,11 +92,12 @@ export default function AssetUploadModal({ onClose, onUploaded }: Props) {
       }
 
       onUploaded(assetId);
-    } catch (err: any) {
-      if (err.message?.includes('storage_quota_exceeded')) {
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg?.includes('storage_quota_exceeded')) {
         setError('Storage quota exceeded (100MB limit). Delete some assets first.');
       } else {
-        setError(err.message ?? 'Upload failed');
+        setError(msg ?? 'Upload failed');
       }
     } finally {
       setUploading(false);
@@ -122,7 +124,7 @@ export default function AssetUploadModal({ onClose, onUploaded }: Props) {
             className="border-2 border-dashed border-gray-200 rounded-2xl p-8 text-center cursor-pointer hover:border-gray-300 transition-colors"
           >
             {preview ? (
-              <img src={preview} alt="Preview" className="max-h-40 mx-auto rounded-xl object-contain" />
+              <Image src={preview} alt="Preview" width={320} height={160} className="max-h-40 mx-auto rounded-xl object-contain" />
             ) : (
               <>
                 <ImageIcon className="w-10 h-10 text-gray-300 mx-auto mb-3" />

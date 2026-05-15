@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Save, Lock, AlertCircle, Tag, Calendar, Users } from 'lucide-react';
 import { getPromoSettings, updatePromoSettings } from '@/lib/modules/promo/api';
 import { PromoSettings } from '@/lib/modules/promo/api';
@@ -17,13 +17,7 @@ export default function PromoSettingsPage() {
 
     const { canEdit, checkAccess } = usePermission('promo', 'settings');
 
-    useEffect(() => {
-        if (siteId) {
-            loadSettings();
-        }
-    }, [siteId]);
-
-    async function loadSettings() {
+    const loadSettings = useCallback(async () => {
         if (!siteId) return;
         try {
             setLoading(true);
@@ -35,7 +29,13 @@ export default function PromoSettingsPage() {
         } finally {
             setLoading(false);
         }
-    }
+    }, [siteId]);
+
+    useEffect(() => {
+        if (siteId) {
+            loadSettings();
+        }
+    }, [siteId, loadSettings]);
 
     async function handleSave() {
         if (!checkAccess('edit')) return;
@@ -90,7 +90,7 @@ export default function PromoSettingsPage() {
                             </div>
                             <div>
                                 <h2 className="text-base font-bold text-gray-900 dark:text-neutral-100">Voucher Code Prefix</h2>
-                                <p className="text-sm text-gray-500 dark:text-neutral-500">Prefix used when generating voucher codes (e.g. "VCH" → VCH-AB12CD).</p>
+                                <p className="text-sm text-gray-500 dark:text-neutral-500">Prefix used when generating voucher codes (e.g. &quot;VCH&quot; → VCH-AB12CD).</p>
                             </div>
                         </div>
                         <div className="max-w-xs">

@@ -1,7 +1,7 @@
 // Multi-skill flow definitions
 // Each flow chains multiple skills sequentially, passing context between steps
 
-import { AgentId, SkillId, MultiSkillFlow } from '../types';
+import { MultiSkillFlow } from '../types';
 
 export const MULTI_SKILL_FLOWS: Record<string, MultiSkillFlow> = {
   full_campaign: {

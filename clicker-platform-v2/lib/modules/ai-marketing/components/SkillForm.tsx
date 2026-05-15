@@ -4,17 +4,17 @@ import { SkillDefinition, SkillFormField } from '../types';
 
 interface Props {
   skill: SkillDefinition;
-  values: Record<string, any>;
-  onChange: (field: string, value: any) => void;
+  values: Record<string, unknown>;
+  onChange: (field: string, value: unknown) => void;
 }
 
-function FormField({ field, value, onChange }: { field: SkillFormField; value: any; onChange: (v: any) => void }) {
+function FormField({ field, value, onChange }: { field: SkillFormField; value: unknown; onChange: (v: unknown) => void }) {
   const base = 'w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 outline-none text-sm';
 
   if (field.type === 'textarea') {
     return (
       <textarea
-        value={value ?? ''}
+        value={(value ?? '') as string}
         onChange={e => onChange(e.target.value)}
         placeholder={field.placeholder}
         rows={3}
@@ -27,7 +27,7 @@ function FormField({ field, value, onChange }: { field: SkillFormField; value: a
   if (field.type === 'select') {
     return (
       <select
-        value={value ?? ''}
+        value={(value ?? '') as string}
         onChange={e => onChange(e.target.value)}
         className={base}
         required={field.required}
@@ -43,7 +43,7 @@ function FormField({ field, value, onChange }: { field: SkillFormField; value: a
   return (
     <input
       type="text"
-      value={value ?? ''}
+      value={(value ?? '') as string}
       onChange={e => onChange(e.target.value)}
       placeholder={field.placeholder}
       className={base}

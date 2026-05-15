@@ -15,9 +15,9 @@ export default function ReservationWidget({
     initialSettings
 }: {
     siteId?: string;
-    initialServices?: any[];
-    initialStaff?: any[];
-    initialSettings?: any;
+    initialServices?: unknown[];
+    initialStaff?: unknown[];
+    initialSettings?: Record<string, unknown>;
 }) {
     const { siteId: contextSiteId } = useSite();
     const siteId = propSiteId || contextSiteId;
@@ -26,7 +26,7 @@ export default function ReservationWidget({
     const [data, setData] = useState<{
         services: Service[];
         staff: Staff[];
-        settings: any;
+        settings: Record<string, unknown>;
     } | null>(
         hasInitialData
             ? { services: initialServices as Service[], staff: (initialStaff || []) as Staff[], settings: initialSettings || {} }
@@ -49,7 +49,7 @@ export default function ReservationWidget({
                     getStaffMembers(siteId, true),
                     getReservationSettings(siteId)
                 ]);
-                setData({ services, staff, settings });
+                setData({ services, staff, settings: settings as unknown as Record<string, unknown> });
             } catch (e) {
                 logger.error('reservation.widget.load.failed', { siteId, error: e });
             } finally {
@@ -57,7 +57,7 @@ export default function ReservationWidget({
             }
         }
         load();
-    }, [siteId]);
+    }, [siteId, hasInitialData]);
 
     if (loading) {
         return <div className="py-12 text-center text-[var(--theme-foreground,#6b7280)] opacity-60">Loading reservation system...</div>;
@@ -73,7 +73,7 @@ export default function ReservationWidget({
                 siteId={siteId!}
                 initialServices={data.services}
                 initialStaff={data.staff}
-                initialSettings={data.settings}
+                initialSettings={data.settings as unknown as Parameters<typeof BookingForm>[0]['initialSettings']}
             />
         </div>
     );

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useMemo } from 'react';
-import { NavigationItem } from '@/data/mockData';
+import { NavigationItem, Form } from '@/data/mockData';
 import { useNavigationConfig, TopNavActions, NavBarStyle, InitialNavData } from '@/lib/hooks/useNavigationConfig';
 
 interface NavigationContextType {
@@ -13,7 +13,7 @@ interface NavigationContextType {
     bottomNavStyle: NavBarStyle;
     loading: boolean;
     error: Error | null;
-    formCache: Record<string, any>;
+    formCache: Record<string, Form>;
 }
 
 const NavigationContext = createContext<NavigationContextType | null>(null);
@@ -21,7 +21,7 @@ const NavigationContext = createContext<NavigationContextType | null>(null);
 interface NavigationProviderProps {
     siteId: string;
     children: React.ReactNode;
-    initialFormCache?: Record<string, any>;
+    initialFormCache?: Record<string, Form>;
     initialNavData?: InitialNavData;
 }
 

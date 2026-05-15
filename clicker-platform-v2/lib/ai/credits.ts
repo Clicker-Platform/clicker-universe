@@ -71,7 +71,7 @@ export async function deductCredits(
 export async function refundCredits(
   siteId: string,
   costUSD: number,
-  _meta: { moduleId: string; skillId: string; reason: string; model: string }
+  _meta?: { moduleId: string; skillId: string; reason: string; model: string }
 ): Promise<void> {
   await adminDb.doc(CREDIT_DOC_PATH(siteId)).update({
     balance: FieldValue.increment(costUSD),

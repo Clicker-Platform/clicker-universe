@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Download, Calendar, Printer, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Download, Printer, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
     getDailyReport,
     getWeeklyReport,
@@ -87,7 +86,7 @@ export default function POSReportsPage() {
                 Promise.all([
                     getReportStats(siteId, rStart, rEnd),
                     fetchItemsSales(rStart, rEnd)
-                ]).then(([stats, _]) => {
+                ]).then(([stats]) => {
                     setSummary(stats);
                     setTotalOrdersCount(stats.totalOrders);
                 });
@@ -245,7 +244,7 @@ export default function POSReportsPage() {
                             {['daily', 'weekly', 'monthly'].map((tab) => (
                                 <button
                                     key={tab}
-                                    onClick={() => setActiveTab(tab as any)}
+                                    onClick={() => setActiveTab(tab as 'daily' | 'weekly' | 'monthly')}
                                     className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors flex-1 md:flex-none text-center whitespace-nowrap ${activeTab === tab
                                         ? 'bg-black dark:bg-white text-white dark:text-black'
                                         : 'text-gray-600 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-700'

@@ -6,7 +6,7 @@ import { ModuleLoader } from './ModuleLoader';
 
 interface ModuleBlockLoaderProps {
     type: string;
-    data: any;
+    data: Record<string, unknown>;
     siteId?: string;
 }
 

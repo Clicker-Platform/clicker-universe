@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Activity, Loader2 } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
+import { auth } from '@/lib/firebase';
 
 interface DailyEntry {
   id: string;
@@ -33,9 +34,12 @@ export function UsagePage() {
 
   const fetchData = useCallback(async () => {
     if (!siteId) return;
+    const token = await auth.currentUser?.getIdToken();
+    if (!token) return;
+    const headers = { Authorization: `Bearer ${token}`, 'x-site-id': siteId };
     const [usageRes, creditRes] = await Promise.all([
-      fetch(`/api/admin/ai-usage?limit=30`, { headers: { 'x-site-id': siteId } }),
-      fetch('/api/admin/ai-credits', { headers: { 'x-site-id': siteId } }),
+      fetch(`/api/admin/ai-usage?limit=30`, { headers }),
+      fetch('/api/admin/ai-credits', { headers }),
     ]);
     const [usageData, creditData] = await Promise.all([usageRes.json(), creditRes.json()]);
     setDays(usageData.days ?? []);
@@ -43,8 +47,10 @@ export function UsagePage() {
   }, [siteId]);
 
   useEffect(() => {
-    setLoading(true);
-    fetchData().finally(() => setLoading(false));
+    Promise.resolve().then(() => {
+      setLoading(true);
+      fetchData().finally(() => setLoading(false));
+    });
   }, [fetchData]);
 
   const now = new Date();

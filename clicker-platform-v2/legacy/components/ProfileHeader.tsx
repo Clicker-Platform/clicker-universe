@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { BusinessProfile } from '../types';
 import { MapPin, Star } from 'lucide-react';
 
@@ -11,10 +12,12 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile }) => {
     <div className="flex flex-col items-center text-center mb-10 relative z-10">
       <div className="relative mb-6">
         <div className="w-32 h-32 bg-white rounded-full border-[4px] border-brand-dark overflow-hidden relative z-10">
-            <img 
-                src={profile.avatarUrl} 
-                alt={profile.name} 
-                className="w-full h-full object-cover"
+            <Image
+                src={profile.avatarUrl}
+                alt={profile.name}
+                fill
+                className="object-cover"
+                unoptimized
             />
         </div>
         {/* Decorative elements behind avatar */}

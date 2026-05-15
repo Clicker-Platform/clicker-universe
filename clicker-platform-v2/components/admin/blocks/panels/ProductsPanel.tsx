@@ -30,6 +30,9 @@ interface Product {
     showLabel?: boolean;
     ctaMode?: 'whatsapp' | 'url' | 'both' | 'none';
     ctaUrl?: string;
+    // Legacy migration fields
+    name?: string;
+    imageUrl?: string;
 }
 
 interface ProductSettings {
@@ -73,8 +76,8 @@ function ProductListItem({ product, isFeatured, onEdit, onDelete, onToggleVisibi
     const [confirmDelete, setConfirmDelete] = useState(false);
     const [deleting, setDeleting] = useState(false);
 
-    const displayTitle = product.title || (product as any).name;
-    const displayImage = (product.images && product.images[0]) || product.image || (product as any).imageUrl;
+    const displayTitle = product.title || product.name;
+    const displayImage = (product.images && product.images[0]) || product.image || product.imageUrl;
     const isActive = product.isActive !== false;
 
     const handleDelete = async () => {
@@ -87,7 +90,7 @@ function ProductListItem({ product, isFeatured, onEdit, onDelete, onToggleVisibi
             {/* Thumbnail */}
             <div className="w-10 h-10 bg-gray-100 dark:bg-neutral-800 rounded-md flex-shrink-0 overflow-hidden relative">
                 {displayImage ? (
-                    <Image src={displayImage} alt={displayTitle} fill sizes="40px" className={`object-cover ${!isActive ? 'grayscale' : ''}`} />
+                    <Image src={displayImage as string} alt={displayTitle || ''} fill sizes="40px" className={`object-cover ${!isActive ? 'grayscale' : ''}`} />
                 ) : (
                     <div className="w-full h-full flex items-center justify-center text-neutral-400 dark:text-neutral-600">
                         <ShoppingBag size={16} />
@@ -218,7 +221,7 @@ export function ProductsPanel() {
         if (product) {
             setEditingId(product.id);
             setFormData({
-                title: product.title || (product as any).name || '',
+                title: product.title || product.name || '',
                 price: product.price ? String(product.price) : '',
                 showPrice: product.showPrice !== false,
                 category: product.category || '',
@@ -372,7 +375,7 @@ export function ProductsPanel() {
                             <div>
                                 <label className={labelClass}>Items to Show (Home)</label>
                                 <input type="number" value={settings.itemsToShow} onChange={e => setSettings({ ...settings, itemsToShow: parseInt(e.target.value) || 6 })} className={inputClass} min={1} />
-                                <p className="text-[10px] text-neutral-400 dark:text-neutral-600 mt-1">Exceeding this shows a "View More" button.</p>
+                                <p className="text-[10px] text-neutral-400 dark:text-neutral-600 mt-1">Exceeding this shows a &ldquo;View More&rdquo; button.</p>
                             </div>
                             <label className="flex items-center gap-2.5 cursor-pointer">
                                 <input type="checkbox" checked={settings.showSectionTitle} onChange={e => setSettings({ ...settings, showSectionTitle: e.target.checked })} className="rounded border-gray-300 dark:border-neutral-600 bg-gray-100 dark:bg-neutral-800 text-blue-500 focus:ring-blue-500/30" />

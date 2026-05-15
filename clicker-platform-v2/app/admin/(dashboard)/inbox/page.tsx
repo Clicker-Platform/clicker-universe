@@ -9,7 +9,8 @@ export default function InboxPage() {
 
     useEffect(() => {
         if (!isOpen) open();
-    }, []);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // intentionally run once on mount to auto-open the inbox panel
 
     return (
         <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">

@@ -11,8 +11,8 @@ interface SocialEmbedItem {
 }
 
 interface SocialEmbedFormProps {
-    data: any;
-    onChange: (data: any) => void;
+    data: Record<string, unknown>;
+    onChange: (data: Record<string, unknown>) => void;
 }
 
 const inputClass = "w-full px-4 py-2.5 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-lg text-sm text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-600 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-medium";
@@ -39,8 +39,8 @@ const platformLabel: Record<Platform, string> = {
 
 export function SocialEmbedForm({ data, onChange }: SocialEmbedFormProps) {
     const safeData = data || {};
-    const items: SocialEmbedItem[] = safeData.items || [];
-    const limit: number = safeData.limit ?? 6;
+    const items: SocialEmbedItem[] = (safeData.items as SocialEmbedItem[] | undefined) || [];
+    const limit: number = (safeData.limit as number | undefined) ?? 6;
 
     const handleItemChange = (index: number, field: keyof SocialEmbedItem, value: string) => {
         const newItems = [...items];
@@ -68,7 +68,7 @@ export function SocialEmbedForm({ data, onChange }: SocialEmbedFormProps) {
                 <label className={labelClass}>Section Title (optional)</label>
                 <input
                     type="text"
-                    value={safeData.title || ''}
+                    value={(safeData.title as string | undefined) || ''}
                     onChange={e => onChange({ ...safeData, title: e.target.value })}
                     className={inputClass}
                     placeholder="e.g. Follow us on TikTok"

@@ -8,13 +8,13 @@ interface FAQItem {
 }
 
 interface FAQFormProps {
-    data: any;
-    onChange: (data: any) => void;
+    data: Record<string, unknown>;
+    onChange: (data: Record<string, unknown>) => void;
 }
 
 export const FAQForm = ({ data, onChange }: FAQFormProps) => {
     const safeData = data || {};
-    const items: FAQItem[] = safeData.items || [];
+    const items: FAQItem[] = (safeData.items as FAQItem[] | undefined) || [];
 
     const handleItemChange = (index: number, field: keyof FAQItem, value: string) => {
         const newItems = [...items];
@@ -46,7 +46,7 @@ export const FAQForm = ({ data, onChange }: FAQFormProps) => {
 
             {items.length === 0 && (
                 <div className="text-center py-10 bg-gray-100/50 dark:bg-neutral-900/50 rounded-lg border-2 border-dashed border-gray-200 dark:border-neutral-800 text-neutral-400 dark:text-neutral-500 text-sm">
-                    No items yet. Click "Add Item" to start.
+                    No items yet. Click &ldquo;Add Item&rdquo; to start.
                 </div>
             )}
 

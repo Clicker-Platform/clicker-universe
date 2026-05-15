@@ -28,7 +28,7 @@ export interface ModuleDefinition {
     requires?: string[]; // IDs of other modules this module depends on
     blocks?: ModuleBlockDefinition[]; // Custom blocks provided by this module
     dashboardWidgets?: ModuleWidgetDefinition[]; // Widgets for Member Dashboard
-    settings?: Record<string, any>; // Module-specific configuration
+    settings?: Record<string, unknown>; // Module-specific configuration
     dashboardAction?: {
         label: string;
         href: string;
@@ -54,5 +54,5 @@ export interface ModuleBlockDefinition {
 // For future use when we permit configuration via DB
 export interface ModuleConfig {
     moduleId: string;
-    settings: Record<string, any>;
+    settings: Record<string, unknown>;
 }

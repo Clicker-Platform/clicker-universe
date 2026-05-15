@@ -26,9 +26,11 @@ interface InboxPanelListProps {
     bulkLoading: boolean;
 }
 
-function formatDate(ts: any): string {
+function formatDate(ts: { toDate?: () => Date; toMillis?: () => number } | string | number | null | undefined): string {
     if (!ts) return '';
-    const d: Date = ts?.toDate ? ts.toDate() : new Date(ts);
+    const d: Date = (typeof ts === 'object' && ts !== null && 'toDate' in ts && typeof ts.toDate === 'function')
+        ? ts.toDate()
+        : new Date(ts as string | number);
     const now = new Date();
     const diffMs = now.getTime() - d.getTime();
     const diffMin = Math.floor(diffMs / 60000);
@@ -59,7 +61,7 @@ export const InboxPanelList = memo(function InboxPanelList({
     onSelect,
     onMarkRead,
     loadingId,
-    itemLimit,
+    itemLimit: _itemLimit,
     onLoadMore,
     hasMore,
     selectedIds,

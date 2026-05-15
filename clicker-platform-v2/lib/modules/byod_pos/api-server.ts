@@ -53,10 +53,10 @@ export async function getPOSDataServer(siteId: string) {
             initialItems: JSON.parse(JSON.stringify(items)),
             initialInventoryMap: JSON.parse(JSON.stringify(inventoryMap))
         };
-    } catch (e: any) {
+    } catch (e: unknown) {
         // Log warning but don't crash. If credentials missing, client-side fetch will take over.
         // Returning undefined (instead of empty array) triggers the client-side useEffect fallback.
-        if (e.message?.includes('credentials')) {
+        if (e instanceof Error && e.message?.includes('credentials')) {
             logger.warn('pos.server.fetch.skipped', { siteId, error: e });
         } else {
             logger.error('pos.server.fetch.failed', { siteId, error: e });

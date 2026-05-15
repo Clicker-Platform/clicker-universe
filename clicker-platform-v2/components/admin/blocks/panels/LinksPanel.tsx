@@ -150,7 +150,7 @@ export function LinksPanel() {
     const [trashedLinks, setTrashedLinks] = useState<AdminLinkItem[]>([]);
     const [trashedLinksLoading, setTrashedLinksLoading] = useState(false);
 
-    const [isTrashingId, setIsTrashingId] = useState<string | null>(null);
+    const [_isTrashingId, setIsTrashingId] = useState<string | null>(null);
     const [isRestoringId, setIsRestoringId] = useState<string | null>(null);
     const [pendingPermDeleteId, setPendingPermDeleteId] = useState<string | null>(null);
     const [isDeletingPermId, setIsDeletingPermId] = useState<string | null>(null);
@@ -218,7 +218,7 @@ export function LinksPanel() {
                 setLinks(fetchedLinks);
                 setForms(formsSnap.docs.map(d => ({ id: d.id, ...d.data() } as Form)));
                 setPages(pagesSnap.docs.map(d => ({ id: d.id, ...d.data() } as Page)));
-                if (settingsSnap.exists()) setSettings(settingsSnap.data() as any);
+                if (settingsSnap.exists()) setSettings(settingsSnap.data() as { sectionTitle: string; showOnHome: boolean });
             } catch (error) {
                 console.error('Error loading links data:', error);
             } finally {
@@ -232,7 +232,7 @@ export function LinksPanel() {
     useEffect(() => {
         if (!siteId || linksVersion === 0) return;
         fetchLinks();
-    }, [linksVersion, fetchLinks]);
+    }, [linksVersion, fetchLinks, siteId]);
 
     // ── CRUD ──────────────────────────────────────────────────────────
 
@@ -421,9 +421,9 @@ export function LinksPanel() {
         }
     };
 
-    const formatDeletedAt = (deletedAt: any) => {
+    const formatDeletedAt = (deletedAt: unknown) => {
         if (!deletedAt) return '';
-        const date = deletedAt instanceof Timestamp ? deletedAt.toDate() : new Date(deletedAt);
+        const date = deletedAt instanceof Timestamp ? deletedAt.toDate() : new Date(deletedAt as string | number | Date);
         const diff = Date.now() - date.getTime();
         const days = Math.floor(diff / 86400000);
         if (days === 0) return 'Today';

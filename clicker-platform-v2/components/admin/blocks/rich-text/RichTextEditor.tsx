@@ -38,7 +38,7 @@ export const RichTextEditor = ({ value, onChange, placeholder = 'Write something
             Placeholder.configure({
                 placeholder,
             }),
-            VideoEmbed as any,
+            VideoEmbed as unknown as NonNullable<Parameters<typeof useEditor>[0]>['extensions'] extends (infer E)[] ? E : never,
         ],
         content: value,
         editorProps: {
@@ -59,12 +59,12 @@ export const RichTextEditor = ({ value, onChange, placeholder = 'Write something
             className="bg-gray-50 dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 overflow-hidden shadow-lg"
             style={{
                 // Fallback variables for Admin Context where TemplateProvider is missing
-                ['--theme-foreground' as any]: '#e5e5e5', // neutral-200
-                ['--theme-primary' as any]: '#60a5fa',    // blue-400
-                ['--theme-radius' as any]: '1rem',
-                ['--font-heading' as any]: 'inherit',
-                ['--font-body' as any]: 'inherit',
-            }}
+                '--theme-foreground': '#e5e5e5', // neutral-200
+                '--theme-primary': '#60a5fa',    // blue-400
+                '--theme-radius': '1rem',
+                '--font-heading': 'inherit',
+                '--font-body': 'inherit',
+            } as React.CSSProperties}
         >
             <Toolbar editor={editor} />
             <EditorContent editor={editor} />

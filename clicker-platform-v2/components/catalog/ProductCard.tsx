@@ -15,7 +15,7 @@ import { useTemplate } from '@/components/TemplateProvider';
 import { getGlassStyle } from '@/components/blocks/public/cardStyles';
 
 function ProductCardComponent({ product, onClick, className = '' }: ProductCardProps) {
-    const { theme, templateId } = useTemplate(); // Use context
+    const { theme } = useTemplate(); // Use context
 
     const isClean = theme.cardStyle === 'clean';
     const isGlass = theme.cardStyle === 'glass';
@@ -62,7 +62,7 @@ function ProductCardComponent({ product, onClick, className = '' }: ProductCardP
             style={isGlass ? { ...getGlassStyle(theme.colors.surface) } : isBrutalist ? cardStyle : {}}
         >
             {/* Price Tag */}
-            {(product as any).showPrice !== false && (
+            {(product as unknown as { showPrice?: boolean }).showPrice !== false && (
                 <div className={`absolute z-10 ${isClean ? 'top-3 right-3' : isGlass ? 'top-3 right-3' : 'top-0 right-0 max-w-[50%]'}`}>
                     {isClean ? (
                         <div className="bg-white/90 backdrop-blur-sm text-gray-800 px-3 py-1 rounded-full font-bold text-xs shadow-sm border border-gray-100">

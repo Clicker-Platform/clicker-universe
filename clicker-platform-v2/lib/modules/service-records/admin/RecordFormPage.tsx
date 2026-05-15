@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useCallback, useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Search, AlertTriangle, ChevronLeft } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
@@ -59,12 +59,7 @@ function RecordFormContent() {
     const [submitting, setSubmitting] = useState(false);
     const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
-    useEffect(() => {
-        if (!siteId) return;
-        initPage();
-    }, [siteId]);
-
-    async function initPage() {
+    const initPage = useCallback(async () => {
         setLoading(true);
         try {
             const [types, catalog] = await Promise.all([
@@ -101,7 +96,12 @@ function RecordFormContent() {
         } finally {
             setLoading(false);
         }
-    }
+    }, [siteId, prefillServiceTypeId, prefillPlate]);
+
+    useEffect(() => {
+        if (!siteId) return;
+        initPage();
+    }, [siteId, initPage]);
 
     function showToast(type: 'success' | 'error', message: string) {
         setToast({ type, message });
@@ -138,7 +138,7 @@ function RecordFormContent() {
         try {
             const { searchMembers } = await import('@/lib/modules/membership/api');
             const results = await searchMembers(siteId, term);
-            setMemberResults(results.map((m: any) => ({
+            setMemberResults(results.map((m: { id: string; fullName?: string; phoneNumber?: string }) => ({
                 memberId: m.id,
                 fullName: m.fullName || '',
                 phone: m.phoneNumber || '',
@@ -201,12 +201,12 @@ function RecordFormContent() {
                 paymentStatus: 'UNPAID',
                 createdBy: user?.email || user?.uid || 'unknown',
                 ...(bookingId ? { bookingId, bookingSource: bookingSource || 'reservation' } : {}),
-            } as any);
+            } as Parameters<typeof createServiceRecord>[1]);
 
             router.push(`/admin/service-records/detail?id=${newId}`);
-        } catch (err: any) {
+        } catch (err: unknown) {
             logger.error('service-records.record-form.save.failed', { siteId, error: err });
-            showToast('error', err.message || 'Failed to save record');
+            showToast('error', err instanceof Error ? err.message : 'Failed to save record');
         } finally {
             setSubmitting(false);
         }

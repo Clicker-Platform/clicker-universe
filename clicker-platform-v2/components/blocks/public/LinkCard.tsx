@@ -23,11 +23,11 @@ export const LinkCard: React.FC<LinkCardProps> = ({ item, siteId, tenantSlug, ca
     const isHighlight = item.highlight;
     const Icon = item.iconName && ICON_MAP[item.iconName] ? ICON_MAP[item.iconName] : ShoppingBag;
 
-    const { theme } = React.useContext(TemplateContext) || { theme: { cardStyle: 'brutalist' } as any };
+    const { theme } = React.useContext(TemplateContext) || { theme: { cardStyle: 'brutalist' } as { cardStyle: string; colors?: Record<string, string> } };
     const isGlass = theme.cardStyle === 'glass';
 
     const [isModalOpen, setIsModalOpen] = React.useState(false);
-    const [formData, setFormData] = React.useState<any>(null);
+    const [formData, setFormData] = React.useState<Record<string, unknown> | null>(null);
     const [isLoadingForm, setIsLoadingForm] = React.useState(false);
 
     const { siteId: contextSiteId, tenantSlug: contextTenantSlug, isSubdomain } = useSite();
@@ -63,7 +63,7 @@ export const LinkCard: React.FC<LinkCardProps> = ({ item, siteId, tenantSlug, ca
     };
 
     const Wrapper = item.type === 'form' ? 'button' : 'a';
-    const wrapperProps: any = item.type === 'form'
+    const wrapperProps: Record<string, unknown> = item.type === 'form'
         ? { onClick: handleClick, type: 'button' }
         : { href: getTenantAwareUrl(item.url), target: item.openInNewTab ? '_blank' : undefined, rel: item.openInNewTab ? 'noopener noreferrer' : undefined, onClick: handleClick };
 
@@ -112,7 +112,7 @@ export const LinkCard: React.FC<LinkCardProps> = ({ item, siteId, tenantSlug, ca
             </Wrapper>
 
             {isModalOpen && formData && (
-                <FormModal form={formData} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} siteId={effectiveSiteId} />
+                <FormModal form={formData as unknown as import('@/data/mockData').Form} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} siteId={effectiveSiteId} />
             )}
         </>
     );

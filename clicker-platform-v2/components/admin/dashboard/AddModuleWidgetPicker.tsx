@@ -15,7 +15,7 @@ export function AddModuleWidgetPicker({ open, candidates, currentVisible, onSave
   const [selected, setSelected] = useState<Set<string>>(() => new Set(currentVisible));
 
   useEffect(() => {
-    if (open) setSelected(new Set(currentVisible));
+    if (open) Promise.resolve().then(() => setSelected(new Set(currentVisible)));
   }, [open, currentVisible]);
 
   if (!open) return null;

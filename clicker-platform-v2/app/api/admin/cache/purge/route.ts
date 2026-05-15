@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'siteId required' }, { status: 400 });
         }
 
-        const claims = decoded as any;
+        const claims = decoded as { siteIds?: string[]; role?: string };
         const allowedSites: string[] = claims.siteIds || [];
         if (!allowedSites.includes(siteId) && claims.role !== 'superadmin') {
             return NextResponse.json({ error: 'forbidden' }, { status: 403 });

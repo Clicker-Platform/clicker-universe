@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
-import { Lock } from 'lucide-react';
 import Image from 'next/image';
 
 import { Suspense } from 'react';
@@ -40,7 +39,7 @@ function AdminLoginForm() {
                 await auth.signOut();
             }
 
-        } catch (err: any) {
+        } catch {
             setError('Invalid email or password.');
         }
     };

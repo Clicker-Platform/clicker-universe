@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useCallback, useEffect, useState, useMemo } from 'react';
+import { QueryDocumentSnapshot } from 'firebase/firestore';
 import { POSOrder } from '@/lib/modules/byod_pos/types';
 import { getHistoryOrders, getPaginatedOrders } from '@/lib/modules/byod_pos/api';
 import { Clock, Loader2, ChevronDown } from 'lucide-react';
@@ -15,14 +16,13 @@ import { logger } from '@/lib/logger-edge';
 export default function TransactionsClient({ initialOrders = [] }: { initialOrders?: POSOrder[] }) {
     const { siteId } = useSite();
     const [orders, setOrders] = useState<POSOrder[]>(initialOrders);
-    const [lastDoc, setLastDoc] = useState<any>(null); // Keep track of last doc for cursor
+    const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot | null>(null); // Keep track of last doc for cursor
     const [isLoading, setIsLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
 
-    // Use any type temporarily for Group until we extract interface if needed, or rely on prop inference
-    const [selectedGroup, setSelectedGroup] = useState<any>(null);
+    const [selectedGroup, setSelectedGroup] = useState<Record<string, unknown> | null>(null);
 
-    const loadOrders = async (isInitial = false) => {
+    const loadOrders = useCallback(async (isInitial = false) => {
         if (!siteId) return;
         setIsLoading(true);
         try {
@@ -38,7 +38,7 @@ export default function TransactionsClient({ initialOrders = [] }: { initialOrde
 
             setLastDoc(lastVisible);
             setHasMore(newOrders.length === 20);
-        } catch (error: any) {
+        } catch (error: unknown) {
             logger.warn('pos.transactions.history.optimized.failed', { siteId, error });
 
             // Fallback: Standard fetch
@@ -65,12 +65,12 @@ export default function TransactionsClient({ initialOrders = [] }: { initialOrde
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [siteId, lastDoc]);
 
     useEffect(() => {
         // Initial load
         if (siteId) loadOrders(true);
-    }, [siteId]);
+    }, [siteId, loadOrders]);
 
     // Each order is its own row — no grouping. Combining causes confusion when
     // unrelated walk-in orders share table/customer keys.
@@ -123,7 +123,7 @@ export default function TransactionsClient({ initialOrders = [] }: { initialOrde
                         ))
                     )}
 
-                    {historyGroups.map((group: any) => (
+                    {historyGroups.map((group) => (
                         <HistoryBillRow
                             key={group.id}
                             group={group}
@@ -158,7 +158,7 @@ export default function TransactionsClient({ initialOrders = [] }: { initialOrde
             <HistorySidebar
                 isOpen={!!selectedGroup}
                 onClose={() => setSelectedGroup(null)}
-                group={selectedGroup}
+                group={selectedGroup as unknown as { id: string; label: string; orders: import('@/lib/modules/byod_pos/types').POSOrder[]; total: number; timestamp: number; status: 'cancelled' | 'paid' | 'mixed' } | null}
             />
         </div>
     );

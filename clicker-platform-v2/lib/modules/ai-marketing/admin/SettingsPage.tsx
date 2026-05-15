@@ -6,7 +6,7 @@ import { useSite } from '@/lib/site-context';
 import { useUser } from '@/lib/user-context';
 import { getMarketingSettings, apiPost } from '../api';
 import {
-  BrandVoiceConfig, MarketingSettings,
+  BrandVoiceConfig,
 } from '../types';
 import {
   DEFAULT_BRAND_VOICE, TONE_OPTIONS, STYLE_OPTIONS,
@@ -49,8 +49,8 @@ export default function SettingsPage() {
       await apiPost(API.config, { brandVoice, defaultPlatforms }, token, siteId);
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
-    } catch (err: any) {
-      alert(err.message);
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : String(err));
     } finally {
       setSaving(false);
     }
@@ -99,7 +99,7 @@ export default function SettingsPage() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Tone</label>
             <select
               value={brandVoice.tone}
-              onChange={e => setBrandVoice(prev => ({ ...prev, tone: e.target.value as any }))}
+              onChange={e => setBrandVoice(prev => ({ ...prev, tone: e.target.value as BrandVoiceConfig['tone'] }))}
               className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 outline-none text-sm"
             >
               {TONE_OPTIONS.map(o => (
@@ -111,7 +111,7 @@ export default function SettingsPage() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Style</label>
             <select
               value={brandVoice.style}
-              onChange={e => setBrandVoice(prev => ({ ...prev, style: e.target.value as any }))}
+              onChange={e => setBrandVoice(prev => ({ ...prev, style: e.target.value as BrandVoiceConfig['style'] }))}
               className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 outline-none text-sm"
             >
               {STYLE_OPTIONS.map(o => (

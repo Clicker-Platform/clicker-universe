@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
 
     try {
         const form = await req.json();
-        const { id, siteId: _siteId, ...data } = form;
+        const { id, siteId: _siteId, ...data } = form; // siteId excluded from data intentionally
 
         if (!id) {
             return NextResponse.json({ error: 'Missing Form ID' }, { status: 400 });

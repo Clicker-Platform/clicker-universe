@@ -26,6 +26,8 @@ export default function ServicesClient({ initialServices = [] }: ServicesClientP
         getServices(siteId)
             .then(setServices)
             .catch(e => logger.error('reservation.services.fetch.failed', { siteId, error: e }));
+    // initialServices.length intentionally omitted — only fetch when siteId changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [siteId]);
 
     const usedCategories = Array.from(new Set(services.map(s => s.category).filter((c): c is string => !!c)));

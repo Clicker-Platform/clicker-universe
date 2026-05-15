@@ -22,9 +22,11 @@ import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 import BillModal from './components/BillModal';
 import type { ServiceRecord, WarrantyCard } from '../types';
 
-function formatDate(ts: any): string {
+function formatDate(ts: { toDate?: () => Date } | Date | string | number | null | undefined): string {
     if (!ts) return '—';
-    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    const d = typeof ts === 'object' && ts !== null && 'toDate' in ts && typeof ts.toDate === 'function'
+        ? ts.toDate()
+        : new Date(ts as string | number | Date);
     return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
@@ -86,6 +88,8 @@ function RecordDetailContent() {
             }
         });
         return () => unsub();
+    // warrantyCard intentionally excluded to avoid re-subscribing on card load
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [siteId, recordId]);
 
     useEffect(() => {
@@ -135,8 +139,8 @@ function RecordDetailContent() {
         try {
             await cancelRecord(siteId, record.id, cancelReason.trim());
             showToast('success', 'Record cancelled');
-        } catch (err: any) {
-            showToast('error', err.message || 'Cancel failed');
+        } catch (err: unknown) {
+            showToast('error', err instanceof Error ? err.message : 'Cancel failed');
         } finally {
             setActionLoading(false);
         }
@@ -149,8 +153,8 @@ function RecordDetailContent() {
             await voidWarrantyCard(siteId, record.warrantyCardId);
             setWarrantyCard(prev => prev ? { ...prev, status: 'VOIDED' } : prev);
             showToast('success', 'Warranty card voided');
-        } catch (err: any) {
-            showToast('error', err.message || 'Failed to void warranty');
+        } catch (err: unknown) {
+            showToast('error', err instanceof Error ? err.message : 'Failed to void warranty');
         } finally {
             setActionLoading(false);
             setShowVoidDialog(false);
@@ -165,8 +169,8 @@ function RecordDetailContent() {
         try {
             await generateWarrantyCardForRecord(siteId, record.id);
             showToast('success', 'Warranty card generated');
-        } catch (err: any) {
-            showToast('error', err.message || 'Failed to generate warranty card');
+        } catch (err: unknown) {
+            showToast('error', err instanceof Error ? err.message : 'Failed to generate warranty card');
             setJustCompleted(false);
         } finally {
             setActionLoading(false);

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Loader2, Upload, X, Image as ImageIcon } from 'lucide-react';
+import { Loader2, Upload, X } from 'lucide-react';
 import Image from 'next/image';
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 

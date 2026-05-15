@@ -40,6 +40,7 @@ export function TokenBootstrap() {
                 const gatewayUrl = process.env.NEXT_PUBLIC_AUTH_GATEWAY_URL;
                 if (gatewayUrl) window.location.href = `${gatewayUrl}?error=auth_failed`;
             });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally runs once on mount to process URL hash token
     }, []);
 
     return null;

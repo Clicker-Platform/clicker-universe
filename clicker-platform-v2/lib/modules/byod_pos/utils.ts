@@ -75,7 +75,7 @@ export function createAggregatedOrder(orders: POSOrder[]): POSOrder {
         total: totals.total,
         taxBreakdown: totals,
         createdAt: Timestamp.now(),
-        status: referenceOrder.status === 'completed' ? 'completed' : 'mixed' as any,
+        status: 'completed' as POSOrder['status'],
         paymentStatus: 'paid'
     };
 }

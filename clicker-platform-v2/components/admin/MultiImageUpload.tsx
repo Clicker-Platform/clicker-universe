@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Upload, X, Loader2, Image as ImageIcon, Plus } from 'lucide-react';
+import { Upload, X, Loader2 } from 'lucide-react';
 import { uploadToStorage } from '@/lib/upload';
 import { useSite } from '@/lib/site-context';
 import Image from 'next/image';
@@ -53,9 +53,9 @@ export function MultiImageUpload({ images, onImagesChange, maxImages = 10 }: Mul
                 try {
                     const url = await uploadToStorage({ file, folder: 'products', siteId });
                     newImageUrls.push(url);
-                } catch (err: any) {
+                } catch (err: unknown) {
                     console.error("Upload error details:", err);
-                    errors.push(`${file.name}: ${err.message || 'Upload failed'}`);
+                    errors.push(`${file.name}: ${err instanceof Error ? err.message : 'Upload failed'}`);
                 }
             }
 

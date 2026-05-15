@@ -7,10 +7,47 @@ import { db } from '@/lib/firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import { useSite } from '@/lib/site-context';
 
-interface HeroFormProps {
-    data: any;
-    onChange: (data: any) => void;
+interface HeroCtaBtn {
+    label?: string;
+    url?: string;
+    type?: string;
+    formId?: string;
+    pageId?: string;
 }
+
+interface HeroFormData {
+    imageUrl?: string;
+    imageUrlMobile?: string;
+    bgMode?: string;
+    bgColor?: string;
+    textColorMode?: string;
+    imagePosition?: string;
+    imagePositionMobile?: string;
+    tagline?: string;
+    title?: string;
+    subtitle?: string;
+    titleColor?: string;
+    subtitleColor?: string;
+    taglineColor?: string;
+    subtitleWeight?: string;
+    titleSize?: string;
+    primaryBtn?: HeroCtaBtn | null;
+    secondaryBtn?: HeroCtaBtn | null;
+    textAlign?: string;
+    taglineAlign?: string;
+    titleAlign?: string;
+    subtitleAlign?: string;
+    ctaAlign?: string;
+    [key: string]: unknown;
+}
+
+interface HeroFormProps {
+    data: HeroFormData;
+    onChange: (data: HeroFormData) => void;
+}
+
+interface PageDoc { id: string; title?: string; slug?: string; [k: string]: unknown }
+interface FormDoc { id: string; title?: string; name?: string; [k: string]: unknown }
 
 const ALIGN_OPTIONS = [
     { value: 'left', icon: AlignLeft, label: 'Left' },
@@ -122,7 +159,7 @@ const inputClass = "w-full px-4 py-2.5 bg-gray-100 dark:bg-neutral-800 border bo
 const labelClass = "block text-xs font-medium text-neutral-400 dark:text-neutral-500 mb-1";
 const sectionClass = "p-3 bg-gray-100/50 dark:bg-neutral-900/50 rounded-lg border border-gray-200 dark:border-neutral-800 space-y-3";
 
-const ColorInput = ({ label, value, resolvedValue, onChange, onClear }: {
+const ColorInput = ({ label: _label, value, resolvedValue, onChange, onClear }: {
     label: string;
     value?: string;
     resolvedValue?: string; // effective color when no override is set — shown as placeholder
@@ -131,7 +168,7 @@ const ColorInput = ({ label, value, resolvedValue, onChange, onClear }: {
 }) => {
     const [textVal, setTextVal] = useState(value || '');
 
-    useEffect(() => { setTextVal(value || ''); }, [value]);
+    useEffect(() => { Promise.resolve().then(() => setTextVal(value || '')); }, [value]);
 
     const isValidHex = (s: string) => /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(s);
 
@@ -170,10 +207,10 @@ const ColorInput = ({ label, value, resolvedValue, onChange, onClear }: {
 };
 
 export const HeroForm = ({ data, onChange }: HeroFormProps) => {
-    const safeData = data || {};
+    const safeData: HeroFormData = data || {};
     const { siteId } = useSite();
-    const [pages, setPages] = useState<any[]>([]);
-    const [forms, setForms] = useState<any[]>([]);
+    const [pages, setPages] = useState<PageDoc[]>([]);
+    const [forms, setForms] = useState<FormDoc[]>([]);
 
     useEffect(() => {
         if (!siteId) return;

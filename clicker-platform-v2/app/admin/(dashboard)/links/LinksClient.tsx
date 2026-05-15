@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc, writeBatch, setDoc, getDoc } from 'firebase/firestore';
 import { LinkItem, Form, Page } from '@/data/mockData';
-import { Trash2, Plus, GripVertical, Save, Pencil, X, Search, FileText, Link as LinkIcon, EyeOff, Settings } from 'lucide-react';
+import { Trash2, Plus, GripVertical, Pencil, X, Search, FileText, Link as LinkIcon, EyeOff, Settings } from 'lucide-react';
 import { TableSkeleton } from '@/components/skeletons/TableSkeleton';
 import { IconSelector } from '@/components/admin/IconSelector';
 import { ICON_MAP } from '@/data/icons';
@@ -167,7 +167,8 @@ export default function LinksManager({ initialLinks }: LinksClientProps) {
             fetchPages();
             fetchLinks();
         }
-    }, [siteId]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [siteId]); // fetch functions are defined below and only depend on siteId which is already in deps
 
     const fetchForms = async () => {
         if (!siteId) return;
@@ -341,7 +342,7 @@ export default function LinksManager({ initialLinks }: LinksClientProps) {
         const loadSettings = async () => {
             const snap = await getDoc(doc(db, "sites", siteId, "content", "linkSettings"));
             if (snap.exists()) {
-                setSettings(snap.data() as any);
+                setSettings(snap.data() as typeof settings);
             }
         }
         loadSettings();

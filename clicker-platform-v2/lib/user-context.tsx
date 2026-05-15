@@ -57,7 +57,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
         // 1. Check Granular Permission (moduleAccess)
         // If the user has explicit setting for this module, RESPECT IT.
         // We must also handle aliases here (pos <-> byod_pos)
-        let targetModuleId = moduleId;
         if (moduleAccess) {
             if (moduleAccess[moduleId]) {
                 return moduleAccess[moduleId][routeId] || 'none';

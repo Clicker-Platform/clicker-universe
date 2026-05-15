@@ -15,7 +15,7 @@ type Tab = 'inbox' | 'new' | 'read';
 
 const PREVIEW_LIMIT = 10;
 
-function derivePreview(data: Record<string, any> | undefined): string {
+function derivePreview(data: Record<string, unknown> | undefined): string {
   if (!data) return '';
   for (const v of Object.values(data)) {
     if (typeof v === 'string' && v.trim().length > 0) return v;
@@ -23,7 +23,7 @@ function derivePreview(data: Record<string, any> | undefined): string {
   return '';
 }
 
-function deriveSender(data: Record<string, any> | undefined): string {
+function deriveSender(data: Record<string, unknown> | undefined): string {
   if (!data) return 'Anonymous';
   for (const key of ['name', 'fullName', 'contactName', 'email']) {
     const v = data[key];
@@ -34,7 +34,8 @@ function deriveSender(data: Record<string, any> | undefined): string {
 
 function formatRelative(ts?: Timestamp | { toDate?: () => Date }): string {
   if (!ts) return '';
-  const date = typeof (ts as any).toDate === 'function' ? (ts as any).toDate() : new Date(ts as any);
+  const tsAny = ts as { toDate?: () => Date };
+  const date = typeof tsAny.toDate === 'function' ? tsAny.toDate() : new Date(ts as unknown as string | number);
   const diffMs = Date.now() - date.getTime();
   const hours = Math.floor(diffMs / 3_600_000);
   if (hours < 1) return 'just now';
@@ -138,7 +139,7 @@ export function InboxColumn({ siteId }: Props) {
                     <p className="text-xs text-gray-500 dark:text-neutral-400 truncate">{preview}</p>
                   )}
                   <p className="text-[10px] text-gray-400 dark:text-neutral-500 mt-0.5">
-                    {formatRelative(s.submittedAt)}
+                    {formatRelative(s.submittedAt as Timestamp | { toDate?: () => Date } | undefined)}
                   </p>
                 </button>
               </li>

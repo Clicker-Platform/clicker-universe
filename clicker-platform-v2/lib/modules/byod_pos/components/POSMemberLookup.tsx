@@ -23,7 +23,6 @@ export function POSMemberLookup({ onMemberSelect, selectedMember, submitLabel = 
     const templateCtx = useContext(TemplateContext);
     const theme = templateCtx?.theme;
     const isGlass = theme?.decorations?.surfaceStyle === 'glass' || theme?.cardStyle === 'glass';
-    const surfaceBg = isGlass ? 'rgba(255,255,255,0.05)' : (theme?.colors.surface ?? '#f9fafb');
     const borderColor = isGlass ? 'rgba(255,255,255,0.1)' : (theme?.colors.border ?? '#e5e7eb');
     const subtleText = theme?.colors.textSubtle ?? theme?.colors.muted ?? theme?.colors.foreground ?? '#6b7280';
     const primaryColor = theme?.colors.primary ?? '#16a34a';
@@ -101,9 +100,9 @@ export function POSMemberLookup({ onMemberSelect, selectedMember, submitLabel = 
             onMemberSelect(member);
             toast.success("Member linked successfully!");
             setIsRegistering(false);
-        } catch (error: any) {
+        } catch (error: unknown) {
             logger.error('pos.member.register.failed', { siteId, error });
-            toast.error(error.message || "Failed to register member");
+            toast.error((error instanceof Error ? error.message : null) || "Failed to register member");
         } finally {
             if (!collisionMember) setLoading(false);
         }

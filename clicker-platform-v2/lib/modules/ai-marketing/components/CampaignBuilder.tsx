@@ -37,8 +37,8 @@ export default function CampaignBuilder({ onClose, onCreated }: Props) {
       if (!token) throw new Error('Not authenticated');
       const { campaignId } = await apiPost(API.campaigns, { name, platform, objective, status }, token, siteId);
       onCreated(campaignId);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setSaving(false);
     }

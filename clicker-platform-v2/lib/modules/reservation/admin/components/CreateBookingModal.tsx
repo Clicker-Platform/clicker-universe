@@ -5,7 +5,7 @@ import AdminBookingWizard from './AdminBookingWizard';
 
 interface CreateBookingModalProps {
     onClose: () => void;
-    onSubmit: (data: any) => Promise<void>;
+    onSubmit: (data: Record<string, unknown>) => Promise<void>;
     services: Service[];
     staff: Staff[];
     settings: { allowStaffSelection: boolean };

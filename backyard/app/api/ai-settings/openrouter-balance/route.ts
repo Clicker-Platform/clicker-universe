@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
     let apiKey: string;
     try {
       apiKey = await getSecret('OPENROUTER_API_KEY');
-    } catch (e) {
+    } catch {
       return NextResponse.json({ error: 'OPENROUTER_API_KEY not set' }, { status: 500 });
     }
 

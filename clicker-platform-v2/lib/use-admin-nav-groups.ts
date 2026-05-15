@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, ComponentType } from 'react';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Box, LayoutDashboard, Palette, Layers, MessageCircle } from 'lucide-react';
@@ -11,7 +11,7 @@ import { useSite } from '@/lib/site-context';
 import { useUser } from '@/lib/user-context';
 
 export interface NavItem {
-    icon: any;
+    icon: ComponentType<{ size?: number; className?: string }>;
     label: string;
     href: string;
 }
@@ -20,7 +20,7 @@ export interface NavGroup {
     title: string;
     items: NavItem[];
     isModule: boolean;
-    moduleIcon?: any;
+    moduleIcon?: ComponentType<{ size?: number; className?: string }>;
 }
 
 export function useAdminNavGroups(): NavGroup[] {
@@ -76,7 +76,7 @@ export function useAdminNavGroups(): NavGroup[] {
                     .filter(r => {
                         if (r.permission) {
                             if (hasFullAccess) return true;
-                            return userPermissions.includes(r.permission as any);
+                            return userPermissions.includes(r.permission as string);
                         }
                         const routeId = getRouteIdFromPath(m.id, r.path);
                         return hasAccess(m.id, routeId);

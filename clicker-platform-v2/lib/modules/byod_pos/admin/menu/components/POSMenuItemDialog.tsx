@@ -49,7 +49,6 @@ export function POSMenuItemDialog({ isOpen, onClose, onSave, initialData, isLoad
     useEffect(() => {
         if (isOpen) {
             if (initialData) {
-                // eslint-disable-next-line react-hooks/set-state-in-effect
                 setFormData(initialData);
             } else {
                 // Reset for new item
@@ -64,7 +63,8 @@ export function POSMenuItemDialog({ isOpen, onClose, onSave, initialData, isLoad
                 });
             }
         }
-    }, [isOpen]); // Intentionally exclude initialData to prevent loops if reference changes upstream
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally exclude initialData to prevent loops if reference changes upstream
+    }, [isOpen]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

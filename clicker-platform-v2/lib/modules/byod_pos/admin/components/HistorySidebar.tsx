@@ -34,7 +34,7 @@ export function HistorySidebar({ isOpen, onClose, group }: HistorySidebarProps) 
 
     useEffect(() => {
         if (isOpen) {
-            setVisible(true);
+            Promise.resolve().then(() => setVisible(true));
             document.body.style.overflow = 'hidden';
         } else {
             const timer = setTimeout(() => setVisible(false), 300); // Wait for transition
@@ -213,7 +213,7 @@ export function HistorySidebar({ isOpen, onClose, group }: HistorySidebarProps) 
                                 </h4>
 
                                 <div className="space-y-4">
-                                    {group.orders.map((order, idx) => (
+                                    {group.orders.map((order) => (
                                         <div key={order.id} className="border border-gray-100 dark:border-neutral-800 rounded-lg overflow-hidden">
                                             <div className="bg-gray-50/50 dark:bg-neutral-800/50 p-3 flex justify-between items-center text-xs text-gray-500 dark:text-neutral-500 border-b border-gray-100 dark:border-neutral-800">
                                                 <div className="flex items-center gap-2">

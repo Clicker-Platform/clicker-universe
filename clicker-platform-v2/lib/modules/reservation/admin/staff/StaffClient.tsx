@@ -54,7 +54,7 @@ export default function StaffClient({ initialStaff }: StaffClientProps) {
             if (!siteId) return;
             await updateReservationSettings(siteId, { allowStaffSelection: val });
             toast.success("Settings updated");
-        } catch (e) {
+        } catch {
             toast.error("Failed to update settings");
             setSettings(prev => ({ ...prev, allowStaffSelection: !val })); // Revert
         }

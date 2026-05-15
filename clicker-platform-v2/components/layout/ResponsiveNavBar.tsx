@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback, useMemo } from 'react';
-import { BusinessProfile } from '@/data/mockData';
+import { BusinessProfile, NavigationItem, Form } from '@/data/mockData';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FormModal } from '@/components/FormModal';
@@ -22,7 +22,7 @@ interface ResponsiveNavBarProps {
     isSubPage?: boolean;
     pageTitle?: string;
     /** Canvas Studio preview: intercepts nav clicks instead of real navigation */
-    onNavigate?: (href: string, item: any) => void;
+    onNavigate?: (href: string, item: NavigationItem) => void;
 }
 
 export const ResponsiveNavBar: React.FC<ResponsiveNavBarProps> = ({
@@ -42,7 +42,7 @@ export const ResponsiveNavBar: React.FC<ResponsiveNavBarProps> = ({
 
     const { topNav, topNavActions, headerStyle, loading, formCache } = useNavigation();
 
-    const [selectedForm, setSelectedForm] = useState<any>(null);
+    const [selectedForm, setSelectedForm] = useState<Form | null>(null);
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -59,13 +59,13 @@ export const ResponsiveNavBar: React.FC<ResponsiveNavBarProps> = ({
 
     const getHref = useCallback((val: string) => resolveNavHref(val, tenantSlug, isSubdomain), [tenantSlug, isSubdomain]);
 
-    const handleItemClick = useCallback(async (e: React.MouseEvent, item: any) => {
+    const handleItemClick = useCallback(async (e: React.MouseEvent, item: NavigationItem) => {
         if (onNavigate) {
             e.preventDefault();
             onNavigate(getHref(item.value), item);
             return;
         }
-        if (item.value === 'action:chat' || item.type === 'action-chat') {
+        if (item.value === 'action:chat' || (item.type as string) === 'action-chat') {
             e.preventDefault();
             openChat();
             return;
@@ -83,7 +83,7 @@ export const ResponsiveNavBar: React.FC<ResponsiveNavBarProps> = ({
                     const { db } = await import('@/lib/firebase');
                     const snap = await getDoc(doc(db, 'sites', siteId, 'forms', item.formId));
                     if (snap.exists() && snap.data().isPublished !== false) {
-                        setSelectedForm({ id: snap.id, ...snap.data() });
+                        setSelectedForm({ id: snap.id, ...snap.data() } as Form);
                         setIsFormOpen(true);
                     }
                 } catch (err) {
@@ -170,7 +170,7 @@ export const ResponsiveNavBar: React.FC<ResponsiveNavBarProps> = ({
                         <div className={forceMobile ? 'hidden' : 'hidden lg:block'}>
                             {(() => {
                                 const { label, linkType, linkValue, formId } = navActions.cta!;
-                                const actionItem = { type: linkType, formId, value: linkValue };
+                                const actionItem = { id: '', label: '', type: linkType, formId, value: linkValue } as NavigationItem;
                                 return (
                                     <Link
                                         href={getHref(linkValue)}
@@ -228,7 +228,7 @@ export const ResponsiveNavBar: React.FC<ResponsiveNavBarProps> = ({
                             <div className="mt-8 w-full max-w-sm">
                                 {(() => {
                                     const { label, linkType, linkValue, formId } = navActions.cta!;
-                                    const actionItem = { type: linkType, formId, value: linkValue };
+                                    const actionItem = { id: '', label: '', type: linkType, formId, value: linkValue } as NavigationItem;
                                     return (
                                         <Link
                                             href={getHref(linkValue)}
@@ -249,7 +249,7 @@ export const ResponsiveNavBar: React.FC<ResponsiveNavBarProps> = ({
             <FormModal
                 isOpen={isFormOpen}
                 onClose={() => setIsFormOpen(false)}
-                form={selectedForm}
+                form={selectedForm as Form}
                 siteId={siteId || ''}
             />
         </>

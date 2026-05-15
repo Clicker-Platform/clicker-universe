@@ -36,7 +36,7 @@ export function PermissionGuard({ moduleId, routeId, children, fallback }: Permi
                 </div>
                 <h2 className="text-xl font-bold text-gray-800 mb-2">Access Denied</h2>
                 <p className="text-gray-500 max-w-md">
-                    You don't have permission to access this page. Please contact your administrator if you believe this is a mistake.
+                    You don&apos;t have permission to access this page. Please contact your administrator if you believe this is a mistake.
                 </p>
                 <div className="mt-4 text-xs text-gray-400 font-mono">
                     Missing Permission: {moduleId}:{routeId}

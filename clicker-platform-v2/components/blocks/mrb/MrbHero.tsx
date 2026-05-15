@@ -2,7 +2,6 @@
 
 import React, { useRef, useState, useEffect } from 'react';
 import Image from 'next/image';
-import { ImageIcon } from 'lucide-react';
 
 const BLUR_PLACEHOLDER = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxIiBoZWlnaHQ9IjEiPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNlNWU3ZWIiLz48L3N2Zz4=';
 const ALIGN_CLASS = { left: 'text-left', center: 'text-center', right: 'text-right' } as const;
@@ -208,8 +207,8 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, isFirst = true,
 
     const titleText = data?.title;
     const nameParts = profile.name.split(' ');
-    const firstName = nameParts[0] || '';
-    const restName = nameParts.slice(1).join(' ');
+    const _firstName = nameParts[0] || '';
+    const _restName = nameParts.slice(1).join(' ');
 
     const tagline = data?.tagline !== null ? (data?.tagline ?? profile.tagline) : null;
     const subtitle = data?.subtitle !== null ? (data?.subtitle ?? profile.description) : null;

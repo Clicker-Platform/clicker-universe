@@ -12,7 +12,7 @@ interface UsePermissionResult {
  * Provides accessible booleans and a helper to show Toasts on denial.
  */
 export function usePermission(moduleId: string, routeId: string = 'default'): UsePermissionResult {
-    const { canEdit: checkEdit, hasAccess: checkView, isOwner } = useUser();
+    const { canEdit: checkEdit, hasAccess: checkView } = useUser();
 
     const canEdit = checkEdit(moduleId, routeId);
     const canView = checkView(moduleId, routeId);

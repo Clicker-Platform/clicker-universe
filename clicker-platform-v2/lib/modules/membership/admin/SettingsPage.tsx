@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Save, AlertCircle, Lock, RefreshCw, CheckCircle2 } from 'lucide-react';
 import { getMembershipSettings, updateMembershipSettings, backfillMemberCodes } from '../api';
 import { MembershipSettings, Tier, DEFAULT_TIER_THRESHOLDS } from '../types';
@@ -41,13 +41,7 @@ export default function MembershipSettingsPage() {
         }
     }
 
-    useEffect(() => {
-        if (siteId) {
-            loadSettings();
-        }
-    }, [siteId]);
-
-    async function loadSettings() {
+    const loadSettings = useCallback(async () => {
         if (!siteId) return;
         try {
             setLoading(true);
@@ -59,7 +53,13 @@ export default function MembershipSettingsPage() {
         } finally {
             setLoading(false);
         }
-    }
+    }, [siteId]);
+
+    useEffect(() => {
+        if (siteId) {
+            loadSettings();
+        }
+    }, [siteId, loadSettings]);
 
     async function handleSave() {
         if (!checkAccess('edit')) return;
@@ -220,7 +220,7 @@ export default function MembershipSettingsPage() {
                     {/* Member Code */}
                     <section>
                         <h2 className="text-lg font-bold text-gray-900 dark:text-neutral-100 mb-1">Member Code</h2>
-                        <p className="text-sm text-gray-500 dark:text-neutral-500 mb-4">Prefix used when generating member codes (e.g. "CLK" → CLK-001).</p>
+                        <p className="text-sm text-gray-500 dark:text-neutral-500 mb-4">Prefix used when generating member codes (e.g. &quot;CLK&quot; → CLK-001).</p>
                         <div className="max-w-xs">
                             <label className="block text-xs font-bold text-gray-400 dark:text-neutral-600 uppercase tracking-wider mb-2">
                                 Code Prefix
@@ -241,7 +241,7 @@ export default function MembershipSettingsPage() {
                         <div className="mt-6 p-4 rounded-lg border border-dashed border-gray-200 dark:border-neutral-700 bg-gray-50 dark:bg-neutral-800/30">
                             <p className="text-sm font-bold text-gray-700 dark:text-neutral-300 mb-1">Backfill Existing Members</p>
                             <p className="text-xs text-gray-400 dark:text-neutral-600 mb-3">
-                                Assign codes to all members that don't have one yet, using the prefix above.
+                                Assign codes to all members that don&apos;t have one yet, using the prefix above.
                                 Members are assigned in order of join date (oldest = 001).
                             </p>
 
@@ -272,7 +272,7 @@ export default function MembershipSettingsPage() {
                     {/* Tier Thresholds */}
                     <section>
                         <h2 className="text-lg font-bold text-gray-900 dark:text-neutral-100 mb-1">Tier Thresholds</h2>
-                        <p className="text-sm text-gray-500 dark:text-neutral-500 mb-4">Minimum points required to reach each tier. Tier is computed automatically from a member's current points.</p>
+                        <p className="text-sm text-gray-500 dark:text-neutral-500 mb-4">Minimum points required to reach each tier. Tier is computed automatically from a member&apos;s current points.</p>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-lg">
                             {((['Bronze', 'Silver', 'Gold', 'Platinum'] as Tier[])).map((tier) => {
                                 const thresholds = settings.tierThresholds || DEFAULT_TIER_THRESHOLDS;

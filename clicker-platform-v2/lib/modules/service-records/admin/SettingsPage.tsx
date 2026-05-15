@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useSite } from '@/lib/site-context';
 import { logger } from '@/lib/logger-edge';
 import { useUser } from '@/lib/user-context';
@@ -10,7 +10,7 @@ import type { ServiceConfig } from '../types';
 export default function SettingsPage() {
     const { siteId } = useSite();
     const { isOwner } = useUser();
-    const [config, setConfig] = useState<ServiceConfig | null>(null);
+    const [_config, setConfig] = useState<ServiceConfig | null>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -18,12 +18,7 @@ export default function SettingsPage() {
     const [warrantyCardsEnabled, setWarrantyCardsEnabled] = useState(true);
     const [reminderEngineEnabled, setReminderEngineEnabled] = useState(false);
 
-    useEffect(() => {
-        if (!siteId) return;
-        loadConfig();
-    }, [siteId]);
-
-    async function loadConfig() {
+    const loadConfig = useCallback(async () => {
         setLoading(true);
         try {
             const cfg = await getServiceConfig(siteId);
@@ -36,7 +31,12 @@ export default function SettingsPage() {
         } finally {
             setLoading(false);
         }
-    }
+    }, [siteId]);
+
+    useEffect(() => {
+        if (!siteId) return;
+        loadConfig();
+    }, [siteId, loadConfig]);
 
     function showToast(type: 'success' | 'error', message: string) {
         setToast({ type, message });

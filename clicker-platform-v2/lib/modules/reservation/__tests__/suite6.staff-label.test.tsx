@@ -3,7 +3,6 @@ import { vi, describe, it, expect, beforeEach, Mock } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 
 import StaffStep from '../public/steps/StaffStep';
-import BookingForm from '../public/BookingForm';
 import StaffClient from '../admin/staff/StaffClient';
 import { getReservationSettings } from '../api';
 import { getStaffMembers } from '../staff';
@@ -37,11 +36,6 @@ const mockStaff = [
   { id: 's1', name: 'John Doe', isActive: true, label: 'Staff' }
 ];
 
-const mockServices = [
-  { id: 'srv1', name: 'Wash', durationMinutes: 30, price: 50, categoryId: 'c1' }
-];
-
-const mockWeeklySlots = [];
 
 describe('Suite 6 — staffLabel Dynamic Terminology (B7)', () => {
 
@@ -62,6 +56,7 @@ describe('Suite 6 — staffLabel Dynamic Terminology (B7)', () => {
           staffList={mockStaff} 
           onSelect={vi.fn()} 
           staffLabel="Staff" // Default fallback mapping
+          theme={{ colors: {}, decorations: {}, cardStyle: 'flat' } as unknown as Parameters<typeof StaffStep>[0]['theme']}
         />
       );
       
@@ -96,6 +91,7 @@ describe('Suite 6 — staffLabel Dynamic Terminology (B7)', () => {
           staffList={mockStaff} 
           onSelect={vi.fn()} 
           staffLabel="Technician"
+          theme={{ colors: {}, decorations: {}, cardStyle: 'flat' } as unknown as Parameters<typeof StaffStep>[0]['theme']}
         />
       );
       

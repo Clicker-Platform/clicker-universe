@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { User } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
@@ -20,29 +20,12 @@ export default function MemberDashboard() {
     const router = useRouter();
     const [user, setUser] = useState<User | null>(null);
     const [member, setMember] = useState<Member | null>(null);
-    const [widgets, setWidgets] = useState<any[]>([]);
+    const [widgets, setWidgets] = useState<Awaited<ReturnType<typeof findWidgetsForLocation>>>([]);
     const [loading, setLoading] = useState(true);
     const [authChecking, setAuthChecking] = useState(true);
 
-    // 1. Monitor Auth State
-    useEffect(() => {
-        const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
-            setUser(currentUser);
-            setAuthChecking(false);
-
-            if (currentUser && siteId) {
-                await loadMember(currentUser, siteId);
-            } else if (!currentUser) {
-                setLoading(false);
-                // Defer until router is initialized after hydration
-                setTimeout(() => router.replace('/member/login'), 0);
-            }
-        });
-        return () => unsubscribe();
-    }, [siteId]);
-
     // 2. Fetch Member Data
-    const loadMember = async (authUser: User, currentSiteId: string) => {
+    const loadMember = useCallback(async (authUser: User, currentSiteId: string) => {
         try {
             // A. Try finding by Linked UID
             let foundMember = await findMemberByAuthId(currentSiteId, authUser.uid);
@@ -63,11 +46,28 @@ export default function MemberDashboard() {
             setWidgets(foundWidgets);
 
         } catch (error) {
-            logger.error('membership.load.failed', { siteId, error });
+            logger.error('membership.load.failed', { siteId: currentSiteId, error });
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
+
+    // 1. Monitor Auth State
+    useEffect(() => {
+        const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
+            setUser(currentUser);
+            setAuthChecking(false);
+
+            if (currentUser && siteId) {
+                await loadMember(currentUser, siteId);
+            } else if (!currentUser) {
+                setLoading(false);
+                // Defer until router is initialized after hydration
+                setTimeout(() => router.replace('/member/login'), 0);
+            }
+        });
+        return () => unsubscribe();
+    }, [siteId, loadMember, router]);
 
     const handleLogout = async () => {
         await auth.signOut();
@@ -90,7 +90,7 @@ export default function MemberDashboard() {
             <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-6 text-center">
                 <h2 className="text-xl font-bold text-gray-800 mb-2">Membership Not Found</h2>
                 <p className="text-gray-600 mb-6 max-w-xs mx-auto">
-                    We couldn't find a membership linked to <strong>{user.email}</strong>.
+                    We couldn&apos;t find a membership linked to <strong>{user.email}</strong>.
                 </p>
                 <div className="space-y-3 w-full max-w-xs">
                     <button className="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg opacity-50 cursor-not-allowed">
@@ -115,7 +115,7 @@ export default function MemberDashboard() {
                 {/* Dynamic Widgets Area */}
                 <div className="space-y-6">
                     {widgets.map((w, idx) => {
-                        const WidgetComponent = CLIENT_MODULE_COMPONENTS[w.componentKey];
+                        const WidgetComponent = CLIENT_MODULE_COMPONENTS[w.componentKey] as React.ComponentType<{ memberPhone?: string; memberId?: string }> | undefined;
                         if (!WidgetComponent) return null;
 
                         return (

@@ -18,13 +18,13 @@ const RichTextEditor = dynamic(
 const labelClass = "block text-xs font-medium text-neutral-400 dark:text-neutral-500 mb-1";
 
 interface TextFormProps {
-    data: any;
-    onChange: (data: any) => void;
+    data: Record<string, unknown>;
+    onChange: (data: Record<string, unknown>) => void;
 }
 
 export const TextForm = ({ data, onChange }: TextFormProps) => {
     const safeData = data || {};
-    const set = (field: string, value: any) => onChange({ ...safeData, [field]: value });
+    const set = (field: string, value: unknown) => onChange({ ...safeData, [field]: value });
 
     return (
         <div className="space-y-4">
@@ -32,7 +32,7 @@ export const TextForm = ({ data, onChange }: TextFormProps) => {
                 <label className={labelClass}>Content</label>
                 <div className="min-h-[200px] rounded-lg overflow-hidden">
                     <RichTextEditor
-                        value={safeData.content || ''}
+                        value={(safeData.content as string | undefined) || ''}
                         onChange={(html) => set('content', html)}
                     />
                 </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { BarChart3, Download, Printer, TrendingUp, Clock, CheckCircle2, XCircle, Car, CreditCard, Shield, Users } from 'lucide-react';
+import { BarChart3, Download, Printer, TrendingUp, Clock, CreditCard, Shield } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
 import { logger } from '@/lib/logger-edge';
 import { downloadAsCSV } from '@/lib/utils/export';
@@ -137,9 +137,9 @@ export default function ReportsPage() {
             const data = await getServiceRecordsByDateRange(siteId, start, end);
             setRecords(data);
             setSummary(computeReportSummary(data));
-        } catch (err: any) {
+        } catch (err: unknown) {
             logger.error('service-records.reports.fetch.failed', { siteId, error: err });
-            setError(err.message || 'Failed to load report');
+            setError(err instanceof Error ? err.message : 'Failed to load report');
         } finally {
             setLoading(false);
         }

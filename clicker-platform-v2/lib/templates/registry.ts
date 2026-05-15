@@ -1,4 +1,4 @@
-import { TemplateDefinition, TemplateId } from './types';
+import { TemplateDefinition } from './types';
 import { templateDefinitions } from './definitions';
 
 // Component Imports
@@ -13,7 +13,7 @@ import { MrbOperatingHours } from '@/components/blocks/mrb/MrbOperatingHours';
 import { MrbHero } from '@/components/blocks/mrb/MrbHero';
 
 // Map IDs to Component Sets
-const templateComponents: Record<string, any> = {
+const templateComponents: Record<string, unknown> = {
     'classic': {
         Header: ClassicProfileHeader,
         Background: BackgroundDecorations,
@@ -55,7 +55,7 @@ const templateComponents: Record<string, any> = {
 export const templates: Record<string, TemplateDefinition> = Object.keys(templateDefinitions).reduce((acc, key) => {
     acc[key] = {
         ...templateDefinitions[key],
-        components: templateComponents[key]
+        components: templateComponents[key] as TemplateDefinition['components']
     };
     return acc;
 }, {} as Record<string, TemplateDefinition>);

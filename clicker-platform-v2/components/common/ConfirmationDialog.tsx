@@ -32,7 +32,7 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
 }) => {
     const { isDark } = useAdminTheme();
     const [mounted, setMounted] = useState(false);
-    useEffect(() => { setMounted(true); }, []);
+    useEffect(() => { Promise.resolve().then(() => setMounted(true)); }, []);
 
     if (!isOpen || !mounted) return null;
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { createPortal } from 'react-dom';
@@ -24,7 +24,7 @@ export const FullScreenGallery = ({ isOpen, images, initialIndex = 0, onClose }:
     const [mainLoaded, setMainLoaded] = useState(false);
 
     useEffect(() => {
-        setMounted(true);
+        Promise.resolve().then(() => setMounted(true));
         return () => setMounted(false);
     }, []);
 
@@ -58,8 +58,7 @@ export const FullScreenGallery = ({ isOpen, images, initialIndex = 0, onClose }:
 
     useEffect(() => {
         if (isOpen) {
-            setCurrentIndex(initialIndex);
-            setMainLoaded(false);
+            Promise.resolve().then(() => { setCurrentIndex(initialIndex); setMainLoaded(false); });
             document.body.style.overflow = 'hidden';
         } else {
             document.body.style.overflow = 'unset';
@@ -67,17 +66,17 @@ export const FullScreenGallery = ({ isOpen, images, initialIndex = 0, onClose }:
         return () => { document.body.style.overflow = 'unset'; };
     }, [isOpen, initialIndex]);
 
-    const nextImage = (e?: React.MouseEvent) => {
+    const nextImage = useCallback((e?: React.MouseEvent) => {
         e?.stopPropagation();
         setMainLoaded(false);
         setCurrentIndex((prev) => (prev + 1) % images.length);
-    };
+    }, [images.length]);
 
-    const prevImage = (e?: React.MouseEvent) => {
+    const prevImage = useCallback((e?: React.MouseEvent) => {
         e?.stopPropagation();
         setMainLoaded(false);
         setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
-    };
+    }, [images.length]);
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -88,7 +87,7 @@ export const FullScreenGallery = ({ isOpen, images, initialIndex = 0, onClose }:
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [isOpen, onClose]);
+    }, [isOpen, onClose, nextImage, prevImage]);
 
     if (!mounted) return null;
     if (!isOpen) return preloadPortal;

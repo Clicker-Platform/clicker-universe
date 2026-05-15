@@ -10,13 +10,13 @@ import { SkillId } from '../types';
 interface GenerationResult {
   generationId: string;
   content: string;
-  structured?: Record<string, any>;
-  stepOutputs?: Record<string, any>;
+  structured?: Record<string, unknown>;
+  stepOutputs?: Record<string, unknown>;
   model: string;
 }
 
 interface UseGenerationReturn {
-  generate: (params: { skillId?: SkillId; flowId?: string; formData: Record<string, any> }) => Promise<GenerationResult | null>;
+  generate: (params: { skillId?: SkillId; flowId?: string; formData: Record<string, unknown> }) => Promise<GenerationResult | null>;
   generating: boolean;
   error: string | null;
   insufficientCredits: boolean;
@@ -31,7 +31,7 @@ export function useGeneration(): UseGenerationReturn {
   const [insufficientCredits, setInsufficientCredits] = useState(false);
   const [requiredCredits, setRequiredCredits] = useState(0);
 
-  const generate = async (params: { skillId?: SkillId; flowId?: string; formData: Record<string, any> }): Promise<GenerationResult | null> => {
+  const generate = async (params: { skillId?: SkillId; flowId?: string; formData: Record<string, unknown> }): Promise<GenerationResult | null> => {
     setGenerating(true);
     setError(null);
     setInsufficientCredits(false);
@@ -42,13 +42,14 @@ export function useGeneration(): UseGenerationReturn {
 
       const result = await apiPost(API.generate, params, token, siteId);
       return result as GenerationResult;
-    } catch (err: any) {
-      if (err.message?.includes('insufficient_credits')) {
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : String(err);
+      if (errMsg?.includes('insufficient_credits')) {
         // Parse from error message or JSON response
         setInsufficientCredits(true);
         setRequiredCredits(0);
       }
-      setError(err.message ?? 'Generation failed');
+      setError(errMsg ?? 'Generation failed');
       return null;
     } finally {
       setGenerating(false);

@@ -17,7 +17,7 @@ export const LinkSelector = ({ editor, isOpen, onClose }: LinkSelectorProps) => 
     useEffect(() => {
         if (isOpen) {
             const previousUrl = editor.getAttributes('link').href;
-            setUrl(previousUrl || '');
+            Promise.resolve().then(() => setUrl(previousUrl || ''));
             setTimeout(() => inputRef.current?.focus(), 50);
         }
     }, [isOpen, editor]);

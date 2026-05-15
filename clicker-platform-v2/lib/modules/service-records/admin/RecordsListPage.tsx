@@ -20,9 +20,11 @@ const TABS: { key: TabStatus; label: string; highlight?: boolean }[] = [
     { key: 'CANCELLED', label: 'Cancelled' },
 ];
 
-function formatDate(ts: any): string {
+function formatDate(ts: { toDate?: () => Date } | Date | string | null | undefined): string {
     if (!ts) return '—';
-    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    const d = typeof ts === 'object' && ts !== null && 'toDate' in ts && typeof ts.toDate === 'function'
+        ? ts.toDate()
+        : new Date(ts as string | number | Date);
     return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
@@ -66,6 +68,8 @@ export default function RecordsListPage() {
 
     useEffect(() => {
         load(activeTab, true);
+    // load changes when lastDoc changes but we don't want to re-fetch on cursor updates
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [siteId, activeTab]);
 
     function handleTabChange(tab: TabStatus) {

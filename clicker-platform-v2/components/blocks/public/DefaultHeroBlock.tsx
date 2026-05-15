@@ -57,6 +57,36 @@ const TITLE_SIZES = (d: DeviceView): Record<string, string> => ({
 
 interface CtaBtn { label?: string; url?: string; type?: string; formId?: string; pageId?: string; }
 
+interface HeroBlockData {
+    imageUrl?: string;
+    bgMode?: string;
+    bgColor?: string;
+    textColorMode?: string;
+    layoutVariant?: string;
+    imagePosition?: string;
+    titleSize?: string;
+    primaryBtn?: CtaBtn | null;
+    secondaryBtn?: CtaBtn | null;
+    textAlign?: 'left' | 'center' | 'right';
+    taglineAlign?: 'left' | 'center' | 'right';
+    titleAlign?: 'left' | 'center' | 'right';
+    subtitleAlign?: 'left' | 'center' | 'right';
+    ctaAlign?: 'left' | 'center' | 'right';
+    tagline?: string;
+    title?: string;
+    subtitle?: string;
+    titleColor?: string;
+    subtitleColor?: string;
+    taglineColor?: string;
+    subtitleWeight?: string;
+    imageFullWidth?: boolean;
+}
+
+interface HeroBlockTheme {
+    cardStyle?: string;
+    colors?: { background?: string; foreground?: string; primary?: string; [k: string]: unknown };
+}
+
 // ─── CTA button row ───────────────────────────────────────────────────────────
 
 const CtaButtons = ({
@@ -144,28 +174,29 @@ const CtaButtons = ({
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export const DefaultHeroBlock = ({ data, theme, isFirst = true, onInlineChange, onFieldFocus, onFieldBlur }: {
-    data: any;
-    theme?: any;
+    data: HeroBlockData;
+    theme?: HeroBlockTheme;
     isFirst?: boolean;
     onInlineChange?: (field: string, value: string) => void;
     onFieldFocus?: (field: string, rect: DOMRect) => void;
     onFieldBlur?: () => void;
 }) => {
-    if (!data) return null;
-
     const deviceView = useDeviceView();
     const d = deviceView;
 
+    type LocalThemeColors = { background?: string; foreground?: string; primary?: string; [k: string]: unknown };
     let cardStyle = 'brutalist';
-    let themeColors: any = null;
+    let themeColors: LocalThemeColors | null = null;
     try {
         // eslint-disable-next-line react-hooks/rules-of-hooks
         const { theme: templateTheme } = useTemplate();
         cardStyle = templateTheme.cardStyle || 'brutalist';
-        themeColors = templateTheme.colors || null;
+        themeColors = (templateTheme.colors as unknown as LocalThemeColors) || null;
     } catch {
         if (theme?.cardStyle) cardStyle = theme.cardStyle;
     }
+
+    if (!data) return null;
 
     const isClean = cardStyle === 'clean';
     const isGlass = cardStyle === 'glass';
@@ -212,7 +243,7 @@ export const DefaultHeroBlock = ({ data, theme, isFirst = true, onInlineChange, 
             : {}; // image handled separately on right panel
 
         // Card chrome: when bgMode is color/transparent, drop the default bg-white
-        const leftClasses = bgMode === 'image'
+        const _leftClasses = bgMode === 'image'
             ? isClean
                 ? 'border border-gray-200 shadow-sm bg-white'
                 : isGlass
@@ -279,7 +310,7 @@ export const DefaultHeroBlock = ({ data, theme, isFirst = true, onInlineChange, 
                     style={bgMode === 'color' ? { backgroundColor: bgColor } : bgMode === 'transparent' ? {} : {}}>
                     {bgMode === 'image' && hasImage && (
                         <Image
-                            src={data.imageUrl}
+                            src={data.imageUrl as string}
                             alt={data?.title || 'Hero Image'}
                             fill
                             priority={isFirst}
@@ -304,7 +335,7 @@ export const DefaultHeroBlock = ({ data, theme, isFirst = true, onInlineChange, 
                 {bgMode === 'image' && hasImage ? (
                     <div className="absolute inset-0 z-0">
                         <Image
-                            src={data.imageUrl}
+                            src={data.imageUrl as string}
                             alt=""
                             fill
                             priority={isFirst}
@@ -400,7 +431,7 @@ export const DefaultHeroBlock = ({ data, theme, isFirst = true, onInlineChange, 
             {bgMode === 'image' && hasImage && (
                 <div className="absolute inset-0 z-0">
                     <Image
-                        src={data.imageUrl}
+                        src={data.imageUrl as string}
                         alt=""
                         fill
                         priority={isFirst}

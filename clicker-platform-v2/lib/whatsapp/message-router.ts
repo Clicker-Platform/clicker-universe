@@ -126,8 +126,9 @@ async function handleBookingQuery(siteId: string, _cmd: string): Promise<string>
 
   if (!bookings.length) return `📅 *Jadwal Hari Ini*\n${formatDate(today)}\n\nTidak ada booking hari ini.`;
 
-  const confirmed = bookings.filter((b: any) => b.status === 'confirmed' || b.status === 'new');
-  const lines = confirmed.slice(0, 10).map((b: any) => {
+  type BookingSummary = { status?: string; date?: { toDate?: () => Date }; time?: string; customerName?: string; pax?: number };
+  const confirmed = (bookings as BookingSummary[]).filter(b => b.status === 'confirmed' || b.status === 'new');
+  const lines = confirmed.slice(0, 10).map(b => {
     const time = b.date?.toDate?.()
       ? new Date(b.date.toDate()).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
       : b.time ?? '-';
@@ -156,9 +157,10 @@ async function handleMemberQuery(siteId: string, _cmd: string): Promise<string> 
 
   if (!members.length) return '👤 *Data Member*\n\nBelum ada member terdaftar.';
 
-  const active = members.filter((m: any) => m.status !== 'inactive' && m.status !== 'suspended');
+  type MemberSummary = { status?: string; tierName?: string; tier?: string };
+  const active = (members as MemberSummary[]).filter(m => m.status !== 'inactive' && m.status !== 'suspended');
   const tierCounts: Record<string, number> = {};
-  members.forEach((m: any) => {
+  (members as MemberSummary[]).forEach(m => {
     const tier = m.tierName ?? m.tier ?? 'Regular';
     tierCounts[tier] = (tierCounts[tier] ?? 0) + 1;
   });

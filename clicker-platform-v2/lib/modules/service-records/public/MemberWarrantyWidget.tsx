@@ -59,7 +59,7 @@ export default function MemberWarrantyWidget({ siteId, memberPhone, memberId }: 
                 <h3 className="text-sm font-bold text-gray-700">Active Warranties</h3>
             </div>
             {cards.map(card => {
-                const expiryDate = card.expiryDate?.toDate ? card.expiryDate.toDate() : new Date(card.expiryDate as any);
+                const expiryDate = card.expiryDate?.toDate ? card.expiryDate.toDate() : new Date(card.expiryDate as unknown as string);
                 const daysLeft = Math.ceil((expiryDate.getTime() - Date.now()) / 86_400_000);
 
                 return (

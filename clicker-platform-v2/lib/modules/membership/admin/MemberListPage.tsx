@@ -53,7 +53,7 @@ export default function MemberListPage() {
     const [members, setMembers] = useState<Member[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [lastDoc, setLastDoc] = useState<any>(null);
+    const [lastDoc, setLastDoc] = useState<import('firebase/firestore').QueryDocumentSnapshot | null>(null);
     const [hasMore, setHasMore] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
     const [settings, setSettings] = useState<MembershipSettings | null>(null);

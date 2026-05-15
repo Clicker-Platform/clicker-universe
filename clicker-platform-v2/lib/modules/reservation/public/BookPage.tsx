@@ -24,8 +24,8 @@ import { notFound } from 'next/navigation';
 
 interface BookPageProps {
     siteId: string;
-    params?: any;
-    searchParams?: any;
+    params?: Record<string, string>;
+    searchParams?: Record<string, string | string[]>;
 }
 
 export default async function BookPage({ siteId }: BookPageProps) {

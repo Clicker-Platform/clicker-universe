@@ -1,5 +1,5 @@
 
-import { POSOrder } from '../byod_pos/types';
+import { POSOrder, CartItem } from '../byod_pos/types';
 
 export interface ReportSummary {
     totalSales: number;
@@ -15,7 +15,7 @@ export interface ReportSummary {
  * Useful for client-side calculations or fallback when server-side stats are insufficient (e.g. payment breakdown).
  */
 export function calculateReportSummary(orders: POSOrder[]): ReportSummary {
-    const validOrders = orders.filter(o => o.status === 'completed' || o.status === 'ready' || (o.status as any) === 'served');
+    const validOrders = orders.filter(o => o.status === 'completed' || o.status === 'ready' || (o.status as string) === 'served');
     const cancelledOrders = orders.filter(o => o.status === 'cancelled');
 
     const totalSales = validOrders.reduce((acc, o) => acc + o.total, 0);
@@ -58,7 +58,7 @@ export interface ItemSalesSummary {
     category?: string;
 }
 
-export function calculateItemsSales(orders: any[]): ItemSalesSummary[] {
+export function calculateItemsSales(orders: POSOrder[]): ItemSalesSummary[] {
     const map = new Map<string, ItemSalesSummary>();
 
     for (const order of orders) {
@@ -67,7 +67,7 @@ export function calculateItemsSales(orders: any[]): ItemSalesSummary[] {
         for (const item of order.items) {
             // Group by (productId, variantId) so e.g. Latte Small and Latte Large
             // appear as separate rows instead of collapsing under the base item.
-            const productKey = item.id || item.name;
+            const productKey = (item as CartItem & { id?: string }).id || item.productId || item.name;
             const key = item.variantId ? `${productKey}::${item.variantId}` : productKey;
             const displayName = item.variantName ? `${item.name} — ${item.variantName}` : item.name;
             const existing = map.get(key);
@@ -81,7 +81,7 @@ export function calculateItemsSales(orders: any[]): ItemSalesSummary[] {
                     name: displayName,
                     quantity: item.quantity || 1,
                     revenue: item.price * (item.quantity || 1),
-                    category: item.category
+                    category: (item as CartItem & { category?: string }).category
                 });
             }
         }

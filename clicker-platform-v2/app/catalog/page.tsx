@@ -22,6 +22,7 @@ export default async function CatalogPage({
     const headersList = await headers();
     const siteId = headersList.get('x-site-id') || 'default';
 
+    const publicData = await fetchPublicData(siteId);
     const {
         profile,
         socialLinks,
@@ -30,11 +31,11 @@ export default async function CatalogPage({
         contact,
         hideFooterContact,
         showHeaderAddress,
-        themeColor,
-        borderRadius,
         products,
-        accentColor // Ensure we pass this if needed or implicit via theme
-    } = await fetchPublicData(siteId);
+    } = publicData;
+    const themeColor = (publicData as unknown as { themeColor?: string }).themeColor;
+    const borderRadius = (publicData as unknown as { borderRadius?: string }).borderRadius;
+    const accentColor = (publicData as unknown as { accentColor?: string }).accentColor;
 
     // Resolve Template (Priority: URL Param > DB Setting > Default)
     const overrideTemplate = typeof t === 'string' ? t : undefined;
@@ -58,7 +59,7 @@ export default async function CatalogPage({
             default: return '24px';
         }
     };
-    const radiusValue = getRadiusValue(borderRadius);
+    const radiusValue = getRadiusValue(borderRadius as 'small' | 'medium' | 'large' | undefined);
 
     // Construct Theme Overrides
     // Construct Theme Overrides

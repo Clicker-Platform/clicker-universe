@@ -6,7 +6,7 @@ import { getStaffMembers } from '@/lib/modules/reservation/staff';
 vi.mock('firebase/firestore', async (importOriginal) => {
     const actual = await importOriginal();
     return {
-        ...(actual as any),
+        ...(actual as Record<string, unknown>),
         collection: vi.fn(() => ({})),
         query: vi.fn((...args) => args),
         where: vi.fn(),

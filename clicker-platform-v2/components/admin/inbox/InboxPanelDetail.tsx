@@ -1,6 +1,7 @@
 'use client';
 
 import { memo, useState } from 'react';
+import Image from 'next/image';
 import { ArrowLeft, Clock, Mail, MailOpen, Archive, ArchiveRestore, Trash2, Download, ExternalLink } from 'lucide-react';
 import { Submission } from '@/data/mockData';
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
@@ -19,15 +20,25 @@ const isImageUrl = (url: string) => {
     return /\.(jpg|jpeg|png|gif|webp)($|\?)/i.test(url);
 };
 
-function formatDetailDate(ts: any): string {
+type TsLike = { toDate?: () => Date } | { toMillis?: () => number } | string | number | null | undefined;
+
+function tsToDate(ts: TsLike): Date {
+    if (ts && typeof ts === 'object') {
+        if ('toDate' in ts && typeof ts.toDate === 'function') return ts.toDate();
+        if ('toMillis' in ts && typeof ts.toMillis === 'function') return new Date(ts.toMillis());
+    }
+    return new Date(ts as string | number);
+}
+
+function formatDetailDate(ts: TsLike): string {
     if (!ts) return 'Unknown';
-    const d: Date = ts?.toDate ? ts.toDate() : new Date(ts);
+    const d = tsToDate(ts);
     return d.toLocaleString();
 }
 
-function formatRelative(ts: any): string {
+function formatRelative(ts: TsLike): string {
     if (!ts) return '';
-    const d: Date = ts?.toDate ? ts.toDate() : new Date(ts);
+    const d = tsToDate(ts);
     const diffMs = Date.now() - d.getTime();
     const diffMin = Math.floor(diffMs / 60000);
     if (diffMin < 1) return 'just now';
@@ -178,7 +189,7 @@ export const InboxPanelDetail = memo(function InboxPanelDetail({
                                     <p className="text-[11px] font-bold text-gray-400 dark:text-neutral-500 uppercase mb-1">{label}</p>
                                     {isImage ? (
                                         <div className="group relative rounded-lg overflow-hidden border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-900">
-                                            <img src={stringValue} alt={label} className="w-full h-auto object-cover max-h-[240px]" />
+                                            <Image src={stringValue} alt={label} width={600} height={240} className="w-full h-auto object-cover max-h-[240px]" unoptimized />
                                             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
                                                 <a
                                                     href={stringValue}

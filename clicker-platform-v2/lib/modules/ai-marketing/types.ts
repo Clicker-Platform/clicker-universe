@@ -39,19 +39,19 @@ export interface BrandVoiceConfig {
 export interface MarketingSettings {
   brandVoice: BrandVoiceConfig;
   defaultPlatforms: string[];
-  updatedAt: any;
+  updatedAt: unknown;
   updatedBy: string;
 }
 
 export interface AssetAnalysis {
-  subject: Record<string, any>;
+  subject: Record<string, unknown>;
   composition: string;
   lighting: string;
   mood: string;
   colors: { hex: string; name: string; percentage: number }[];
   generatedPrompt: string;
   recommendedUseCases: string[];
-  analyzedAt: any;
+  analyzedAt: unknown;
 }
 
 export interface MarketingAsset {
@@ -65,7 +65,7 @@ export interface MarketingAsset {
   tags: string[];
   analysis: AssetAnalysis | null;
   analysisStatus: 'pending' | 'analyzing' | 'complete' | 'failed';
-  createdAt: any;
+  createdAt: unknown;
   createdBy: string;
 }
 
@@ -73,13 +73,13 @@ export interface GenerationInput {
   userPrompt: string;
   platform?: string;
   assetIds?: string[];
-  formData?: Record<string, any>;
+  formData?: Record<string, unknown>;
 }
 
 export interface GenerationOutput {
   content: string;
   variations?: string[];
-  structured?: Record<string, any>;
+  structured?: Record<string, unknown>;
 }
 
 export interface MarketingGeneration {
@@ -92,7 +92,7 @@ export interface MarketingGeneration {
   model: string;
   creditsUsed?: number;
   status: 'generating' | 'complete' | 'failed';
-  createdAt: any;
+  createdAt: unknown;
   createdBy: string;
 }
 
@@ -104,7 +104,7 @@ export interface SavedContent {
   content: string;
   platform?: string;
   tags: string[];
-  createdAt: any;
+  createdAt: unknown;
   createdBy: string;
 }
 
@@ -115,20 +115,20 @@ export interface MarketingCampaign {
   objective: string;
   status: CampaignStatus;
   strategy: {
-    audiencePersonas: Record<string, any>[];
+    audiencePersonas: Record<string, unknown>[];
     budgetAllocation: Record<string, number>;
-    contentCalendar: Record<string, any>[];
-    successMetrics: Record<string, any>;
+    contentCalendar: Record<string, unknown>[];
+    successMetrics: Record<string, unknown>;
   } | null;
   savedContentIds: string[];
   assetIds: string[];
   performanceData: {
     metrics: Record<string, number>;
-    lastAnalysis: Record<string, any> | null;
-    lastAnalyzedAt: any | null;
+    lastAnalysis: Record<string, unknown> | null;
+    lastAnalyzedAt: unknown | null;
   } | null;
-  createdAt: any;
-  updatedAt: any;
+  createdAt: unknown;
+  updatedAt: unknown;
   createdBy: string;
 }
 

@@ -33,9 +33,9 @@ export default function KDSClient({ initialOrders = [] }: { initialOrders?: POSO
         try {
             await updateOrderStatus(siteId, order, newStatus);
             toast.success(`Order moved to ${newStatus}`);
-        } catch (error: any) {
+        } catch (error: unknown) {
             logger.error('pos.kds.status.update.failed', { siteId, error });
-            if (error.message?.includes("Item does not exist")) {
+            if (error instanceof Error && error.message?.includes("Item does not exist")) {
                 toast.error("Inventory Item Deleted! Cannot process stock.");
             } else {
                 toast.error("Failed to update status");

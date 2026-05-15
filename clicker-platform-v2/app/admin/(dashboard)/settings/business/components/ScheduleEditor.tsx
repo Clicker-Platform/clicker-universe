@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { DaySchedule } from '@/lib/core/types';
-import { defaultBusinessSchedule } from '@/data/mockData';
 import { Clock } from 'lucide-react';
 
 interface ScheduleEditorProps {

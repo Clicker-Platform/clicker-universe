@@ -19,7 +19,7 @@ export const BackgroundDecorations: React.FC = () => {
                 return (
                     <StickerBadge
                         key={index}
-                        icon={IconComponent}
+                        icon={IconComponent as import('lucide-react').LucideIcon}
                         rotation={el.rotation}
                         className={`${el.position} ${el.size || 'w-12 h-12'} ${el.colorClass || ''}`}
                     />

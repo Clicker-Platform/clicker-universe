@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Plus, Edit2, Car, Search, AlertTriangle, List } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useSite } from '@/lib/site-context';
@@ -45,12 +45,7 @@ export default function VehiclesPage() {
 
     const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
-    useEffect(() => {
-        if (!siteId) return;
-        loadAll();
-    }, [siteId]);
-
-    async function loadAll() {
+    const loadAll = useCallback(async () => {
         setLoading(true);
         try {
             const [v, c] = await Promise.all([getVehicles(siteId), getCarCatalog(siteId)]);
@@ -61,7 +56,12 @@ export default function VehiclesPage() {
         } finally {
             setLoading(false);
         }
-    }
+    }, [siteId]);
+
+    useEffect(() => {
+        if (!siteId) return;
+        loadAll();
+    }, [siteId, loadAll]);
 
     function showToast(type: 'success' | 'error', message: string) {
         setToast({ type, message });

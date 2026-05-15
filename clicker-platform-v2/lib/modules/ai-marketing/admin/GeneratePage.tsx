@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Bot, Loader2, AlertTriangle, Zap } from 'lucide-react';
 import { useUser } from '@/lib/user-context';
-import { SkillDefinition } from '../types';
+import { SkillDefinition, SkillId } from '../types';
 import { SKILLS_CATALOG, AGENT_LABELS } from '../config/skills-catalog';
 import { MULTI_SKILL_FLOWS } from '../orchestrator/flows';
 import { useGeneration } from '../hooks/use-generation';
@@ -24,8 +24,14 @@ export default function GeneratePage() {
   const [agentFilter, setAgentFilter] = useState('all');
   const [selectedSkill, setSelectedSkill] = useState<SkillDefinition | null>(null);
   const [selectedFlowId, setSelectedFlowId] = useState<string | null>(null);
-  const [formData, setFormData] = useState<Record<string, any>>({});
-  const [result, setResult] = useState<any | null>(null);
+  const [formData, setFormData] = useState<Record<string, unknown>>({});
+  const [result, setResult] = useState<{
+    generationId: string;
+    content: string;
+    structured?: Record<string, unknown>;
+    stepOutputs?: Record<string, unknown>;
+    model: string;
+  } | null>(null);
 
   const filteredSkills = agentFilter === 'all'
     ? SKILLS_CATALOG
@@ -54,7 +60,8 @@ export default function GeneratePage() {
     if (res) setResult(res);
   };
 
-  const canGenerate = mode === 'single' ? !!selectedSkill : !!selectedFlowId;
+  // canGenerate intentionally not rendered — kept for future guard logic
+  void (mode === 'single' ? !!selectedSkill : !!selectedFlowId);
 
   return (
     <div className="space-y-6">
@@ -174,7 +181,7 @@ export default function GeneratePage() {
                     <label className="block text-sm font-medium text-gray-700 mb-1">Product / Service <span className="text-red-500">*</span></label>
                     <input
                       type="text"
-                      value={formData.product ?? ''}
+                      value={(formData.product as string | undefined) ?? ''}
                       onChange={e => setFormData(p => ({ ...p, product: e.target.value }))}
                       placeholder="What are you marketing?"
                       className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 outline-none text-sm"
@@ -184,7 +191,7 @@ export default function GeneratePage() {
                     <label className="block text-sm font-medium text-gray-700 mb-1">Campaign Objective</label>
                     <input
                       type="text"
-                      value={formData.objective ?? ''}
+                      value={(formData.objective as string | undefined) ?? ''}
                       onChange={e => setFormData(p => ({ ...p, objective: e.target.value }))}
                       placeholder="e.g. Launch new product, increase sales"
                       className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 outline-none text-sm"
@@ -194,7 +201,7 @@ export default function GeneratePage() {
                     <label className="block text-sm font-medium text-gray-700 mb-1">Platform</label>
                     <input
                       type="text"
-                      value={formData.platform ?? ''}
+                      value={(formData.platform as string | undefined) ?? ''}
                       onChange={e => setFormData(p => ({ ...p, platform: e.target.value }))}
                       placeholder="e.g. Instagram, Meta, TikTok"
                       className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 outline-none text-sm"
@@ -243,15 +250,15 @@ export default function GeneratePage() {
             <div className="space-y-4">
               {result.stepOutputs ? (
                 // Multi-skill flow results
-                Object.entries(result.stepOutputs).map(([skill, output]: [string, any]) => (
+                Object.entries(result.stepOutputs as Record<string, { content: string; structured?: Record<string, unknown>; model?: string }>).map(([skill, output]) => (
                   <div key={skill}>
                     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 px-1">{skill.replace(/_/g, ' ')}</p>
                     <GenerationResult
                       generationId={result.generationId}
-                      skillId={skill as any}
+                      skillId={skill as SkillId}
                       content={output.content}
                       structured={output.structured}
-                      model={output.model}
+                      model={output.model ?? ''}
                       onRegenerate={handleGenerate}
                     />
                   </div>

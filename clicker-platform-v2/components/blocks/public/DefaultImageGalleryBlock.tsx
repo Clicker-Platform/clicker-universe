@@ -42,7 +42,7 @@ function GalleryTile({
     // when navigating via browser back button
     useEffect(() => {
         if (imgRef.current?.complete) {
-            setLoaded(true);
+            Promise.resolve().then(() => setLoaded(true));
         }
     }, [src]);
 

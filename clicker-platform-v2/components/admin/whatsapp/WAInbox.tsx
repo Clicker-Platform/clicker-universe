@@ -129,7 +129,7 @@ function ThreadItem({
 }) {
   const initials = thread.contactName?.slice(0, 2).toUpperCase() ?? '??';
   const time = thread.lastMessageAt
-    ? formatTime(thread.lastMessageAt instanceof Date ? thread.lastMessageAt : (thread.lastMessageAt as any).toDate?.())
+    ? formatTime(thread.lastMessageAt instanceof Date ? thread.lastMessageAt : (thread.lastMessageAt as { toDate?: () => Date }).toDate?.())
     : '';
 
   return (
@@ -203,7 +203,7 @@ function NewConversationModal({ siteId, onClose, onCreated }: {
     setError('');
     try {
       // Create thread doc first
-      const { collection: col, addDoc, serverTimestamp, doc: fsDoc, setDoc } = await import('firebase/firestore');
+      const { collection: col, addDoc, serverTimestamp } = await import('firebase/firestore');
       const threadRef = await addDoc(
         col(db, 'sites', siteId, WA_ROOT, WA_MAIN_DOC, WA_CUSTOMER_THREADS),
         {
@@ -235,8 +235,8 @@ function NewConversationModal({ siteId, onClose, onCreated }: {
       }
 
       onCreated(threadRef.id);
-    } catch (err: any) {
-      setError(err.message ?? 'Terjadi kesalahan.');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Terjadi kesalahan.');
     } finally {
       setSending(false);
     }

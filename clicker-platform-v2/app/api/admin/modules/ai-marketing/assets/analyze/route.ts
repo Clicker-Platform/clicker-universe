@@ -61,19 +61,20 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ ok: true, analysis });
-  } catch (err: any) {
+  } catch (err: unknown) {
     await assetRef.update({ analysisStatus: 'failed' });
+    const errMsg = err instanceof Error ? err.message : String(err);
 
     // Check for insufficient credits
-    if (err.message?.startsWith('insufficient_credits:')) {
-      const [, balance, required] = err.message.split(':');
+    if (errMsg?.startsWith('insufficient_credits:')) {
+      const [, balance, required] = errMsg.split(':');
       return NextResponse.json(
         { error: 'insufficient_credits', balance: Number(balance), required: Number(required) },
         { status: 402 }
       );
     }
 
-    logger.warn('ai.marketing.analyze.failed', { siteId, error: err.message });
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    logger.warn('ai.marketing.analyze.failed', { siteId, error: errMsg });
+    return NextResponse.json({ error: errMsg }, { status: 500 });
   }
 }

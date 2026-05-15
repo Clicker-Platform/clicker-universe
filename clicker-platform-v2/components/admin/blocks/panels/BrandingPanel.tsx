@@ -41,12 +41,12 @@ export function BrandingPanel() {
         ]).then(([profileSnap, settingsSnap]) => {
             if (profileSnap.exists()) setProfile(profileSnap.data() as BusinessProfile);
             if (settingsSnap.exists()) {
-                const settings = settingsSnap.data() as any;
+                const settings = settingsSnap.data() as Record<string, unknown>;
                 if (settings.globalBackground) {
-                    setGlobalBackground(settings.globalBackground);
+                    setGlobalBackground(settings.globalBackground as BackgroundMedia);
                 } else if (settings.backgroundImageUrl) {
                     // migration
-                    setGlobalBackground({ mode: 'image', url: settings.backgroundImageUrl, displaySize: 'cover' });
+                    setGlobalBackground({ mode: 'image', url: settings.backgroundImageUrl as string, displaySize: 'cover' });
                 }
             }
         }).finally(() => setLoading(false));

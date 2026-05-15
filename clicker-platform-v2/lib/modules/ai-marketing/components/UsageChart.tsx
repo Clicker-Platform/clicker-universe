@@ -7,10 +7,12 @@ interface Props {
   days?: number;
 }
 
-function getDateKey(ts: any): string {
+function getDateKey(ts: { toDate?: () => Date } | string | number | null | undefined): string {
   if (!ts) return '';
-  const d = ts.toDate ? ts.toDate() : new Date(ts);
-  return d.toISOString().split('T')[0];
+  const d = typeof ts === 'object' && ts !== null && 'toDate' in ts && typeof ts.toDate === 'function'
+    ? ts.toDate()
+    : new Date(ts as string | number);
+  return d.toISOString().split('T')[0] ?? '';
 }
 
 export default function UsageChart({ generations, days = 14 }: Props) {
@@ -23,7 +25,7 @@ export default function UsageChart({ generations, days = 14 }: Props) {
   }
 
   for (const gen of generations) {
-    const key = getDateKey(gen.createdAt);
+    const key = getDateKey(gen.createdAt as { toDate?: () => Date } | string | number | null | undefined);
     if (key in buckets) {
       buckets[key] += 1;
     }
@@ -38,7 +40,8 @@ export default function UsageChart({ generations, days = 14 }: Props) {
       <div className="flex items-end gap-1 h-24">
         {labels.map((label, i) => {
           const height = Math.round((values[i] / max) * 100);
-          const date = new Date(label);
+          const _date = new Date(label);
+          void _date;
           const isToday = i === labels.length - 1;
           return (
             <div key={label} className="flex-1 flex flex-col items-center gap-1" title={`${label}: ${values[i]} generations`}>

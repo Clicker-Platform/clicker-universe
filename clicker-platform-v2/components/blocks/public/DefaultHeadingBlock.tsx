@@ -28,7 +28,7 @@ const HORIZONTAL_PADDING = {
 } as const;
 
 export function DefaultHeadingBlock({ data, onInlineChange, onFieldFocus, onFieldBlur }: {
-    data: any;
+    data: Record<string, unknown>;
     onInlineChange?: (field: string, value: string) => void;
     onFieldFocus?: (field: string, rect: DOMRect) => void;
     onFieldBlur?: () => void;
@@ -49,7 +49,7 @@ export function DefaultHeadingBlock({ data, onInlineChange, onFieldFocus, onFiel
             <EditableText
                 tag={HeadingTag}
                 field="heading"
-                value={data.heading}
+                value={data.heading as string | undefined}
                 placeholder="Your Headline"
                 onInlineChange={onInlineChange}
                 onFieldFocus={onFieldFocus}
@@ -61,7 +61,7 @@ export function DefaultHeadingBlock({ data, onInlineChange, onFieldFocus, onFiel
                 <EditableText
                     tag="p"
                     field="subheading"
-                    value={data.subheading ?? ''}
+                    value={(data.subheading ?? '') as string}
                     placeholder="Supporting text..."
                     onInlineChange={onInlineChange}
                     onFieldFocus={onFieldFocus}

@@ -1,6 +1,6 @@
 import React from 'react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { DefaultImageGalleryBlock } from '../DefaultImageGalleryBlock';
 
 // ─── Module mocks ─────────────────────────────────────────────────────────────
@@ -15,7 +15,7 @@ vi.mock('@/components/DeviceViewContext', () => ({
 }));
 
 vi.mock('next/image', () => ({
-    default: ({ src, alt, priority, fill, sizes, quality, className, placeholder, blurDataURL, ...rest }: any) => (
+    default: ({ src, alt, priority, fill, sizes, quality, className, placeholder, blurDataURL, ...rest }: { src: string; alt: string; priority?: boolean; fill?: boolean; sizes?: string; quality?: number; className?: string; placeholder?: string; blurDataURL?: string; [key: string]: unknown }) => (
         // eslint-disable-next-line @next/next/no-img-element
         <img
             src={src}
@@ -33,7 +33,7 @@ vi.mock('next/image', () => ({
 }));
 
 vi.mock('@/components/common/FullScreenGallery', () => ({
-    FullScreenGallery: ({ isOpen, images, initialIndex, onClose }: any) =>
+    FullScreenGallery: ({ isOpen, images, initialIndex, onClose }: { isOpen: boolean; images: unknown[]; initialIndex: number; onClose: () => void }) =>
         isOpen ? (
             <div data-testid="fullscreen-gallery" data-index={initialIndex}>
                 <span data-testid="gallery-count">{images.length}</span>

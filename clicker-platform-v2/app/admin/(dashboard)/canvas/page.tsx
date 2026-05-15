@@ -55,7 +55,7 @@ function PageStudioInner() {
                     <StudioTopBarSlot />
                     <div className="flex-1 min-h-0 flex">
                         <CanvasStudio
-                            globalSettings={globalSettings}
+                            globalSettings={globalSettings ?? undefined}
                             pageSlug={formData.slug}
                             pageTitle={formData.title}
                         />

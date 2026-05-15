@@ -13,9 +13,9 @@ interface ChatWidgetProps {
     agentName?: string;
 }
 
-export const ChatWidget: React.FC<ChatWidgetProps> = ({ siteId, moduleId, agentName }) => {
+export const ChatWidget: React.FC<ChatWidgetProps> = ({ siteId, agentName }) => {
     const [isOpen, setIsOpen] = useState(false);
-    const [config, setConfig] = useState<any>(null);
+    const [config, setConfig] = useState<Record<string, unknown> | null>(null);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);

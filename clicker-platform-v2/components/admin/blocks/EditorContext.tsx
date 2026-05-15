@@ -14,7 +14,7 @@ interface EditorContextType {
     setDeviceView: (view: 'desktop' | 'tablet' | 'mobile') => void;
     showGuides: boolean;
     setShowGuides: (v: boolean) => void;
-    updateBlockData: (id: string, data: any) => void;
+    updateBlockData: (id: string, data: Record<string, unknown>) => void;
     addBlock: (block: PageBlock) => void;
     removeBlock: (id: string) => void;
     moveBlock: (oldIndex: number, newIndex: number) => void;
@@ -36,7 +36,7 @@ export function EditorProvider({ children, blocks, onChange }: { children: React
         localStorage.setItem('canvas_studio_device_view', deviceView);
     }, [deviceView]);
 
-    const updateBlockData = useCallback((id: string, data: any) => {
+    const updateBlockData = useCallback((id: string, data: Record<string, unknown>) => {
         onChange(prev => prev.map(block => 
             block.id === id ? { ...block, data: { ...block.data, ...data } } : block
         ));

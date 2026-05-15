@@ -13,11 +13,11 @@ interface ProductGalleryProps {
     title?: string;
     viewAllHref?: string;
     phoneNumber?: string;
-    whatsappSettings?: any;
+    whatsappSettings?: Record<string, unknown>;
 }
 
 export const DefaultProductGalleryBlock: React.FC<ProductGalleryProps> = ({ products, title = "Popular Treats", viewAllHref, phoneNumber, whatsappSettings }) => {
-    const { siteId } = useSite();
+    useSite();
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const { templateId, theme } = useTemplate();
     const isClean = theme.cardStyle === 'clean';

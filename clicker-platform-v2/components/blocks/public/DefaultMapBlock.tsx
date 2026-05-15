@@ -19,15 +19,16 @@ const DefaultMapBlockInner = ({ data }: MapBlockProps) => {
     const variant = data?.layoutVariant || 'card-with-address';
     const iframeFilter = isGlass ? 'invert(90%) hue-rotate(180deg)' : undefined;
 
-    if (!data.address) return null;
-
     const { mapsUrl, googleMapsLink } = useMemo(() => {
-        const encodedAddress = encodeURIComponent(data.address!);
+        if (!data.address) return { mapsUrl: '', googleMapsLink: '' };
+        const encodedAddress = encodeURIComponent(data.address);
         return {
             mapsUrl: `https://maps.google.com/maps?q=${encodedAddress}&t=&z=13&ie=UTF8&iwloc=&output=embed`,
             googleMapsLink: `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`,
         };
     }, [data.address]);
+
+    if (!data.address) return null;
 
     // ----- Embed full -----
     if (variant === 'embed-full') {

@@ -10,7 +10,7 @@
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
-export async function writeSiteSettings(siteId: string, partial: Record<string, any>): Promise<void> {
+export async function writeSiteSettings(siteId: string, partial: Record<string, unknown>): Promise<void> {
     await setDoc(
         doc(db, 'sites', siteId, 'content', 'siteSettings'),
         partial,

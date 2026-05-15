@@ -27,9 +27,9 @@ vi.mock('@/lib/modules/reservation/api', () => ({
 describe('Suite 2 — Service Record Approval → Downstream integrations', () => {
   const mockSiteId = 'site_123';
   const mockRecordId = 'sr_001';
-  let mockRecord: any;
-  let mockConfig: any;
-  let mockBatch: any;
+  let mockRecord: Record<string, unknown>;
+  let mockConfig: Record<string, unknown>;
+  let mockBatch: Record<string, unknown>;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -61,7 +61,7 @@ describe('Suite 2 — Service Record Approval → Downstream integrations', () =
       reminders: {}
     };
 
-    (getDoc as Mock).mockImplementation((ref: any) => {
+    (getDoc as Mock).mockImplementation((ref: { _path?: string }) => {
       // Mock getServiceRecord vs getServiceConfig
       if (ref._path?.includes('serviceConfig')) {
         return Promise.resolve({

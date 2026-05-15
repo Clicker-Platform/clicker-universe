@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { CheckCircle, Loader2, Settings as SettingsIcon, Zap } from 'lucide-react';
+import { CheckCircle, Loader2, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { useSite } from '@/lib/site-context';
 import { logger } from '@/lib/logger-edge';

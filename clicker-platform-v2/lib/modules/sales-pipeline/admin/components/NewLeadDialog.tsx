@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { createLead } from '@/lib/modules/sales-pipeline/api';
 import { toast } from 'sonner';
 import { Loader2, X } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { useSite } from '@/lib/site-context';
 import { logger } from '@/lib/logger-edge';
 

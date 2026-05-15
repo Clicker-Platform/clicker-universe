@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { Shield, CheckCircle, XCircle, Clock, QrCode } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import type { SerializedWarrantyCard } from '../types';
@@ -69,7 +70,7 @@ function DaysRemaining({ expiryDate }: { expiryDate: string }) {
 
 export default function WarrantyCardView({ card, warrantyUrl }: Props) {
     const [mounted, setMounted] = useState(false);
-    useEffect(() => { setMounted(true); }, []);
+    useEffect(() => { Promise.resolve().then(() => setMounted(true)); }, []);
 
     return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -80,7 +81,7 @@ export default function WarrantyCardView({ card, warrantyUrl }: Props) {
                     <div className="bg-gray-900 px-6 py-5 text-white">
                         <div className="flex items-center gap-3">
                             {card.businessLogo ? (
-                                <img src={card.businessLogo} alt={card.businessName} className="w-10 h-10 rounded-lg object-cover" />
+                                <Image src={card.businessLogo} alt={card.businessName} width={40} height={40} className="rounded-lg object-cover" />
                             ) : (
                                 <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
                                     <Shield className="w-6 h-6 text-white" />

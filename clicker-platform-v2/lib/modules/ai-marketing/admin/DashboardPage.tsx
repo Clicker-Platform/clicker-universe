@@ -128,7 +128,10 @@ export default function DashboardPage() {
           ) : (
             <div className="space-y-3">
               {generations.slice(0, 5).map(gen => {
-                const date = gen.createdAt?.toDate?.() ?? new Date(gen.createdAt);
+                const createdAt = gen.createdAt as { toDate?: () => Date } | string | number | undefined;
+                const date = (typeof createdAt === 'object' && createdAt && 'toDate' in createdAt && typeof createdAt.toDate === 'function')
+                    ? createdAt.toDate()
+                    : new Date(createdAt as string | number);
                 return (
                   <div key={gen.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
                     <div>

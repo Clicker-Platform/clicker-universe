@@ -86,8 +86,8 @@ export function useNavigationConfig(siteId: string, initialData?: InitialNavData
                     }
                     setLoading(false);
                 },
-                (err: any) => {
-                    if (err?.code === 'unavailable') {
+                (err: unknown) => {
+                    if ((err as { code?: string })?.code === 'unavailable') {
                         setLoading(false);
                         return;
                     }

@@ -17,15 +17,14 @@ export const VideoSelector = ({ editor, isOpen, onClose }: VideoSelectorProps) =
 
     useEffect(() => {
         if (isOpen) {
-            setUrl('');
-            setError('');
+            Promise.resolve().then(() => { setUrl(''); setError(''); });
             setTimeout(() => inputRef.current?.focus(), 50);
         }
     }, [isOpen]);
 
     const embed = () => {
         if (!url) return;
-        const ok = (editor.chain().focus() as any).setVideoEmbed({ src: url }).run();
+        const ok = (editor.chain().focus() as unknown as { setVideoEmbed: (opts: { src: string }) => { run: () => boolean } }).setVideoEmbed({ src: url }).run();
         if (!ok) {
             setError('Use a YouTube, Vimeo, or direct .mp4/.webm URL');
             return;

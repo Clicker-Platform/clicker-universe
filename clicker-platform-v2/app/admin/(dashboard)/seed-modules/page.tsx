@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { db } from '@/lib/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { ModuleDefinition } from '@/lib/modules/types';
@@ -157,9 +157,9 @@ export default function SeedModulesPage() {
             await setDoc(doc(db, 'modules', 'stocklens'), stocklensModule);
 
             setStatus('Success: Modules seeded!');
-        } catch (e: any) {
+        } catch (e: unknown) {
             logger.error('admin.modules.seed.failed', { siteId: 'platform', error: e });
-            setStatus('Error: ' + e.message);
+            setStatus('Error: ' + (e instanceof Error ? e.message : String(e)));
         }
     };
 
@@ -193,9 +193,9 @@ export default function SeedModulesPage() {
             }
 
             setStatus(`Success: Stocklens seeded${siteId ? ` & enabled on tenant "${siteId}"` : ''}!`);
-        } catch (e: any) {
+        } catch (e: unknown) {
             logger.error('admin.modules.seed.failed', { siteId: 'platform', error: e });
-            setStatus('Error: ' + e.message);
+            setStatus('Error: ' + (e instanceof Error ? e.message : String(e)));
         }
     };
 

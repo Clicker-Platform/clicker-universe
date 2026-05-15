@@ -13,6 +13,27 @@ import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 
 // ── PagesPanel ─────────────────────────────────────────────────────────────
 
+function formatDeletedAt(deletedAt: { toDate?: () => Date } | { toMillis?: () => number } | string | number | null | undefined): string {
+    if (!deletedAt) return '';
+    let date: Date;
+    if (typeof deletedAt === 'object' && deletedAt !== null) {
+        if ('toDate' in deletedAt && typeof deletedAt.toDate === 'function') date = deletedAt.toDate();
+        else if ('toMillis' in deletedAt && typeof deletedAt.toMillis === 'function') date = new Date(deletedAt.toMillis());
+        else date = new Date();
+    } else {
+        date = new Date(deletedAt as string | number);
+    }
+    const now = Date.now();
+    const diff = now - date.getTime();
+    const days = Math.floor(diff / 86400000);
+    if (days === 0) return 'today';
+    if (days === 1) return 'yesterday';
+    if (days < 7) return `${days}d ago`;
+    const weeks = Math.floor(days / 7);
+    if (weeks < 5) return `${weeks}w ago`;
+    return date.toLocaleDateString();
+}
+
 export function PagesPanel() {
     const {
         pages, activePageId, switchPage, globalSettings, pagesLoading,
@@ -86,20 +107,6 @@ export function PagesPanel() {
         setIsEmptyingTrash(true);
         await permanentlyDeleteAllPages();
         setIsEmptyingTrash(false);
-    };
-
-    const formatDeletedAt = (deletedAt: any) => {
-        if (!deletedAt) return '';
-        const date: Date = deletedAt.toDate ? deletedAt.toDate() : new Date(deletedAt);
-        const now = Date.now();
-        const diff = now - date.getTime();
-        const days = Math.floor(diff / 86400000);
-        if (days === 0) return 'today';
-        if (days === 1) return 'yesterday';
-        if (days < 7) return `${days}d ago`;
-        const weeks = Math.floor(days / 7);
-        if (weeks < 5) return `${weeks}w ago`;
-        return date.toLocaleDateString();
     };
 
     return (
@@ -322,7 +329,7 @@ export function AddBlocksPanel({ templateId = 'classic', onAfterAdd }: AddBlocks
             modules.forEach(mod => {
                 if (mod.blocks) {
                     mod.blocks.forEach(blockDef => {
-                        const IconComponent = MODULE_ICONS[mod.icon] || Box;
+                        const IconComponent = (MODULE_ICONS[mod.icon] || Box) as React.ElementType;
                         dynamicBlocks.push({
                             type: blockDef.type,
                             label: blockDef.label,

@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { Product } from '../types';
 
 interface ProductGalleryProps {
@@ -36,10 +37,12 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({ products, title 
 
             {/* Image */}
             <div className="aspect-square w-full rounded-xl overflow-hidden border-[2px] border-brand-dark mb-3 bg-gray-100">
-              <img 
-                src={product.imageUrl} 
-                alt={product.name} 
-                className="w-full h-full object-cover transition-transform duration-500 hover:scale-110" 
+              <Image
+                src={product.imageUrl}
+                alt={product.name}
+                fill
+                className="object-cover transition-transform duration-500 hover:scale-110"
+                unoptimized
               />
             </div>
             

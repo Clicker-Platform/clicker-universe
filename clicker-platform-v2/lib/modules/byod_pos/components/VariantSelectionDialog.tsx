@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { ProductVariant } from '../types';
-import { X, Check } from 'lucide-react';
+import { X } from 'lucide-react';
 import { InventoryItem } from '@/lib/modules/inventory/types';
 import { useTemplate } from '@/components/TemplateProvider';
 

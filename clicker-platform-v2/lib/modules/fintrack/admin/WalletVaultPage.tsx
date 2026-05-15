@@ -25,7 +25,7 @@ export default function WalletVaultPage() {
 
   const load = useCallback(async () => {
     if (!siteId) return;
-    setLoading(true);
+    await Promise.resolve().then(() => setLoading(true));
     const ws = await getWallets(siteId);
     setWallets(ws);
     const bals: Record<string, number> = {};
@@ -34,7 +34,7 @@ export default function WalletVaultPage() {
     setLoading(false);
   }, [siteId]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { Promise.resolve().then(() => load()); }, [load]);
 
   function openNew() {
     setForm({ nama: '', tipe: '', icon: '🏦', warna: WALLET_COLORS[0], saldoAwal: '' });

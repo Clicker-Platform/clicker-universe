@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { getPOSSettings, updatePOSSettings } from '../api';
 import { POSSettings } from '../types';
 import { toast } from 'sonner';
@@ -15,13 +15,7 @@ export default function POSSettingsPage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
 
-    useEffect(() => {
-        if (siteId) {
-            loadSettings();
-        }
-    }, [siteId]);
-
-    const loadSettings = async () => {
+    const loadSettings = useCallback(async () => {
         if (!siteId) return;
         try {
             const data = await getPOSSettings(siteId);
@@ -32,7 +26,13 @@ export default function POSSettingsPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [siteId]);
+
+    useEffect(() => {
+        if (siteId) {
+            loadSettings();
+        }
+    }, [siteId, loadSettings]);
 
     const handleSave = async () => {
         if (!settings || !siteId) return;

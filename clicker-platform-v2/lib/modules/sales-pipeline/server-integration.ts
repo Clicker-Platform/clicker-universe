@@ -1,9 +1,9 @@
 import { adminDb } from '@/lib/firebase-admin';
-import { FormIntegration, PipelineConfig } from './types';
+import { PipelineConfig } from './types';
 import { MODULE_ID, COLLECTION_LEADS } from './constants';
 import { logger } from '@/lib/logger';
 
-export async function handleNewSubmission(siteId: string, formId: string, submissionData: any) {
+export async function handleNewSubmission(siteId: string, formId: string, submissionData: Record<string, unknown>) {
 
     try {
         // 1. Fetch Pipeline Configuration (per-tenant path)
@@ -34,15 +34,15 @@ export async function handleNewSubmission(siteId: string, formId: string, submis
         // Handle optional fields
         let source = 'Form Submission';
         if (mapping.source && submissionData[mapping.source]) {
-            source = submissionData[mapping.source];
+            source = submissionData[mapping.source] as string;
         }
 
         // 4. Construct Notes from ALL other fields
-        let notesParts: string[] = [`Submitted via form: ${formId}`];
+        const notesParts: string[] = [`Submitted via form: ${formId}`];
 
         // Add explicitly mapped notes first if any
         if (mapping.notes && submissionData[mapping.notes]) {
-            notesParts.push(submissionData[mapping.notes]);
+            notesParts.push(submissionData[mapping.notes] as string);
         }
 
         // Add all other non-mapped fields to notes

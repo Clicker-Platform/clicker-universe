@@ -10,12 +10,11 @@ import {
     getDoc,
     getDocs,
     where,
-    Timestamp,
     setDoc,
     startAfter,
     QueryDocumentSnapshot,
+    QueryConstraint,
     runTransaction,
-    arrayRemove
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { POSOrder, POSSettings, POSItem, POSStaffMember } from './types';
@@ -96,7 +95,7 @@ export async function getHistoryOrders(siteId: string, lastDoc: QueryDocumentSna
     // Note: 'in' query with orderBy might require a composite index. 
     // If you see a "Missing Index" error, click the link in the console to create it.
 
-    const constraints: any[] = [
+    const constraints: QueryConstraint[] = [
         where('status', 'in', ['completed', 'cancelled']),
         orderBy('createdAt', 'desc'),
         limit(pageSize)
@@ -155,7 +154,7 @@ export async function getMenuItems(
     pageSize: number = 20,
     lastDoc: QueryDocumentSnapshot | null = null
 ): Promise<{ items: POSItem[], lastDoc: QueryDocumentSnapshot | null }> {
-    let constraints: any[] = [orderBy('name'), limit(pageSize + 1)]; // Fetch one extra to check for "next"
+    let constraints: QueryConstraint[] = [orderBy('name'), limit(pageSize + 1)]; // Fetch one extra to check for "next"
 
     // Category Filter
     if (category && category !== 'All') {
@@ -227,7 +226,7 @@ export async function savePOSCategories(siteId: string, categories: POSCategory[
     await setDoc(settingsRef, { menuCategories: categories }, { merge: true });
 }
 
-export async function getProducts(siteId: string): Promise<any[]> {
+export async function getProducts(siteId: string): Promise<Record<string, unknown>[]> {
     const q = query(collection(db, 'sites', siteId, 'modules/byod_pos/products'));
     const snapshot = await getDocs(q);
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -673,14 +672,14 @@ export async function getPOSStaff(siteId: string): Promise<POSStaffMember[]> {
 /**
  * @deprecated Use Global Team Management (/admin/settings/team)
  */
-export async function assignPOSRole(siteId: string, email: string, role: string): Promise<void> {
+export async function assignPOSRole(siteId: string, _email: string, _role: string): Promise<void> {
     logger.warn('pos.role.deprecated', { siteId });
 }
 
 /**
  * @deprecated Use Global Team Management (/admin/settings/team)
  */
-export async function removePOSRole(siteId: string, userId: string): Promise<void> {
+export async function removePOSRole(siteId: string, _userId: string): Promise<void> {
     logger.warn('pos.role.deprecated', { siteId });
 }
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { ArrowLeft, Loader2, RefreshCw, Trash2, AlertCircle } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSite } from '@/lib/site-context';
@@ -52,8 +53,8 @@ export default function AssetDetailPage() {
         siteId
       );
       setAsset(prev => prev ? { ...prev, analysis, analysisStatus: 'complete' } : prev);
-    } catch (err: any) {
-      alert(err.message);
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : String(err));
     } finally {
       setReanalyzing(false);
     }
@@ -123,7 +124,7 @@ export default function AssetDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Image */}
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-          <img src={asset.fileUrl} alt={asset.fileName} className="w-full object-contain max-h-96" />
+          <Image src={asset.fileUrl} alt={asset.fileName} width={800} height={384} className="w-full object-contain max-h-96" />
         </div>
 
         {/* Analysis */}

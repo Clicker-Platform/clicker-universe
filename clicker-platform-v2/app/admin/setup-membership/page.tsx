@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { db } from '@/lib/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { logger } from '@/lib/logger-edge';
@@ -57,9 +58,9 @@ export default function SetupMembershipPage() {
         try {
             await setDoc(doc(db, 'modules', MODULE_DEF.id), MODULE_DEF);
             setStatus('success');
-        } catch (err: any) {
+        } catch (err: unknown) {
             logger.error('membership.module.register.failed', { siteId: 'platform', error: err });
-            setError(err.message);
+            setError(err instanceof Error ? err.message : String(err));
             setStatus('error');
         }
     }
@@ -69,12 +70,12 @@ export default function SetupMembershipPage() {
             <h1 className="text-2xl font-bold mb-4">Update Membership Module</h1>
             <p className="mb-6 text-gray-600">
                 Click below to force-update the module definition in Firestore.
-                This will fix the missing "Settings" route.
+                This will fix the missing &quot;Settings&quot; route.
             </p>
 
             {status === 'success' && (
                 <div className="bg-green-100 dark:bg-green-950/30 text-green-800 dark:text-green-400 p-4 rounded-lg mb-4">
-                    ✅ Success! Access the <a href="/admin/membership/settings" className="underline font-bold">Settings Page</a> now.
+                    ✅ Success! Access the <Link href="/admin/membership/settings" className="underline font-bold">Settings Page</Link> now.
                 </div>
             )}
 

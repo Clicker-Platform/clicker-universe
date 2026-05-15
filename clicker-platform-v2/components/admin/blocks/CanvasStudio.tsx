@@ -21,6 +21,7 @@ import { MobileStudioTabBar, type MobileActiveSheet } from './MobileStudioTabBar
 import { InlineEditToolbar, type InlineFieldFocus } from './InlineEditToolbar';
 import { BackgroundMediaEditor } from './BackgroundMediaEditor';
 import { PageBackground } from '@/components/blocks/PageBackground';
+import type { BusinessProfile, BusinessContact, SocialLinkItem, BackgroundMedia } from '@/data/mockData';
 
 // Lazy-load sidebar panels — only needed when their respective panels are open
 const BlockFormRenderer = dynamic(() => import('./BlockFormRenderer').then(m => m.BlockFormRenderer));
@@ -36,15 +37,54 @@ const ProductsPanel = dynamic(() => import('./panels/ProductsPanel').then(m => m
 const SiteInfoPanel = dynamic(() => import('./panels/SiteInfoPanel').then(m => m.SiteInfoPanel));
 const BrandingPanel = dynamic(() => import('./panels/BrandingPanel').then(m => m.BrandingPanel));
 
+interface CanvasGlobalPixels {
+    facebookPixelId?: string;
+    googleAnalyticsId?: string;
+    tiktokPixelId?: string;
+}
+
+interface CanvasGlobalSeo {
+    title?: string;
+    description?: string;
+    image?: string;
+}
+
+interface CanvasGlobalSettings {
+    templateId?: string;
+    themeColor?: string;
+    accentColor?: string;
+    borderRadius?: string;
+    customBorderRadius?: string;
+    backgroundColor?: string;
+    surfaceColor?: string;
+    cardVariant?: string;
+    homepageSlug?: string;
+    globalBackground?: BackgroundMedia;
+    profile?: BusinessProfile;
+    contact?: BusinessContact;
+    showHeaderAddress?: boolean;
+    linkSettings?: Record<string, unknown>;
+    productSettings?: Record<string, unknown>;
+    businessHours?: Record<string, unknown>;
+    businessSchedule?: Record<string, unknown>;
+    globalPixels?: CanvasGlobalPixels;
+    globalSeo?: CanvasGlobalSeo;
+    socialLinks?: SocialLinkItem[];
+    footerText?: string;
+    hideFooterContact?: boolean;
+    [key: string]: unknown;
+}
+
 export function CanvasStudio({
-    globalSettings,
+    globalSettings: globalSettingsProp,
     pageSlug,
     pageTitle
 }: {
-    globalSettings?: any,
+    globalSettings?: Record<string, unknown>,
     pageSlug?: string;
     pageTitle?: string;
 }) {
+    const globalSettings = globalSettingsProp as CanvasGlobalSettings | undefined;
     const { blocks, setBlocks, selectedBlockId, setSelectedBlockId, updateBlockData, deviceView, showGuides } = useEditor();
     const { tenantSlug, siteId } = useSite();
     const {
@@ -129,17 +169,19 @@ export function CanvasStudio({
     // Desktop: sync activePanel with block selection
     useEffect(() => {
         if (isMobile) return;
-        if (selectedBlockId) {
-            setActivePanel(null);
-            setRightPanelOpen(true);
-        } else if (activePageId === null) {
-            setActivePanel('page');
-            setRightPanelOpen(true);
-        } else {
-            setActivePanel(prev => prev === null ? 'page' : prev);
-        }
-        // Clear inline field toolbar when selection changes
-        setInlineFocus(null);
+        Promise.resolve().then(() => {
+            if (selectedBlockId) {
+                setActivePanel(null);
+                setRightPanelOpen(true);
+            } else if (activePageId === null) {
+                setActivePanel('page');
+                setRightPanelOpen(true);
+            } else {
+                setActivePanel(prev => prev === null ? 'page' : prev);
+            }
+            // Clear inline field toolbar when selection changes
+            setInlineFocus(null);
+        });
     }, [isMobile, selectedBlockId, activePageId]);
 
     // Calculate active background config
@@ -153,17 +195,19 @@ export function CanvasStudio({
     // Auto-open props sheet on mobile when a block is selected/deselected
     useEffect(() => {
         if (!isMobile) return;
-        if (selectedBlockId) {
-            // Block selected — open props sheet and clear page/seo panel so block form shows
-            setMobileSheet('props');
-            setActivePanel(null);
-        } else {
-            // Nothing selected — if props sheet is open, show Title & Slug by default
-            setMobileSheet(prev => {
-                if (prev === 'props') setActivePanel('page');
-                return prev;
-            });
-        }
+        Promise.resolve().then(() => {
+            if (selectedBlockId) {
+                // Block selected — open props sheet and clear page/seo panel so block form shows
+                setMobileSheet('props');
+                setActivePanel(null);
+            } else {
+                // Nothing selected — if props sheet is open, show Title & Slug by default
+                setMobileSheet(prev => {
+                    if (prev === 'props') setActivePanel('page');
+                    return prev;
+                });
+            }
+        });
     }, [isMobile, selectedBlockId]);
 
     // Scroll canvas to selected block
@@ -199,10 +243,10 @@ export function CanvasStudio({
         };
         window.addEventListener('keydown', handler);
         return () => window.removeEventListener('keydown', handler);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
     }, [isMobile]);
 
-    const templateId = globalSettings?.templateId || 'classic';
+    const templateId: string = globalSettings?.templateId || 'classic';
     const themeColor = globalSettings?.themeColor;
     const accentColor = globalSettings?.accentColor;
     const borderRadius = globalSettings?.borderRadius || 'large';
@@ -274,9 +318,9 @@ export function CanvasStudio({
                         if (globalSettings?.surfaceColor) colorOverrides.surface = globalSettings.surfaceColor;
                         return {
                             borderRadius: radiusValue,
-                            ...(globalSettings?.cardVariant ? { cardVariant: globalSettings.cardVariant } : {}),
+                            ...(globalSettings?.cardVariant ? { cardVariant: globalSettings.cardVariant as 'shadow' | 'outlined' | 'flat' } : {}),
                             ...(Object.keys(colorOverrides).length > 0 ? { colors: colorOverrides } : {}),
-                        };
+                        } as Parameters<typeof TemplateProvider>[0]['themeOverrides'];
                     })()}
                 >
                 {/* Background wrapper inside TemplateProvider so var(--theme-background) is resolved */}
@@ -420,23 +464,23 @@ export function CanvasStudio({
                                                         <BlockRenderer
                                                             block={block}
                                                             templateId={templateId}
-                                                            theme={themeColor}
+                                                            theme={themeColor ? { color: themeColor } : undefined}
                                                             siteId={siteId}
                                                             previewMode={true}
                                                             tenantSlug={tenantSlug || ''}
-                                                            links={hydratedData.links || []}
-                                                            products={hydratedData.products || []}
-                                                            featuredProduct={hydratedData.featuredProduct}
-                                                            branches={hydratedData.branches || []}
-                                                            linkSettings={hydratedData.linkSettings || globalSettings?.linkSettings}
-                                                            productSettings={hydratedData.productSettings || globalSettings?.productSettings}
-                                                            reservationServices={hydratedData.reservationServices}
-                                                            reservationStaff={hydratedData.reservationStaff}
-                                                            reservationSettings={hydratedData.reservationSettings}
-                                                            contact={globalSettings?.contact}
-                                                            businessHours={globalSettings?.businessHours}
-                                                            businessSchedule={globalSettings?.businessSchedule}
-                                                            profile={globalSettings?.profile}
+                                                            links={(hydratedData.links as unknown as import('@/data/mockData').LinkItem[] | undefined) || []}
+                                                            products={(hydratedData.products as unknown as import('@/data/mockData').Product[] | undefined) || []}
+                                                            featuredProduct={hydratedData.featuredProduct as unknown as import('@/data/mockData').Product | null | undefined}
+                                                            branches={(hydratedData.branches as unknown as import('@/data/mockData').Branch[] | undefined) || []}
+                                                            linkSettings={(hydratedData.linkSettings as unknown as import('@/data/mockData').LinkSettings | undefined) || (globalSettings?.linkSettings as unknown as import('@/data/mockData').LinkSettings | undefined)}
+                                                            productSettings={(hydratedData.productSettings as unknown as import('@/data/mockData').ProductSettings | undefined) || (globalSettings?.productSettings as unknown as import('@/data/mockData').ProductSettings | undefined)}
+                                                            reservationServices={hydratedData.reservationServices as Record<string, unknown>[] | undefined}
+                                                            reservationStaff={hydratedData.reservationStaff as Record<string, unknown>[] | undefined}
+                                                            reservationSettings={hydratedData.reservationSettings as Record<string, unknown> | undefined}
+                                                            contact={globalSettings?.contact as unknown as import('@/data/mockData').BusinessContact | undefined}
+                                                            businessHours={globalSettings?.businessHours as unknown as import('@/data/mockData').BusinessHours | undefined}
+                                                            businessSchedule={globalSettings?.businessSchedule as unknown as import('@/lib/core/types').DaySchedule[] | undefined}
+                                                            profile={globalSettings?.profile as unknown as import('@/data/mockData').BusinessProfile | null | undefined}
                                                             onInlineChange={
                                                                 (block.type === 'hero' || block.type === 'heading') && selectedBlockId === block.id
                                                                     ? (field, value) => updateBlockData(block.id, { [field]: value })
@@ -473,7 +517,7 @@ export function CanvasStudio({
                                     >
                                         <div className="pointer-events-none">
                                             <Footer
-                                                socialLinks={globalSettings?.socialLinks}
+                                                socialLinks={globalSettings?.socialLinks || []}
                                                 footerText={globalSettings?.footerText}
                                                 contact={globalSettings?.contact}
                                                 hideContact={globalSettings?.hideFooterContact}

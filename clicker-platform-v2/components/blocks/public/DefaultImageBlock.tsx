@@ -7,18 +7,23 @@ import { useDeviceView, dv } from '@/components/DeviceViewContext';
 import { MediaView } from './MediaView';
 import { MediaFieldValue, DEFAULT_MEDIA } from '@/components/admin/blocks/media-field/types';
 
-export const DefaultImageBlock = ({ data, isFirst = false }: { data: any; isFirst?: boolean }) => {
+export const DefaultImageBlock = ({ data, isFirst = false }: { data: Record<string, unknown>; isFirst?: boolean }) => {
     const { theme } = useTemplate();
     const d = useDeviceView();
     const cardStyle = theme.cardStyle;
     const isGlass = cardStyle === 'glass';
     const radius = theme.borderRadius || 'var(--theme-radius)';
 
+    const caption = data.caption as string | undefined;
+    const layoutVariant = data.layoutVariant as string | undefined;
+    const dataUrl = data.url as string | undefined;
+    const dataMedia = data.media as MediaFieldValue | undefined;
+
     // Resolve media: prefer new `media` field, fall back to legacy `url`
-    const media: MediaFieldValue | null = data.media
-        ? data.media
-        : data.url
-            ? { ...DEFAULT_MEDIA, type: 'image', src: data.url }
+    const media: MediaFieldValue | null = dataMedia
+        ? dataMedia
+        : dataUrl
+            ? { ...DEFAULT_MEDIA, type: 'image', src: dataUrl }
             : null;
 
     if (!media || !media.src) return null;
@@ -37,16 +42,16 @@ export const DefaultImageBlock = ({ data, isFirst = false }: { data: any; isFirs
                     style={{ borderRadius: radius }}
                     priority={isFirst}
                 />
-                {data.caption && (
+                {caption && (
                     <p className={`text-center text-sm font-bold mt-4 italic ${isGlass ? 'text-white/50' : 'text-gray-500'}`}>
-                        {data.caption}
+                        {caption}
                     </p>
                 )}
             </section>
         );
     }
 
-    const variant = data.layoutVariant || 'standard';
+    const variant = layoutVariant || 'standard';
 
     if (variant === 'full-width') {
         return (
@@ -54,7 +59,7 @@ export const DefaultImageBlock = ({ data, isFirst = false }: { data: any; isFirs
                 <div className="w-full relative">
                     <Image
                         src={media.src}
-                        alt={data.caption || "Image"}
+                        alt={caption || "Image"}
                         width={1920}
                         height={1080}
                         sizes="100vw"
@@ -64,9 +69,9 @@ export const DefaultImageBlock = ({ data, isFirst = false }: { data: any; isFirs
                         style={{ width: '100%', height: 'auto' }}
                     />
                 </div>
-                {data.caption && (
+                {caption && (
                     <p className={`text-center text-sm font-bold mt-3 px-4 italic ${isGlass ? 'text-white/50' : 'text-gray-500'}`}>
-                        {data.caption}
+                        {caption}
                     </p>
                 )}
             </section>
@@ -79,7 +84,7 @@ export const DefaultImageBlock = ({ data, isFirst = false }: { data: any; isFirs
                 <div className={`overflow-hidden max-w-4xl w-full ${getCardClasses(cardStyle)}`} style={{ borderRadius: radius }}>
                     <Image
                         src={media.src}
-                        alt={data.caption || "Image"}
+                        alt={caption || "Image"}
                         width={1200}
                         height={800}
                         sizes="(max-width: 1024px) 100vw, 800px"
@@ -88,10 +93,10 @@ export const DefaultImageBlock = ({ data, isFirst = false }: { data: any; isFirs
                         className="w-full h-auto object-cover max-h-[60vh]"
                         style={{ width: '100%', height: 'auto' }}
                     />
-                    {data.caption && (
+                    {caption && (
                         <div className={`p-4 backdrop-blur border-t ${isGlass ? 'bg-white/5 border-white/10' : 'bg-white/50 border-gray-100'}`}>
                             <p className={`text-center text-sm font-medium ${isGlass ? 'text-white/70' : 'text-gray-600'}`}>
-                                {data.caption}
+                                {caption}
                             </p>
                         </div>
                     )}
@@ -106,7 +111,7 @@ export const DefaultImageBlock = ({ data, isFirst = false }: { data: any; isFirs
                 <div className={`flex-1 overflow-hidden shadow-lg ${getCardClasses(cardStyle)}`} style={{ borderRadius: radius }}>
                     <Image
                         src={media.src}
-                        alt={data.caption || "Image"}
+                        alt={caption || "Image"}
                         width={800}
                         height={800}
                         sizes="(max-width: 768px) 100vw, 50vw"
@@ -116,11 +121,11 @@ export const DefaultImageBlock = ({ data, isFirst = false }: { data: any; isFirs
                         style={{ width: '100%', height: 'auto' }}
                     />
                 </div>
-                {data.caption && (
+                {caption && (
                     <div className={`${dv(d, 'w-full', 'md:w-1/3')} flex items-center p-4`}>
                         <div className={`border-l-4 pl-6 py-2 ${isGlass ? 'border-[var(--theme-primary)]' : 'border-brand-dark'}`}>
                             <p className={`text-lg font-medium italic leading-relaxed ${isGlass ? 'text-white/70' : 'text-gray-700'}`}>
-                                {data.caption}
+                                {caption}
                             </p>
                         </div>
                     </div>
@@ -135,7 +140,7 @@ export const DefaultImageBlock = ({ data, isFirst = false }: { data: any; isFirs
             <div className={`overflow-hidden shadow-md ${getCardClasses(cardStyle)}`} style={{ borderRadius: radius }}>
                 <Image
                     src={media.src}
-                    alt={data.caption || "Image"}
+                    alt={caption || "Image"}
                     width={1000}
                     height={600}
                     sizes="(max-width: 1024px) 100vw, 1000px"
@@ -145,9 +150,9 @@ export const DefaultImageBlock = ({ data, isFirst = false }: { data: any; isFirs
                     style={{ width: '100%', height: 'auto' }}
                 />
             </div>
-            {data.caption && (
+            {caption && (
                 <p className={`text-center text-sm font-bold mt-4 italic ${isGlass ? 'text-white/50' : 'text-gray-500'}`}>
-                    {data.caption}
+                    {caption}
                 </p>
             )}
         </section>

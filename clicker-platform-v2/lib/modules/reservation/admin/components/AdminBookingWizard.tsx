@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { createBooking } from '@/lib/modules/reservation/api';
 import { Service, Staff } from '@/lib/modules/reservation/types';
+import type { Member } from '@/lib/modules/membership/types';
 import { Clock, User, Check, ChevronLeft, ChevronRight, Loader2, Search } from 'lucide-react';
 import { PromoApplicator } from '@/lib/modules/promo/components/PromoApplicator';
 import { commitPromoUsage, AppliedPromo } from '@/lib/modules/promo/api';
@@ -22,7 +23,7 @@ export default function AdminBookingWizard({
     initialStaff,
     initialSettings,
     onSuccess,
-    onCancel
+    onCancel: _onCancel
 }: AdminBookingWizardProps) {
     const { siteId } = useSite();
     const [step, setStep] = useState(1);
@@ -50,8 +51,8 @@ export default function AdminBookingWizard({
 
     // Member Search State
     const [searchTerm, setSearchTerm] = useState('');
-    const [searchResults, setSearchResults] = useState<any[]>([]);
-    const [isSearching, setIsSearching] = useState(false);
+    const [searchResults, setSearchResults] = useState<Member[]>([]);
+    const [_isSearching, setIsSearching] = useState(false);
 
     const handleSearch = async (term: string) => {
         setSearchTerm(term);
@@ -103,7 +104,7 @@ export default function AdminBookingWizard({
                 const candidates: string[] = [];
                 const parseTime = (t: string) => t.split(':').map(Number);
 
-                const globalDay = globalSchedule.find((d: any) => d.dayOfWeek === dayOfWeek);
+                const globalDay = globalSchedule.find((d: { dayOfWeek: number; isOpen: boolean; hours: { start: string; end: string }[] }) => d.dayOfWeek === dayOfWeek);
 
                 if (!globalDay || !globalDay.isOpen || globalDay.hours.length === 0) {
                     setGeneratedSlots([]);
@@ -112,7 +113,7 @@ export default function AdminBookingWizard({
                 }
 
                 let minTime = 24 * 60, maxTime = 0;
-                globalDay.hours.forEach((h: any) => {
+                globalDay.hours.forEach((h: { start: string; end: string }) => {
                     const [sH, sM] = parseTime(h.start);
                     const [eH, eM] = parseTime(h.end);
                     const startMins = sH * 60 + sM;
@@ -251,14 +252,14 @@ export default function AdminBookingWizard({
                 customerEmail: customerInfo.email,
                 customerPhone: customerInfo.phone,
                 status: 'confirmed', // Admin bookings are confirmed by default
-                startAt: bookingStart as any,
-                endAt: bookingEnd as any,
+                startAt: bookingStart as Date & { toDate?: () => Date },
+                endAt: bookingEnd as Date & { toDate?: () => Date },
                 totalPrice: finalPrice,
                 notes: customerInfo.notes,
                 staffId: selectedStaff?.id,
                 staffName: selectedStaff?.name,
                 ...(appliedPromo ? { appliedPromo } : {}),
-            } as any);
+            } as unknown as Parameters<typeof createBooking>[1]);
 
             if (appliedPromo) {
                 await commitPromoUsage({
@@ -487,7 +488,7 @@ export default function AdminBookingWizard({
 
                                 {(searchResults?.length > 0) && (
                                     <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-neutral-900 rounded-lg shadow-xl border border-gray-100 dark:border-neutral-800 z-50 max-h-[200px] overflow-y-auto">
-                                        {searchResults.map((member: any) => (
+                                        {searchResults.map((member) => (
                                             <button
                                                 key={member.id}
                                                 type="button"

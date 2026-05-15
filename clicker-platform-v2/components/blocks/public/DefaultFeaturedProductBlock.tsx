@@ -9,6 +9,7 @@ import { ProductDetailModal } from '@/components/catalog/ProductDetailModal';
 import { FullScreenGallery } from '@/components/common/FullScreenGallery';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getCardClasses, getGlassStyle } from './cardStyles';
+import type { ThemeConfig } from '@/lib/templates/types';
 
 interface WhatsAppSettings {
     label?: string;
@@ -22,7 +23,7 @@ interface WhatsAppSettings {
 
 interface DefaultFeaturedProductBlockProps {
     product: Product;
-    theme?: any;
+    theme?: ThemeConfig;
     previewMode?: boolean;
     badgeText?: string;
     showBadge?: boolean;

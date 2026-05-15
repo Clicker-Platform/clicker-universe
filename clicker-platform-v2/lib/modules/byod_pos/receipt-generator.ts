@@ -32,7 +32,7 @@ export function generateReceiptHtml(order: POSOrder, settings?: POSSettings): st
     const businessAddress = settings?.businessAddress || '';
 
     // Tax/Total HTML
-    let subtotal = order.taxBreakdown?.subtotal || order.total;
+    const subtotal = order.taxBreakdown?.subtotal || order.total;
     let service = order.taxBreakdown?.serviceCharge || 0;
     let tax = order.taxBreakdown?.restaurantTax || 0;
     let total = order.total;

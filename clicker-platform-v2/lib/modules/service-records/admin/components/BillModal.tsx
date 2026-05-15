@@ -73,8 +73,9 @@ export default function BillModal({ siteId, record, approvedByEmail, onCompleted
     const balance = total - amountPaid;
 
     useEffect(() => {
-        // Auto-fill amountPaid = total once total is set
+        // Auto-fill amountPaid = total on initial mount only
         setAmountPaid(total);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
@@ -85,11 +86,11 @@ export default function BillModal({ siteId, record, approvedByEmail, onCompleted
                     setInventoryEnabled(true);
                     const { getInventory } = await import('@/lib/modules/inventory/api');
                     const items = await getInventory(siteId);
-                    setInventoryItems(items.map((i: any) => ({
+                    setInventoryItems(items.map((i: { id: string; name: string; currentStock: number; unit?: string }) => ({
                         id: i.id,
                         name: i.name,
                         currentStock: i.currentStock,
-                        unit: i.unit,
+                        unit: i.unit || '',
                     })));
                 }
             } catch { /* ignore */ }
@@ -130,10 +131,10 @@ export default function BillModal({ siteId, record, approvedByEmail, onCompleted
                 notes: notes || undefined,
                 productUsed: productUsed || undefined,
                 consumedItems: consumedItems.length > 0
-                    ? consumedItems.map(({ _tempId, ...ci }) => ci)
+                    ? consumedItems.map(({ _tempId: _t, ...ci }) => ci)
                     : undefined,
                 ...(appliedPromo ? { appliedPromo } : {}),
-            } as any);
+            } as Parameters<typeof updateServiceRecord>[2]);
 
             // Step 2 — Atomically complete: warranty card + reminders + points
             await approveRecord(siteId, record.id, approvedByEmail);
@@ -150,8 +151,8 @@ export default function BillModal({ siteId, record, approvedByEmail, onCompleted
             }
 
             onCompleted();
-        } catch (err: any) {
-            setError(err.message || 'Failed to complete service');
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : 'Failed to complete service');
         } finally {
             setSubmitting(false);
         }

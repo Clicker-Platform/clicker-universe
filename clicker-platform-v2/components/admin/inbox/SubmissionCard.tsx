@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import Image from 'next/image';
 import { Clock, Trash2, Archive, Download, ExternalLink } from 'lucide-react';
 import { Submission } from '@/data/mockData';
 
@@ -59,7 +60,7 @@ export const SubmissionCard = memo(function SubmissionCard({
                     <div className="flex items-center gap-2 text-gray-400 dark:text-neutral-500 text-sm font-bold">
                         <Clock size={14} />
                         <span suppressHydrationWarning>
-                            {sub.submittedAt ? new Date(sub.submittedAt).toLocaleString() : 'Unknown'}
+                            {sub.submittedAt ? new Date(sub.submittedAt as unknown as string | number | Date).toLocaleString() : 'Unknown'}
                         </span>
                     </div>
 
@@ -125,7 +126,7 @@ export const SubmissionCard = memo(function SubmissionCard({
                                     <p className="text-xs font-bold text-gray-400 dark:text-neutral-500 uppercase mb-1">{label}</p>
                                     {isImage ? (
                                         <div className="mt-2 group relative max-w-[200px] rounded-lg overflow-hidden border-2 border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-900">
-                                            <img src={stringValue} alt={label} className="w-full h-auto object-cover max-h-[200px]" />
+                                            <Image src={stringValue} alt={label} width={200} height={200} className="w-full h-auto object-cover max-h-[200px]" unoptimized />
                                             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
                                                 <a
                                                     href={stringValue}

@@ -4,6 +4,7 @@
 // Used by Client Components like MemberDashboard.
 // MUST NOT import any Server Components or libraries using 'child_process' (firebase-admin).
 
+import React from 'react';
 import POSBlockClient from '@/lib/modules/byod_pos/components/POSBlockClient';
 import UpcomingReservationsWidget from '@/lib/modules/reservation/public/UpcomingReservationsWidget';
 import ReservationWidget from '@/lib/modules/reservation/public/ReservationWidget';
@@ -11,7 +12,7 @@ import MemberRewardsWidget from '@/lib/modules/promo/components/MemberRewardsWid
 import MyVouchersWidget from '@/lib/modules/promo/components/MyVouchersWidget';
 
 // Only include components specifically designed for Client usage
-export const CLIENT_MODULE_COMPONENTS: Record<string, any> = {
+export const CLIENT_MODULE_COMPONENTS: Record<string, React.ComponentType> = {
     // POS Module
     'byod_pos:MenuGrid': POSBlockClient,
 

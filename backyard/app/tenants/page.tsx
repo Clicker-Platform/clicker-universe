@@ -87,6 +87,7 @@ export default function TenantsPage() {
         if (showCreate && !password) {
             setPassword(generatePassword());
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [showCreate]);
 
     useEffect(() => {
