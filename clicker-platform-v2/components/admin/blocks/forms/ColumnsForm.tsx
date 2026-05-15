@@ -37,7 +37,16 @@ export function ColumnsForm({ data, onChange, templateId, onOpenSlideOver }: Col
     [safeData.columns]
   );
 
-  const [activeIdx, setActiveIdx] = useState(0);
+  const { setActiveContainerSlotId, selectedBlockId, activeContainerSlotId } = useEditor();
+
+  // Initialize active tab from context if a slot is already active for this column
+  // set (e.g., user clicked an empty column area on canvas before the form mounted).
+  const initialIdx = (() => {
+    if (!activeContainerSlotId) return 0;
+    const idx = columns.findIndex(c => c.id === activeContainerSlotId);
+    return idx >= 0 ? idx : 0;
+  })();
+  const [activeIdx, setActiveIdx] = useState(initialIdx);
   const [drilledBlockId, setDrilledBlockId] = useState<string | null>(null);
 
   const safeActiveIdx = Math.min(activeIdx, Math.max(0, columns.length - 1));
@@ -45,11 +54,33 @@ export function ColumnsForm({ data, onChange, templateId, onOpenSlideOver }: Col
 
   // Mirror the active column's id to EditorContext so DefaultColumnsBlock can
   // highlight that column on the canvas. Cleared on unmount/blur.
-  const { setActiveContainerSlotId } = useEditor();
   useEffect(() => {
     setActiveContainerSlotId(activeColumnId);
     return () => setActiveContainerSlotId(null);
   }, [activeColumnId, setActiveContainerSlotId]);
+
+  // If the user clicked a nested block on canvas, selectedBlockId becomes that
+  // child's id. Auto-drill into it and switch the active tab to its column.
+  useEffect(() => {
+    if (!selectedBlockId) return;
+    for (let ci = 0; ci < columns.length; ci++) {
+      if (columns[ci].blocks.some(b => b.id === selectedBlockId)) {
+        setActiveIdx(ci);
+        setDrilledBlockId(selectedBlockId);
+        return;
+      }
+    }
+  }, [selectedBlockId, columns]);
+
+  // If the user clicked an empty column area on canvas while this form was already
+  // mounted, sync activeIdx to that slot. (Initial mount is handled by initialIdx;
+  // this catches subsequent changes from canvas click.)
+  useEffect(() => {
+    if (!activeContainerSlotId) return;
+    const idx = columns.findIndex(c => c.id === activeContainerSlotId);
+    if (idx >= 0 && idx !== activeIdx) setActiveIdx(idx);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeContainerSlotId, columns]);
 
   const drilledLocation = useMemo(() => {
     if (!drilledBlockId) return null;

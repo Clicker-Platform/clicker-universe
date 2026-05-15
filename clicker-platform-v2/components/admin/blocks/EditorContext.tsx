@@ -25,7 +25,7 @@ interface EditorContextType {
     moveBlock: (oldIndex: number, newIndex: number) => void;
 }
 
-const EditorContext = createContext<EditorContextType | undefined>(undefined);
+export const EditorContext = createContext<EditorContextType | undefined>(undefined);
 
 export function EditorProvider({ children, blocks, onChange }: { children: ReactNode, blocks: PageBlock[], onChange: (blocks: PageBlock[] | ((prev: PageBlock[]) => PageBlock[])) => void }) {
     const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);

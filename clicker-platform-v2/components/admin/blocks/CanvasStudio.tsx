@@ -6,6 +6,8 @@ import { Settings, Layers, Box, FileText, BarChart2, CheckSquare, Square, X, Plu
 import { useSite } from '@/lib/site-context';
 import { TemplateProvider } from '@/components/TemplateProvider';
 import { BlockRenderer } from '@/components/blocks/BlockRenderer';
+import { SelectableBlock } from './SelectableBlock';
+import { findBlockPath, findContainerBySlotId } from './forms/container/types';
 import { useEffect, useRef, useState, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { getTemplate } from '@/lib/templates/registry';
@@ -45,7 +47,7 @@ export function CanvasStudio({
     pageSlug?: string;
     pageTitle?: string;
 }) {
-    const { blocks, setBlocks, selectedBlockId, setSelectedBlockId, updateBlockData, deviceView, showGuides, activeContainerSlotId } = useEditor();
+    const { blocks, setBlocks, selectedBlockId, setSelectedBlockId, updateBlockData, deviceView, showGuides, activeContainerSlotId, setActiveContainerSlotId } = useEditor();
     const { tenantSlug, siteId } = useSite();
     const {
         activePageId,
@@ -342,7 +344,10 @@ export function CanvasStudio({
 
                             <div
                                 className="w-full flex-1 relative overflow-x-clip"
-                                onClick={() => setSelectedBlockId?.(null)}
+                                onClick={() => {
+                                    setSelectedBlockId?.(null);
+                                    setActiveContainerSlotId(null);
+                                }}
                             >
                                 <div className="relative">
                                     {/* Base Background Fallback */}
@@ -375,90 +380,53 @@ export function CanvasStudio({
                                         {/* Blocks */}
                                         <div className="relative z-10 grid gap-6" style={{ gridTemplateColumns: 'minmax(0, 1fr)' }}>
                                             {blocks.map((block) => (
-                                                <div
+                                                <SelectableBlock
                                                     key={block.id}
-                                                    data-block-id={block.id}
-                                                    className={`min-w-0 relative ${selectedBlockId === block.id ? 'z-20' : 'cursor-pointer'}`}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setSelectedBlockId?.(block.id);
-                                                        // Single-click into a contentEditable field: select block + open toolbar in one gesture
-                                                        const ce = (e.target as HTMLElement).closest<HTMLElement>('[contenteditable="true"][data-field]');
-                                                        if (ce) {
-                                                            const field = ce.dataset.field!;
-                                                            setInlineFocus({ blockId: block.id, field, rect: ce.getBoundingClientRect(), currentData: block.data });
-                                                            ce.focus();
-                                                        }
-                                                    }}
+                                                    blockId={block.id}
+                                                    blockType={block.type}
+                                                    blockData={block.data}
+                                                    onInlineFocus={setInlineFocus}
                                                 >
-                                                    {/* Hover outline */}
-                                                    {showGuides && selectedBlockId !== block.id && (
-                                                        <div className="absolute inset-0 pointer-events-none z-10 outline outline-1 outline-blue-400/40 outline-offset-0 hover:outline-blue-400/60" />
-                                                    )}
-                                                    {/* Selection chrome — sharp border + 8 square handles */}
-                                                    {selectedBlockId === block.id && (
-                                                        <div className="absolute pointer-events-none z-10" style={{ inset: -1 }}>
-                                                            {/* Full border — sharp corners, no border-radius */}
-                                                            <div className="absolute inset-0 border-2 border-blue-500" style={{ borderRadius: 0 }} />
-                                                            {/* 8 square handles — sharp, no rounding */}
-                                                            <div className="absolute -top-[4px] -left-[4px] w-[8px] h-[8px] bg-white border-[1.5px] border-blue-500" />
-                                                            <div className="absolute -top-[4px] left-1/2 -translate-x-1/2 w-[8px] h-[8px] bg-white border-[1.5px] border-blue-500" />
-                                                            <div className="absolute -top-[4px] -right-[4px] w-[8px] h-[8px] bg-white border-[1.5px] border-blue-500" />
-                                                            <div className="absolute top-1/2 -translate-y-1/2 -left-[4px] w-[8px] h-[8px] bg-white border-[1.5px] border-blue-500" />
-                                                            <div className="absolute top-1/2 -translate-y-1/2 -right-[4px] w-[8px] h-[8px] bg-white border-[1.5px] border-blue-500" />
-                                                            <div className="absolute -bottom-[4px] -left-[4px] w-[8px] h-[8px] bg-white border-[1.5px] border-blue-500" />
-                                                            <div className="absolute -bottom-[4px] left-1/2 -translate-x-1/2 w-[8px] h-[8px] bg-white border-[1.5px] border-blue-500" />
-                                                            <div className="absolute -bottom-[4px] -right-[4px] w-[8px] h-[8px] bg-white border-[1.5px] border-blue-500" />
-                                                        </div>
-                                                    )}
-                                                    <div className={
-                                                        // social_embed always needs pointer events (iframe interaction)
-                                                        block.type === 'social_embed' ? 'pointer-events-auto' :
-                                                        // Inline-editable blocks always allow pointer events so a single click can land on contentEditable
-                                                        (block.type === 'hero' || block.type === 'heading') ? 'pointer-events-auto' :
-                                                        'pointer-events-none'
-                                                    }>
-                                                        <BlockRenderer
-                                                            block={block}
-                                                            templateId={templateId}
-                                                            theme={themeColor}
-                                                            siteId={siteId}
-                                                            previewMode={true}
-                                                            showGuides={showGuides}
-                                                            isHydrating={isHydrating}
-                                                            activeContainerSlotId={activeContainerSlotId}
-                                                            tenantSlug={tenantSlug || ''}
-                                                            links={hydratedData.links || []}
-                                                            products={hydratedData.products || []}
-                                                            featuredProduct={hydratedData.featuredProduct}
-                                                            branches={hydratedData.branches || []}
-                                                            linkSettings={hydratedData.linkSettings || globalSettings?.linkSettings}
-                                                            productSettings={hydratedData.productSettings || globalSettings?.productSettings}
-                                                            reservationServices={hydratedData.reservationServices}
-                                                            reservationStaff={hydratedData.reservationStaff}
-                                                            reservationSettings={hydratedData.reservationSettings}
-                                                            contact={globalSettings?.contact}
-                                                            businessHours={globalSettings?.businessHours}
-                                                            businessSchedule={globalSettings?.businessSchedule}
-                                                            profile={globalSettings?.profile}
-                                                            onInlineChange={
-                                                                (block.type === 'hero' || block.type === 'heading') && selectedBlockId === block.id
-                                                                    ? (field, value) => updateBlockData(block.id, { [field]: value })
-                                                                    : undefined
-                                                            }
-                                                            onFieldFocus={
-                                                                (block.type === 'hero' || block.type === 'heading') && selectedBlockId === block.id
-                                                                    ? (field, rect) => setInlineFocus({ blockId: block.id, field, rect, currentData: block.data })
-                                                                    : undefined
-                                                            }
-                                                            onFieldBlur={
-                                                                (block.type === 'hero' || block.type === 'heading') && selectedBlockId === block.id
-                                                                    ? () => setInlineFocus(null)
-                                                                    : undefined
-                                                            }
-                                                        />
-                                                    </div>
-                                                </div>
+                                                    <BlockRenderer
+                                                        block={block}
+                                                        templateId={templateId}
+                                                        theme={themeColor}
+                                                        siteId={siteId}
+                                                        previewMode={true}
+                                                        showGuides={showGuides}
+                                                        isHydrating={isHydrating}
+                                                        activeContainerSlotId={activeContainerSlotId}
+                                                        tenantSlug={tenantSlug || ''}
+                                                        links={hydratedData.links || []}
+                                                        products={hydratedData.products || []}
+                                                        featuredProduct={hydratedData.featuredProduct}
+                                                        branches={hydratedData.branches || []}
+                                                        linkSettings={hydratedData.linkSettings || globalSettings?.linkSettings}
+                                                        productSettings={hydratedData.productSettings || globalSettings?.productSettings}
+                                                        reservationServices={hydratedData.reservationServices}
+                                                        reservationStaff={hydratedData.reservationStaff}
+                                                        reservationSettings={hydratedData.reservationSettings}
+                                                        contact={globalSettings?.contact}
+                                                        businessHours={globalSettings?.businessHours}
+                                                        businessSchedule={globalSettings?.businessSchedule}
+                                                        profile={globalSettings?.profile}
+                                                        onInlineChange={
+                                                            (block.type === 'hero' || block.type === 'heading') && selectedBlockId === block.id
+                                                                ? (field, value) => updateBlockData(block.id, { [field]: value })
+                                                                : undefined
+                                                        }
+                                                        onFieldFocus={
+                                                            (block.type === 'hero' || block.type === 'heading') && selectedBlockId === block.id
+                                                                ? (field, rect) => setInlineFocus({ blockId: block.id, field, rect, currentData: block.data })
+                                                                : undefined
+                                                        }
+                                                        onFieldBlur={
+                                                            (block.type === 'hero' || block.type === 'heading') && selectedBlockId === block.id
+                                                                ? () => setInlineFocus(null)
+                                                                : undefined
+                                                        }
+                                                    />
+                                                </SelectableBlock>
                                             ))}
                                         </div>
                                     </div>
@@ -680,20 +648,58 @@ export function CanvasStudio({
                 ) : selectedBlockId === 'chrome:bottomnav' ? (
                     <ChromeBottomNavPanel />
                 ) : null
-            ) : selectedBlockId ? (
-                blocks.find(b => b.id === selectedBlockId) ? (
-                    <BlockFormRenderer
-                        block={blocks.find(b => b.id === selectedBlockId)!}
-                        onChange={updateBlockData}
-                        templateId={templateId}
-                        onOpenSlideOver={toggleSlideOverPanel}
-                    />
-                ) : (
-                    <div className="flex flex-col items-center justify-center h-full text-center text-neutral-400 dark:text-neutral-500 gap-3">
-                        <Box size={32} className="opacity-20" />
-                        <p className="text-sm">Block not found</p>
-                    </div>
-                )
+            ) : (selectedBlockId || activeContainerSlotId) ? (
+                (() => {
+                    // 1. Top-level block selected — render its form directly.
+                    if (selectedBlockId) {
+                        const topLevel = blocks.find(b => b.id === selectedBlockId);
+                        if (topLevel) {
+                            return (
+                                <BlockFormRenderer
+                                    block={topLevel}
+                                    onChange={updateBlockData}
+                                    templateId={templateId}
+                                    onOpenSlideOver={toggleSlideOverPanel}
+                                />
+                            );
+                        }
+                        // 2. Nested block selected — render its parent container's form.
+                        // The container form auto-drills into the nested block via selectedBlockId.
+                        const path = findBlockPath(blocks, selectedBlockId);
+                        if (path && (path.kind === 'columns-child' || path.kind === 'grid-cell')) {
+                            return (
+                                <BlockFormRenderer
+                                    block={path.parentBlock}
+                                    onChange={updateBlockData}
+                                    templateId={templateId}
+                                    onOpenSlideOver={toggleSlideOverPanel}
+                                />
+                            );
+                        }
+                    }
+                    // 3. No block selected, but a container slot is active — render that
+                    // container's form. The form uses activeContainerSlotId to highlight
+                    // the right tab; no drill-down because no block is selected.
+                    if (activeContainerSlotId) {
+                        const container = findContainerBySlotId(blocks, activeContainerSlotId);
+                        if (container) {
+                            return (
+                                <BlockFormRenderer
+                                    block={container}
+                                    onChange={updateBlockData}
+                                    templateId={templateId}
+                                    onOpenSlideOver={toggleSlideOverPanel}
+                                />
+                            );
+                        }
+                    }
+                    return (
+                        <div className="flex flex-col items-center justify-center h-full text-center text-neutral-400 dark:text-neutral-500 gap-3">
+                            <Box size={32} className="opacity-20" />
+                            <p className="text-sm">Block not found</p>
+                        </div>
+                    );
+                })()
             ) : (
                 <div className="flex flex-col items-center justify-center h-full text-center text-neutral-400 dark:text-neutral-500 gap-3">
                     <Box size={32} className="opacity-20" />
