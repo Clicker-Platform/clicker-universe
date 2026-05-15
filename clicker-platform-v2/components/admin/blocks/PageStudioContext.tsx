@@ -6,7 +6,7 @@ import { db } from '@/lib/firebase';
 import { collection, addDoc, doc, getDoc, updateDoc, deleteDoc, setDoc, getDocs, serverTimestamp, query, where, writeBatch } from 'firebase/firestore';
 import { writeSiteSettings } from '@/lib/admin/siteSettings';
 import { Page, PageBlock } from '@/data/mockData';
-import { fetchCanvasData, hydratePageBlocks } from '@/lib/fetchData';
+import { fetchCanvasData, hydratePageBlocks, collectAllBlockTypes } from '@/lib/fetchData';
 import { purgeTenantCache } from '@/lib/admin/purgeCache';
 import { useSite } from '@/lib/site-context';
 
@@ -286,7 +286,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
             formData: { ...data, blocks: [...data.blocks] },
             savedSnapshot: snapshot,
             hydratedData: { ...hydrated },
-            blockTypesKey: data.blocks.map(b => b.type).sort().join(','),
+            blockTypesKey: collectAllBlockTypes(data.blocks).sort().join(','),
             cachedAt: Date.now(),
             updatedAt,
         });
@@ -311,7 +311,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
     // ── Block hydration (lifted from CanvasStudio) ──────────────────────
 
     const blockTypesKey = useMemo(
-        () => formData.blocks.map(b => b.type).sort().join(','),
+        () => collectAllBlockTypes(formData.blocks).sort().join(','),
         [formData.blocks]
     );
 
@@ -329,7 +329,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
                     const cached = pageCacheRef.current.get(pageId);
                     if (cached) {
                         cached.hydratedData = { ...data };
-                        cached.blockTypesKey = formData.blocks.map(b => b.type).sort().join(',');
+                        cached.blockTypesKey = collectAllBlockTypes(formData.blocks).sort().join(',');
                     }
                 }
             }

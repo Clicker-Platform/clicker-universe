@@ -464,6 +464,34 @@ export const fetchCanvasData = cache(async function fetchCanvasData(siteId: stri
 import { getServices, getReservationSettings } from '@/lib/modules/reservation/api';
 import { getStaffMembers } from '@/lib/modules/reservation/staff';
 
+/**
+ * Walks a page's blocks recursively and returns the flat list of every block type
+ * present, including those nested inside container blocks (columns, grid).
+ *
+ * Why this matters: data-dependent blocks (Products, Link, Featured Product,
+ * Quick Actions) only get their data fetched when their type appears in this list.
+ * Without recursion, a Featured Product placed only inside a Grid would render empty.
+ */
+export function collectAllBlockTypes(blocks: PageBlock[]): string[] {
+    const out: string[] = [];
+    const walk = (bs: PageBlock[]) => {
+        for (const b of bs) {
+            out.push(b.type);
+            if (b.type === 'columns' && Array.isArray(b.data?.columns)) {
+                for (const col of b.data.columns) {
+                    if (Array.isArray(col?.blocks)) walk(col.blocks);
+                }
+            } else if (b.type === 'grid' && Array.isArray(b.data?.cells)) {
+                for (const cell of b.data.cells) {
+                    if (cell?.block) walk([cell.block]);
+                }
+            }
+        }
+    };
+    walk(blocks);
+    return out;
+}
+
 export async function hydratePageBlocks(siteId: string, blocks: PageBlock[]) {
     const data: {
         links?: LinkItem[];
@@ -479,7 +507,7 @@ export async function hydratePageBlocks(siteId: string, blocks: PageBlock[]) {
 
     if (!blocks || blocks.length === 0) return data;
 
-    const blockTypes = blocks.map(b => b.type);
+    const blockTypes = collectAllBlockTypes(blocks);
     
     const needsLinks = blockTypes.includes('quick_actions') || blockTypes.includes('link');
     const needsProducts = blockTypes.includes('products');

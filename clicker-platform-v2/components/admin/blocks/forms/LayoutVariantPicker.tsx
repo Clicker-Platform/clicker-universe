@@ -60,7 +60,7 @@ export const LayoutVariantPicker = ({ blockType, currentVariant, templateDefault
                 )}
                 {!isOverridden && templateDefault && (
                     <span className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 bg-gray-100/50 dark:bg-neutral-900/50 px-2 py-0.5 rounded-full border border-gray-300 dark:border-neutral-700 uppercase tracking-wider">
-                        Template default
+                        Default
                     </span>
                 )}
             </h4>

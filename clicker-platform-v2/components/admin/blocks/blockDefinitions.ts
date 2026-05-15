@@ -1,6 +1,5 @@
 import { BlockType } from '@/data/mockData';
-import { Type, Image as ImageIcon, Layout, Box, HelpCircle, AlignCenter, Link, Map, List, Clock, Star, MapPin, Play, Columns2, ClipboardList, LayoutGrid } from 'lucide-react';
-import { getTemplate } from '@/lib/templates/registry';
+import { Type, Image as ImageIcon, Layout, Box, HelpCircle, AlignCenter, Link, Map, List, Clock, Star, MapPin, Play, Columns2, ClipboardList, LayoutGrid, Columns3 } from 'lucide-react';
 import { DEFAULT_SHOWCASE_DATA, newRow } from '@/components/blocks/content-showcase/types';
 import { DEFAULT_MEDIA } from '@/components/admin/blocks/media-field/types';
 import { makeDefaultCard } from '@/components/blocks/feature-cards/types';
@@ -24,11 +23,22 @@ export const BLOCK_OPTIONS: { type: BlockType; label: string; icon: React.Elemen
     { type: 'inline_form', label: 'Inline Form', icon: ClipboardList },
     { type: 'heading', label: 'Heading', icon: Type },
     { type: 'feature_cards', label: 'Feature Cards', icon: LayoutGrid },
+    { type: 'columns', label: 'Columns', icon: Columns3 },
+    { type: 'grid', label: 'Grid', icon: LayoutGrid },
 ];
 
-export function getDefaultData(type: BlockType, templateId = 'classic'): any {
-    const template = getTemplate(templateId);
-    const defaultLayoutVariant = template.config.defaultBlockLayouts?.[type];
+// Block-owned default layout variants. Industry-standard: the block defines its own
+// default; the template controls visual identity (colors, fonts, spacing) only.
+export const BLOCK_DEFAULT_LAYOUT: Record<string, string> = {
+    hero: 'centered',
+    text: 'prose',
+    image: 'standard',
+    faq: 'accordion',
+    map: 'card-with-address',
+};
+
+export function getDefaultData(type: BlockType, _templateId = 'classic'): any {
+    const defaultLayoutVariant = BLOCK_DEFAULT_LAYOUT[type];
     const baseData: any = {};
 
     if (defaultLayoutVariant) {
@@ -95,6 +105,48 @@ export function getDefaultData(type: BlockType, templateId = 'classic'): any {
                     makeDefaultCard(),
                 ],
             };
+        case 'columns': {
+            const colIds = [
+                `col-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+                `col-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+            ];
+            return {
+                ...baseData,
+                columns: [
+                    { id: colIds[0], size: 6, blocks: [] },
+                    { id: colIds[1], size: 6, blocks: [] },
+                ],
+                gap: 16,
+                padding: 16,
+                stackOnMobile: true,
+                maxWidth: 'full',
+            };
+        }
+        case 'grid': {
+            const cols = 3, rows = 2;
+            const cells = [];
+            for (let r = 1; r <= rows; r++) {
+                for (let c = 1; c <= cols; c++) {
+                    cells.push({
+                        id: `cell-${Date.now()}-${Math.random().toString(36).slice(2, 6)}-${r}-${c}`,
+                        row: r,
+                        col: c,
+                        block: null,
+                    });
+                }
+            }
+            return {
+                ...baseData,
+                cols,
+                rows,
+                cells,
+                gapX: 16,
+                gapY: 16,
+                padding: 16,
+                stackOnMobile: true,
+                maxWidth: 'full',
+            };
+        }
         default:
             return baseData;
     }

@@ -423,6 +423,7 @@ export function CanvasStudio({
                                                             theme={themeColor}
                                                             siteId={siteId}
                                                             previewMode={true}
+                                                            showGuides={showGuides}
                                                             tenantSlug={tenantSlug || ''}
                                                             links={hydratedData.links || []}
                                                             products={hydratedData.products || []}

@@ -7,7 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { subscribeToEnabledModules } from '@/lib/modules/registry';
 import { Settings, ExternalLink, Box } from 'lucide-react';
 import Link from 'next/link';
-import { getTemplate } from '@/lib/templates/registry';
+import { BLOCK_DEFAULT_LAYOUT } from './blockDefinitions';
 import { LayoutVariantPicker } from './forms/LayoutVariantPicker';
 
 const FormSkeleton = () => (
@@ -35,6 +35,8 @@ const SocialEmbedForm = dynamic(() => import('./forms/SocialEmbedForm').then(mod
 const InlineFormBlockForm = dynamic(() => import('./forms/InlineFormBlockForm').then(mod => mod.InlineFormBlockForm), { loading: () => <FormSkeleton /> });
 const HeadingForm = dynamic(() => import('./forms/HeadingForm').then(mod => mod.HeadingForm), { loading: () => <FormSkeleton /> });
 const FeatureCardsForm = dynamic(() => import('./forms/FeatureCardsForm').then(mod => mod.FeatureCardsForm), { loading: () => <FormSkeleton /> });
+const ColumnsForm = dynamic(() => import('./forms/ColumnsForm').then(mod => mod.ColumnsForm), { loading: () => <FormSkeleton /> });
+const GridForm = dynamic(() => import('./forms/GridForm').then(mod => mod.GridForm), { loading: () => <FormSkeleton /> });
 
 interface BlockFormRendererProps {
     block: PageBlock;
@@ -58,6 +60,7 @@ export const BlockFormRenderer = memo(({ block, onChange, templateId = 'classic'
             'inline_form': 'Inline Form',
             'heading': 'Heading',
             'feature_cards': 'Feature Cards',
+            'columns': 'Columns', 'grid': 'Grid',
         };
 
         if (coreLabels[block.type]) {
@@ -105,8 +108,7 @@ export const BlockFormRenderer = memo(({ block, onChange, templateId = 'classic'
         onChange(block.id, { ...block.data, layoutVariant: newVariant });
     };
 
-    const template = getTemplate(templateId);
-    const defaultVariant = template.config.defaultBlockLayouts?.[block.type] || 'default';
+    const defaultVariant = BLOCK_DEFAULT_LAYOUT[block.type] || 'default';
     const currentVariant = block.data.layoutVariant || defaultVariant;
 
     const renderWithLayoutPicker = (FormContent: React.ReactNode) => (
@@ -137,6 +139,8 @@ export const BlockFormRenderer = memo(({ block, onChange, templateId = 'classic'
 
         case 'heading': return <HeadingForm data={block.data} onChange={handleDataChange} />;
         case 'feature_cards': return <FeatureCardsForm data={block.data} onChange={handleDataChange} />;
+        case 'columns': return <ColumnsForm data={block.data} onChange={handleDataChange} templateId={templateId} onOpenSlideOver={onOpenSlideOver} />;
+        case 'grid': return <GridForm data={block.data} onChange={handleDataChange} templateId={templateId} onOpenSlideOver={onOpenSlideOver} />;
 
         case 'quick_actions':
             return <QuickActionsBlockForm data={block.data} onChange={handleDataChange} onOpenLinks={onOpenSlideOver ? () => onOpenSlideOver('links') : undefined} />;

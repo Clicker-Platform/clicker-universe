@@ -37,13 +37,6 @@ export const templateDefinitions: Record<string, Omit<TemplateDefinition, 'compo
                 containerWidth: 'narrow',
                 navMode: 'mobile-only',
                 grid: { mobile: 1, tablet: 1, desktop: 1, gap: 'gap-4' }
-            },
-            defaultBlockLayouts: {
-                hero: 'centered',
-                text: 'prose',
-                image: 'standard',
-                faq: 'simple-list',
-                map: 'card-with-address'
             }
         }
     },
@@ -78,13 +71,6 @@ export const templateDefinitions: Record<string, Omit<TemplateDefinition, 'compo
                 containerWidth: 'boxed',
                 navMode: 'adaptive',
                 grid: { mobile: 1, tablet: 1, desktop: 1, gap: 'gap-6' }
-            },
-            defaultBlockLayouts: {
-                hero: 'split',
-                text: 'two-column',
-                image: 'full-width',
-                faq: 'accordion',
-                map: 'embed-full'
             }
         }
     },
@@ -120,13 +106,6 @@ export const templateDefinitions: Record<string, Omit<TemplateDefinition, 'compo
                 containerWidth: 'full',
                 navMode: 'adaptive',
                 grid: { mobile: 1, tablet: 1, desktop: 1, gap: 'gap-8' }
-            },
-            defaultBlockLayouts: {
-                hero: 'fullbleed',
-                text: 'prose',
-                image: 'standard',
-                faq: 'grid',
-                map: 'embed-full'
             }
         }
     },
@@ -164,14 +143,6 @@ export const templateDefinitions: Record<string, Omit<TemplateDefinition, 'compo
                 showBottomNav: true, // Explicitly enable Bottom Bar
                 grid: { mobile: 1, tablet: 1, desktop: 1, gap: 'gap-4' }
             },
-            defaultBlockLayouts: {
-                hero: 'split',
-                text: 'highlight-box',
-                image: 'rounded-card',
-                faq: 'accordion',
-                map: 'card-with-address'
-            },
-
             // Shuvo-Specific Customizations
             custom: {
                 bottomNavStyle: 'minimal', // Options: 'minimal', 'labeled', 'float'
@@ -222,13 +193,6 @@ export const templateDefinitions: Record<string, Omit<TemplateDefinition, 'compo
                 showBottomNav: true,
                 grid: { mobile: 1, tablet: 1, desktop: 1, gap: 'gap-6' }
             },
-            defaultBlockLayouts: {
-                hero: 'centered',
-                text: 'two-column',
-                image: 'full-width',
-                faq: 'accordion',
-                map: 'embed-full'
-            },
             custom: {
                 bottomNavStyle: 'glass',
             }
@@ -275,13 +239,6 @@ export const templateDefinitions: Record<string, Omit<TemplateDefinition, 'compo
                 navMode: 'adaptive',
                 showBottomNav: true,
                 grid: { mobile: 1, tablet: 1, desktop: 1, gap: 'gap-6' }
-            },
-            defaultBlockLayouts: {
-                hero: 'centered',
-                text: 'two-column',
-                image: 'full-width',
-                faq: 'accordion',
-                map: 'embed-full'
             },
             custom: {
                 bottomNavStyle: 'minimal',
