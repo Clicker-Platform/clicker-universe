@@ -1,6 +1,21 @@
-import { TemplateDefinition } from './types';
+import { TemplateDefinition, ThemeColors } from './types';
 
-export const templateDefinitions: Record<string, Omit<TemplateDefinition, 'components'>> = {
+// Semantic status colors — same across all tenants in v1.
+// Not user-customizable; merged into every template's color config below.
+export const SEMANTIC_STATUS_COLORS: Pick<
+    ThemeColors,
+    'error' | 'errorBg' | 'success' | 'successBg' | 'warning' | 'warningBg' | 'overlay'
+> = {
+    error: '#dc2626',           // red-600
+    errorBg: 'rgba(239,68,68,0.10)', // red-500 @ 10%
+    success: '#16a34a',         // green-600
+    successBg: 'rgba(34,197,94,0.10)', // green-500 @ 10%
+    warning: '#d97706',         // amber-600
+    warningBg: 'rgba(245,158,11,0.10)', // amber-500 @ 10%
+    overlay: 'rgba(0,0,0,0.70)',
+};
+
+const rawTemplateDefinitions: Record<string, Omit<TemplateDefinition, 'components'>> = {
     'classic': {
         id: 'classic',
         name: 'Sunnyside Original',
@@ -13,6 +28,8 @@ export const templateDefinitions: Record<string, Omit<TemplateDefinition, 'compo
                 foreground: '#0E3B2E',
                 surface: '#FFFFFF',
                 border: '#0E3B2E',
+                textMuted: 'rgba(14,59,46,0.70)',  // foreground @ 70%
+                textSubtle: 'rgba(14,59,46,0.55)', // foreground @ 55%
             },
             fonts: {
                 heading: 'var(--font-inter), sans-serif',
@@ -52,6 +69,8 @@ export const templateDefinitions: Record<string, Omit<TemplateDefinition, 'compo
                 foreground: '#1A1A1A',
                 surface: '#F5F5F5',
                 border: '#E5E5E5',
+                textMuted: 'rgba(26,26,26,0.65)',
+                textSubtle: 'rgba(26,26,26,0.45)',
             },
             fonts: {
                 heading: 'var(--font-space), monospace',
@@ -86,6 +105,8 @@ export const templateDefinitions: Record<string, Omit<TemplateDefinition, 'compo
                 foreground: '#1C1C1C', // Dark text
                 surface: '#FFFFFF',
                 border: '#E0E0E0',
+                textMuted: 'rgba(28,28,28,0.65)',
+                textSubtle: 'rgba(28,28,28,0.45)',
             },
             fonts: {
                 heading: 'var(--font-inter), sans-serif',
@@ -121,6 +142,8 @@ export const templateDefinitions: Record<string, Omit<TemplateDefinition, 'compo
                 foreground: '#1A1A1A', // Sharp Black Text
                 surface: '#FFFFFF', // White Cards
                 border: '#E5E5E5',
+                textMuted: 'rgba(26,26,26,0.65)',
+                textSubtle: 'rgba(26,26,26,0.45)',
             },
             fonts: {
                 heading: 'var(--font-playfair), serif', // Assuming Playfair exists, else fallback to Serif
@@ -247,6 +270,25 @@ export const templateDefinitions: Record<string, Omit<TemplateDefinition, 'compo
         homeBlockOrder: ['hero', 'quick_actions', 'branches', 'featured', 'gallery', 'hours'],
     }
 };
+
+/**
+ * Merges semantic status colors (error/success/warning/overlay) into every template's
+ * colors. These are hardcoded semantic defaults — not user-customizable in v1.
+ * Per-template overrides win if a template explicitly sets a status color.
+ */
+export const templateDefinitions: Record<string, Omit<TemplateDefinition, 'components'>> =
+    Object.fromEntries(
+        Object.entries(rawTemplateDefinitions).map(([id, def]) => [
+            id,
+            {
+                ...def,
+                config: {
+                    ...def.config,
+                    colors: { ...SEMANTIC_STATUS_COLORS, ...def.config.colors },
+                },
+            },
+        ])
+    );
 
 export const getTemplateDefinition = (id: string) => {
     return templateDefinitions[id] || templateDefinitions['classic'];

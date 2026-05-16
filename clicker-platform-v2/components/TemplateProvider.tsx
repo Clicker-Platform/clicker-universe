@@ -120,6 +120,17 @@ export const TemplateProvider: React.FC<TemplateProviderProps> = ({ templateId, 
         if (theme.colors.accent) vars['--theme-accent'] = theme.colors.accent;
         if (theme.colors.surface) vars['--theme-surface'] = theme.colors.surface;
         if (theme.colors.border) vars['--theme-border'] = theme.colors.border;
+        if (theme.colors.textMuted) vars['--theme-text-muted'] = theme.colors.textMuted;
+        if (theme.colors.textSubtle) vars['--theme-text-subtle'] = theme.colors.textSubtle;
+
+        // Semantic status tokens (same defaults across all tenants in v1)
+        if (theme.colors.error) vars['--theme-error'] = theme.colors.error;
+        if (theme.colors.errorBg) vars['--theme-error-bg'] = theme.colors.errorBg;
+        if (theme.colors.success) vars['--theme-success'] = theme.colors.success;
+        if (theme.colors.successBg) vars['--theme-success-bg'] = theme.colors.successBg;
+        if (theme.colors.warning) vars['--theme-warning'] = theme.colors.warning;
+        if (theme.colors.warningBg) vars['--theme-warning-bg'] = theme.colors.warningBg;
+        if (theme.colors.overlay) vars['--theme-overlay'] = theme.colors.overlay;
 
         // Inject border radius
         if (theme.borderRadius) vars['--theme-radius'] = theme.borderRadius;

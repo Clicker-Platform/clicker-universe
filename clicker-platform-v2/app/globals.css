@@ -50,6 +50,28 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+/*
+ * Block typography foundation — spec §4.3
+ * Scoped to [data-template] so admin chrome (sidebar, dashboard) keeps its
+ * own font stack. Inside any TemplateProvider, headings inherit --font-heading
+ * and body text inherits --font-body. Tenant-customizable via theme.fonts.
+ */
+[data-template] :is(h1, h2, h3, h4, h5, h6) {
+  font-family: var(--font-heading, var(--font-jakarta), system-ui, sans-serif);
+}
+
+[data-template] :is(p, li, dd, dt, td, th, input, button, textarea, select, blockquote) {
+  font-family: var(--font-body, var(--font-jakarta), system-ui, sans-serif);
+}
+
+[data-template] .prose {
+  font-family: var(--font-body, var(--font-jakarta), system-ui, sans-serif);
+}
+
+[data-template] .prose :where(h1, h2, h3, h4, h5, h6) {
+  font-family: var(--font-heading, var(--font-jakarta), system-ui, sans-serif);
+}
+
 /* Admin: override brand-green body background so it never bleeds through admin UI gaps */
 .admin-layout body,
 body:has(.admin-layout) {

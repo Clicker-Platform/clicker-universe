@@ -18,6 +18,14 @@ export interface ThemeColors {
     surfaceElevated?: string;   // elevated card/panel surface (lifts off background)
     textMuted?: string;         // secondary text (labels, subtitles)
     textSubtle?: string;        // tertiary text (captions, meta, placeholders)
+    // Semantic status tokens — same across all tenants (not user-customizable in v1)
+    error?: string;             // error text/icon color
+    errorBg?: string;           // error region background
+    success?: string;           // success text/icon color
+    successBg?: string;         // success region background
+    warning?: string;           // warning text/icon color
+    warningBg?: string;         // warning region background
+    overlay?: string;           // semi-transparent scrim for photo badges, modals
 }
 
 export interface ThemeFonts {
