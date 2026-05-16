@@ -9,6 +9,8 @@ import { FormModal } from '@/components/FormModal';
 import { TemplateContext } from '@/components/TemplateProvider';
 import { useSite } from '@/lib/site-context';
 import { resolveNavHref } from '@/lib/resolveNavHref';
+import { getHeadingColor, getMutedColor, hexWithOpacity } from './cardStyles';
+import { H3, BODY_SM } from './typography';
 
 interface LinkCardProps {
     item: LinkItem;
@@ -37,11 +39,17 @@ export const LinkCard: React.FC<LinkCardProps> = ({ item, siteId, tenantSlug, ca
     const getTenantAwareUrl = (url: string): string =>
         resolveNavHref(url, effectiveTenantSlug, isSubdomain);
 
-    // Resolved colors: block override → theme token → glass fallback
+    // Card surface still needs local resolution because block-level overrides
+    // (cardBgColor / cardBorderColor) take precedence over theme tokens.
     const bgColor = isGlass ? 'rgba(0,0,0,0.2)' : (cardBgColor || theme.colors?.surface || '#ffffff');
     const borderColor = isGlass ? 'rgba(255,255,255,0.1)' : (cardBorderColor || theme.colors?.border || '#e5e7eb');
-    const fgColor = isGlass ? 'rgba(255,255,255,0.95)' : (cardFgColor || theme.colors?.foreground);
-    const mutedColor = isGlass ? 'rgba(255,255,255,0.4)' : (cardFgColor ? `${cardFgColor}99` : (theme.colors?.textMuted || '#9ca3af'));
+
+    // Foreground: if user overrode cardBgColor, derive contrast (cardFgColor).
+    // Otherwise route through standard helpers.
+    const fgColor = cardFgColor ?? getHeadingColor(theme.cardStyle, theme);
+    const mutedColor = cardFgColor
+        ? hexWithOpacity(cardFgColor, 0.6)
+        : getMutedColor(theme.cardStyle, theme);
 
     const handleClick = async (e: React.MouseEvent) => {
         if (item.type === 'form' && item.formId) {
@@ -92,11 +100,11 @@ export const LinkCard: React.FC<LinkCardProps> = ({ item, siteId, tenantSlug, ca
                         <Icon size={24} strokeWidth={2} />
                     </div>
                     <div className="text-left">
-                        <h3 className="font-bold text-base leading-tight" style={{ color: fgColor }}>
+                        <h3 className={H3} style={{ color: fgColor }}>
                             {item.title}
                         </h3>
                         {item.subtitle && (
-                            <p className="text-sm font-medium" style={{ color: isHighlight ? theme.colors?.primary : mutedColor }}>
+                            <p className={BODY_SM} style={{ color: isHighlight ? theme.colors?.primary : mutedColor }}>
                                 {item.subtitle}
                             </p>
                         )}
