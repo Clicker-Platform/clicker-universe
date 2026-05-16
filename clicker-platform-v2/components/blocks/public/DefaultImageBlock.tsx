@@ -2,7 +2,8 @@
 
 import Image from 'next/image';
 import { useTemplate } from '@/components/TemplateProvider';
-import { getCardClasses } from './cardStyles';
+import { getCardClasses, getMutedColor, getBodyColor } from './cardStyles';
+import { BODY_SM, BODY_LG } from './typography';
 import { useDeviceView, dv } from '@/components/DeviceViewContext';
 import { MediaView } from './MediaView';
 import { MediaFieldValue, DEFAULT_MEDIA } from '@/components/admin/blocks/media-field/types';
@@ -13,6 +14,8 @@ export const DefaultImageBlock = ({ data, isFirst = false }: { data: any; isFirs
     const cardStyle = theme.cardStyle;
     const isGlass = cardStyle === 'glass';
     const radius = theme.borderRadius || 'var(--theme-radius)';
+    const captionColor = getMutedColor(cardStyle, theme);
+    const captionEmphasisColor = getBodyColor(cardStyle, theme);
 
     // Resolve media: prefer new `media` field, fall back to legacy `url`
     const media: MediaFieldValue | null = data.media
@@ -39,8 +42,8 @@ export const DefaultImageBlock = ({ data, isFirst = false }: { data: any; isFirs
                 />
                 {data.caption && (
                     <p
-                        className="text-center text-sm font-bold mt-4 italic"
-                        style={{ color: isGlass ? 'rgba(255,255,255,0.5)' : 'var(--theme-foreground)', opacity: isGlass ? 1 : 0.6 }}
+                        className={`${BODY_SM} text-center mt-4 italic`}
+                        style={{ color: captionColor }}
                     >
                         {data.caption}
                     </p>
@@ -69,8 +72,8 @@ export const DefaultImageBlock = ({ data, isFirst = false }: { data: any; isFirs
                 </div>
                 {data.caption && (
                     <p
-                        className="text-center text-sm font-bold mt-3 px-4 italic"
-                        style={{ color: isGlass ? 'rgba(255,255,255,0.5)' : 'var(--theme-foreground)', opacity: isGlass ? 1 : 0.6 }}
+                        className={`${BODY_SM} text-center mt-3 px-4 italic`}
+                        style={{ color: captionColor }}
                     >
                         {data.caption}
                     </p>
@@ -103,8 +106,8 @@ export const DefaultImageBlock = ({ data, isFirst = false }: { data: any; isFirs
                             }}
                         >
                             <p
-                                className="text-center text-sm font-medium"
-                                style={{ color: isGlass ? 'rgba(255,255,255,0.7)' : 'var(--theme-foreground)', opacity: isGlass ? 1 : 0.7 }}
+                                className={`${BODY_SM} text-center`}
+                                style={{ color: captionColor }}
                             >
                                 {data.caption}
                             </p>
@@ -135,8 +138,8 @@ export const DefaultImageBlock = ({ data, isFirst = false }: { data: any; isFirs
                     <div className={`${dv(d, 'w-full', 'md:w-1/3')} flex items-center p-4`}>
                         <div className="border-l-4 pl-6 py-2" style={{ borderColor: 'var(--theme-primary)' }}>
                             <p
-                                className="text-lg font-medium italic leading-relaxed"
-                                style={{ color: isGlass ? 'rgba(255,255,255,0.7)' : 'var(--theme-foreground)', opacity: isGlass ? 1 : 0.8 }}
+                                className={`${BODY_LG} italic`}
+                                style={{ color: captionEmphasisColor }}
                             >
                                 {data.caption}
                             </p>
@@ -165,8 +168,8 @@ export const DefaultImageBlock = ({ data, isFirst = false }: { data: any; isFirs
             </div>
             {data.caption && (
                 <p
-                    className="text-center text-sm font-bold mt-4 italic"
-                    style={{ color: isGlass ? 'rgba(255,255,255,0.5)' : 'var(--theme-foreground)', opacity: isGlass ? 1 : 0.6 }}
+                    className={`${BODY_SM} text-center mt-4 italic`}
+                    style={{ color: captionColor }}
                 >
                     {data.caption}
                 </p>
