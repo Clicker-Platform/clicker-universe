@@ -440,7 +440,9 @@ Block rendering (shared admin + public):
   components/blocks/public/ReservationBlock.tsx  ← reservation module block (read-only in canvas)
   components/blocks/public/LinkBlockClient.tsx   ← client-side interactive wrapper for link blocks
   components/blocks/public/ProductsBlockClient.tsx ← client-side interactive wrapper for product blocks
-  components/blocks/public/cardStyles.ts         ← getCardClasses(), getTextColor()
+  components/blocks/public/cardStyles.ts         ← getCardClasses(), getGlassStyle(), getHeadingColor/getBodyColor/getMutedColor/getLabelColor/getAccentColor, hexWithOpacity()
+  components/blocks/public/typography.ts         ← H1/H2/H3/TILE_TITLE/H4/BODY_LG/BODY/BODY_SM/BUTTON_TEXT constants
+  components/blocks/public/proseConfig.ts        ← proseClass, proseGlassClass, getProseClass(cardStyle) — shared prose plugin styling
   components/blocks/mrb/                        ← MRB template-specific block overrides (MrbHero, MrbQuickActions, MrbOperatingHours)
 
 Image/media uploads in blocks:

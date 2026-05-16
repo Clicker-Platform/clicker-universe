@@ -107,20 +107,6 @@ export function getCardClasses(cardStyle?: string, extra?: string): string {
 }
 
 /**
- * @deprecated Use getHeadingColor / getBodyColor / getMutedColor / getLabelColor / getAccentColor
- * from this file instead. Returns Tailwind class names rather than color strings; the new helpers
- * return inline-style-ready color strings, which is the spec-approved consumption pattern.
- * Tracked for removal once Phase 2 of the typography migration completes.
- * Spec: superpowers/specs/2026-05-16-block-typography-system.md
- */
-export function getTextColor(cardStyle?: string, muted = false): string {
-    if (cardStyle === 'glass') {
-        return muted ? 'text-white/60' : 'text-theme-foreground/60';
-    }
-    return muted ? 'text-gray-500' : 'text-theme-foreground';
-}
-
-/**
  * Returns inline style for glass card backgrounds that respect the user-configured surface color.
  * Use this alongside getCardClasses() when you need an explicit inline style (e.g. when Tailwind
  * JIT cannot pick up the dynamic color-mix expression).
