@@ -10,6 +10,7 @@ import { BusinessProfile } from '@/data/mockData';
 import { useTemplate } from '@/components/TemplateProvider';
 import { useDeviceView, dv, type DeviceView } from '@/components/DeviceViewContext';
 import { FieldSelectionChrome, EditableText } from '@/components/blocks/shared/EditablePrimitives';
+import { H4, BODY_LG, BUTTON_TEXT } from '@/components/blocks/public/typography';
 
 // ─── Colour helpers ───────────────────────────────────────────────────────────
 
@@ -51,12 +52,21 @@ function resolveTextOnBg(
     return 'dark';
 }
 
+// MRB shares the Default Hero scale in this phase. 'md' is the spec H1
+// default (text-4xl md:text-6xl); other tiers scale around it. The previous
+// MRB-specific oversized variants (text-7xl md:text-8xl) were dropped per
+// spec §10 — variants/branding will revisit larger scales post-foundation.
 const TITLE_SIZES = (d: DeviceView): Record<string, string> => ({
     sm: dv(d, 'text-3xl', 'md:text-4xl'),
-    md: dv(d, 'text-5xl', 'md:text-6xl'),
-    lg: dv(d, 'text-6xl', 'md:text-7xl'),
-    xl: dv(d, 'text-7xl', 'md:text-8xl'),
+    md: dv(d, 'text-4xl', 'md:text-6xl'),  // spec H1
+    lg: dv(d, 'text-5xl', 'md:text-7xl'),
+    xl: dv(d, 'text-6xl', 'md:text-8xl'),
 });
+
+// Non-size half of H1, shared across all size tiers. Per spec §9, the
+// MRB-only tracking-tighter / leading-[0.95] are dropped in favor of the
+// canonical leading-tight / tracking-tight.
+const H1_BASE = 'font-extrabold leading-tight tracking-tight';
 
 interface CtaBtn { label?: string; url?: string; }
 
@@ -102,7 +112,7 @@ function CtaButtons({ primary, secondary, ctaJustify, primaryColor, bgColor, def
                 >
                     <a
                         href={onFieldFocus ? undefined : (primary.url || '#')}
-                        className="inline-flex items-center px-6 py-3 rounded-xl text-sm font-bold transition-all active:scale-[0.98] shadow-lg"
+                        className={`inline-flex items-center px-6 py-3 rounded-xl ${BUTTON_TEXT} transition-all active:scale-[0.98] shadow-lg`}
                         style={{ backgroundColor: primaryColor, color: bgColor }}
                     >
                         {primary.label}
@@ -119,7 +129,7 @@ function CtaButtons({ primary, secondary, ctaJustify, primaryColor, bgColor, def
                 >
                     <a
                         href={onFieldFocus ? undefined : (secondary.url || '#')}
-                        className="inline-flex items-center px-6 py-3 rounded-xl text-sm font-bold border-2 transition-all active:scale-[0.98]"
+                        className={`inline-flex items-center px-6 py-3 rounded-xl ${BUTTON_TEXT} border-2 transition-all active:scale-[0.98]`}
                         style={{ borderColor: `${primaryColor}66`, color: titleColor || defaultTextColor }}
                     >
                         {secondary.label}
@@ -307,7 +317,7 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, isFirst = true,
 
             {/* Text Content */}
             <div className="flex flex-col gap-4 relative z-10 w-full">
-                {/* Tagline Bubble */}
+                {/* Tagline Bubble — pill chrome is MRB decorative ornament (spec §10) */}
                 {(tagline != null && tagline !== '' && (tagline || onInlineChange)) && (
                     <div className={`flex ${taglineJustify} ${taC}`}>
                         <EditableText
@@ -318,12 +328,11 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, isFirst = true,
                             onInlineChange={onInlineChange}
                             onFieldFocus={onFieldFocus}
                             onFieldBlur={onFieldBlur}
-                            className="inline-flex items-center rounded-full px-4 py-1.5 text-[10px] font-bold uppercase border"
+                            className={`inline-flex items-center rounded-full px-4 py-1.5 border ${H4}`}
                             style={{
                                 backgroundColor: `${theme.colors.primary}15`,
                                 color: data?.taglineColor || theme.colors.primary,
                                 borderColor: `${theme.colors.primary}33`,
-                                letterSpacing: '0.25em',
                             }}
                         />
                     </div>
@@ -338,12 +347,12 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, isFirst = true,
                         placeholder="Add title…"
                         onInlineChange={onInlineChange}
                         onFieldFocus={onFieldFocus}
-                        className={`${titleSizeClass} ${tiC} font-extrabold leading-[0.95] tracking-tighter m-0`}
+                        className={`${titleSizeClass} ${H1_BASE} ${tiC} m-0`}
                         style={{ color: data?.titleColor || defaultTextColor }}
                     />
                 ) : null}
 
-                {/* Subtitle */}
+                {/* Subtitle — opacity baked into defaultSubtitleOpacity color */}
                 {(subtitle != null && subtitle !== '' && (subtitle || onInlineChange)) && (
                     <EditableText
                         tag="p"
@@ -352,7 +361,7 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, isFirst = true,
                         placeholder="Add subtitle…"
                         onInlineChange={onInlineChange}
                         onFieldFocus={onFieldFocus}
-                        className={`text-lg ${suC} ${data?.subtitleWeight ? `font-${data.subtitleWeight}` : 'font-medium'} leading-relaxed m-0 opacity-80`}
+                        className={`${BODY_LG} ${suC} ${data?.subtitleWeight ? `font-${data.subtitleWeight}` : ''} m-0`}
                         style={{ color: data?.subtitleColor || defaultSubtitleOpacity }}
                     />
                 )}
