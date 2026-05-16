@@ -44,12 +44,17 @@ export interface GridCell {
 ```ts
 {
   columns: ColumnSlot[];   // ordered left-to-right
-  gap: number;             // inter-column gap in px
+  gap: number;             // horizontal gap between columns (px)
+  blockGap: number;        // vertical gap between stacked blocks inside each column (px)
   padding: number;         // outer padding in px
   stackOnMobile: boolean;  // default true
   maxWidth: 'sm' | 'md' | 'lg' | 'xl' | 'full';
 }
 ```
+
+`gap` and `blockGap` are independent: `gap` controls the horizontal space
+between adjacent columns; `blockGap` controls the vertical space between
+the blocks stacked inside a single column. Both default to 16px.
 
 ### Grid block data
 ```ts

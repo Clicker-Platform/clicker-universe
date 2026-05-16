@@ -192,7 +192,7 @@ export function ColumnsForm({ data, containerBlockId, onChange, templateId, onOp
           Layout
         </legend>
         <label className="block text-sm">
-          <span className="text-neutral-700 dark:text-neutral-300">Gap (px)</span>
+          <span className="text-neutral-700 dark:text-neutral-300">Column gap (px)</span>
           <input
             type="number"
             min={0}
@@ -200,6 +200,18 @@ export function ColumnsForm({ data, containerBlockId, onChange, templateId, onOp
             onChange={(e) => updateField('gap', Number(e.target.value))}
             className="mt-1 w-full px-2 py-1 border border-gray-300 dark:border-neutral-700 rounded bg-white dark:bg-neutral-900"
           />
+          <p className="mt-1 text-xs text-neutral-400 dark:text-neutral-500">Horizontal space between columns.</p>
+        </label>
+        <label className="block text-sm">
+          <span className="text-neutral-700 dark:text-neutral-300">Block gap (px)</span>
+          <input
+            type="number"
+            min={0}
+            value={safeData.blockGap ?? 16}
+            onChange={(e) => updateField('blockGap', Number(e.target.value))}
+            className="mt-1 w-full px-2 py-1 border border-gray-300 dark:border-neutral-700 rounded bg-white dark:bg-neutral-900"
+          />
+          <p className="mt-1 text-xs text-neutral-400 dark:text-neutral-500">Vertical space between blocks stacked inside each column.</p>
         </label>
         <label className="block text-sm">
           <span className="text-neutral-700 dark:text-neutral-300">Padding (px)</span>

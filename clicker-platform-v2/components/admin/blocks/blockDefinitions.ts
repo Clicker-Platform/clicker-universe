@@ -116,7 +116,8 @@ export function getDefaultData(type: BlockType, _templateId = 'classic'): any {
                     { id: colIds[0], size: 6, blocks: [] },
                     { id: colIds[1], size: 6, blocks: [] },
                 ],
-                gap: 16,
+                gap: 16,        // horizontal gap between columns
+                blockGap: 16,   // vertical gap between stacked blocks inside each column
                 padding: 16,
                 stackOnMobile: true,
                 maxWidth: 'full',

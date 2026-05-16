@@ -30,7 +30,8 @@ export function DefaultColumnsBlock({ data, containerBlockId, previewMode, showG
   const editor = useContext(EditorContext);
   const columns: ColumnSlot[] = Array.isArray(data?.columns) ? data.columns : [];
   const {
-    gap = 16,
+    gap = 16,         // horizontal gap between columns
+    blockGap = 16,    // vertical gap between stacked blocks inside each column
     padding = 16,
     stackOnMobile = true,
     maxWidth = 'full',
@@ -120,6 +121,7 @@ export function DefaultColumnsBlock({ data, containerBlockId, previewMode, showG
               minWidth: 0,
               boxSizing: 'border-box',
               minHeight: col.blocks.length === 0 ? 60 : undefined,
+              gap: blockGap,
             }}
             className={`flex flex-col transition-[outline] duration-150 ${outlineClass} ${editor && previewMode ? 'cursor-pointer' : ''}`}
           >
