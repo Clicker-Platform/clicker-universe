@@ -4,7 +4,8 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { Calendar } from 'lucide-react';
 import { useTemplate } from '@/components/TemplateProvider';
-import { getGlassStyle } from './cardStyles';
+import { getGlassStyle, getHeadingColor } from './cardStyles';
+import { H2, BUTTON_TEXT } from './typography';
 
 // Animated skeleton bar — uses CSS vars from TemplateProvider so it works across all themes.
 // Renders inside the dynamic() loading prop which shows while JS chunk downloads.
@@ -66,21 +67,31 @@ export const ReservationBlock = ({ data, siteId, initialServices, initialStaff, 
     if (data.mode === 'button') {
         const buttonText = data.buttonText || "Book Now";
 
-        const buttonStyle = isGlass
-            ? 'bg-[var(--theme-primary)] text-black rounded-xl hover:opacity-90 shadow-lg'
+        // Contrast color for text on top of theme.primary / theme.foreground.
+        const primaryContrastColor =
+            theme.colors.accentForeground ??
+            (theme.colors.accent && theme.colors.accent !== theme.colors.primary ? theme.colors.accent : undefined) ??
+            theme.colors.background ??
+            '#ffffff';
+
+        const buttonChrome = isGlass
+            ? 'rounded-xl hover:opacity-90 shadow-lg'
             : isClean
-            ? 'bg-brand-dark text-white rounded-xl shadow-sm hover:bg-brand-green hover:shadow-md'
-            : 'bg-theme-foreground text-theme-background border-[3px] border-theme-foreground shadow-sticker hover:bg-theme-primary hover:text-theme-foreground hover:-translate-y-1 hover:shadow-sticker-hover';
+            ? 'rounded-xl shadow-sm hover:opacity-90 hover:shadow-md'
+            : 'border-[3px] shadow-sticker hover:-translate-y-1 hover:shadow-sticker-hover';
+
+        const buttonInlineStyle: React.CSSProperties = isGlass
+            ? { backgroundColor: theme.colors.primary, color: primaryContrastColor }
+            : isClean
+            ? { backgroundColor: theme.colors.foreground, color: theme.colors.background }
+            : { backgroundColor: theme.colors.foreground, color: theme.colors.background, borderColor: theme.colors.foreground };
 
         return (
             <div className="py-8 text-center">
                 <Link
                     href={data.href || "/book"}
-                    className={`
-                        inline-flex items-center gap-2 px-8 py-4 font-bold transition-all text-lg
-                        ${buttonStyle}
-                    `}
-                    style={{ borderRadius: 'calc(var(--theme-radius) * 0.75)' }}
+                    className={`inline-flex items-center gap-2 px-8 py-4 ${BUTTON_TEXT} transition-all ${buttonChrome}`}
+                    style={{ ...buttonInlineStyle, borderRadius: 'calc(var(--theme-radius) * 0.75)' }}
                 >
                     <Calendar size={20} strokeWidth={isGlass ? 2 : isClean ? 2 : 2.5} />
                     {buttonText}
@@ -106,10 +117,7 @@ export const ReservationBlock = ({ data, siteId, initialServices, initialStaff, 
             }}
         >
             {data.title && (
-                <h2 className={`
-                    text-3xl mb-8 text-center
-                    ${isGlass ? 'font-bold text-white' : isClean ? 'font-bold text-gray-900' : 'font-black text-theme-foreground'}
-                `}>
+                <h2 className={`${H2} mb-8 text-center`} style={{ color: getHeadingColor(theme.cardStyle, theme) }}>
                     {data.title}
                 </h2>
             )}
