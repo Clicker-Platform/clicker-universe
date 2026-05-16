@@ -11,6 +11,8 @@ import { ShoppingBag } from 'lucide-react';
 import { getWhatsappUrl } from '@/components/common/WhatsappButton';
 import { resolveNavHref } from '@/lib/resolveNavHref';
 import { getContrastColor } from '@/lib/utils/color';
+import { getHeadingColor, getMutedColor, getLabelColor, hexWithOpacity } from './cardStyles';
+import { H3, H4 } from './typography';
 
 interface QuickActionsProps {
     links: LinkItem[];
@@ -76,19 +78,21 @@ export const DefaultQuickActionsBlock: React.FC<QuickActionsProps> = ({
         }
     };
 
-    // Resolved card colors: block override → theme token → glass fallback
+    // Card surface still needs local resolution because block-level overrides
+    // (cardBgColor / cardBorderColor) take precedence over theme tokens.
     const resolvedBg = isGlass
         ? `${theme.colors.surfaceElevated || theme.colors.surface}99`
         : (cardBgColor || theme.colors.surface || '#ffffff');
     const resolvedBorder = isGlass
         ? 'rgba(255,255,255,0.1)'
         : (cardBorderColor || theme.colors.border || '#e5e7eb');
-    const resolvedFg = isGlass
-        ? 'rgba(255,255,255,0.95)'
-        : (cardFgColor || theme.colors.foreground);
-    const resolvedMuted = isGlass
-        ? 'rgba(255,255,255,0.6)'
-        : (cardFgColor ? `${cardFgColor}99` : (theme.colors.textSubtle || theme.colors.textMuted || theme.colors.foreground));
+
+    // Foreground colors: if the user overrode cardBgColor, derive contrast.
+    // Otherwise route through the standard helpers.
+    const resolvedFg = cardFgColor ?? getHeadingColor(theme.cardStyle, theme);
+    const resolvedMuted = cardFgColor
+        ? hexWithOpacity(cardFgColor, 0.6)
+        : getMutedColor(theme.cardStyle, theme);
 
     const cardStyle: React.CSSProperties = {
         borderRadius: 'var(--theme-radius)',
@@ -110,8 +114,8 @@ export const DefaultQuickActionsBlock: React.FC<QuickActionsProps> = ({
         <section className="w-full space-y-4">
             {showOnHome && !theme.custom?.hideQuickActionsTitle && (
                 <h2
-                    className="text-xs font-bold uppercase tracking-[0.2em]"
-                    style={{ color: theme.colors.textMuted || theme.colors.foreground }}
+                    className={H4}
+                    style={{ color: getLabelColor(theme.cardStyle, theme) }}
                 >
                     {sectionTitle}
                 </h2>
@@ -136,11 +140,11 @@ export const DefaultQuickActionsBlock: React.FC<QuickActionsProps> = ({
                                 <div className="p-2.5 flex items-center justify-center" style={iconStyle(!!link.highlight)}>
                                     <Icon size={22} strokeWidth={2} />
                                 </div>
-                                <span className="text-sm font-bold leading-tight" style={{ color: resolvedFg }}>
+                                <span className={H3} style={{ color: resolvedFg }}>
                                     {link.title}
                                 </span>
                                 {link.subtitle && (
-                                    <span className="text-xs" style={{ color: resolvedMuted }}>
+                                    <span className="text-sm font-normal leading-normal" style={{ color: resolvedMuted }}>
                                         {link.subtitle}
                                     </span>
                                 )}
