@@ -11,6 +11,8 @@ description: >
 ---
 
 > **Architecture Reference:** Always read [`docs/ARCHITECTURE.md`](../../../clicker-platform-v2/docs/ARCHITECTURE.md) before making any changes.
+>
+> **Typography:** When authoring or editing **public block components** (`components/blocks/public/`, `components/blocks/mrb/`), invoke the [`typography_system`](../typography_system/SKILL.md) skill. It enforces the H1–H4 scale, color helper API, and no-hardcoded-colors rule per the [block typography spec](../../../superpowers/specs/2026-05-16-block-typography-system.md).
 
 
 # /canvas_studio — Page Builder & Block System
