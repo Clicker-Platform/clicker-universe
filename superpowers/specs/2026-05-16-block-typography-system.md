@@ -20,19 +20,23 @@ Establish a single, enforceable typography foundation for all Canvas Studio publ
 
 ## 1. The Heading Scale — H1 to H4
 
-Four locked tiers. Mobile → desktop. **No block defines its own sizes.**
+Four locked tiers plus a tile-grid tier. Mobile → desktop. **No block defines its own sizes.**
 
 | Tier | Semantic | Size | Weight | Line-height | Tracking | Family |
 |------|----------|------|--------|-------------|----------|--------|
 | **H1** | Display (Hero title) | `text-4xl md:text-6xl` | `font-extrabold` | `leading-tight` | `tracking-tight` | heading |
 | **H2** | Section title | `text-3xl md:text-4xl` | `font-bold` | `leading-tight` | `tracking-tight` | heading |
-| **H3** | Subsection / card title | `text-xl md:text-2xl` | `font-semibold` | `leading-snug` | normal | heading |
+| **H3** | Subsection / card title (full-width) | `text-xl md:text-2xl` | `font-semibold` | `leading-snug` | normal | heading |
+| **TILE_TITLE** | Title in dense `n`-up grid (≤180px tiles) | `text-sm md:text-base` | `font-semibold` | `leading-tight` | normal | heading |
 | **H4** | Label / eyebrow | `text-xs md:text-sm` | `font-bold` | `leading-normal` | `tracking-[0.2em]` (uppercase) | heading |
 
 **Rules:**
 - Each block selects a tier based on semantic role, not visual taste.
+- **H3 vs TILE_TITLE:** H3 is for full-width card titles where text has horizontal room (FAQ question, branch name, ContentShowcase row heading). TILE_TITLE is for dense grids where H3 wraps mid-word (QuickActions 3-up tiles, Products auto-fit minmax-140px grid, LinkCard inside QuickActions list mode).
 - H4 is the **only** tier with implied `uppercase` (it's the "eyebrow" label tier). Other tiers stay sentence-case unless the user explicitly types caps.
 - Templates may swap the heading font family (`--font-heading`) — but **not the size/weight scale** in this phase.
+
+**Added 2026-05-16 (post-2c visual QA):** TILE_TITLE introduced after H3 was applied to QuickActions grid tiles per the original decision table, which caused titles to wrap into 3+ lines on ~120px-wide tiles. The spec's "card title" rule didn't distinguish dense grids from full-width cards. TILE_TITLE fills that gap.
 
 ### Mapping current blocks to tiers
 
@@ -48,8 +52,10 @@ Four locked tiers. Mobile → desktop. **No block defines its own sizes.**
 | FAQ block title ("FAQ") | `text-2xl` | **H2** |
 | FAQ question | `text-base` | **H3** |
 | FeatureCards card headline | `text-xl` | **H3** |
-| LinkCard title | `text-base` | **H3** |
+| LinkCard title (in QuickActions list mode) | `text-base` | **TILE_TITLE** |
 | Branches branch name | unset | **H3** |
+| QuickActions grid-tile link title | `text-sm` | **TILE_TITLE** |
+| Products grid tile product name | `text-sm` | **TILE_TITLE** |
 | Operating Hours label | `text-sm` | **H4** |
 | Branches "Main Location" | `text-base` uppercase | **H4** |
 | QuickActions section title | `text-xs` | **H4** |
@@ -387,10 +393,11 @@ Update `.claude/commands/canvas_studio/SKILL.md` with a "Typography" section poi
 
 ```
 HEADINGS
-  H1  text-4xl md:text-6xl   font-extrabold  leading-tight  tracking-tight
-  H2  text-3xl md:text-4xl   font-bold       leading-tight  tracking-tight
-  H3  text-xl  md:text-2xl   font-semibold   leading-snug   normal
-  H4  text-xs  md:text-sm    font-bold       leading-normal tracking-[0.2em]  (uppercase via H4)
+  H1          text-4xl md:text-6xl   font-extrabold  leading-tight  tracking-tight
+  H2          text-3xl md:text-4xl   font-bold       leading-tight  tracking-tight
+  H3          text-xl  md:text-2xl   font-semibold   leading-snug   normal
+  TILE_TITLE  text-sm  md:text-base  font-semibold   leading-tight  normal             (dense n-up grids)
+  H4          text-xs  md:text-sm    font-bold       leading-normal tracking-[0.2em]   (uppercase eyebrow)
 
 BODY
   body-lg  text-lg    font-normal  leading-normal

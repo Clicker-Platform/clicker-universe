@@ -19,11 +19,12 @@ Before 2026-05-16 the block system had no shared typographic foundation: every b
 ## The Token Quick Reference
 
 ```
-HEADINGS  (use the H1/H2/H3/H4 constants from components/blocks/public/typography.ts)
-  H1  text-4xl md:text-6xl   font-extrabold  leading-tight  tracking-tight     (Display — Hero title)
-  H2  text-3xl md:text-4xl   font-bold       leading-tight  tracking-tight     (Section title — FAQ, FeatureCards, ContentShowcase row)
-  H3  text-xl  md:text-2xl   font-semibold   leading-snug                       (Subsection — card title, FAQ question, branch name)
-  H4  text-xs  md:text-sm    font-bold       leading-normal tracking-[0.2em]    (Label/eyebrow — always uppercase)
+HEADINGS  (use constants from components/blocks/public/typography.ts)
+  H1          text-4xl md:text-6xl   font-extrabold  leading-tight  tracking-tight     (Display — Hero title)
+  H2          text-3xl md:text-4xl   font-bold       leading-tight  tracking-tight     (Section title — FAQ, FeatureCards, ContentShowcase row, Featured Product name)
+  H3          text-xl  md:text-2xl   font-semibold   leading-snug                       (Full-width card title — FAQ question, branch name)
+  TILE_TITLE  text-sm  md:text-base  font-semibold   leading-tight                      (Dense n-up grid title — QuickActions tiles, Products tiles, LinkCard)
+  H4          text-xs  md:text-sm    font-bold       leading-normal tracking-[0.2em]    (Label/eyebrow — always uppercase)
 
 BODY
   body-lg  text-lg    font-normal  leading-normal     (Hero subtitle, lead)
@@ -54,10 +55,13 @@ When adding or editing a block, map each heading element to a tier:
 | Hero / page-level display title | **H1** |
 | Block section title (e.g., "FAQ", "Our Products", "Operating Hours") | **H2** if visually dominant, **H4** if it's a small eyebrow |
 | Featured Product name, FeatureCards section title, ContentShowcase row heading, Form heading | **H2** |
-| Card title (LinkCard, FAQ question, FeatureCards card headline, branch name, product name in grid) | **H3** |
+| Full-width card title (FAQ question, branch name, FeatureCards card headline) | **H3** |
+| Title in a dense `n`-up grid (QuickActions tile, Products tile, LinkCard inside QuickActions list) | **TILE_TITLE** |
 | Eyebrow / small label (Hero tagline, "MAIN LOCATION", category label, "PRODUCTS" small heading) | **H4** |
 
-**Rule:** Pick the tier by semantic role, not by visual desire. If the visual feels wrong, the tier is wrong — don't override sizes ad-hoc.
+**H3 vs TILE_TITLE:** if the card stretches full container width with horizontal room (FAQ accordion, branch row), use H3. If it sits in a grid where multiple tiles share row width (≤180px each), use TILE_TITLE — otherwise H3 wraps mid-word and breaks layout. Confirmed empirically post-Phase 2c.
+
+**Rule:** Pick the tier by semantic role, not by visual desire. If the visual feels wrong AND the role is right, the spec has a gap — file it rather than override locally.
 
 ---
 

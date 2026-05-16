@@ -30,6 +30,17 @@ export const H3 = 'text-xl md:text-2xl font-semibold leading-snug';
 /** Label / eyebrow — Hero tagline, "OPERATING HOURS", category labels. Always uppercase. */
 export const H4 = 'text-xs md:text-sm font-bold tracking-[0.2em] uppercase leading-normal';
 
+/**
+ * Tile / card-label tier — for titles in dense n-up grids where H3 wraps awkwardly:
+ *   • QuickActions grid-mode link titles (3–6 up, ~120px tiles)
+ *   • ProductsBlockClient product names (auto-fit minmax 140px)
+ *   • LinkCard titles (consumed by QuickActions list mode)
+ *
+ * Visually between H3 and BODY: still semibold to read as a heading, but small
+ * enough to fit dense layouts without forcing text-wrap mid-word.
+ */
+export const TILE_TITLE = 'text-sm md:text-base font-semibold leading-tight';
+
 // ──────────────────────────────────────────────────────────────────────────────
 // Body text
 // ──────────────────────────────────────────────────────────────────────────────
