@@ -6,6 +6,8 @@ import { DaySchedule } from '@/lib/core/types';
 import { isBusinessOpen } from '@/lib/core/businessHours/utils';
 import { useTemplate } from '@/components/TemplateProvider';
 import { Clock } from 'lucide-react';
+import { getCardClasses, getGlassStyle, getHeadingColor, getMutedColor, getLabelColor } from '@/components/blocks/public/cardStyles';
+import { H4 } from '@/components/blocks/public/typography';
 
 interface OperatingHoursProps {
     data: BusinessHours;
@@ -47,11 +49,11 @@ export const MrbOperatingHours: React.FC<OperatingHoursProps> = ({ data, schedul
     const [isOpen, setIsOpen] = React.useState(false);
     const [isMounted, setIsMounted] = React.useState(false);
 
-    const isGlass = theme.decorations?.surfaceStyle === 'glass';
-    const surface = theme.colors.surfaceElevated || theme.colors.surface || '#1a1a1a';
-    const fg = theme.colors.foreground || '#ffffff';
-    const subtle = theme.colors.textSubtle || theme.colors.muted || `${fg}80`;
-    const border = theme.colors.border || `${fg}15`;
+    const cardStyle = theme.cardStyle;
+    const isGlass = cardStyle === 'glass';
+    const headingColor = getHeadingColor(cardStyle, theme);
+    const mutedColor = getMutedColor(cardStyle, theme);
+    const labelColor = getLabelColor(cardStyle, theme);
 
     React.useEffect(() => {
         setIsMounted(true);
@@ -66,32 +68,32 @@ export const MrbOperatingHours: React.FC<OperatingHoursProps> = ({ data, schedul
         { label: 'Sat – Sun', hours: data.satSun || '' },
     ];
 
+    // Status badge: semantic tokens — same defaults across all tenants.
+    const statusStyle: React.CSSProperties = isOpen
+        ? { backgroundColor: 'var(--theme-success-bg)', color: 'var(--theme-success)' }
+        : { backgroundColor: 'var(--theme-error-bg)', color: 'var(--theme-error)' };
+
     return (
         <section>
             <div
-                className="px-5 py-4"
+                className={`px-5 py-4 ${getCardClasses(cardStyle)}`}
                 style={{
-                    background: surface,
-                    backdropFilter: isGlass ? 'blur(12px)' : undefined,
-                    border: `1px solid ${border}`,
                     borderRadius: 'var(--theme-radius)',
+                    ...(isGlass ? getGlassStyle(theme.colors.surfaceElevated || theme.colors.surface) : {}),
                 }}
             >
                 {/* Header row */}
                 <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
-                        <Clock size={13} style={{ color: subtle }} />
-                        <h3 className="text-sm font-black uppercase tracking-wide" style={{ color: fg }}>
+                        <Clock size={13} style={{ color: labelColor }} />
+                        <h3 className={H4} style={{ color: headingColor }}>
                             {data.label}
                         </h3>
                     </div>
                     {statusText && (
                         <span
-                            className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border transition-opacity duration-300 ${isMounted ? 'opacity-100' : 'opacity-0'} ${
-                                isOpen
-                                    ? 'bg-green-500/10 text-green-400 border-green-500/20'
-                                    : 'bg-red-500/10 text-red-400 border-red-500/20'
-                            }`}
+                            className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full transition-opacity duration-300 ${isMounted ? 'opacity-100' : 'opacity-0'}`}
+                            style={statusStyle}
                         >
                             {statusText}
                         </span>
@@ -99,18 +101,24 @@ export const MrbOperatingHours: React.FC<OperatingHoursProps> = ({ data, schedul
                 </div>
 
                 {/* Hours table */}
-                <div className="space-y-1.5">
-                    {rows.map(({ label, hours }) => (
-                        <div key={label} className="flex items-baseline justify-between gap-4">
-                            <span className="text-xs" style={{ color: subtle }}>{label}</span>
-                            <span
-                                className="text-xs font-bold tabular-nums"
-                                style={{ color: hours === 'Closed' ? '#f87171' : fg }}
-                            >
-                                {hours}
-                            </span>
-                        </div>
-                    ))}
+                <div className="space-y-1">
+                    {rows.map(({ label, hours }) => {
+                        const isClosed = hours === 'Closed';
+                        return (
+                            <div key={label} className="flex items-baseline justify-between gap-4">
+                                <span className="text-xs font-medium leading-normal" style={{ color: mutedColor }}>{label}</span>
+                                <span
+                                    className="text-xs font-semibold leading-normal tabular-nums"
+                                    style={{
+                                        color: headingColor,
+                                        opacity: isClosed ? 0.5 : 1,
+                                    }}
+                                >
+                                    {hours}
+                                </span>
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
         </section>
