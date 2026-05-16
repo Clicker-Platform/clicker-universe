@@ -7,6 +7,8 @@ import { ProductDetailModal } from '@/components/catalog/ProductDetailModal';
 import { useSite } from '@/lib/site-context';
 
 import { useTemplate } from '@/components/TemplateProvider';
+import { getHeadingColor, getLabelColor } from './cardStyles';
+import { H4, BUTTON_TEXT } from './typography';
 
 interface ProductGalleryProps {
     products: Product[];
@@ -51,18 +53,13 @@ export const DefaultProductGalleryBlock: React.FC<ProductGalleryProps> = ({ prod
             }
             : {};
 
-    const textStyle = {
-        color: colors.foreground,
-        fontFamily: theme.fonts.heading
-    };
-
     return (
         <div className="mb-12">
             {/* Section Title */}
             {title && (
                 <div className={isGlass ? 'mb-6' : 'flex justify-center mb-6'}>
                     {isGlass ? (
-                        <h2 className="text-slate-400 text-xs font-bold uppercase tracking-[0.2em]">
+                        <h2 className={H4} style={{ color: getLabelColor(theme.cardStyle, theme) }}>
                             {title}
                         </h2>
                     ) : (
@@ -70,10 +67,7 @@ export const DefaultProductGalleryBlock: React.FC<ProductGalleryProps> = ({ prod
                             className={`px-8 py-3 transition-transform ${isClean ? 'shadow-sm border' : 'border-[3px] rotate-1 hover:rotate-0'}`}
                             style={titleContainerStyle}
                         >
-                            <h2
-                                className="font-extrabold uppercase tracking-wider text-base"
-                                style={textStyle}
-                            >
+                            <h2 className={H4} style={{ color: getHeadingColor(theme.cardStyle, theme) }}>
                                 {title}
                             </h2>
                         </div>
@@ -101,7 +95,7 @@ export const DefaultProductGalleryBlock: React.FC<ProductGalleryProps> = ({ prod
                 <div className="mt-8 flex justify-center">
                     <a
                         href={viewAllHref}
-                        className={`inline-flex items-center gap-2 px-8 py-3 font-bold transition-all hover:opacity-90 ${isGlass ? 'backdrop-blur-sm' : ''}`}
+                        className={`inline-flex items-center gap-2 px-8 py-3 ${BUTTON_TEXT} transition-all hover:opacity-90 ${isGlass ? 'backdrop-blur-sm' : ''}`}
                         style={{
                             backgroundColor: isClean
                                 ? 'transparent'
@@ -124,7 +118,6 @@ export const DefaultProductGalleryBlock: React.FC<ProductGalleryProps> = ({ prod
                                 : isClean
                                     ? '0 1px 3px 0 rgb(0 0 0 / 0.1)'
                                     : undefined,
-                            fontFamily: theme.fonts?.heading,
                         }}
                     >
                         View More ...
