@@ -6,7 +6,8 @@ import { useTemplate } from '@/components/TemplateProvider';
 import { DaySchedule } from '@/lib/core/types';
 import { isBusinessOpen } from '@/lib/core/businessHours/utils';
 import { Clock } from 'lucide-react';
-import { getCardClasses, getGlassStyle } from './cardStyles';
+import { getCardClasses, getGlassStyle, getLabelColor, getMutedColor, getHeadingColor } from './cardStyles';
+import { H4 } from './typography';
 
 interface OperatingHoursProps {
     data: BusinessHours;
@@ -67,10 +68,14 @@ export const DefaultOperatingHoursBlock: React.FC<OperatingHoursProps> = ({ data
         { label: 'Sat – Sun', hours: data.satSun || '' },
     ];
 
-    // Status badge: use theme primary/foreground; semantic colors only for open/closed status
+    // Status badge: semantic tokens — same defaults across all tenants.
     const statusStyle: React.CSSProperties = isOpen
-        ? { backgroundColor: 'rgba(34,197,94,0.15)', color: 'rgb(22,163,74)' }   // green-ish for "open"
-        : { backgroundColor: 'rgba(239,68,68,0.15)', color: 'rgb(220,38,38)' };   // red-ish for "closed"
+        ? { backgroundColor: 'var(--theme-success-bg)', color: 'var(--theme-success)' }
+        : { backgroundColor: 'var(--theme-error-bg)', color: 'var(--theme-error)' };
+
+    const labelColor = getLabelColor(cardStyle, theme);
+    const mutedColor = getMutedColor(cardStyle, theme);
+    const headingColor = getHeadingColor(cardStyle, theme);
 
     const cardClasses = `px-5 py-4 ${getCardClasses(cardStyle)} ${isBold ? 'transform -rotate-1' : ''}`;
     const cardInlineStyle: React.CSSProperties = {
@@ -85,14 +90,11 @@ export const DefaultOperatingHoursBlock: React.FC<OperatingHoursProps> = ({ data
                 <div className="flex items-center gap-2">
                     <Clock
                         size={14}
-                        style={{ color: isGlass ? 'rgba(255,255,255,0.6)' : colors.foreground, opacity: isClean ? 0.6 : 1 }}
+                        style={{ color: labelColor }}
                     />
                     <h3
-                        className="text-sm font-black uppercase tracking-wide"
-                        style={{
-                            color: isGlass ? 'rgba(255,255,255,0.95)' : colors.foreground,
-                            fontFamily: theme.fonts?.heading,
-                        }}
+                        className={H4}
+                        style={{ color: headingColor }}
                     >
                         {data.label}
                     </h3>
@@ -117,18 +119,15 @@ export const DefaultOperatingHoursBlock: React.FC<OperatingHoursProps> = ({ data
                     return (
                         <div key={label} className="flex items-baseline justify-between gap-4">
                             <span
-                                className="text-xs font-bold"
-                                style={{
-                                    color: isGlass ? 'rgba(255,255,255,0.6)' : colors.foreground,
-                                    opacity: isGlass ? 1 : 0.7,
-                                }}
+                                className="text-xs font-medium leading-normal"
+                                style={{ color: mutedColor }}
                             >
                                 {label}
                             </span>
                             <span
-                                className="text-xs font-bold tabular-nums"
+                                className="text-xs font-semibold leading-normal tabular-nums"
                                 style={{
-                                    color: isGlass ? 'rgba(255,255,255,0.95)' : colors.foreground,
+                                    color: headingColor,
                                     opacity: isClosed ? 0.5 : 1,
                                 }}
                             >
