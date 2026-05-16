@@ -60,7 +60,9 @@ const TITLE_SIZES = (d: DeviceView): Record<string, string> => ({
 
 // Non-size half of H1 — shared by all size tiers and applied uniformly,
 // removing the previous per-cardStyle font-weight branching (spec §9).
-const H1_BASE = 'font-extrabold leading-tight tracking-tight';
+// leading-[1.1] (tighter than spec's leading-tight=1.25) because Hero titles
+// at large sizes regularly wrap to 3-4 lines; 1.25 stacks too much gap.
+const H1_BASE = 'font-extrabold leading-[1.1] tracking-tight';
 
 interface CtaBtn { label?: string; url?: string; type?: string; formId?: string; pageId?: string; }
 
@@ -306,7 +308,7 @@ export const DefaultHeroBlock = ({ data, theme, isFirst = true, onInlineChange, 
     // ─── FULLBLEED ────────────────────────────────────────────────────────────
     if (variant === 'fullbleed') {
         return (
-            <section className="relative w-full h-[60vh] min-h-[400px] flex items-center justify-center overflow-hidden">
+            <section className="relative w-full min-h-[60vh] flex items-center justify-center overflow-hidden">
                 {/* Background layer */}
                 {bgMode === 'image' && hasImage ? (
                     <div className="absolute inset-0 z-0">

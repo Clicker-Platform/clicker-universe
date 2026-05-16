@@ -66,7 +66,8 @@ const TITLE_SIZES = (d: DeviceView): Record<string, string> => ({
 // Non-size half of H1, shared across all size tiers. Per spec §9, the
 // MRB-only tracking-tighter / leading-[0.95] are dropped in favor of the
 // canonical leading-tight / tracking-tight.
-const H1_BASE = 'font-extrabold leading-tight tracking-tight';
+// leading-[1.1] for the same reason as DefaultHeroBlock: Hero titles wrap.
+const H1_BASE = 'font-extrabold leading-[1.1] tracking-tight';
 
 interface CtaBtn { label?: string; url?: string; }
 
@@ -302,7 +303,7 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, isFirst = true,
 
     return (
         <div
-            className={`relative flex h-[560px] flex-col gap-6 justify-end ${dv(d, 'px-6', 'md:px-12')} pb-16 overflow-hidden ${
+            className={`relative flex min-h-[560px] flex-col gap-6 justify-end ${dv(d, 'px-6', 'md:px-12')} pb-16 overflow-hidden ${
                 fallbackAlign === 'center' ? 'items-center' : fallbackAlign === 'right' ? 'items-end' : 'items-start'
             } ${
                 isFullbleed
