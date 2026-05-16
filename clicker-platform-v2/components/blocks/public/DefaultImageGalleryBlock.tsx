@@ -106,8 +106,14 @@ export const DefaultImageGalleryBlock = ({ data, isFirst = false }: ImageGallery
         ? 'border border-white/10 hover:border-white/20'
         : 'border-[3px] border-theme-border shadow-sticker hover:shadow-none hover:translate-y-[2px] hover:translate-x-[2px]';
 
+    // Photo badge sits on top of user-uploaded photos at arbitrary luminance.
+    // White-on-overlay is the universal contrast solution — spec §3.1 allows
+    // contrast colors over user surfaces. Overlay color routed through token.
     const photoBadge = (
-        <div className="absolute bottom-3 right-3 bg-black/70 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 z-20 shadow-sm border border-white/10">
+        <div
+            className="absolute bottom-3 right-3 backdrop-blur-md text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 z-20 shadow-sm border border-white/10"
+            style={{ backgroundColor: 'var(--theme-overlay)', color: 'rgba(255,255,255,0.95)' }}
+        >
             <ImageIcon size={14} />
             <span>{images.length} Photos</span>
         </div>
