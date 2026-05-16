@@ -10,7 +10,7 @@ import { TemplateContext } from '@/components/TemplateProvider';
 import { useSite } from '@/lib/site-context';
 import { resolveNavHref } from '@/lib/resolveNavHref';
 import { getHeadingColor, getMutedColor, hexWithOpacity } from './cardStyles';
-import { H3, BODY_SM } from './typography';
+import { TILE_TITLE, BODY_SM } from './typography';
 
 interface LinkCardProps {
     item: LinkItem;
@@ -100,7 +100,7 @@ export const LinkCard: React.FC<LinkCardProps> = ({ item, siteId, tenantSlug, ca
                         <Icon size={24} strokeWidth={2} />
                     </div>
                     <div className="text-left">
-                        <h3 className={H3} style={{ color: fgColor }}>
+                        <h3 className={TILE_TITLE} style={{ color: fgColor }}>
                             {item.title}
                         </h3>
                         {item.subtitle && (

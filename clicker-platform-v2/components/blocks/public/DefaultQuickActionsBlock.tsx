@@ -12,7 +12,7 @@ import { getWhatsappUrl } from '@/components/common/WhatsappButton';
 import { resolveNavHref } from '@/lib/resolveNavHref';
 import { getContrastColor } from '@/lib/utils/color';
 import { getHeadingColor, getMutedColor, getLabelColor, hexWithOpacity } from './cardStyles';
-import { H3, H4 } from './typography';
+import { TILE_TITLE, H4 } from './typography';
 
 interface QuickActionsProps {
     links: LinkItem[];
@@ -140,7 +140,7 @@ export const DefaultQuickActionsBlock: React.FC<QuickActionsProps> = ({
                                 <div className="p-2.5 flex items-center justify-center" style={iconStyle(!!link.highlight)}>
                                     <Icon size={22} strokeWidth={2} />
                                 </div>
-                                <span className={H3} style={{ color: resolvedFg }}>
+                                <span className={TILE_TITLE} style={{ color: resolvedFg }}>
                                     {link.title}
                                 </span>
                                 {link.subtitle && (

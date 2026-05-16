@@ -6,7 +6,7 @@ import { Product } from '@/data/mockData';
 import { ProductDetailModal } from '@/components/catalog/ProductDetailModal';
 import { useTemplate } from '@/components/TemplateProvider';
 import { getCardClasses, getHeadingColor, getLabelColor, getMutedColor } from './cardStyles';
-import { H3, H4, BODY_SM } from './typography';
+import { TILE_TITLE, H4, BODY_SM } from './typography';
 
 // 1x1 gray SVG placeholder — shown while the real image downloads
 const BLUR_PLACEHOLDER =
@@ -82,7 +82,7 @@ function ProductTile({ product, onClick, priority, cardStyle }: {
                     </span>
                 )}
                 <h3
-                    className={`${H3} mb-1 group-hover:opacity-80 transition-opacity truncate`}
+                    className={`${TILE_TITLE} mb-1 group-hover:opacity-80 transition-opacity truncate`}
                     style={{ color: headingColor }}
                 >
                     {product.name || (product as any).title}
