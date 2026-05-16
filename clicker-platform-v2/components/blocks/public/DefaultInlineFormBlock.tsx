@@ -9,7 +9,8 @@ import { Form } from '@/data/mockData';
 import { useFormSubmit } from '@/lib/forms/useFormSubmit';
 import { FormFieldsRenderer } from '@/components/forms/FormFieldsRenderer';
 import { useTemplate } from '@/components/TemplateProvider';
-import { getCardClasses, getGlassStyle } from './cardStyles';
+import { getCardClasses, getGlassStyle, getHeadingColor, getMutedColor } from './cardStyles';
+import { H2, H3, BODY, BODY_SM, BUTTON_TEXT } from './typography';
 
 interface Props {
     data: {
@@ -34,7 +35,8 @@ export function DefaultInlineFormBlock({ data, siteId }: Props) {
     const isBold = !isClean && !isGlass;
 
     const colors = theme?.colors ?? {};
-    const fonts = theme?.fonts ?? {};
+    const headingColor = getHeadingColor(theme?.cardStyle, theme);
+    const mutedColor = getMutedColor(theme?.cardStyle, theme);
 
     // Contrast color for text/icons placed on top of theme.primary.
     // Falls back to accent, then background, then white.
@@ -100,8 +102,8 @@ export function DefaultInlineFormBlock({ data, siteId }: Props) {
                     <CheckCircle size={28} style={{ color: primaryContrastColor }} />
                 </div>
                 <p
-                    className="text-lg font-bold"
-                    style={{ color: 'var(--theme-foreground)', fontFamily: fonts.heading }}
+                    className={H3}
+                    style={{ color: headingColor }}
                 >
                     {data.successMessage || "Thank you! We'll be in touch."}
                 </p>
@@ -132,18 +134,12 @@ export function DefaultInlineFormBlock({ data, siteId }: Props) {
         <section className="w-full px-4 py-10 max-w-2xl mx-auto">
             <div className={cardClasses} style={cardStyle}>
                 {data.heading && (
-                    <h2
-                        className={`mb-1 ${isBold ? 'text-3xl font-black uppercase tracking-tight' : 'text-2xl font-bold'}`}
-                        style={{ color: 'var(--theme-foreground)', fontFamily: fonts.heading }}
-                    >
+                    <h2 className={`${H2} mb-1`} style={{ color: headingColor }}>
                         {data.heading}
                     </h2>
                 )}
                 {data.subheading && (
-                    <p
-                        className="text-sm font-medium mb-6"
-                        style={{ color: 'var(--theme-foreground)', opacity: 0.6, fontFamily: fonts.body }}
-                    >
+                    <p className={`${BODY} mb-6`} style={{ color: mutedColor }}>
                         {data.subheading}
                     </p>
                 )}
@@ -155,10 +151,7 @@ export function DefaultInlineFormBlock({ data, siteId }: Props) {
                         <div className="h-12 bg-gray-200 dark:bg-neutral-800 rounded" />
                     </div>
                 ) : !form ? (
-                    <p
-                        className="text-sm font-medium italic"
-                        style={{ color: 'var(--theme-foreground)', opacity: 0.5, fontFamily: fonts.body }}
-                    >
+                    <p className={`${BODY_SM} italic`} style={{ color: mutedColor }}>
                         Select a form in the block settings.
                     </p>
                 ) : (
@@ -172,14 +165,14 @@ export function DefaultInlineFormBlock({ data, siteId }: Props) {
                         />
 
                         {error && (
-                            <p className="text-sm text-red-500 font-medium">{error}</p>
+                            <p className={BODY_SM} style={{ color: 'var(--theme-error)' }}>{error}</p>
                         )}
 
                         <button
                             type="submit"
                             disabled={submitting}
-                            className={`w-full py-4 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${hoverClass} ${
-                                isBold ? 'font-black uppercase tracking-wider text-sm border-[3px]' : 'font-bold'
+                            className={`w-full py-4 ${BUTTON_TEXT} transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${hoverClass} ${
+                                isBold ? 'border-[3px]' : ''
                             }`}
                             style={{
                                 backgroundColor: isBold ? colors.foreground : colors.primary,
@@ -189,7 +182,6 @@ export function DefaultInlineFormBlock({ data, siteId }: Props) {
                                 boxShadow: isBold
                                     ? `4px 4px 0px 0px ${colors.border ?? colors.foreground}`
                                     : '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-                                fontFamily: fonts.heading,
                             }}
                         >
                             {submitting && <Loader size={20} className="animate-spin" />}
