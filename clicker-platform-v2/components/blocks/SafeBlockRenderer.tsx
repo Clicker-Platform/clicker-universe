@@ -27,7 +27,14 @@ class ErrorBoundary extends Component<Props, State> {
     public render() {
         if (this.state.hasError) {
             return (
-                <div className="p-4 border-2 border-dashed border-red-200 rounded-xl bg-red-50 text-red-600 text-sm font-medium text-center my-4">
+                <div
+                    className="p-4 border-2 border-dashed rounded-xl text-sm font-medium text-center my-4"
+                    style={{
+                        backgroundColor: 'var(--theme-error-bg)',
+                        color: 'var(--theme-error)',
+                        borderColor: 'var(--theme-error)',
+                    }}
+                >
                     Something went wrong with this block.
                 </div>
             );
