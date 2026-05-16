@@ -47,22 +47,9 @@ export function GridForm({ data, onChange, templateId, onOpenSlideOver }: GridFo
     [cells, cols, rows]
   );
 
-  const { setActiveContainerSlotId, selectedBlockId, activeContainerSlotId } = useEditor();
+  const { selectedBlockId } = useEditor();
 
-  // Initialize active cell from context if a slot is already active for this grid
-  // (e.g., user clicked an empty cell on canvas before the form mounted).
-  const initialActiveCellId = (() => {
-    if (!activeContainerSlotId) return null;
-    return cells.some(c => c.id === activeContainerSlotId) ? activeContainerSlotId : null;
-  })();
-  const [activeCellId, setActiveCellId] = useState<string | null>(initialActiveCellId);
-
-  // Mirror the active cell's id to EditorContext so DefaultGridBlock can highlight
-  // it on the canvas. Cleared on unmount/blur.
-  useEffect(() => {
-    setActiveContainerSlotId(activeCellId);
-    return () => setActiveContainerSlotId(null);
-  }, [activeCellId, setActiveContainerSlotId]);
+  const [activeCellId, setActiveCellId] = useState<string | null>(null);
   const [drilledCellId, setDrilledCellId] = useState<string | null>(null);
 
   // If the user clicked a nested block on canvas, selectedBlockId becomes that
@@ -75,16 +62,6 @@ export function GridForm({ data, onChange, templateId, onOpenSlideOver }: GridFo
       setDrilledCellId(cell.id);
     }
   }, [selectedBlockId, cells]);
-
-  // If the user clicked an empty cell on canvas while this form was already mounted,
-  // sync activeCellId to that slot.
-  useEffect(() => {
-    if (!activeContainerSlotId) return;
-    if (cells.some(c => c.id === activeContainerSlotId) && activeContainerSlotId !== activeCellId) {
-      setActiveCellId(activeContainerSlotId);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeContainerSlotId, cells]);
 
   // Resolve the active cell from id; fall back to first visible cell if missing/stale.
   const activeCell = useMemo(() => {

@@ -1,12 +1,10 @@
 'use client';
 
-import { useContext } from 'react';
 import { BlockRenderer } from '../BlockRenderer';
 import { useDeviceView } from '@/components/DeviceViewContext';
 import type { GridCell } from '@/components/admin/blocks/forms/container/types';
 import { EmptyContainerPlaceholder } from '@/components/admin/blocks/forms/container/EmptyContainerPlaceholder';
 import { SelectableBlock } from '@/components/admin/blocks/SelectableBlock';
-import { EditorContext } from '@/components/admin/blocks/EditorContext';
 
 const MAX_WIDTH_PX: Record<string, string | undefined> = {
   sm: '640px',
@@ -26,9 +24,6 @@ interface DefaultGridBlockProps {
 
 export function DefaultGridBlock({ data, previewMode, showGuides, activeContainerSlotId, passthroughProps = {} }: DefaultGridBlockProps) {
   const deviceView = useDeviceView();
-  // Context-safe: returns undefined on public site. Used to switch active cell tab
-  // on empty-cell clicks (admin canvas only).
-  const editor = useContext(EditorContext);
   const cells: GridCell[] = Array.isArray(data?.cells) ? data.cells : [];
   const {
     cols = 3,
@@ -102,22 +97,10 @@ export function DefaultGridBlock({ data, previewMode, showGuides, activeContaine
             : showCellGuides
               ? 'outline outline-1 outline-dashed outline-blue-300/60 min-h-[40px]'
               : '';
-          // In admin canvas, clicking the cell's structural area (not the nested
-          // block) switches the active tab to this cell. The nested block's own
-          // SelectableBlock catches clicks on the block content and stops propagation.
-          const handleCellClick = editor && previewMode
-            ? (e: React.MouseEvent) => {
-                if (e.target !== e.currentTarget) return; // nested block handled it
-                e.stopPropagation();
-                editor.setActiveContainerSlotId(cell.id);
-                editor.setSelectedBlockId(null);
-              }
-            : undefined;
           return (
           <div
             key={cell.id}
-            onClick={handleCellClick}
-            className={`relative transition-[outline] duration-150 ${outlineClass} ${editor && previewMode ? 'cursor-pointer' : ''}`}
+            className={`relative transition-[outline] duration-150 ${outlineClass}`}
           >
             {cell.block ? (
               <SelectableBlock

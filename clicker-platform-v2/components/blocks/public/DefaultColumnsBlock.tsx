@@ -1,12 +1,10 @@
 'use client';
 
-import { useContext } from 'react';
 import { BlockRenderer } from '../BlockRenderer';
 import { useDeviceView } from '@/components/DeviceViewContext';
 import type { ColumnSlot } from '@/components/admin/blocks/forms/container/types';
 import { EmptyContainerPlaceholder } from '@/components/admin/blocks/forms/container/EmptyContainerPlaceholder';
 import { SelectableBlock } from '@/components/admin/blocks/SelectableBlock';
-import { EditorContext } from '@/components/admin/blocks/EditorContext';
 
 const MAX_WIDTH_PX: Record<string, string | undefined> = {
   sm: '640px',
@@ -26,9 +24,6 @@ interface DefaultColumnsBlockProps {
 
 export function DefaultColumnsBlock({ data, previewMode, showGuides, activeContainerSlotId, passthroughProps = {} }: DefaultColumnsBlockProps) {
   const deviceView = useDeviceView();
-  // Context-safe: returns undefined on public site where no EditorProvider is mounted.
-  // Used to switch active column tab on slot-area clicks (admin canvas only).
-  const editor = useContext(EditorContext);
   const columns: ColumnSlot[] = Array.isArray(data?.columns) ? data.columns : [];
   const {
     gap = 16,
@@ -95,30 +90,15 @@ export function DefaultColumnsBlock({ data, previewMode, showGuides, activeConta
             : showColumnGuides
               ? 'outline outline-1 outline-dashed outline-blue-300/60'
               : '';
-          // In admin canvas (editor available + previewMode), clicking the column's
-          // structural area (not a nested block) switches the active tab to this column.
-          // Stops propagation so the page-root SelectableBlock doesn't catch it and
-          // re-select the entire Columns container. Clears selectedBlockId so the form
-          // panel shows the Columns properties (with this column's tab active), not a
-          // drilled-in child form.
-          const handleColumnClick = editor && previewMode
-            ? (e: React.MouseEvent) => {
-                if (e.target !== e.currentTarget) return; // a nested block handled it
-                e.stopPropagation();
-                editor.setActiveContainerSlotId(col.id);
-                editor.setSelectedBlockId(null);
-              }
-            : undefined;
           return (
           <div
             key={col.id}
-            onClick={handleColumnClick}
             style={{
               flex: `0 0 ${flexBasis}`,
               minWidth: 0,
               boxSizing: 'border-box',
             }}
-            className={`flex flex-col transition-[outline] duration-150 ${outlineClass} ${editor && previewMode ? 'cursor-pointer' : ''}`}
+            className={`flex flex-col transition-[outline] duration-150 ${outlineClass}`}
           >
             {col.blocks.map(block => (
               <SelectableBlock

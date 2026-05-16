@@ -7,7 +7,7 @@ import { useSite } from '@/lib/site-context';
 import { TemplateProvider } from '@/components/TemplateProvider';
 import { BlockRenderer } from '@/components/blocks/BlockRenderer';
 import { SelectableBlock } from './SelectableBlock';
-import { findBlockPath, findContainerBySlotId } from './forms/container/types';
+import { findBlockPath } from './forms/container/types';
 import { useEffect, useRef, useState, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { getTemplate } from '@/lib/templates/registry';
@@ -47,7 +47,7 @@ export function CanvasStudio({
     pageSlug?: string;
     pageTitle?: string;
 }) {
-    const { blocks, setBlocks, selectedBlockId, setSelectedBlockId, updateBlockData, deviceView, showGuides, activeContainerSlotId, setActiveContainerSlotId } = useEditor();
+    const { blocks, setBlocks, selectedBlockId, setSelectedBlockId, updateBlockData, deviceView, showGuides } = useEditor();
     const { tenantSlug, siteId } = useSite();
     const {
         activePageId,
@@ -344,10 +344,7 @@ export function CanvasStudio({
 
                             <div
                                 className="w-full flex-1 relative overflow-x-clip"
-                                onClick={() => {
-                                    setSelectedBlockId?.(null);
-                                    setActiveContainerSlotId(null);
-                                }}
+                                onClick={() => setSelectedBlockId?.(null)}
                             >
                                 <div className="relative">
                                     {/* Base Background Fallback */}
@@ -395,7 +392,6 @@ export function CanvasStudio({
                                                         previewMode={true}
                                                         showGuides={showGuides}
                                                         isHydrating={isHydrating}
-                                                        activeContainerSlotId={activeContainerSlotId}
                                                         tenantSlug={tenantSlug || ''}
                                                         links={hydratedData.links || []}
                                                         products={hydratedData.products || []}
@@ -648,50 +644,32 @@ export function CanvasStudio({
                 ) : selectedBlockId === 'chrome:bottomnav' ? (
                     <ChromeBottomNavPanel />
                 ) : null
-            ) : (selectedBlockId || activeContainerSlotId) ? (
+            ) : selectedBlockId ? (
                 (() => {
-                    // 1. Top-level block selected — render its form directly.
-                    if (selectedBlockId) {
-                        const topLevel = blocks.find(b => b.id === selectedBlockId);
-                        if (topLevel) {
-                            return (
-                                <BlockFormRenderer
-                                    block={topLevel}
-                                    onChange={updateBlockData}
-                                    templateId={templateId}
-                                    onOpenSlideOver={toggleSlideOverPanel}
-                                />
-                            );
-                        }
-                        // 2. Nested block selected — render its parent container's form.
-                        // The container form auto-drills into the nested block via selectedBlockId.
-                        const path = findBlockPath(blocks, selectedBlockId);
-                        if (path && (path.kind === 'columns-child' || path.kind === 'grid-cell')) {
-                            return (
-                                <BlockFormRenderer
-                                    block={path.parentBlock}
-                                    onChange={updateBlockData}
-                                    templateId={templateId}
-                                    onOpenSlideOver={toggleSlideOverPanel}
-                                />
-                            );
-                        }
+                    // Top-level block selected — render its form directly.
+                    const topLevel = blocks.find(b => b.id === selectedBlockId);
+                    if (topLevel) {
+                        return (
+                            <BlockFormRenderer
+                                block={topLevel}
+                                onChange={updateBlockData}
+                                templateId={templateId}
+                                onOpenSlideOver={toggleSlideOverPanel}
+                            />
+                        );
                     }
-                    // 3. No block selected, but a container slot is active — render that
-                    // container's form. The form uses activeContainerSlotId to highlight
-                    // the right tab; no drill-down because no block is selected.
-                    if (activeContainerSlotId) {
-                        const container = findContainerBySlotId(blocks, activeContainerSlotId);
-                        if (container) {
-                            return (
-                                <BlockFormRenderer
-                                    block={container}
-                                    onChange={updateBlockData}
-                                    templateId={templateId}
-                                    onOpenSlideOver={toggleSlideOverPanel}
-                                />
-                            );
-                        }
+                    // Nested block selected — render its parent container's form.
+                    // The container form auto-drills into the nested block via selectedBlockId.
+                    const path = findBlockPath(blocks, selectedBlockId);
+                    if (path && (path.kind === 'columns-child' || path.kind === 'grid-cell')) {
+                        return (
+                            <BlockFormRenderer
+                                block={path.parentBlock}
+                                onChange={updateBlockData}
+                                templateId={templateId}
+                                onOpenSlideOver={toggleSlideOverPanel}
+                            />
+                        );
                     }
                     return (
                         <div className="flex flex-col items-center justify-center h-full text-center text-neutral-400 dark:text-neutral-500 gap-3">
