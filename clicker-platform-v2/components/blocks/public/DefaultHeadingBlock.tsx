@@ -1,6 +1,7 @@
 'use client';
 
 import { EditableText } from '@/components/blocks/shared/EditablePrimitives';
+import { H1, H2, H3, BODY } from './typography';
 
 const ALIGN_CLASS = {
     left: 'text-left',
@@ -8,11 +9,12 @@ const ALIGN_CLASS = {
     right: 'text-right',
 } as const;
 
+// xl/lg/md map to H1/H2/H3 tiers. 'sm' kept for backwards compat → renders as H3.
 const SIZE_CONFIG = {
-    xl: { tag: 'h1' as const, className: 'text-4xl md:text-5xl' },
-    lg: { tag: 'h2' as const, className: 'text-3xl md:text-4xl' },
-    md: { tag: 'h3' as const, className: 'text-2xl md:text-3xl' },
-    sm: { tag: 'h4' as const, className: 'text-xl md:text-2xl' },
+    xl: { tag: 'h1' as const, className: H1 },
+    lg: { tag: 'h2' as const, className: H2 },
+    md: { tag: 'h3' as const, className: H3 },
+    sm: { tag: 'h3' as const, className: H3 },
 };
 
 const VERTICAL_SPACING = {
@@ -54,7 +56,7 @@ export function DefaultHeadingBlock({ data, onInlineChange, onFieldFocus, onFiel
                 onInlineChange={onInlineChange}
                 onFieldFocus={onFieldFocus}
                 onFieldBlur={onFieldBlur}
-                className={`${sizeClass} ${headingAlignClass} font-bold tracking-tight m-0`}
+                className={`${sizeClass} ${headingAlignClass} m-0`}
                 style={{ color: 'var(--theme-foreground)' }}
             />
             {(hasSubheading || onInlineChange) && (
@@ -66,7 +68,7 @@ export function DefaultHeadingBlock({ data, onInlineChange, onFieldFocus, onFiel
                     onInlineChange={onInlineChange}
                     onFieldFocus={onFieldFocus}
                     onFieldBlur={onFieldBlur}
-                    className={`text-base font-medium mt-2 opacity-65 ${subheadingAlignClass} m-0`}
+                    className={`${BODY} mt-2 opacity-65 ${subheadingAlignClass} m-0`}
                     style={{ color: 'var(--theme-foreground)' }}
                 />
             )}
