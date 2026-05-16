@@ -3,7 +3,7 @@
 import React, { useMemo } from 'react';
 import { MapPin, ExternalLink } from 'lucide-react';
 import { useTemplate } from '@/components/TemplateProvider';
-import { getCardClasses, getTextColor } from './cardStyles';
+import { getCardClasses, getBodyColor, getAccentColor } from './cardStyles';
 
 interface MapBlockProps {
     data: {
@@ -18,6 +18,8 @@ const DefaultMapBlockInner = ({ data }: MapBlockProps) => {
     const isGlass = cardStyle === 'glass';
     const variant = data?.layoutVariant || 'card-with-address';
     const iframeFilter = isGlass ? 'invert(90%) hue-rotate(180deg)' : undefined;
+    const bodyColor = getBodyColor(cardStyle, theme);
+    const accentColor = getAccentColor(theme);
 
     if (!data.address) return null;
 
@@ -46,13 +48,14 @@ const DefaultMapBlockInner = ({ data }: MapBlockProps) => {
                     />
                 </div>
                 <div className={`absolute bottom-0 left-0 right-0 p-4 flex items-center gap-3 ${isGlass ? 'bg-black/50 backdrop-blur-md' : 'bg-white/90 backdrop-blur-sm border-t border-gray-200'}`}>
-                    <MapPin size={18} className="text-[var(--theme-primary)] shrink-0" />
-                    <span className={`text-sm font-medium line-clamp-1 flex-1 ${getTextColor(cardStyle)}`}>{data.address}</span>
+                    <MapPin size={18} className="shrink-0" style={{ color: accentColor }} />
+                    <span className="text-sm font-medium leading-normal line-clamp-1 flex-1" style={{ color: bodyColor }}>{data.address}</span>
                     <a
                         href={googleMapsLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="shrink-0 flex items-center gap-1 text-xs font-bold text-[var(--theme-primary)] hover:opacity-80 transition-opacity"
+                        className="shrink-0 flex items-center gap-1 text-xs font-bold hover:opacity-80 transition-opacity"
+                        style={{ color: accentColor }}
                     >
                         Open <ExternalLink size={13} />
                     </a>
@@ -68,17 +71,24 @@ const DefaultMapBlockInner = ({ data }: MapBlockProps) => {
             style={{ borderRadius: 'var(--theme-radius)' }}
         >
             <div className={`p-4 border-b flex items-center gap-2 ${isGlass ? 'border-white/10' : 'border-gray-100'}`}>
-                <div className={`p-2 rounded-full ${isGlass ? 'bg-white/10 text-theme-primary' : 'bg-brand-light/10 text-brand-dark'}`}>
+                <div
+                    className="p-2 rounded-full"
+                    style={{
+                        backgroundColor: isGlass ? 'rgba(255,255,255,0.10)' : `${accentColor}1a`,
+                        color: accentColor,
+                    }}
+                >
                     <MapPin size={20} />
                 </div>
-                <div className={`font-medium line-clamp-1 flex-1 ${getTextColor(cardStyle)}`}>
+                <div className="font-medium leading-normal line-clamp-1 flex-1" style={{ color: bodyColor }}>
                     {data.address}
                 </div>
                 <a
                     href={googleMapsLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="shrink-0 flex items-center gap-1 text-xs font-semibold text-[var(--theme-primary)] hover:opacity-80 transition-opacity"
+                    className="shrink-0 flex items-center gap-1 text-xs font-semibold hover:opacity-80 transition-opacity"
+                    style={{ color: accentColor }}
                 >
                     Directions <ExternalLink size={13} />
                 </a>
