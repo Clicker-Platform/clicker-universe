@@ -15,14 +15,20 @@
 /**
  * Default prose styling — theme-foreground text, theme-primary links,
  * 1.65 line-height optimized for long-form reading. Use on light/clean cardStyles.
+ *
+ * Base size: 15px mobile → 18px desktop, with reading-optimized leading.
  */
 export const proseClass = [
     'prose prose-neutral max-w-none',
-    'prose-headings:font-heading prose-headings:text-[var(--theme-foreground)]',
-    'prose-p:font-body prose-p:text-[var(--theme-foreground)] prose-p:leading-[1.65]',
+    'text-[15px] leading-[1.65] sm:text-[16px] md:text-[18px] md:leading-[1.75]',
+    'prose-headings:text-[var(--theme-foreground)]',
+    'prose-headings:mt-8 prose-headings:mb-4',
+    'prose-p:text-[var(--theme-foreground)] prose-p:leading-[1.65] prose-p:my-3',
     'prose-a:text-[var(--theme-primary)] prose-a:no-underline hover:prose-a:underline',
     'prose-strong:text-[var(--theme-foreground)] prose-strong:font-semibold',
-    'prose-li:text-[var(--theme-foreground)] prose-li:leading-[1.65]',
+    'prose-ul:text-[var(--theme-foreground)] prose-ol:text-[var(--theme-foreground)]',
+    'prose-ul:my-4 prose-ol:my-4 prose-li:my-1.5 prose-li:leading-snug',
+    'prose-li:text-[var(--theme-foreground)]',
     'prose-blockquote:text-[var(--theme-foreground)]/80 prose-blockquote:border-l-[var(--theme-primary)]',
 ].join(' ');
 
@@ -32,11 +38,15 @@ export const proseClass = [
  */
 export const proseGlassClass = [
     'prose prose-invert max-w-none',
-    'prose-headings:font-heading prose-headings:text-white',
-    'prose-p:font-body prose-p:text-white/85 prose-p:leading-[1.65]',
+    'text-[15px] leading-[1.65] sm:text-[16px] md:text-[18px] md:leading-[1.75]',
+    'prose-headings:text-white',
+    'prose-headings:mt-8 prose-headings:mb-4',
+    'prose-p:text-white/85 prose-p:leading-[1.65] prose-p:my-3',
     'prose-a:text-[var(--theme-primary)] prose-a:no-underline hover:prose-a:underline',
     'prose-strong:text-white prose-strong:font-semibold',
-    'prose-li:text-white/85 prose-li:leading-[1.65]',
+    'prose-ul:text-white/85 prose-ol:text-white/85',
+    'prose-ul:my-4 prose-ol:my-4 prose-li:my-1.5 prose-li:leading-snug',
+    'prose-li:text-white/85',
     'prose-blockquote:text-white/70 prose-blockquote:border-l-[var(--theme-primary)]',
 ].join(' ');
 
