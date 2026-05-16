@@ -139,8 +139,8 @@ export const BlockFormRenderer = memo(({ block, onChange, templateId = 'classic'
 
         case 'heading': return <HeadingForm data={block.data} onChange={handleDataChange} />;
         case 'feature_cards': return <FeatureCardsForm data={block.data} onChange={handleDataChange} />;
-        case 'columns': return <ColumnsForm data={block.data} onChange={handleDataChange} templateId={templateId} onOpenSlideOver={onOpenSlideOver} />;
-        case 'grid': return <GridForm data={block.data} onChange={handleDataChange} templateId={templateId} onOpenSlideOver={onOpenSlideOver} />;
+        case 'columns': return <ColumnsForm data={block.data} containerBlockId={block.id} onChange={handleDataChange} templateId={templateId} onOpenSlideOver={onOpenSlideOver} />;
+        case 'grid': return <GridForm data={block.data} containerBlockId={block.id} onChange={handleDataChange} templateId={templateId} onOpenSlideOver={onOpenSlideOver} />;
 
         case 'quick_actions':
             return <QuickActionsBlockForm data={block.data} onChange={handleDataChange} onOpenLinks={onOpenSlideOver ? () => onOpenSlideOver('links') : undefined} />;

@@ -25,40 +25,66 @@ function rebalance(cols: ColumnSlot[]): ColumnSlot[] {
 
 interface ColumnsFormProps {
   data: any;
+  /** The parent container block's id — needed to write proper `kind: 'slots'` selection. */
+  containerBlockId: string;
   onChange: (data: any) => void;
   templateId?: string;
   onOpenSlideOver?: (panel: 'links' | 'forms' | 'products' | 'siteinfo' | 'branding') => void;
 }
 
-export function ColumnsForm({ data, onChange, templateId, onOpenSlideOver }: ColumnsFormProps) {
+export function ColumnsForm({ data, containerBlockId, onChange, templateId, onOpenSlideOver }: ColumnsFormProps) {
   const safeData = data || {};
   const columns: ColumnSlot[] = useMemo(
     () => (Array.isArray(safeData.columns) ? safeData.columns : []),
     [safeData.columns]
   );
 
-  const { selection } = useEditor();
-  // Selected nested block id, or null. Used to auto-drill when the user clicks
-  // a nested block on canvas.
-  const selectedBlockId = selection.kind === 'blocks' && selection.ids.length === 1 ? selection.ids[0] : null;
+  const { selection, setSelection } = useEditor();
 
-  const [activeIdx, setActiveIdx] = useState(0);
-  const [drilledBlockId, setDrilledBlockId] = useState<string | null>(null);
-
-  const safeActiveIdx = Math.min(activeIdx, Math.max(0, columns.length - 1));
-
-  // If the user clicked a nested block on canvas, selectedBlockId becomes that
-  // child's id. Auto-drill into it and switch the active tab to its column.
-  useEffect(() => {
-    if (!selectedBlockId) return;
-    for (let ci = 0; ci < columns.length; ci++) {
-      if (columns[ci].blocks.some(b => b.id === selectedBlockId)) {
-        setActiveIdx(ci);
-        setDrilledBlockId(selectedBlockId);
-        return;
+  // ── Active column (derived from selection — single source of truth) ──
+  // Active column = the slot in `selection` matching this container, OR the
+  // column containing the currently selected nested block, OR the first column
+  // as a final fallback. No local state, no useEffect, no sync loop.
+  const safeActiveIdx = useMemo<number>(() => {
+    // Case 1: a slot in this container is selected → use it.
+    if (selection.kind === 'slots' && selection.containerId === containerBlockId && selection.ids.length === 1) {
+      const idx = columns.findIndex(c => c.id === selection.ids[0]);
+      if (idx >= 0) return Math.min(idx, Math.max(0, columns.length - 1));
+    }
+    // Case 2: a nested block in this container is selected → use its column.
+    if (selection.kind === 'blocks' && selection.ids.length === 1) {
+      const blockId = selection.ids[0];
+      for (let ci = 0; ci < columns.length; ci++) {
+        if (columns[ci].blocks.some(b => b.id === blockId)) return ci;
       }
     }
-  }, [selectedBlockId, columns]);
+    // Fallback.
+    return 0;
+  }, [selection, columns, containerBlockId]);
+
+  const setActiveIdx = (idx: number) => {
+    const col = columns[idx];
+    if (!col) return;
+    setSelection({ kind: 'slots', containerId: containerBlockId, ids: [col.id] });
+  };
+
+  // ── Drilled-into block (form-internal navigation, derived from selection) ──
+  // When the user clicks a nested block on canvas, selection.kind === 'blocks'
+  // and we drill into that block. When they click "← Back to Columns",
+  // setDrilledBlockId(null) writes a slot selection so the canvas highlight +
+  // form tab follow the user's intent.
+  const drilledBlockId = (
+    selection.kind === 'blocks' && selection.ids.length === 1
+      ? (() => {
+          const blockId = selection.ids[0];
+          // Verify it's actually a nested block in this container.
+          for (const col of columns) {
+            if (col.blocks.some(b => b.id === blockId)) return blockId;
+          }
+          return null;
+        })()
+      : null
+  );
 
   const drilledLocation = useMemo(() => {
     if (!drilledBlockId) return null;
@@ -69,9 +95,20 @@ export function ColumnsForm({ data, onChange, templateId, onOpenSlideOver }: Col
     return null;
   }, [drilledBlockId, columns]);
 
-  if (drilledBlockId && !drilledLocation) {
-    setDrilledBlockId(null);
-  }
+  /**
+   * Set or clear the drilled-into block. Writes to context selection.
+   * id !== null → select that nested block.
+   * id === null → exit drill: select the column slot we were inside.
+   */
+  const setDrilledBlockId = (id: string | null) => {
+    if (id === null) {
+      const col = columns[safeActiveIdx];
+      if (col) setSelection({ kind: 'slots', containerId: containerBlockId, ids: [col.id] });
+      else setSelection({ kind: 'none' });
+    } else {
+      setSelection({ kind: 'blocks', ids: [id] });
+    }
+  };
 
   const updateField = (field: string, value: any) => {
     onChange({ ...safeData, [field]: value });

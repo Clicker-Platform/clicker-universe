@@ -136,10 +136,14 @@ export function CanvasStudio({
         setLeftPanel(null);
     };
 
-    // Desktop: sync activePanel with block selection
+    // True when the form panel (block / chrome / slot) should be shown instead
+    // of the page-level Title/Slug panel.
+    const hasSelectionForForm = selection.kind !== 'none';
+
+    // Desktop: sync activePanel with selection.
     useEffect(() => {
         if (isMobile) return;
-        if (selectedBlockId) {
+        if (hasSelectionForForm) {
             setActivePanel(null);
             setRightPanelOpen(true);
         } else if (activePageId === null) {
@@ -150,7 +154,7 @@ export function CanvasStudio({
         }
         // Clear inline field toolbar when selection changes
         setInlineFocus(null);
-    }, [isMobile, selectedBlockId, activePageId]);
+    }, [isMobile, hasSelectionForForm, activePageId]);
 
     // Calculate active background config
     const activeBackgroundConfig = useMemo(() => {
@@ -160,21 +164,19 @@ export function CanvasStudio({
         return globalSettings?.globalBackground;
     }, [formData.background, globalSettings?.globalBackground]);
 
-    // Auto-open props sheet on mobile when a block is selected/deselected
+    // Auto-open props sheet on mobile when a block or slot is selected.
     useEffect(() => {
         if (!isMobile) return;
-        if (selectedBlockId) {
-            // Block selected — open props sheet and clear page/seo panel so block form shows
+        if (hasSelectionForForm) {
             setMobileSheet('props');
             setActivePanel(null);
         } else {
-            // Nothing selected — if props sheet is open, show Title & Slug by default
             setMobileSheet(prev => {
                 if (prev === 'props') setActivePanel('page');
                 return prev;
             });
         }
-    }, [isMobile, selectedBlockId]);
+    }, [isMobile, hasSelectionForForm]);
 
     // Scroll canvas to selected block
     useEffect(() => {
@@ -667,7 +669,7 @@ export function CanvasStudio({
                         );
                     }
                     // Nested block selected — render its parent container's form.
-                    // The container form auto-drills into the nested block via selectedBlockId.
+                    // The container form derives drill-down state from `selection`.
                     const path = findBlockPath(blocks, blockId);
                     if (path && (path.kind === 'columns-child' || path.kind === 'grid-cell')) {
                         return (
@@ -683,6 +685,29 @@ export function CanvasStudio({
                         <div className="flex flex-col items-center justify-center h-full text-center text-neutral-400 dark:text-neutral-500 gap-3">
                             <Box size={32} className="opacity-20" />
                             <p className="text-sm">Block not found</p>
+                        </div>
+                    );
+                })()
+            ) : selection.kind === 'slots' && selection.containerId ? (
+                // Empty container slot selected — render the parent container's form.
+                // The container form (ColumnsForm / GridForm) reads `selection` to
+                // pick the active tab and show the slot's properties / picker.
+                (() => {
+                    const container = blocks.find(b => b.id === selection.containerId);
+                    if (container) {
+                        return (
+                            <BlockFormRenderer
+                                block={container}
+                                onChange={updateBlockData}
+                                templateId={templateId}
+                                onOpenSlideOver={toggleSlideOverPanel}
+                            />
+                        );
+                    }
+                    return (
+                        <div className="flex flex-col items-center justify-center h-full text-center text-neutral-400 dark:text-neutral-500 gap-3">
+                            <Box size={32} className="opacity-20" />
+                            <p className="text-sm">Container not found</p>
                         </div>
                     );
                 })()

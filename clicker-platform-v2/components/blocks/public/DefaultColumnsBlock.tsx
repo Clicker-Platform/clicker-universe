@@ -1,10 +1,12 @@
 'use client';
 
+import { useContext } from 'react';
 import { BlockRenderer } from '../BlockRenderer';
 import { useDeviceView } from '@/components/DeviceViewContext';
 import type { ColumnSlot } from '@/components/admin/blocks/forms/container/types';
 import { EmptyContainerPlaceholder } from '@/components/admin/blocks/forms/container/EmptyContainerPlaceholder';
 import { SelectableBlock } from '@/components/admin/blocks/SelectableBlock';
+import { EditorContext } from '@/components/admin/blocks/EditorContext';
 
 const MAX_WIDTH_PX: Record<string, string | undefined> = {
   sm: '640px',
@@ -16,14 +18,16 @@ const MAX_WIDTH_PX: Record<string, string | undefined> = {
 
 interface DefaultColumnsBlockProps {
   data: any;
+  containerBlockId: string;
   previewMode?: boolean;
   showGuides?: boolean;
-  activeContainerSlotId?: string | null;
   passthroughProps?: Record<string, any>;
 }
 
-export function DefaultColumnsBlock({ data, previewMode, showGuides, activeContainerSlotId, passthroughProps = {} }: DefaultColumnsBlockProps) {
+export function DefaultColumnsBlock({ data, containerBlockId, previewMode, showGuides, passthroughProps = {} }: DefaultColumnsBlockProps) {
   const deviceView = useDeviceView();
+  // Context-safe: undefined on public site where no EditorProvider is mounted.
+  const editor = useContext(EditorContext);
   const columns: ColumnSlot[] = Array.isArray(data?.columns) ? data.columns : [];
   const {
     gap = 16,
@@ -34,8 +38,17 @@ export function DefaultColumnsBlock({ data, previewMode, showGuides, activeConta
 
   const showColumnGuides = !!(previewMode && showGuides);
 
-  const totalBlocks = columns.reduce((sum, c) => sum + c.blocks.length, 0);
-  if (columns.length === 0 || totalBlocks === 0) {
+  // Active slot for this container, derived from selection.
+  // Single direction: canvas reads selection → highlights matching slot.
+  // No setState here, no useEffect, pure derivation.
+  const activeSlotId: string | null = editor && previewMode
+    && editor.selection.kind === 'slots'
+    && editor.selection.containerId === containerBlockId
+    && editor.selection.ids.length === 1
+    ? editor.selection.ids[0]
+    : null;
+
+  if (columns.length === 0) {
     return previewMode ? <EmptyContainerPlaceholder type="columns" /> : null;
   }
 
@@ -74,31 +87,41 @@ export function DefaultColumnsBlock({ data, previewMode, showGuides, activeConta
       >
         {columns.map(col => {
           // Subtract this column's share of the inter-column gap so total width
-          // (sum of basis + (N-1)*gap) stays within 100%. Each column "donates"
-          // ((N-1)*gap / N) to make room. Skips when stacked (1-col layout has no
-          // inter-column gap consuming horizontal width).
+          // (sum of basis + (N-1)*gap) stays within 100%.
           const N = columns.length;
           const gapDeduction = N > 1 ? `${((N - 1) * gap) / N}px` : '0px';
           const flexBasis = isStackedMobile
             ? '100%'
             : `calc(${(col.size / 12) * 100}% - ${gapDeduction})`;
-          const isActive = !!(previewMode && activeContainerSlotId === col.id);
-          // Active column gets a stronger solid outline + faint tint to anchor the user's
-          // attention. Inactive columns keep the existing dashed guide (when on).
+          const isActive = activeSlotId === col.id;
           const outlineClass = isActive
             ? 'outline outline-2 outline-blue-500 [background-color:color-mix(in_srgb,var(--theme-primary)_3%,transparent)]'
             : showColumnGuides
               ? 'outline outline-1 outline-dashed outline-blue-300/60'
               : '';
+
+          // Click handler for empty area inside the column slot. Only fires when
+          // the click target is THIS div (not a nested block bubbling up). Atomic
+          // write to selection: { kind: 'slots', containerId, ids: [col.id] }.
+          const handleSlotClick = editor && previewMode
+            ? (e: React.MouseEvent) => {
+                if (e.target !== e.currentTarget) return;
+                e.stopPropagation();
+                editor.setSelection({ kind: 'slots', containerId: containerBlockId, ids: [col.id] });
+              }
+            : undefined;
+
           return (
           <div
             key={col.id}
+            onClick={handleSlotClick}
             style={{
               flex: `0 0 ${flexBasis}`,
               minWidth: 0,
               boxSizing: 'border-box',
+              minHeight: col.blocks.length === 0 ? 60 : undefined,
             }}
-            className={`flex flex-col transition-[outline] duration-150 ${outlineClass}`}
+            className={`flex flex-col transition-[outline] duration-150 ${outlineClass} ${editor && previewMode ? 'cursor-pointer' : ''}`}
           >
             {col.blocks.map(block => (
               <SelectableBlock

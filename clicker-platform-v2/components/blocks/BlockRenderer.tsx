@@ -215,9 +215,9 @@ export const BlockRenderer = ({
                 return <FeatureCardsBlock data={block.data} theme={theme} previewMode={previewMode} />;
 
             case 'columns':
-                return <ColumnsContainerBlock data={block.data} previewMode={previewMode} showGuides={showGuides} activeContainerSlotId={activeContainerSlotId} passthroughProps={{ theme, siteId, tenantSlug, templateId, phoneNumber, whatsappSettings, onInlineChange, onFieldFocus, onFieldBlur, links, contact, branches, featuredProduct, products, businessHours, businessSchedule, linkSettings, productSettings, profile, reservationServices, reservationStaff, reservationSettings, showGuides, isHydrating }} />;
+                return <ColumnsContainerBlock data={block.data} containerBlockId={block.id} previewMode={previewMode} showGuides={showGuides} passthroughProps={{ theme, siteId, tenantSlug, templateId, phoneNumber, whatsappSettings, onInlineChange, onFieldFocus, onFieldBlur, links, contact, branches, featuredProduct, products, businessHours, businessSchedule, linkSettings, productSettings, profile, reservationServices, reservationStaff, reservationSettings, showGuides, isHydrating }} />;
             case 'grid':
-                return <GridContainerBlock data={block.data} previewMode={previewMode} showGuides={showGuides} activeContainerSlotId={activeContainerSlotId} passthroughProps={{ theme, siteId, tenantSlug, templateId, phoneNumber, whatsappSettings, onInlineChange, onFieldFocus, onFieldBlur, links, contact, branches, featuredProduct, products, businessHours, businessSchedule, linkSettings, productSettings, profile, reservationServices, reservationStaff, reservationSettings, showGuides, isHydrating }} />;
+                return <GridContainerBlock data={block.data} containerBlockId={block.id} previewMode={previewMode} showGuides={showGuides} passthroughProps={{ theme, siteId, tenantSlug, templateId, phoneNumber, whatsappSettings, onInlineChange, onFieldFocus, onFieldBlur, links, contact, branches, featuredProduct, products, businessHours, businessSchedule, linkSettings, productSettings, profile, reservationServices, reservationStaff, reservationSettings, showGuides, isHydrating }} />;
 
             default:
                 return <ModuleBlockLoader type={block.type} data={block.data} siteId={siteId} />;

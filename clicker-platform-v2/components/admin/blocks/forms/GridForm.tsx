@@ -13,6 +13,8 @@ import { useEditor } from '../EditorContext';
 
 interface GridFormProps {
   data: any;
+  /** The parent container block's id — needed to write proper `kind: 'slots'` selection. */
+  containerBlockId: string;
   onChange: (data: any) => void;
   templateId?: string;
   onOpenSlideOver?: (panel: 'links' | 'forms' | 'products' | 'siteinfo' | 'branding') => void;
@@ -25,7 +27,7 @@ function clampDim(n: number) {
   return Math.max(MIN_DIM, Math.min(MAX_DIM, Math.floor(n)));
 }
 
-export function GridForm({ data, onChange, templateId, onOpenSlideOver }: GridFormProps) {
+export function GridForm({ data, containerBlockId, onChange, templateId, onOpenSlideOver }: GridFormProps) {
   const safeData = data || {};
   const cols: number = clampDim(safeData.cols ?? 3);
   const rows: number = clampDim(safeData.rows ?? 2);
@@ -47,36 +49,62 @@ export function GridForm({ data, onChange, templateId, onOpenSlideOver }: GridFo
     [cells, cols, rows]
   );
 
-  const { selection } = useEditor();
-  // Selected nested block id, or null. Used to auto-drill when the user clicks
-  // a nested block on canvas.
-  const selectedBlockId = selection.kind === 'blocks' && selection.ids.length === 1 ? selection.ids[0] : null;
+  const { selection, setSelection } = useEditor();
 
-  const [activeCellId, setActiveCellId] = useState<string | null>(null);
-  const [drilledCellId, setDrilledCellId] = useState<string | null>(null);
-
-  // If the user clicked a nested block on canvas, selectedBlockId becomes that
-  // block's id. Auto-drill into the cell that contains it.
-  useEffect(() => {
-    if (!selectedBlockId) return;
-    const cell = cells.find(c => c.block?.id === selectedBlockId);
-    if (cell) {
-      setActiveCellId(cell.id);
-      setDrilledCellId(cell.id);
+  // ── Active cell (derived from selection — single source of truth) ──
+  const activeCell = useMemo<GridCell | null>(() => {
+    // Case 1: a slot in this grid is selected → use it.
+    if (selection.kind === 'slots' && selection.containerId === containerBlockId && selection.ids.length === 1) {
+      const cell = visibleCells.find(c => c.id === selection.ids[0]);
+      if (cell) return cell;
     }
-  }, [selectedBlockId, cells]);
+    // Case 2: a nested block in this grid is selected → use its cell.
+    if (selection.kind === 'blocks' && selection.ids.length === 1) {
+      const blockId = selection.ids[0];
+      const cell = visibleCells.find(c => c.block?.id === blockId);
+      if (cell) return cell;
+    }
+    // Fallback to first visible cell.
+    return visibleCells[0] ?? null;
+  }, [selection, visibleCells, containerBlockId]);
 
-  // Resolve the active cell from id; fall back to first visible cell if missing/stale.
-  const activeCell = useMemo(() => {
-    const found = activeCellId ? visibleCells.find(c => c.id === activeCellId) : null;
-    return found ?? visibleCells[0] ?? null;
-  }, [activeCellId, visibleCells]);
   const safeActiveIdx = activeCell ? visibleCells.indexOf(activeCell) : -1;
 
-  const drilledCell = drilledCellId ? cells.find(c => c.id === drilledCellId && c.block) : null;
-  if (drilledCellId && !drilledCell) {
-    setDrilledCellId(null);
-  }
+  /** Set active cell id — writes a slot selection. Use null to deselect. */
+  const setActiveCellId = (id: string | null) => {
+    if (id === null) {
+      setSelection({ kind: 'none' });
+    } else {
+      setSelection({ kind: 'slots', containerId: containerBlockId, ids: [id] });
+    }
+  };
+
+  // ── Drilled-into block (form-internal nav, derived from selection) ──
+  const drilledCell = useMemo<GridCell | null>(() => {
+    if (selection.kind !== 'blocks' || selection.ids.length !== 1) return null;
+    const blockId = selection.ids[0];
+    return cells.find(c => c.block?.id === blockId) ?? null;
+  }, [selection, cells]);
+  const drilledCellId = drilledCell?.id ?? null;
+
+  /** Set or clear drilled cell. id !== null → select that cell's block.
+   * id === null → exit drill back to the slot containing it (or none). */
+  const setDrilledCellId = (id: string | null) => {
+    if (id === null) {
+      // Exit drill: select the cell as a slot (keeps form tab + canvas highlight).
+      if (activeCell) {
+        setSelection({ kind: 'slots', containerId: containerBlockId, ids: [activeCell.id] });
+      } else {
+        setSelection({ kind: 'none' });
+      }
+    } else {
+      // Drilling into a cell's block: write the block selection.
+      const cell = cells.find(c => c.id === id);
+      if (cell?.block) {
+        setSelection({ kind: 'blocks', ids: [cell.block.id] });
+      }
+    }
+  };
 
   // Block label lookup for showing the type name on the active tab.
   const [labelLookup, setLabelLookup] = useState<Record<string, string>>(() => {
