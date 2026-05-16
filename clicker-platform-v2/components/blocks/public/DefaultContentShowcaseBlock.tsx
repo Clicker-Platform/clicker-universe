@@ -13,6 +13,9 @@ import {
 } from '@/components/blocks/content-showcase/types';
 import { MediaView } from './MediaView';
 import { useTemplate } from '@/components/TemplateProvider';
+import { getHeadingColor } from './cardStyles';
+import { H2, BUTTON_TEXT } from './typography';
+import { getProseClass } from './proseConfig';
 
 function normalizeRow(row: Partial<ShowcaseRow>, i: number): ShowcaseRow {
     const base: ShowcaseRow = {
@@ -54,7 +57,7 @@ function isSafeHref(href: string | undefined | null): boolean {
 }
 
 function ctaProps(variant: string, primaryContrastColor: string): { className: string; style: React.CSSProperties } {
-    const base = 'inline-flex items-center gap-1.5 font-bold transition-opacity hover:opacity-90';
+    const base = `inline-flex items-center gap-1.5 ${BUTTON_TEXT} transition-opacity hover:opacity-90`;
     const padded = `${base} px-5 py-2.5`;
     const radiusSm = 'calc(var(--theme-radius) * 0.6)';
 
@@ -183,11 +186,12 @@ function ShowcaseRowView({
 
     const contentNode = (
         <div className={`space-y-4 ${contentOrderClass}`} style={contentStyle}>
-            <h3 className={`${dv(d, 'text-2xl', 'md:text-3xl')} font-black font-heading text-[var(--theme-foreground)] leading-tight`}>
+            <h3 className={H2} style={{ color: getHeadingColor(theme.cardStyle, theme) }}>
                 {row.heading.text}
             </h3>
             <div
-                className="prose dark:prose-invert max-w-none prose-p:text-[var(--theme-foreground)]/80 prose-headings:text-[var(--theme-foreground)] prose-strong:text-[var(--theme-foreground)] prose-a:text-[var(--theme-primary)]"
+                className={getProseClass(theme.cardStyle)}
+                // safeContent is sanitized via sanitizeRichText() above
                 dangerouslySetInnerHTML={{ __html: safeContent }}
             />
             {row.cta?.enabled && row.cta.label && (() => {
