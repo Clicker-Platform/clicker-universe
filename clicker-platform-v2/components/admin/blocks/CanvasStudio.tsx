@@ -47,7 +47,14 @@ export function CanvasStudio({
     pageSlug?: string;
     pageTitle?: string;
 }) {
-    const { blocks, setBlocks, selectedBlockId, setSelectedBlockId, updateBlockData, deviceView, showGuides } = useEditor();
+    const { blocks, setBlocks, selection, setSelection, updateBlockData, deviceView, showGuides } = useEditor();
+
+    // Derived helpers — keep the local names familiar while reading from `selection`.
+    const selectedBlockId: string | null = (
+        selection.kind === 'blocks' && selection.ids.length === 1 ? selection.ids[0] :
+        selection.kind === 'chrome' ? `chrome:${selection.chromeId}` :
+        null
+    );
     const { tenantSlug, siteId } = useSite();
     const {
         activePageId,
@@ -308,13 +315,13 @@ export function CanvasStudio({
                             {/* Top Navbar Slot */}
                             <div
                                 data-block-id="chrome:header"
-                                className={`z-50 w-full cursor-pointer transition-all flex-shrink-0 ${selectedBlockId === 'chrome:header'
+                                className={`z-50 w-full cursor-pointer transition-all flex-shrink-0 ${selection.kind === 'chrome' && selection.chromeId === 'header'
                                         ? 'ring-4 ring-blue-500 ring-offset-[-4px]'
                                         : showGuides ? 'hover:ring-2 hover:ring-blue-300' : ''
                                     }`}
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    setSelectedBlockId?.('chrome:header');
+                                    setSelection({ kind: 'chrome', chromeId: 'header' });
                                 }}
                             >
                                 {globalSettings?.profile && (
@@ -344,7 +351,7 @@ export function CanvasStudio({
 
                             <div
                                 className="w-full flex-1 relative overflow-x-clip"
-                                onClick={() => setSelectedBlockId?.(null)}
+                                onClick={() => setSelection({ kind: 'none' })}
                             >
                                 <div className="relative">
                                     {/* Base Background Fallback */}
@@ -430,13 +437,13 @@ export function CanvasStudio({
                                     {/* Site Footer */}
                                     <div
                                         data-block-id="chrome:footer"
-                                        className={`relative z-10 w-full cursor-pointer transition-all ${selectedBlockId === 'chrome:footer'
+                                        className={`relative z-10 w-full cursor-pointer transition-all ${selection.kind === 'chrome' && selection.chromeId === 'footer'
                                                 ? 'ring-4 ring-blue-500 ring-offset-[-4px]'
                                                 : showGuides ? 'hover:ring-2 hover:ring-blue-300' : ''
                                             }`}
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            setSelectedBlockId?.('chrome:footer');
+                                            setSelection({ kind: 'chrome', chromeId: 'footer' });
                                         }}
                                     >
                                         <div className="pointer-events-none">
@@ -454,13 +461,13 @@ export function CanvasStudio({
                             {/* Bottom Nav Slot — only rendered when template enables showBottomNav */}
                             <div
                                 data-block-id="chrome:bottomnav"
-                                className={`relative z-50 w-full flex-shrink-0 cursor-pointer transition-all ${selectedBlockId === 'chrome:bottomnav'
+                                className={`relative z-50 w-full flex-shrink-0 cursor-pointer transition-all ${selection.kind === 'chrome' && selection.chromeId === 'bottomnav'
                                         ? 'ring-4 ring-blue-500 ring-offset-[-4px]'
                                         : showGuides ? 'hover:ring-2 hover:ring-blue-300' : ''
                                     }`}
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    setSelectedBlockId?.('chrome:bottomnav');
+                                    setSelection({ kind: 'chrome', chromeId: 'bottomnav' });
                                 }}
                             >
                                 <div className="pointer-events-none">
@@ -633,21 +640,22 @@ export function CanvasStudio({
                         allowInherit={true}
                     />
                 </div>
-            ) : selectedBlockId?.startsWith('chrome:') ? (
-                selectedBlockId === 'chrome:header' ? (
+            ) : selection.kind === 'chrome' ? (
+                selection.chromeId === 'header' ? (
                     <ChromeHeaderPanel />
-                ) : selectedBlockId === 'chrome:footer' ? (
+                ) : selection.chromeId === 'footer' ? (
                     <ChromeFooterPanel
                         footerText={globalSettings?.footerText || ''}
                         onFooterTextChange={updateFooterText}
                     />
-                ) : selectedBlockId === 'chrome:bottomnav' ? (
+                ) : selection.chromeId === 'bottomnav' ? (
                     <ChromeBottomNavPanel />
                 ) : null
-            ) : selectedBlockId ? (
+            ) : selection.kind === 'blocks' && selection.ids.length === 1 ? (
                 (() => {
+                    const blockId = selection.ids[0];
                     // Top-level block selected — render its form directly.
-                    const topLevel = blocks.find(b => b.id === selectedBlockId);
+                    const topLevel = blocks.find(b => b.id === blockId);
                     if (topLevel) {
                         return (
                             <BlockFormRenderer
@@ -660,7 +668,7 @@ export function CanvasStudio({
                     }
                     // Nested block selected — render its parent container's form.
                     // The container form auto-drills into the nested block via selectedBlockId.
-                    const path = findBlockPath(blocks, selectedBlockId);
+                    const path = findBlockPath(blocks, blockId);
                     if (path && (path.kind === 'columns-child' || path.kind === 'grid-cell')) {
                         return (
                             <BlockFormRenderer

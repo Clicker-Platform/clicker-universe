@@ -47,7 +47,10 @@ export function GridForm({ data, onChange, templateId, onOpenSlideOver }: GridFo
     [cells, cols, rows]
   );
 
-  const { selectedBlockId } = useEditor();
+  const { selection } = useEditor();
+  // Selected nested block id, or null. Used to auto-drill when the user clicks
+  // a nested block on canvas.
+  const selectedBlockId = selection.kind === 'blocks' && selection.ids.length === 1 ? selection.ids[0] : null;
 
   const [activeCellId, setActiveCellId] = useState<string | null>(null);
   const [drilledCellId, setDrilledCellId] = useState<string | null>(null);

@@ -54,12 +54,12 @@ export function SelectableBlock({
     if (!editor) {
         return <>{children}</>;
     }
-    const { selectedBlockId, setSelectedBlockId, showGuides } = editor;
-    const isSelected = selectedBlockId === blockId;
+    const { selection, setSelection, showGuides } = editor;
+    const isSelected = selection.kind === 'blocks' && selection.ids.includes(blockId);
 
     const handleClick = (e: React.MouseEvent) => {
         e.stopPropagation();
-        setSelectedBlockId(blockId);
+        setSelection({ kind: 'blocks', ids: [blockId] });
         // Single-click into a contentEditable field: select block + open toolbar in one gesture.
         const ce = (e.target as HTMLElement).closest<HTMLElement>('[contenteditable="true"][data-field]');
         if (ce && onInlineFocus) {

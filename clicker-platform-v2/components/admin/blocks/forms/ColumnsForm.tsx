@@ -37,7 +37,10 @@ export function ColumnsForm({ data, onChange, templateId, onOpenSlideOver }: Col
     [safeData.columns]
   );
 
-  const { selectedBlockId } = useEditor();
+  const { selection } = useEditor();
+  // Selected nested block id, or null. Used to auto-drill when the user clicks
+  // a nested block on canvas.
+  const selectedBlockId = selection.kind === 'blocks' && selection.ids.length === 1 ? selection.ids[0] : null;
 
   const [activeIdx, setActiveIdx] = useState(0);
   const [drilledBlockId, setDrilledBlockId] = useState<string | null>(null);
