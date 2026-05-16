@@ -77,7 +77,9 @@ Three sizes. Same rules across blocks.
 
 **Emphasis:** Use `font-medium` for inline emphasis. Reserve `font-semibold`+ for headings.
 
-**Long-form prose exception:** When body text is rendered via the **prose plugin** (rich text from TextBlock, ContentShowcase row content, FAQ answer), use `leading-[1.65]` for reading optimization. This is the **only** allowed line-height override and is configured once in the prose config — never inline.
+**Prose plugin line-height:** When body text is rendered via the **prose plugin** (rich text from TextBlock, ContentShowcase row content, FAQ answer), use `leading-relaxed` (1.625). Configured once in `proseConfig.ts` — never inline.
+
+Originally `leading-[1.65]` / `md:leading-[1.75]`; tightened to `leading-relaxed` post-Phase 2c after visual QA showed loose lines disconnecting in 2-up card layouts (ContentShowcase). Long-form articles still read fine at 1.625.
 
 ---
 
@@ -403,7 +405,7 @@ BODY
   body-lg  text-lg    font-normal  leading-normal
   body     text-base  font-normal  leading-normal
   body-sm  text-sm    font-normal  leading-normal
-  prose    (configured separately, leading-[1.65])
+  prose    (configured separately, leading-relaxed)
 
 WEIGHTS (semantic)
   font-normal     body
