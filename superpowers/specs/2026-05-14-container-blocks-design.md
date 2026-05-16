@@ -1,8 +1,22 @@
 # Container Blocks — Design
 
 **Date:** 2026-05-14
-**Status:** Approved design, ready for implementation plan
+**Status:** ⚠️ SUPERSEDED on 2026-05-16. See [2026-05-16-container-blocks-current.md](2026-05-16-container-blocks-current.md) for the current source of truth.
 **Sketch source:** [superpowers/notes/2026-05-14-container-blocks-sketch.md](../notes/2026-05-14-container-blocks-sketch.md)
+
+> **Historical note:** This spec describes the original Row + Column + Grid
+> trio. After implementation it became clear the model didn't match
+> industry-standard usage (e.g., "Column" usually means a vertical slot
+> inside a multi-column layout, not a vertical-stack container as I had
+> designed it). The 2026-05-15 refactor dropped Row, repurposed Column
+> into "Columns" (N side-by-side slots), and kept Grid with a new shape
+> (explicit cells with row/col coords). The current implementation is
+> documented in [2026-05-16-container-blocks-current.md](2026-05-16-container-blocks-current.md).
+> The refactor execution log is at
+> [`superpowers/plans/2026-05-15-container-blocks-refactor.md`](../plans/2026-05-15-container-blocks-refactor.md).
+>
+> This document is preserved for historical context. **Do not use it as a
+> design reference.**
 
 ## Goal
 
