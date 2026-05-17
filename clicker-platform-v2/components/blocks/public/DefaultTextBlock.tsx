@@ -7,6 +7,7 @@ import { sanitizeRichText } from '@/lib/sanitizeHtml';
 import { getProseClass } from './proseConfig';
 
 const VERTICAL_SPACING = {
+    none:   'py-0',
     small:  'py-4',
     medium: 'py-8',
     tall:   'py-14',

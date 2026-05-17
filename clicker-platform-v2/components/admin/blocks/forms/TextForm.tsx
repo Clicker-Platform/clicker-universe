@@ -45,7 +45,7 @@ export const TextForm = ({ data, onChange }: TextFormProps) => {
             <div>
                 <label className={labelClass}>Vertical Spacing</label>
                 <div className="flex gap-1 p-1 bg-gray-50 dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800">
-                    {(['small', 'medium', 'tall'] as const).map((v) => (
+                    {(['none', 'small', 'medium', 'tall'] as const).map((v) => (
                         <button
                             key={v}
                             type="button"
@@ -56,7 +56,7 @@ export const TextForm = ({ data, onChange }: TextFormProps) => {
                                     : 'text-neutral-400 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800'
                             }`}
                         >
-                            {v === 'small' ? 'Small' : v === 'medium' ? 'Medium' : 'Tall'}
+                            {v === 'none' ? 'None' : v === 'small' ? 'Small' : v === 'medium' ? 'Medium' : 'Tall'}
                         </button>
                     ))}
                 </div>
