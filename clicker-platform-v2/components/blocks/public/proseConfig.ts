@@ -36,7 +36,15 @@ export const proseClass = [
     'prose-ul:text-[var(--theme-foreground)]/80 prose-ol:text-[var(--theme-foreground)]/80',
     'prose-ul:my-4 prose-ol:my-4 prose-li:my-1.5 prose-li:leading-snug',
     'prose-li:text-[var(--theme-foreground)]/80',
+    // Tiptap wraps <li> content in <p> per ProseMirror schema; zero the
+    // inner <p> margin so list-item spacing is governed by prose-li:my-1.5
+    // alone, not compounded by prose-p:my-3.
+    '[&_li>p]:my-0',
     'prose-blockquote:text-[var(--theme-foreground)]/70 prose-blockquote:border-l-[var(--theme-primary)]',
+    // First child has no top margin and last child has no bottom margin,
+    // so the prose block aligns flush with its container regardless of
+    // which element type starts/ends the content (heading, paragraph, list).
+    '[&>*:first-child]:!mt-0 [&>*:last-child]:!mb-0',
 ].join(' ');
 
 /**
@@ -54,7 +62,9 @@ export const proseGlassClass = [
     'prose-ul:text-white/75 prose-ol:text-white/75',
     'prose-ul:my-4 prose-ol:my-4 prose-li:my-1.5 prose-li:leading-snug',
     'prose-li:text-white/75',
+    '[&_li>p]:my-0',
     'prose-blockquote:text-white/65 prose-blockquote:border-l-[var(--theme-primary)]',
+    '[&>*:first-child]:!mt-0 [&>*:last-child]:!mb-0',
 ].join(' ');
 
 /** Convenience: pick the right variant based on cardStyle. */
