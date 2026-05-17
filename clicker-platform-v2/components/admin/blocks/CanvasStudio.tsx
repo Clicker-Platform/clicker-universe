@@ -263,8 +263,8 @@ export function CanvasStudio({
                 </div>
             )}
             {/* The actual canvas container */}
-            <div className="px-8 py-8 self-start">
-            <div className={`${deviceView === 'tablet' ? 'min-w-[768px] max-w-[768px]' : deviceView === 'mobile' ? 'min-w-[375px] max-w-[390px]' : 'min-w-[1024px]'} shadow-2xl ring-1 ring-black/10 dark:ring-white/10 overflow-hidden transition-all duration-300 isolate`}>
+            <div className={`px-8 py-8 self-start ${deviceView === 'desktop' ? 'w-full' : ''}`}>
+            <div className={`${deviceView === 'tablet' ? 'min-w-[768px] max-w-[768px]' : deviceView === 'mobile' ? 'min-w-[375px] max-w-[390px]' : 'w-full min-w-[1024px]'} shadow-2xl ring-1 ring-black/10 dark:ring-white/10 overflow-hidden transition-all duration-300 isolate`}>
                 {/* WYSIWYG Renderer — providers are always mounted to prevent context loss during block reorder */}
                 <DeviceViewProvider deviceView={deviceView}>
                 <TemplateProvider
@@ -332,40 +332,43 @@ export function CanvasStudio({
                                 )}
                             </div>
 
-                            <div
-                                className="w-full flex-1 relative overflow-x-clip"
+                            <main
+                                className={`w-full flex-1 relative overflow-x-clip ${blocks[0]?.type === 'hero' ? 'pt-0 pb-12' : 'py-12'}`}
                                 onClick={() => setSelection({ kind: 'none' })}
                             >
-                                <div className="relative">
-                                    {/* Base Background Fallback */}
-                                    <div className="absolute inset-0 -z-20 pointer-events-none" style={{ backgroundColor: pageBackgroundColor }} />
+                                {/* Base Background Fallback */}
+                                <div className="absolute inset-0 -z-20 pointer-events-none" style={{ backgroundColor: pageBackgroundColor }} />
 
-                                    {/* User Custom Background (Page or Global) */}
-                                    <PageBackground config={activeBackgroundConfig} previewMode={true} />
+                                {/* User Custom Background (Page or Global) */}
+                                <PageBackground config={activeBackgroundConfig} previewMode={true} />
 
-                                    {/* Template Background Decorations */}
-                                    {BackgroundComponent && (
-                                        <div className="absolute inset-0 -z-10 pointer-events-none">
-                                            <BackgroundComponent />
+                                {/* Template Background Decorations */}
+                                {BackgroundComponent && (
+                                    <div className="absolute inset-0 -z-10 pointer-events-none">
+                                        <BackgroundComponent />
+                                    </div>
+                                )}
+
+                                {/* Constrained container — mirrors SharedPageLayout */}
+                                <div
+                                    className="w-full mx-auto px-4 md:px-6 relative z-10 flex flex-col gap-6 min-h-[90vh]"
+                                    style={{ maxWidth: 'var(--layout-max-width, 480px)' }}
+                                >
+                                    {/* Template Header (Profile) */}
+                                    {HeaderComponent && globalSettings?.profile && (
+                                        <div>
+                                            <div className="pointer-events-none">
+                                                <HeaderComponent
+                                                    profile={globalSettings.profile}
+                                                    contact={globalSettings.contact}
+                                                    showAddress={globalSettings.showHeaderAddress}
+                                                />
+                                            </div>
                                         </div>
                                     )}
 
-                                    <div className="px-4 pt-4 pb-8">
-                                        {/* Template Header (Profile) */}
-                                        {HeaderComponent && globalSettings?.profile && (
-                                            <div className="relative z-10">
-                                                <div className="pointer-events-none">
-                                                    <HeaderComponent
-                                                        profile={globalSettings.profile}
-                                                        contact={globalSettings.contact}
-                                                        showAddress={globalSettings.showHeaderAddress}
-                                                    />
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {/* Blocks */}
-                                        <div className="relative z-10 grid gap-6" style={{ gridTemplateColumns: 'minmax(0, 1fr)' }}>
+                                    {/* Blocks */}
+                                    <div className="grid gap-6" style={{ gridTemplateColumns: 'minmax(0, 1fr)' }}>
                                             {blocks.map((block) => (
                                                 <SelectableBlock
                                                     key={block.id}
@@ -438,13 +441,12 @@ export function CanvasStudio({
                                                     </div>
                                                 </div>
                                             )}
-                                        </div>
                                     </div>
 
                                     {/* Site Footer */}
                                     <div
                                         data-block-id="chrome:footer"
-                                        className={`relative z-10 w-full cursor-pointer transition-all ${selection.kind === 'chrome' && selection.chromeId === 'footer'
+                                        className={`w-full cursor-pointer transition-all ${selection.kind === 'chrome' && selection.chromeId === 'footer'
                                                 ? 'ring-4 ring-blue-500 ring-offset-[-4px]'
                                                 : showGuides ? 'hover:ring-2 hover:ring-blue-300' : ''
                                             }`}
@@ -463,7 +465,7 @@ export function CanvasStudio({
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </main>
 
                             {/* Bottom Nav Slot — only rendered when template enables showBottomNav */}
                             <div
