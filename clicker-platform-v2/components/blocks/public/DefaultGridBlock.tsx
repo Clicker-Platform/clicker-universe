@@ -120,6 +120,7 @@ export function DefaultGridBlock({ data, containerBlockId, previewMode, showGuid
           <div
             key={cell.id}
             onClick={handleSlotClick}
+            style={cell.bgColor ? { backgroundColor: cell.bgColor } : undefined}
             className={`relative transition-[outline] duration-150 ${outlineClass} ${editor && previewMode ? 'cursor-pointer' : ''}`}
           >
             {cell.block ? (

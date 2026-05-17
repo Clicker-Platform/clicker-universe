@@ -14,6 +14,7 @@ export interface GridCell {
   row: number;             // 1-indexed
   col: number;             // 1-indexed
   block: PageBlock | null; // empty cell allowed
+  bgColor?: string;        // optional cell background color (any CSS color string)
 }
 
 export const SIZE_MIN = 1;

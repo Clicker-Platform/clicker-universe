@@ -3,6 +3,7 @@
 import { useMemo, useState, useEffect } from 'react';
 import { BlockFormRenderer } from '../BlockFormRenderer';
 import { MiniBlockPicker } from './container/MiniBlockPicker';
+import { CellColorField } from './container/CellColorField';
 import { BLOCK_OPTIONS } from '../blockDefinitions';
 import { subscribeToEnabledModules } from '@/lib/modules/registry';
 import type { GridCell } from './container/types';
@@ -155,6 +156,10 @@ export function GridForm({ data, containerBlockId, onChange, templateId, onOpenS
 
   const setCellBlock = (cellId: string, block: PageBlock | null) => {
     updateCells(cells.map(c => (c.id === cellId ? { ...c, block } : c)));
+  };
+
+  const setCellBgColor = (cellId: string, bgColor: string | undefined) => {
+    updateCells(cells.map(c => (c.id === cellId ? { ...c, bgColor } : c)));
   };
 
   const updateBlockData = (cellId: string, newData: any) => {
@@ -319,6 +324,13 @@ export function GridForm({ data, containerBlockId, onChange, templateId, onOpenS
           <div className="space-y-2 pt-2">
             <div className="text-xs text-neutral-500 dark:text-neutral-400">
               Cell {safeActiveIdx + 1} — Row {activeRow}, Col {activeCol}
+            </div>
+            <div className="space-y-1">
+              <span className="text-xs text-neutral-700 dark:text-neutral-300">Background color</span>
+              <CellColorField
+                value={activeCell.bgColor}
+                onChange={(c) => setCellBgColor(activeCell.id, c)}
+              />
             </div>
             {activeCell.block ? (
               <div className="flex items-center gap-2 px-2 py-2 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded-md">
