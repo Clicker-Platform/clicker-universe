@@ -28,8 +28,12 @@ const VARIANTS: Partial<Record<BlockType, { id: string; label: string; icon: Rea
     image: [
         { id: 'standard', label: 'Standard', icon: ImageIcon },
         { id: 'full-width', label: 'Full', icon: ImageIcon },
-        { id: 'rounded-card', label: 'Card', icon: CreditCard },
-        { id: 'side-caption', label: 'Side Cap', icon: Columns },
+        // 'rounded-card' — disabled 2026-05-17 pending a clearer use case
+        //   (gallery-like card grid). Renderer kept in DefaultImageBlock so any
+        //   existing pages with layoutVariant='rounded-card' continue to render
+        //   correctly; users just can't pick it from the form anymore.
+        // 'side-caption' — removed 2026-05-17 as unused. Renderer in
+        //   DefaultImageBlock should be deleted in the same commit.
     ],
     faq: [
         { id: 'accordion', label: 'Accordion', icon: LayoutList },

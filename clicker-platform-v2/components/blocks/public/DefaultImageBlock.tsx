@@ -2,8 +2,8 @@
 
 import Image from 'next/image';
 import { useTemplate } from '@/components/TemplateProvider';
-import { getCardClasses, getMutedColor, getBodyColor } from './cardStyles';
-import { BODY_SM, BODY_LG } from './typography';
+import { getCardClasses, getMutedColor } from './cardStyles';
+import { BODY_SM } from './typography';
 import { useDeviceView, dv } from '@/components/DeviceViewContext';
 import { MediaView } from './MediaView';
 import { MediaFieldValue, DEFAULT_MEDIA } from '@/components/admin/blocks/media-field/types';
@@ -15,7 +15,6 @@ export const DefaultImageBlock = ({ data, isFirst = false }: { data: any; isFirs
     const isGlass = cardStyle === 'glass';
     const radius = theme.borderRadius || 'var(--theme-radius)';
     const captionColor = getMutedColor(cardStyle, theme);
-    const captionEmphasisColor = getBodyColor(cardStyle, theme);
 
     // Resolve media: prefer new `media` field, fall back to legacy `url`
     const media: MediaFieldValue | null = data.media
@@ -66,7 +65,12 @@ export const DefaultImageBlock = ({ data, isFirst = false }: { data: any; isFirs
                         sizes="100vw"
                         priority={isFirst}
                         fetchPriority={isFirst ? 'high' : 'auto'}
-                        className="w-full h-auto object-cover max-h-[70vh]"
+                        // No object-cover: image renders at its natural aspect ratio,
+                        // filling the container width. Previously object-cover + the
+                        // hardcoded 1920×1080 dimensions cropped portrait images to
+                        // a forced 16:9 frame. Full variant means "edge-to-edge,
+                        // no chrome" — that includes not cropping.
+                        className="w-full h-auto"
                         style={{ width: '100%', height: 'auto' }}
                     />
                 </div>
@@ -118,42 +122,11 @@ export const DefaultImageBlock = ({ data, isFirst = false }: { data: any; isFirs
         );
     }
 
-    if (variant === 'side-caption') {
-        return (
-            <section className={`w-full ${dv(d, 'p-6', 'md:p-12')} max-w-6xl mx-auto flex ${dv(d, 'flex-col', 'md:flex-row')} items-center gap-8`}>
-                <div className={`flex-1 overflow-hidden shadow-lg ${getCardClasses(cardStyle)}`} style={{ borderRadius: radius }}>
-                    <Image
-                        src={media.src}
-                        alt={data.caption || "Image"}
-                        width={800}
-                        height={800}
-                        sizes="(max-width: 768px) 100vw, 50vw"
-                        priority={isFirst}
-                        fetchPriority={isFirst ? 'high' : 'auto'}
-                        className={`w-full h-auto object-cover ${dv(d, 'aspect-square', 'md:aspect-auto md:h-[60vh]')}`}
-                        style={{ width: '100%', height: 'auto' }}
-                    />
-                </div>
-                {data.caption && (
-                    <div className={`${dv(d, 'w-full', 'md:w-1/3')} flex items-center p-4`}>
-                        <div className="border-l-4 pl-6 py-2" style={{ borderColor: 'var(--theme-primary)' }}>
-                            <p
-                                className={`${BODY_LG} italic`}
-                                style={{ color: captionEmphasisColor }}
-                            >
-                                {data.caption}
-                            </p>
-                        </div>
-                    </div>
-                )}
-            </section>
-        );
-    }
-
-    // Default: 'standard'
+    // Default: 'standard' — naked image, padded section, optional caption.
+    // No card chrome (border / shadow / bg); use the 'card' variant for framing.
     return (
         <section className={`w-full ${dv(d, 'px-4', 'md:px-8')} py-6 max-w-5xl mx-auto`}>
-            <div className={`overflow-hidden shadow-md ${getCardClasses(cardStyle)}`} style={{ borderRadius: radius }}>
+            <div className="overflow-hidden" style={{ borderRadius: radius }}>
                 <Image
                     src={media.src}
                     alt={data.caption || "Image"}
