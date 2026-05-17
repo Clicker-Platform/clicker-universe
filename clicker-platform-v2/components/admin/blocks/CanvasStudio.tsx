@@ -246,7 +246,7 @@ export function CanvasStudio({
     const canvasContent = (
         <div
             ref={canvasScrollRef}
-            className={`flex-1 flex items-start relative overflow-y-auto overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [--canvas-bg:rgb(229_231_235)] [--canvas-dot:rgb(0_0_0_/_0.12)] dark:[--canvas-bg:rgb(10_10_10)] dark:[--canvas-dot:rgb(255_255_255_/_0.09)] ${deviceView === 'mobile' ? 'justify-center' : ''} ${isMobile ? 'pb-20' : ''}`}
+            className={`flex-1 flex items-start relative overflow-y-auto overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [--canvas-bg:rgb(229_231_235)] [--canvas-dot:rgb(0_0_0_/_0.12)] dark:[--canvas-bg:rgb(10_10_10)] dark:[--canvas-dot:rgb(255_255_255_/_0.09)] justify-center ${isMobile ? 'pb-20' : ''}`}
             style={{
                 backgroundColor: 'var(--canvas-bg)',
                 backgroundImage: 'radial-gradient(circle, var(--canvas-dot) 1.5px, transparent 1.5px)',
@@ -294,25 +294,6 @@ export function CanvasStudio({
                 {/* Background wrapper inside TemplateProvider so var(--theme-background) is resolved */}
                 <div>
                 <NavigationProvider siteId={siteId!}>
-                    {blocks.length === 0 ? (
-                        <div className="h-96 flex items-center justify-center text-neutral-400 dark:text-neutral-500 p-12 text-center text-sm font-medium">
-                            Start{' '}
-                            {isMobile ? (
-                                'adding blocks from the Add tab below to build your page.'
-                            ) : (
-                                <>
-                                    <button
-                                        type="button"
-                                        onClick={() => setLeftPanel('add')}
-                                        className="text-studio-blue dark:text-studio-blue-muted underline underline-offset-2 hover:opacity-80 transition-opacity mx-1"
-                                    >
-                                        adding blocks
-                                    </button>
-                                    from the left panel to build your page.
-                                </>
-                            )}
-                        </div>
-                    ) : (
                         <div className="flex flex-col h-full relative">
                             {/* Top Navbar Slot */}
                             <div
@@ -433,6 +414,30 @@ export function CanvasStudio({
                                                     />
                                                 </SelectableBlock>
                                             ))}
+                                            {blocks.length === 0 && (
+                                                <div
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    className="min-h-[280px] flex items-center justify-center p-12 text-center text-sm font-medium text-neutral-500 dark:text-neutral-400"
+                                                >
+                                                    <div>
+                                                        Start{' '}
+                                                        {isMobile ? (
+                                                            'adding blocks from the Add tab below to build your page.'
+                                                        ) : (
+                                                            <>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => setLeftPanel('add')}
+                                                                    className="text-studio-blue dark:text-studio-blue-muted underline underline-offset-2 hover:opacity-80 transition-opacity mx-1"
+                                                                >
+                                                                    adding blocks
+                                                                </button>
+                                                                from the left panel to build your page.
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
 
@@ -477,7 +482,6 @@ export function CanvasStudio({
                                 </div>
                             </div>
                         </div>
-                    )}
                 </NavigationProvider>
                 </div>
                 </TemplateProvider>
