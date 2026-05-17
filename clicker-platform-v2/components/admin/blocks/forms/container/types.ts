@@ -1,9 +1,12 @@
 import { PageBlock } from '@/data/mockData';
 
+export type ColumnVerticalAlign = 'top' | 'center' | 'bottom' | 'stretch';
+
 export interface ColumnSlot {
   id: string;
-  size: number;          // 1–12, fraction of 12-column grid
-  blocks: PageBlock[];   // multiple stacked blocks inside this column
+  size: number;                              // 1–12, fraction of 12-column grid
+  blocks: PageBlock[];                       // multiple stacked blocks inside this column
+  verticalAlign?: ColumnVerticalAlign;       // optional; undefined = 'stretch' (current default)
 }
 
 export interface GridCell {

@@ -3,7 +3,7 @@
 import { useMemo, useState, useEffect } from 'react';
 import { BlockFormRenderer } from '../BlockFormRenderer';
 import { NestedBlockList } from './container/NestedBlockList';
-import type { ColumnSlot } from './container/types';
+import type { ColumnSlot, ColumnVerticalAlign } from './container/types';
 import { clampSize, defaultNewColumnSize, distributeSizes, newId } from './container/types';
 import type { PageBlock } from '@/data/mockData';
 import { ChevronLeft, Plus, X } from 'lucide-react';
@@ -134,6 +134,12 @@ export function ColumnsForm({ data, containerBlockId, onChange, templateId, onOp
 
   const setColumnSize = (colIdx: number, size: number) => {
     updateColumns(columns.map((c, i) => (i === colIdx ? { ...c, size: clampSize(size) } : c)));
+  };
+
+  const setColumnVerticalAlign = (colIdx: number, verticalAlign: ColumnVerticalAlign) => {
+    // Store 'stretch' as undefined to keep saved data minimal (it's the default).
+    const value = verticalAlign === 'stretch' ? undefined : verticalAlign;
+    updateColumns(columns.map((c, i) => (i === colIdx ? { ...c, verticalAlign: value } : c)));
   };
 
   const addColumn = () => {
@@ -304,6 +310,37 @@ export function ColumnsForm({ data, containerBlockId, onChange, templateId, onOp
                 className="mt-1 w-full"
               />
             </label>
+            <div className="text-sm">
+              <span className="text-neutral-700 dark:text-neutral-300">Vertical alignment</span>
+              <div className="mt-1 flex gap-1 p-1 bg-gray-50 dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800">
+                {([
+                  { v: 'top' as const, label: 'Top' },
+                  { v: 'center' as const, label: 'Middle' },
+                  { v: 'bottom' as const, label: 'Bottom' },
+                  { v: 'stretch' as const, label: 'Stretch' },
+                ]).map(({ v, label }) => {
+                  // Persisted 'stretch' is stored as undefined; treat both equivalently.
+                  const current = activeColumn.verticalAlign ?? 'stretch';
+                  return (
+                    <button
+                      key={v}
+                      type="button"
+                      onClick={() => setColumnVerticalAlign(safeActiveIdx, v)}
+                      className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                        current === v
+                          ? 'bg-blue-600 text-white shadow'
+                          : 'text-neutral-400 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="mt-1 text-xs text-neutral-400 dark:text-neutral-500">
+                Aligns this column&apos;s content relative to the tallest column in the row.
+              </p>
+            </div>
             <div>
               <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">
                 Blocks in this column

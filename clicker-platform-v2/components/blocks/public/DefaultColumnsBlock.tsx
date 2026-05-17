@@ -112,6 +112,17 @@ export function DefaultColumnsBlock({ data, containerBlockId, previewMode, showG
               }
             : undefined;
 
+          // Vertical alignment of stacked children within this column.
+          // Column is `flex flex-col`, so the vertical axis = main axis,
+          // which is controlled by justifyContent (not alignItems).
+          // undefined or 'stretch' = unset (default; children stack from top
+          // and the column grows to fit content — visually identical to current).
+          const justifyContent =
+            col.verticalAlign === 'top' ? 'flex-start' :
+            col.verticalAlign === 'center' ? 'center' :
+            col.verticalAlign === 'bottom' ? 'flex-end' :
+            undefined;
+
           return (
           <div
             key={col.id}
@@ -122,6 +133,7 @@ export function DefaultColumnsBlock({ data, containerBlockId, previewMode, showG
               boxSizing: 'border-box',
               minHeight: col.blocks.length === 0 ? 60 : undefined,
               gap: blockGap,
+              justifyContent,
             }}
             className={`flex flex-col transition-[outline] duration-150 ${outlineClass} ${editor && previewMode ? 'cursor-pointer' : ''}`}
           >
