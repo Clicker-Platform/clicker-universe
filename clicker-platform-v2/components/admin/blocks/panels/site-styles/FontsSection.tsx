@@ -26,6 +26,7 @@ export function FontsSection() {
 
   useEffect(() => {
     let cancelled = false;
+    setLoading(true);
     getAppearanceStyles(siteId).then(s => {
       if (!cancelled) {
         setActiveId(s.fontPackId);
