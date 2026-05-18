@@ -54,7 +54,14 @@ export const HeaderShell: React.FC<HeaderShellProps> = ({
       : { transform: 'translateY(0)' };
 
   // Height (shrink-on-scroll)
-  const heightClass = shrunk ? 'h-14' : scrollBehavior === 'shrink-on-scroll' ? 'h-20' : 'h-16';
+  const isStacked = config.variant === 'logo-left-stacked';
+  const heightClass = isStacked
+    ? 'min-h-[64px]'
+    : shrunk
+      ? 'h-14'
+      : scrollBehavior === 'shrink-on-scroll'
+        ? 'h-20'
+        : 'h-16';
 
   // Inner container width
   const innerClass =
