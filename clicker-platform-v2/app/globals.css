@@ -123,3 +123,21 @@ body:has(.dark.admin-layout) {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
+/* Marquee block — seamless infinite scroll via translateX -50% on a 2x-duplicated track */
+@keyframes marquee-left {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@keyframes marquee-right {
+  from { transform: translateX(-50%); }
+  to   { transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none !important;
+    transform: none !important;
+  }
+}
