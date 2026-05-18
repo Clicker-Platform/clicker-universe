@@ -4,14 +4,24 @@ import { getAppearanceStyles, setFontPackId } from '../api';
 vi.mock('@/lib/firebase', () => ({ db: {} }));
 
 vi.mock('firebase/firestore', () => {
-  const data: Record<string, any> = (globalThis as any).__appearanceData ?? ((globalThis as any).__appearanceData = {});
+  const getData = (): Record<string, any> => {
+    const g = globalThis as any;
+    if (!g.__appearanceData) g.__appearanceData = {};
+    return g.__appearanceData;
+  };
   return {
     doc: (_db: any, ...path: string[]) => ({ path: path.join('/') }),
-    getDoc: async (ref: any) => ({
-      exists: () => ref.path in data,
-      data: () => data[ref.path],
-    }),
-    setDoc: async (ref: any, value: any, _opts?: any) => { data[ref.path] = { ...(data[ref.path] ?? {}), ...value }; },
+    getDoc: async (ref: any) => {
+      const data = getData();
+      return {
+        exists: () => ref.path in data,
+        data: () => data[ref.path],
+      };
+    },
+    setDoc: async (ref: any, value: any, _opts?: any) => {
+      const data = getData();
+      data[ref.path] = { ...(data[ref.path] ?? {}), ...value };
+    },
     serverTimestamp: () => new Date(),
   };
 });
