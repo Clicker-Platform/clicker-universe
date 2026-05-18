@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, doc, getDoc, updateDoc, deleteDoc, setDoc, getDocs, serverTimestamp, query, where, writeBatch } from 'firebase/firestore';
 import { writeSiteSettings } from '@/lib/admin/siteSettings';
+import { stripUndefined } from '@/lib/firestore/stripUndefined';
 import { Page, PageBlock } from '@/data/mockData';
 import { fetchCanvasData, hydratePageBlocks, collectAllBlockTypes } from '@/lib/fetchData';
 import { purgeTenantCache } from '@/lib/admin/purgeCache';
@@ -649,7 +650,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
                 return;
             }
 
-            const pageData = {
+            const pageData = stripUndefined({
                 title: trimmedTitle,
                 slug: trimmedSlug,
                 content: formData.content,
@@ -667,7 +668,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
                 } : null,
                 background: formData.background,
                 updatedAt: serverTimestamp(),
-            };
+            });
 
             let savedPageId = activePageId;
 

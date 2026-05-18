@@ -329,7 +329,7 @@ export function CanvasStudio({
                             </div>
 
                             <main
-                                className={`w-full flex-1 relative overflow-x-clip ${blocks[0]?.type === 'hero' ? 'pt-0 pb-12' : 'py-12'}`}
+                                className="w-full flex-1 relative overflow-x-clip pt-0 pb-12"
                                 onClick={() => setSelection({ kind: 'none' })}
                             >
                                 {/* Base Background Fallback */}
@@ -345,10 +345,9 @@ export function CanvasStudio({
                                     </div>
                                 )}
 
-                                {/* Constrained container — mirrors SharedPageLayout.
-                                    mt-2: small gap so block selection/hover guides clear the header chrome ring. */}
+                                {/* Constrained container — mirrors SharedPageLayout (incl. mt-4 md:mt-6). */}
                                 <div
-                                    className="w-full mx-auto px-4 md:px-6 mt-2 relative z-10 flex flex-col gap-6 min-h-[90vh]"
+                                    className="w-full mx-auto px-4 md:px-6 mt-4 md:mt-6 relative z-10 flex flex-col gap-6 min-h-[90vh]"
                                     style={{ maxWidth: 'var(--layout-max-width, 480px)' }}
                                 >
                                     {/* Template Header (Profile) */}

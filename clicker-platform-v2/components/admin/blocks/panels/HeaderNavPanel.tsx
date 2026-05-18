@@ -334,10 +334,11 @@ export function HeaderNavPanel() {
         updateHeader({ items: (header.items || []).filter(i => i.id !== id) });
     };
 
-    const handleUpdateItem = (id: string, field: string, value: string) => {
+    const handleUpdateItem = (id: string, fieldOrPatch: string | Record<string, string>, value?: string) => {
+        const patch = typeof fieldOrPatch === 'string' ? { [fieldOrPatch]: value as string } : fieldOrPatch;
         updateHeader({
             items: (header.items || []).map(item =>
-                item.id === id ? { ...item, [field]: value } : item
+                item.id === id ? { ...item, ...patch } : item
             ),
         });
     };
@@ -483,7 +484,7 @@ export function HeaderNavPanel() {
                                     pages={pages}
                                     homepageSlug={homepageSlug}
                                     onRemove={() => handleRemoveItem(item.id)}
-                                    onUpdate={(field, val) => handleUpdateItem(item.id, field, val)}
+                                    onUpdate={(fieldOrPatch, val) => handleUpdateItem(item.id, fieldOrPatch as any, val)}
                                     onOpenIconPicker={openIconPicker}
                                 />
                             ))}

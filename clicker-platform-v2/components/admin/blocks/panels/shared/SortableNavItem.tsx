@@ -9,7 +9,7 @@ import { CSS } from '@dnd-kit/utilities';
 export interface SortableNavItemProps {
     item: any;
     onRemove: () => void;
-    onUpdate: (field: string, val: string) => void;
+    onUpdate: (fieldOrPatch: string | Record<string, string>, val?: string) => void;
     onOpenIconPicker: (currentIcon: string, onSelect: (icon: string) => void) => void;
     forms: any[];
     pages: any[];
@@ -120,16 +120,16 @@ export function SortableNavItem({
                                 value={item.pageId || ''}
                                 onChange={(e) => {
                                     const page = pages.find(p => p.id === e.target.value);
-                                    onUpdate('pageId', e.target.value);
+                                    const patch: Record<string, string> = { pageId: e.target.value };
                                     if (page) {
                                         // Homepage uses action:homepage so the nav bar resolves it to "/"
-                                        const resolvedValue = page.slug === homepageSlug ? 'action:homepage' : `/${page.slug}`;
-                                        onUpdate('value', resolvedValue);
+                                        patch.value = page.slug === homepageSlug ? 'action:homepage' : `/${page.slug}`;
                                         // Auto-fill label if still the default placeholder
                                         if (!item.label || item.label === 'New Link') {
-                                            onUpdate('label', page.title);
+                                            patch.label = page.title;
                                         }
                                     }
+                                    onUpdate(patch);
                                 }}
                                 className="w-full px-3 py-1.5 text-sm bg-gray-50 dark:bg-neutral-900 border border-gray-300 dark:border-neutral-700 rounded-md text-neutral-900 dark:text-neutral-200 focus:border-blue-500/50 focus:outline-none"
                             >

@@ -192,11 +192,12 @@ export function ChromeBottomNavProperties() {
         }));
     };
 
-    const handleUpdateItem = (id: string, field: string, value: string) => {
+    const handleUpdateItem = (id: string, fieldOrPatch: string | Record<string, string>, value?: string) => {
+        const patch = typeof fieldOrPatch === 'string' ? { [fieldOrPatch]: value as string } : fieldOrPatch;
         setNavigation((prev: any) => ({
             ...prev,
             bottomNav: (prev.bottomNav || []).map((item: any) =>
-                item.id === id ? { ...item, [field]: value } : item
+                item.id === id ? { ...item, ...patch } : item
             ),
         }));
     };
@@ -290,7 +291,7 @@ export function ChromeBottomNavProperties() {
                                     pages={pages}
                                     homepageSlug={homepageSlug}
                                     onRemove={() => handleRemoveItem(item.id)}
-                                    onUpdate={(field, val) => handleUpdateItem(item.id, field, val)}
+                                    onUpdate={(fieldOrPatch, val) => handleUpdateItem(item.id, fieldOrPatch as any, val)}
                                     onOpenIconPicker={openIconPicker}
                                 />
                             ))}

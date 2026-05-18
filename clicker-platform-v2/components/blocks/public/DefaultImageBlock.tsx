@@ -65,13 +65,11 @@ export const DefaultImageBlock = ({ data, isFirst = false }: { data: any; isFirs
                         sizes="100vw"
                         priority={isFirst}
                         fetchPriority={isFirst ? 'high' : 'auto'}
-                        // No object-cover: image renders at its natural aspect ratio,
-                        // filling the container width. Previously object-cover + the
-                        // hardcoded 1920×1080 dimensions cropped portrait images to
-                        // a forced 16:9 frame. Full variant means "edge-to-edge,
-                        // no chrome" — that includes not cropping.
+                        // aspect-ratio: auto overrides next/image's intrinsic 1920/1080
+                        // aspect lock so portrait/square images render at their natural
+                        // ratio. Full variant = edge-to-edge, no chrome, no crop.
                         className="w-full h-auto"
-                        style={{ width: '100%', height: 'auto' }}
+                        style={{ width: '100%', height: 'auto', aspectRatio: 'auto' }}
                     />
                 </div>
                 {data.caption && (
@@ -98,8 +96,8 @@ export const DefaultImageBlock = ({ data, isFirst = false }: { data: any; isFirs
                         sizes="(max-width: 1024px) 100vw, 800px"
                         priority={isFirst}
                         fetchPriority={isFirst ? 'high' : 'auto'}
-                        className="w-full h-auto object-cover max-h-[60vh]"
-                        style={{ width: '100%', height: 'auto' }}
+                        className="w-full h-auto max-h-[70vh] object-contain"
+                        style={{ width: '100%', height: 'auto', aspectRatio: 'auto' }}
                     />
                     {data.caption && (
                         <div
@@ -135,8 +133,8 @@ export const DefaultImageBlock = ({ data, isFirst = false }: { data: any; isFirs
                     sizes="(max-width: 1024px) 100vw, 1000px"
                     priority={isFirst}
                     fetchPriority={isFirst ? 'high' : 'auto'}
-                    className="w-full h-auto object-cover max-h-[70vh]"
-                    style={{ width: '100%', height: 'auto' }}
+                    className="w-full h-auto max-h-[80vh] object-contain"
+                    style={{ width: '100%', height: 'auto', aspectRatio: 'auto' }}
                 />
             </div>
             {data.caption && (
