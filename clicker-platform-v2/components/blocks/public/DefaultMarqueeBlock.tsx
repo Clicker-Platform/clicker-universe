@@ -67,18 +67,8 @@ export const DefaultMarqueeBlock: React.FC<DefaultMarqueeBlockProps> = ({ data }
         flexShrink: 0,
     };
 
-    const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
-        const track = e.currentTarget.querySelector('.marquee-track') as HTMLElement | null;
-        if (track) track.style.animationPlayState = 'paused';
-    };
-
-    const handleMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
-        const track = e.currentTarget.querySelector('.marquee-track') as HTMLElement | null;
-        if (track) track.style.animationPlayState = 'running';
-    };
-
     return (
-        <div className="marquee-wrapper" style={wrapperStyle} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+        <div className="marquee-wrapper" style={wrapperStyle}>
             <div className="marquee-track" style={trackStyle}>
                 {doubled.map((item, idx) => (
                     <span key={`${item.id}-${idx}`} className="marquee-item" style={itemStyle}>

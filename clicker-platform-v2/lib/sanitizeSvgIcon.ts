@@ -1,5 +1,8 @@
 import DOMPurify from 'isomorphic-dompurify';
 
+// <use> intentionally omitted: not needed for inline icon markup, and removing
+// it forecloses a forward-looking risk if `id` is ever added to SVG_ATTRS for
+// gradient targeting.
 const SVG_TAGS = [
     'svg', 'g', 'path', 'circle', 'rect', 'line', 'polyline', 'polygon', 'ellipse',
     'defs', 'linearGradient', 'radialGradient', 'stop', 'mask', 'clipPath', 'title',

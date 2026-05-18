@@ -135,6 +135,11 @@ body:has(.dark.admin-layout) {
   to   { transform: translateX(0); }
 }
 
+/* Pause on hover (desktop). No-op on touch devices. */
+.marquee-wrapper:hover .marquee-track {
+  animation-play-state: paused;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .marquee-track {
     animation: none !important;
