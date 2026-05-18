@@ -93,13 +93,13 @@ export const MarqueeForm: React.FC<MarqueeFormProps> = ({ data, onChange }) => {
             <section className="space-y-3">
                 <h3 className="text-sm font-medium text-gray-700">Layout & motion</h3>
 
-                <div className="flex items-center justify-between">
-                    <label className="text-xs text-gray-600">Speed</label>
+                <div className="flex items-center gap-3">
+                    <label className="w-20 shrink-0 text-xs text-gray-600 whitespace-nowrap">Speed</label>
                     <Segmented<MarqueeSpeed> value={data.speed} options={SPEEDS} onChange={(v) => onChange({ ...data, speed: v })} />
                 </div>
 
-                <div className="flex items-center justify-between">
-                    <label className="text-xs text-gray-600">Direction</label>
+                <div className="flex items-center gap-3">
+                    <label className="w-20 shrink-0 text-xs text-gray-600 whitespace-nowrap">Direction</label>
                     <Segmented<MarqueeDirection>
                         value={data.direction}
                         options={['left', 'right']}
@@ -108,13 +108,13 @@ export const MarqueeForm: React.FC<MarqueeFormProps> = ({ data, onChange }) => {
                     />
                 </div>
 
-                <div className="flex items-center justify-between">
-                    <label className="text-xs text-gray-600">Icon size</label>
+                <div className="flex items-center gap-3">
+                    <label className="w-20 shrink-0 text-xs text-gray-600 whitespace-nowrap">Icon size</label>
                     <Segmented<MarqueeIconSize> value={data.iconSize} options={SIZES} onChange={(v) => onChange({ ...data, iconSize: v })} />
                 </div>
 
-                <div className="flex items-center justify-between">
-                    <label className="text-xs text-gray-600">Item gap</label>
+                <div className="flex items-center gap-3">
+                    <label className="w-20 shrink-0 text-xs text-gray-600 whitespace-nowrap">Item gap</label>
                     <Segmented<MarqueeItemGap> value={data.itemGap} options={GAPS} onChange={(v) => onChange({ ...data, itemGap: v })} />
                 </div>
             </section>
