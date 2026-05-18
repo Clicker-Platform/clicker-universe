@@ -8,7 +8,6 @@ import { InitialNavData } from '@/lib/hooks/useNavigationConfig';
 // import { ResponsiveContainer } from '@/components/layout/ResponsiveContainer'; // Inlined to fix hydration issues
 import { TemplateProvider } from '@/components/TemplateProvider';
 import { getTemplate } from '@/lib/templates/registry';
-import { ClassicProfileHeader } from "@/components/headers/ClassicProfileHeader";
 import { BackgroundDecorations } from "@/components/BackgroundDecorations";
 import { Footer } from "@/components/Footer";
 import { PageBackground } from '@/components/blocks/PageBackground';
@@ -68,7 +67,6 @@ export function SharedPageLayout({
     const template = getTemplate(activeTemplateId);
 
     // Components
-    const HeaderComponent = template.components?.Header || ClassicProfileHeader;
     const Background = template.components?.Background || BackgroundDecorations;
 
     // Styling Logic
@@ -156,17 +154,6 @@ export function SharedPageLayout({
                         className={`w-full mx-auto px-4 md:px-6 transition-all duration-300 relative z-10 flex flex-col gap-6 min-h-[90vh]`}
                         style={{ maxWidth: 'var(--layout-max-width, 480px)' }}
                     >
-                        {/* Header */}
-                        {profile && (
-                            <div>
-                                <HeaderComponent
-                                    profile={profile}
-                                    contact={contact}
-                                    showAddress={showHeaderAddress}
-                                />
-                            </div>
-                        )}
-
                         {/* Content */}
                         {children}
 

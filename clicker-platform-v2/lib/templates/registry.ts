@@ -2,10 +2,6 @@ import { TemplateDefinition, TemplateId } from './types';
 import { templateDefinitions } from './definitions';
 
 // Component Imports
-import { ClassicProfileHeader } from '@/components/headers/ClassicProfileHeader';
-import { ModernProfileHeader } from '@/components/headers/ModernProfileHeader';
-import { ShuvoHeader } from '@/components/headers/ShuvoHeader';
-import { MrbHeader } from '@/components/headers/MrbHeader';
 import { BackgroundDecorations } from '@/components/BackgroundDecorations';
 
 import { MrbQuickActions } from '@/components/blocks/mrb/MrbQuickActions';
@@ -15,23 +11,18 @@ import { MrbHero } from '@/components/blocks/mrb/MrbHero';
 // Map IDs to Component Sets
 const templateComponents: Record<string, any> = {
     'classic': {
-        Header: ClassicProfileHeader,
         Background: BackgroundDecorations,
     },
     'modern': {
-        Header: ModernProfileHeader,
         Background: () => null, // Modern template has no background decorations
     },
     'sojourner': {
-        Header: ModernProfileHeader,
         Background: BackgroundDecorations,
     },
     'shuvo': {
-        Header: ShuvoHeader,
         Background: BackgroundDecorations,
     },
     'mrb': {
-        Header: MrbHeader,
         Background: () => null,
         Blocks: {
             Hero: MrbHero,
@@ -40,7 +31,6 @@ const templateComponents: Record<string, any> = {
         }
     },
     'mrb-light': {
-        Header: MrbHeader,
         Background: () => null,
         Blocks: {
             Hero: MrbHero,
