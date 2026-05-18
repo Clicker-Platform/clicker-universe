@@ -140,35 +140,32 @@ Add a Site Styles button (paintbrush icon, matching screenshot) next to existing
 
 ---
 
-## Curated Library (Initial ~24 Packs)
+## Curated Library (Starter Set: 8 Core + 4 Optional)
 
-Categories and sample picks (final list to be design-reviewed before code):
+**Sizing rationale:** 8–12 packs at launch (not 24+). Each pack adds 15–40KB per weight to the build's font bundle, and decision fatigue is a real cost for SMB users. Adding pack #13 later is a trivial PR — start focused, expand on usage data.
 
-**Serif-led editorial**
-- Editorial Serif — Playfair Display / Source Sans Pro
-- Modern Magazine — Fraunces / Inter
-- Bookish — Lora / Lato
+**Core 8 (ship at launch):**
 
-**Sans-led modern**
-- Clean Minimal — Inter / Inter
-- Geometric — Poppins / Poppins
-- Swiss — Work Sans / Work Sans
+|#|Pack name|Heading|Body|
+|-|-|-|-|
+|1|Clean Minimal|Inter|Inter Tight|
+|2|Modern Geometric|Outfit|DM Sans|
+|3|Editorial Serif|Playfair Display|Lora|
+|4|Modern Magazine|Fraunces|Inter|
+|5|Bold Display|Archivo Black|Archivo|
+|6|Brutalist|Space Grotesk|Inter|
+|7|Warm Friendly|DM Serif Display|DM Sans|
+|8|Rounded Soft|Quicksand|Montserrat|
+
+**Optional 4 (add if bundle budget allows, or defer to v1.1):**
+
 - Humanist — Nunito / Nunito
+- Tech Mono-flavored — IBM Plex Sans / IBM Plex Mono
+- Bookish — Lora / Lato
+- Swiss — Work Sans / Work Sans
 
-**Display + body pairs**
-- Bold Display — Archivo Black / Archivo
-- Brutalist — Space Grotesk / Space Mono
-- Editorial Bold — Bricolage Grotesque / Inter
-
-**Friendly / approachable**
-- Rounded — Quicksand / Open Sans
-- Warm — DM Serif Display / DM Sans
-
-**Tech / mono-flavored**
-- Monospace — JetBrains Mono / JetBrains Mono
-- Code-adjacent — IBM Plex Sans / IBM Plex Mono
-
-(Final pack curation happens during implementation; this is illustrative.)
+**Unique families to register in `app/layout.tsx` for the core 8:**
+Inter, Inter Tight, Outfit, DM Sans, Playfair Display, Lora, Fraunces, Archivo, Archivo Black, Space Grotesk, DM Serif Display, Quicksand, Montserrat — 13 families total. (Inter and DM Sans appear in multiple packs but are imported once.)
 
 ---
 
