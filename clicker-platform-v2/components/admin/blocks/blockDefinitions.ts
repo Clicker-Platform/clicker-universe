@@ -1,8 +1,9 @@
 import { BlockType } from '@/data/mockData';
-import { Type, Image as ImageIcon, Layout, Box, HelpCircle, AlignCenter, Link, Map, List, Clock, Star, MapPin, Play, Columns2, ClipboardList, LayoutGrid, Columns3 } from 'lucide-react';
+import { Type, Image as ImageIcon, Layout, Box, HelpCircle, AlignCenter, Link, Map, List, Clock, Star, MapPin, Play, Columns2, ClipboardList, LayoutGrid, Columns3, Megaphone } from 'lucide-react';
 import { DEFAULT_SHOWCASE_DATA, newRow } from '@/components/blocks/content-showcase/types';
 import { DEFAULT_MEDIA } from '@/components/admin/blocks/media-field/types';
 import { makeDefaultCard } from '@/components/blocks/feature-cards/types';
+import { makeDefaultMarqueeItem } from '@/components/blocks/marquee/types';
 
 export const BLOCK_OPTIONS: { type: BlockType; label: string; icon: React.ElementType }[] = [
     { type: 'hero', label: 'Hero Section', icon: Layout },
@@ -25,6 +26,7 @@ export const BLOCK_OPTIONS: { type: BlockType; label: string; icon: React.Elemen
     { type: 'feature_cards', label: 'Feature Cards', icon: LayoutGrid },
     { type: 'columns', label: 'Columns', icon: Columns3 },
     { type: 'grid', label: 'Grid', icon: LayoutGrid },
+    { type: 'marquee', label: 'Marquee', icon: Megaphone },
 ];
 
 // Block-owned default layout variants. Industry-standard: the block defines its own
@@ -148,6 +150,20 @@ export function getDefaultData(type: BlockType, _templateId = 'classic'): any {
                 maxWidth: 'full',
             };
         }
+        case 'marquee':
+            return {
+                ...baseData,
+                items: [
+                    makeDefaultMarqueeItem('100% Online', 'Globe'),
+                    makeDefaultMarqueeItem('Clear Pricing', 'DollarSign'),
+                    makeDefaultMarqueeItem('Shipped To Your Door', 'Package'),
+                    makeDefaultMarqueeItem('Licensed Providers', 'Award'),
+                ],
+                speed: 'normal',
+                direction: 'left',
+                iconSize: 'md',
+                itemGap: 'normal',
+            };
         default:
             return baseData;
     }
