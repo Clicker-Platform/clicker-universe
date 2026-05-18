@@ -29,13 +29,13 @@ const GAPS: MarqueeItemGap[] = ['tight', 'normal', 'loose'];
 
 function Segmented<T extends string>({ value, options, onChange, labels }: { value: T; options: T[]; onChange: (v: T) => void; labels?: Record<string, string> }) {
     return (
-        <div className="inline-flex border border-gray-200 rounded overflow-hidden">
+        <div className="flex w-56 border border-gray-200 rounded overflow-hidden">
             {options.map((opt) => (
                 <button
                     key={opt}
                     type="button"
                     onClick={() => onChange(opt)}
-                    className={`px-3 py-1 text-xs capitalize ${value === opt ? 'bg-gray-900 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+                    className={`flex-1 px-3 py-1 text-xs capitalize text-center ${value === opt ? 'bg-gray-900 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
                 >
                     {labels?.[opt] ?? opt}
                 </button>
