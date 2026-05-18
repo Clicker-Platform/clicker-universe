@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ResponsiveNavBar } from '@/components/layout/ResponsiveNavBar';
+import { HeaderNavigation } from '@/components/layout/header/HeaderNavigation';
 import { BottomNavBar } from '@/components/layout/BottomNavBar';
 import { NavigationProvider } from '@/components/layout/NavigationProvider';
 import { InitialNavData } from '@/lib/hooks/useNavigationConfig';
@@ -123,7 +123,7 @@ export function SharedPageLayout({
             <div className="contents">
                 {/* Navigation */}
                 {profile && (
-                    <ResponsiveNavBar
+                    <HeaderNavigation
                         profile={profile}
                         siteId={siteId}
                         forceMobile={forceMobile}

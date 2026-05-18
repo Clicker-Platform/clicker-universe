@@ -11,7 +11,7 @@ import { findBlockPath } from './forms/container/types';
 import { useEffect, useRef, useState, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { getTemplate } from '@/lib/templates/registry';
-import { ResponsiveNavBar } from '@/components/layout/ResponsiveNavBar';
+import { HeaderNavigation } from '@/components/layout/header/HeaderNavigation';
 import { Footer } from '@/components/Footer';
 import { BottomNavBar } from '@/components/layout/BottomNavBar';
 import { usePageStudio } from './PageStudioContext';
@@ -308,7 +308,7 @@ export function CanvasStudio({
                                 }}
                             >
                                 {globalSettings?.profile && (
-                                    <ResponsiveNavBar
+                                    <HeaderNavigation
                                         profile={globalSettings.profile}
                                         siteId={siteId!}
                                         forceMobile={deviceView !== 'desktop'}
