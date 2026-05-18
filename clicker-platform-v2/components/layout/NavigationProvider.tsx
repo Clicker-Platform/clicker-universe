@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useMemo } from 'react';
-import { NavigationItem } from '@/data/mockData';
+import { NavigationItem, HeaderNavigationConfig } from '@/data/mockData';
 import { useNavigationConfig, TopNavActions, NavBarStyle, InitialNavData } from '@/lib/hooks/useNavigationConfig';
 
 interface NavigationContextType {
@@ -11,6 +11,7 @@ interface NavigationContextType {
     fab: NavigationItem | null;
     headerStyle: NavBarStyle;
     bottomNavStyle: NavBarStyle;
+    header: HeaderNavigationConfig;
     loading: boolean;
     error: Error | null;
     formCache: Record<string, any>;
@@ -44,6 +45,15 @@ const NAVIGATION_FALLBACK: NavigationContextType = {
     fab: null,
     headerStyle: {},
     bottomNavStyle: {},
+    header: {
+        variant: 'logo-left',
+        width: 'constrained',
+        scrollBehavior: 'fixed',
+        items: [],
+        cta: { enabled: false, label: '', linkType: 'url', linkValue: '' },
+        typography: { preset: 'default' },
+        scrolledAppearance: { enabled: false },
+    },
     loading: false,
     error: null,
     formCache: {},

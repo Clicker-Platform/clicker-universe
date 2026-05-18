@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { NavigationItem } from '@/data/mockData';
+import { NavigationItem, HeaderNavigationConfig } from '@/data/mockData';
+import { synthesizeHeaderConfig } from '@/lib/migrations/headerNavigation';
 import { logger } from '@/lib/logger-edge';
 
 export interface TopNavActions {
@@ -28,6 +29,7 @@ export interface NavigationConfig {
     fab: NavigationItem | null;
     headerStyle: NavBarStyle;
     bottomNavStyle: NavBarStyle;
+    header: HeaderNavigationConfig;
     loading: boolean;
     error: Error | null;
 }
@@ -39,6 +41,7 @@ export interface InitialNavData {
     fab?: NavigationItem | null;
     headerStyle?: NavBarStyle;
     bottomNavStyle?: NavBarStyle;
+    header?: HeaderNavigationConfig;
 }
 
 export function useNavigationConfig(siteId: string, initialData?: InitialNavData): NavigationConfig {
@@ -50,6 +53,9 @@ export function useNavigationConfig(siteId: string, initialData?: InitialNavData
     const [fab, setFab] = useState<NavigationItem | null>(initialData?.fab ?? null);
     const [headerStyle, setHeaderStyle] = useState<NavBarStyle>(initialData?.headerStyle ?? {});
     const [bottomNavStyle, setBottomNavStyle] = useState<NavBarStyle>(initialData?.bottomNavStyle ?? {});
+    const [header, setHeader] = useState<HeaderNavigationConfig>(() =>
+        synthesizeHeaderConfig((initialData as any) ?? undefined)
+    );
     const [loading, setLoading] = useState(!hasInitial);
     const [error, setError] = useState<Error | null>(null);
 
@@ -76,6 +82,7 @@ export function useNavigationConfig(siteId: string, initialData?: InitialNavData
                         setFab(nav.fab ?? null);
                         setHeaderStyle(nav.headerStyle ?? {});
                         setBottomNavStyle(nav.bottomNavStyle ?? {});
+                        setHeader(synthesizeHeaderConfig((nav as any) ?? undefined));
                     } else {
                         setTopNav([]);
                         setTopNavActions(null);
@@ -83,6 +90,7 @@ export function useNavigationConfig(siteId: string, initialData?: InitialNavData
                         setFab(null);
                         setHeaderStyle({});
                         setBottomNavStyle({});
+                        setHeader(synthesizeHeaderConfig(undefined));
                     }
                     setLoading(false);
                 },
@@ -106,7 +114,7 @@ export function useNavigationConfig(siteId: string, initialData?: InitialNavData
     }, [siteId, hasInitial]);
 
     return useMemo(
-        () => ({ topNav, topNavActions, bottomNav, fab, headerStyle, bottomNavStyle, loading, error }),
-        [topNav, topNavActions, bottomNav, fab, headerStyle, bottomNavStyle, loading, error]
+        () => ({ topNav, topNavActions, bottomNav, fab, headerStyle, bottomNavStyle, header, loading, error }),
+        [topNav, topNavActions, bottomNav, fab, headerStyle, bottomNavStyle, header, loading, error]
     );
 }
