@@ -349,9 +349,10 @@ export function CanvasStudio({
                                     </div>
                                 )}
 
-                                {/* Constrained container — mirrors SharedPageLayout */}
+                                {/* Constrained container — mirrors SharedPageLayout.
+                                    mt-2: small gap so block selection/hover guides clear the header chrome ring. */}
                                 <div
-                                    className="w-full mx-auto px-4 md:px-6 relative z-10 flex flex-col gap-6 min-h-[90vh]"
+                                    className="w-full mx-auto px-4 md:px-6 mt-2 relative z-10 flex flex-col gap-6 min-h-[90vh]"
                                     style={{ maxWidth: 'var(--layout-max-width, 480px)' }}
                                 >
                                     {/* Template Header (Profile) */}
