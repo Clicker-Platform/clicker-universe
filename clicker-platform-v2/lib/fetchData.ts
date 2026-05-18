@@ -231,6 +231,23 @@ export const fetchSiteSettings = cache(async function fetchSiteSettings(siteId: 
     });
 });
 
+// Font pack fields are fetched fresh on every request — no Redis cache.
+// Font pack changes should be instantly visible in the editor (same reasoning as fetchThemeSettings).
+export const fetchAppearanceStyles = cache(async function fetchAppearanceStyles(siteId: string): Promise<{ fontPackId: string | null }> {
+    if (!siteId || siteId === 'default' || siteId === 'pending' || siteId.startsWith('.')) {
+        return { fontPackId: null };
+    }
+    try {
+        const snap = await getDoc(doc(db, "sites", siteId, "appearance", "styles"));
+        if (!snap.exists()) return { fontPackId: null };
+        const data = snap.data() ?? {};
+        return { fontPackId: typeof data.fontPackId === 'string' ? data.fontPackId : null };
+    } catch (e) {
+        logDebug(`fetchAppearanceStyles: Error ${e}`);
+        return { fontPackId: null };
+    }
+});
+
 // Theme fields are fetched fresh on every request — no Redis cache.
 // Active template development requires instant visibility of color/radius/template changes.
 export const fetchThemeSettings = cache(async function fetchThemeSettings(siteId: string) {
