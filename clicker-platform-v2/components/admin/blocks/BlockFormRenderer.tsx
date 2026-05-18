@@ -37,6 +37,7 @@ const HeadingForm = dynamic(() => import('./forms/HeadingForm').then(mod => mod.
 const FeatureCardsForm = dynamic(() => import('./forms/FeatureCardsForm').then(mod => mod.FeatureCardsForm), { loading: () => <FormSkeleton /> });
 const ColumnsForm = dynamic(() => import('./forms/ColumnsForm').then(mod => mod.ColumnsForm), { loading: () => <FormSkeleton /> });
 const GridForm = dynamic(() => import('./forms/GridForm').then(mod => mod.GridForm), { loading: () => <FormSkeleton /> });
+const MarqueeForm = dynamic(() => import('./forms/MarqueeForm').then(mod => mod.MarqueeForm), { loading: () => <FormSkeleton /> });
 
 interface BlockFormRendererProps {
     block: PageBlock;
@@ -141,6 +142,7 @@ export const BlockFormRenderer = memo(({ block, onChange, templateId = 'classic'
         case 'feature_cards': return <FeatureCardsForm data={block.data} onChange={handleDataChange} />;
         case 'columns': return <ColumnsForm data={block.data} containerBlockId={block.id} onChange={handleDataChange} templateId={templateId} onOpenSlideOver={onOpenSlideOver} />;
         case 'grid': return <GridForm data={block.data} containerBlockId={block.id} onChange={handleDataChange} templateId={templateId} onOpenSlideOver={onOpenSlideOver} />;
+        case 'marquee': return <MarqueeForm data={block.data} onChange={handleDataChange} />;
 
         case 'quick_actions':
             return <QuickActionsBlockForm data={block.data} onChange={handleDataChange} onOpenLinks={onOpenSlideOver ? () => onOpenSlideOver('links') : undefined} />;
