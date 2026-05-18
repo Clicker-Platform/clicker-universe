@@ -1,21 +1,48 @@
 import type { Metadata } from "next";
-import { Figtree, Space_Mono } from "next/font/google";
+import {
+  Figtree,
+  Space_Mono,
+  Inter,
+  Inter_Tight,
+  Outfit,
+  DM_Sans,
+  Playfair_Display,
+  Lora,
+  Fraunces,
+  Archivo,
+  Archivo_Black,
+  Space_Grotesk,
+  DM_Serif_Display,
+  Quicksand,
+  Montserrat,
+} from "next/font/google";
 import { Toaster } from 'sonner';
 import "./globals.css";
 
-const figtree = Figtree({
-  subsets: ["latin"],
-  variable: "--font-jakarta",
-  weight: ['400', '500', '600', '700', '800'],
-  display: 'swap',
-});
+const figtree = Figtree({ subsets: ["latin"], variable: "--font-jakarta", weight: ['400','500','600','700','800'], display: 'swap' });
+const spaceMono = Space_Mono({ subsets: ["latin"], variable: "--font-space", weight: ['400','700'], display: 'swap' });
 
-const spaceMono = Space_Mono({
-  subsets: ["latin"],
-  variable: "--font-space",
-  weight: ['400', '700'],
-  display: 'swap',
-});
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter", weight: ['400','500','600','700'], display: 'swap' });
+const interTight = Inter_Tight({ subsets: ["latin"], variable: "--font-inter-tight", weight: ['400','500','600','700'], display: 'swap' });
+const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit", weight: ['400','500','600','700'], display: 'swap' });
+const dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-dm-sans", weight: ['400','500','600','700'], display: 'swap' });
+const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair", weight: ['400','600','700'], display: 'swap' });
+const lora = Lora({ subsets: ["latin"], variable: "--font-lora", weight: ['400','500','600'], display: 'swap' });
+const fraunces = Fraunces({ subsets: ["latin"], variable: "--font-fraunces", weight: ['400','600','700'], display: 'swap' });
+const archivo = Archivo({ subsets: ["latin"], variable: "--font-archivo", weight: ['400','500','600','700'], display: 'swap' });
+const archivoBlack = Archivo_Black({ subsets: ["latin"], variable: "--font-archivo-black", weight: ['400'], display: 'swap' });
+const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space-grotesk", weight: ['400','500','600','700'], display: 'swap' });
+const dmSerifDisplay = DM_Serif_Display({ subsets: ["latin"], variable: "--font-dm-serif-display", weight: ['400'], display: 'swap' });
+const quicksand = Quicksand({ subsets: ["latin"], variable: "--font-quicksand", weight: ['400','500','600','700'], display: 'swap' });
+const montserrat = Montserrat({ subsets: ["latin"], variable: "--font-montserrat", weight: ['400','500','600','700'], display: 'swap' });
+
+const FONT_CLASS_NAMES = [
+  figtree.variable, spaceMono.variable,
+  inter.variable, interTight.variable, outfit.variable, dmSans.variable,
+  playfair.variable, lora.variable, fraunces.variable,
+  archivo.variable, archivoBlack.variable, spaceGrotesk.variable,
+  dmSerifDisplay.variable, quicksand.variable, montserrat.variable,
+].join(' ');
 
 import { fetchSiteSettings } from "@/lib/fetchData";
 import ThemeRegistry from "@/components/ThemeRegistry";
@@ -83,7 +110,7 @@ export default async function RootLayout({
       </head>
       <body
         suppressHydrationWarning
-        className={`${figtree.variable} ${spaceMono.variable} antialiased font-sans`}
+        className={`${FONT_CLASS_NAMES} antialiased font-sans`}
       >
         <PostHogProvider>
           <SiteProvider siteId={siteId} tenantSlug={tenantSlug} isSubdomain={isSubdomain}>
