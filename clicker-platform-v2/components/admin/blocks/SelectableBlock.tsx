@@ -2,6 +2,7 @@
 
 import React, { ReactNode, useContext } from 'react';
 import { EditorContext } from './EditorContext';
+import { SelectionChrome } from './SelectionChrome';
 
 interface InlineFieldFocusPayload {
     blockId: string;
@@ -94,27 +95,7 @@ export function SelectableBlock({
             className={`min-w-0 relative ${isSelected ? 'z-20' : 'cursor-pointer'}`}
             onClick={handleClick}
         >
-            {/* Hover outline — only when guides are on and not selected */}
-            {showGuides && !isSelected && (
-                <div className="absolute inset-0 pointer-events-none z-10 outline outline-1 outline-blue-400/40 outline-offset-0 hover:outline-blue-400/60" />
-            )}
-
-            {/* Selection chrome — 2px blue border + 8 square handles */}
-            {isSelected && (
-                <div className="absolute pointer-events-none z-10" style={{ inset: -1 }}>
-                    {/* Full border — sharp corners, no border-radius */}
-                    <div className="absolute inset-0 border-2 border-blue-500" style={{ borderRadius: 0 }} />
-                    {/* 8 square handles */}
-                    <div className="absolute -top-[4px] -left-[4px] w-[8px] h-[8px] bg-white border-[1.5px] border-blue-500" />
-                    <div className="absolute -top-[4px] left-1/2 -translate-x-1/2 w-[8px] h-[8px] bg-white border-[1.5px] border-blue-500" />
-                    <div className="absolute -top-[4px] -right-[4px] w-[8px] h-[8px] bg-white border-[1.5px] border-blue-500" />
-                    <div className="absolute top-1/2 -translate-y-1/2 -left-[4px] w-[8px] h-[8px] bg-white border-[1.5px] border-blue-500" />
-                    <div className="absolute top-1/2 -translate-y-1/2 -right-[4px] w-[8px] h-[8px] bg-white border-[1.5px] border-blue-500" />
-                    <div className="absolute -bottom-[4px] -left-[4px] w-[8px] h-[8px] bg-white border-[1.5px] border-blue-500" />
-                    <div className="absolute -bottom-[4px] left-1/2 -translate-x-1/2 w-[8px] h-[8px] bg-white border-[1.5px] border-blue-500" />
-                    <div className="absolute -bottom-[4px] -right-[4px] w-[8px] h-[8px] bg-white border-[1.5px] border-blue-500" />
-                </div>
-            )}
+            <SelectionChrome selected={isSelected} hoverGuide={showGuides && !isSelected} />
 
             <div className={allowsPointerEvents ? 'pointer-events-auto' : 'pointer-events-none'}>
                 {children}

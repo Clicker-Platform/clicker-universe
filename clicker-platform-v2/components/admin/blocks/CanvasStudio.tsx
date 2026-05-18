@@ -7,6 +7,7 @@ import { useSite } from '@/lib/site-context';
 import { TemplateProvider } from '@/components/TemplateProvider';
 import { BlockRenderer } from '@/components/blocks/BlockRenderer';
 import { SelectableBlock } from './SelectableBlock';
+import { SelectionChrome } from './SelectionChrome';
 import { findBlockPath } from './forms/container/types';
 import { useEffect, useRef, useState, useMemo } from 'react';
 import dynamic from 'next/dynamic';
@@ -298,15 +299,16 @@ export function CanvasStudio({
                             {/* Top Navbar Slot */}
                             <div
                                 data-block-id="chrome:header"
-                                className={`z-50 w-full cursor-pointer transition-all flex-shrink-0 ${selection.kind === 'chrome' && selection.chromeId === 'header'
-                                        ? 'ring-4 ring-blue-500 ring-offset-[-4px]'
-                                        : showGuides ? 'hover:ring-2 hover:ring-blue-300' : ''
-                                    }`}
+                                className="z-50 w-full cursor-pointer transition-all flex-shrink-0 relative"
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     setSelection({ kind: 'chrome', chromeId: 'header' });
                                 }}
                             >
+                                <SelectionChrome
+                                    selected={selection.kind === 'chrome' && selection.chromeId === 'header'}
+                                    hoverGuide={showGuides && !(selection.kind === 'chrome' && selection.chromeId === 'header')}
+                                />
                                 {globalSettings?.profile && (
                                     <HeaderNavigation
                                         profile={globalSettings.profile}
@@ -447,15 +449,16 @@ export function CanvasStudio({
                                     {/* Site Footer */}
                                     <div
                                         data-block-id="chrome:footer"
-                                        className={`w-full cursor-pointer transition-all ${selection.kind === 'chrome' && selection.chromeId === 'footer'
-                                                ? 'ring-4 ring-blue-500 ring-offset-[-4px]'
-                                                : showGuides ? 'hover:ring-2 hover:ring-blue-300' : ''
-                                            }`}
+                                        className="w-full cursor-pointer transition-all relative"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             setSelection({ kind: 'chrome', chromeId: 'footer' });
                                         }}
                                     >
+                                        <SelectionChrome
+                                            selected={selection.kind === 'chrome' && selection.chromeId === 'footer'}
+                                            hoverGuide={showGuides && !(selection.kind === 'chrome' && selection.chromeId === 'footer')}
+                                        />
                                         <div className="pointer-events-none">
                                             <Footer
                                                 socialLinks={globalSettings?.socialLinks}
@@ -471,15 +474,16 @@ export function CanvasStudio({
                             {/* Bottom Nav Slot — only rendered when template enables showBottomNav */}
                             <div
                                 data-block-id="chrome:bottomnav"
-                                className={`relative z-50 w-full flex-shrink-0 cursor-pointer transition-all ${selection.kind === 'chrome' && selection.chromeId === 'bottomnav'
-                                        ? 'ring-4 ring-blue-500 ring-offset-[-4px]'
-                                        : showGuides ? 'hover:ring-2 hover:ring-blue-300' : ''
-                                    }`}
+                                className="relative z-50 w-full flex-shrink-0 cursor-pointer transition-all"
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     setSelection({ kind: 'chrome', chromeId: 'bottomnav' });
                                 }}
                             >
+                                <SelectionChrome
+                                    selected={selection.kind === 'chrome' && selection.chromeId === 'bottomnav'}
+                                    hoverGuide={showGuides && !(selection.kind === 'chrome' && selection.chromeId === 'bottomnav')}
+                                />
                                 <div className="pointer-events-none">
                                     <BottomNavBar previewMode={true} />
                                 </div>
