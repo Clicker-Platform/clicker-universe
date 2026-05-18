@@ -2,7 +2,7 @@ import DOMPurify from 'isomorphic-dompurify';
 
 const SVG_TAGS = [
     'svg', 'g', 'path', 'circle', 'rect', 'line', 'polyline', 'polygon', 'ellipse',
-    'defs', 'linearGradient', 'radialGradient', 'stop', 'mask', 'clipPath', 'use', 'title',
+    'defs', 'linearGradient', 'radialGradient', 'stop', 'mask', 'clipPath', 'title',
 ];
 
 const SVG_ATTRS = [
@@ -12,6 +12,8 @@ const SVG_ATTRS = [
     'points', 'width', 'height', 'offset', 'stop-color',
 ];
 
+// Runs AFTER DOMPurify, which normalizes attribute quotes to double quotes.
+// Do not call on raw/untrusted input or single-quoted/unquoted attrs will bypass.
 function normalizeColors(svg: string): string {
     return svg.replace(/(stroke|fill)="([^"]*)"/g, (_match, attr, value) => {
         const v = value.trim().toLowerCase();
@@ -22,9 +24,9 @@ function normalizeColors(svg: string): string {
 
 function forceRootSize(svg: string): string {
     return svg.replace(/<svg\b([^>]*)>/i, (_full, attrs) => {
-        const cleaned = attrs
-            .replace(/\swidth="[^"]*"/i, '')
-            .replace(/\sheight="[^"]*"/i, '');
+        const cleaned = (attrs as string)
+            .replace(/(^|\s)width\s*=\s*"[^"]*"/i, '')
+            .replace(/(^|\s)height\s*=\s*"[^"]*"/i, '');
         return `<svg${cleaned} width="1em" height="1em">`;
     });
 }
@@ -35,7 +37,6 @@ export function sanitizeSvgIcon(input: string | null | undefined): string {
     if (!trimmed.toLowerCase().includes('<svg')) return '';
 
     const purified = DOMPurify.sanitize(trimmed, {
-        USE_PROFILES: { svg: true, svgFilters: false },
         ALLOWED_TAGS: SVG_TAGS,
         ALLOWED_ATTR: SVG_ATTRS,
         FORBID_ATTR: ['href', 'xlink:href', 'style'],

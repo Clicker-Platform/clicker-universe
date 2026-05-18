@@ -59,4 +59,51 @@ describe('sanitizeSvgIcon', () => {
         expect(out).toMatch(/<svg[^>]*\swidth="1em"/);
         expect(out).toMatch(/<svg[^>]*\sheight="1em"/);
     });
+
+    it('strips <style> tags inside svg', () => {
+        const malicious = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><style>circle{fill:red}</style><circle cx="12" cy="12" r="5"/></svg>`;
+        const out = sanitizeSvgIcon(malicious);
+        expect(out).not.toContain('<style');
+        expect(out).toContain('<circle');
+    });
+
+    it('strips <image> tags', () => {
+        const malicious = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><image href="https://evil.com/x.png"/><path d="M1 1"/></svg>`;
+        const out = sanitizeSvgIcon(malicious);
+        expect(out).not.toContain('<image');
+        expect(out).not.toContain('evil.com');
+    });
+
+    it('strips <a> anchor tags (no clickable icons)', () => {
+        const malicious = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><a href="javascript:alert(1)"><circle cx="12" cy="12" r="5"/></a></svg>`;
+        const out = sanitizeSvgIcon(malicious);
+        expect(out).not.toContain('<a ');
+        expect(out).not.toContain('javascript');
+    });
+
+    it('strips SMIL animation tags (<animate>, <set>)', () => {
+        const malicious = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><animate attributeName="x" from="0" to="1"/><set attributeName="y" to="2"/><path d="M1 1"/></svg>`;
+        const out = sanitizeSvgIcon(malicious);
+        expect(out).not.toContain('<animate');
+        expect(out).not.toContain('<set');
+        expect(out).toContain('<path');
+    });
+
+    it('strips <foreignObject> entirely', () => {
+        const malicious = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><foreignObject><div onclick="alert(1)">x</div></foreignObject></svg>`;
+        const out = sanitizeSvgIcon(malicious);
+        expect(out).not.toContain('foreignObject');
+        expect(out).not.toContain('onclick');
+        expect(out).not.toContain('alert');
+    });
+
+    it('forces width="1em" when width is the first attribute (no leading space)', () => {
+        const input = `<svg width="24" height="24" viewBox="0 0 24 24" stroke="currentColor"><path d="M1 1"/></svg>`;
+        const out = sanitizeSvgIcon(input);
+        // Should only contain "1em", never "24" as a width value
+        expect(out).toMatch(/width="1em"/);
+        expect(out).not.toMatch(/width="24"/);
+        expect(out).toMatch(/height="1em"/);
+        expect(out).not.toMatch(/height="24"/);
+    });
 });
