@@ -2,7 +2,7 @@
 
 import { useEditor } from './EditorContext';
 import { BlockManager } from './BlockManager';
-import { Settings, Layers, Box, FileText, BarChart2, CheckSquare, Square, X, Plus, Link2, FileInput, ShoppingBag, Globe, Loader2, Palette, MoreHorizontal as MoreHorizontalIcon, Image as ImageIcon } from 'lucide-react';
+import { Settings, Layers, Box, Brush, FileText, BarChart2, CheckSquare, Square, X, Plus, Link2, FileInput, ShoppingBag, Globe, Loader2, Palette, MoreHorizontal as MoreHorizontalIcon, Image as ImageIcon } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
 import { TemplateProvider } from '@/components/TemplateProvider';
 import { BlockRenderer } from '@/components/blocks/BlockRenderer';
@@ -38,6 +38,7 @@ const FormsPanel = dynamic(() => import('./panels/FormsPanel').then(m => m.Forms
 const ProductsPanel = dynamic(() => import('./panels/ProductsPanel').then(m => m.ProductsPanel));
 const SiteInfoPanel = dynamic(() => import('./panels/SiteInfoPanel').then(m => m.SiteInfoPanel));
 const BrandingPanel = dynamic(() => import('./panels/BrandingPanel').then(m => m.BrandingPanel));
+const SiteStylesPanel = dynamic(() => import('./panels/SiteStylesPanel').then(m => m.SiteStylesPanel));
 
 export function CanvasStudio({
     globalSettings,
@@ -91,7 +92,7 @@ export function CanvasStudio({
     const [host] = useState(() => typeof window !== 'undefined' ? window.location.host : '');
     const [tooltip, setTooltip] = useState<{ label: string; top: number; left: number; side?: boolean; sideLeft?: boolean } | null>(null);
     const [leftPanel, setLeftPanel] = useState<'pages' | 'add' | 'layers' | null>('layers');
-    const [slideOverPanel, setSlideOverPanel] = useState<'links' | 'forms' | 'products' | 'siteinfo' | 'branding' | null>(null);
+    const [slideOverPanel, setSlideOverPanel] = useState<'links' | 'forms' | 'products' | 'siteinfo' | 'branding' | 'sitestyles' | null>(null);
 
     // Mobile state
     const [mobileSheet, setMobileSheet] = useState<MobileActiveSheet>(null);
@@ -130,7 +131,7 @@ export function CanvasStudio({
         setSlideOverPanel(null);
     };
 
-    const toggleSlideOverPanel = (panel: 'links' | 'forms' | 'products' | 'siteinfo' | 'branding') => {
+    const toggleSlideOverPanel = (panel: 'links' | 'forms' | 'products' | 'siteinfo' | 'branding' | 'sitestyles') => {
         setSlideOverPanel(prev => prev === panel ? null : panel);
         setLeftPanel(null);
     };
@@ -206,6 +207,7 @@ export function CanvasStudio({
                 case 'b': toggleSlideOverPanel('products'); break;
                 case 'i': toggleSlideOverPanel('siteinfo'); break;
                 case 'g': toggleSlideOverPanel('branding'); break;
+                case 't': toggleSlideOverPanel('sitestyles'); break;
             }
         };
         window.addEventListener('keydown', handler);
@@ -784,6 +786,7 @@ export function CanvasStudio({
                                 { id: 'products' as const, icon: ShoppingBag, label: 'Products', description: 'Manage product listings' },
                                 { id: 'siteinfo' as const, icon: Globe, label: 'Site Info', description: 'Business info & contact details' },
                                 { id: 'branding' as const, icon: Palette, label: 'Branding', description: 'Logos, colors & typography' },
+                                { id: 'sitestyles' as const, icon: Brush, label: 'Site Styles', description: 'Fonts, colors, buttons, forms' },
                             ]).map(({ id, icon: Icon, label, description }) => (
                                 <button
                                     key={id}
@@ -876,8 +879,8 @@ export function CanvasStudio({
                 <MobileBottomSheet
                     isOpen={!!slideOverPanel}
                     onClose={() => setSlideOverPanel(null)}
-                    title={slideOverPanel === 'links' ? 'Links' : slideOverPanel === 'forms' ? 'Forms' : slideOverPanel === 'products' ? 'Products' : slideOverPanel === 'siteinfo' ? 'Site Info' : slideOverPanel === 'branding' ? 'Branding' : ''}
-                    icon={slideOverPanel === 'links' ? Link2 : slideOverPanel === 'forms' ? FileInput : slideOverPanel === 'products' ? ShoppingBag : slideOverPanel === 'siteinfo' ? Globe : slideOverPanel === 'branding' ? Palette : undefined}
+                    title={slideOverPanel === 'links' ? 'Links' : slideOverPanel === 'forms' ? 'Forms' : slideOverPanel === 'products' ? 'Products' : slideOverPanel === 'siteinfo' ? 'Site Info' : slideOverPanel === 'branding' ? 'Branding' : slideOverPanel === 'sitestyles' ? 'Site Styles' : ''}
+                    icon={slideOverPanel === 'links' ? Link2 : slideOverPanel === 'forms' ? FileInput : slideOverPanel === 'products' ? ShoppingBag : slideOverPanel === 'siteinfo' ? Globe : slideOverPanel === 'branding' ? Palette : slideOverPanel === 'sitestyles' ? Brush : undefined}
                     height="80vh"
                 >
                     {slideOverPanel === 'links' && <LinksPanel />}
@@ -885,6 +888,7 @@ export function CanvasStudio({
                     {slideOverPanel === 'products' && <ProductsPanel />}
                     {slideOverPanel === 'siteinfo' && <SiteInfoPanel />}
                     {slideOverPanel === 'branding' && <BrandingPanel />}
+                    {slideOverPanel === 'sitestyles' && <SiteStylesPanel />}
                 </MobileBottomSheet>
             </div>
         );
@@ -931,6 +935,7 @@ export function CanvasStudio({
                         { id: 'products' as const, icon: ShoppingBag, label: 'Products', shortcut: 'B' },
                         { id: 'siteinfo' as const, icon: Globe, label: 'Site Info', shortcut: 'I' },
                         { id: 'branding' as const, icon: Palette, label: 'Branding', shortcut: 'G' },
+                        { id: 'sitestyles' as const, icon: Brush, label: 'Site Styles', shortcut: 'T' },
                     ]).map(({ id, icon: Icon, label, shortcut }) => (
                         <button
                             key={id}
@@ -983,8 +988,8 @@ export function CanvasStudio({
             {/* Slide-over Panel (Links / Forms / Products / Site Info) */}
             {slideOverPanel && (
                 <SlideOverPanel
-                    title={slideOverPanel === 'links' ? 'Links' : slideOverPanel === 'forms' ? 'Forms' : slideOverPanel === 'products' ? 'Products' : slideOverPanel === 'siteinfo' ? 'Site Info' : slideOverPanel === 'branding' ? 'Branding' : slideOverPanel}
-                    icon={slideOverPanel === 'links' ? Link2 : slideOverPanel === 'forms' ? FileInput : slideOverPanel === 'products' ? ShoppingBag : slideOverPanel === 'siteinfo' ? Globe : slideOverPanel === 'branding' ? Palette : Link2}
+                    title={slideOverPanel === 'links' ? 'Links' : slideOverPanel === 'forms' ? 'Forms' : slideOverPanel === 'products' ? 'Products' : slideOverPanel === 'siteinfo' ? 'Site Info' : slideOverPanel === 'branding' ? 'Branding' : slideOverPanel === 'sitestyles' ? 'Site Styles' : slideOverPanel}
+                    icon={slideOverPanel === 'links' ? Link2 : slideOverPanel === 'forms' ? FileInput : slideOverPanel === 'products' ? ShoppingBag : slideOverPanel === 'siteinfo' ? Globe : slideOverPanel === 'branding' ? Palette : slideOverPanel === 'sitestyles' ? Brush : Link2}
                     onClose={() => setSlideOverPanel(null)}
                 >
                     {slideOverPanel === 'links' && <LinksPanel />}
@@ -992,6 +997,7 @@ export function CanvasStudio({
                     {slideOverPanel === 'products' && <ProductsPanel />}
                     {slideOverPanel === 'siteinfo' && <SiteInfoPanel />}
                     {slideOverPanel === 'branding' && <BrandingPanel />}
+                    {slideOverPanel === 'sitestyles' && <SiteStylesPanel />}
                 </SlideOverPanel>
             )}
 
