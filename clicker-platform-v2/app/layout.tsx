@@ -44,7 +44,7 @@ const FONT_CLASS_NAMES = [
   dmSerifDisplay.variable, quicksand.variable, montserrat.variable,
 ].join(' ');
 
-import { fetchSiteSettings } from "@/lib/fetchData";
+import { fetchSiteSettings, fetchAppearanceStyles } from "@/lib/fetchData";
 import ThemeRegistry from "@/components/ThemeRegistry";
 import { headers } from "next/headers";
 import { SiteProvider } from "@/lib/site-context";
@@ -94,10 +94,14 @@ export default async function RootLayout({
     }
 
   // 4. THEME REGISTRY requests
-  // 2. Fetch Settings (Only if we have a valid siteId)
-  const settings = (siteId && siteId !== 'pending' && siteId !== 'default')
-    ? await fetchSiteSettings(siteId)
-    : null;
+  // 2. Fetch Settings + appearance in parallel (only if we have a valid siteId)
+  const hasValidSite = siteId && siteId !== 'pending' && siteId !== 'default';
+  const [settings, appearanceStyles] = hasValidSite
+    ? await Promise.all([
+        fetchSiteSettings(siteId),
+        fetchAppearanceStyles(siteId),
+      ])
+    : [null, { fontPackId: null }];
 
   return (
     <html lang="id" className="notranslate" translate="no" suppressHydrationWarning>
@@ -114,7 +118,7 @@ export default async function RootLayout({
       >
         <PostHogProvider>
           <SiteProvider siteId={siteId} tenantSlug={tenantSlug} isSubdomain={isSubdomain}>
-            <ThemeRegistry initialSettings={settings} />
+            <ThemeRegistry initialSettings={settings} appearanceStyles={appearanceStyles} />
             <div className="flex-grow w-full">
               {children}
             </div>

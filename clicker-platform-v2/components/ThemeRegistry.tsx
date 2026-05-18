@@ -4,8 +4,14 @@
 import { useRef } from 'react';
 import { useServerInsertedHTML, usePathname } from 'next/navigation';
 import { SiteSettings } from '@/data/mockData';
+import { getPackById } from '@/lib/fonts/packs';
 
-export default function ThemeRegistry({ initialSettings }: { initialSettings: SiteSettings | null }) {
+type Props = {
+  initialSettings: SiteSettings | null;
+  appearanceStyles?: { fontPackId: string | null } | null;
+};
+
+export default function ThemeRegistry({ initialSettings, appearanceStyles }: Props) {
     const settings = initialSettings;
     const pathname = usePathname();
     const isAdmin = pathname?.startsWith('/admin');
@@ -23,6 +29,10 @@ export default function ThemeRegistry({ initialSettings }: { initialSettings: Si
         const isCustomFont = !fontFamily.startsWith('var(');
         const fontUrl = `https://fonts.googleapis.com/css2?family=${fontFamily.replace(/ /g, '+')}:wght@400;700;800&display=swap`;
 
+        const pack = getPackById(appearanceStyles?.fontPackId) ?? null;
+        const headingVar = pack ? 'var(' + pack.heading.cssVar + ')' : 'var(--font-jakarta)';
+        const bodyVar = pack ? 'var(' + pack.body.cssVar + ')' : 'var(--font-jakarta)';
+
         return (
             <>
                 {isCustomFont && (
@@ -38,11 +48,13 @@ export default function ThemeRegistry({ initialSettings }: { initialSettings: Si
                         --color-brand-green: ${settings.themeColor || '#B6FF2E'};
                         --color-brand-dark: ${settings.accentColor || '#0E3B2E'};
                         --font-dynamic: ${fontFamily.startsWith('var(') ? fontFamily : `'${fontFamily}', sans-serif`};
+                        --font-heading: ${headingVar};
+                        --font-body: ${bodyVar};
                     }
                     body {
                         background-color: var(--color-brand-green);
                         color: var(--color-brand-dark);
-                        font-family: var(--font-dynamic) !important;
+                        font-family: var(--font-body) !important;
                     }
                 `
                 }} />
