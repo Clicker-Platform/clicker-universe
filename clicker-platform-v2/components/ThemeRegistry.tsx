@@ -5,13 +5,15 @@ import { useRef } from 'react';
 import { useServerInsertedHTML, usePathname } from 'next/navigation';
 import { SiteSettings } from '@/data/mockData';
 import { getPackById } from '@/lib/fonts/packs';
+import { getTemplate } from '@/lib/templates/registry';
 
 type Props = {
   initialSettings: SiteSettings | null;
   appearanceStyles?: { fontPackId: string | null } | null;
+  templateId?: string | null;
 };
 
-export default function ThemeRegistry({ initialSettings, appearanceStyles }: Props) {
+export default function ThemeRegistry({ initialSettings, appearanceStyles, templateId }: Props) {
     const settings = initialSettings;
     const pathname = usePathname();
     const isAdmin = pathname?.startsWith('/admin');
@@ -30,8 +32,19 @@ export default function ThemeRegistry({ initialSettings, appearanceStyles }: Pro
         const fontUrl = `https://fonts.googleapis.com/css2?family=${fontFamily.replace(/ /g, '+')}:wght@400;700;800&display=swap`;
 
         const pack = getPackById(appearanceStyles?.fontPackId) ?? null;
-        const headingVar = pack ? 'var(' + pack.heading.cssVar + ')' : 'var(--font-jakarta)';
-        const bodyVar = pack ? 'var(' + pack.body.cssVar + ')' : 'var(--font-jakarta)';
+        let headingVar: string;
+        let bodyVar: string;
+        if (pack) {
+          headingVar = 'var(' + pack.heading.cssVar + ')';
+          bodyVar = 'var(' + pack.body.cssVar + ')';
+        } else if (templateId) {
+          const template = getTemplate(templateId);
+          headingVar = template.config.fonts.heading;
+          bodyVar = template.config.fonts.body;
+        } else {
+          headingVar = 'var(--font-jakarta)';
+          bodyVar = 'var(--font-jakarta)';
+        }
 
         return (
             <>

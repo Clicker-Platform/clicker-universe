@@ -118,7 +118,11 @@ export default async function RootLayout({
       >
         <PostHogProvider>
           <SiteProvider siteId={siteId} tenantSlug={tenantSlug} isSubdomain={isSubdomain}>
-            <ThemeRegistry initialSettings={settings} appearanceStyles={appearanceStyles} />
+            <ThemeRegistry
+              initialSettings={settings}
+              appearanceStyles={appearanceStyles}
+              templateId={settings?.templateId ?? null}
+            />
             <div className="flex-grow w-full">
               {children}
             </div>
