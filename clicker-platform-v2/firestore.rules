@@ -153,6 +153,15 @@ service cloud.firestore {
         allow write: if isValidUser(siteId) && isOwner(siteId);
       }
 
+      // APPEARANCE (Site Styles — Font Pack, future Colors/Buttons/Forms)
+      // Public read so SSR can apply the chosen pack on every page load.
+      // Write requires site access (owner/manager); finer-grained access can be
+      // added when Colors/Buttons/Forms ship.
+      match /appearance/{docId} {
+        allow read: if true;
+        allow write: if hasSiteAccess(siteId);
+      }
+
       // ANALYTICS (Read only by authenticated staff, except siteStats for tracking)
       match /analytics/siteStats {
         allow read: if true;
