@@ -109,13 +109,88 @@ A single `styles` doc (not per-axis docs) keeps reads cheap and writes atomic.
 
 ### Write path (Canvas Studio)
 
-1. User opens Canvas Studio → clicks "Site Styles" button in toolbar.
-2. Slide-over panel opens (z-40 per memory `feedback_slideover_zindex`), showing sections: **Fonts** (active), Colors / Buttons / Forms (disabled, "Coming soon" tile).
-3. User clicks Fonts → grid of Font Pack cards (heading sample + body sample, matching Squarespace screenshot).
+1. User opens Canvas Studio → clicks "Site Styles" button (paintbrush icon) in the top toolbar, next to the device-view toggles.
+2. Slide-over panel opens from the right (z-40 per memory `feedback_slideover_zindex`, width matches existing properties sidebar at ~380px), showing sections: **Fonts** (active), Colors / Buttons / Forms (disabled, "Coming soon" tile).
+3. User clicks Fonts → enters Fonts sub-view: header strip showing the active pack name plus a "Reset to template" button, followed by a **single-column, full-width** list of Font Pack cards.
 4. Clicking a pack:
-   - **Optimistic update**: immediately swaps `--font-heading` / `--font-body` CSS vars on the canvas preview root (no React re-render needed).
+   - **Optimistic update**: immediately swaps `--font-heading` / `--font-body` CSS vars on the canvas preview root (no React re-render needed). No hover preview — selection commits on click. **No "Apply" button** — the click *is* the apply (Squarespace pattern).
    - **Persists**: writes `fontPackId` to `sites/{siteId}/appearance/styles`.
-5. Selected pack is highlighted in the grid.
+5. Selected pack is highlighted with a **ring border + checkmark badge** (see Active state indicator below).
+
+### Active state indicator
+
+The active pack card uses two non-color signals stacked so it remains identifiable for users with color-vision deficiency (WCAG 1.4.1):
+
+- **2px ring border** in brand accent color around the card.
+- **Checkmark badge** (small filled circle with ✓) anchored top-right of the card.
+
+Inactive cards have a 1px subtle gray border. The card's sample area (heading + body text) stays on a neutral surface in both states so the font preview itself isn't distorted by a tinted background.
+
+The Fonts sub-view header strip (showing the active pack name plus a "Reset to template" button) only renders when `fontPackId !== null`. When no pack is set (template default in use), the header strip collapses and the grid scrolls to the top of the catalog.
+
+### Preview behavior (three levels)
+
+The word "preview" appears at three distinct levels in this feature:
+
+1. **In-card preview** (always on): each `FontPackCard` renders "Heading" + "This is your paragraph." in the pack's real fonts on mount. Static — never changes. This is the "browse the catalog" view.
+2. **Canvas preview** (on click): when the user clicks a card, the canvas iframe root's `--font-heading` / `--font-body` CSS variables swap to the selected pack's variables. The currently-edited page repaints instantly — all H1s, paragraphs, buttons, nav, etc. update because they consume `var(--font-heading)` / `var(--font-body)`. Firestore write fires in the background; toast on failure.
+3. **Public site** (after save): next page load reads `fontPackId` from `sites/{id}/appearance/styles` and emits the same CSS variables via SSR. No client-side flicker.
+
+### Scope of the selection
+
+Site Styles is **global** — the selected Font Pack persists across all pages of the site. If a user opens Site Styles while editing Home, picks a pack, then navigates to About in Canvas Studio, About also shows the new pack (both pages share `--font-heading` / `--font-body`). There is no per-page font override in this slice.
+
+### UI wireframe — Fonts sub-view
+
+```
+                                ┌──────────────────────────────┐
+                                │ ← Fonts                  ✕   │
+                                ├──────────────────────────────┤
+                                │ Active: Modern Geometric     │
+                                │ [ Reset to template ]        │
+                                ├──────────────────────────────┤
+                                │ ┌──────────────────────────┐ │
+┌───────────────────────┐       │ │  Heading                 │ │
+│                       │       │ │  This is your paragraph. │ │
+│   Canvas preview      │       │ │  Inter / Inter Tight     │ │
+│   (live, updates on   │       │ └──────────────────────────┘ │
+│   pack click)         │       │ ┌──────────────────────────┐ │
+│                       │       │ │  Heading                 │ │ ← active
+│                       │       │ │  This is your paragraph. │ │   (ring)
+│                       │       │ │  Outfit / DM Sans        │ │
+│                       │       │ └──────────────────────────┘ │
+│                       │       │ ┌──────────────────────────┐ │
+│                       │       │ │  Heading                 │ │
+│                       │       │ │  This is your paragraph. │ │
+│                       │       │ │  Playfair Display / Lora │ │
+│                       │       │ └──────────────────────────┘ │
+│                       │       │           ⋮ (scroll)         │
+└───────────────────────┘       └──────────────────────────────┘
+```
+
+**Layout rationale (1 column, full-width):** Display fonts (Archivo Black, Fraunces, Playfair Display) need ~340px of card width to render the "Heading" sample at a meaningful size (28–32px). A 2-column grid in the ~380px slide-over leaves each card at ~165px — too cramped for display fonts to show their character. 8 cards in 1 column scrolls in ~2 viewport heights, which is acceptable. A future "browse all" view (30+ packs) can use a full modal with a 3–4 column grid.
+
+### Card preview rendering
+
+Card previews use **real fonts via CSS variables**, not pre-rendered images. Each `FontPackCard` is two `<div>`s:
+
+```tsx
+<div style={{ fontFamily: `var(${pack.heading.cssVar})`, fontWeight: 700, fontSize: 32 }}>
+  Heading
+</div>
+<div style={{ fontFamily: `var(${pack.body.cssVar})`, fontWeight: 400, fontSize: 14 }}>
+  This is your paragraph.
+</div>
+```
+
+Why real fonts (not images):
+
+- Always in sync with the catalog — swap a pack's body font and previews update automatically.
+- No asset pipeline (no PNGs, retina variants, dark/light versions, or CDN).
+- Sharp at any size; semantic; selectable; i18n-ready.
+- All pack fonts are already statically imported in `app/layout.tsx` for the public renderer — using them in Canvas Studio costs nothing extra at runtime.
+
+**Cost acknowledgement:** the admin Canvas Studio bundle eagerly loads all 13 pack font families (not just the active site's pack) so the picker can render live previews. This is intentional and acceptable — admin bundle size is a less sensitive budget than public-site bundle size, and the alternative (lazy-loading fonts per card hover) would add complexity and FOUT flicker in the picker.
 
 ### Template migration
 
