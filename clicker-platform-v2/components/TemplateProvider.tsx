@@ -143,9 +143,10 @@ export const TemplateProvider: React.FC<TemplateProviderProps> = ({ templateId, 
         };
         vars['--theme-card-shadow'] = shadowMap[theme.cardVariant] ?? 'none';
 
-        // Inject Fonts
-        if (theme.fonts?.heading) vars['--font-heading'] = theme.fonts.heading;
-        if (theme.fonts?.body) vars['--font-body'] = theme.fonts.body;
+        // Font CSS variables are owned by ThemeRegistry (no-pack fallback) and
+        // SiteStylesPanel's applyFontVarsToDocument (optimistic preview).
+        // TemplateProvider intentionally does NOT inject --font-heading/--font-body
+        // so Font Pack selections aren't overridden by inline-style specificity.
 
         // --- Responsive Layout Logic ---
         const layout = theme.layout || {
