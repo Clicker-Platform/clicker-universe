@@ -8,6 +8,7 @@ import { useSite } from '@/lib/site-context';
 
 import { useTemplate } from '@/components/TemplateProvider';
 import { getHeadingColor, getLabelColor } from './cardStyles';
+import { useDeviceView } from '@/components/DeviceViewContext';
 import { H4, BUTTON_TEXT } from './typography';
 
 interface ProductGalleryProps {
@@ -20,6 +21,7 @@ interface ProductGalleryProps {
 
 export const DefaultProductGalleryBlock: React.FC<ProductGalleryProps> = ({ products, title = "Popular Treats", viewAllHref, phoneNumber, whatsappSettings }) => {
     const { siteId } = useSite();
+    const d = useDeviceView();
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const { templateId, theme } = useTemplate();
     const isClean = theme.cardStyle === 'clean';
@@ -59,7 +61,7 @@ export const DefaultProductGalleryBlock: React.FC<ProductGalleryProps> = ({ prod
             {title && (
                 <div className={isGlass ? 'mb-6' : 'flex justify-center mb-6'}>
                     {isGlass ? (
-                        <h2 className={H4} style={{ color: getLabelColor(theme.cardStyle, theme) }}>
+                        <h2 className={H4(d)} style={{ color: getLabelColor(theme.cardStyle, theme) }}>
                             {title}
                         </h2>
                     ) : (
@@ -67,7 +69,7 @@ export const DefaultProductGalleryBlock: React.FC<ProductGalleryProps> = ({ prod
                             className={`px-8 py-3 transition-transform ${isClean ? 'shadow-sm border' : 'border-[3px] rotate-1 hover:rotate-0'}`}
                             style={titleContainerStyle}
                         >
-                            <h2 className={H4} style={{ color: getHeadingColor(theme.cardStyle, theme) }}>
+                            <h2 className={H4(d)} style={{ color: getHeadingColor(theme.cardStyle, theme) }}>
                                 {title}
                             </h2>
                         </div>
@@ -95,7 +97,7 @@ export const DefaultProductGalleryBlock: React.FC<ProductGalleryProps> = ({ prod
                 <div className="mt-8 flex justify-center">
                     <a
                         href={viewAllHref}
-                        className={`inline-flex items-center gap-2 px-8 py-3 ${BUTTON_TEXT} transition-all hover:opacity-90 ${isGlass ? 'backdrop-blur-sm' : ''}`}
+                        className={`inline-flex items-center gap-2 px-8 py-3 ${BUTTON_TEXT(d)} transition-all hover:opacity-90 ${isGlass ? 'backdrop-blur-sm' : ''}`}
                         style={{
                             backgroundColor: isClean
                                 ? 'transparent'

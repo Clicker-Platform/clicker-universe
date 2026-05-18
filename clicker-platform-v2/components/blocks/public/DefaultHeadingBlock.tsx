@@ -1,6 +1,7 @@
 'use client';
 
 import { EditableText } from '@/components/blocks/shared/EditablePrimitives';
+import { useDeviceView } from '@/components/DeviceViewContext';
 import { H1, H2, H3, BODY } from './typography';
 
 const ALIGN_CLASS = {
@@ -37,8 +38,10 @@ export function DefaultHeadingBlock({ data, onInlineChange, onFieldFocus, onFiel
 }) {
     if (!data) return null;
 
+    const d = useDeviceView();
     const sizeKey = (data.headingSize || 'xl') as keyof typeof SIZE_CONFIG;
-    const { tag: HeadingTag, className: sizeClass } = SIZE_CONFIG[sizeKey] ?? SIZE_CONFIG.xl;
+    const { tag: HeadingTag, className: sizeClassFn } = SIZE_CONFIG[sizeKey] ?? SIZE_CONFIG.xl;
+    const sizeClass = sizeClassFn(d);
 
     const headingAlignClass = ALIGN_CLASS[(data.headingAlign || 'left') as keyof typeof ALIGN_CLASS] ?? 'text-left';
     const subheadingAlignClass = ALIGN_CLASS[(data.subheadingAlign || 'left') as keyof typeof ALIGN_CLASS] ?? 'text-left';
@@ -68,7 +71,7 @@ export function DefaultHeadingBlock({ data, onInlineChange, onFieldFocus, onFiel
                     onInlineChange={onInlineChange}
                     onFieldFocus={onFieldFocus}
                     onFieldBlur={onFieldBlur}
-                    className={`${BODY} mt-2 opacity-65 ${subheadingAlignClass} m-0`}
+                    className={`${BODY(d)} mt-2 opacity-65 ${subheadingAlignClass} m-0`}
                     style={{ color: 'var(--theme-foreground)' }}
                 />
             )}

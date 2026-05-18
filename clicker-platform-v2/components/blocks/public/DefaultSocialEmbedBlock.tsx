@@ -4,6 +4,7 @@ import { Play } from 'lucide-react';
 import { useTemplate } from '@/components/TemplateProvider';
 import { useRef, useState, useEffect } from 'react';
 import { getMutedColor, getLabelColor } from './cardStyles';
+import { useDeviceView } from '@/components/DeviceViewContext';
 import { H4 } from './typography';
 
 type Platform = 'tiktok' | 'instagram' | 'youtube';
@@ -99,6 +100,7 @@ function getAspectRatio(item: SocialEmbedItem): string {
 
 export function DefaultSocialEmbedBlock({ data, previewMode }: DefaultSocialEmbedBlockProps) {
     const { theme } = useTemplate();
+    const d = useDeviceView();
     const isClean = theme.cardStyle === 'clean';
     const isGlass = theme.cardStyle === 'glass';
     const labelColor = getLabelColor(theme.cardStyle, theme);
@@ -122,7 +124,7 @@ export function DefaultSocialEmbedBlock({ data, previewMode }: DefaultSocialEmbe
     return (
         <div className="w-full min-w-0 space-y-4">
             {data.title && (
-                <h2 className={`${H4} mb-4 px-1`} style={{ color: labelColor }}>
+                <h2 className={`${H4(d)} mb-4 px-1`} style={{ color: labelColor }}>
                     {data.title}
                 </h2>
             )}

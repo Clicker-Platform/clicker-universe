@@ -36,6 +36,6 @@ export function dv(
 ): string {
     if (deviceView === 'responsive') return `${mobile} ${desktop}`;
     if (deviceView === 'mobile') return mobile;
-    if (deviceView === 'tablet') return tablet ?? desktop;
+    if (deviceView === 'tablet') return tablet ?? `${mobile} ${desktop}`;
     return `${mobile} ${desktop}`; // desktop: include both so md: classes apply
 }

@@ -7,6 +7,7 @@ import { isBusinessOpen } from '@/lib/core/businessHours/utils';
 import { useTemplate } from '@/components/TemplateProvider';
 import { Clock } from 'lucide-react';
 import { getCardClasses, getGlassStyle, getHeadingColor, getMutedColor, getLabelColor } from '@/components/blocks/public/cardStyles';
+import { useDeviceView } from '@/components/DeviceViewContext';
 import { H4 } from '@/components/blocks/public/typography';
 
 interface OperatingHoursProps {
@@ -46,6 +47,7 @@ function buildRows(schedule: DaySchedule[]): { label: string; hours: string }[] 
 
 export const MrbOperatingHours: React.FC<OperatingHoursProps> = ({ data, schedule }) => {
     const { theme } = useTemplate();
+    const d = useDeviceView();
     const [isOpen, setIsOpen] = React.useState(false);
     const [isMounted, setIsMounted] = React.useState(false);
 
@@ -86,7 +88,7 @@ export const MrbOperatingHours: React.FC<OperatingHoursProps> = ({ data, schedul
                 <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
                         <Clock size={13} style={{ color: labelColor }} />
-                        <h3 className={H4} style={{ color: headingColor }}>
+                        <h3 className={H4(d)} style={{ color: headingColor }}>
                             {data.label}
                         </h3>
                     </div>

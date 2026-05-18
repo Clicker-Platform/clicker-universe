@@ -12,6 +12,7 @@ import {
     getLabelColor,
     getAccentColor,
 } from '@/components/blocks/public/cardStyles';
+import { useDeviceView } from '@/components/DeviceViewContext';
 import { H3, H4, BODY_SM } from '@/components/blocks/public/typography';
 
 interface BranchesListProps {
@@ -23,6 +24,7 @@ export const DefaultBranchesBlock: React.FC<BranchesListProps> = ({ contact, bra
     const [isExpanded, setIsExpanded] = useState(false);
 
     const { theme } = useTemplate();
+    const d = useDeviceView();
     const cardStyle = theme.cardStyle;
     const isGlass = cardStyle === 'glass';
     const colors = theme.colors;
@@ -61,8 +63,8 @@ export const DefaultBranchesBlock: React.FC<BranchesListProps> = ({ contact, bra
                             <MapPin size={24} />
                         </div>
                         <div className="flex-1">
-                            <h4 className={`${H4} mb-1`} style={{ color: labelColor }}>Main Location</h4>
-                            <p className={`${BODY_SM} mb-3 whitespace-pre-line`} style={{ color: mutedColor }}>
+                            <h4 className={`${H4(d)} mb-1`} style={{ color: labelColor }}>Main Location</h4>
+                            <p className={`${BODY_SM(d)} mb-3 whitespace-pre-line`} style={{ color: mutedColor }}>
                                 {contact.address}
                             </p>
                             <div className="flex flex-wrap gap-2">
@@ -110,8 +112,8 @@ export const DefaultBranchesBlock: React.FC<BranchesListProps> = ({ contact, bra
                         <div className={`divide-y ${isGlass ? 'divide-white/10' : 'divide-gray-100'}`}>
                             {branches.map((branch) => (
                                 <div key={branch.id} className={`p-4 transition-colors ${isGlass ? 'hover:bg-white/5' : 'hover:bg-gray-50'}`}>
-                                    <h3 className={`${H3} mb-1`} style={{ color: headingColor }}>{branch.name}</h3>
-                                    <p className={`${BODY_SM} whitespace-pre-line mb-3`} style={{ color: mutedColor }}>{branch.address}</p>
+                                    <h3 className={`${H3(d)} mb-1`} style={{ color: headingColor }}>{branch.name}</h3>
+                                    <p className={`${BODY_SM(d)} whitespace-pre-line mb-3`} style={{ color: mutedColor }}>{branch.address}</p>
                                     <div className="flex gap-3">
                                         {branch.mapUrl && (
                                             <a

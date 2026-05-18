@@ -12,6 +12,7 @@ import { getWhatsappUrl } from '@/components/common/WhatsappButton';
 import { resolveNavHref } from '@/lib/resolveNavHref';
 import { getContrastColor } from '@/lib/utils/color';
 import { getHeadingColor, getMutedColor, getLabelColor, hexWithOpacity } from './cardStyles';
+import { useDeviceView } from '@/components/DeviceViewContext';
 import { TILE_TITLE, H4 } from './typography';
 
 interface QuickActionsProps {
@@ -28,6 +29,7 @@ export const DefaultQuickActionsBlock: React.FC<QuickActionsProps> = ({
     links, contact, settings, siteId, tenantSlug, blockData, defaultLayout = 'list'
 }) => {
     const { theme } = useTemplate();
+    const d = useDeviceView();
     const { siteId: contextSiteId, tenantSlug: contextTenantSlug, isSubdomain } = useSite();
     const effectiveSiteId = siteId || contextSiteId;
     const effectiveTenantSlug = tenantSlug || contextTenantSlug || '';
@@ -114,7 +116,7 @@ export const DefaultQuickActionsBlock: React.FC<QuickActionsProps> = ({
         <section className="w-full space-y-4">
             {showOnHome && !theme.custom?.hideQuickActionsTitle && (
                 <h2
-                    className={H4}
+                    className={H4(d)}
                     style={{ color: getLabelColor(theme.cardStyle, theme) }}
                 >
                     {sectionTitle}
@@ -140,7 +142,7 @@ export const DefaultQuickActionsBlock: React.FC<QuickActionsProps> = ({
                                 <div className="p-2.5 flex items-center justify-center" style={iconStyle(!!link.highlight)}>
                                     <Icon size={22} strokeWidth={2} />
                                 </div>
-                                <span className={TILE_TITLE} style={{ color: resolvedFg }}>
+                                <span className={TILE_TITLE(d)} style={{ color: resolvedFg }}>
                                     {link.title}
                                 </span>
                                 {link.subtitle && (

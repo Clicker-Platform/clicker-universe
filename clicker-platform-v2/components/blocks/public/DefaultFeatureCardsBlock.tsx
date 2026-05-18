@@ -34,6 +34,7 @@ interface CardItemProps {
 }
 
 function CardItem({ card, cardStyle, theme }: CardItemProps) {
+    const d = useDeviceView();
     const hasCustomBg = !!card.bgColor;
 
     // Per-card bgColor override → derive contrast text color via luminance.
@@ -64,15 +65,15 @@ function CardItem({ card, cardStyle, theme }: CardItemProps) {
             )}
             <div className="flex flex-col gap-2 p-4 flex-1">
                 {card.label && (
-                    <span className={H4} style={{ color: labelColor }}>
+                    <span className={H4(d)} style={{ color: labelColor }}>
                         {card.label}
                     </span>
                 )}
-                <h3 className={H3} style={{ color: headingColor }}>
+                <h3 className={H3(d)} style={{ color: headingColor }}>
                     {card.headline}
                 </h3>
                 {card.body && (
-                    <p className={BODY_SM} style={{ color: bodyColor }}>
+                    <p className={BODY_SM(d)} style={{ color: bodyColor }}>
                         {card.body}
                     </p>
                 )}
@@ -124,12 +125,12 @@ export function DefaultFeatureCardsBlock({ data, theme: themeProp, previewMode: 
             {(data.title || data.subtitle) && (
                 <div className="mb-8 px-4 text-center max-w-2xl mx-auto">
                     {data.title && (
-                        <h2 className={H2} style={{ color: getHeadingColor(theme?.cardStyle, theme) }}>
+                        <h2 className={H2(deviceView)} style={{ color: getHeadingColor(theme?.cardStyle, theme) }}>
                             {data.title}
                         </h2>
                     )}
                     {data.subtitle && (
-                        <p className={`${BODY} mt-2`} style={{ color: getMutedColor(theme?.cardStyle, theme) }}>
+                        <p className={`${BODY(deviceView)} mt-2`} style={{ color: getMutedColor(theme?.cardStyle, theme) }}>
                             {data.subtitle}
                         </p>
                     )}

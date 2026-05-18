@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Calendar } from 'lucide-react';
 import { useTemplate } from '@/components/TemplateProvider';
 import { getGlassStyle, getHeadingColor } from './cardStyles';
+import { useDeviceView } from '@/components/DeviceViewContext';
 import { H2, BUTTON_TEXT } from './typography';
 
 // Animated skeleton bar — uses CSS vars from TemplateProvider so it works across all themes.
@@ -60,6 +61,7 @@ const ReservationWidget = dynamic(
 
 export const ReservationBlock = ({ data, siteId, initialServices, initialStaff, initialSettings }: { data: any, siteId?: string, initialServices?: any, initialStaff?: any, initialSettings?: any }) => {
     const { theme } = useTemplate();
+    const d = useDeviceView();
     const isClean = theme.cardStyle === 'clean';
     const isGlass = theme.cardStyle === 'glass';
 
@@ -90,7 +92,7 @@ export const ReservationBlock = ({ data, siteId, initialServices, initialStaff, 
             <div className="py-8 text-center">
                 <Link
                     href={data.href || "/book"}
-                    className={`inline-flex items-center gap-2 px-8 py-4 ${BUTTON_TEXT} transition-all ${buttonChrome}`}
+                    className={`inline-flex items-center gap-2 px-8 py-4 ${BUTTON_TEXT(d)} transition-all ${buttonChrome}`}
                     style={{ ...buttonInlineStyle, borderRadius: 'calc(var(--theme-radius) * 0.75)' }}
                 >
                     <Calendar size={20} strokeWidth={isGlass ? 2 : isClean ? 2 : 2.5} />
@@ -117,7 +119,7 @@ export const ReservationBlock = ({ data, siteId, initialServices, initialStaff, 
             }}
         >
             {data.title && (
-                <h2 className={`${H2} mb-8 text-center`} style={{ color: getHeadingColor(theme.cardStyle, theme) }}>
+                <h2 className={`${H2(d)} mb-8 text-center`} style={{ color: getHeadingColor(theme.cardStyle, theme) }}>
                     {data.title}
                 </h2>
             )}

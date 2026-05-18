@@ -6,6 +6,7 @@ import { Product } from '@/data/mockData';
 import { ProductDetailModal } from '@/components/catalog/ProductDetailModal';
 import { useTemplate } from '@/components/TemplateProvider';
 import { getCardClasses, getHeadingColor, getLabelColor, getMutedColor } from './cardStyles';
+import { useDeviceView } from '@/components/DeviceViewContext';
 import { TILE_TITLE, H4, BODY_SM } from './typography';
 
 // 1x1 gray SVG placeholder — shown while the real image downloads
@@ -27,6 +28,7 @@ function ProductTile({ product, onClick, priority, cardStyle }: {
 }) {
     const [loaded, setLoaded] = useState(false);
     const { theme } = useTemplate();
+    const d = useDeviceView();
     const isGlass = theme.cardStyle === 'glass';
     const headingColor = getHeadingColor(theme.cardStyle, theme);
     const labelColor = getLabelColor(theme.cardStyle, theme);
@@ -75,21 +77,21 @@ function ProductTile({ product, onClick, priority, cardStyle }: {
             <div className="flex-1 flex flex-col min-w-0 px-1 pb-1">
                 {showLabel && product.category && (
                     <span
-                        className={`${H4} mb-1`}
+                        className={`${H4(d)} mb-1`}
                         style={{ color: labelColor }}
                     >
                         {product.category}
                     </span>
                 )}
                 <h3
-                    className={`${TILE_TITLE} mb-1 group-hover:opacity-80 transition-opacity truncate`}
+                    className={`${TILE_TITLE(d)} mb-1 group-hover:opacity-80 transition-opacity truncate`}
                     style={{ color: headingColor }}
                 >
                     {product.name || (product as any).title}
                 </h3>
                 {showPrice && (
                     <p
-                        className={BODY_SM}
+                        className={BODY_SM(d)}
                         style={{ color: mutedColor }}
                     >
                         {product.price}
@@ -103,13 +105,14 @@ function ProductTile({ product, onClick, priority, cardStyle }: {
 export const ProductsBlockClient = ({ data, products, phoneNumber, whatsappSettings }: ProductsBlockClientProps) => {
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const { theme } = useTemplate();
+    const d = useDeviceView();
     const cardStyle = getCardClasses(theme.cardStyle);
 
     return (
         <section>
             {data.title && (
                 <h2
-                    className={`${H4} mb-6`}
+                    className={`${H4(d)} mb-6`}
                     style={{ color: getLabelColor(theme.cardStyle, theme) }}
                 >
                     {data.title}

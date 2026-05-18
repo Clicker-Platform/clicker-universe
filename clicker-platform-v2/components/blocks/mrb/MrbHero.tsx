@@ -81,6 +81,7 @@ function CtaButtons({ primary, secondary, ctaJustify, primaryColor, bgColor, def
     titleColor?: string;
     onFieldFocus?: (field: string, rect: DOMRect) => void;
 }) {
+    const d = useDeviceView();
     const primaryRef = useRef<HTMLDivElement>(null);
     const secondaryRef = useRef<HTMLDivElement>(null);
     const [focusedBtn, setFocusedBtn] = useState<'primary' | 'secondary' | null>(null);
@@ -113,7 +114,7 @@ function CtaButtons({ primary, secondary, ctaJustify, primaryColor, bgColor, def
                 >
                     <a
                         href={onFieldFocus ? undefined : (primary.url || '#')}
-                        className={`inline-flex items-center px-6 py-3 rounded-xl ${BUTTON_TEXT} transition-all active:scale-[0.98] shadow-lg`}
+                        className={`inline-flex items-center px-6 py-3 rounded-xl ${BUTTON_TEXT(d)} transition-all active:scale-[0.98] shadow-lg`}
                         style={{ backgroundColor: primaryColor, color: bgColor }}
                     >
                         {primary.label}
@@ -130,7 +131,7 @@ function CtaButtons({ primary, secondary, ctaJustify, primaryColor, bgColor, def
                 >
                     <a
                         href={onFieldFocus ? undefined : (secondary.url || '#')}
-                        className={`inline-flex items-center px-6 py-3 rounded-xl ${BUTTON_TEXT} border-2 transition-all active:scale-[0.98]`}
+                        className={`inline-flex items-center px-6 py-3 rounded-xl ${BUTTON_TEXT(d)} border-2 transition-all active:scale-[0.98]`}
                         style={{ borderColor: `${primaryColor}66`, color: titleColor || defaultTextColor }}
                     >
                         {secondary.label}
@@ -329,7 +330,7 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, isFirst = true,
                             onInlineChange={onInlineChange}
                             onFieldFocus={onFieldFocus}
                             onFieldBlur={onFieldBlur}
-                            className={`inline-flex items-center rounded-full px-4 py-1.5 border ${H4}`}
+                            className={`inline-flex items-center rounded-full px-4 py-1.5 border ${H4(d)}`}
                             style={{
                                 backgroundColor: `${theme.colors.primary}15`,
                                 color: data?.taglineColor || theme.colors.primary,
@@ -362,7 +363,7 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, isFirst = true,
                         placeholder="Add subtitle…"
                         onInlineChange={onInlineChange}
                         onFieldFocus={onFieldFocus}
-                        className={`${BODY_LG} ${suC} ${data?.subtitleWeight ? `font-${data.subtitleWeight}` : ''} m-0`}
+                        className={`${BODY_LG(d)} ${suC} ${data?.subtitleWeight ? `font-${data.subtitleWeight}` : ''} m-0`}
                         style={{ color: data?.subtitleColor || defaultSubtitleOpacity }}
                     />
                 )}

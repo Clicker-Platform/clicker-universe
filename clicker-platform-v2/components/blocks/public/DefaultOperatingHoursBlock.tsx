@@ -7,6 +7,7 @@ import { DaySchedule } from '@/lib/core/types';
 import { isBusinessOpen } from '@/lib/core/businessHours/utils';
 import { Clock } from 'lucide-react';
 import { getCardClasses, getGlassStyle, getLabelColor, getMutedColor, getHeadingColor } from './cardStyles';
+import { useDeviceView } from '@/components/DeviceViewContext';
 import { H4 } from './typography';
 
 interface OperatingHoursProps {
@@ -46,6 +47,7 @@ function buildRows(schedule: DaySchedule[]): { label: string; hours: string }[] 
 
 export const DefaultOperatingHoursBlock: React.FC<OperatingHoursProps> = ({ data, schedule }) => {
     const { theme } = useTemplate();
+    const d = useDeviceView();
     const cardStyle = theme.cardStyle;
     const isGlass = cardStyle === 'glass';
     const isClean = cardStyle === 'clean';
@@ -93,7 +95,7 @@ export const DefaultOperatingHoursBlock: React.FC<OperatingHoursProps> = ({ data
                         style={{ color: labelColor }}
                     />
                     <h3
-                        className={H4}
+                        className={H4(d)}
                         style={{ color: headingColor }}
                     >
                         {data.label}

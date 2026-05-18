@@ -10,6 +10,7 @@ import { TemplateContext } from '@/components/TemplateProvider';
 import { useSite } from '@/lib/site-context';
 import { resolveNavHref } from '@/lib/resolveNavHref';
 import { getHeadingColor, getMutedColor, hexWithOpacity } from './cardStyles';
+import { useDeviceView } from '@/components/DeviceViewContext';
 import { TILE_TITLE, BODY_SM } from './typography';
 
 interface LinkCardProps {
@@ -22,6 +23,7 @@ interface LinkCardProps {
 }
 
 export const LinkCard: React.FC<LinkCardProps> = ({ item, siteId, tenantSlug, cardBgColor, cardBorderColor, cardFgColor }) => {
+    const d = useDeviceView();
     const isHighlight = item.highlight;
     const Icon = item.iconName && ICON_MAP[item.iconName] ? ICON_MAP[item.iconName] : ShoppingBag;
 
@@ -100,11 +102,11 @@ export const LinkCard: React.FC<LinkCardProps> = ({ item, siteId, tenantSlug, ca
                         <Icon size={24} strokeWidth={2} />
                     </div>
                     <div className="text-left">
-                        <h3 className={TILE_TITLE} style={{ color: fgColor }}>
+                        <h3 className={TILE_TITLE(d)} style={{ color: fgColor }}>
                             {item.title}
                         </h3>
                         {item.subtitle && (
-                            <p className={BODY_SM} style={{ color: isHighlight ? theme.colors?.primary : mutedColor }}>
+                            <p className={BODY_SM(d)} style={{ color: isHighlight ? theme.colors?.primary : mutedColor }}>
                                 {item.subtitle}
                             </p>
                         )}

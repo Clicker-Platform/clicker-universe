@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { useDeviceView, dv } from '@/components/DeviceViewContext';
+import { useDeviceView, dv, type DeviceView } from '@/components/DeviceViewContext';
 import { sanitizeRichText } from '@/lib/sanitizeHtml';
 import {
     ContentShowcaseData,
@@ -56,8 +56,8 @@ function isSafeHref(href: string | undefined | null): boolean {
     return /^(https?:\/\/|\/|#|mailto:|tel:)/i.test(href);
 }
 
-function ctaProps(variant: string, primaryContrastColor: string): { className: string; style: React.CSSProperties } {
-    const base = `inline-flex items-center gap-1.5 ${BUTTON_TEXT} transition-opacity hover:opacity-90`;
+function ctaProps(variant: string, primaryContrastColor: string, deviceView: DeviceView): { className: string; style: React.CSSProperties } {
+    const base = `inline-flex items-center gap-1.5 ${BUTTON_TEXT(deviceView)} transition-opacity hover:opacity-90`;
     const padded = `${base} px-5 py-2.5`;
     const radiusSm = 'calc(var(--theme-radius) * 0.6)';
 
@@ -186,7 +186,7 @@ function ShowcaseRowView({
 
     const contentNode = (
         <div className={`space-y-4 ${contentOrderClass}`} style={contentStyle}>
-            <h3 className={H2} style={{ color: getHeadingColor(theme.cardStyle, theme) }}>
+            <h3 className={H2(d)} style={{ color: getHeadingColor(theme.cardStyle, theme) }}>
                 {row.heading.text}
             </h3>
             <div
@@ -197,7 +197,7 @@ function ShowcaseRowView({
             {row.cta?.enabled && row.cta.label && (() => {
                 const href = isSafeHref(row.cta.href) ? row.cta.href : '#';
                 const isExternal = /^https?:\/\//i.test(href);
-                const cta = ctaProps(row.cta.variant, primaryContrastColor);
+                const cta = ctaProps(row.cta.variant, primaryContrastColor, d);
                 return (
                     <a
                         href={href}

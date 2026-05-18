@@ -6,6 +6,7 @@ import { useTemplate } from '@/components/TemplateProvider';
 import { useSite } from '@/lib/site-context';
 import { resolveNavHref } from '@/lib/resolveNavHref';
 import { FormModal } from '@/components/FormModal';
+import { useDeviceView } from '@/components/DeviceViewContext';
 import { BUTTON_TEXT } from './typography';
 
 function isSafeHref(href: string | undefined | null): boolean {
@@ -19,6 +20,7 @@ function isExternalProtocol(href: string): boolean {
 
 export const DefaultButtonBlock = ({ data, previewMode, siteId: siteIdProp }: { data: any; previewMode?: boolean; siteId?: string }) => {
     const { theme } = useTemplate();
+    const d = useDeviceView();
     const { siteId: ctxSiteId, tenantSlug, isSubdomain } = useSite();
     const siteId = siteIdProp || ctxSiteId;
     const isClean = theme.cardStyle === 'clean';
@@ -58,7 +60,7 @@ export const DefaultButtonBlock = ({ data, previewMode, siteId: siteIdProp }: { 
         }
     };
 
-    const className = `inline-block py-3 px-6 ${BUTTON_TEXT} transition-all transform ${isClean ? 'shadow-sm hover:-translate-y-0.5' : isGlass ? 'hover:-translate-y-0.5 hover:shadow-lg' : 'hover:-translate-y-1 hover:shadow-lg'} ${getVariantClass()} ${data.align === 'full' ? 'w-full block' : ''}`;
+    const className = `inline-block py-3 px-6 ${BUTTON_TEXT(d)} transition-all transform ${isClean ? 'shadow-sm hover:-translate-y-0.5' : isGlass ? 'hover:-translate-y-0.5 hover:shadow-lg' : 'hover:-translate-y-1 hover:shadow-lg'} ${getVariantClass()} ${data.align === 'full' ? 'w-full block' : ''}`;
 
     const buttonStyle = { borderRadius: 'calc(var(--theme-radius) * 0.75)' };
     const label = data.label || 'Click Here';

@@ -77,6 +77,7 @@ const CtaButtons = ({
     align?: string;
     onFieldFocus?: (field: string, rect: DOMRect) => void;
 }) => {
+    const d = useDeviceView();
     const primaryRef = useRef<HTMLDivElement>(null);
     const secondaryRef = useRef<HTMLDivElement>(null);
     const [focusedBtn, setFocusedBtn] = useState<'primary' | 'secondary' | null>(null);
@@ -113,7 +114,7 @@ const CtaButtons = ({
                 >
                     <a
                         href={onFieldFocus ? undefined : (primary?.type === 'form' ? `#form-${primary.formId}` : primary.url || '#')}
-                        className={`inline-flex items-center px-6 py-2.5 ${BUTTON_TEXT} transition-all shadow-sm ${
+                        className={`inline-flex items-center px-6 py-2.5 ${BUTTON_TEXT(d)} transition-all shadow-sm ${
                             dark
                                 ? 'bg-white text-gray-900 hover:bg-white/90'
                                 : 'bg-theme-primary text-white hover:opacity-90'
@@ -134,7 +135,7 @@ const CtaButtons = ({
                 >
                     <a
                         href={onFieldFocus ? undefined : (secondary?.type === 'form' ? `#form-${secondary.formId}` : secondary.url || '#')}
-                        className={`inline-flex items-center px-6 py-2.5 ${BUTTON_TEXT} border-2 transition-all ${
+                        className={`inline-flex items-center px-6 py-2.5 ${BUTTON_TEXT(d)} border-2 transition-all ${
                             dark
                                 ? 'border-white/50 text-white hover:bg-white/10'
                                 : 'border-theme-border text-theme-foreground hover:bg-black/5'
@@ -249,7 +250,7 @@ export const DefaultHeroBlock = ({ data, theme, isFirst = true, onInlineChange, 
                             onInlineChange={onInlineChange}
                             onFieldFocus={onFieldFocus}
                             onFieldBlur={onFieldBlur}
-                            className={`${H4} mb-2 ${taC}`}
+                            className={`${H4(d)} mb-2 ${taC}`}
                             style={data?.taglineColor
                                 ? { color: data.taglineColor }
                                 : defaultTaglineColor
@@ -277,7 +278,7 @@ export const DefaultHeroBlock = ({ data, theme, isFirst = true, onInlineChange, 
                             onInlineChange={onInlineChange}
                             onFieldFocus={onFieldFocus}
                             onFieldBlur={onFieldBlur}
-                            className={`${BODY_LG} ${suC} ${data?.subtitleWeight ? `font-${data.subtitleWeight}` : ''}`}
+                            className={`${BODY_LG(d)} ${suC} ${data?.subtitleWeight ? `font-${data.subtitleWeight}` : ''}`}
                             style={{ color: data?.subtitleColor || defaultSubtitleColor }}
                         />
                     )}
@@ -343,7 +344,7 @@ export const DefaultHeroBlock = ({ data, theme, isFirst = true, onInlineChange, 
                             onInlineChange={onInlineChange}
                             onFieldFocus={onFieldFocus}
                             onFieldBlur={onFieldBlur}
-                            className={`${H4} mb-2 ${taC}`}
+                            className={`${H4(d)} mb-2 ${taC}`}
                             style={data?.taglineColor
                                 ? { color: data.taglineColor }
                                 : { color: isTransparentAuto ? 'var(--theme-foreground)' : isDark ? 'rgba(255,255,255,0.60)' : 'rgba(0,0,0,0.50)' }}
@@ -369,7 +370,7 @@ export const DefaultHeroBlock = ({ data, theme, isFirst = true, onInlineChange, 
                             onInlineChange={onInlineChange}
                             onFieldFocus={onFieldFocus}
                             onFieldBlur={onFieldBlur}
-                            className={`${BODY_LG} ${suC} ${data?.subtitleWeight ? `font-${data.subtitleWeight}` : ''}`}
+                            className={`${BODY_LG(d)} ${suC} ${data?.subtitleWeight ? `font-${data.subtitleWeight}` : ''}`}
                             style={{ color: data?.subtitleColor || defaultSubtitleColor }}
                         />
                     )}
@@ -432,7 +433,7 @@ export const DefaultHeroBlock = ({ data, theme, isFirst = true, onInlineChange, 
                         value={data?.tagline}
                         placeholder="Add tagline…"
                         onInlineChange={onInlineChange}
-                        className={`${H4} mb-2 ${taC}`}
+                        className={`${H4(d)} mb-2 ${taC}`}
                         style={data?.taglineColor
                             ? { color: data.taglineColor }
                             : { color: isTransparentAuto ? 'var(--theme-foreground)' : isDark ? 'rgba(255,255,255,0.55)' : undefined }}
@@ -456,7 +457,7 @@ export const DefaultHeroBlock = ({ data, theme, isFirst = true, onInlineChange, 
                         value={data?.subtitle}
                         placeholder="Add subtitle…"
                         onInlineChange={onInlineChange}
-                        className={`${BODY_LG} ${suC} ${data?.subtitleWeight ? `font-${data.subtitleWeight}` : ''}`}
+                        className={`${BODY_LG(d)} ${suC} ${data?.subtitleWeight ? `font-${data.subtitleWeight}` : ''}`}
                         style={{ color: data?.subtitleColor || defaultSubtitleColor }}
                     />
                 )}

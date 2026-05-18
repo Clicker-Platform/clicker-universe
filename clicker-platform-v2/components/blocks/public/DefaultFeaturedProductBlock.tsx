@@ -9,6 +9,7 @@ import { ProductDetailModal } from '@/components/catalog/ProductDetailModal';
 import { FullScreenGallery } from '@/components/common/FullScreenGallery';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getCardClasses, getGlassStyle, getHeadingColor, getLabelColor } from './cardStyles';
+import { useDeviceView } from '@/components/DeviceViewContext';
 import { H2, H4, BUTTON_TEXT } from './typography';
 
 interface WhatsAppSettings {
@@ -45,6 +46,7 @@ export function DefaultFeaturedProductBlock({
     const [isFullScreenOpen, setIsFullScreenOpen] = useState(false);
 
     const { theme } = useTemplate();
+    const d = useDeviceView();
 
     const isClean = theme?.cardStyle === 'clean';
     const isGlass = theme?.cardStyle === 'glass';
@@ -98,7 +100,7 @@ export function DefaultFeaturedProductBlock({
             {showBadge && (
                 <div className={isGlass ? 'mb-4' : 'absolute -top-5 left-1/2 -translate-x-1/2 z-20 w-max'}>
                     {isGlass ? (
-                        <span className={H4} style={{ color: labelColor }}>
+                        <span className={H4(d)} style={{ color: labelColor }}>
                             {badgeText}
                         </span>
                     ) : !isBold ? (
@@ -107,7 +109,7 @@ export function DefaultFeaturedProductBlock({
                             style={badgeStyle}
                         >
                             <Star size={14} className="fill-current" />
-                            <span className={H4}>{badgeText}</span>
+                            <span className={H4(d)}>{badgeText}</span>
                         </div>
                     ) : (
                         <div
@@ -115,7 +117,7 @@ export function DefaultFeaturedProductBlock({
                             style={{ ...badgeStyle, boxShadow: `2px 2px 0px 0px ${colors.foreground}` }}
                         >
                             <Star size={20} className="fill-current" />
-                            <span className={H4}>{badgeText}</span>
+                            <span className={H4(d)}>{badgeText}</span>
                             <Star size={20} className="fill-current" />
                         </div>
                     )}
@@ -248,7 +250,7 @@ export function DefaultFeaturedProductBlock({
                 {/* Content */}
                 <div className="text-center px-2 pb-2">
                     <h3
-                        className={`${H2} mb-3`}
+                        className={`${H2(d)} mb-3`}
                         style={{ color: headingColor }}
                     >
                         {product.name}
@@ -256,7 +258,7 @@ export function DefaultFeaturedProductBlock({
 
                     <button
                         onClick={handleOrderClick}
-                        className={`w-full py-4 rounded-xl flex items-center justify-center gap-2 transition-all duration-300 ${BUTTON_TEXT}`}
+                        className={`w-full py-4 rounded-xl flex items-center justify-center gap-2 transition-all duration-300 ${BUTTON_TEXT(d)}`}
                         style={{
                             borderRadius: 'calc(var(--theme-radius) * 0.6)',
                             backgroundColor: isBold ? colors.foreground : colors.primary,

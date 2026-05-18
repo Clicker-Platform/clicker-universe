@@ -10,6 +10,7 @@ import { useFormSubmit } from '@/lib/forms/useFormSubmit';
 import { FormFieldsRenderer } from '@/components/forms/FormFieldsRenderer';
 import { useTemplate } from '@/components/TemplateProvider';
 import { getCardClasses, getGlassStyle, getHeadingColor, getMutedColor } from './cardStyles';
+import { useDeviceView } from '@/components/DeviceViewContext';
 import { H2, H3, BODY, BODY_SM, BUTTON_TEXT } from './typography';
 
 interface Props {
@@ -25,6 +26,7 @@ interface Props {
 
 export function DefaultInlineFormBlock({ data, siteId }: Props) {
     const { theme } = useTemplate();
+    const d = useDeviceView();
     const router = useRouter();
     const [form, setForm] = useState<Form | null>(null);
     const [loadingForm, setLoadingForm] = useState(true);
@@ -102,7 +104,7 @@ export function DefaultInlineFormBlock({ data, siteId }: Props) {
                     <CheckCircle size={28} style={{ color: primaryContrastColor }} />
                 </div>
                 <p
-                    className={H3}
+                    className={H3(d)}
                     style={{ color: headingColor }}
                 >
                     {data.successMessage || "Thank you! We'll be in touch."}
@@ -134,12 +136,12 @@ export function DefaultInlineFormBlock({ data, siteId }: Props) {
         <section className="w-full px-4 py-10 max-w-2xl mx-auto">
             <div className={cardClasses} style={cardStyle}>
                 {data.heading && (
-                    <h2 className={`${H2} mb-1`} style={{ color: headingColor }}>
+                    <h2 className={`${H2(d)} mb-1`} style={{ color: headingColor }}>
                         {data.heading}
                     </h2>
                 )}
                 {data.subheading && (
-                    <p className={`${BODY} mb-6`} style={{ color: mutedColor }}>
+                    <p className={`${BODY(d)} mb-6`} style={{ color: mutedColor }}>
                         {data.subheading}
                     </p>
                 )}
@@ -151,7 +153,7 @@ export function DefaultInlineFormBlock({ data, siteId }: Props) {
                         <div className="h-12 bg-gray-200 dark:bg-neutral-800 rounded" />
                     </div>
                 ) : !form ? (
-                    <p className={`${BODY_SM} italic`} style={{ color: mutedColor }}>
+                    <p className={`${BODY_SM(d)} italic`} style={{ color: mutedColor }}>
                         Select a form in the block settings.
                     </p>
                 ) : (
@@ -165,13 +167,13 @@ export function DefaultInlineFormBlock({ data, siteId }: Props) {
                         />
 
                         {error && (
-                            <p className={BODY_SM} style={{ color: 'var(--theme-error)' }}>{error}</p>
+                            <p className={BODY_SM(d)} style={{ color: 'var(--theme-error)' }}>{error}</p>
                         )}
 
                         <button
                             type="submit"
                             disabled={submitting}
-                            className={`w-full py-4 ${BUTTON_TEXT} transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${hoverClass} ${
+                            className={`w-full py-4 ${BUTTON_TEXT(d)} transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${hoverClass} ${
                                 isBold ? 'border-[3px]' : ''
                             }`}
                             style={{
