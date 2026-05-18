@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Menu, X } from 'lucide-react';
+import { TextAlignEnd, X } from 'lucide-react';
 import { useTemplate } from '@/components/TemplateProvider';
 
 interface BurgerButtonProps {
@@ -11,8 +11,6 @@ interface BurgerButtonProps {
 
 export const BurgerButton: React.FC<BurgerButtonProps> = ({ isOpen, onClick }) => {
   const { theme } = useTemplate();
-  const textMuted = `${theme.colors.foreground}99`;
-  const borderColor = theme.colors.border ?? `${theme.colors.foreground}26`;
 
   return (
     <button
@@ -21,20 +19,12 @@ export const BurgerButton: React.FC<BurgerButtonProps> = ({ isOpen, onClick }) =
         e.preventDefault();
         onClick();
       }}
-      className="p-2 rounded-xl border transition-all"
-      style={{
-        backgroundColor: theme.colors.surface ?? theme.colors.background,
-        borderColor,
-        color: textMuted,
-      }}
+      className="p-2 transition-all"
+      style={{ color: theme.colors.foreground }}
       aria-label="Toggle menu"
       aria-expanded={isOpen}
     >
-      {isOpen ? (
-        <X className="w-6 h-6" style={{ color: theme.colors.foreground }} />
-      ) : (
-        <Menu className="w-6 h-6" />
-      )}
+      {isOpen ? <X className="w-6 h-6" /> : <TextAlignEnd className="w-6 h-6" />}
     </button>
   );
 };

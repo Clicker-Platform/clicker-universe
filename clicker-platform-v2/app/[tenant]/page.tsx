@@ -65,6 +65,7 @@ export default async function TenantPage({ params, searchParams }: TenantPagePro
         fab: navSettings.fab ?? null,
         headerStyle: navSettings.headerStyle ?? {},
         bottomNavStyle: navSettings.bottomNavStyle ?? {},
+        header: navSettings.header,
     };
 
     // Hydrate block-specific data and nav form cache in parallel
@@ -137,7 +138,6 @@ export default async function TenantPage({ params, searchParams }: TenantPagePro
             templateId={safeTemplateId}
             data={publicData}
             siteId={siteId}
-            isSubPage={false}
             heroFirst={heroFirst}
             initialFormCache={navFormCache}
             initialNavData={initialNavData}

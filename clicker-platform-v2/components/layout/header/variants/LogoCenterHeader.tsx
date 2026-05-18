@@ -16,8 +16,6 @@ export const LogoCenterHeader: React.FC<VariantProps> = ({
   typographyClass,
   onItemClick,
   forceMobile = false,
-  isSubPage = false,
-  pageTitle,
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { theme } = useTemplate();
@@ -38,13 +36,7 @@ export const LogoCenterHeader: React.FC<VariantProps> = ({
       </div>
 
       <div className={`${forceMobile ? 'flex-1' : 'lg:flex-none'} flex justify-center`}>
-        <NavLogo
-          profile={profile}
-          siteId={siteId}
-          isSubPage={isSubPage}
-          pageTitle={pageTitle}
-          forceMobile={forceMobile}
-        />
+        <NavLogo profile={profile} siteId={siteId} />
       </div>
 
       <div className={`${forceMobile ? 'hidden' : 'hidden lg:flex'} items-center justify-end gap-6 flex-1`}>

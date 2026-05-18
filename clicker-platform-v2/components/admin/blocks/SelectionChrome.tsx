@@ -10,12 +10,20 @@
 interface SelectionChromeProps {
     selected: boolean;
     hoverGuide?: boolean;
+    /** When true, border and handles render inset (inside bounds) instead of outside.
+     *  Use for full-width chrome slots where overflow is clipped by the canvas frame. */
+    inset?: boolean;
 }
 
-export function SelectionChrome({ selected, hoverGuide = false }: SelectionChromeProps) {
+export function SelectionChrome({ selected, hoverGuide = false, inset = false }: SelectionChromeProps) {
     if (selected) {
+        if (inset) {
+            return (
+                <div className="absolute inset-[2px] pointer-events-none z-[60] border-2 border-blue-500" />
+            );
+        }
         return (
-            <div className="absolute pointer-events-none z-10" style={{ inset: -1 }}>
+            <div className="absolute pointer-events-none z-[60]" style={{ inset: -1 }}>
                 <div className="absolute inset-0 border-2 border-blue-500" style={{ borderRadius: 0 }} />
                 <div className="absolute -top-[4px] -left-[4px] w-[8px] h-[8px] bg-white border-[1.5px] border-blue-500" />
                 <div className="absolute -top-[4px] left-1/2 -translate-x-1/2 w-[8px] h-[8px] bg-white border-[1.5px] border-blue-500" />
@@ -31,7 +39,7 @@ export function SelectionChrome({ selected, hoverGuide = false }: SelectionChrom
 
     if (hoverGuide) {
         return (
-            <div className="absolute inset-0 pointer-events-none z-10 outline outline-1 outline-blue-400/40 outline-offset-0 hover:outline-blue-400/60" />
+            <div className="absolute inset-0 pointer-events-none z-[60] outline outline-1 outline-blue-400/40 outline-offset-0 hover:outline-blue-400/60" />
         );
     }
 

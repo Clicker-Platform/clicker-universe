@@ -16,8 +16,6 @@ export interface VariantProps {
   typographyClass: string;
   onItemClick: (e: React.MouseEvent, item: NavigationItem) => void;
   forceMobile?: boolean;
-  isSubPage?: boolean;
-  pageTitle?: string;
 }
 
 export const LogoLeftHeader: React.FC<VariantProps> = ({
@@ -28,8 +26,6 @@ export const LogoLeftHeader: React.FC<VariantProps> = ({
   typographyClass,
   onItemClick,
   forceMobile = false,
-  isSubPage = false,
-  pageTitle,
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { theme } = useTemplate();
@@ -38,13 +34,7 @@ export const LogoLeftHeader: React.FC<VariantProps> = ({
 
   return (
     <div className="flex items-center justify-between w-full relative">
-      <NavLogo
-        profile={profile}
-        siteId={siteId}
-        isSubPage={isSubPage}
-        pageTitle={pageTitle}
-        forceMobile={forceMobile}
-      />
+      <NavLogo profile={profile} siteId={siteId} />
 
       <div className="flex items-center gap-4 relative z-10">
         <NavMenu

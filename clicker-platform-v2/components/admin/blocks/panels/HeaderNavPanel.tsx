@@ -116,14 +116,20 @@ function SegmentedControl<T extends string>({
     value: T;
     onChange: (v: T) => void;
 }) {
+    // 1–3 options stay on a single row; 4+ wrap to 2 columns so labels never get clipped.
+    const colsClass =
+        options.length === 1 ? 'grid-cols-1' :
+        options.length === 2 ? 'grid-cols-2' :
+        options.length === 3 ? 'grid-cols-3' :
+        'grid-cols-2';
     return (
-        <div className="flex gap-1 flex-wrap">
+        <div className={`grid ${colsClass} gap-1`}>
             {options.map(opt => (
                 <button
                     key={opt.value}
                     type="button"
                     onClick={() => onChange(opt.value)}
-                    className={`flex-1 min-w-0 px-2 py-1.5 text-[10px] font-bold uppercase rounded transition-all whitespace-nowrap ${
+                    className={`min-w-0 px-2 py-1.5 text-[10px] font-bold uppercase rounded transition-all truncate ${
                         value === opt.value
                             ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
                             : 'bg-gray-100 dark:bg-neutral-800 text-neutral-500 border border-gray-300 dark:border-neutral-700 hover:text-neutral-700 dark:hover:text-neutral-300'

@@ -18,8 +18,6 @@ interface HeaderNavigationProps {
   profile: BusinessProfile;
   siteId?: string;
   forceMobile?: boolean;
-  isSubPage?: boolean;
-  pageTitle?: string;
   /** Canvas Studio preview: intercepts nav clicks instead of real navigation */
   onNavigate?: (href: string, item: NavigationItem) => void;
 }
@@ -28,8 +26,6 @@ export const HeaderNavigation: React.FC<HeaderNavigationProps> = ({
   profile,
   siteId,
   forceMobile = false,
-  isSubPage = false,
-  pageTitle,
   onNavigate,
 }) => {
   const { tenantSlug, isSubdomain } = useSite();
@@ -113,8 +109,6 @@ export const HeaderNavigation: React.FC<HeaderNavigationProps> = ({
           typographyClass={typographyClass}
           onItemClick={handleItemClick}
           forceMobile={forceMobile}
-          isSubPage={isSubPage}
-          pageTitle={pageTitle}
         />
       </HeaderShell>
 

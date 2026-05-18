@@ -164,6 +164,7 @@ export default async function TenantCatchAllPage({ params, searchParams }: Props
         fab: navSettings.fab ?? null,
         headerStyle: navSettings.headerStyle ?? {},
         bottomNavStyle: navSettings.bottomNavStyle ?? {},
+        header: navSettings.header,
     };
 
     const firstBlock = page.blocks?.[0];
@@ -187,9 +188,7 @@ export default async function TenantCatchAllPage({ params, searchParams }: Props
             templateId={safeTemplateId}
             data={publicData}
             siteId={siteId}
-            isSubPage={true}
             heroFirst={heroFirst}
-            pageTitle={page.title}
             initialNavData={initialNavData}
             pageOverrides={{
                 borderRadius: borderRadius,

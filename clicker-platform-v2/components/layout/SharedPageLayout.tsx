@@ -27,8 +27,6 @@ export interface SharedLayoutProps {
     showFooter?: boolean;
     siteId: string;
     forceMobile?: boolean;
-    isSubPage?: boolean;
-    pageTitle?: string;
     heroFirst?: boolean;
     initialFormCache?: Record<string, any>;
     initialNavData?: InitialNavData;
@@ -42,8 +40,6 @@ export function SharedPageLayout({
     showFooter = true,
     siteId,
     forceMobile = false,
-    isSubPage = false,
-    pageTitle,
     heroFirst = false,
     initialFormCache = {},
     initialNavData,
@@ -125,8 +121,6 @@ export function SharedPageLayout({
                         profile={profile}
                         siteId={siteId}
                         forceMobile={forceMobile}
-                        isSubPage={isSubPage}
-                        pageTitle={pageTitle}
                     />
                 )}
                 <BottomNavBar />

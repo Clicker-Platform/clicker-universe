@@ -42,11 +42,9 @@ const BrandingPanel = dynamic(() => import('./panels/BrandingPanel').then(m => m
 export function CanvasStudio({
     globalSettings,
     pageSlug,
-    pageTitle
 }: {
     globalSettings?: any,
     pageSlug?: string;
-    pageTitle?: string;
 }) {
     const { blocks, setBlocks, selection, setSelection, updateBlockData, deviceView, showGuides } = useEditor();
 
@@ -240,9 +238,6 @@ export function CanvasStudio({
         ? (globalSettings?.backgroundColor || template.config.colors.background)
         : (globalSettings?.backgroundColor || themeColor || template.config.colors.background);
 
-    const isHomepage = pageSlug === (globalSettings?.homepageSlug || 'home');
-    const isSubPage = !isHomepage;
-
     // ─── Shared canvas content ────────────────────────────────────────────────
     const canvasContent = (
         <div
@@ -308,14 +303,13 @@ export function CanvasStudio({
                                 <SelectionChrome
                                     selected={selection.kind === 'chrome' && selection.chromeId === 'header'}
                                     hoverGuide={showGuides && !(selection.kind === 'chrome' && selection.chromeId === 'header')}
+                                    inset
                                 />
                                 {globalSettings?.profile && (
                                     <HeaderNavigation
                                         profile={globalSettings.profile}
                                         siteId={siteId!}
                                         forceMobile={deviceView !== 'desktop'}
-                                        isSubPage={isSubPage}
-                                        pageTitle={pageTitle}
                                         onNavigate={(href, item) => {
                                             const val: string = item?.value ?? href;
                                             // External URLs — open in new tab
@@ -458,6 +452,7 @@ export function CanvasStudio({
                                         <SelectionChrome
                                             selected={selection.kind === 'chrome' && selection.chromeId === 'footer'}
                                             hoverGuide={showGuides && !(selection.kind === 'chrome' && selection.chromeId === 'footer')}
+                                            inset
                                         />
                                         <div className="pointer-events-none">
                                             <Footer
@@ -483,6 +478,7 @@ export function CanvasStudio({
                                 <SelectionChrome
                                     selected={selection.kind === 'chrome' && selection.chromeId === 'bottomnav'}
                                     hoverGuide={showGuides && !(selection.kind === 'chrome' && selection.chromeId === 'bottomnav')}
+                                    inset
                                 />
                                 <div className="pointer-events-none">
                                     <BottomNavBar previewMode={true} />

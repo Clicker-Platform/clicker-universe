@@ -16,8 +16,6 @@ export const BurgerHeader: React.FC<VariantProps> = ({
   typographyClass,
   onItemClick,
   forceMobile = false,
-  isSubPage = false,
-  pageTitle,
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { theme } = useTemplate();
@@ -35,13 +33,7 @@ export const BurgerHeader: React.FC<VariantProps> = ({
 
   return (
     <div className="flex items-center justify-between w-full relative">
-      <NavLogo
-        profile={profile}
-        siteId={siteId}
-        isSubPage={isSubPage}
-        pageTitle={pageTitle}
-        forceMobile={forceMobile}
-      />
+      <NavLogo profile={profile} siteId={siteId} />
 
       <div className="flex items-center gap-3">
         <NavCTA cta={cta} typographyClass={typographyClass} onItemClick={onItemClick} />

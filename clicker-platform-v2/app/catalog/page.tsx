@@ -23,6 +23,7 @@ export default async function CatalogPage({
     const headersList = await headers();
     const siteId = headersList.get('x-site-id') || 'default';
 
+    const publicData = await fetchPublicData(siteId);
     const {
         profile,
         socialLinks,
@@ -35,7 +36,19 @@ export default async function CatalogPage({
         borderRadius,
         products,
         accentColor // Ensure we pass this if needed or implicit via theme
-    } = await fetchPublicData(siteId);
+    } = publicData;
+
+    // Build initialNavData from SSR siteSettings — eliminates onSnapshot on public pages
+    const navSettings = ((publicData as any).navigation ?? {}) as any;
+    const initialNavData = {
+        topNav: navSettings.topNav ?? [],
+        topNavActions: navSettings.topNavActions ?? null,
+        bottomNav: navSettings.bottomNav ?? [],
+        fab: navSettings.fab ?? null,
+        headerStyle: navSettings.headerStyle ?? {},
+        bottomNavStyle: navSettings.bottomNavStyle ?? {},
+        header: navSettings.header,
+    };
 
     // Resolve Template (Priority: URL Param > DB Setting > Default)
     const overrideTemplate = typeof t === 'string' ? t : undefined;
@@ -76,7 +89,7 @@ export default async function CatalogPage({
             templateId={safeTemplateId}
             themeOverrides={themeOverrides}
         >
-            <NavigationProvider siteId={siteId}>
+            <NavigationProvider siteId={siteId} initialNavData={initialNavData}>
             <main
                 className="min-h-screen bg-theme-background transition-colors duration-300 px-4 py-8 relative overflow-hidden"
                 style={{ backgroundColor: pageBackgroundColor }}
