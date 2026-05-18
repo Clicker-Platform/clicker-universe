@@ -22,6 +22,7 @@ import {
     verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { SortableNavItem } from './shared/SortableNavItem';
+import { stripUndefined } from '@/lib/firestore/stripUndefined';
 import {
     HeaderNavigationConfig,
     HeaderVariant,
@@ -281,7 +282,12 @@ export function HeaderNavPanel() {
             const docRef = doc(db, 'sites', sid, 'content', 'siteSettings');
             // merge: true at the top level means the `navigation` field is merged,
             // so bottomNav / fab / topNav / etc. are untouched.
-            await setDoc(docRef, { navigation: { header: nextHeader } }, { merge: true });
+            // Firestore rejects `undefined` field values — strip them at the boundary.
+            // The HeaderNavigationConfig type has several optional fields (bgColor,
+            // showBorder, cta.formId/pageId, scrolledAppearance.*) that are `undefined`
+            // until the user sets them.
+            const sanitized = stripUndefined({ navigation: { header: nextHeader } });
+            await setDoc(docRef, sanitized, { merge: true });
             lastSavedSnapshotRef.current = snapshot;
             setStatus('saved');
             setTimeout(() => setStatus('idle'), 2000);
