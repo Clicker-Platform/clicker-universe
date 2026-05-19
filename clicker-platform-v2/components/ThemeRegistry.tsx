@@ -23,13 +23,9 @@ export default function ThemeRegistry({ initialSettings, appearanceStyles, templ
     // but we also guard with a ref so we only return content on the first call.
     const inserted = useRef(false);
     useServerInsertedHTML(() => {
-        if (!settings || isAdmin) return null;
+        if (!settings) return null;
         if (inserted.current) return null;
         inserted.current = true;
-
-        const fontFamily = settings.fontFamily || 'var(--font-jakarta)';
-        const isCustomFont = !fontFamily.startsWith('var(');
-        const fontUrl = `https://fonts.googleapis.com/css2?family=${fontFamily.replace(/ /g, '+')}:wght@400;700;800&display=swap`;
 
         const pack = getPackById(appearanceStyles?.fontPackId) ?? null;
         let headingVar: string;
@@ -45,6 +41,25 @@ export default function ThemeRegistry({ initialSettings, appearanceStyles, templ
           headingVar = 'var(--font-jakarta)';
           bodyVar = 'var(--font-jakarta)';
         }
+
+        // In admin we only emit the font vars so the canvas (inside the admin
+        // shell) inherits the tenant's Font Pack. Brand colors and the legacy
+        // --font-dynamic / body background path stay off admin to avoid bleeding
+        // tenant brand styling into the admin chrome.
+        if (isAdmin) {
+            return (
+                <style
+                    data-theme-registry
+                    dangerouslySetInnerHTML={{
+                        __html: ':root { --font-heading: ' + headingVar + '; --font-body: ' + bodyVar + '; }',
+                    }}
+                />
+            );
+        }
+
+        const fontFamily = settings.fontFamily || 'var(--font-jakarta)';
+        const isCustomFont = !fontFamily.startsWith('var(');
+        const fontUrl = `https://fonts.googleapis.com/css2?family=${fontFamily.replace(/ /g, '+')}:wght@400;700;800&display=swap`;
 
         return (
             <>
