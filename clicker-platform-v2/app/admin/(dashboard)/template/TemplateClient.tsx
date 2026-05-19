@@ -227,7 +227,6 @@ export default function TemplateClient() {
                                                             templateId: template.id as any,
                                                             themeColor: template.config.colors.primary,
                                                             accentColor: template.config.colors.foreground,
-                                                            fontFamily: template.config.fonts.heading
                                                         });
                                                     }}
                                                     className={`
