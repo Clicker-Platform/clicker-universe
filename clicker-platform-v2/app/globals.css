@@ -51,23 +51,23 @@ body {
 /*
  * Block typography foundation — spec §4.3
  * Scoped to [data-template] so admin chrome (sidebar, dashboard) keeps its
- * own system-stack font. Inside any TemplateProvider, headings consume
- * --font-heading and body text consumes --font-body, both populated by
- * the active Font Pack (ThemeRegistry SSR + applyFontVarsToDocument).
+ * own system-stack font. Inside any TemplateProvider:
+ *   - headings (h1–h6) consume --font-heading
+ *   - everything else consumes --font-body
+ * Both populated by the active Font Pack (ThemeRegistry SSR +
+ * applyFontVarsToDocument).
+ *
+ * The :not(:is(h1…)) selector covers nav links, logo text, buttons,
+ * inputs, and any future element type without maintaining a tag list.
  *
  * !important is required to beat Tailwind v4's body cascade, which has
- * equal specificity (0,0,1,1) but loads later and would otherwise win
- * for inherited font-family on headings and body text.
+ * equal specificity but loads later and would otherwise win.
  */
 [data-template] :is(h1, h2, h3, h4, h5, h6) {
   font-family: var(--font-heading, system-ui, sans-serif) !important;
 }
 
-[data-template] :is(p, li, dd, dt, td, th, input, button, textarea, select, blockquote) {
-  font-family: var(--font-body, system-ui, sans-serif) !important;
-}
-
-[data-template] .prose {
+[data-template] :not(:is(h1, h2, h3, h4, h5, h6)) {
   font-family: var(--font-body, system-ui, sans-serif) !important;
 }
 
