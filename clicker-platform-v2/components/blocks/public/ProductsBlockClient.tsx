@@ -5,7 +5,9 @@ import Image from 'next/image';
 import { Product } from '@/data/mockData';
 import { ProductDetailModal } from '@/components/catalog/ProductDetailModal';
 import { useTemplate } from '@/components/TemplateProvider';
-import { getCardClasses, getTextColor } from './cardStyles';
+import { getCardClasses, getHeadingColor, getLabelColor, getMutedColor } from './cardStyles';
+import { useDeviceView } from '@/components/DeviceViewContext';
+import { TILE_TITLE, H4, BODY_SM } from './typography';
 
 // 1x1 gray SVG placeholder — shown while the real image downloads
 const BLUR_PLACEHOLDER =
@@ -26,7 +28,11 @@ function ProductTile({ product, onClick, priority, cardStyle }: {
 }) {
     const [loaded, setLoaded] = useState(false);
     const { theme } = useTemplate();
+    const d = useDeviceView();
     const isGlass = theme.cardStyle === 'glass';
+    const headingColor = getHeadingColor(theme.cardStyle, theme);
+    const labelColor = getLabelColor(theme.cardStyle, theme);
+    const mutedColor = getMutedColor(theme.cardStyle, theme);
 
     const imageUrl = product.imageUrl || (product as any).image;
     const showPrice = (product as any).showPrice !== false;
@@ -71,22 +77,22 @@ function ProductTile({ product, onClick, priority, cardStyle }: {
             <div className="flex-1 flex flex-col min-w-0 px-1 pb-1">
                 {showLabel && product.category && (
                     <span
-                        className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${getTextColor(theme.cardStyle, true)}`}
-                        style={{ fontFamily: theme.fonts.body }}
+                        className={`${H4(d)} mb-1`}
+                        style={{ color: labelColor }}
                     >
                         {product.category}
                     </span>
                 )}
                 <h3
-                    className={`font-bold text-sm leading-tight mb-1 group-hover:opacity-80 transition-opacity truncate ${getTextColor(theme.cardStyle)}`}
-                    style={{ fontFamily: theme.fonts.heading }}
+                    className={`${TILE_TITLE(d)} mb-1 group-hover:opacity-80 transition-opacity truncate`}
+                    style={{ color: headingColor }}
                 >
                     {product.name || (product as any).title}
                 </h3>
                 {showPrice && (
                     <p
-                        className={`text-xs font-medium ${getTextColor(theme.cardStyle, true)}`}
-                        style={{ fontFamily: theme.fonts.body }}
+                        className={BODY_SM(d)}
+                        style={{ color: mutedColor }}
                     >
                         {product.price}
                     </p>
@@ -99,14 +105,15 @@ function ProductTile({ product, onClick, priority, cardStyle }: {
 export const ProductsBlockClient = ({ data, products, phoneNumber, whatsappSettings }: ProductsBlockClientProps) => {
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const { theme } = useTemplate();
+    const d = useDeviceView();
     const cardStyle = getCardClasses(theme.cardStyle);
 
     return (
         <section>
             {data.title && (
                 <h2
-                    className="text-xs font-bold uppercase tracking-[0.2em] mb-6 opacity-60"
-                    style={{ fontFamily: theme.fonts.heading, color: theme.colors.foreground }}
+                    className={`${H4(d)} mb-6`}
+                    style={{ color: getLabelColor(theme.cardStyle, theme) }}
                 >
                     {data.title}
                 </h2>

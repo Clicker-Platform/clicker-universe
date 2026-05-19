@@ -27,7 +27,7 @@ export interface LinkItem {
     openInNewTab?: boolean;
 }
 
-export type BlockType = 'hero' | 'text' | 'image' | 'button' | 'products' | 'faq' | 'link' | 'map' | 'image_gallery' | 'social_embed' | 'quick_actions' | 'hours' | 'featured_product' | 'branches' | 'reservation' | 'reservation_cta' | 'content_showcase' | 'inline_form' | 'heading' | 'feature_cards' | string;
+export type BlockType = 'hero' | 'text' | 'image' | 'button' | 'products' | 'faq' | 'link' | 'map' | 'image_gallery' | 'social_embed' | 'quick_actions' | 'hours' | 'featured_product' | 'branches' | 'reservation' | 'reservation_cta' | 'content_showcase' | 'inline_form' | 'heading' | 'feature_cards' | 'columns' | 'grid' | 'marquee' | string;
 
 export interface PageBlock {
     id: string;
@@ -212,6 +212,48 @@ export interface NavigationItem {
     formId?: string | null;
     pageId?: string | null;
     enabled?: boolean;
+    /** Phase 2 — schema only in Phase 1, no rendering or editor UI */
+    children?: NavigationItem[];
+}
+
+// === Header Navigation v2 — variant-based, token-driven ===
+
+export type HeaderVariant = 'logo-left' | 'logo-center' | 'burger' | 'logo-left-stacked';
+export type HeaderScrollBehavior = 'none' | 'fixed' | 'sticky-on-scroll-up' | 'shrink-on-scroll';
+export type HeaderContainerWidth = 'full' | 'constrained';
+export type HeaderNavTextPreset = 'default' | 'tight' | 'spacious' | 'sentence-case';
+
+export interface HeaderTypography {
+    preset: HeaderNavTextPreset;
+    trackingOverride?: 'normal' | 'tight' | 'wide';
+    caseOverride?: 'uppercase' | 'none';
+}
+
+export interface HeaderCTA {
+    enabled: boolean;
+    label: string;
+    linkType: 'page' | 'form' | 'url' | 'action';
+    linkValue: string;
+    formId?: string;
+    pageId?: string;
+}
+
+export interface HeaderScrolledAppearance {
+    enabled: boolean;
+    bgColor?: string;
+    showBorder?: boolean;
+}
+
+export interface HeaderNavigationConfig {
+    variant: HeaderVariant;
+    width: HeaderContainerWidth;
+    scrollBehavior: HeaderScrollBehavior;
+    items: NavigationItem[];
+    cta: HeaderCTA;
+    bgColor?: string;
+    showBorder?: boolean;
+    typography: HeaderTypography;
+    scrolledAppearance: HeaderScrolledAppearance;
 }
 
 export interface SocialLinkItem {

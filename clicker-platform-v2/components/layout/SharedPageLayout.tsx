@@ -1,14 +1,13 @@
 'use client';
 
 import React from 'react';
-import { ResponsiveNavBar } from '@/components/layout/ResponsiveNavBar';
+import { HeaderNavigation } from '@/components/layout/header/HeaderNavigation';
 import { BottomNavBar } from '@/components/layout/BottomNavBar';
 import { NavigationProvider } from '@/components/layout/NavigationProvider';
 import { InitialNavData } from '@/lib/hooks/useNavigationConfig';
 // import { ResponsiveContainer } from '@/components/layout/ResponsiveContainer'; // Inlined to fix hydration issues
 import { TemplateProvider } from '@/components/TemplateProvider';
 import { getTemplate } from '@/lib/templates/registry';
-import { ClassicProfileHeader } from "@/components/headers/ClassicProfileHeader";
 import { BackgroundDecorations } from "@/components/BackgroundDecorations";
 import { Footer } from "@/components/Footer";
 import { PageBackground } from '@/components/blocks/PageBackground';
@@ -28,8 +27,6 @@ export interface SharedLayoutProps {
     showFooter?: boolean;
     siteId: string;
     forceMobile?: boolean;
-    isSubPage?: boolean;
-    pageTitle?: string;
     heroFirst?: boolean;
     initialFormCache?: Record<string, any>;
     initialNavData?: InitialNavData;
@@ -43,8 +40,6 @@ export function SharedPageLayout({
     showFooter = true,
     siteId,
     forceMobile = false,
-    isSubPage = false,
-    pageTitle,
     heroFirst = false,
     initialFormCache = {},
     initialNavData,
@@ -68,7 +63,6 @@ export function SharedPageLayout({
     const template = getTemplate(activeTemplateId);
 
     // Components
-    const HeaderComponent = template.components?.Header || ClassicProfileHeader;
     const Background = template.components?.Background || BackgroundDecorations;
 
     // Styling Logic
@@ -123,12 +117,10 @@ export function SharedPageLayout({
             <div className="contents">
                 {/* Navigation */}
                 {profile && (
-                    <ResponsiveNavBar
+                    <HeaderNavigation
                         profile={profile}
                         siteId={siteId}
                         forceMobile={forceMobile}
-                        isSubPage={isSubPage}
-                        pageTitle={pageTitle}
                     />
                 )}
                 <BottomNavBar />
@@ -136,7 +128,7 @@ export function SharedPageLayout({
 
                 <main
                     className={`
-                        min-h-screen ${heroFirst ? 'pt-0 pb-12' : 'py-12'} relative transition-colors duration-300 overflow-x-clip
+                        min-h-screen pt-0 pb-12 relative transition-colors duration-300 overflow-x-clip
                         ${template.config.layout?.navMode === 'adaptive' ? 'pt-16' : ''}
                     `}
                     suppressHydrationWarning // Prevent mismatches on dynamic styles
@@ -153,20 +145,9 @@ export function SharedPageLayout({
 
                     {/* ResponsiveContainer Inlined */}
                     <div
-                        className={`w-full mx-auto px-4 md:px-6 transition-all duration-300 relative z-10 flex flex-col gap-6 min-h-[90vh]`}
+                        className={`w-full mx-auto px-4 md:px-6 mt-4 md:mt-6 transition-all duration-300 relative z-10 flex flex-col gap-6 min-h-[90vh]`}
                         style={{ maxWidth: 'var(--layout-max-width, 480px)' }}
                     >
-                        {/* Header */}
-                        {profile && (
-                            <div>
-                                <HeaderComponent
-                                    profile={profile}
-                                    contact={contact}
-                                    showAddress={showHeaderAddress}
-                                />
-                            </div>
-                        )}
-
                         {/* Content */}
                         {children}
 

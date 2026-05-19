@@ -2,7 +2,6 @@
 
 import React from 'react';
 import dynamic from 'next/dynamic';
-import { ClassicProfileHeader } from "@/components/headers/ClassicProfileHeader";
 import { DefaultFeaturedProductBlock } from "@/components/blocks/public/DefaultFeaturedProductBlock";
 import { DefaultProductGalleryBlock as ProductGallery } from "@/components/blocks/public/DefaultProductGalleryBlock";
 import { Footer } from "@/components/Footer";
@@ -17,7 +16,6 @@ import { TemplateId } from '@/lib/templates/types';
 import { getTemplate } from '@/lib/templates/registry'; // Use registry which includes components
 import { getBlockSpan } from '@/lib/templates/layoutUtils';
 import { TemplateProvider } from '@/components/TemplateProvider';
-import { ModernProfileHeader } from '@/components/headers/ModernProfileHeader';
 import { SharedPageLayout } from '@/components/layout/SharedPageLayout';
 
 // No local selector, we use the registry logic directly or mapped
@@ -26,20 +24,6 @@ import { SharedPageLayout } from '@/components/layout/SharedPageLayout';
 // Registry imports Server Components? No, headers are 'use client'.
 // Let's use the explicit map here to be safe but cleaner.
 
-function HeaderSelector({ templateId, props }: { templateId: string, props: any }) {
-    // This looks redundant if we can use dynamic Registry.
-    // Ideally: const Component = registry[layoutStyle].Header;
-    // But let's look at the mapping logic I updated in task 232.
-    // We already identified Modern use ModernProfileHeader.
-    // Classic uses ClassicProfileHeader.
-
-    // STRICT FIX: logic should rely on definition if possible? No, strictly registry mapping.
-    // Let's keep HeaderSelector but make it cleaner or just rely on the fallback.
-    // Actually, the user wants "perfect". Perfect means no ad-hoc switches.
-    const template = getTemplate(templateId);
-    const HeaderComponent = template.components?.Header || ClassicProfileHeader;
-    return <HeaderComponent {...props} />;
-}
 
 export interface PublicPageProps {
     data: {

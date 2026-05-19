@@ -5,8 +5,9 @@ import { toast } from 'sonner';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, doc, getDoc, updateDoc, deleteDoc, setDoc, getDocs, serverTimestamp, query, where, writeBatch } from 'firebase/firestore';
 import { writeSiteSettings } from '@/lib/admin/siteSettings';
+import { stripUndefined } from '@/lib/firestore/stripUndefined';
 import { Page, PageBlock } from '@/data/mockData';
-import { fetchCanvasData, hydratePageBlocks } from '@/lib/fetchData';
+import { fetchCanvasData, hydratePageBlocks, collectAllBlockTypes } from '@/lib/fetchData';
 import { purgeTenantCache } from '@/lib/admin/purgeCache';
 import { useSite } from '@/lib/site-context';
 
@@ -88,6 +89,11 @@ interface PageStudioContextType {
 
     // Hydrated data (links, products, etc.) — lifted from CanvasStudio for caching
     hydratedData: Record<string, any>;
+
+    // True while hydratePageBlocks is in flight (e.g. after adding a data-dependent
+    // block). Consumers can use this to suppress "empty" diagnostics until the
+    // fetch resolves.
+    isHydrating: boolean;
 
     // Global settings
     globalSettings: any;
@@ -186,6 +192,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
 
     // Hydrated data (lifted from CanvasStudio for caching)
     const [hydratedData, setHydratedData] = useState<Record<string, any>>({});
+    const [isHydrating, setIsHydrating] = useState(false);
 
     // Links sync
     const [linksVersion, setLinksVersion] = useState(0);
@@ -286,7 +293,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
             formData: { ...data, blocks: [...data.blocks] },
             savedSnapshot: snapshot,
             hydratedData: { ...hydrated },
-            blockTypesKey: data.blocks.map(b => b.type).sort().join(','),
+            blockTypesKey: collectAllBlockTypes(data.blocks).sort().join(','),
             cachedAt: Date.now(),
             updatedAt,
         });
@@ -311,7 +318,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
     // ── Block hydration (lifted from CanvasStudio) ──────────────────────
 
     const blockTypesKey = useMemo(
-        () => formData.blocks.map(b => b.type).sort().join(','),
+        () => collectAllBlockTypes(formData.blocks).sort().join(','),
         [formData.blocks]
     );
 
@@ -319,21 +326,26 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
         if (!formData.blocks.length || !siteId) return;
 
         let isMounted = true;
+        setIsHydrating(true);
 
-        hydratePageBlocks(siteId, formData.blocks).then(data => {
-            if (isMounted) {
-                setHydratedData(data);
-                // Update cache entry with hydrated data
-                const pageId = activePageIdRef.current;
-                if (pageId) {
-                    const cached = pageCacheRef.current.get(pageId);
-                    if (cached) {
-                        cached.hydratedData = { ...data };
-                        cached.blockTypesKey = formData.blocks.map(b => b.type).sort().join(',');
+        hydratePageBlocks(siteId, formData.blocks)
+            .then(data => {
+                if (isMounted) {
+                    setHydratedData(data);
+                    // Update cache entry with hydrated data
+                    const pageId = activePageIdRef.current;
+                    if (pageId) {
+                        const cached = pageCacheRef.current.get(pageId);
+                        if (cached) {
+                            cached.hydratedData = { ...data };
+                            cached.blockTypesKey = collectAllBlockTypes(formData.blocks).sort().join(',');
+                        }
                     }
                 }
-            }
-        });
+            })
+            .finally(() => {
+                if (isMounted) setIsHydrating(false);
+            });
 
         return () => { isMounted = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -638,7 +650,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
                 return;
             }
 
-            const pageData = {
+            const pageData = stripUndefined({
                 title: trimmedTitle,
                 slug: trimmedSlug,
                 content: formData.content,
@@ -656,7 +668,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
                 } : null,
                 background: formData.background,
                 updatedAt: serverTimestamp(),
-            };
+            });
 
             let savedPageId = activePageId;
 
@@ -998,6 +1010,7 @@ export function PageStudioProvider({ children, initialPageId }: { children: Reac
             pageLoading,
             isDirty,
             hydratedData,
+            isHydrating,
             globalSettings,
             saving,
             setTitle,

@@ -2,14 +2,17 @@
 
 import { useEditor } from './EditorContext';
 import { BlockManager } from './BlockManager';
-import { Settings, Layers, Box, FileText, BarChart2, CheckSquare, Square, X, Plus, Link2, FileInput, ShoppingBag, Globe, Loader2, Palette, MoreHorizontal as MoreHorizontalIcon, Image as ImageIcon } from 'lucide-react';
+import { Settings, Layers, Box, Brush, FileText, BarChart2, CheckSquare, Square, X, Plus, Link2, FileInput, ShoppingBag, Globe, Loader2, Palette, MoreHorizontal as MoreHorizontalIcon, Image as ImageIcon } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
 import { TemplateProvider } from '@/components/TemplateProvider';
 import { BlockRenderer } from '@/components/blocks/BlockRenderer';
+import { SelectableBlock } from './SelectableBlock';
+import { SelectionChrome } from './SelectionChrome';
+import { findBlockPath } from './forms/container/types';
 import { useEffect, useRef, useState, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { getTemplate } from '@/lib/templates/registry';
-import { ResponsiveNavBar } from '@/components/layout/ResponsiveNavBar';
+import { HeaderNavigation } from '@/components/layout/header/HeaderNavigation';
 import { Footer } from '@/components/Footer';
 import { BottomNavBar } from '@/components/layout/BottomNavBar';
 import { usePageStudio } from './PageStudioContext';
@@ -35,17 +38,23 @@ const FormsPanel = dynamic(() => import('./panels/FormsPanel').then(m => m.Forms
 const ProductsPanel = dynamic(() => import('./panels/ProductsPanel').then(m => m.ProductsPanel));
 const SiteInfoPanel = dynamic(() => import('./panels/SiteInfoPanel').then(m => m.SiteInfoPanel));
 const BrandingPanel = dynamic(() => import('./panels/BrandingPanel').then(m => m.BrandingPanel));
+const SiteStylesPanel = dynamic(() => import('./panels/SiteStylesPanel').then(m => m.SiteStylesPanel));
 
 export function CanvasStudio({
     globalSettings,
     pageSlug,
-    pageTitle
 }: {
     globalSettings?: any,
     pageSlug?: string;
-    pageTitle?: string;
 }) {
-    const { blocks, setBlocks, selectedBlockId, setSelectedBlockId, updateBlockData, deviceView, showGuides } = useEditor();
+    const { blocks, setBlocks, selection, setSelection, updateBlockData, deviceView, showGuides } = useEditor();
+
+    // Derived helpers — keep the local names familiar while reading from `selection`.
+    const selectedBlockId: string | null = (
+        selection.kind === 'blocks' && selection.ids.length === 1 ? selection.ids[0] :
+        selection.kind === 'chrome' ? `chrome:${selection.chromeId}` :
+        null
+    );
     const { tenantSlug, siteId } = useSite();
     const {
         activePageId,
@@ -65,6 +74,7 @@ export function CanvasStudio({
         updateFooterText,
         pageLoading,
         hydratedData,
+        isHydrating,
         saving,
         isDirty,
         savePage,
@@ -82,7 +92,7 @@ export function CanvasStudio({
     const [host] = useState(() => typeof window !== 'undefined' ? window.location.host : '');
     const [tooltip, setTooltip] = useState<{ label: string; top: number; left: number; side?: boolean; sideLeft?: boolean } | null>(null);
     const [leftPanel, setLeftPanel] = useState<'pages' | 'add' | 'layers' | null>('layers');
-    const [slideOverPanel, setSlideOverPanel] = useState<'links' | 'forms' | 'products' | 'siteinfo' | 'branding' | null>(null);
+    const [slideOverPanel, setSlideOverPanel] = useState<'links' | 'forms' | 'products' | 'siteinfo' | 'branding' | 'sitestyles' | null>(null);
 
     // Mobile state
     const [mobileSheet, setMobileSheet] = useState<MobileActiveSheet>(null);
@@ -121,15 +131,19 @@ export function CanvasStudio({
         setSlideOverPanel(null);
     };
 
-    const toggleSlideOverPanel = (panel: 'links' | 'forms' | 'products' | 'siteinfo' | 'branding') => {
+    const toggleSlideOverPanel = (panel: 'links' | 'forms' | 'products' | 'siteinfo' | 'branding' | 'sitestyles') => {
         setSlideOverPanel(prev => prev === panel ? null : panel);
         setLeftPanel(null);
     };
 
-    // Desktop: sync activePanel with block selection
+    // True when the form panel (block / chrome / slot) should be shown instead
+    // of the page-level Title/Slug panel.
+    const hasSelectionForForm = selection.kind !== 'none';
+
+    // Desktop: sync activePanel with selection.
     useEffect(() => {
         if (isMobile) return;
-        if (selectedBlockId) {
+        if (hasSelectionForForm) {
             setActivePanel(null);
             setRightPanelOpen(true);
         } else if (activePageId === null) {
@@ -140,7 +154,7 @@ export function CanvasStudio({
         }
         // Clear inline field toolbar when selection changes
         setInlineFocus(null);
-    }, [isMobile, selectedBlockId, activePageId]);
+    }, [isMobile, hasSelectionForForm, activePageId]);
 
     // Calculate active background config
     const activeBackgroundConfig = useMemo(() => {
@@ -150,21 +164,19 @@ export function CanvasStudio({
         return globalSettings?.globalBackground;
     }, [formData.background, globalSettings?.globalBackground]);
 
-    // Auto-open props sheet on mobile when a block is selected/deselected
+    // Auto-open props sheet on mobile when a block or slot is selected.
     useEffect(() => {
         if (!isMobile) return;
-        if (selectedBlockId) {
-            // Block selected — open props sheet and clear page/seo panel so block form shows
+        if (hasSelectionForForm) {
             setMobileSheet('props');
             setActivePanel(null);
         } else {
-            // Nothing selected — if props sheet is open, show Title & Slug by default
             setMobileSheet(prev => {
                 if (prev === 'props') setActivePanel('page');
                 return prev;
             });
         }
-    }, [isMobile, selectedBlockId]);
+    }, [isMobile, hasSelectionForForm]);
 
     // Scroll canvas to selected block
     useEffect(() => {
@@ -195,6 +207,7 @@ export function CanvasStudio({
                 case 'b': toggleSlideOverPanel('products'); break;
                 case 'i': toggleSlideOverPanel('siteinfo'); break;
                 case 'g': toggleSlideOverPanel('branding'); break;
+                case 't': toggleSlideOverPanel('sitestyles'); break;
             }
         };
         window.addEventListener('keydown', handler);
@@ -227,14 +240,11 @@ export function CanvasStudio({
         ? (globalSettings?.backgroundColor || template.config.colors.background)
         : (globalSettings?.backgroundColor || themeColor || template.config.colors.background);
 
-    const isHomepage = pageSlug === (globalSettings?.homepageSlug || 'home');
-    const isSubPage = !isHomepage;
-
     // ─── Shared canvas content ────────────────────────────────────────────────
     const canvasContent = (
         <div
             ref={canvasScrollRef}
-            className={`flex-1 flex items-start relative overflow-y-auto overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [--canvas-bg:rgb(229_231_235)] [--canvas-dot:rgb(0_0_0_/_0.12)] dark:[--canvas-bg:rgb(10_10_10)] dark:[--canvas-dot:rgb(255_255_255_/_0.09)] ${deviceView === 'mobile' ? 'justify-center' : ''} ${isMobile ? 'pb-20' : ''}`}
+            className={`flex-1 flex items-start relative overflow-y-auto overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [--canvas-bg:rgb(229_231_235)] [--canvas-dot:rgb(0_0_0_/_0.12)] dark:[--canvas-bg:rgb(10_10_10)] dark:[--canvas-dot:rgb(255_255_255_/_0.09)] justify-center ${isMobile ? 'pb-20' : ''}`}
             style={{
                 backgroundColor: 'var(--canvas-bg)',
                 backgroundImage: 'radial-gradient(circle, var(--canvas-dot) 1.5px, transparent 1.5px)',
@@ -251,8 +261,8 @@ export function CanvasStudio({
                 </div>
             )}
             {/* The actual canvas container */}
-            <div className="px-8 py-8 self-start">
-            <div className={`${deviceView === 'tablet' ? 'min-w-[768px] max-w-[768px]' : deviceView === 'mobile' ? 'min-w-[375px] max-w-[390px]' : 'min-w-[1024px]'} shadow-2xl ring-1 ring-black/10 dark:ring-white/10 overflow-hidden transition-all duration-300 isolate`}>
+            <div className={`px-8 py-8 self-start ${deviceView === 'desktop' ? 'w-full' : ''}`}>
+            <div className={`${deviceView === 'tablet' ? 'min-w-[768px] max-w-[768px]' : deviceView === 'mobile' ? 'min-w-[375px] max-w-[390px]' : 'w-full min-w-[1024px]'} shadow-2xl ring-1 ring-black/10 dark:ring-white/10 overflow-hidden transition-all duration-300 isolate`}>
                 {/* WYSIWYG Renderer — providers are always mounted to prevent context loss during block reorder */}
                 <DeviceViewProvider deviceView={deviceView}>
                 <TemplateProvider
@@ -282,45 +292,26 @@ export function CanvasStudio({
                 {/* Background wrapper inside TemplateProvider so var(--theme-background) is resolved */}
                 <div>
                 <NavigationProvider siteId={siteId!}>
-                    {blocks.length === 0 ? (
-                        <div className="h-96 flex items-center justify-center text-neutral-400 dark:text-neutral-500 p-12 text-center text-sm font-medium">
-                            Start{' '}
-                            {isMobile ? (
-                                'adding blocks from the Add tab below to build your page.'
-                            ) : (
-                                <>
-                                    <button
-                                        type="button"
-                                        onClick={() => setLeftPanel('add')}
-                                        className="text-studio-blue dark:text-studio-blue-muted underline underline-offset-2 hover:opacity-80 transition-opacity mx-1"
-                                    >
-                                        adding blocks
-                                    </button>
-                                    from the left panel to build your page.
-                                </>
-                            )}
-                        </div>
-                    ) : (
                         <div className="flex flex-col h-full relative">
                             {/* Top Navbar Slot */}
                             <div
                                 data-block-id="chrome:header"
-                                className={`z-50 w-full cursor-pointer transition-all flex-shrink-0 ${selectedBlockId === 'chrome:header'
-                                        ? 'ring-4 ring-blue-500 ring-offset-[-4px]'
-                                        : showGuides ? 'hover:ring-2 hover:ring-blue-300' : ''
-                                    }`}
+                                className="z-50 w-full cursor-pointer transition-all flex-shrink-0 relative"
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    setSelectedBlockId?.('chrome:header');
+                                    setSelection({ kind: 'chrome', chromeId: 'header' });
                                 }}
                             >
+                                <SelectionChrome
+                                    selected={selection.kind === 'chrome' && selection.chromeId === 'header'}
+                                    hoverGuide={showGuides && !(selection.kind === 'chrome' && selection.chromeId === 'header')}
+                                    inset
+                                />
                                 {globalSettings?.profile && (
-                                    <ResponsiveNavBar
+                                    <HeaderNavigation
                                         profile={globalSettings.profile}
                                         siteId={siteId!}
                                         forceMobile={deviceView !== 'desktop'}
-                                        isSubPage={isSubPage}
-                                        pageTitle={pageTitle}
                                         onNavigate={(href, item) => {
                                             const val: string = item?.value ?? href;
                                             // External URLs — open in new tab
@@ -339,138 +330,131 @@ export function CanvasStudio({
                                 )}
                             </div>
 
-                            <div
-                                className="w-full flex-1 relative overflow-x-clip"
-                                onClick={() => setSelectedBlockId?.(null)}
+                            <main
+                                className="w-full flex-1 relative overflow-x-clip pt-0 pb-12"
+                                onClick={() => setSelection({ kind: 'none' })}
                             >
-                                <div className="relative">
-                                    {/* Base Background Fallback */}
-                                    <div className="absolute inset-0 -z-20 pointer-events-none" style={{ backgroundColor: pageBackgroundColor }} />
+                                {/* Base Background Fallback */}
+                                <div className="absolute inset-0 -z-20 pointer-events-none" style={{ backgroundColor: pageBackgroundColor }} />
 
-                                    {/* User Custom Background (Page or Global) */}
-                                    <PageBackground config={activeBackgroundConfig} previewMode={true} />
+                                {/* User Custom Background (Page or Global) */}
+                                <PageBackground config={activeBackgroundConfig} previewMode={true} />
 
-                                    {/* Template Background Decorations */}
-                                    {BackgroundComponent && (
-                                        <div className="absolute inset-0 -z-10 pointer-events-none">
-                                            <BackgroundComponent />
+                                {/* Template Background Decorations */}
+                                {BackgroundComponent && (
+                                    <div className="absolute inset-0 -z-10 pointer-events-none">
+                                        <BackgroundComponent />
+                                    </div>
+                                )}
+
+                                {/* Constrained container — mirrors SharedPageLayout (incl. mt-4 md:mt-6). */}
+                                <div
+                                    className="w-full mx-auto px-4 md:px-6 mt-4 md:mt-6 relative z-10 flex flex-col gap-6 min-h-[90vh]"
+                                    style={{ maxWidth: 'var(--layout-max-width, 480px)' }}
+                                >
+                                    {/* Template Header (Profile) */}
+                                    {HeaderComponent && globalSettings?.profile && (
+                                        <div>
+                                            <div className="pointer-events-none">
+                                                <HeaderComponent
+                                                    profile={globalSettings.profile}
+                                                    contact={globalSettings.contact}
+                                                    showAddress={globalSettings.showHeaderAddress}
+                                                />
+                                            </div>
                                         </div>
                                     )}
 
-                                    <div className="px-4 pt-4 pb-8">
-                                        {/* Template Header (Profile) */}
-                                        {HeaderComponent && globalSettings?.profile && (
-                                            <div className="relative z-10">
-                                                <div className="pointer-events-none">
-                                                    <HeaderComponent
-                                                        profile={globalSettings.profile}
-                                                        contact={globalSettings.contact}
-                                                        showAddress={globalSettings.showHeaderAddress}
-                                                    />
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {/* Blocks */}
-                                        <div className="relative z-10 grid gap-6" style={{ gridTemplateColumns: 'minmax(0, 1fr)' }}>
+                                    {/* Blocks */}
+                                    <div className="grid gap-6" style={{ gridTemplateColumns: 'minmax(0, 1fr)' }}>
                                             {blocks.map((block) => (
-                                                <div
+                                                <SelectableBlock
                                                     key={block.id}
-                                                    data-block-id={block.id}
-                                                    className={`min-w-0 relative ${selectedBlockId === block.id ? 'z-20' : 'cursor-pointer'}`}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setSelectedBlockId?.(block.id);
-                                                        // Single-click into a contentEditable field: select block + open toolbar in one gesture
-                                                        const ce = (e.target as HTMLElement).closest<HTMLElement>('[contenteditable="true"][data-field]');
-                                                        if (ce) {
-                                                            const field = ce.dataset.field!;
-                                                            setInlineFocus({ blockId: block.id, field, rect: ce.getBoundingClientRect(), currentData: block.data });
-                                                            ce.focus();
-                                                        }
-                                                    }}
+                                                    blockId={block.id}
+                                                    blockType={block.type}
+                                                    blockData={block.data}
+                                                    onInlineFocus={setInlineFocus}
                                                 >
-                                                    {/* Hover outline */}
-                                                    {showGuides && selectedBlockId !== block.id && (
-                                                        <div className="absolute inset-0 pointer-events-none z-10 outline outline-1 outline-blue-400/40 outline-offset-0 hover:outline-blue-400/60" />
-                                                    )}
-                                                    {/* Selection chrome — sharp border + 8 square handles */}
-                                                    {selectedBlockId === block.id && (
-                                                        <div className="absolute pointer-events-none z-10" style={{ inset: -1 }}>
-                                                            {/* Full border — sharp corners, no border-radius */}
-                                                            <div className="absolute inset-0 border-2 border-blue-500" style={{ borderRadius: 0 }} />
-                                                            {/* 8 square handles — sharp, no rounding */}
-                                                            <div className="absolute -top-[4px] -left-[4px] w-[8px] h-[8px] bg-white border-[1.5px] border-blue-500" />
-                                                            <div className="absolute -top-[4px] left-1/2 -translate-x-1/2 w-[8px] h-[8px] bg-white border-[1.5px] border-blue-500" />
-                                                            <div className="absolute -top-[4px] -right-[4px] w-[8px] h-[8px] bg-white border-[1.5px] border-blue-500" />
-                                                            <div className="absolute top-1/2 -translate-y-1/2 -left-[4px] w-[8px] h-[8px] bg-white border-[1.5px] border-blue-500" />
-                                                            <div className="absolute top-1/2 -translate-y-1/2 -right-[4px] w-[8px] h-[8px] bg-white border-[1.5px] border-blue-500" />
-                                                            <div className="absolute -bottom-[4px] -left-[4px] w-[8px] h-[8px] bg-white border-[1.5px] border-blue-500" />
-                                                            <div className="absolute -bottom-[4px] left-1/2 -translate-x-1/2 w-[8px] h-[8px] bg-white border-[1.5px] border-blue-500" />
-                                                            <div className="absolute -bottom-[4px] -right-[4px] w-[8px] h-[8px] bg-white border-[1.5px] border-blue-500" />
-                                                        </div>
-                                                    )}
-                                                    <div className={
-                                                        // social_embed always needs pointer events (iframe interaction)
-                                                        block.type === 'social_embed' ? 'pointer-events-auto' :
-                                                        // Inline-editable blocks always allow pointer events so a single click can land on contentEditable
-                                                        (block.type === 'hero' || block.type === 'heading') ? 'pointer-events-auto' :
-                                                        'pointer-events-none'
-                                                    }>
-                                                        <BlockRenderer
-                                                            block={block}
-                                                            templateId={templateId}
-                                                            theme={themeColor}
-                                                            siteId={siteId}
-                                                            previewMode={true}
-                                                            tenantSlug={tenantSlug || ''}
-                                                            links={hydratedData.links || []}
-                                                            products={hydratedData.products || []}
-                                                            featuredProduct={hydratedData.featuredProduct}
-                                                            branches={hydratedData.branches || []}
-                                                            linkSettings={hydratedData.linkSettings || globalSettings?.linkSettings}
-                                                            productSettings={hydratedData.productSettings || globalSettings?.productSettings}
-                                                            reservationServices={hydratedData.reservationServices}
-                                                            reservationStaff={hydratedData.reservationStaff}
-                                                            reservationSettings={hydratedData.reservationSettings}
-                                                            contact={globalSettings?.contact}
-                                                            businessHours={globalSettings?.businessHours}
-                                                            businessSchedule={globalSettings?.businessSchedule}
-                                                            profile={globalSettings?.profile}
-                                                            onInlineChange={
-                                                                (block.type === 'hero' || block.type === 'heading') && selectedBlockId === block.id
-                                                                    ? (field, value) => updateBlockData(block.id, { [field]: value })
-                                                                    : undefined
-                                                            }
-                                                            onFieldFocus={
-                                                                (block.type === 'hero' || block.type === 'heading') && selectedBlockId === block.id
-                                                                    ? (field, rect) => setInlineFocus({ blockId: block.id, field, rect, currentData: block.data })
-                                                                    : undefined
-                                                            }
-                                                            onFieldBlur={
-                                                                (block.type === 'hero' || block.type === 'heading') && selectedBlockId === block.id
-                                                                    ? () => setInlineFocus(null)
-                                                                    : undefined
-                                                            }
-                                                        />
+                                                    <BlockRenderer
+                                                        block={block}
+                                                        templateId={templateId}
+                                                        theme={themeColor}
+                                                        siteId={siteId}
+                                                        previewMode={true}
+                                                        showGuides={showGuides}
+                                                        isHydrating={isHydrating}
+                                                        tenantSlug={tenantSlug || ''}
+                                                        links={hydratedData.links || []}
+                                                        products={hydratedData.products || []}
+                                                        featuredProduct={hydratedData.featuredProduct}
+                                                        branches={hydratedData.branches || []}
+                                                        linkSettings={hydratedData.linkSettings || globalSettings?.linkSettings}
+                                                        productSettings={hydratedData.productSettings || globalSettings?.productSettings}
+                                                        reservationServices={hydratedData.reservationServices}
+                                                        reservationStaff={hydratedData.reservationStaff}
+                                                        reservationSettings={hydratedData.reservationSettings}
+                                                        contact={globalSettings?.contact}
+                                                        businessHours={globalSettings?.businessHours}
+                                                        businessSchedule={globalSettings?.businessSchedule}
+                                                        profile={globalSettings?.profile}
+                                                        onInlineChange={
+                                                            (block.type === 'hero' || block.type === 'heading') && selectedBlockId === block.id
+                                                                ? (field, value) => updateBlockData(block.id, { [field]: value })
+                                                                : undefined
+                                                        }
+                                                        onFieldFocus={
+                                                            (block.type === 'hero' || block.type === 'heading') && selectedBlockId === block.id
+                                                                ? (field, rect) => setInlineFocus({ blockId: block.id, field, rect, currentData: block.data })
+                                                                : undefined
+                                                        }
+                                                        onFieldBlur={
+                                                            (block.type === 'hero' || block.type === 'heading') && selectedBlockId === block.id
+                                                                ? () => setInlineFocus(null)
+                                                                : undefined
+                                                        }
+                                                    />
+                                                </SelectableBlock>
+                                            ))}
+                                            {blocks.length === 0 && (
+                                                <div
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    className="min-h-[280px] flex items-center justify-center p-12 text-center text-sm font-medium text-neutral-500 dark:text-neutral-400"
+                                                >
+                                                    <div>
+                                                        Start{' '}
+                                                        {isMobile ? (
+                                                            'adding blocks from the Add tab below to build your page.'
+                                                        ) : (
+                                                            <>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => setLeftPanel('add')}
+                                                                    className="text-studio-blue dark:text-studio-blue-muted underline underline-offset-2 hover:opacity-80 transition-opacity mx-1"
+                                                                >
+                                                                    adding blocks
+                                                                </button>
+                                                                from the left panel to build your page.
+                                                            </>
+                                                        )}
                                                     </div>
                                                 </div>
-                                            ))}
-                                        </div>
+                                            )}
                                     </div>
 
                                     {/* Site Footer */}
                                     <div
                                         data-block-id="chrome:footer"
-                                        className={`relative z-10 w-full cursor-pointer transition-all ${selectedBlockId === 'chrome:footer'
-                                                ? 'ring-4 ring-blue-500 ring-offset-[-4px]'
-                                                : showGuides ? 'hover:ring-2 hover:ring-blue-300' : ''
-                                            }`}
+                                        className="w-full cursor-pointer transition-all relative"
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            setSelectedBlockId?.('chrome:footer');
+                                            setSelection({ kind: 'chrome', chromeId: 'footer' });
                                         }}
                                     >
+                                        <SelectionChrome
+                                            selected={selection.kind === 'chrome' && selection.chromeId === 'footer'}
+                                            hoverGuide={showGuides && !(selection.kind === 'chrome' && selection.chromeId === 'footer')}
+                                            inset
+                                        />
                                         <div className="pointer-events-none">
                                             <Footer
                                                 socialLinks={globalSettings?.socialLinks}
@@ -481,26 +465,27 @@ export function CanvasStudio({
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </main>
 
                             {/* Bottom Nav Slot — only rendered when template enables showBottomNav */}
                             <div
                                 data-block-id="chrome:bottomnav"
-                                className={`relative z-50 w-full flex-shrink-0 cursor-pointer transition-all ${selectedBlockId === 'chrome:bottomnav'
-                                        ? 'ring-4 ring-blue-500 ring-offset-[-4px]'
-                                        : showGuides ? 'hover:ring-2 hover:ring-blue-300' : ''
-                                    }`}
+                                className="relative z-50 w-full flex-shrink-0 cursor-pointer transition-all"
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    setSelectedBlockId?.('chrome:bottomnav');
+                                    setSelection({ kind: 'chrome', chromeId: 'bottomnav' });
                                 }}
                             >
+                                <SelectionChrome
+                                    selected={selection.kind === 'chrome' && selection.chromeId === 'bottomnav'}
+                                    hoverGuide={showGuides && !(selection.kind === 'chrome' && selection.chromeId === 'bottomnav')}
+                                    inset
+                                />
                                 <div className="pointer-events-none">
                                     <BottomNavBar previewMode={true} />
                                 </div>
                             </div>
                         </div>
-                    )}
                 </NavigationProvider>
                 </div>
                 </TemplateProvider>
@@ -665,31 +650,75 @@ export function CanvasStudio({
                         allowInherit={true}
                     />
                 </div>
-            ) : selectedBlockId?.startsWith('chrome:') ? (
-                selectedBlockId === 'chrome:header' ? (
+            ) : selection.kind === 'chrome' ? (
+                selection.chromeId === 'header' ? (
                     <ChromeHeaderPanel />
-                ) : selectedBlockId === 'chrome:footer' ? (
+                ) : selection.chromeId === 'footer' ? (
                     <ChromeFooterPanel
                         footerText={globalSettings?.footerText || ''}
                         onFooterTextChange={updateFooterText}
                     />
-                ) : selectedBlockId === 'chrome:bottomnav' ? (
+                ) : selection.chromeId === 'bottomnav' ? (
                     <ChromeBottomNavPanel />
                 ) : null
-            ) : selectedBlockId ? (
-                blocks.find(b => b.id === selectedBlockId) ? (
-                    <BlockFormRenderer
-                        block={blocks.find(b => b.id === selectedBlockId)!}
-                        onChange={updateBlockData}
-                        templateId={templateId}
-                        onOpenSlideOver={toggleSlideOverPanel}
-                    />
-                ) : (
-                    <div className="flex flex-col items-center justify-center h-full text-center text-neutral-400 dark:text-neutral-500 gap-3">
-                        <Box size={32} className="opacity-20" />
-                        <p className="text-sm">Block not found</p>
-                    </div>
-                )
+            ) : selection.kind === 'blocks' && selection.ids.length === 1 ? (
+                (() => {
+                    const blockId = selection.ids[0];
+                    // Top-level block selected — render its form directly.
+                    const topLevel = blocks.find(b => b.id === blockId);
+                    if (topLevel) {
+                        return (
+                            <BlockFormRenderer
+                                block={topLevel}
+                                onChange={updateBlockData}
+                                templateId={templateId}
+                                onOpenSlideOver={toggleSlideOverPanel}
+                            />
+                        );
+                    }
+                    // Nested block selected — render its parent container's form.
+                    // The container form derives drill-down state from `selection`.
+                    const path = findBlockPath(blocks, blockId);
+                    if (path && (path.kind === 'columns-child' || path.kind === 'grid-cell')) {
+                        return (
+                            <BlockFormRenderer
+                                block={path.parentBlock}
+                                onChange={updateBlockData}
+                                templateId={templateId}
+                                onOpenSlideOver={toggleSlideOverPanel}
+                            />
+                        );
+                    }
+                    return (
+                        <div className="flex flex-col items-center justify-center h-full text-center text-neutral-400 dark:text-neutral-500 gap-3">
+                            <Box size={32} className="opacity-20" />
+                            <p className="text-sm">Block not found</p>
+                        </div>
+                    );
+                })()
+            ) : selection.kind === 'slots' && selection.containerId ? (
+                // Empty container slot selected — render the parent container's form.
+                // The container form (ColumnsForm / GridForm) reads `selection` to
+                // pick the active tab and show the slot's properties / picker.
+                (() => {
+                    const container = blocks.find(b => b.id === selection.containerId);
+                    if (container) {
+                        return (
+                            <BlockFormRenderer
+                                block={container}
+                                onChange={updateBlockData}
+                                templateId={templateId}
+                                onOpenSlideOver={toggleSlideOverPanel}
+                            />
+                        );
+                    }
+                    return (
+                        <div className="flex flex-col items-center justify-center h-full text-center text-neutral-400 dark:text-neutral-500 gap-3">
+                            <Box size={32} className="opacity-20" />
+                            <p className="text-sm">Container not found</p>
+                        </div>
+                    );
+                })()
             ) : (
                 <div className="flex flex-col items-center justify-center h-full text-center text-neutral-400 dark:text-neutral-500 gap-3">
                     <Box size={32} className="opacity-20" />
@@ -757,6 +786,7 @@ export function CanvasStudio({
                                 { id: 'products' as const, icon: ShoppingBag, label: 'Products', description: 'Manage product listings' },
                                 { id: 'siteinfo' as const, icon: Globe, label: 'Site Info', description: 'Business info & contact details' },
                                 { id: 'branding' as const, icon: Palette, label: 'Branding', description: 'Logos, colors & typography' },
+                                { id: 'sitestyles' as const, icon: Brush, label: 'Site Styles', description: 'Fonts, colors, buttons, forms' },
                             ]).map(({ id, icon: Icon, label, description }) => (
                                 <button
                                     key={id}
@@ -849,8 +879,8 @@ export function CanvasStudio({
                 <MobileBottomSheet
                     isOpen={!!slideOverPanel}
                     onClose={() => setSlideOverPanel(null)}
-                    title={slideOverPanel === 'links' ? 'Links' : slideOverPanel === 'forms' ? 'Forms' : slideOverPanel === 'products' ? 'Products' : slideOverPanel === 'siteinfo' ? 'Site Info' : slideOverPanel === 'branding' ? 'Branding' : ''}
-                    icon={slideOverPanel === 'links' ? Link2 : slideOverPanel === 'forms' ? FileInput : slideOverPanel === 'products' ? ShoppingBag : slideOverPanel === 'siteinfo' ? Globe : slideOverPanel === 'branding' ? Palette : undefined}
+                    title={slideOverPanel === 'links' ? 'Links' : slideOverPanel === 'forms' ? 'Forms' : slideOverPanel === 'products' ? 'Products' : slideOverPanel === 'siteinfo' ? 'Site Info' : slideOverPanel === 'branding' ? 'Branding' : slideOverPanel === 'sitestyles' ? 'Site Styles' : ''}
+                    icon={slideOverPanel === 'links' ? Link2 : slideOverPanel === 'forms' ? FileInput : slideOverPanel === 'products' ? ShoppingBag : slideOverPanel === 'siteinfo' ? Globe : slideOverPanel === 'branding' ? Palette : slideOverPanel === 'sitestyles' ? Brush : undefined}
                     height="80vh"
                 >
                     {slideOverPanel === 'links' && <LinksPanel />}
@@ -858,6 +888,7 @@ export function CanvasStudio({
                     {slideOverPanel === 'products' && <ProductsPanel />}
                     {slideOverPanel === 'siteinfo' && <SiteInfoPanel />}
                     {slideOverPanel === 'branding' && <BrandingPanel />}
+                    {slideOverPanel === 'sitestyles' && <SiteStylesPanel />}
                 </MobileBottomSheet>
             </div>
         );
@@ -904,6 +935,7 @@ export function CanvasStudio({
                         { id: 'products' as const, icon: ShoppingBag, label: 'Products', shortcut: 'B' },
                         { id: 'siteinfo' as const, icon: Globe, label: 'Site Info', shortcut: 'I' },
                         { id: 'branding' as const, icon: Palette, label: 'Branding', shortcut: 'G' },
+                        { id: 'sitestyles' as const, icon: Brush, label: 'Site Styles', shortcut: 'T' },
                     ]).map(({ id, icon: Icon, label, shortcut }) => (
                         <button
                             key={id}
@@ -956,8 +988,8 @@ export function CanvasStudio({
             {/* Slide-over Panel (Links / Forms / Products / Site Info) */}
             {slideOverPanel && (
                 <SlideOverPanel
-                    title={slideOverPanel === 'links' ? 'Links' : slideOverPanel === 'forms' ? 'Forms' : slideOverPanel === 'products' ? 'Products' : slideOverPanel === 'siteinfo' ? 'Site Info' : slideOverPanel === 'branding' ? 'Branding' : slideOverPanel}
-                    icon={slideOverPanel === 'links' ? Link2 : slideOverPanel === 'forms' ? FileInput : slideOverPanel === 'products' ? ShoppingBag : slideOverPanel === 'siteinfo' ? Globe : slideOverPanel === 'branding' ? Palette : Link2}
+                    title={slideOverPanel === 'links' ? 'Links' : slideOverPanel === 'forms' ? 'Forms' : slideOverPanel === 'products' ? 'Products' : slideOverPanel === 'siteinfo' ? 'Site Info' : slideOverPanel === 'branding' ? 'Branding' : slideOverPanel === 'sitestyles' ? 'Site Styles' : slideOverPanel}
+                    icon={slideOverPanel === 'links' ? Link2 : slideOverPanel === 'forms' ? FileInput : slideOverPanel === 'products' ? ShoppingBag : slideOverPanel === 'siteinfo' ? Globe : slideOverPanel === 'branding' ? Palette : slideOverPanel === 'sitestyles' ? Brush : Link2}
                     onClose={() => setSlideOverPanel(null)}
                 >
                     {slideOverPanel === 'links' && <LinksPanel />}
@@ -965,6 +997,7 @@ export function CanvasStudio({
                     {slideOverPanel === 'products' && <ProductsPanel />}
                     {slideOverPanel === 'siteinfo' && <SiteInfoPanel />}
                     {slideOverPanel === 'branding' && <BrandingPanel />}
+                    {slideOverPanel === 'sitestyles' && <SiteStylesPanel />}
                 </SlideOverPanel>
             )}
 

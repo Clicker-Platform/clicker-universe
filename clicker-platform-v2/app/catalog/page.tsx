@@ -1,11 +1,12 @@
 import { fetchPublicData } from '@/lib/fetchData';
 import { headers } from 'next/headers';
-import { ClassicProfileHeader } from "@/components/headers/ClassicProfileHeader";
+import { HeaderNavigation } from "@/components/layout/header/HeaderNavigation";
 import { Footer } from "@/components/Footer";
 import { BackgroundDecorations } from "@/components/BackgroundDecorations";
 import Link from 'next/link';
 import { Home } from 'lucide-react';
 import { TemplateProvider, DeepPartial } from '@/components/TemplateProvider';
+import { NavigationProvider } from '@/components/layout/NavigationProvider';
 import { getTemplate } from '@/lib/templates/registry';
 import { CatalogClient } from "./CatalogClient";
 import { ThemeConfig } from '@/lib/templates/types';
@@ -22,6 +23,7 @@ export default async function CatalogPage({
     const headersList = await headers();
     const siteId = headersList.get('x-site-id') || 'default';
 
+    const publicData = await fetchPublicData(siteId);
     const {
         profile,
         socialLinks,
@@ -34,14 +36,25 @@ export default async function CatalogPage({
         borderRadius,
         products,
         accentColor // Ensure we pass this if needed or implicit via theme
-    } = await fetchPublicData(siteId);
+    } = publicData;
+
+    // Build initialNavData from SSR siteSettings — eliminates onSnapshot on public pages
+    const navSettings = ((publicData as any).navigation ?? {}) as any;
+    const initialNavData = {
+        topNav: navSettings.topNav ?? [],
+        topNavActions: navSettings.topNavActions ?? null,
+        bottomNav: navSettings.bottomNav ?? [],
+        fab: navSettings.fab ?? null,
+        headerStyle: navSettings.headerStyle ?? {},
+        bottomNavStyle: navSettings.bottomNavStyle ?? {},
+        header: navSettings.header,
+    };
 
     // Resolve Template (Priority: URL Param > DB Setting > Default)
     const overrideTemplate = typeof t === 'string' ? t : undefined;
     const safeTemplateId = overrideTemplate || templateId || 'classic';
     const template = getTemplate(safeTemplateId);
     // Components from Registry
-    const HeaderComponent = template.components?.Header || ClassicProfileHeader;
     const Background = template.components?.Background || BackgroundDecorations;
 
     // Isolation Logic (Same as UserPage)
@@ -76,23 +89,24 @@ export default async function CatalogPage({
             templateId={safeTemplateId}
             themeOverrides={themeOverrides}
         >
+            <NavigationProvider siteId={siteId} initialNavData={initialNavData}>
             <main
                 className="min-h-screen bg-theme-background transition-colors duration-300 px-4 py-8 relative overflow-hidden"
                 style={{ backgroundColor: pageBackgroundColor }}
             >
+                {profile && (
+                    <HeaderNavigation
+                        profile={profile}
+                        siteId={siteId}
+                    />
+                )}
                 <div className="fixed inset-0 z-0 pointer-events-none">
                     <Background />
                 </div>
 
                 <div className="max-w-md mx-auto relative z-10 flex flex-col min-h-[90vh]">
                     {profile && (
-                        <div className="mb-4 transform scale-90 origin-top">
-                            <HeaderComponent
-                                profile={profile}
-                                contact={contact}
-                                showAddress={showHeaderAddress}
-                            />
-
+                        <div className="mb-4">
                             {/* Centered Home Navigation */}
                             <div className="flex justify-center mt-2 mb-6">
                                 <Link
@@ -144,6 +158,7 @@ export default async function CatalogPage({
                     </div>
                 </div>
             </main>
+            </NavigationProvider>
         </TemplateProvider>
     );
 }

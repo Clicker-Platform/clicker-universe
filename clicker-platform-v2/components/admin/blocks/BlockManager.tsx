@@ -32,7 +32,12 @@ interface BlockManagerProps {
 }
 
 export const BlockManager = ({ blocks, onChange, templateId, onAddClick }: BlockManagerProps) => {
-    const { selectedBlockId, setSelectedBlockId } = useEditor();
+    const { selection, setSelection } = useEditor();
+    // Helper booleans for the chrome rows; for top-level blocks we inline the check.
+    const isChromeSelected = (chromeId: 'header' | 'footer' | 'bottomnav') =>
+        selection.kind === 'chrome' && selection.chromeId === chromeId;
+    const isBlockSelected = (blockId: string) =>
+        selection.kind === 'blocks' && selection.ids.includes(blockId);
     const [blockToDelete, setBlockToDelete] = useState<string | null>(null);
     const [moduleBlockLabels, setModuleBlockLabels] = useState<Record<string, string>>({});
 
@@ -86,11 +91,11 @@ export const BlockManager = ({ blocks, onChange, templateId, onAddClick }: Block
             {/* Pinned Header */}
             <div
                 className={`flex items-center gap-1.5 px-2 py-1.5 cursor-pointer transition-colors ${
-                    selectedBlockId === 'chrome:header'
+                    isChromeSelected('header')
                     ? 'bg-blue-500/10 text-blue-400'
                     : 'text-neutral-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-neutral-200'
                 }`}
-                onClick={() => setSelectedBlockId?.('chrome:header')}
+                onClick={() => setSelection({ kind: 'chrome', chromeId: 'header' })}
             >
                 <Lock size={13} className="flex-shrink-0 text-neutral-400 dark:text-neutral-600" />
                 <span className="flex-1 text-xs font-medium truncate">Header Navigation</span>
@@ -125,8 +130,8 @@ export const BlockManager = ({ blocks, onChange, templateId, onAddClick }: Block
                                     <BlockOutlineItem
                                         key={block.id}
                                         block={block}
-                                        isSelected={selectedBlockId === block.id}
-                                        onClick={() => setSelectedBlockId?.(block.id)}
+                                        isSelected={isBlockSelected(block.id)}
+                                        onClick={() => setSelection({ kind: 'blocks', ids: [block.id] })}
                                         onDelete={deleteBlock}
                                         moduleLabel={moduleBlockLabels[block.type]}
                                     />
@@ -140,11 +145,11 @@ export const BlockManager = ({ blocks, onChange, templateId, onAddClick }: Block
             {/* Pinned Footer */}
             <div
                 className={`flex items-center gap-1.5 px-2 py-1.5 cursor-pointer transition-colors ${
-                    selectedBlockId === 'chrome:footer'
+                    isChromeSelected('footer')
                     ? 'bg-blue-500/10 text-blue-400'
                     : 'text-neutral-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-neutral-200'
                 }`}
-                onClick={() => setSelectedBlockId?.('chrome:footer')}
+                onClick={() => setSelection({ kind: 'chrome', chromeId: 'footer' })}
             >
                 <Lock size={13} className="flex-shrink-0 text-neutral-400 dark:text-neutral-600" />
                 <span className="flex-1 text-xs font-medium truncate">Site Footer</span>
@@ -153,11 +158,11 @@ export const BlockManager = ({ blocks, onChange, templateId, onAddClick }: Block
             {/* Pinned Bottom Nav */}
             <div
                 className={`flex items-center gap-1.5 px-2 py-1.5 cursor-pointer transition-colors ${
-                    selectedBlockId === 'chrome:bottomnav'
+                    isChromeSelected('bottomnav')
                     ? 'bg-blue-500/10 text-blue-400'
                     : 'text-neutral-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-neutral-200'
                 }`}
-                onClick={() => setSelectedBlockId?.('chrome:bottomnav')}
+                onClick={() => setSelection({ kind: 'chrome', chromeId: 'bottomnav' })}
             >
                 <Lock size={13} className="flex-shrink-0 text-neutral-400 dark:text-neutral-600" />
                 <span className="flex-1 text-xs font-medium truncate">Bottom Navigation</span>

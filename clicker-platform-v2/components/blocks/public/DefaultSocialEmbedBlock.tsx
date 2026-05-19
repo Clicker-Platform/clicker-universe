@@ -3,6 +3,9 @@
 import { Play } from 'lucide-react';
 import { useTemplate } from '@/components/TemplateProvider';
 import { useRef, useState, useEffect } from 'react';
+import { getMutedColor, getLabelColor } from './cardStyles';
+import { useDeviceView } from '@/components/DeviceViewContext';
+import { H4 } from './typography';
 
 type Platform = 'tiktok' | 'instagram' | 'youtube';
 
@@ -29,10 +32,16 @@ const platformLabel: Record<Platform, string> = {
     youtube: 'YouTube',
 };
 
-const platformColor: Record<Platform, string> = {
-    tiktok: 'bg-pink-500/20 text-pink-300',
-    instagram: 'bg-purple-500/20 text-purple-300',
-    youtube: 'bg-red-500/20 text-red-300',
+/**
+ * Platform brand colors — these are platform identity colors (TikTok pink,
+ * Instagram purple, YouTube red), NOT theme colors. Spec §3.1 allows brand
+ * colors as long as they're routed through a typed source-of-truth (not
+ * sprinkled as raw Tailwind in JSX).
+ */
+const platformBrand: Record<Platform, { bg: string; fg: string }> = {
+    tiktok:    { bg: 'rgba(236,72,153,0.20)',  fg: 'rgb(244,114,182)' }, // pink-500/20, pink-300
+    instagram: { bg: 'rgba(168,85,247,0.20)',  fg: 'rgb(192,132,252)' }, // purple-500/20, purple-300
+    youtube:   { bg: 'rgba(239,68,68,0.20)',   fg: 'rgb(252,165,165)' }, // red-500/20, red-300
 };
 
 function resolvePlatform(item: SocialEmbedItem): Platform | null {
@@ -91,8 +100,10 @@ function getAspectRatio(item: SocialEmbedItem): string {
 
 export function DefaultSocialEmbedBlock({ data, previewMode }: DefaultSocialEmbedBlockProps) {
     const { theme } = useTemplate();
+    const d = useDeviceView();
     const isClean = theme.cardStyle === 'clean';
     const isGlass = theme.cardStyle === 'glass';
+    const labelColor = getLabelColor(theme.cardStyle, theme);
 
     const allItems = data.items || [];
     const limit = Math.max(1, Math.min(12, data.limit ?? 6));
@@ -113,7 +124,7 @@ export function DefaultSocialEmbedBlock({ data, previewMode }: DefaultSocialEmbe
     return (
         <div className="w-full min-w-0 space-y-4">
             {data.title && (
-                <h2 className="text-slate-400 text-xs font-bold uppercase tracking-[0.2em] mb-4 px-1">
+                <h2 className={`${H4(d)} mb-4 px-1`} style={{ color: labelColor }}>
                     {data.title}
                 </h2>
             )}
@@ -130,10 +141,13 @@ export function DefaultSocialEmbedBlock({ data, previewMode }: DefaultSocialEmbe
 }
 
 function EmbedTile({ item, previewMode }: { item: SocialEmbedItem; previewMode?: boolean }) {
+    const { theme } = useTemplate();
     const embedUrl = getEmbedUrl(item);
     const platform = resolvePlatform(item);
     const containerRef = useRef<HTMLDivElement>(null);
     const [isVisible, setIsVisible] = useState(false);
+    const captionColor = getMutedColor(theme.cardStyle, theme);
+    const placeholderColor = getMutedColor(theme.cardStyle, theme);
 
     useEffect(() => {
         if (previewMode) { setIsVisible(true); return; }
@@ -153,10 +167,16 @@ function EmbedTile({ item, previewMode }: { item: SocialEmbedItem; previewMode?:
             <div ref={containerRef} className="relative w-full overflow-hidden" style={{ aspectRatio: getAspectRatio(item) }}>
                 {!embedUrl ? (
                     // Placeholder shown when there is no valid embed URL
-                    <div className="absolute inset-0 bg-neutral-100 dark:bg-neutral-800 flex flex-col items-center justify-center gap-2 text-neutral-400">
+                    <div
+                        className="absolute inset-0 flex flex-col items-center justify-center gap-2"
+                        style={{ backgroundColor: 'var(--theme-surface)', color: placeholderColor }}
+                    >
                         <Play size={32} className="opacity-40" />
                         {platform && (
-                            <span className={`text-xs font-bold px-2 py-1 rounded-full ${platformColor[platform]}`}>
+                            <span
+                                className="text-xs font-bold px-2 py-1 rounded-full"
+                                style={{ backgroundColor: platformBrand[platform].bg, color: platformBrand[platform].fg }}
+                            >
                                 {platformLabel[platform]}
                             </span>
                         )}
@@ -166,8 +186,11 @@ function EmbedTile({ item, previewMode }: { item: SocialEmbedItem; previewMode?:
                     </div>
                 ) : !isVisible ? (
                     // Skeleton placeholder sebelum visible
-                    <div className="absolute inset-0 bg-neutral-900 flex items-center justify-center">
-                        <Play size={32} className="opacity-20 text-white" />
+                    <div
+                        className="absolute inset-0 flex items-center justify-center"
+                        style={{ backgroundColor: 'var(--theme-overlay)' }}
+                    >
+                        <Play size={32} className="opacity-20" style={{ color: 'rgba(255,255,255,0.9)' }} />
                     </div>
                 ) : (
                     <>
@@ -189,7 +212,7 @@ function EmbedTile({ item, previewMode }: { item: SocialEmbedItem; previewMode?:
             </div>
 
             {item.caption && (
-                <p className="text-xs text-center py-2 px-3 text-gray-500 dark:text-neutral-400 truncate">
+                <p className="text-xs text-center py-2 px-3 truncate" style={{ color: captionColor }}>
                     {item.caption}
                 </p>
             )}

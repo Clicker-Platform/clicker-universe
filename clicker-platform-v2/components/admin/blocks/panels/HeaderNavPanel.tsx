@@ -4,9 +4,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, setDoc, collection, getDocs } from 'firebase/firestore';
 import { useSite } from '@/lib/site-context';
-import { Globe, GripVertical, Trash2, ChevronDown, ChevronUp, Link as LinkIcon, Plus, Check, AlertCircle, Loader2 } from 'lucide-react';
+import { Globe, Plus, Check, AlertCircle, Loader2, ChevronDown, ChevronRight } from 'lucide-react';
 import { InlinePanelIconPicker } from '@/components/admin/IconSelector';
-import { ICON_MAP } from '@/data/icons';
 import {
     DndContext,
     closestCenter,
@@ -21,166 +20,37 @@ import {
     SortableContext,
     sortableKeyboardCoordinates,
     verticalListSortingStrategy,
-    useSortable,
 } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import { SortableNavItem } from './shared/SortableNavItem';
+import { stripUndefined } from '@/lib/firestore/stripUndefined';
+import {
+    HeaderNavigationConfig,
+    HeaderVariant,
+    HeaderScrollBehavior,
+    HeaderContainerWidth,
+    HeaderNavTextPreset,
+} from '@/data/mockData';
 
-function SortableNavItem({
-    item,
-    onRemove,
-    onUpdate,
-    onOpenIconPicker,
-    forms,
-    pages,
-    homepageSlug,
-}: {
-    item: any;
-    onRemove: () => void;
-    onUpdate: (field: string, val: string) => void;
-    onOpenIconPicker: (currentIcon: string, onSelect: (icon: string) => void) => void;
-    forms: any[];
-    pages: any[];
-    homepageSlug: string;
-}) {
-    const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: item.id });
-    const style = { transform: CSS.Transform.toString(transform), transition };
-    const [isExpanded, setIsExpanded] = useState(false);
+// ─── Constants ────────────────────────────────────────────────────────────────
 
-    const Icon = item.icon && ICON_MAP[item.icon as keyof typeof ICON_MAP]
-        ? ICON_MAP[item.icon as keyof typeof ICON_MAP]
-        : LinkIcon;
+const VARIANT_OPTIONS: { id: HeaderVariant; label: string; description: string }[] = [
+    { id: 'logo-left', label: 'Logo-Left', description: 'Logo on the left, menu + CTA on the right.' },
+    { id: 'logo-center', label: 'Logo-Center', description: 'Menu split around centered logo.' },
+    { id: 'burger', label: 'Burger Minimal', description: 'Logo + CTA, menu in drop-down.' },
+    { id: 'logo-left-stacked', label: 'Stacked', description: 'Two rows: logo + CTA above, menu below.' },
+];
 
-    return (
-        <div ref={setNodeRef} style={style} className="bg-gray-100 dark:bg-neutral-800 rounded-lg border border-gray-200 dark:border-neutral-700 overflow-hidden mb-2">
-            <div className="flex items-center justify-between px-3 py-2 bg-gray-100/80 dark:bg-neutral-800/80">
-                <div className="flex items-center gap-2">
-                    <div
-                        {...attributes}
-                        {...listeners}
-                        className="text-neutral-400 dark:text-neutral-600 hover:text-neutral-700 dark:hover:text-neutral-400 cursor-grab active:cursor-grabbing p-0.5"
-                    >
-                        <GripVertical size={15} />
-                    </div>
-                    <div className="w-6 h-6 bg-gray-200 dark:bg-neutral-700 rounded flex items-center justify-center text-neutral-700 dark:text-neutral-300">
-                        <Icon size={13} />
-                    </div>
-                    <span className="text-sm font-medium text-neutral-900 dark:text-neutral-200 truncate max-w-[120px]">
-                        {item.label || 'New Link'}
-                    </span>
-                    <span className="text-[10px] text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
-                        {item.type === 'form' ? 'Form' : item.type === 'page' ? 'Page' : 'URL'}
-                    </span>
-                </div>
-                <div className="flex items-center gap-1">
-                    <button
-                        type="button"
-                        onClick={() => setIsExpanded(!isExpanded)}
-                        className="p-1 text-neutral-400 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors"
-                    >
-                        {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                    </button>
-                    <button
-                        type="button"
-                        onClick={onRemove}
-                        className="p-1 text-neutral-400 dark:text-neutral-600 hover:text-red-400 transition-colors"
-                    >
-                        <Trash2 size={14} />
-                    </button>
-                </div>
-            </div>
+const DEFAULT_HEADER: HeaderNavigationConfig = {
+    variant: 'logo-left',
+    width: 'constrained',
+    scrollBehavior: 'fixed',
+    items: [],
+    cta: { enabled: false, label: 'Order Now', linkType: 'url', linkValue: '#' },
+    typography: { preset: 'default' },
+    scrolledAppearance: { enabled: false },
+};
 
-            {isExpanded && (
-                <div className="px-3 py-3 space-y-3 border-t border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-850">
-                    <div>
-                        <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-1">Label</label>
-                        <input
-                            type="text"
-                            value={item.label}
-                            onChange={(e) => onUpdate('label', e.target.value)}
-                            className="w-full px-3 py-1.5 text-sm bg-gray-50 dark:bg-neutral-900 border border-gray-300 dark:border-neutral-700 rounded-md text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-600 focus:border-blue-500/50 focus:outline-none"
-                            placeholder="e.g. Home"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-1">Link Type</label>
-                        <div className="flex gap-1">
-                            {(['page', 'form', 'url'] as const).map(t => (
-                                <button
-                                    key={t}
-                                    type="button"
-                                    onClick={() => onUpdate('type', t)}
-                                    className={`flex-1 px-2 py-1.5 text-[10px] font-bold uppercase rounded transition-all ${
-                                        (item.type === t) || (!item.type && t === 'page')
-                                            ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                                            : 'bg-gray-100 dark:bg-neutral-800 text-neutral-500 border border-gray-300 dark:border-neutral-700 hover:text-neutral-700 dark:hover:text-neutral-300'
-                                    }`}
-                                >
-                                    {t === 'url' ? 'URL' : t}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div>
-                        {item.type === 'form' ? (
-                            <select
-                                value={item.formId || ''}
-                                onChange={(e) => onUpdate('formId', e.target.value)}
-                                className="w-full px-3 py-1.5 text-sm bg-gray-50 dark:bg-neutral-900 border border-gray-300 dark:border-neutral-700 rounded-md text-neutral-900 dark:text-neutral-200 focus:border-blue-500/50 focus:outline-none"
-                            >
-                                <option value="">— Select Form —</option>
-                                {forms.map(f => <option key={f.id} value={f.id}>{f.title}</option>)}
-                            </select>
-                        ) : item.type === 'page' || !item.type ? (
-                            <select
-                                value={item.pageId || ''}
-                                onChange={(e) => {
-                                    const page = pages.find(p => p.id === e.target.value);
-                                    onUpdate('pageId', e.target.value);
-                                    if (page) {
-                                        const resolvedValue = page.slug === homepageSlug ? 'action:homepage' : `/${page.slug}`;
-                                        onUpdate('value', resolvedValue);
-                                        if (!item.label || item.label === 'New Link') {
-                                            onUpdate('label', page.title);
-                                        }
-                                    }
-                                }}
-                                className="w-full px-3 py-1.5 text-sm bg-gray-50 dark:bg-neutral-900 border border-gray-300 dark:border-neutral-700 rounded-md text-neutral-900 dark:text-neutral-200 focus:border-blue-500/50 focus:outline-none"
-                            >
-                                <option value="">— Select Page —</option>
-                                {pages.map(p => <option key={p.id} value={p.id}>{p.title} (/{p.slug})</option>)}
-                            </select>
-                        ) : (
-                            <input
-                                type="text"
-                                value={item.value || ''}
-                                onChange={(e) => onUpdate('value', e.target.value)}
-                                className="w-full px-3 py-1.5 text-sm bg-gray-50 dark:bg-neutral-900 border border-gray-300 dark:border-neutral-700 rounded-md text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-600 focus:border-blue-500/50 focus:outline-none font-mono"
-                                placeholder="/path or https://"
-                            />
-                        )}
-                    </div>
-
-                    <div>
-                        <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-1">Icon</label>
-                        <button
-                            type="button"
-                            onClick={() => onOpenIconPicker(item.icon || '', (icon) => onUpdate('icon', icon))}
-                            className="w-full flex items-center gap-2 px-3 py-1.5 bg-gray-50 dark:bg-neutral-900 border border-gray-300 dark:border-neutral-700 rounded-md hover:border-gray-400 dark:hover:border-neutral-600 transition-colors text-left"
-                        >
-                            <div className="w-5 h-5 flex items-center justify-center text-neutral-700 dark:text-neutral-300">
-                                <Icon size={14} />
-                            </div>
-                            <span className="text-sm text-neutral-700 dark:text-neutral-300">{item.icon || 'Select Icon'}</span>
-                            <span className="ml-auto text-[10px] text-neutral-400 dark:text-neutral-500">Change</span>
-                        </button>
-                    </div>
-                </div>
-            )}
-        </div>
-    );
-}
+// ─── Sub-components ───────────────────────────────────────────────────────────
 
 function SaveStatusChip({ status }: { status: 'idle' | 'pending' | 'saving' | 'saved' | 'error' }) {
     if (status === 'idle') return null;
@@ -204,13 +74,127 @@ function SaveStatusChip({ status }: { status: 'idle' | 'pending' | 'saving' | 's
     );
 }
 
+function SectionHeader({ label }: { label: string }) {
+    return (
+        <h5 className="text-xs font-bold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider">
+            {label}
+        </h5>
+    );
+}
+
+function Toggle({
+    checked,
+    onChange,
+    label,
+}: {
+    checked: boolean;
+    onChange: (v: boolean) => void;
+    label?: string;
+}) {
+    return (
+        <label className="flex items-center gap-2 cursor-pointer">
+            {label && <span className="text-xs text-neutral-400 dark:text-neutral-500">{checked ? 'On' : 'Off'}</span>}
+            <div className={`relative inline-flex h-5 w-9 rounded-full border-2 border-transparent transition-colors ${checked ? 'bg-blue-500' : 'bg-gray-300 dark:bg-neutral-700'}`}>
+                <input
+                    type="checkbox"
+                    className="sr-only"
+                    checked={checked}
+                    onChange={(e) => onChange(e.target.checked)}
+                />
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition duration-200 ${checked ? 'translate-x-4' : 'translate-x-0'}`} />
+            </div>
+        </label>
+    );
+}
+
+function SegmentedControl<T extends string>({
+    options,
+    value,
+    onChange,
+}: {
+    options: { value: T; label: string }[];
+    value: T;
+    onChange: (v: T) => void;
+}) {
+    // 1–3 options stay on a single row; 4+ wrap to 2 columns so labels never get clipped.
+    const colsClass =
+        options.length === 1 ? 'grid-cols-1' :
+        options.length === 2 ? 'grid-cols-2' :
+        options.length === 3 ? 'grid-cols-3' :
+        'grid-cols-2';
+    return (
+        <div className={`grid ${colsClass} gap-1`}>
+            {options.map(opt => (
+                <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => onChange(opt.value)}
+                    className={`min-w-0 px-2 py-1.5 text-[10px] font-bold uppercase rounded transition-all truncate ${
+                        value === opt.value
+                            ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                            : 'bg-gray-100 dark:bg-neutral-800 text-neutral-500 border border-gray-300 dark:border-neutral-700 hover:text-neutral-700 dark:hover:text-neutral-300'
+                    }`}
+                >
+                    {opt.label}
+                </button>
+            ))}
+        </div>
+    );
+}
+
+function ColorInput({
+    value,
+    onChange,
+    placeholder,
+}: {
+    value?: string;
+    onChange: (v: string | undefined) => void;
+    placeholder?: string;
+}) {
+    return (
+        <div className="flex items-center gap-2">
+            <label
+                className="w-8 h-8 rounded-lg border border-gray-400 dark:border-neutral-600 cursor-pointer overflow-hidden flex-shrink-0 relative"
+                style={{ backgroundColor: value || '#ffffff' }}
+            >
+                <input
+                    type="color"
+                    value={value || '#ffffff'}
+                    onChange={(e) => onChange(e.target.value)}
+                    className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
+                />
+            </label>
+            <input
+                type="text"
+                value={value || ''}
+                onChange={(e) => onChange(e.target.value || undefined)}
+                placeholder={placeholder || 'e.g. #ffffff  (empty = theme default)'}
+                className="flex-1 px-3 py-1.5 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-lg text-xs text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-600 outline-none focus:border-blue-500 font-mono"
+            />
+            {value && (
+                <button
+                    type="button"
+                    onClick={() => onChange(undefined)}
+                    className="text-neutral-400 hover:text-red-400 transition-colors text-xs px-1 font-bold"
+                >×</button>
+            )}
+        </div>
+    );
+}
+
+// ─── Panel view type ──────────────────────────────────────────────────────────
+
 type PanelView =
     | { type: 'properties' }
     | { type: 'iconPicker'; currentIcon: string; onSelect: (icon: string) => void };
 
+// ─── Main Panel ───────────────────────────────────────────────────────────────
+
 export function HeaderNavPanel() {
     const { siteId } = useSite();
-    const [navigation, setNavigation] = useState<any>({ topNav: [], topNavActions: {}, headerStyle: {} });
+
+    // All state lives in a single `header` object — matches HeaderNavigationConfig
+    const [header, setHeader] = useState<HeaderNavigationConfig>(DEFAULT_HEADER);
     const [forms, setForms] = useState<any[]>([]);
     const [pages, setPages] = useState<any[]>([]);
     const [homepageSlug, setHomepageSlug] = useState<string>('home');
@@ -218,20 +202,23 @@ export function HeaderNavPanel() {
     const [hydrated, setHydrated] = useState(false);
     const [status, setStatus] = useState<'idle' | 'pending' | 'saving' | 'saved' | 'error'>('idle');
     const [panelView, setPanelView] = useState<PanelView>({ type: 'properties' });
+    const [advancedTypographyOpen, setAdvancedTypographyOpen] = useState(false);
+
     const siteIdRef = useRef(siteId);
     const hydratedSiteIdRef = useRef<string | null>(null);
     const lastSavedSnapshotRef = useRef<string | null>(null);
     useEffect(() => { siteIdRef.current = siteId; }, [siteId]);
-
-    const openIconPicker = useCallback((currentIcon: string, onSelect: (icon: string) => void) => {
-        setPanelView({ type: 'iconPicker', currentIcon, onSelect });
-    }, []);
 
     const sensors = useSensors(
         useSensor(PointerSensor),
         useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
     );
 
+    const openIconPicker = useCallback((currentIcon: string, onSelect: (icon: string) => void) => {
+        setPanelView({ type: 'iconPicker', currentIcon, onSelect });
+    }, []);
+
+    // ── Load from Firestore ──
     useEffect(() => {
         if (!siteId) return;
         let cancelled = false;
@@ -247,29 +234,39 @@ export function HeaderNavPanel() {
                     getDoc(doc(db, 'sites', siteId, 'content', 'siteSettings')),
                 ]);
                 if (cancelled) return;
+
                 setForms(formsSnap.docs.map(d => ({ id: d.id, ...d.data() })));
                 setPages(pagesSnap.docs.map(d => ({ id: d.id, ...d.data() })));
-                let loaded: any;
+
+                let loadedHeader: HeaderNavigationConfig = { ...DEFAULT_HEADER };
                 if (settingsSnap.exists()) {
                     const data = settingsSnap.data();
                     if (data.homepageSlug) setHomepageSlug(data.homepageSlug);
                     const nav = data.navigation || {};
-                    // Only hold the keys this panel owns; avoid round-tripping unrelated keys (bottomNav/fab/bottomNavStyle)
-                    // which would otherwise let a stale copy here clobber edits made by ChromeBottomNavProperties.
-                    loaded = {
-                        topNav: nav.topNav || [],
-                        topNavActions: nav.topNavActions || {},
-                        headerStyle: nav.headerStyle || {},
-                    };
-                } else {
-                    loaded = { topNav: [], topNavActions: {}, headerStyle: {} };
+                    if (nav.header) {
+                        // New shape — use it directly
+                        loadedHeader = { ...DEFAULT_HEADER, ...nav.header };
+                    } else {
+                        // Legacy shape — synthesize into HeaderNavigationConfig for local state
+                        // (we write to navigation.header; legacy fields remain untouched in Firestore)
+                        loadedHeader = {
+                            ...DEFAULT_HEADER,
+                            items: nav.topNav || [],
+                            cta: nav.topNavActions?.cta
+                                ? { ...DEFAULT_HEADER.cta, ...nav.topNavActions.cta }
+                                : DEFAULT_HEADER.cta,
+                            bgColor: nav.headerStyle?.bgColor,
+                            showBorder: nav.headerStyle?.showBorder,
+                        };
+                    }
                 }
-                setNavigation(loaded);
-                lastSavedSnapshotRef.current = JSON.stringify(loaded);
+
+                setHeader(loadedHeader);
+                lastSavedSnapshotRef.current = JSON.stringify(loadedHeader);
                 hydratedSiteIdRef.current = siteId;
                 setHydrated(true);
             } catch (err) {
-                if (!cancelled) console.error('Failed to load navigation:', err);
+                if (!cancelled) console.error('Failed to load header navigation:', err);
             } finally {
                 if (!cancelled) setLoading(false);
             }
@@ -278,16 +275,25 @@ export function HeaderNavPanel() {
         return () => { cancelled = true; };
     }, [siteId]);
 
-    const saveToFirestore = useCallback(async (nav: any) => {
+    // ── Firestore write helper ──
+    // Writes only navigation.header — does NOT clobber bottomNav / fab / topNav / etc.
+    const saveToFirestore = useCallback(async (nextHeader: HeaderNavigationConfig) => {
         const sid = siteIdRef.current;
         if (!sid) return;
         if (hydratedSiteIdRef.current !== sid) return;
-        const snapshot = JSON.stringify(nav);
+        const snapshot = JSON.stringify(nextHeader);
         if (snapshot === lastSavedSnapshotRef.current) return;
         setStatus('saving');
         try {
             const docRef = doc(db, 'sites', sid, 'content', 'siteSettings');
-            await setDoc(docRef, { navigation: nav }, { merge: true });
+            // merge: true at the top level means the `navigation` field is merged,
+            // so bottomNav / fab / topNav / etc. are untouched.
+            // Firestore rejects `undefined` field values — strip them at the boundary.
+            // The HeaderNavigationConfig type has several optional fields (bgColor,
+            // showBorder, cta.formId/pageId, scrolledAppearance.*) that are `undefined`
+            // until the user sets them.
+            const sanitized = stripUndefined({ navigation: { header: nextHeader } });
+            await setDoc(docRef, sanitized, { merge: true });
             lastSavedSnapshotRef.current = snapshot;
             setStatus('saved');
             setTimeout(() => setStatus('idle'), 2000);
@@ -298,67 +304,56 @@ export function HeaderNavPanel() {
         }
     }, []);
 
-    // Debounced auto-save — only fires after the panel has hydrated from Firestore for the current site
-    // AND only if the navigation differs from the last value persisted to Firestore.
-    // On unmount/dependency-change, flush the pending value so a closed-while-typing edit is not lost.
+    // ── Debounced auto-save ──
     useEffect(() => {
         if (!hydrated) return;
         if (hydratedSiteIdRef.current !== siteId) return;
-        if (JSON.stringify(navigation) === lastSavedSnapshotRef.current) return;
+        if (JSON.stringify(header) === lastSavedSnapshotRef.current) return;
         setStatus('pending');
         let fired = false;
-        const timer = setTimeout(() => { fired = true; saveToFirestore(navigation); }, 600);
+        const timer = setTimeout(() => { fired = true; saveToFirestore(header); }, 600);
         return () => {
             clearTimeout(timer);
-            if (!fired) saveToFirestore(navigation);
+            if (!fired) saveToFirestore(header);
         };
-    }, [navigation, hydrated, siteId, saveToFirestore]);
+    }, [header, hydrated, siteId, saveToFirestore]);
 
+    // ── Single update helper ──
+    const updateHeader = useCallback((partial: Partial<HeaderNavigationConfig>) => {
+        setHeader(prev => ({ ...prev, ...partial }));
+    }, []);
+
+    // ── Nav item handlers ──
     const generateId = () => Math.random().toString(36).substr(2, 9);
 
     const handleAddItem = () => {
-        setNavigation((prev: any) => ({
-            ...prev,
-            topNav: [...(prev.topNav || []), { id: generateId(), label: 'New Link', type: 'page', value: '', icon: 'Link' }],
-        }));
+        updateHeader({ items: [...(header.items || []), { id: generateId(), label: 'New Link', type: 'page', value: '', icon: 'Link' }] });
     };
 
     const handleRemoveItem = (id: string) => {
-        setNavigation((prev: any) => ({
-            ...prev,
-            topNav: (prev.topNav || []).filter((i: any) => i.id !== id),
-        }));
+        updateHeader({ items: (header.items || []).filter(i => i.id !== id) });
     };
 
-    const handleUpdateItem = (id: string, field: string, value: string) => {
-        setNavigation((prev: any) => ({
-            ...prev,
-            topNav: (prev.topNav || []).map((item: any) =>
-                item.id === id ? { ...item, [field]: value } : item
+    const handleUpdateItem = (id: string, fieldOrPatch: string | Record<string, string>, value?: string) => {
+        const patch = typeof fieldOrPatch === 'string' ? { [fieldOrPatch]: value as string } : fieldOrPatch;
+        updateHeader({
+            items: (header.items || []).map(item =>
+                item.id === id ? { ...item, ...patch } : item
             ),
-        }));
+        });
     };
 
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
         if (over && active.id !== over.id) {
-            setNavigation((prev: any) => {
-                const list = prev.topNav || [];
-                const oldIndex = list.findIndex((i: any) => i.id === active.id);
-                const newIndex = list.findIndex((i: any) => i.id === over.id);
-                return { ...prev, topNav: arrayMove(list, oldIndex, newIndex) };
-            });
+            const list = header.items || [];
+            const oldIndex = list.findIndex(i => i.id === active.id);
+            const newIndex = list.findIndex(i => i.id === over.id);
+            updateHeader({ items: arrayMove(list, oldIndex, newIndex) });
         }
     };
 
-    const cta = navigation?.topNavActions?.cta;
-    const setCta = (updater: (prev: any) => any) => {
-        setNavigation((prev: any) => ({
-            ...prev,
-            topNavActions: { ...prev.topNavActions, cta: updater(prev.topNavActions?.cta) },
-        }));
-    };
-
+    // ── Icon picker view ──
     if (panelView.type === 'iconPicker') {
         return (
             <InlinePanelIconPicker
@@ -378,13 +373,17 @@ export function HeaderNavPanel() {
                 <div className="h-16 bg-gray-100 dark:bg-neutral-800 rounded-lg" />
                 <div className="h-10 bg-gray-100 dark:bg-neutral-800 rounded-lg" />
                 <div className="h-10 bg-gray-100 dark:bg-neutral-800 rounded-lg" />
+                <div className="h-10 bg-gray-100 dark:bg-neutral-800 rounded-lg" />
             </div>
         );
     }
 
+    const scrollBehaviorDisabled = header.scrollBehavior === 'none';
+
     return (
         <div className="space-y-5 animate-fade-in">
-            {/* Global Badge */}
+
+            {/* ── Global Badge ── */}
             <div className="bg-blue-500/10 rounded-lg p-4 border border-blue-500/20 flex items-center gap-3">
                 <div className="w-10 h-10 bg-gray-100 dark:bg-neutral-800 rounded-full flex items-center justify-center shadow-lg text-blue-400">
                     <Globe size={20} />
@@ -399,10 +398,65 @@ export function HeaderNavPanel() {
                 <SaveStatusChip status={status} />
             </div>
 
-            {/* Top Nav Items */}
-            <div>
+            {/* ══ LAYOUT ════════════════════════════════════════════════════════ */}
+            <div className="space-y-4">
+                <SectionHeader label="Layout" />
+
+                {/* Variant */}
+                <div className="space-y-2">
+                    <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">Variant</label>
+                    <div className="space-y-1.5">
+                        {VARIANT_OPTIONS.map(opt => (
+                            <button
+                                key={opt.id}
+                                type="button"
+                                onClick={() => updateHeader({ variant: opt.id })}
+                                className={`w-full text-left px-3 py-2.5 rounded-lg border transition-all ${
+                                    header.variant === opt.id
+                                        ? 'border-blue-500 ring-2 ring-blue-100 dark:ring-blue-500/20 bg-blue-500/5'
+                                        : 'border-gray-200 dark:border-neutral-700 bg-gray-50 dark:bg-neutral-800/50 hover:border-gray-300 dark:hover:border-neutral-600'
+                                }`}
+                            >
+                                <div className="text-xs font-bold text-neutral-900 dark:text-neutral-100">{opt.label}</div>
+                                <div className="text-[10px] text-neutral-400 dark:text-neutral-500 mt-0.5">{opt.description}</div>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Width */}
+                <div className="space-y-1.5">
+                    <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">Width</label>
+                    <SegmentedControl<HeaderContainerWidth>
+                        value={header.width}
+                        onChange={(v) => updateHeader({ width: v })}
+                        options={[
+                            { value: 'full', label: 'Full' },
+                            { value: 'constrained', label: 'Constrained' },
+                        ]}
+                    />
+                </div>
+
+                {/* Scroll Behavior */}
+                <div className="space-y-1.5">
+                    <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">Scroll behavior</label>
+                    <SegmentedControl<HeaderScrollBehavior>
+                        value={header.scrollBehavior}
+                        onChange={(v) => updateHeader({ scrollBehavior: v })}
+                        options={[
+                            { value: 'none', label: 'None' },
+                            { value: 'fixed', label: 'Fixed' },
+                            { value: 'sticky-on-scroll-up', label: 'Sticky on scroll-up' },
+                            { value: 'shrink-on-scroll', label: 'Shrink on scroll' },
+                        ]}
+                    />
+                </div>
+            </div>
+
+            {/* ══ NAV LINKS ═════════════════════════════════════════════════════ */}
+            <div className="border-t border-gray-200 dark:border-neutral-800 pt-4">
                 <div className="flex items-center justify-between mb-2">
-                    <h5 className="text-xs font-bold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider">Nav Links</h5>
+                    <SectionHeader label="Nav Links" />
                     <button
                         type="button"
                         onClick={handleAddItem}
@@ -412,17 +466,17 @@ export function HeaderNavPanel() {
                     </button>
                 </div>
 
-                {(navigation?.topNav || []).length === 0 ? (
+                {(header.items || []).length === 0 ? (
                     <div className="text-center py-6 text-neutral-400 dark:text-neutral-600 text-xs border border-dashed border-gray-300 dark:border-neutral-800 rounded-lg">
                         No links yet. Add one above.
                     </div>
                 ) : (
                     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                         <SortableContext
-                            items={(navigation?.topNav || []).map((i: any) => i.id)}
+                            items={(header.items || []).map(i => i.id)}
                             strategy={verticalListSortingStrategy}
                         >
-                            {(navigation?.topNav || []).map((item: any) => (
+                            {(header.items || []).map((item) => (
                                 <SortableNavItem
                                     key={item.id}
                                     item={item}
@@ -430,7 +484,7 @@ export function HeaderNavPanel() {
                                     pages={pages}
                                     homepageSlug={homepageSlug}
                                     onRemove={() => handleRemoveItem(item.id)}
-                                    onUpdate={(field, val) => handleUpdateItem(item.id, field, val)}
+                                    onUpdate={(fieldOrPatch, val) => handleUpdateItem(item.id, fieldOrPatch as any, val)}
                                     onOpenIconPicker={openIconPicker}
                                 />
                             ))}
@@ -439,92 +493,36 @@ export function HeaderNavPanel() {
                 )}
             </div>
 
-            {/* Appearance */}
-            <div className="border-t border-gray-200 dark:border-neutral-800 pt-4 space-y-3">
-                <h5 className="text-xs font-bold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider">Appearance</h5>
-                <div>
-                    <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-1">Background Color</label>
-                    <div className="flex items-center gap-2">
-                        <label
-                            className="w-8 h-8 rounded-lg border border-gray-400 dark:border-neutral-600 cursor-pointer overflow-hidden flex-shrink-0 relative"
-                            style={{ backgroundColor: navigation.headerStyle?.bgColor || '#ffffff' }}
-                        >
-                            <input
-                                type="color"
-                                value={navigation.headerStyle?.bgColor || '#ffffff'}
-                                onChange={(e) => setNavigation((prev: any) => ({ ...prev, headerStyle: { ...prev.headerStyle, bgColor: e.target.value } }))}
-                                className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
-                            />
-                        </label>
-                        <input
-                            type="text"
-                            value={navigation.headerStyle?.bgColor || ''}
-                            onChange={(e) => setNavigation((prev: any) => ({ ...prev, headerStyle: { ...prev.headerStyle, bgColor: e.target.value } }))}
-                            placeholder="e.g. #ffffff  (empty = theme default)"
-                            className="flex-1 px-3 py-1.5 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-lg text-xs text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-600 outline-none focus:border-blue-500 font-mono"
-                        />
-                        {navigation.headerStyle?.bgColor && (
-                            <button
-                                type="button"
-                                onClick={() => setNavigation((prev: any) => ({ ...prev, headerStyle: { ...prev.headerStyle, bgColor: undefined } }))}
-                                className="text-neutral-400 hover:text-red-400 transition-colors text-xs px-1 font-bold"
-                            >×</button>
-                        )}
-                    </div>
-                </div>
-                <div className="flex items-center justify-between">
-                    <div>
-                        <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300">Show Border Bottom</span>
-                        <p className="text-[10px] text-neutral-400 dark:text-neutral-600 mt-0.5">Uses theme border token</p>
-                    </div>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                        <span className="text-xs text-neutral-400 dark:text-neutral-500">{navigation.headerStyle?.showBorder ? 'On' : 'Off'}</span>
-                        <div className={`relative inline-flex h-5 w-9 rounded-full border-2 border-transparent transition-colors ${navigation.headerStyle?.showBorder ? 'bg-blue-500' : 'bg-gray-300 dark:bg-neutral-700'}`}>
-                            <input
-                                type="checkbox"
-                                className="sr-only"
-                                checked={!!navigation.headerStyle?.showBorder}
-                                onChange={(e) => setNavigation((prev: any) => ({ ...prev, headerStyle: { ...prev.headerStyle, showBorder: e.target.checked } }))}
-                            />
-                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition duration-200 ${navigation.headerStyle?.showBorder ? 'translate-x-4' : 'translate-x-0'}`} />
-                        </div>
-                    </label>
-                </div>
-            </div>
-
-            {/* CTA Button */}
+            {/* ══ CTA BUTTON ════════════════════════════════════════════════════ */}
             <div className="border-t border-gray-200 dark:border-neutral-800 pt-4 space-y-3">
                 <div className="flex items-center justify-between">
-                    <h5 className="text-xs font-bold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider">CTA Button</h5>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                        <span className="text-xs text-neutral-400 dark:text-neutral-500">{cta?.enabled ? 'On' : 'Off'}</span>
-                        <div className={`relative inline-flex h-5 w-9 rounded-full border-2 border-transparent transition-colors ${cta?.enabled ? 'bg-blue-500' : 'bg-gray-300 dark:bg-neutral-700'}`}>
-                            <input
-                                type="checkbox"
-                                className="sr-only"
-                                checked={cta?.enabled || false}
-                                onChange={(e) => setCta(prev => ({
-                                    enabled: e.target.checked,
-                                    label: prev?.label || 'Order Now',
-                                    linkType: prev?.linkType || 'url',
-                                    linkValue: prev?.linkValue || '#',
-                                    formId: prev?.formId || null,
-                                    pageId: prev?.pageId || null,
-                                }))}
-                            />
-                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition duration-200 ${cta?.enabled ? 'translate-x-4' : 'translate-x-0'}`} />
-                        </div>
-                    </label>
+                    <SectionHeader label="CTA Button" />
+                    <Toggle
+                        checked={header.cta?.enabled || false}
+                        onChange={(enabled) =>
+                            updateHeader({
+                                cta: {
+                                    enabled,
+                                    label: header.cta?.label || 'Order Now',
+                                    linkType: header.cta?.linkType || 'url',
+                                    linkValue: header.cta?.linkValue || '#',
+                                    formId: header.cta?.formId,
+                                    pageId: header.cta?.pageId,
+                                },
+                            })
+                        }
+                        label=""
+                    />
                 </div>
 
-                {cta?.enabled && (
+                {header.cta?.enabled && (
                     <div className="space-y-3 animate-fade-in">
                         <div>
                             <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-1">Button Label</label>
                             <input
                                 type="text"
-                                value={cta?.label || ''}
-                                onChange={(e) => setCta(prev => ({ ...prev, label: e.target.value }))}
+                                value={header.cta?.label || ''}
+                                onChange={(e) => updateHeader({ cta: { ...header.cta, label: e.target.value } })}
                                 className="w-full px-3 py-2 text-sm bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-lg text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-600 focus:border-blue-500/50 focus:outline-none"
                                 placeholder="e.g. Order Now"
                             />
@@ -536,11 +534,11 @@ export function HeaderNavPanel() {
                                     <button
                                         key={t}
                                         type="button"
-                                        onClick={() => setCta(prev => ({ ...prev, linkType: t, linkValue: '', formId: null, pageId: null }))}
+                                        onClick={() => updateHeader({ cta: { ...header.cta, linkType: t, linkValue: '', formId: undefined, pageId: undefined } })}
                                         className={`flex-1 px-2 py-1.5 text-[10px] font-bold uppercase rounded transition-all ${
-                                            cta?.linkType === t
+                                            header.cta?.linkType === t
                                                 ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                                                : 'bg-neutral-800 text-neutral-500 border border-neutral-700 hover:text-neutral-300'
+                                                : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 border border-neutral-300 dark:border-neutral-700 hover:text-neutral-700 dark:hover:text-neutral-300'
                                         }`}
                                     >
                                         {t === 'url' ? 'URL' : t}
@@ -549,22 +547,22 @@ export function HeaderNavPanel() {
                             </div>
                         </div>
                         <div>
-                            {cta?.linkType === 'form' ? (
+                            {header.cta?.linkType === 'form' ? (
                                 <select
-                                    value={cta?.formId || ''}
-                                    onChange={(e) => setCta(prev => ({ ...prev, formId: e.target.value, linkValue: e.target.value }))}
+                                    value={header.cta?.formId || ''}
+                                    onChange={(e) => updateHeader({ cta: { ...header.cta, formId: e.target.value, linkValue: e.target.value } })}
                                     className="w-full px-3 py-2 text-sm bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-lg text-neutral-900 dark:text-neutral-200 focus:border-blue-500/50 focus:outline-none"
                                 >
                                     <option value="">— Select Form —</option>
                                     {forms.map(f => <option key={f.id} value={f.id}>{f.title}</option>)}
                                 </select>
-                            ) : cta?.linkType === 'page' ? (
+                            ) : header.cta?.linkType === 'page' ? (
                                 <select
-                                    value={cta?.pageId || ''}
+                                    value={header.cta?.pageId || ''}
                                     onChange={(e) => {
                                         const p = pages.find(pg => pg.id === e.target.value);
                                         const resolvedValue = p ? (p.slug === homepageSlug ? 'action:homepage' : `/${p.slug}`) : '';
-                                        setCta(prev => ({ ...prev, pageId: e.target.value, linkValue: resolvedValue }));
+                                        updateHeader({ cta: { ...header.cta, pageId: e.target.value, linkValue: resolvedValue } });
                                     }}
                                     className="w-full px-3 py-2 text-sm bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-lg text-neutral-900 dark:text-neutral-200 focus:border-blue-500/50 focus:outline-none"
                                 >
@@ -574,8 +572,8 @@ export function HeaderNavPanel() {
                             ) : (
                                 <input
                                     type="text"
-                                    value={cta?.linkValue || ''}
-                                    onChange={(e) => setCta(prev => ({ ...prev, linkValue: e.target.value }))}
+                                    value={header.cta?.linkValue || ''}
+                                    onChange={(e) => updateHeader({ cta: { ...header.cta, linkValue: e.target.value } })}
                                     className="w-full px-3 py-2 text-sm bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-lg text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-600 focus:border-blue-500/50 focus:outline-none font-mono"
                                     placeholder="https://..."
                                 />
@@ -583,6 +581,144 @@ export function HeaderNavPanel() {
                         </div>
                     </div>
                 )}
+            </div>
+
+            {/* ══ APPEARANCE ════════════════════════════════════════════════════ */}
+            <div className="border-t border-gray-200 dark:border-neutral-800 pt-4 space-y-4">
+                <SectionHeader label="Appearance" />
+
+                {/* Background color */}
+                <div className="space-y-1.5">
+                    <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">Background Color</label>
+                    <ColorInput
+                        value={header.bgColor}
+                        onChange={(v) => updateHeader({ bgColor: v })}
+                    />
+                </div>
+
+                {/* Show border */}
+                <div className="flex items-center justify-between">
+                    <div>
+                        <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300">Show Border</span>
+                        <p className="text-[10px] text-neutral-400 dark:text-neutral-600 mt-0.5">Uses theme border token</p>
+                    </div>
+                    <Toggle
+                        checked={!!header.showBorder}
+                        onChange={(v) => updateHeader({ showBorder: v })}
+                    />
+                </div>
+
+                {/* Typography */}
+                <div className="space-y-2">
+                    <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">Typography</label>
+
+                    <div className="space-y-1.5">
+                        <label className="block text-[10px] text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">Style Preset</label>
+                        <SegmentedControl<HeaderNavTextPreset>
+                            value={header.typography?.preset || 'default'}
+                            onChange={(v) => updateHeader({ typography: { ...header.typography, preset: v } })}
+                            options={[
+                                { value: 'default', label: 'Default' },
+                                { value: 'tight', label: 'Tight' },
+                                { value: 'spacious', label: 'Spacious' },
+                                { value: 'sentence-case', label: 'Sentence case' },
+                            ]}
+                        />
+                    </div>
+
+                    {/* Advanced disclosure */}
+                    <div className="border border-gray-200 dark:border-neutral-700 rounded-lg overflow-hidden">
+                        <button
+                            type="button"
+                            onClick={() => setAdvancedTypographyOpen(v => !v)}
+                            className="w-full flex items-center justify-between px-3 py-2 text-[10px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors"
+                        >
+                            <span>Advanced</span>
+                            {advancedTypographyOpen
+                                ? <ChevronDown size={12} />
+                                : <ChevronRight size={12} />
+                            }
+                        </button>
+                        {advancedTypographyOpen && (
+                            <div className="px-3 pb-3 space-y-3 border-t border-gray-200 dark:border-neutral-700 bg-gray-50/50 dark:bg-neutral-800/30">
+                                <div className="space-y-1.5 pt-3">
+                                    <label className="block text-[10px] text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">Tracking Override</label>
+                                    <SegmentedControl<'normal' | 'tight' | 'wide'>
+                                        value={header.typography?.trackingOverride || 'normal'}
+                                        onChange={(v) => updateHeader({ typography: { ...header.typography, preset: header.typography?.preset || 'default', trackingOverride: v } })}
+                                        options={[
+                                            { value: 'normal', label: 'Normal' },
+                                            { value: 'tight', label: 'Tight' },
+                                            { value: 'wide', label: 'Wide' },
+                                        ]}
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="block text-[10px] text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">Case Override</label>
+                                    <SegmentedControl<'uppercase' | 'none'>
+                                        value={header.typography?.caseOverride || 'none'}
+                                        onChange={(v) => updateHeader({ typography: { ...header.typography, preset: header.typography?.preset || 'default', caseOverride: v } })}
+                                        options={[
+                                            { value: 'uppercase', label: 'Uppercase' },
+                                            { value: 'none', label: 'None' },
+                                        ]}
+                                    />
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* ══ SCROLLED STATE ════════════════════════════════════════════════ */}
+            <div className="border-t border-gray-200 dark:border-neutral-800 pt-4 space-y-3">
+                <div className="flex items-center justify-between">
+                    <SectionHeader label="Scrolled State" />
+                    {!scrollBehaviorDisabled && (
+                        <Toggle
+                            checked={!!header.scrolledAppearance?.enabled}
+                            onChange={(enabled) =>
+                                updateHeader({
+                                    scrolledAppearance: { ...header.scrolledAppearance, enabled },
+                                })
+                            }
+                        />
+                    )}
+                </div>
+
+                {scrollBehaviorDisabled ? (
+                    <p className="text-[10px] text-neutral-400 dark:text-neutral-500 italic">
+                        Set Scroll behavior to enable scrolled state overrides.
+                    </p>
+                ) : header.scrolledAppearance?.enabled ? (
+                    <div className="space-y-3 animate-fade-in">
+                        <div className="space-y-1.5">
+                            <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">Background Color</label>
+                            <ColorInput
+                                value={header.scrolledAppearance?.bgColor}
+                                onChange={(v) =>
+                                    updateHeader({
+                                        scrolledAppearance: { ...header.scrolledAppearance, enabled: true, bgColor: v },
+                                    })
+                                }
+                            />
+                        </div>
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300">Show Border</span>
+                                <p className="text-[10px] text-neutral-400 dark:text-neutral-600 mt-0.5">Uses theme border token</p>
+                            </div>
+                            <Toggle
+                                checked={!!header.scrolledAppearance?.showBorder}
+                                onChange={(v) =>
+                                    updateHeader({
+                                        scrolledAppearance: { ...header.scrolledAppearance, enabled: true, showBorder: v },
+                                    })
+                                }
+                            />
+                        </div>
+                    </div>
+                ) : null}
             </div>
         </div>
     );

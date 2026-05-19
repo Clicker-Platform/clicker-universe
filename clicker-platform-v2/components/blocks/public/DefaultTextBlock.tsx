@@ -4,8 +4,10 @@ import { useMemo } from 'react';
 import { useTemplate } from '@/components/TemplateProvider';
 import { useDeviceView, dv } from '@/components/DeviceViewContext';
 import { sanitizeRichText } from '@/lib/sanitizeHtml';
+import { getProseClass } from './proseConfig';
 
 const VERTICAL_SPACING = {
+    none:   'py-0',
     small:  'py-4',
     medium: 'py-8',
     tall:   'py-14',
@@ -25,26 +27,12 @@ export const DefaultTextBlock = ({ data }: { data: { content?: string; layoutVar
     if (!data) return null;
 
     const cardStyle = theme.cardStyle || 'brutalist';
-    const isGlass = cardStyle === 'glass';
-    const isClean = cardStyle === 'clean';
-    const isBrutalist = !isGlass && !isClean;
-    const textClass = isGlass ? 'text-theme-foreground/90' : 'text-theme-foreground';
     const variant = data?.layoutVariant || 'prose';
 
     const verticalClass = VERTICAL_SPACING[(data.verticalSpacing || 'medium') as keyof typeof VERTICAL_SPACING] ?? 'py-8';
     const horizontalClass = HORIZONTAL_PADDING[(data.horizontalPadding || 'none') as keyof typeof HORIZONTAL_PADDING] ?? 'px-0';
 
-    const proseClasses = `prose max-w-none font-medium ${textClass}
-        ${dv(d, 'text-[15px] leading-[1.65]', 'sm:text-[16px] md:text-[18px] md:leading-[1.75]')}
-        prose-headings:font-heading prose-headings:text-[var(--theme-foreground)]
-        prose-headings:mt-8 prose-headings:mb-4
-        prose-p:text-[var(--theme-foreground)] prose-p:font-body prose-p:my-3
-        prose-strong:text-[var(--theme-foreground)]
-        prose-ul:text-[var(--theme-foreground)] prose-ol:text-[var(--theme-foreground)]
-        prose-ul:my-4 prose-ol:my-4 prose-li:my-1.5 prose-li:leading-snug
-        prose-a:text-[var(--theme-primary)]
-        prose-blockquote:text-[var(--theme-foreground)] prose-blockquote:border-l-[var(--theme-primary)]
-        ${isBrutalist ? 'prose-invert' : ''}`;
+    const proseClasses = getProseClass(cardStyle);
 
     if (variant === 'two-column') {
         return (

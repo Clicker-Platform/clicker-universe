@@ -305,7 +305,7 @@ interface AddBlocksPanelProps {
 }
 
 export function AddBlocksPanel({ templateId = 'classic', onAfterAdd }: AddBlocksPanelProps) {
-    const { addBlock, setSelectedBlockId } = useEditor();
+    const { addBlock, setSelection } = useEditor();
     const [moduleBlocks, setModuleBlocks] = useState<{ type: BlockType; label: string; icon: React.ElementType }[]>([]);
     const [viewMode, setViewMode] = useState<'list' | 'grid'>(() => {
         if (typeof window === 'undefined') return 'grid';
@@ -343,9 +343,9 @@ export function AddBlocksPanel({ templateId = 'classic', onAfterAdd }: AddBlocks
             data: getDefaultData(type, templateId)
         };
         addBlock(newBlock);
-        setSelectedBlockId(newBlock.id);
+        setSelection({ kind: 'blocks', ids: [newBlock.id] });
         onAfterAdd?.();
-    }, [addBlock, setSelectedBlockId, templateId, onAfterAdd]);
+    }, [addBlock, setSelection, templateId, onAfterAdd]);
 
     const allOptions = [...BLOCK_OPTIONS, ...moduleBlocks];
 

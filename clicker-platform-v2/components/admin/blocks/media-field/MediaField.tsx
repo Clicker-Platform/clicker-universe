@@ -178,7 +178,7 @@ export function MediaField({ value, onChange }: MediaFieldProps) {
                             </button>
                         )}
                         <p className="text-[10px] text-neutral-500 mt-1">
-                            Recommended: {recommended.label}px ({media.aspectRatio || '16:9'})
+                            Any size. Image renders at its natural aspect ratio.
                         </p>
                         {sizeWarning && (
                             <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-1">{sizeWarning}</p>
@@ -275,34 +275,37 @@ export function MediaField({ value, onChange }: MediaFieldProps) {
 
             {error && <p className="text-xs text-red-500">{error}</p>}
 
-            {/* Shared: aspect ratio + object fit */}
-            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-gray-200 dark:border-neutral-800">
-                <div>
-                    <label className={labelClass}>Aspect</label>
-                    <select
-                        value={media.aspectRatio || '16:9'}
-                        onChange={(e) => update({ aspectRatio: e.target.value as MediaAspectRatio })}
-                        className={inputClass}
-                    >
-                        <option value="16:9">16:9</option>
-                        <option value="4:3">4:3</option>
-                        <option value="square">Square</option>
-                        <option value="3:4">3:4</option>
-                        <option value="free">Free</option>
-                    </select>
+            {/* Aspect ratio + object fit — only meaningful for video/lottie, which need
+                a defined frame. Images render at their natural aspect ratio. */}
+            {selectedTab !== 'image' && (
+                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-gray-200 dark:border-neutral-800">
+                    <div>
+                        <label className={labelClass}>Aspect</label>
+                        <select
+                            value={media.aspectRatio || '16:9'}
+                            onChange={(e) => update({ aspectRatio: e.target.value as MediaAspectRatio })}
+                            className={inputClass}
+                        >
+                            <option value="16:9">16:9</option>
+                            <option value="4:3">4:3</option>
+                            <option value="square">Square</option>
+                            <option value="3:4">3:4</option>
+                            <option value="free">Free</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className={labelClass}>Fit</label>
+                        <select
+                            value={media.objectFit || 'cover'}
+                            onChange={(e) => update({ objectFit: e.target.value as MediaObjectFit })}
+                            className={inputClass}
+                        >
+                            <option value="cover">Cover</option>
+                            <option value="contain">Contain</option>
+                        </select>
+                    </div>
                 </div>
-                <div>
-                    <label className={labelClass}>Fit</label>
-                    <select
-                        value={media.objectFit || 'cover'}
-                        onChange={(e) => update({ objectFit: e.target.value as MediaObjectFit })}
-                        className={inputClass}
-                    >
-                        <option value="cover">Cover</option>
-                        <option value="contain">Contain</option>
-                    </select>
-                </div>
-            </div>
+            )}
         </div>
     );
 }

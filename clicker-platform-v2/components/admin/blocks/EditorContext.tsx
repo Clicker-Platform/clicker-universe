@@ -3,11 +3,42 @@
 import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect } from 'react';
 import { PageBlock } from '@/data/mockData';
 
+/**
+ * Single source of truth for "what is currently selected/active in the editor".
+ *
+ * Replaces the previous pair (selectedBlockId, activeContainerSlotId) that had
+ * to be kept in sync via useEffect — that shape caused render loops. Now there
+ * is exactly one field, one setter, and every transition is an atomic single
+ * write.
+ *
+ * Arrays for `blocks.ids` and `slots.ids` from day one even though current UI
+ * always sets length=1 — future multi-select (Cmd+click, merge cells) is a
+ * purely additive change with no shape break.
+ */
+export type EditorSelection =
+    | { kind: 'none' }
+    | { kind: 'blocks'; ids: string[] }
+    | { kind: 'slots'; containerId: string; ids: string[] }
+    | { kind: 'chrome'; chromeId: 'header' | 'footer' | 'bottomnav' };
+
+/** Helper: single-block selection id, or null. */
+export function singleBlockId(s: EditorSelection): string | null {
+    return s.kind === 'blocks' && s.ids.length === 1 ? s.ids[0] : null;
+}
+
+/** Helper: single-slot selection id, or null. */
+export function singleSlotId(s: EditorSelection): string | null {
+    return s.kind === 'slots' && s.ids.length === 1 ? s.ids[0] : null;
+}
+
 interface EditorContextType {
     blocks: PageBlock[];
     setBlocks: (blocks: PageBlock[]) => void;
-    selectedBlockId: string | null;
-    setSelectedBlockId: (id: string | null) => void;
+
+    // Single source of truth for what is currently selected/active.
+    selection: EditorSelection;
+    setSelection: (s: EditorSelection) => void;
+
     hoveredBlockId: string | null;
     setHoveredBlockId: (id: string | null) => void;
     deviceView: 'desktop' | 'tablet' | 'mobile';
@@ -20,10 +51,10 @@ interface EditorContextType {
     moveBlock: (oldIndex: number, newIndex: number) => void;
 }
 
-const EditorContext = createContext<EditorContextType | undefined>(undefined);
+export const EditorContext = createContext<EditorContextType | undefined>(undefined);
 
 export function EditorProvider({ children, blocks, onChange }: { children: ReactNode, blocks: PageBlock[], onChange: (blocks: PageBlock[] | ((prev: PageBlock[]) => PageBlock[])) => void }) {
-    const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
+    const [selection, setSelection] = useState<EditorSelection>({ kind: 'none' });
     const [hoveredBlockId, setHoveredBlockId] = useState<string | null>(null);
     const [showGuides, setShowGuides] = useState(true);
     const [deviceView, setDeviceView] = useState<'desktop' | 'tablet' | 'mobile'>(() => {
@@ -37,7 +68,7 @@ export function EditorProvider({ children, blocks, onChange }: { children: React
     }, [deviceView]);
 
     const updateBlockData = useCallback((id: string, data: any) => {
-        onChange(prev => prev.map(block => 
+        onChange(prev => prev.map(block =>
             block.id === id ? { ...block, data: { ...block.data, ...data } } : block
         ));
     }, [onChange]);
@@ -48,8 +79,15 @@ export function EditorProvider({ children, blocks, onChange }: { children: React
 
     const removeBlock = useCallback((id: string) => {
         onChange(prev => prev.filter(block => block.id !== id));
-        if (selectedBlockId === id) setSelectedBlockId(null);
-    }, [selectedBlockId, onChange]);
+        // If the removed block was selected, clear selection.
+        setSelection(prev => {
+            if (prev.kind === 'blocks' && prev.ids.includes(id)) {
+                const remaining = prev.ids.filter(x => x !== id);
+                return remaining.length > 0 ? { kind: 'blocks', ids: remaining } : { kind: 'none' };
+            }
+            return prev;
+        });
+    }, [onChange]);
 
     const moveBlock = useCallback((oldIndex: number, newIndex: number) => {
         onChange(prev => {
@@ -64,8 +102,8 @@ export function EditorProvider({ children, blocks, onChange }: { children: React
         <EditorContext.Provider value={{
             blocks,
             setBlocks: onChange,
-            selectedBlockId,
-            setSelectedBlockId,
+            selection,
+            setSelection,
             hoveredBlockId,
             setHoveredBlockId,
             deviceView,
@@ -75,7 +113,7 @@ export function EditorProvider({ children, blocks, onChange }: { children: React
             updateBlockData,
             addBlock,
             removeBlock,
-            moveBlock
+            moveBlock,
         }}>
             {children}
         </EditorContext.Provider>

@@ -4,7 +4,8 @@ import React from 'react';
 import { useTemplate } from '@/components/TemplateProvider';
 import { useDeviceView, dv } from '@/components/DeviceViewContext';
 import { MediaView } from './MediaView';
-import { getCardClasses } from './cardStyles';
+import { getCardClasses, getHeadingColor, getBodyColor, getMutedColor, getLabelColor, hexWithOpacity } from './cardStyles';
+import { H2, H3, H4, BODY, BODY_SM } from './typography';
 import type { FeatureCardsData, FeatureCard } from '@/components/blocks/feature-cards/types';
 
 function isLightColor(hex: string): boolean {
@@ -29,11 +30,15 @@ const DESKTOP_COLS_CLASS: Record<number, string> = {
 interface CardItemProps {
     card: FeatureCard;
     cardStyle?: string;
+    theme: any;
 }
 
-function CardItem({ card, cardStyle }: CardItemProps) {
+function CardItem({ card, cardStyle, theme }: CardItemProps) {
+    const d = useDeviceView();
     const hasCustomBg = !!card.bgColor;
 
+    // Per-card bgColor override → derive contrast text color via luminance.
+    // This is the spec-allowed exception in §3.1 (user-uploaded surface colors).
     const autoTextColor = card.bgColor
         ? (card.textColor || (isLightColor(card.bgColor) ? '#111111' : '#ffffff'))
         : undefined;
@@ -46,16 +51,12 @@ function CardItem({ card, cardStyle }: CardItemProps) {
         ? { backgroundColor: card.bgColor, color: autoTextColor }
         : undefined;
 
-    const labelColor = hasCustomBg
-        ? (autoTextColor ? `${autoTextColor}99` : 'rgba(255,255,255,0.6)')
-        : undefined;
+    const headingColor = hasCustomBg ? autoTextColor! : getHeadingColor(cardStyle, theme);
+    const labelColor = hasCustomBg ? hexWithOpacity(autoTextColor!, 0.6) : getLabelColor(cardStyle, theme);
+    const bodyColor = hasCustomBg ? hexWithOpacity(autoTextColor!, 0.8) : getMutedColor(cardStyle, theme);
 
-    const bodyColor = hasCustomBg
-        ? (autoTextColor ? `${autoTextColor}cc` : 'rgba(255,255,255,0.8)')
-        : undefined;
-
-    const tagBg = hasCustomBg ? 'rgba(255,255,255,0.15)' : undefined;
-    const tagText = hasCustomBg ? autoTextColor : undefined;
+    const tagBg = hasCustomBg ? 'rgba(255,255,255,0.15)' : 'var(--theme-surface)';
+    const tagText = hasCustomBg ? autoTextColor : getBodyColor(cardStyle, theme);
 
     return (
         <div className={cardClass} style={inlineStyle}>
@@ -64,24 +65,15 @@ function CardItem({ card, cardStyle }: CardItemProps) {
             )}
             <div className="flex flex-col gap-2 p-4 flex-1">
                 {card.label && (
-                    <span
-                        className="text-xs font-bold tracking-widest uppercase"
-                        style={labelColor ? { color: labelColor } : { color: 'var(--theme-muted-foreground, #6b7280)' }}
-                    >
+                    <span className={H4(d)} style={{ color: labelColor }}>
                         {card.label}
                     </span>
                 )}
-                <h3
-                    className="text-xl font-black leading-tight"
-                    style={hasCustomBg ? { color: autoTextColor } : { color: 'var(--theme-foreground)' }}
-                >
+                <h3 className={H3(d)} style={{ color: headingColor }}>
                     {card.headline}
                 </h3>
                 {card.body && (
-                    <p
-                        className="text-sm leading-relaxed"
-                        style={bodyColor ? { color: bodyColor } : { color: 'var(--theme-muted-foreground, #6b7280)' }}
-                    >
+                    <p className={BODY_SM(d)} style={{ color: bodyColor }}>
                         {card.body}
                     </p>
                 )}
@@ -91,11 +83,7 @@ function CardItem({ card, cardStyle }: CardItemProps) {
                             <span
                                 key={i}
                                 className="px-3 py-1 rounded-full text-xs font-medium"
-                                style={
-                                    tagBg
-                                        ? { backgroundColor: tagBg, color: tagText }
-                                        : { backgroundColor: 'var(--theme-muted, #f3f4f6)', color: 'var(--theme-foreground)' }
-                                }
+                                style={{ backgroundColor: tagBg, color: tagText }}
                             >
                                 {tag}
                             </span>
@@ -137,12 +125,12 @@ export function DefaultFeatureCardsBlock({ data, theme: themeProp, previewMode: 
             {(data.title || data.subtitle) && (
                 <div className="mb-8 px-4 text-center max-w-2xl mx-auto">
                     {data.title && (
-                        <h2 className="text-3xl font-black tracking-tight" style={{ color: 'var(--theme-foreground)' }}>
+                        <h2 className={H2(deviceView)} style={{ color: getHeadingColor(theme?.cardStyle, theme) }}>
                             {data.title}
                         </h2>
                     )}
                     {data.subtitle && (
-                        <p className="mt-2 text-base" style={{ color: 'var(--theme-muted-foreground, #6b7280)' }}>
+                        <p className={`${BODY(deviceView)} mt-2`} style={{ color: getMutedColor(theme?.cardStyle, theme) }}>
                             {data.subtitle}
                         </p>
                     )}
@@ -158,7 +146,7 @@ export function DefaultFeatureCardsBlock({ data, theme: themeProp, previewMode: 
                         );
                         return (
                             <div key={card.id} className={cardWrapperClass}>
-                                <CardItem card={card} cardStyle={theme?.cardStyle} />
+                                <CardItem card={card} cardStyle={theme?.cardStyle} theme={theme} />
                             </div>
                         );
                     })}

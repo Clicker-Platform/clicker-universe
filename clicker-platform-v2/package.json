@@ -45,6 +45,7 @@
     "posthog-js": "^1.372.9",
     "qrcode.react": "^4.2.0",
     "react": "19.2.3",
+    "react-colorful": "^5.7.0",
     "react-dom": "19.2.3",
     "sharp": "0.33.5",
     "sonner": "^2.0.7",

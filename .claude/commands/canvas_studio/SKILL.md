@@ -11,6 +11,8 @@ description: >
 ---
 
 > **Architecture Reference:** Always read [`docs/ARCHITECTURE.md`](../../../clicker-platform-v2/docs/ARCHITECTURE.md) before making any changes.
+>
+> **Typography:** When authoring or editing **public block components** (`components/blocks/public/`, `components/blocks/mrb/`), invoke the [`typography_system`](../typography_system/SKILL.md) skill. It enforces the H1–H4 scale, color helper API, and no-hardcoded-colors rule per the [block typography spec](../../../superpowers/specs/2026-05-16-block-typography-system.md).
 
 
 # /canvas_studio — Page Builder & Block System
@@ -438,7 +440,9 @@ Block rendering (shared admin + public):
   components/blocks/public/ReservationBlock.tsx  ← reservation module block (read-only in canvas)
   components/blocks/public/LinkBlockClient.tsx   ← client-side interactive wrapper for link blocks
   components/blocks/public/ProductsBlockClient.tsx ← client-side interactive wrapper for product blocks
-  components/blocks/public/cardStyles.ts         ← getCardClasses(), getTextColor()
+  components/blocks/public/cardStyles.ts         ← getCardClasses(), getGlassStyle(), getHeadingColor/getBodyColor/getMutedColor/getLabelColor/getAccentColor, hexWithOpacity()
+  components/blocks/public/typography.ts         ← H1/H2/H3/TILE_TITLE/H4/BODY_LG/BODY/BODY_SM/BUTTON_TEXT constants
+  components/blocks/public/proseConfig.ts        ← proseClass, proseGlassClass, getProseClass(cardStyle) — shared prose plugin styling
   components/blocks/mrb/                        ← MRB template-specific block overrides (MrbHero, MrbQuickActions, MrbOperatingHours)
 
 Image/media uploads in blocks:

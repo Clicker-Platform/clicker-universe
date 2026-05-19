@@ -8,7 +8,9 @@ import { useTemplate } from '@/components/TemplateProvider';
 import { ProductDetailModal } from '@/components/catalog/ProductDetailModal';
 import { FullScreenGallery } from '@/components/common/FullScreenGallery';
 import { Skeleton } from '@/components/ui/skeleton';
-import { getCardClasses, getGlassStyle } from './cardStyles';
+import { getCardClasses, getGlassStyle, getHeadingColor, getLabelColor } from './cardStyles';
+import { useDeviceView } from '@/components/DeviceViewContext';
+import { H2, H4, BUTTON_TEXT } from './typography';
 
 interface WhatsAppSettings {
     label?: string;
@@ -22,7 +24,6 @@ interface WhatsAppSettings {
 
 interface DefaultFeaturedProductBlockProps {
     product: Product;
-    theme?: any;
     previewMode?: boolean;
     badgeText?: string;
     showBadge?: boolean;
@@ -33,7 +34,6 @@ interface DefaultFeaturedProductBlockProps {
 
 export function DefaultFeaturedProductBlock({
     product,
-    theme: themeProp,
     previewMode,
     badgeText = 'Featured',
     showBadge = true,
@@ -45,8 +45,8 @@ export function DefaultFeaturedProductBlock({
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isFullScreenOpen, setIsFullScreenOpen] = useState(false);
 
-    const { theme: contextTheme } = useTemplate();
-    const theme = themeProp ?? contextTheme;
+    const { theme } = useTemplate();
+    const d = useDeviceView();
 
     const isClean = theme?.cardStyle === 'clean';
     const isGlass = theme?.cardStyle === 'glass';
@@ -68,7 +68,8 @@ export function DefaultFeaturedProductBlock({
     const showGallery = images.length > 1;
 
     const colors = theme?.colors ?? {};
-    const fonts = theme?.fonts ?? {};
+    const headingColor = getHeadingColor(theme?.cardStyle, theme);
+    const labelColor = getLabelColor(theme?.cardStyle, theme);
     const primaryContrastColor =
         colors.accent && colors.accent !== colors.primary
             ? colors.accent
@@ -99,34 +100,24 @@ export function DefaultFeaturedProductBlock({
             {showBadge && (
                 <div className={isGlass ? 'mb-4' : 'absolute -top-5 left-1/2 -translate-x-1/2 z-20 w-max'}>
                     {isGlass ? (
-                        <span
-                            className="text-xs font-bold uppercase tracking-[0.2em]"
-                            style={{
-                                color: colors.muted || colors.foreground,
-                                opacity: colors.muted ? 1 : 0.5,
-                            }}
-                        >
+                        <span className={H4(d)} style={{ color: labelColor }}>
                             {badgeText}
                         </span>
                     ) : !isBold ? (
                         <div
                             className="px-4 py-1 rounded-full shadow-sm flex items-center gap-2"
-                            style={{ ...badgeStyle, fontFamily: fonts.body }}
+                            style={badgeStyle}
                         >
                             <Star size={14} className="fill-current" />
-                            <span className="font-bold uppercase tracking-wider text-xs">{badgeText}</span>
+                            <span className={H4(d)}>{badgeText}</span>
                         </div>
                     ) : (
                         <div
                             className="border-[3px] px-6 py-2 rounded-full rotate-[-2deg] flex items-center gap-2 animate-bounce"
-                            style={{
-                                ...badgeStyle,
-                                boxShadow: `2px 2px 0px 0px ${colors.foreground}`,
-                                fontFamily: fonts.body,
-                            }}
+                            style={{ ...badgeStyle, boxShadow: `2px 2px 0px 0px ${colors.foreground}` }}
                         >
                             <Star size={20} className="fill-current" />
-                            <span className="font-black uppercase tracking-wider text-sm">{badgeText}</span>
+                            <span className={H4(d)}>{badgeText}</span>
                             <Star size={20} className="fill-current" />
                         </div>
                     )}
@@ -224,7 +215,7 @@ export function DefaultFeaturedProductBlock({
                             className={[
                                 'absolute bottom-4 right-4 z-20',
                                 isBold
-                                    ? 'px-4 py-2 rounded-xl border-2 font-black text-xl rotate-[-3deg] group-hover:rotate-0 transition-transform'
+                                    ? 'px-4 py-2 rounded-xl border-2 text-xl font-semibold rotate-[-3deg] group-hover:rotate-0 transition-transform'
                                     : '',
                             ].join(' ')}
                             style={
@@ -234,14 +225,13 @@ export function DefaultFeaturedProductBlock({
                                           color: colors.primary,
                                           borderColor: colors.primary,
                                           boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
-                                          fontFamily: fonts.heading,
                                       }
-                                    : { fontFamily: fonts.body }
+                                    : undefined
                             }
                         >
                             {!isBold ? (
                                 <div
-                                    className="px-3 py-1.5 rounded-lg font-bold text-lg border shadow-sm backdrop-blur-md"
+                                    className="px-3 py-1.5 rounded-lg text-lg font-semibold border shadow-sm backdrop-blur-md"
                                     style={{
                                         backgroundColor: `${colors.surface || colors.background}E6`,
                                         color: colors.foreground,
@@ -260,17 +250,15 @@ export function DefaultFeaturedProductBlock({
                 {/* Content */}
                 <div className="text-center px-2 pb-2">
                     <h3
-                        className={`mb-3 uppercase leading-none tracking-tight ${
-                            !isBold ? 'font-bold text-2xl' : 'font-black text-3xl'
-                        }`}
-                        style={{ color: colors.foreground, fontFamily: fonts.heading }}
+                        className={`${H2(d)} mb-3`}
+                        style={{ color: headingColor }}
                     >
                         {product.name}
                     </h3>
 
                     <button
                         onClick={handleOrderClick}
-                        className="w-full py-4 rounded-xl flex items-center justify-center gap-2 transition-all duration-300"
+                        className={`w-full py-4 rounded-xl flex items-center justify-center gap-2 transition-all duration-300 ${BUTTON_TEXT(d)}`}
                         style={{
                             borderRadius: 'calc(var(--theme-radius) * 0.6)',
                             backgroundColor: isBold ? colors.foreground : colors.primary,
@@ -281,10 +269,6 @@ export function DefaultFeaturedProductBlock({
                             boxShadow: isBold
                                 ? `4px 4px 0px 0px ${colors.border}`
                                 : '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-                            fontWeight: isBold ? 800 : 700,
-                            textTransform: isBold ? 'uppercase' : 'none',
-                            letterSpacing: isBold ? '0.05em' : 'normal',
-                            fontFamily: fonts.heading,
                         }}
                     >
                         {buttonText} <ArrowRight size={24} strokeWidth={isBold ? 3 : 2} />

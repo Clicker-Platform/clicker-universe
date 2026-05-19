@@ -8,6 +8,7 @@ const ALIGN_CLASS = { left: 'text-left', center: 'text-center', right: 'text-rig
 import { useTemplate } from '@/components/TemplateProvider';
 import { useDeviceView, dv, type DeviceView } from '@/components/DeviceViewContext';
 import { FieldSelectionChrome, EditableText } from '@/components/blocks/shared/EditablePrimitives';
+import { H4, BODY_LG, BUTTON_TEXT } from './typography';
 
 // ─── Colour helpers ───────────────────────────────────────────────────────────
 
@@ -48,12 +49,20 @@ function resolveTextOnBg(
 }
 
 
+// User-selectable title size. 'md' is the spec H1 default (text-4xl md:text-6xl).
+// All sizes share the H1 weight/leading/tracking via H1_BASE below.
 const TITLE_SIZES = (d: DeviceView): Record<string, string> => ({
-    sm: dv(d, 'text-2xl', 'md:text-3xl'),
-    md: dv(d, 'text-4xl', 'md:text-5xl'),
-    lg: dv(d, 'text-5xl', 'md:text-6xl'),
-    xl: dv(d, 'text-6xl', 'md:text-7xl'),
+    sm: dv(d, 'text-3xl', 'md:text-4xl'),
+    md: dv(d, 'text-4xl', 'md:text-6xl'),  // spec H1
+    lg: dv(d, 'text-5xl', 'md:text-7xl'),
+    xl: dv(d, 'text-6xl', 'md:text-8xl'),
 });
+
+// Non-size half of H1 — shared by all size tiers and applied uniformly,
+// removing the previous per-cardStyle font-weight branching (spec §9).
+// leading-[1.1] (tighter than spec's leading-tight=1.25) because Hero titles
+// at large sizes regularly wrap to 3-4 lines; 1.25 stacks too much gap.
+const H1_BASE = 'font-extrabold leading-[1.1] tracking-tight';
 
 interface CtaBtn { label?: string; url?: string; type?: string; formId?: string; pageId?: string; }
 
@@ -68,6 +77,7 @@ const CtaButtons = ({
     align?: string;
     onFieldFocus?: (field: string, rect: DOMRect) => void;
 }) => {
+    const d = useDeviceView();
     const primaryRef = useRef<HTMLDivElement>(null);
     const secondaryRef = useRef<HTMLDivElement>(null);
     const [focusedBtn, setFocusedBtn] = useState<'primary' | 'secondary' | null>(null);
@@ -104,7 +114,7 @@ const CtaButtons = ({
                 >
                     <a
                         href={onFieldFocus ? undefined : (primary?.type === 'form' ? `#form-${primary.formId}` : primary.url || '#')}
-                        className={`inline-flex items-center px-6 py-2.5 text-sm font-bold transition-all shadow-sm ${
+                        className={`inline-flex items-center px-6 py-2.5 ${BUTTON_TEXT(d)} transition-all shadow-sm ${
                             dark
                                 ? 'bg-white text-gray-900 hover:bg-white/90'
                                 : 'bg-theme-primary text-white hover:opacity-90'
@@ -125,7 +135,7 @@ const CtaButtons = ({
                 >
                     <a
                         href={onFieldFocus ? undefined : (secondary?.type === 'form' ? `#form-${secondary.formId}` : secondary.url || '#')}
-                        className={`inline-flex items-center px-6 py-2.5 text-sm font-bold border-2 transition-all ${
+                        className={`inline-flex items-center px-6 py-2.5 ${BUTTON_TEXT(d)} border-2 transition-all ${
                             dark
                                 ? 'border-white/50 text-white hover:bg-white/10'
                                 : 'border-theme-border text-theme-foreground hover:bg-black/5'
@@ -240,7 +250,7 @@ export const DefaultHeroBlock = ({ data, theme, isFirst = true, onInlineChange, 
                             onInlineChange={onInlineChange}
                             onFieldFocus={onFieldFocus}
                             onFieldBlur={onFieldBlur}
-                            className={`text-xs font-bold uppercase tracking-[0.2em] mb-2 ${taC} ${isDark ? 'text-white/55' : 'text-theme-foreground/50'}`}
+                            className={`${H4(d)} mb-2 ${taC}`}
                             style={data?.taglineColor
                                 ? { color: data.taglineColor }
                                 : defaultTaglineColor
@@ -256,7 +266,7 @@ export const DefaultHeroBlock = ({ data, theme, isFirst = true, onInlineChange, 
                         onInlineChange={onInlineChange}
                         onFieldFocus={onFieldFocus}
                         onFieldBlur={onFieldBlur}
-                        className={`${titleSizeClass} mb-4 ${tiC} ${isClean ? 'font-bold tracking-tight' : isGlass ? 'font-bold' : 'font-extrabold'}`}
+                        className={`${titleSizeClass} ${H1_BASE} mb-4 ${tiC}`}
                         style={{ color: data?.titleColor || defaultTitleColor }}
                     />
                     {(data?.subtitle != null && data.subtitle !== '' && (data.subtitle || onInlineChange)) && (
@@ -268,7 +278,7 @@ export const DefaultHeroBlock = ({ data, theme, isFirst = true, onInlineChange, 
                             onInlineChange={onInlineChange}
                             onFieldFocus={onFieldFocus}
                             onFieldBlur={onFieldBlur}
-                            className={`text-xl ${suC} ${data?.subtitleWeight ? `font-${data.subtitleWeight}` : 'font-medium'}`}
+                            className={`${BODY_LG(d)} ${suC} ${data?.subtitleWeight ? `font-${data.subtitleWeight}` : ''}`}
                             style={{ color: data?.subtitleColor || defaultSubtitleColor }}
                         />
                     )}
@@ -299,7 +309,7 @@ export const DefaultHeroBlock = ({ data, theme, isFirst = true, onInlineChange, 
     // ─── FULLBLEED ────────────────────────────────────────────────────────────
     if (variant === 'fullbleed') {
         return (
-            <section className="relative w-full h-[60vh] min-h-[400px] flex items-center justify-center overflow-hidden">
+            <section className="relative w-full min-h-[60vh] flex items-center justify-center overflow-hidden">
                 {/* Background layer */}
                 {bgMode === 'image' && hasImage ? (
                     <div className="absolute inset-0 z-0">
@@ -334,7 +344,7 @@ export const DefaultHeroBlock = ({ data, theme, isFirst = true, onInlineChange, 
                             onInlineChange={onInlineChange}
                             onFieldFocus={onFieldFocus}
                             onFieldBlur={onFieldBlur}
-                            className={`text-xs font-bold uppercase tracking-[0.2em] mb-2 ${taC}`}
+                            className={`${H4(d)} mb-2 ${taC}`}
                             style={data?.taglineColor
                                 ? { color: data.taglineColor }
                                 : { color: isTransparentAuto ? 'var(--theme-foreground)' : isDark ? 'rgba(255,255,255,0.60)' : 'rgba(0,0,0,0.50)' }}
@@ -348,7 +358,7 @@ export const DefaultHeroBlock = ({ data, theme, isFirst = true, onInlineChange, 
                         onInlineChange={onInlineChange}
                         onFieldFocus={onFieldFocus}
                         onFieldBlur={onFieldBlur}
-                        className={`${titleSizeClass} mb-4 ${tiC} font-bold tracking-tight`}
+                        className={`${titleSizeClass} ${H1_BASE} mb-4 ${tiC}`}
                         style={{ color: data?.titleColor || defaultTitleColor }}
                     />
                     {(data?.subtitle != null && data.subtitle !== '' && (data.subtitle || onInlineChange)) && (
@@ -360,7 +370,7 @@ export const DefaultHeroBlock = ({ data, theme, isFirst = true, onInlineChange, 
                             onInlineChange={onInlineChange}
                             onFieldFocus={onFieldFocus}
                             onFieldBlur={onFieldBlur}
-                            className={`${dv(d, 'text-xl', 'md:text-2xl')} ${suC} ${data?.subtitleWeight ? `font-${data.subtitleWeight}` : 'font-medium'}`}
+                            className={`${BODY_LG(d)} ${suC} ${data?.subtitleWeight ? `font-${data.subtitleWeight}` : ''}`}
                             style={{ color: data?.subtitleColor || defaultSubtitleColor }}
                         />
                     )}
@@ -423,7 +433,7 @@ export const DefaultHeroBlock = ({ data, theme, isFirst = true, onInlineChange, 
                         value={data?.tagline}
                         placeholder="Add tagline…"
                         onInlineChange={onInlineChange}
-                        className={`text-xs font-bold uppercase tracking-[0.2em] mb-2 ${taC}`}
+                        className={`${H4(d)} mb-2 ${taC}`}
                         style={data?.taglineColor
                             ? { color: data.taglineColor }
                             : { color: isTransparentAuto ? 'var(--theme-foreground)' : isDark ? 'rgba(255,255,255,0.55)' : undefined }}
@@ -437,7 +447,7 @@ export const DefaultHeroBlock = ({ data, theme, isFirst = true, onInlineChange, 
                     onInlineChange={onInlineChange}
                     onFieldFocus={onFieldFocus}
                     onFieldBlur={onFieldBlur}
-                    className={`${titleSizeClass} mb-4 ${tiC} ${isClean ? 'font-bold tracking-tight' : isGlass ? 'font-bold' : 'font-extrabold transform -rotate-1'}`}
+                    className={`${titleSizeClass} ${H1_BASE} mb-4 ${tiC} ${!isClean && !isGlass ? 'transform -rotate-1' : ''}`}
                     style={{ color: data?.titleColor || defaultTitleColor }}
                 />
                 {(data?.subtitle || onInlineChange) && (
@@ -447,7 +457,7 @@ export const DefaultHeroBlock = ({ data, theme, isFirst = true, onInlineChange, 
                         value={data?.subtitle}
                         placeholder="Add subtitle…"
                         onInlineChange={onInlineChange}
-                        className={`text-xl ${suC} ${data?.subtitleWeight ? `font-${data.subtitleWeight}` : 'font-medium'}`}
+                        className={`${BODY_LG(d)} ${suC} ${data?.subtitleWeight ? `font-${data.subtitleWeight}` : ''}`}
                         style={{ color: data?.subtitleColor || defaultSubtitleColor }}
                     />
                 )}

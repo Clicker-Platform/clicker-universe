@@ -7,6 +7,9 @@ import { ProductDetailModal } from '@/components/catalog/ProductDetailModal';
 import { useSite } from '@/lib/site-context';
 
 import { useTemplate } from '@/components/TemplateProvider';
+import { getHeadingColor, getLabelColor } from './cardStyles';
+import { useDeviceView } from '@/components/DeviceViewContext';
+import { H4, BUTTON_TEXT } from './typography';
 
 interface ProductGalleryProps {
     products: Product[];
@@ -18,26 +21,39 @@ interface ProductGalleryProps {
 
 export const DefaultProductGalleryBlock: React.FC<ProductGalleryProps> = ({ products, title = "Popular Treats", viewAllHref, phoneNumber, whatsappSettings }) => {
     const { siteId } = useSite();
+    const d = useDeviceView();
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const { templateId, theme } = useTemplate();
     const isClean = theme.cardStyle === 'clean';
     const isGlass = theme.cardStyle === 'glass';
+    const isBold = !isClean && !isGlass;
+    const colors = theme.colors;
+
+    // Contrast color for text/icons on top of theme.primary.
+    const primaryContrastColor =
+        colors.accentForeground ??
+        (colors.accent && colors.accent !== colors.primary ? colors.accent : undefined) ??
+        colors.background ??
+        '#ffffff';
 
     const handleProductClick = (product: Product) => {
         setSelectedProduct(product);
     };
 
-    const containerStyle = !isClean
+    const titleContainerStyle: React.CSSProperties = isBold
         ? {
-            borderColor: theme.colors.foreground,
-            boxShadow: `4px 4px 0px ${theme.colors.foreground}`,
+            borderColor: colors.foreground,
+            boxShadow: `4px 4px 0px ${colors.foreground}`,
+            backgroundColor: colors.surface || colors.background,
+            borderRadius: '9999px',
         }
-        : {};
-
-    const textStyle = {
-        color: theme.colors.foreground,
-        fontFamily: theme.fonts.heading
-    };
+        : isClean
+            ? {
+                borderRadius: '9999px',
+                backgroundColor: colors.surface || colors.background,
+                borderColor: colors.border || `${colors.foreground}1a`,
+            }
+            : {};
 
     return (
         <div className="mb-12">
@@ -45,24 +61,15 @@ export const DefaultProductGalleryBlock: React.FC<ProductGalleryProps> = ({ prod
             {title && (
                 <div className={isGlass ? 'mb-6' : 'flex justify-center mb-6'}>
                     {isGlass ? (
-                        <h2 className="text-slate-400 text-xs font-bold uppercase tracking-[0.2em]">
+                        <h2 className={H4(d)} style={{ color: getLabelColor(theme.cardStyle, theme) }}>
                             {title}
                         </h2>
                     ) : (
                         <div
-                            className={`
-                            px-8 py-3 rounded-full transition-transform
-                            ${theme.cardStyle === 'clean'
-                                    ? 'bg-white shadow-sm border border-gray-200'
-                                    : 'bg-brand-white border-[3px] rotate-1 hover:rotate-0'
-                                }
-                        `}
-                            style={theme.cardStyle === 'brutalist' ? containerStyle : {}}
+                            className={`px-8 py-3 transition-transform ${isClean ? 'shadow-sm border' : 'border-[3px] rotate-1 hover:rotate-0'}`}
+                            style={titleContainerStyle}
                         >
-                            <h2
-                                className="font-extrabold uppercase tracking-wider text-base"
-                                style={textStyle}
-                            >
+                            <h2 className={H4(d)} style={{ color: getHeadingColor(theme.cardStyle, theme) }}>
                                 {title}
                             </h2>
                         </div>
@@ -90,14 +97,30 @@ export const DefaultProductGalleryBlock: React.FC<ProductGalleryProps> = ({ prod
                 <div className="mt-8 flex justify-center">
                     <a
                         href={viewAllHref}
-                        className={`inline-flex items-center gap-2 px-8 py-3 rounded-xl font-bold transition-colors ${
-                            isClean
-                                ? 'bg-transparent text-gray-800 border-2 border-gray-800 hover:bg-gray-800 hover:text-white'
+                        className={`inline-flex items-center gap-2 px-8 py-3 ${BUTTON_TEXT(d)} transition-all hover:opacity-90 ${isGlass ? 'backdrop-blur-sm' : ''}`}
+                        style={{
+                            backgroundColor: isClean
+                                ? 'transparent'
                                 : isGlass
-                                    ? 'bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm border border-white/20'
-                                    : 'bg-brand-dark text-white hover:bg-brand-green hover:text-brand-dark shadow-sm'
-                        }`}
-
+                                    ? 'rgba(255,255,255,0.10)'
+                                    : colors.foreground,
+                            color: isClean
+                                ? colors.foreground
+                                : isGlass
+                                    ? 'rgba(255,255,255,0.95)'
+                                    : colors.background,
+                            border: isClean
+                                ? `2px solid ${colors.foreground}`
+                                : isGlass
+                                    ? '1px solid rgba(255,255,255,0.2)'
+                                    : `3px solid ${colors.foreground}`,
+                            borderRadius: 'calc(var(--theme-radius) * 0.75)',
+                            boxShadow: isBold
+                                ? `4px 4px 0px ${colors.border || colors.foreground}`
+                                : isClean
+                                    ? '0 1px 3px 0 rgb(0 0 0 / 0.1)'
+                                    : undefined,
+                        }}
                     >
                         View More ...
                     </a>

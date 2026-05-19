@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { useDeviceView, dv } from '@/components/DeviceViewContext';
+import { useDeviceView, dv, type DeviceView } from '@/components/DeviceViewContext';
 import { sanitizeRichText } from '@/lib/sanitizeHtml';
 import {
     ContentShowcaseData,
@@ -12,6 +12,10 @@ import {
     VERTICAL_ALIGN_CLASS,
 } from '@/components/blocks/content-showcase/types';
 import { MediaView } from './MediaView';
+import { useTemplate } from '@/components/TemplateProvider';
+import { getHeadingColor } from './cardStyles';
+import { H2, BUTTON_TEXT } from './typography';
+import { getProseClass } from './proseConfig';
 
 function normalizeRow(row: Partial<ShowcaseRow>, i: number): ShowcaseRow {
     const base: ShowcaseRow = {
@@ -52,18 +56,46 @@ function isSafeHref(href: string | undefined | null): boolean {
     return /^(https?:\/\/|\/|#|mailto:|tel:)/i.test(href);
 }
 
-function ctaClasses(variant: string): string {
+function ctaProps(variant: string, primaryContrastColor: string, deviceView: DeviceView): { className: string; style: React.CSSProperties } {
+    const base = `inline-flex items-center gap-1.5 ${BUTTON_TEXT(deviceView)} transition-opacity hover:opacity-90`;
+    const padded = `${base} px-5 py-2.5`;
+    const radiusSm = 'calc(var(--theme-radius) * 0.6)';
+
     switch (variant) {
         case 'primary':
-            return 'inline-flex items-center gap-1.5 px-5 py-2.5 bg-[var(--theme-primary)] text-white font-bold rounded-lg hover:opacity-90 transition-opacity';
+            return {
+                className: padded,
+                style: {
+                    backgroundColor: 'var(--theme-primary)',
+                    color: primaryContrastColor,
+                    borderRadius: radiusSm,
+                },
+            };
         case 'secondary':
-            return 'inline-flex items-center gap-1.5 px-5 py-2.5 bg-[var(--theme-foreground)] text-[var(--theme-background)] font-bold rounded-lg hover:opacity-90 transition-opacity';
+            return {
+                className: padded,
+                style: {
+                    backgroundColor: 'var(--theme-foreground)',
+                    color: 'var(--theme-background)',
+                    borderRadius: radiusSm,
+                },
+            };
         case 'ghost':
-            return 'inline-flex items-center gap-1.5 px-5 py-2.5 border-2 border-[var(--theme-primary)] text-[var(--theme-primary)] font-bold rounded-lg hover:bg-[var(--theme-primary)]/10 transition-colors';
+            return {
+                className: `${padded} border-2 hover:bg-[var(--theme-primary)]/10 transition-colors`,
+                style: {
+                    borderColor: 'var(--theme-primary)',
+                    color: 'var(--theme-primary)',
+                    borderRadius: radiusSm,
+                },
+            };
         case 'link':
-            return 'inline-flex items-center gap-1.5 text-[var(--theme-primary)] font-bold underline-offset-4 hover:underline';
+            return {
+                className: `${base} underline-offset-4 hover:underline`,
+                style: { color: 'var(--theme-primary)' },
+            };
         default:
-            return '';
+            return { className: '', style: {} };
     }
 }
 
@@ -109,8 +141,16 @@ function ShowcaseRowView({
     priority?: boolean;
 }) {
     const d = useDeviceView();
+    const { theme } = useTemplate();
     const layout = resolveRowLayout(row, index, showcase.defaultLayout);
     const isLeft = layout === 'image-left';
+
+    // Contrast color for text/icons on top of theme.primary (CTA primary variant).
+    const primaryContrastColor =
+        theme.colors.accentForeground ??
+        (theme.colors.accent && theme.colors.accent !== theme.colors.primary ? theme.colors.accent : undefined) ??
+        theme.colors.background ??
+        '#ffffff';
     const mediaWidth = Math.max(25, Math.min(75, row.mediaColumnWidth ?? showcase.mediaColumnWidth));
     const contentWidth = 100 - mediaWidth;
 
@@ -140,26 +180,29 @@ function ShowcaseRowView({
 
     const mediaNode = (
         <div className={mediaOrderClass} style={mediaStyle}>
-            <MediaView media={row.media} className="rounded-lg" priority={priority} />
+            <MediaView media={row.media} className="[border-radius:var(--theme-radius)]" priority={priority} />
         </div>
     );
 
     const contentNode = (
         <div className={`space-y-4 ${contentOrderClass}`} style={contentStyle}>
-            <h3 className={`${dv(d, 'text-2xl', 'md:text-3xl')} font-black font-heading text-[var(--theme-foreground)] leading-tight`}>
+            <h3 className={H2(d)} style={{ color: getHeadingColor(theme.cardStyle, theme) }}>
                 {row.heading.text}
             </h3>
             <div
-                className="prose dark:prose-invert max-w-none prose-p:text-[var(--theme-foreground)]/80 prose-headings:text-[var(--theme-foreground)] prose-strong:text-[var(--theme-foreground)] prose-a:text-[var(--theme-primary)]"
+                className={getProseClass(theme.cardStyle)}
+                // safeContent is sanitized via sanitizeRichText() above
                 dangerouslySetInnerHTML={{ __html: safeContent }}
             />
             {row.cta?.enabled && row.cta.label && (() => {
                 const href = isSafeHref(row.cta.href) ? row.cta.href : '#';
                 const isExternal = /^https?:\/\//i.test(href);
+                const cta = ctaProps(row.cta.variant, primaryContrastColor, d);
                 return (
                     <a
                         href={href}
-                        className={ctaClasses(row.cta.variant)}
+                        className={cta.className}
+                        style={cta.style}
                         target={isExternal ? '_blank' : undefined}
                         rel={isExternal ? 'noopener noreferrer' : undefined}
                     >
@@ -172,8 +215,11 @@ function ShowcaseRowView({
 
     return (
         <div
-            className={`${dv(d, 'py-6', 'md:py-10')} ${bgColor ? dv(d, 'px-5', 'md:px-8') : ''} rounded-xl`}
-            style={bgColor ? { background: bgColor } : undefined}
+            className={`${dv(d, 'py-6', 'md:py-10')} ${bgColor ? dv(d, 'px-5', 'md:px-8') : ''}`}
+            style={{
+                ...(bgColor ? { background: bgColor } : {}),
+                borderRadius: 'var(--theme-radius)',
+            }}
         >
             <div
                 className={`flex flex-col md:flex-row ${verticalAlignClass}`}

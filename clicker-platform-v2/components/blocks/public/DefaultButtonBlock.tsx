@@ -6,6 +6,8 @@ import { useTemplate } from '@/components/TemplateProvider';
 import { useSite } from '@/lib/site-context';
 import { resolveNavHref } from '@/lib/resolveNavHref';
 import { FormModal } from '@/components/FormModal';
+import { useDeviceView } from '@/components/DeviceViewContext';
+import { BUTTON_TEXT } from './typography';
 
 function isSafeHref(href: string | undefined | null): boolean {
     if (!href) return false;
@@ -18,6 +20,7 @@ function isExternalProtocol(href: string): boolean {
 
 export const DefaultButtonBlock = ({ data, previewMode, siteId: siteIdProp }: { data: any; previewMode?: boolean; siteId?: string }) => {
     const { theme } = useTemplate();
+    const d = useDeviceView();
     const { siteId: ctxSiteId, tenantSlug, isSubdomain } = useSite();
     const siteId = siteIdProp || ctxSiteId;
     const isClean = theme.cardStyle === 'clean';
@@ -40,12 +43,12 @@ export const DefaultButtonBlock = ({ data, previewMode, siteId: siteIdProp }: { 
             switch (data.variant) {
                 case 'secondary': return 'bg-white/10 border border-white/20 text-white hover:bg-white/20';
                 case 'outline': return 'bg-transparent border border-white/30 text-white hover:border-[var(--theme-primary)] hover:text-[var(--theme-primary)]';
-                default: return 'bg-[var(--theme-primary)] text-[var(--theme-background)] font-bold hover:opacity-90';
+                default: return 'bg-[var(--theme-primary)] text-[var(--theme-background)] hover:opacity-90';
             }
         }
         if (isClean) {
             switch (data.variant) {
-                case 'secondary': return 'bg-white border-2 border-gray-200 text-gray-800 hover:border-[var(--theme-primary)] hover:text-[var(--theme-primary)]';
+                case 'secondary': return 'bg-[var(--theme-surface)] border-2 border-[var(--theme-border)] text-[var(--theme-foreground)] hover:border-[var(--theme-primary)] hover:text-[var(--theme-primary)]';
                 case 'outline': return 'bg-transparent border-2 border-[var(--theme-foreground)] text-[var(--theme-foreground)] hover:bg-[var(--theme-foreground)] hover:text-[var(--theme-background)]';
                 default: return 'bg-[var(--theme-foreground)] text-[var(--theme-background)] hover:bg-[var(--theme-primary)] hover:shadow-lg';
             }
@@ -57,7 +60,7 @@ export const DefaultButtonBlock = ({ data, previewMode, siteId: siteIdProp }: { 
         }
     };
 
-    const className = `inline-block py-3 px-6 font-bold transition-all transform ${isClean ? 'shadow-sm hover:-translate-y-0.5' : isGlass ? 'hover:-translate-y-0.5 hover:shadow-lg' : 'hover:-translate-y-1 hover:shadow-lg'} ${getVariantClass()} ${data.align === 'full' ? 'w-full block' : ''}`;
+    const className = `inline-block py-3 px-6 ${BUTTON_TEXT(d)} transition-all transform ${isClean ? 'shadow-sm hover:-translate-y-0.5' : isGlass ? 'hover:-translate-y-0.5 hover:shadow-lg' : 'hover:-translate-y-1 hover:shadow-lg'} ${getVariantClass()} ${data.align === 'full' ? 'w-full block' : ''}`;
 
     const buttonStyle = { borderRadius: 'calc(var(--theme-radius) * 0.75)' };
     const label = data.label || 'Click Here';
@@ -159,7 +162,12 @@ export const DefaultButtonBlock = ({ data, previewMode, siteId: siteIdProp }: { 
                 {formError && (
                     <div
                         role="alert"
-                        className="mt-2 inline-block text-xs font-medium px-3 py-1.5 rounded-lg bg-red-500/10 text-red-600 border border-red-500/20"
+                        className="mt-2 inline-block text-xs font-medium px-3 py-1.5 rounded-lg border"
+                        style={{
+                            backgroundColor: 'var(--theme-error-bg)',
+                            color: 'var(--theme-error)',
+                            borderColor: 'var(--theme-error-bg)',
+                        }}
                     >
                         {formError}
                     </div>

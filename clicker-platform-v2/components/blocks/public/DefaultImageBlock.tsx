@@ -2,7 +2,8 @@
 
 import Image from 'next/image';
 import { useTemplate } from '@/components/TemplateProvider';
-import { getCardClasses } from './cardStyles';
+import { getCardClasses, getMutedColor } from './cardStyles';
+import { BODY_SM } from './typography';
 import { useDeviceView, dv } from '@/components/DeviceViewContext';
 import { MediaView } from './MediaView';
 import { MediaFieldValue, DEFAULT_MEDIA } from '@/components/admin/blocks/media-field/types';
@@ -13,6 +14,7 @@ export const DefaultImageBlock = ({ data, isFirst = false }: { data: any; isFirs
     const cardStyle = theme.cardStyle;
     const isGlass = cardStyle === 'glass';
     const radius = theme.borderRadius || 'var(--theme-radius)';
+    const captionColor = getMutedColor(cardStyle, theme);
 
     // Resolve media: prefer new `media` field, fall back to legacy `url`
     const media: MediaFieldValue | null = data.media
@@ -38,7 +40,10 @@ export const DefaultImageBlock = ({ data, isFirst = false }: { data: any; isFirs
                     priority={isFirst}
                 />
                 {data.caption && (
-                    <p className={`text-center text-sm font-bold mt-4 italic ${isGlass ? 'text-white/50' : 'text-gray-500'}`}>
+                    <p
+                        className={`${BODY_SM(d)} text-center mt-4 italic`}
+                        style={{ color: captionColor }}
+                    >
                         {data.caption}
                     </p>
                 )}
@@ -60,12 +65,18 @@ export const DefaultImageBlock = ({ data, isFirst = false }: { data: any; isFirs
                         sizes="100vw"
                         priority={isFirst}
                         fetchPriority={isFirst ? 'high' : 'auto'}
-                        className="w-full h-auto object-cover max-h-[70vh]"
-                        style={{ width: '100%', height: 'auto' }}
+                        // aspect-ratio: auto overrides next/image's intrinsic 1920/1080
+                        // aspect lock so portrait/square images render at their natural
+                        // ratio. Full variant = edge-to-edge, no chrome, no crop.
+                        className="w-full h-auto"
+                        style={{ width: '100%', height: 'auto', aspectRatio: 'auto' }}
                     />
                 </div>
                 {data.caption && (
-                    <p className={`text-center text-sm font-bold mt-3 px-4 italic ${isGlass ? 'text-white/50' : 'text-gray-500'}`}>
+                    <p
+                        className={`${BODY_SM(d)} text-center mt-3 px-4 italic`}
+                        style={{ color: captionColor }}
+                    >
                         {data.caption}
                     </p>
                 )}
@@ -85,12 +96,21 @@ export const DefaultImageBlock = ({ data, isFirst = false }: { data: any; isFirs
                         sizes="(max-width: 1024px) 100vw, 800px"
                         priority={isFirst}
                         fetchPriority={isFirst ? 'high' : 'auto'}
-                        className="w-full h-auto object-cover max-h-[60vh]"
-                        style={{ width: '100%', height: 'auto' }}
+                        className="w-full h-auto max-h-[70vh] object-contain"
+                        style={{ width: '100%', height: 'auto', aspectRatio: 'auto' }}
                     />
                     {data.caption && (
-                        <div className={`p-4 backdrop-blur border-t ${isGlass ? 'bg-white/5 border-white/10' : 'bg-white/50 border-gray-100'}`}>
-                            <p className={`text-center text-sm font-medium ${isGlass ? 'text-white/70' : 'text-gray-600'}`}>
+                        <div
+                            className="p-4 backdrop-blur border-t"
+                            style={{
+                                backgroundColor: isGlass ? 'rgba(255,255,255,0.05)' : `${theme.colors.surface || theme.colors.background}80`,
+                                borderColor: isGlass ? 'rgba(255,255,255,0.10)' : (theme.colors.border || `${theme.colors.foreground}1a`),
+                            }}
+                        >
+                            <p
+                                className={`${BODY_SM(d)} text-center`}
+                                style={{ color: captionColor }}
+                            >
                                 {data.caption}
                             </p>
                         </div>
@@ -100,39 +120,11 @@ export const DefaultImageBlock = ({ data, isFirst = false }: { data: any; isFirs
         );
     }
 
-    if (variant === 'side-caption') {
-        return (
-            <section className={`w-full ${dv(d, 'p-6', 'md:p-12')} max-w-6xl mx-auto flex ${dv(d, 'flex-col', 'md:flex-row')} items-center gap-8`}>
-                <div className={`flex-1 overflow-hidden shadow-lg ${getCardClasses(cardStyle)}`} style={{ borderRadius: radius }}>
-                    <Image
-                        src={media.src}
-                        alt={data.caption || "Image"}
-                        width={800}
-                        height={800}
-                        sizes="(max-width: 768px) 100vw, 50vw"
-                        priority={isFirst}
-                        fetchPriority={isFirst ? 'high' : 'auto'}
-                        className={`w-full h-auto object-cover ${dv(d, 'aspect-square', 'md:aspect-auto md:h-[60vh]')}`}
-                        style={{ width: '100%', height: 'auto' }}
-                    />
-                </div>
-                {data.caption && (
-                    <div className={`${dv(d, 'w-full', 'md:w-1/3')} flex items-center p-4`}>
-                        <div className={`border-l-4 pl-6 py-2 ${isGlass ? 'border-[var(--theme-primary)]' : 'border-brand-dark'}`}>
-                            <p className={`text-lg font-medium italic leading-relaxed ${isGlass ? 'text-white/70' : 'text-gray-700'}`}>
-                                {data.caption}
-                            </p>
-                        </div>
-                    </div>
-                )}
-            </section>
-        );
-    }
-
-    // Default: 'standard'
+    // Default: 'standard' — naked image, padded section, optional caption.
+    // No card chrome (border / shadow / bg); use the 'card' variant for framing.
     return (
         <section className={`w-full ${dv(d, 'px-4', 'md:px-8')} py-6 max-w-5xl mx-auto`}>
-            <div className={`overflow-hidden shadow-md ${getCardClasses(cardStyle)}`} style={{ borderRadius: radius }}>
+            <div className="overflow-hidden" style={{ borderRadius: radius }}>
                 <Image
                     src={media.src}
                     alt={data.caption || "Image"}
@@ -141,12 +133,15 @@ export const DefaultImageBlock = ({ data, isFirst = false }: { data: any; isFirs
                     sizes="(max-width: 1024px) 100vw, 1000px"
                     priority={isFirst}
                     fetchPriority={isFirst ? 'high' : 'auto'}
-                    className="w-full h-auto object-cover max-h-[70vh]"
-                    style={{ width: '100%', height: 'auto' }}
+                    className="w-full h-auto max-h-[80vh] object-contain"
+                    style={{ width: '100%', height: 'auto', aspectRatio: 'auto' }}
                 />
             </div>
             {data.caption && (
-                <p className={`text-center text-sm font-bold mt-4 italic ${isGlass ? 'text-white/50' : 'text-gray-500'}`}>
+                <p
+                    className={`${BODY_SM(d)} text-center mt-4 italic`}
+                    style={{ color: captionColor }}
+                >
                     {data.caption}
                 </p>
             )}

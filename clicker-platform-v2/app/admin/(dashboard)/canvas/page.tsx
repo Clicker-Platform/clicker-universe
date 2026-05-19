@@ -57,7 +57,6 @@ function PageStudioInner() {
                         <CanvasStudio
                             globalSettings={globalSettings}
                             pageSlug={formData.slug}
-                            pageTitle={formData.title}
                         />
                     </div>
                 </div>
