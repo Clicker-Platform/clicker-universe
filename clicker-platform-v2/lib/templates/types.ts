@@ -28,11 +28,6 @@ export interface ThemeColors {
     overlay?: string;           // semi-transparent scrim for photo badges, modals
 }
 
-export interface ThemeFonts {
-    heading: string;
-    body: string;
-}
-
 export interface BackgroundElement {
     icon: string;
     position: string; // Tailwind class e.g. "top-10 left-4"
@@ -43,8 +38,6 @@ export interface BackgroundElement {
 
 export interface TemplateConfig {
     colors: ThemeColors;
-    /** @deprecated Use defaultFontPackId; the Font Pack system owns font choices. Removed in a follow-up. */
-    fonts: ThemeFonts;
     defaultFontPackId: string;
     borderRadius: string;
     // Deprecated: cardStyle in favor of cardVariant, but keeping for compatibility

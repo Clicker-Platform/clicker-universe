@@ -31,10 +31,6 @@ const rawTemplateDefinitions: Record<string, Omit<TemplateDefinition, 'component
                 textMuted: 'rgba(14,59,46,0.70)',  // foreground @ 70%
                 textSubtle: 'rgba(14,59,46,0.55)', // foreground @ 55%
             },
-            fonts: {
-                heading: 'var(--font-inter), sans-serif',
-                body: 'var(--font-inter), sans-serif',
-            },
             defaultFontPackId: 'clean-minimal',
             borderRadius: '1.5rem',
             cardStyle: 'brutalist',
@@ -73,10 +69,6 @@ const rawTemplateDefinitions: Record<string, Omit<TemplateDefinition, 'component
                 textMuted: 'rgba(26,26,26,0.65)',
                 textSubtle: 'rgba(26,26,26,0.45)',
             },
-            fonts: {
-                heading: 'var(--font-space), monospace',
-                body: 'var(--font-space), monospace',
-            },
             defaultFontPackId: 'brutalist',
             borderRadius: '1rem',
             cardStyle: 'clean',
@@ -109,10 +101,6 @@ const rawTemplateDefinitions: Record<string, Omit<TemplateDefinition, 'component
                 border: '#E0E0E0',
                 textMuted: 'rgba(28,28,28,0.65)',
                 textSubtle: 'rgba(28,28,28,0.45)',
-            },
-            fonts: {
-                heading: 'var(--font-inter), sans-serif',
-                body: 'var(--font-inter), sans-serif',
             },
             defaultFontPackId: 'clean-minimal',
             borderRadius: '1rem',
@@ -147,10 +135,6 @@ const rawTemplateDefinitions: Record<string, Omit<TemplateDefinition, 'component
                 border: '#E5E5E5',
                 textMuted: 'rgba(26,26,26,0.65)',
                 textSubtle: 'rgba(26,26,26,0.45)',
-            },
-            fonts: {
-                heading: 'var(--font-playfair), serif', // Assuming Playfair exists, else fallback to Serif
-                body: 'var(--font-inter), sans-serif',
             },
             defaultFontPackId: 'editorial-serif',
             borderRadius: '1rem',
@@ -196,10 +180,6 @@ const rawTemplateDefinitions: Record<string, Omit<TemplateDefinition, 'component
                 textMuted: '#94a3b8',   // slate-400
                 textSubtle: '#64748b',  // slate-500
             },
-            fonts: {
-                heading: 'var(--font-inter), sans-serif',
-                body: 'var(--font-inter), sans-serif',
-            },
             defaultFontPackId: 'bold-display',
             borderRadius: '1rem',
             cardStyle: 'glass',
@@ -243,10 +223,6 @@ const rawTemplateDefinitions: Record<string, Omit<TemplateDefinition, 'component
                 surfaceElevated: '#FFFFFF', // Pure white cards elevated above cream
                 textMuted: '#8C7B6E',     // Warm medium gray
                 textSubtle: '#B5A99E',    // Warm light gray (captions, meta)
-            },
-            fonts: {
-                heading: 'var(--font-inter), sans-serif',
-                body: 'var(--font-inter), sans-serif',
             },
             defaultFontPackId: 'clean-minimal',
             borderRadius: '1rem',
