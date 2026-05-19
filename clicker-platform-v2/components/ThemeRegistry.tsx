@@ -55,7 +55,7 @@ export default function ThemeRegistry({ initialSettings, appearanceStyles, templ
             );
         }
 
-        const fontFamily = settings.fontFamily || 'var(--font-jakarta)';
+        const fontFamily = settings.fontFamily || 'var(--font-inter)';
         const isCustomFont = !fontFamily.startsWith('var(');
         const fontUrl = `https://fonts.googleapis.com/css2?family=${fontFamily.replace(/ /g, '+')}:wght@400;700;800&display=swap`;
 
