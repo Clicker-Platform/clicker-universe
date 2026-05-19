@@ -63,18 +63,26 @@ export const HeaderShell: React.FC<HeaderShellProps> = ({
         ? 'h-20'
         : 'h-16';
 
-  // Inner container width
+  // Inner container width.
+  // "constrained" matches the page body's container width via the
+  // --layout-max-width CSS var (set by TemplateProvider from the
+  // template's containerWidth: narrow/boxed/tablet/full).
   const innerClass =
     width === 'constrained'
-      ? 'max-w-7xl mx-auto w-full h-full px-4 flex items-center'
+      ? 'mx-auto w-full h-full px-4 flex items-center'
       : 'w-full h-full px-4 flex items-center';
+
+  const innerStyle: React.CSSProperties =
+    width === 'constrained'
+      ? { maxWidth: 'var(--layout-max-width)' }
+      : {};
 
   return (
     <nav
       className={`${positionClass} ${heightClass} border-b transition-all duration-300`}
       style={{ backgroundColor: effectiveBg, borderColor, ...visibilityStyle }}
     >
-      <div className={innerClass}>{children}</div>
+      <div className={innerClass} style={innerStyle}>{children}</div>
     </nav>
   );
 };

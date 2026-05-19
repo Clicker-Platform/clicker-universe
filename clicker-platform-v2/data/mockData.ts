@@ -226,6 +226,8 @@ export interface HeaderTypography {
     preset: HeaderNavTextPreset;
     trackingOverride?: 'normal' | 'tight' | 'wide';
     caseOverride?: 'uppercase' | 'none';
+    sizeOverride?: 'sm' | 'md' | 'lg';
+    weightOverride?: 'normal' | 'medium' | 'semibold' | 'bold';
 }
 
 export interface HeaderCTA {
