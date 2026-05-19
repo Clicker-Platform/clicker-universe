@@ -43,7 +43,9 @@ export interface BackgroundElement {
 
 export interface TemplateConfig {
     colors: ThemeColors;
+    /** @deprecated Use defaultFontPackId; the Font Pack system owns font choices. Removed in a follow-up. */
     fonts: ThemeFonts;
+    defaultFontPackId: string;
     borderRadius: string;
     // Deprecated: cardStyle in favor of cardVariant, but keeping for compatibility
     cardStyle: 'brutalist' | 'clean' | 'glass';
