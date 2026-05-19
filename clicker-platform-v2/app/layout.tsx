@@ -102,7 +102,12 @@ export default async function RootLayout({
     : [null, { fontPackId: null }];
 
   return (
-    <html lang="id" className="notranslate" translate="no" suppressHydrationWarning>
+    <html
+      lang="id"
+      className={`notranslate ${FONT_CLASS_NAMES}`}
+      translate="no"
+      suppressHydrationWarning
+    >
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -112,7 +117,7 @@ export default async function RootLayout({
       </head>
       <body
         suppressHydrationWarning
-        className={`${FONT_CLASS_NAMES} antialiased font-sans`}
+        className="antialiased font-sans"
       >
         <PostHogProvider>
           <SiteProvider siteId={siteId} tenantSlug={tenantSlug} isSubdomain={isSubdomain}>
