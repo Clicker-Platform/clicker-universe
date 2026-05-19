@@ -67,6 +67,7 @@ This project has Claude Code skills in `.claude/commands/`. Use them:
 - `/core_content` — pages, links, system blocks
 - `/core_crm` — forms and inbox
 - `/canvas_studio` — WYSIWYG page builder
+- `/font_pack` — Font Pack system & Site Styles → Fonts picker
 - `/admin_dark_theme` — dark theme system
 - `/file_upload` — file and image uploads
 
