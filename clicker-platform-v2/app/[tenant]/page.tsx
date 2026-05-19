@@ -198,10 +198,7 @@ export default async function TenantPage({ params, searchParams }: TenantPagePro
                     style={{ borderRadius: 'var(--theme-radius)' }}
                 >
                     {homePage?.title && (
-                        <h1 className={`
-                            text-3xl font-extrabold text-theme-foreground mb-6 border-b-2 border-theme-border/30 pb-4
-                            ${template.config.fonts.heading.includes('Inter') ? 'tracking-normal' : ''}
-                        `}>
+                        <h1 className="text-3xl font-extrabold text-theme-foreground mb-6 border-b-2 border-theme-border/30 pb-4">
                             {homePage.title}
                         </h1>
                     )}

@@ -76,7 +76,7 @@ export function ProductDetailModal({ product, isOpen, onClose, phoneNumber = '15
     // Dynamic Styles based on Theme
     const modalStyle: React.CSSProperties = {
         backgroundColor: theme.colors.surface || theme.colors.background,
-        fontFamily: theme.fonts.body,
+        fontFamily: 'var(--font-body)',
         color: theme.colors.foreground,
         maxHeight: '95vh',
     };
@@ -89,7 +89,7 @@ export function ProductDetailModal({ product, isOpen, onClose, phoneNumber = '15
 
     const titleStyle = {
         color: theme.colors.foreground,
-        fontFamily: theme.fonts.heading
+        fontFamily: 'var(--font-heading)'
     };
 
     return createPortal(

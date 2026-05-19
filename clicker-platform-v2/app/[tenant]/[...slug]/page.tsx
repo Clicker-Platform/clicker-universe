@@ -248,10 +248,7 @@ export default async function TenantCatchAllPage({ params, searchParams }: Props
                     style={{ borderRadius: 'var(--theme-radius)' }}
                 >
                     {page.title && (
-                        <h1 className={`
-                            text-3xl font-extrabold text-theme-foreground mb-6 border-b-2 border-theme-border/30 pb-4
-                            ${template.config.fonts.heading.includes('Inter') ? 'tracking-normal' : ''}
-                        `}>
+                        <h1 className="text-3xl font-extrabold text-theme-foreground mb-6 border-b-2 border-theme-border/30 pb-4">
                             {page.title}
                         </h1>
                     )}
