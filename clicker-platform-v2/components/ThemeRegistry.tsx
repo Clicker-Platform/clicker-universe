@@ -4,7 +4,7 @@
 import { useRef } from 'react';
 import { useServerInsertedHTML, usePathname } from 'next/navigation';
 import { SiteSettings } from '@/data/mockData';
-import { getPackById } from '@/lib/fonts/packs';
+import { getPackById, getDefaultPack } from '@/lib/fonts/packs';
 import { getTemplate } from '@/lib/templates/registry';
 
 type Props = {
@@ -27,20 +27,18 @@ export default function ThemeRegistry({ initialSettings, appearanceStyles, templ
         if (inserted.current) return null;
         inserted.current = true;
 
-        const pack = getPackById(appearanceStyles?.fontPackId) ?? null;
-        let headingVar: string;
-        let bodyVar: string;
-        if (pack) {
-          headingVar = 'var(' + pack.heading.cssVar + ')';
-          bodyVar = 'var(' + pack.body.cssVar + ')';
+        const sitePack = getPackById(appearanceStyles?.fontPackId);
+        let pack;
+        if (sitePack) {
+          pack = sitePack;
         } else if (templateId) {
           const template = getTemplate(templateId);
-          headingVar = template.config.fonts.heading;
-          bodyVar = template.config.fonts.body;
+          pack = getPackById(template.config.defaultFontPackId) ?? getDefaultPack();
         } else {
-          headingVar = 'var(--font-jakarta)';
-          bodyVar = 'var(--font-jakarta)';
+          pack = getDefaultPack();
         }
+        const headingVar = 'var(' + pack.heading.cssVar + ')';
+        const bodyVar = 'var(' + pack.body.cssVar + ')';
 
         // In admin we only emit the font vars so the canvas (inside the admin
         // shell) inherits the tenant's Font Pack. Brand colors and the legacy
