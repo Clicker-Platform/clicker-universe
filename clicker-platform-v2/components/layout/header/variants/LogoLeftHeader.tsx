@@ -16,6 +16,7 @@ export interface VariantProps {
   typographyClass: string;
   onItemClick: (e: React.MouseEvent, item: NavigationItem) => void;
   forceMobile?: boolean;
+  logoFontStyle?: 'heading' | 'body';
 }
 
 export const LogoLeftHeader: React.FC<VariantProps> = ({
@@ -26,6 +27,7 @@ export const LogoLeftHeader: React.FC<VariantProps> = ({
   typographyClass,
   onItemClick,
   forceMobile = false,
+  logoFontStyle,
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { theme } = useTemplate();
@@ -34,7 +36,7 @@ export const LogoLeftHeader: React.FC<VariantProps> = ({
 
   return (
     <div className="flex items-center justify-between w-full relative">
-      <NavLogo profile={profile} siteId={siteId} />
+      <NavLogo profile={profile} siteId={siteId} logoFontStyle={logoFontStyle} />
 
       <div className="flex items-center gap-4 relative z-10">
         <NavMenu
@@ -60,18 +62,20 @@ export const LogoLeftHeader: React.FC<VariantProps> = ({
 
       {isMenuOpen && (
         <div
-          className="absolute inset-x-0 top-full mt-2 z-50 p-6 rounded-xl shadow-lg flex flex-col gap-4"
+          className="absolute inset-x-0 top-full mt-2 z-50 p-6 rounded-xl shadow-lg flex flex-col gap-2"
           style={{ backgroundColor: theme.colors.background, borderColor: theme.colors.border }}
         >
           <NavMenu
             items={items}
-            typographyClass={typographyClass}
+            // Mobile dropdown: force readable size + 44px tap target,
+            // ignoring the (often-too-tight) desktop typography preset.
+            typographyClass="text-base font-medium tracking-normal py-2 min-h-[44px] flex items-center w-full"
             onItemClick={(e, item) => {
               onItemClick(e, item);
               setIsMenuOpen(false);
             }}
             className="flex-col items-start"
-            gap="gap-4"
+            gap="gap-1"
           />
           <NavCTA
             cta={cta}

@@ -97,19 +97,37 @@ export const HeaderNavigation: React.FC<HeaderNavigationProps> = ({
   if (loading) return <TopNavSkeleton forceMobile={forceMobile || isPreview} />;
 
   const VariantComponent = HEADER_VARIANTS[header.variant] ?? HEADER_VARIANTS['logo-left'];
+  const LogoLeftComponent = HEADER_VARIANTS['logo-left'];
+  const isLogoLeft = header.variant === 'logo-left';
+
+  const sharedVariantProps = {
+    profile,
+    siteId,
+    items: header.items,
+    cta: header.cta,
+    typographyClass,
+    onItemClick: handleItemClick,
+    logoFontStyle: header.logoFontStyle,
+  };
 
   return (
     <>
       <HeaderShell config={header} scrollState={scrollState} staticPosition={isPreview || forceMobile}>
-        <VariantComponent
-          profile={profile}
-          siteId={siteId}
-          items={header.items}
-          cta={header.cta}
-          typographyClass={typographyClass}
-          onItemClick={handleItemClick}
-          forceMobile={forceMobile}
-        />
+        {isLogoLeft ? (
+          // Configured variant is already LogoLeft — render once at all sizes.
+          <VariantComponent {...sharedVariantProps} forceMobile={forceMobile} />
+        ) : (
+          // Mobile (< lg) always renders LogoLeft for safety; desktop (lg+)
+          // renders the configured variant. Mutually exclusive via CSS.
+          <>
+            <div className="w-full lg:hidden">
+              <LogoLeftComponent {...sharedVariantProps} forceMobile />
+            </div>
+            <div className="hidden w-full lg:block">
+              <VariantComponent {...sharedVariantProps} forceMobile={forceMobile} />
+            </div>
+          </>
+        )}
       </HeaderShell>
 
       <FormModal

@@ -9,13 +9,16 @@ import type { BusinessProfile } from '@/data/mockData';
 interface NavLogoProps {
   profile: BusinessProfile;
   siteId?: string;
+  /** Which Font Pack slot the logo text uses. Defaults to 'heading'. */
+  logoFontStyle?: 'heading' | 'body';
 }
 
-export const NavLogo: React.FC<NavLogoProps> = ({ profile, siteId }) => {
+export const NavLogo: React.FC<NavLogoProps> = ({ profile, siteId, logoFontStyle = 'heading' }) => {
   const { theme } = useTemplate();
+  const fontFamilyVar = logoFontStyle === 'body' ? 'var(--font-body)' : 'var(--font-heading)';
 
   return (
-    <div className="flex items-center gap-3 md:gap-4 overflow-hidden max-w-[60%] md:max-w-none">
+    <div className="flex items-center gap-3 md:gap-4 min-w-0 flex-1">
       <Link href={siteId ? `/${siteId}` : '/'} className="flex-shrink-0 hover:opacity-80 transition-opacity">
         <div
           className="rounded-full flex items-center justify-center w-10 h-10 overflow-hidden shadow-sm"
@@ -42,7 +45,7 @@ export const NavLogo: React.FC<NavLogoProps> = ({ profile, siteId }) => {
       </Link>
       <h1
         className="font-bold tracking-[0.1em] md:tracking-[0.3em] uppercase text-sm md:text-lg whitespace-nowrap truncate"
-        style={{ color: theme.colors.foreground }}
+        style={{ color: theme.colors.foreground, fontFamily: fontFamilyVar }}
       >
         {profile.name}
       </h1>

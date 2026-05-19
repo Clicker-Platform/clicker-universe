@@ -437,6 +437,19 @@ export function HeaderNavPanel() {
                     />
                 </div>
 
+                {/* Logo Font Style */}
+                <div className="space-y-1.5">
+                    <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">Logo Font</label>
+                    <SegmentedControl<'heading' | 'body'>
+                        value={header.logoFontStyle || 'heading'}
+                        onChange={(v) => updateHeader({ logoFontStyle: v })}
+                        options={[
+                            { value: 'heading', label: 'Heading' },
+                            { value: 'body', label: 'Body' },
+                        ]}
+                    />
+                </div>
+
                 {/* Scroll Behavior */}
                 <div className="space-y-1.5">
                     <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">Scroll behavior</label>

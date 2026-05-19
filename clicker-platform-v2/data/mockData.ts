@@ -255,6 +255,8 @@ export interface HeaderNavigationConfig {
     showBorder?: boolean;
     typography: HeaderTypography;
     scrolledAppearance: HeaderScrolledAppearance;
+    /** Font family for the logo text. 'heading' uses --font-heading; 'body' uses --font-body. Defaults to 'heading'. */
+    logoFontStyle?: 'heading' | 'body';
 }
 
 export interface SocialLinkItem {
