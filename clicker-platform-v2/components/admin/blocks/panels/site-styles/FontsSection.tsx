@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { FONT_PACKS, getPackById } from '@/lib/fonts/packs';
 import { getAppearanceStyles, setFontPackId } from '@/lib/appearance/api';
 import { useSite } from '@/lib/site-context';
+import { getTemplate } from '@/lib/templates/registry';
 import { FontPackCard } from './FontPackCard';
 
 function applyFontVarsToDocument(packId: string | null) {
@@ -19,10 +20,21 @@ function applyFontVarsToDocument(packId: string | null) {
   }
 }
 
-export function FontsSection() {
+type Props = {
+  templateId?: string | null;
+};
+
+export function FontsSection({ templateId }: Props) {
   const { siteId } = useSite();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // The pack the canvas should display when no site-level fontPackId is set —
+  // the active template's defaultFontPackId. Used to drive the optimistic
+  // preview on "Reset to template default" so the canvas matches what SSR
+  // would emit after a real reload.
+  const templateDefaultPackId =
+    (templateId ? getTemplate(templateId).config.defaultFontPackId : null) ?? null;
 
   useEffect(() => {
     let cancelled = false;
@@ -52,7 +64,12 @@ export function FontsSection() {
   const handleReset = async () => {
     const prev = activeId;
     setActiveId(null);
-    applyFontVarsToDocument(null);
+    // Drive the optimistic preview to the template's default pack rather than
+    // clearing the inline style — otherwise the canvas falls back to whichever
+    // pack the SSR <style data-theme-registry> was emitting at page load,
+    // which is the *previously-active* pack (frozen at SSR time), not the
+    // template default.
+    applyFontVarsToDocument(templateDefaultPackId);
     try {
       await setFontPackId(siteId, null);
     } catch {
