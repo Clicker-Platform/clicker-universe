@@ -44,8 +44,8 @@ export const NavLogo: React.FC<NavLogoProps> = ({ profile, siteId, logoFontStyle
         </div>
       </Link>
       <h1
-        className="font-bold tracking-[0.1em] md:tracking-[0.3em] uppercase text-sm md:text-lg whitespace-nowrap truncate"
-        style={{ color: theme.colors.foreground, fontFamily: fontFamilyVar }}
+        className="nav-logo-text font-bold tracking-[0.1em] md:tracking-[0.3em] uppercase text-sm md:text-lg whitespace-nowrap truncate"
+        style={{ color: theme.colors.foreground, ['--nav-logo-font' as string]: fontFamilyVar } as React.CSSProperties}
       >
         {profile.name}
       </h1>

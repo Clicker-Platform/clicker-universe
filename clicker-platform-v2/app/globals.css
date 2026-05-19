@@ -75,6 +75,13 @@ body {
   font-family: var(--font-heading, system-ui, sans-serif) !important;
 }
 
+/* Logo text: opts into a configurable font slot via --nav-logo-font.
+ * Higher specificity (the .nav-logo-text class) lets this beat the
+ * generic [data-template] h1 rule above. */
+[data-template] h1.nav-logo-text {
+  font-family: var(--nav-logo-font, var(--font-heading, system-ui, sans-serif)) !important;
+}
+
 /* Admin: override brand-green body background so it never bleeds through admin UI gaps */
 .admin-layout body,
 body:has(.admin-layout) {
