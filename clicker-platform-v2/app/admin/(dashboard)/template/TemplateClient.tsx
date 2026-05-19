@@ -27,7 +27,6 @@ export default function TemplateClient() {
         ogImageUrl: '',
         themeColor: '#B6FF2E',
         accentColor: '#0E3B2E',
-        fontFamily: 'Plus Jakarta Sans',
         templateId: 'classic',
         backgroundImageUrl: '',
         footerText: '',
@@ -84,7 +83,6 @@ export default function TemplateClient() {
                     ogImageUrl: '',
                     themeColor: '#B6FF2E',
                     accentColor: '#0E3B2E',
-                    fontFamily: 'Plus Jakarta Sans',
                     templateId: 'classic',
                     backgroundImageUrl: '',
                     footerText: '© 2024 SunnySide',
@@ -514,20 +512,6 @@ export default function TemplateClient() {
                                     </div>
                                 </div>
 
-                                <div>
-                                    <label className="block text-brand-dark font-bold mb-2">Typography</label>
-                                    <select
-                                        value={settings.fontFamily || 'Plus Jakarta Sans'}
-                                        onChange={(e) => setSettings({ ...settings, fontFamily: e.target.value })}
-                                        className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 focus:border-gray-400 outline-none font-medium"
-                                    >
-                                        <option value="Plus Jakarta Sans">Plus Jakarta Sans (Default)</option>
-                                        <option value="Inter">Inter</option>
-                                        <option value="Playfair Display">Playfair Display (Serif)</option>
-                                        <option value="Space Mono">Space Mono (Code)</option>
-                                        <option value="Poppins">Poppins</option>
-                                    </select>
-                                </div>
                             </div>
 
                         <div className="pt-4 border-t border-gray-100 dark:border-neutral-800/50">

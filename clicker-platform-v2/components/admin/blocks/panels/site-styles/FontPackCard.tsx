@@ -19,7 +19,7 @@ export function FontPackCard({ pack, active, onClick }: Props) {
         'group relative w-full rounded-lg border bg-white dark:bg-neutral-900 text-left',
         'px-4 py-4 transition-all',
         active
-          ? 'border-blue-600 ring-2 ring-blue-600 ring-offset-2 ring-offset-white dark:ring-offset-neutral-900'
+          ? 'border-transparent ring-2 ring-blue-600 ring-offset-2 ring-offset-white dark:ring-offset-neutral-900'
           : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600',
       ].join(' ')}
     >

@@ -155,7 +155,6 @@ export interface SiteSettings {
     ogImageUrl: string;
     themeColor: string;
     accentColor: string;
-    fontFamily: string;
     templateId: TemplateId;
     /** @deprecated Use templateId instead. Kept for backward compatibility with existing Firestore data. */
     layoutStyle?: TemplateId;
