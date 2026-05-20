@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { Loader2, Upload, X, Image as ImageIcon } from 'lucide-react';
+import { useState } from 'react';
+import { Upload, X, Image as ImageIcon } from 'lucide-react';
 import Image from 'next/image';
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
+import { MediaPicker } from '@/components/admin/media/MediaPicker';
 
 interface BlockImageUploaderProps {
     label?: string;
@@ -12,38 +13,9 @@ interface BlockImageUploaderProps {
     onRemove: () => void;
 }
 
-import { validateImageFile } from '@/lib/imageUtils';
-import { uploadToStorage } from '@/lib/upload';
-import { useSite } from '@/lib/site-context';
-
 export const BlockImageUploader = ({ label = "Upload Image", currentUrl, onUpload, onRemove }: BlockImageUploaderProps) => {
-    const { siteId } = useSite();
-    const [uploading, setUploading] = useState(false);
+    const [pickerOpen, setPickerOpen] = useState(false);
     const [errorDialog, setErrorDialog] = useState<{ title: string; message: string } | null>(null);
-    const fileInputRef = useRef<HTMLInputElement>(null);
-
-    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        const validationError = validateImageFile(file);
-        if (validationError) {
-            setErrorDialog({ title: 'Invalid File', message: validationError });
-            return;
-        }
-
-        setUploading(true);
-        try {
-            const { url } = await uploadToStorage({ file, folder: 'uploads', siteId });
-            onUpload(url);
-        } catch (error) {
-            console.error(error);
-            setErrorDialog({ title: 'Upload Failed', message: 'Failed to upload image. Please try again.' });
-        } finally {
-            setUploading(false);
-            if (fileInputRef.current) fileInputRef.current.value = '';
-        }
-    };
 
     return (
         <div className="space-y-4">
@@ -62,30 +34,13 @@ export const BlockImageUploader = ({ label = "Upload Image", currentUrl, onUploa
 
             {!currentUrl ? (
                 <div className="flex items-center gap-3">
-                    <input
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={handleFileChange}
-                        accept="image/*"
-                        className="hidden"
-                    />
                     <button
                         type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={uploading}
+                        onClick={() => setPickerOpen(true)}
                         className="flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-lg border border-dashed border-gray-300 dark:border-neutral-700 bg-gray-50/50 dark:bg-neutral-900/30 hover:bg-gray-50 dark:hover:bg-neutral-900/50 transition-all text-neutral-600 dark:text-neutral-400 hover:text-blue-500 hover:border-blue-500/50 active:scale-[0.99] text-xs font-bold"
                     >
-                        {uploading ? (
-                            <>
-                                <Loader2 size={14} className="animate-spin text-blue-500" />
-                                Uploading...
-                            </>
-                        ) : (
-                            <>
-                                <Upload size={14} />
-                                Upload Image
-                            </>
-                        )}
+                        <Upload size={14} />
+                        Upload Image
                     </button>
                     <span className="text-[10px] font-medium text-neutral-400 opacity-80 whitespace-nowrap">
                         Max 10MB
@@ -113,28 +68,12 @@ export const BlockImageUploader = ({ label = "Upload Image", currentUrl, onUploa
 
                     {/* Actions */}
                     <div className="flex-1 py-1">
-                        <input
-                            type="file"
-                            ref={fileInputRef}
-                            onChange={handleFileChange}
-                            accept="image/*"
-                            className="hidden"
-                        />
                         <button
                             type="button"
-                            onClick={() => fileInputRef.current?.click()}
-                            disabled={uploading}
+                            onClick={() => setPickerOpen(true)}
                             className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-md text-xs font-bold text-neutral-700 dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-neutral-700 transition-all active:scale-[0.98]"
                         >
-                            {uploading ? (
-                                <>
-                                    <Loader2 size={14} className="animate-spin" /> Uploading...
-                                </>
-                            ) : (
-                                <>
-                                    <Upload size={14} /> Replace Image
-                                </>
-                            )}
+                            <Upload size={14} /> Replace Image
                         </button>
                         <p className="text-[10px] text-neutral-400 dark:text-neutral-500 mt-2 font-medium leading-tight">
                             Click image to remove.<br/>Max 10MB.
@@ -142,6 +81,13 @@ export const BlockImageUploader = ({ label = "Upload Image", currentUrl, onUploa
                     </div>
                 </div>
             )}
+
+            <MediaPicker
+                open={pickerOpen}
+                onClose={() => setPickerOpen(false)}
+                onSelect={({ url }) => { onUpload(url); setPickerOpen(false); }}
+                accept="image"
+            />
         </div>
     );
 };

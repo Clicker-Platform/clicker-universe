@@ -1,7 +1,9 @@
 'use client';
 
+import { useState } from 'react';
+import { Upload, X } from 'lucide-react';
 import { BackgroundMedia, BackgroundMediaBase } from '@/data/mockData';
-import { CompactImageUpload } from '@/components/admin/CompactImageUpload';
+import { MediaPicker } from '@/components/admin/media/MediaPicker';
 
 const inputClass = "w-full px-3 py-2 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-lg text-sm text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-600 focus:border-blue-500/50 focus:outline-none transition-colors";
 const labelClass = "block text-xs font-medium text-neutral-400 dark:text-neutral-500 mb-1";
@@ -79,6 +81,7 @@ function BackgroundBaseEditor({
     inheritLabel?: string;
 }) {
     const mode = value.mode;
+    const [pickerOpen, setPickerOpen] = useState(false);
 
     return (
         <div className="space-y-4">
@@ -120,13 +123,42 @@ function BackgroundBaseEditor({
             {mode === 'image' && (
                 <div className="space-y-3">
                     <div>
-                        <label className={labelClass}>Upload Image</label>
-                        <CompactImageUpload
-                            currentUrl={value.url}
-                            onUpload={(url) => onChange({ url })}
-                            onRemove={() => onChange({ url: '' })}
-                            label="Background Image"
-                        />
+                        <label className={labelClass}>Background Image</label>
+                        {value.url ? (
+                            <div className="flex items-center gap-3 p-2 bg-gray-50 dark:bg-neutral-800/50 border border-gray-200 dark:border-neutral-800 rounded-lg group hover:border-blue-500/30 transition-colors">
+                                <div className="w-10 h-10 rounded-lg bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 overflow-hidden flex-shrink-0">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img src={value.url} alt="Background preview" className="w-full h-full object-cover" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-xs text-gray-500 dark:text-neutral-400 truncate font-medium">{value.url.split('/').pop() || 'image'}</p>
+                                    <button
+                                        type="button"
+                                        onClick={() => setPickerOpen(true)}
+                                        className="text-[10px] text-blue-600 dark:text-blue-400 font-bold hover:underline"
+                                    >
+                                        Change Image
+                                    </button>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => onChange({ url: '' })}
+                                    className="p-1.5 text-gray-400 dark:text-neutral-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                    title="Remove Image"
+                                >
+                                    <X size={16} />
+                                </button>
+                            </div>
+                        ) : (
+                            <button
+                                type="button"
+                                onClick={() => setPickerOpen(true)}
+                                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg border border-dashed border-gray-300 dark:border-neutral-700 text-gray-500 dark:text-neutral-400 font-bold hover:border-blue-500/50 hover:bg-gray-50 dark:hover:bg-neutral-800 transition-all text-sm"
+                            >
+                                <Upload size={18} />
+                                <span>Upload Image</span>
+                            </button>
+                        )}
                     </div>
                     <div>
                         <label className={labelClass}>Position</label>
@@ -156,6 +188,13 @@ function BackgroundBaseEditor({
                         </select>
                     </div>
                     <OverlayEditor value={value} onChange={onChange} />
+
+                    <MediaPicker
+                        open={pickerOpen}
+                        onClose={() => setPickerOpen(false)}
+                        onSelect={({ url }) => { onChange({ url }); setPickerOpen(false); }}
+                        accept="image"
+                    />
                 </div>
             )}
 
