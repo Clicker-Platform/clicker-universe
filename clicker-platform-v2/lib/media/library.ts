@@ -100,8 +100,67 @@ export async function updateMedia(siteId: string, id: string, patch: MediaPatch)
     await updateDoc(ref, patch);
 }
 
-export async function findUsages(_siteId: string, _url: string): Promise<MediaUsage[]> {
-    throw new Error('not implemented');
+function containsUrl(value: unknown, url: string): boolean {
+    return JSON.stringify(value ?? '').includes(url);
+}
+
+export async function findUsages(siteId: string, url: string): Promise<MediaUsage[]> {
+    const usages: MediaUsage[] = [];
+
+    // Pages
+    const pagesSnap = await getDocs(collection(db, 'sites', siteId, 'pages'));
+    for (const d of pagesSnap.docs) {
+        const data = d.data() as any;
+        if (containsUrl(data.blocks, url)) {
+            usages.push({
+                type: 'page',
+                id: d.id,
+                label: `Page: ${data.name || data.title || d.id}`,
+                location: 'Page blocks',
+            });
+        }
+    }
+
+    // Links
+    const linksSnap = await getDocs(collection(db, 'sites', siteId, 'links'));
+    for (const d of linksSnap.docs) {
+        const data = d.data() as any;
+        if (containsUrl(data, url)) {
+            usages.push({
+                type: 'link',
+                id: d.id,
+                label: `Link: ${data.title || data.label || d.id}`,
+                location: 'Link properties',
+            });
+        }
+    }
+
+    // Forms
+    const formsSnap = await getDocs(collection(db, 'sites', siteId, 'forms'));
+    for (const d of formsSnap.docs) {
+        const data = d.data() as any;
+        if (containsUrl(data, url)) {
+            usages.push({
+                type: 'form',
+                id: d.id,
+                label: `Form: ${data.name || data.title || d.id}`,
+                location: 'Form schema',
+            });
+        }
+    }
+
+    // Business profile lives at content/business in this codebase (not settings/business).
+    const bizSnap = await getDoc(doc(db, 'sites', siteId, 'content', 'business'));
+    if (bizSnap.exists() && containsUrl(bizSnap.data(), url)) {
+        usages.push({
+            type: 'business',
+            id: 'business',
+            label: 'Business profile',
+            location: 'Profile fields',
+        });
+    }
+
+    return usages;
 }
 
 export async function deleteMedia(_siteId: string, _id: string, _options?: { force?: boolean }): Promise<void> {
@@ -115,4 +174,4 @@ export async function importExistingMedia(_siteId: string, _uploadedBy: string):
 export { MediaInUseError } from './types';
 
 // Suppress unused import warnings for stubs (used in future tasks)
-void getDoc; void where; void deleteDoc;
+void where; void deleteDoc;
