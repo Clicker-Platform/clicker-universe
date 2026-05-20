@@ -237,4 +237,31 @@ export async function importExistingMedia(
     return { imported, skipped };
 }
 
+/**
+ * Background reconciliation pass: for each item, fetch the actual Storage object size
+ * and update the Firestore record if it diverges from `sizeBytes`.
+ *
+ * Earlier versions of registerMedia wrote the source-file size instead of the converted
+ * blob size, so historical items overstate their footprint. Callers should fire-and-forget
+ * this and not await it; failures per item are swallowed and logged.
+ *
+ * Returns the number of records that were corrected.
+ */
+export async function reconcileMediaSizes(siteId: string, items: MediaItem[]): Promise<number> {
+    let corrected = 0;
+    for (const item of items) {
+        try {
+            const meta = await getMetadata(storageRef(storage, item.storagePath));
+            const actual = meta.size ?? 0;
+            if (actual > 0 && actual !== item.sizeBytes) {
+                await updateDoc(doc(db, 'sites', siteId, 'mediaLibrary', item.id), { sizeBytes: actual });
+                corrected++;
+            }
+        } catch {
+            // Storage object missing or unreadable — skip silently.
+        }
+    }
+    return corrected;
+}
+
 export { MediaInUseError } from './types';

@@ -6,7 +6,7 @@ import { useSite } from '@/lib/site-context';
 import { auth } from '@/lib/firebase';
 import { logger } from '@/lib/logger-edge';
 import {
-    listMedia, deleteMedia, importExistingMedia, registerMedia,
+    listMedia, deleteMedia, importExistingMedia, registerMedia, reconcileMediaSizes,
 } from '@/lib/media/library';
 import { MediaInUseError } from '@/lib/media/types';
 import type { MediaItem, MediaUsage } from '@/lib/media/types';
@@ -44,7 +44,23 @@ export default function MediaPage() {
         let cancelled = false;
         setLoading(true);
         listMedia({ siteId })
-            .then((next) => { if (!cancelled) setItems(next); })
+            .then((next) => {
+                if (cancelled) return;
+                setItems(next);
+                // Fire-and-forget: silently fix historical sizeBytes that overstated original-file
+                // size instead of converted-blob size. Once per browser session per tenant.
+                const sessionKey = `media.reconciled.${siteId}`;
+                if (typeof window !== 'undefined' && !sessionStorage.getItem(sessionKey)) {
+                    sessionStorage.setItem(sessionKey, '1');
+                    reconcileMediaSizes(siteId, next)
+                        .then((corrected) => {
+                            if (cancelled || corrected === 0) return;
+                            // Refresh items in place so the UI reflects the corrected sizes.
+                            listMedia({ siteId }).then((fresh) => { if (!cancelled) setItems(fresh); }).catch(() => {});
+                        })
+                        .catch((e) => logger.error('admin.media.reconcile', { siteId, error: e }));
+                }
+            })
             .catch((e) => {
                 if (cancelled) return;
                 logger.error('admin.media.load', { siteId, error: e });
