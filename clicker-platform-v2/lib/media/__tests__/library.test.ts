@@ -5,6 +5,11 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 Object.defineProperty(URL, 'createObjectURL', { value: vi.fn(() => 'blob:mock'), writable: true });
 Object.defineProperty(URL, 'revokeObjectURL', { value: vi.fn(), writable: true });
 
+vi.mock('firebase/storage', () => ({
+    ref: vi.fn(),
+    deleteObject: vi.fn(async () => undefined),
+}));
+
 type MockImageBehavior = { kind: 'error' } | { kind: 'load'; width: number; height: number };
 let mockImageBehavior: MockImageBehavior = { kind: 'error' };
 
@@ -47,9 +52,10 @@ vi.mock('firebase/firestore', () => ({
     Timestamp: { now: () => 'mock-ts' },
 }));
 
-import { registerMedia, listMedia, updateMedia } from '../library';
+import { registerMedia, listMedia, updateMedia, deleteMedia, MediaInUseError } from '../library';
 import { uploadToStorage } from '@/lib/upload';
-import { setDoc, getDocs, updateDoc } from 'firebase/firestore';
+import { setDoc, getDocs, updateDoc, deleteDoc, getDoc } from 'firebase/firestore';
+import { deleteObject } from 'firebase/storage';
 
 describe('registerMedia', () => {
     beforeEach(() => {
@@ -167,5 +173,57 @@ describe('updateMedia', () => {
         expect(updateDoc).toHaveBeenCalledTimes(1);
         const args = (updateDoc as any).mock.calls[0];
         expect(args[1]).toEqual({ folder: 'new', tags: ['a'] });
+    });
+});
+
+describe('deleteMedia', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+    });
+
+    const mediaItemSnap = {
+        exists: () => true,
+        data: () => ({
+            id: 'item-1',
+            url: 'https://example/url',
+            storagePath: 'sites/s1/media/file.webp',
+        }),
+    };
+    const notExistsSnap = { exists: () => false };
+
+    it('deletes Firestore doc and Storage object when no usages', async () => {
+        // getDoc: media item first, then business doc (not-exists)
+        (getDoc as any)
+            .mockResolvedValueOnce(mediaItemSnap)
+            .mockResolvedValueOnce(notExistsSnap);
+        (getDocs as any).mockResolvedValue({ docs: [] });
+
+        await deleteMedia('s1', 'item-1');
+        expect(deleteDoc).toHaveBeenCalledTimes(1);
+        expect(deleteObject).toHaveBeenCalledTimes(1);
+    });
+
+    it('throws MediaInUseError when usages found and force is not set', async () => {
+        (getDoc as any)
+            .mockResolvedValueOnce(mediaItemSnap)
+            .mockResolvedValueOnce(notExistsSnap); // business doc
+        (getDocs as any)
+            .mockResolvedValueOnce({
+                docs: [{ id: 'home', data: () => ({ name: 'Home', blocks: [{ src: 'https://example/url' }] }) }],
+            })
+            .mockResolvedValueOnce({ docs: [] })
+            .mockResolvedValueOnce({ docs: [] });
+
+        await expect(deleteMedia('s1', 'item-1')).rejects.toBeInstanceOf(MediaInUseError);
+        expect(deleteDoc).not.toHaveBeenCalled();
+    });
+
+    it('force-deletes despite usages when force=true', async () => {
+        (getDoc as any).mockResolvedValueOnce(mediaItemSnap);
+        // force=true skips findUsages entirely, no further getDoc calls needed
+
+        await deleteMedia('s1', 'item-1', { force: true });
+        expect(deleteDoc).toHaveBeenCalledTimes(1);
+        expect(deleteObject).toHaveBeenCalledTimes(1);
     });
 });

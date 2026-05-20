@@ -1,6 +1,7 @@
-import { db } from '@/lib/firebase';
+import { db, storage } from '@/lib/firebase';
 import { uploadToStorage } from '@/lib/upload';
 import { collection, doc, setDoc, getDocs, getDoc, query, where, orderBy, deleteDoc, updateDoc, Timestamp } from 'firebase/firestore';
+import { ref as storageRef, deleteObject } from 'firebase/storage';
 import type { MediaItem, MediaUsage } from './types';
 import { DEFAULT_FOLDER, MediaInUseError } from './types';
 
@@ -163,8 +164,25 @@ export async function findUsages(siteId: string, url: string): Promise<MediaUsag
     return usages;
 }
 
-export async function deleteMedia(_siteId: string, _id: string, _options?: { force?: boolean }): Promise<void> {
-    throw new Error('not implemented');
+export async function deleteMedia(
+    siteId: string,
+    id: string,
+    options?: { force?: boolean },
+): Promise<void> {
+    const ref = doc(db, 'sites', siteId, 'mediaLibrary', id);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) return;
+    const item = snap.data() as MediaItem;
+
+    if (!options?.force) {
+        const usages = await findUsages(siteId, item.url);
+        if (usages.length > 0) throw new MediaInUseError(usages);
+    }
+
+    await deleteObject(storageRef(storage, item.storagePath)).catch(() => {
+        // Storage object may already be gone — non-fatal
+    });
+    await deleteDoc(ref);
 }
 
 export async function importExistingMedia(_siteId: string, _uploadedBy: string): Promise<{ imported: number; skipped: number }> {
@@ -174,4 +192,4 @@ export async function importExistingMedia(_siteId: string, _uploadedBy: string):
 export { MediaInUseError } from './types';
 
 // Suppress unused import warnings for stubs (used in future tasks)
-void where; void deleteDoc;
+void where;
