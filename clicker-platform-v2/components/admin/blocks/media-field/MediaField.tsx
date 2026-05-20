@@ -88,7 +88,7 @@ export function MediaField({ value, onChange }: MediaFieldProps) {
 
         setUploading(target);
         try {
-            const url = await uploadToStorage({ file, folder: 'content-showcase', siteId });
+            const { url } = await uploadToStorage({ file, folder: 'content-showcase', siteId });
             if (target === 'image') commit(url);
             else update({ poster: url });
         } catch (err) {
@@ -114,7 +114,7 @@ export function MediaField({ value, onChange }: MediaFieldProps) {
         }
         setUploading('lottie');
         try {
-            const url = await uploadToStorage({ file, folder: 'content-showcase-lottie', siteId, convertToWebP: false });
+            const { url } = await uploadToStorage({ file, folder: 'content-showcase-lottie', siteId, convertToWebP: false });
             commit(url);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Upload failed');

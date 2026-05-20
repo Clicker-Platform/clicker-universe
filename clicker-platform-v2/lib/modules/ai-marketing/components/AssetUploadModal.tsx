@@ -57,7 +57,7 @@ export default function AssetUploadModal({ onClose, onUploaded }: Props) {
       if (!token) throw new Error('Not authenticated');
 
       // 1. Upload to Firebase Storage (client-side, converts to WebP)
-      const url = await uploadToStorage({
+      const { url } = await uploadToStorage({
         file,
         folder: `${STORAGE_FOLDER}/${siteId}`,
         siteId,

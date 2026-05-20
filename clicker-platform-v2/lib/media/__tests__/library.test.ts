@@ -1,15 +1,27 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // jsdom doesn't load images — stub URL.createObjectURL and Image so readImageDimensions
-// resolves immediately with null instead of hanging until the 5 s test timeout.
+// resolves immediately instead of hanging until the 5 s test timeout.
 Object.defineProperty(URL, 'createObjectURL', { value: vi.fn(() => 'blob:mock'), writable: true });
 Object.defineProperty(URL, 'revokeObjectURL', { value: vi.fn(), writable: true });
+
+type MockImageBehavior = { kind: 'error' } | { kind: 'load'; width: number; height: number };
+let mockImageBehavior: MockImageBehavior = { kind: 'error' };
+
 class MockImage {
     onload: (() => void) | null = null;
     onerror: (() => void) | null = null;
     naturalWidth = 0;
     naturalHeight = 0;
-    set src(_: string) { this.onerror?.(); }
+    set src(_: string) {
+        if (mockImageBehavior.kind === 'load') {
+            this.naturalWidth = mockImageBehavior.width;
+            this.naturalHeight = mockImageBehavior.height;
+            this.onload?.();
+        } else {
+            this.onerror?.();
+        }
+    }
 }
 vi.stubGlobal('Image', MockImage);
 
@@ -42,7 +54,8 @@ import { setDoc } from 'firebase/firestore';
 describe('registerMedia', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        (uploadToStorage as any).mockResolvedValue('https://storage.example/sites/s1/media/abc.webp');
+        mockImageBehavior = { kind: 'error' };
+        (uploadToStorage as any).mockResolvedValue({ url: 'https://storage.example/sites/s1/media/abc.webp', contentType: 'image/webp' });
     });
 
     it('uploads to Storage and writes a Firestore record with defaults', async () => {
@@ -66,6 +79,7 @@ describe('registerMedia', () => {
         expect(item.tags).toEqual([]);
         expect(item.fileName).toBe('hero.png');
         expect(item.uploadedBy).toBe('user-1');
+        expect(item.mimeType).toBe('image/webp');
     });
 
     it('applies provided folder and tags', async () => {
@@ -80,5 +94,15 @@ describe('registerMedia', () => {
 
         expect(item.folder).toBe('heroes');
         expect(item.tags).toEqual(['hero', 'banner']);
+    });
+
+    it('records width/height when image loads successfully', async () => {
+        mockImageBehavior = { kind: 'load', width: 1024, height: 768 };
+        const file = new File([new Uint8Array([1])], 'h.png', { type: 'image/png' });
+        Object.defineProperty(file, 'size', { value: 1 });
+        const item = await registerMedia({ siteId: 's1', file, uploadedBy: 'user-1' });
+        expect(item.width).toBe(1024);
+        expect(item.height).toBe(768);
+        mockImageBehavior = { kind: 'error' };  // reset
     });
 });

@@ -8,7 +8,12 @@ function extractStoragePath(url: string): string {
     // Firebase Storage download URLs look like:
     // https://firebasestorage.googleapis.com/v0/b/<bucket>/o/<ENCODED_PATH>?alt=media&token=...
     const match = url.match(/\/o\/([^?]+)/);
-    return match ? decodeURIComponent(match[1]) : url;
+    if (!match) return url;
+    try {
+        return decodeURIComponent(match[1]);
+    } catch {
+        return url;
+    }
 }
 
 async function readImageDimensions(file: File): Promise<{ width: number; height: number } | null> {
@@ -41,7 +46,7 @@ export async function registerMedia({
     tags?: string[];
     uploadedBy: string;
 }): Promise<MediaItem> {
-    const url = await uploadToStorage({ file, folder: 'media', siteId, convertToWebP: true });
+    const { url, contentType } = await uploadToStorage({ file, folder: 'media', siteId, convertToWebP: true });
     const dims = await readImageDimensions(file);
     const colRef = collection(db, 'sites', siteId, 'mediaLibrary');
     const docRef = doc(colRef);
@@ -51,7 +56,7 @@ export async function registerMedia({
         url,
         storagePath: extractStoragePath(url),
         fileName: file.name,
-        mimeType: file.type || 'image/webp',
+        mimeType: contentType,
         sizeBytes: file.size,
         ...(dims ? { width: dims.width, height: dims.height } : {}),
         folder: folder ?? DEFAULT_FOLDER,

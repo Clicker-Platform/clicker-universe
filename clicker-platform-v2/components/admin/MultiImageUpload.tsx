@@ -51,7 +51,7 @@ export function MultiImageUpload({ images, onImagesChange, maxImages = 10 }: Mul
                 }
 
                 try {
-                    const url = await uploadToStorage({ file, folder: 'products', siteId });
+                    const { url } = await uploadToStorage({ file, folder: 'products', siteId });
                     newImageUrls.push(url);
                 } catch (err: any) {
                     console.error("Upload error details:", err);

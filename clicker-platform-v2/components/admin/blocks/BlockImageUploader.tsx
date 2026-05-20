@@ -34,7 +34,7 @@ export const BlockImageUploader = ({ label = "Upload Image", currentUrl, onUploa
 
         setUploading(true);
         try {
-            const url = await uploadToStorage({ file, folder: 'uploads', siteId });
+            const { url } = await uploadToStorage({ file, folder: 'uploads', siteId });
             onUpload(url);
         } catch (error) {
             console.error(error);

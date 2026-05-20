@@ -55,7 +55,7 @@ export function AvatarUpload({ currentAvatarUrl, onUploadComplete }: AvatarUploa
         setUploading(true);
 
         try {
-            const url = await uploadToStorage({ file, folder: 'profile', siteId });
+            const { url } = await uploadToStorage({ file, folder: 'profile', siteId });
             onUploadComplete(url);
         } catch (err: any) {
             console.error('[AvatarUpload] Error:', err);
