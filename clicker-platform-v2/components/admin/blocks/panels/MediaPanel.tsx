@@ -16,6 +16,12 @@ export function MediaPanel() {
     const [toast, setToast] = useState<string | null>(null);
 
     useEffect(() => {
+        // Wait for a real tenant before reading; useSite() returns sentinels ('platform' / 'default' / 'pending')
+        // until TokenBootstrap resolves the site context.
+        if (!siteId || siteId === 'platform' || siteId === 'default' || siteId === 'pending') {
+            setLoading(false);
+            return;
+        }
         let cancelled = false;
         setLoading(true);
         listMedia({ siteId })

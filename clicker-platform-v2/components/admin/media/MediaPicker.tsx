@@ -34,6 +34,11 @@ export function MediaPicker({ open, onClose, onSelect, accept = 'image', initial
         // Reset per-session state so reopening doesn't carry over stale URL input or error.
         setUrlInput('');
         setError('');
+        // Wait for a real tenant (useSite returns 'platform'/'default'/'pending' until resolved).
+        if (!siteId || siteId === 'platform' || siteId === 'default' || siteId === 'pending') {
+            setLoading(false);
+            return;
+        }
         setLoading(true);
         let cancelled = false;
         listMedia({ siteId, folder: initialFolder })

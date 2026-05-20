@@ -36,6 +36,11 @@ export default function MediaPage() {
         }
     };
     useEffect(() => {
+        // Wait for a real tenant before reading (useSite returns 'platform'/'default'/'pending' until resolved).
+        if (!siteId || siteId === 'platform' || siteId === 'default' || siteId === 'pending') {
+            setLoading(false);
+            return;
+        }
         let cancelled = false;
         setLoading(true);
         listMedia({ siteId })
