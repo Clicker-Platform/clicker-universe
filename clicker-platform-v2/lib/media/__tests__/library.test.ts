@@ -47,9 +47,9 @@ vi.mock('firebase/firestore', () => ({
     Timestamp: { now: () => 'mock-ts' },
 }));
 
-import { registerMedia } from '../library';
+import { registerMedia, listMedia, updateMedia } from '../library';
 import { uploadToStorage } from '@/lib/upload';
-import { setDoc } from 'firebase/firestore';
+import { setDoc, getDocs, updateDoc } from 'firebase/firestore';
 
 describe('registerMedia', () => {
     beforeEach(() => {
@@ -104,5 +104,68 @@ describe('registerMedia', () => {
         expect(item.width).toBe(1024);
         expect(item.height).toBe(768);
         mockImageBehavior = { kind: 'error' };  // reset
+    });
+});
+
+describe('listMedia', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+    });
+
+    it('returns items ordered by uploadedAt desc', async () => {
+        (getDocs as any).mockResolvedValue({
+            docs: [
+                { id: 'b', data: () => ({ id: 'b', fileName: 'b.png', folder: 'Uncategorized', tags: [] }) },
+                { id: 'a', data: () => ({ id: 'a', fileName: 'a.png', folder: 'heroes', tags: ['hero'] }) },
+            ],
+        });
+        const items = await listMedia({ siteId: 's1' });
+        expect(items.map(i => i.id)).toEqual(['b', 'a']);
+    });
+
+    it('filters by folder client-side when folder provided', async () => {
+        (getDocs as any).mockResolvedValue({
+            docs: [
+                { id: 'a', data: () => ({ id: 'a', folder: 'heroes', tags: [], fileName: 'a' }) },
+                { id: 'b', data: () => ({ id: 'b', folder: 'Uncategorized', tags: [], fileName: 'b' }) },
+            ],
+        });
+        const items = await listMedia({ siteId: 's1', folder: 'heroes' });
+        expect(items.map(i => i.id)).toEqual(['a']);
+    });
+
+    it('filters by tag', async () => {
+        (getDocs as any).mockResolvedValue({
+            docs: [
+                { id: 'a', data: () => ({ id: 'a', folder: 'f', tags: ['hero'], fileName: 'a' }) },
+                { id: 'b', data: () => ({ id: 'b', folder: 'f', tags: ['team'], fileName: 'b' }) },
+            ],
+        });
+        const items = await listMedia({ siteId: 's1', tag: 'hero' });
+        expect(items.map(i => i.id)).toEqual(['a']);
+    });
+
+    it('filters by case-insensitive filename substring', async () => {
+        (getDocs as any).mockResolvedValue({
+            docs: [
+                { id: 'a', data: () => ({ id: 'a', folder: 'f', tags: [], fileName: 'Hero-2024.png' }) },
+                { id: 'b', data: () => ({ id: 'b', folder: 'f', tags: [], fileName: 'logo.png' }) },
+            ],
+        });
+        const items = await listMedia({ siteId: 's1', search: 'hero' });
+        expect(items.map(i => i.id)).toEqual(['a']);
+    });
+});
+
+describe('updateMedia', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+    });
+
+    it('calls updateDoc with the given patch', async () => {
+        await updateMedia('s1', 'item-1', { folder: 'new', tags: ['a'] });
+        expect(updateDoc).toHaveBeenCalledTimes(1);
+        const args = (updateDoc as any).mock.calls[0];
+        expect(args[1]).toEqual({ folder: 'new', tags: ['a'] });
     });
 });

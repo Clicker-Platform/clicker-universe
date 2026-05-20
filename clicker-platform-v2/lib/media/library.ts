@@ -69,17 +69,33 @@ export async function registerMedia({
     return item;
 }
 
-export async function listMedia(_args: {
+export async function listMedia({
+    siteId,
+    folder,
+    tag,
+    search,
+}: {
     siteId: string;
     folder?: string;
     tag?: string;
     search?: string;
 }): Promise<MediaItem[]> {
-    throw new Error('not implemented');
+    const colRef = collection(db, 'sites', siteId, 'mediaLibrary');
+    const snap = await getDocs(query(colRef, orderBy('uploadedAt', 'desc')));
+    let items = snap.docs.map(d => d.data() as MediaItem);
+
+    if (folder) items = items.filter(i => i.folder === folder);
+    if (tag) items = items.filter(i => i.tags.includes(tag));
+    if (search) {
+        const needle = search.toLowerCase();
+        items = items.filter(i => i.fileName.toLowerCase().includes(needle));
+    }
+    return items;
 }
 
-export async function updateMedia(_siteId: string, _id: string, _patch: Partial<MediaItem>): Promise<void> {
-    throw new Error('not implemented');
+export async function updateMedia(siteId: string, id: string, patch: Partial<MediaItem>): Promise<void> {
+    const ref = doc(db, 'sites', siteId, 'mediaLibrary', id);
+    await updateDoc(ref, patch as any);
 }
 
 export async function findUsages(_siteId: string, _url: string): Promise<MediaUsage[]> {
@@ -97,4 +113,4 @@ export async function importExistingMedia(_siteId: string, _uploadedBy: string):
 export { MediaInUseError } from './types';
 
 // Suppress unused import warnings for stubs (used in future tasks)
-void getDocs; void getDoc; void query; void where; void orderBy; void deleteDoc; void updateDoc;
+void getDoc; void where; void deleteDoc;
