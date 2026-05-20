@@ -188,13 +188,6 @@ function BackgroundBaseEditor({
                         </select>
                     </div>
                     <OverlayEditor value={value} onChange={onChange} />
-
-                    <MediaPicker
-                        open={pickerOpen}
-                        onClose={() => setPickerOpen(false)}
-                        onSelect={({ url }) => { onChange({ url }); setPickerOpen(false); }}
-                        accept="image"
-                    />
                 </div>
             )}
 
@@ -214,6 +207,14 @@ function BackgroundBaseEditor({
                     <OverlayEditor value={value} onChange={onChange} />
                 </div>
             )}
+
+            {/* Rendered at root so the modal stays mounted across mode changes. */}
+            <MediaPicker
+                open={pickerOpen}
+                onClose={() => setPickerOpen(false)}
+                onSelect={({ url }) => { onChange({ url }); setPickerOpen(false); }}
+                accept="image"
+            />
         </div>
     );
 }

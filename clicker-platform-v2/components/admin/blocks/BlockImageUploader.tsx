@@ -1,9 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Upload, X, Image as ImageIcon } from 'lucide-react';
+import { Upload, X } from 'lucide-react';
 import Image from 'next/image';
-import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 import { MediaPicker } from '@/components/admin/media/MediaPicker';
 
 interface BlockImageUploaderProps {
@@ -15,37 +14,20 @@ interface BlockImageUploaderProps {
 
 export const BlockImageUploader = ({ label = "Upload Image", currentUrl, onUpload, onRemove }: BlockImageUploaderProps) => {
     const [pickerOpen, setPickerOpen] = useState(false);
-    const [errorDialog, setErrorDialog] = useState<{ title: string; message: string } | null>(null);
 
     return (
         <div className="space-y-4">
-            <ConfirmationDialog
-                isOpen={!!errorDialog}
-                title={errorDialog?.title ?? ''}
-                message={errorDialog?.message}
-                onConfirm={() => setErrorDialog(null)}
-                onCancel={() => setErrorDialog(null)}
-                confirmLabel="OK"
-                cancelLabel="Cancel"
-                isDestructive={false}
-                hideFooter={false}
-            />
             {label && <label className="block text-xs font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">{label}</label>}
 
             {!currentUrl ? (
-                <div className="flex items-center gap-3">
-                    <button
-                        type="button"
-                        onClick={() => setPickerOpen(true)}
-                        className="flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-lg border border-dashed border-gray-300 dark:border-neutral-700 bg-gray-50/50 dark:bg-neutral-900/30 hover:bg-gray-50 dark:hover:bg-neutral-900/50 transition-all text-neutral-600 dark:text-neutral-400 hover:text-blue-500 hover:border-blue-500/50 active:scale-[0.99] text-xs font-bold"
-                    >
-                        <Upload size={14} />
-                        Upload Image
-                    </button>
-                    <span className="text-[10px] font-medium text-neutral-400 opacity-80 whitespace-nowrap">
-                        Max 10MB
-                    </span>
-                </div>
+                <button
+                    type="button"
+                    onClick={() => setPickerOpen(true)}
+                    className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-lg border border-dashed border-gray-300 dark:border-neutral-700 bg-gray-50/50 dark:bg-neutral-900/30 hover:bg-gray-50 dark:hover:bg-neutral-900/50 transition-all text-neutral-600 dark:text-neutral-400 hover:text-blue-500 hover:border-blue-500/50 active:scale-[0.99] text-xs font-bold"
+                >
+                    <Upload size={14} />
+                    Upload Image
+                </button>
             ) : (
                 <div className="flex items-start gap-4 p-3 bg-gray-50 dark:bg-neutral-900/50 rounded-lg border border-gray-200 dark:border-neutral-800">
                     {/* Preview / Placeholder */}
@@ -76,7 +58,7 @@ export const BlockImageUploader = ({ label = "Upload Image", currentUrl, onUploa
                             <Upload size={14} /> Replace Image
                         </button>
                         <p className="text-[10px] text-neutral-400 dark:text-neutral-500 mt-2 font-medium leading-tight">
-                            Click image to remove.<br/>Max 10MB.
+                            Click image to remove.
                         </p>
                     </div>
                 </div>
