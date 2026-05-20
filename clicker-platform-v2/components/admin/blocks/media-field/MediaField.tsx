@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { Image as ImageIcon, Film, Sparkles, Upload, X, Loader2 } from 'lucide-react';
+import { Image as ImageIcon, Film, Sparkles, Upload, X } from 'lucide-react';
 import { uploadToStorage } from '@/lib/upload';
 import { useSite } from '@/lib/site-context';
 import { MediaFieldValue, MediaType, MediaAspectRatio, MediaObjectFit, DEFAULT_MEDIA } from './types';
@@ -120,7 +120,7 @@ export function MediaField({ value, onChange }: MediaFieldProps) {
                         <button
                             key={t.id}
                             type="button"
-                            onClick={() => { setSelectedTab(t.id); setError(''); }}
+                            onClick={() => { setSelectedTab(t.id); setError(''); setSizeWarning(''); }}
                             className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-bold rounded-md transition-all ${
                                 active
                                     ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 shadow-sm'
