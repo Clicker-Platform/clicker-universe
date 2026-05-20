@@ -201,9 +201,15 @@ export async function importExistingMedia(
 
     let imported = 0;
     let skipped = 0;
+    const colRef = collection(db, 'sites', siteId, 'mediaLibrary');
     for (const obj of listing.items) {
         const [meta, url] = await Promise.all([getMetadata(obj), getDownloadURL(obj)]);
         if (!meta.contentType || !IMAGE_MIMES.has(meta.contentType)) {
+            skipped++;
+            continue;
+        }
+        const existing = await getDocs(query(colRef, where('storagePath', '==', obj.fullPath)));
+        if (!existing.empty) {
             skipped++;
             continue;
         }
@@ -212,7 +218,6 @@ export async function importExistingMedia(
             skipped++;
             continue;
         }
-        const colRef = collection(db, 'sites', siteId, 'mediaLibrary');
         const docRef = doc(colRef);
         const item: MediaItem = {
             id: docRef.id,
@@ -233,6 +238,3 @@ export async function importExistingMedia(
 }
 
 export { MediaInUseError } from './types';
-
-// Suppress unused import warnings for stubs (used in future tasks)
-void where;

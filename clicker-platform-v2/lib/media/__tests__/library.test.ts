@@ -248,17 +248,24 @@ describe('importExistingMedia', () => {
         (getMetadata as any)
             .mockResolvedValueOnce({ contentType: 'image/webp', size: 1000, name: 'used.webp' })
             .mockResolvedValueOnce({ contentType: 'image/webp', size: 1000, name: 'orphan.webp' });
-        // findUsages: used.webp has 1 page hit, orphan.webp has none
+        // getDocs sequence:
+        // 1. Dedup query for used.webp → not yet indexed
+        // 2. findUsages.pages for used.webp → 1 hit
+        // 3. findUsages.links for used.webp → empty
+        // 4. findUsages.forms for used.webp → empty
+        // 5. Dedup query for orphan.webp → not yet indexed
+        // 6. findUsages.pages for orphan.webp → empty (no hit)
+        // 7. findUsages.links for orphan.webp → empty
+        // 8. findUsages.forms for orphan.webp → empty
         (getDocs as any)
-            // First findUsages call: pages
-            .mockResolvedValueOnce({ docs: [{ id: 'home', data: () => ({ name: 'Home', blocks: [{ src: 'https://example/used' }] }) }] })
-            // links, forms
-            .mockResolvedValueOnce({ docs: [] })
-            .mockResolvedValueOnce({ docs: [] })
-            // Second findUsages call: pages
-            .mockResolvedValueOnce({ docs: [{ id: 'home', data: () => ({ name: 'Home', blocks: [{ src: 'https://example/used' }] }) }] })
-            .mockResolvedValueOnce({ docs: [] })
-            .mockResolvedValueOnce({ docs: [] });
+            .mockResolvedValueOnce({ docs: [], empty: true })  // dedup: used.webp
+            .mockResolvedValueOnce({ docs: [{ id: 'home', data: () => ({ name: 'Home', blocks: [{ src: 'https://example/used' }] }) }] })  // findUsages.pages: used
+            .mockResolvedValueOnce({ docs: [] })  // findUsages.links: used
+            .mockResolvedValueOnce({ docs: [] })  // findUsages.forms: used
+            .mockResolvedValueOnce({ docs: [], empty: true })  // dedup: orphan.webp
+            .mockResolvedValueOnce({ docs: [] })  // findUsages.pages: orphan
+            .mockResolvedValueOnce({ docs: [] })  // findUsages.links: orphan
+            .mockResolvedValueOnce({ docs: [] });  // findUsages.forms: orphan
         (getDoc as any).mockResolvedValue({ exists: () => false }); // business never matches
 
         const result = await importExistingMedia('s1', 'user-1');
