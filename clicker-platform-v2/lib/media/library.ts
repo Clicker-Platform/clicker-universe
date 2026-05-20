@@ -1,9 +1,9 @@
 import { db, storage } from '@/lib/firebase';
 import { uploadToStorage } from '@/lib/upload';
 import { collection, doc, setDoc, getDocs, getDoc, query, where, orderBy, deleteDoc, updateDoc, Timestamp } from 'firebase/firestore';
-import { ref as storageRef, deleteObject } from 'firebase/storage';
+import { ref as storageRef, deleteObject, listAll, getDownloadURL, getMetadata } from 'firebase/storage';
 import type { MediaItem, MediaUsage } from './types';
-import { DEFAULT_FOLDER, MediaInUseError } from './types';
+import { DEFAULT_FOLDER, IMPORTED_FOLDER, MediaInUseError } from './types';
 
 function extractStoragePath(url: string): string {
     // Firebase Storage download URLs look like:
@@ -185,8 +185,51 @@ export async function deleteMedia(
     await deleteDoc(ref);
 }
 
-export async function importExistingMedia(_siteId: string, _uploadedBy: string): Promise<{ imported: number; skipped: number }> {
-    throw new Error('not implemented');
+const IMAGE_MIMES = new Set(['image/webp', 'image/avif', 'image/png', 'image/jpeg', 'image/gif', 'image/svg+xml']);
+
+export async function importExistingMedia(
+    siteId: string,
+    uploadedBy: string,
+): Promise<{ imported: number; skipped: number }> {
+    const root = storageRef(storage, `sites/${siteId}/media`);
+    let listing;
+    try {
+        listing = await listAll(root);
+    } catch {
+        return { imported: 0, skipped: 0 };
+    }
+
+    let imported = 0;
+    let skipped = 0;
+    for (const obj of listing.items) {
+        const [meta, url] = await Promise.all([getMetadata(obj), getDownloadURL(obj)]);
+        if (!meta.contentType || !IMAGE_MIMES.has(meta.contentType)) {
+            skipped++;
+            continue;
+        }
+        const usages = await findUsages(siteId, url);
+        if (usages.length === 0) {
+            skipped++;
+            continue;
+        }
+        const colRef = collection(db, 'sites', siteId, 'mediaLibrary');
+        const docRef = doc(colRef);
+        const item: MediaItem = {
+            id: docRef.id,
+            url,
+            storagePath: obj.fullPath,
+            fileName: obj.name,
+            mimeType: meta.contentType,
+            sizeBytes: meta.size ?? 0,
+            folder: IMPORTED_FOLDER,
+            tags: [],
+            uploadedAt: Timestamp.now(),
+            uploadedBy,
+        };
+        await setDoc(docRef, item);
+        imported++;
+    }
+    return { imported, skipped };
 }
 
 export { MediaInUseError } from './types';

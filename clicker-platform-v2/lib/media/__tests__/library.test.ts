@@ -8,6 +8,9 @@ Object.defineProperty(URL, 'revokeObjectURL', { value: vi.fn(), writable: true }
 vi.mock('firebase/storage', () => ({
     ref: vi.fn(),
     deleteObject: vi.fn(async () => undefined),
+    listAll: vi.fn(),
+    getDownloadURL: vi.fn(),
+    getMetadata: vi.fn(),
 }));
 
 type MockImageBehavior = { kind: 'error' } | { kind: 'load'; width: number; height: number };
@@ -52,10 +55,10 @@ vi.mock('firebase/firestore', () => ({
     Timestamp: { now: () => 'mock-ts' },
 }));
 
-import { registerMedia, listMedia, updateMedia, deleteMedia, MediaInUseError } from '../library';
+import { registerMedia, listMedia, updateMedia, deleteMedia, importExistingMedia, MediaInUseError } from '../library';
 import { uploadToStorage } from '@/lib/upload';
 import { setDoc, getDocs, updateDoc, deleteDoc, getDoc } from 'firebase/firestore';
-import { deleteObject } from 'firebase/storage';
+import { deleteObject, listAll, getDownloadURL, getMetadata } from 'firebase/storage';
 
 describe('registerMedia', () => {
     beforeEach(() => {
@@ -225,5 +228,41 @@ describe('deleteMedia', () => {
         await deleteMedia('s1', 'item-1', { force: true });
         expect(deleteDoc).toHaveBeenCalledTimes(1);
         expect(deleteObject).toHaveBeenCalledTimes(1);
+    });
+});
+
+describe('importExistingMedia', () => {
+    beforeEach(() => vi.clearAllMocks());
+
+    it('imports only Storage files that are referenced in pages/links/forms/business', async () => {
+        (listAll as any).mockResolvedValue({
+            items: [
+                { fullPath: 'sites/s1/media/used.webp', name: 'used.webp' },
+                { fullPath: 'sites/s1/media/orphan.webp', name: 'orphan.webp' },
+            ],
+            prefixes: [],
+        });
+        (getDownloadURL as any)
+            .mockResolvedValueOnce('https://example/used')
+            .mockResolvedValueOnce('https://example/orphan');
+        (getMetadata as any)
+            .mockResolvedValueOnce({ contentType: 'image/webp', size: 1000, name: 'used.webp' })
+            .mockResolvedValueOnce({ contentType: 'image/webp', size: 1000, name: 'orphan.webp' });
+        // findUsages: used.webp has 1 page hit, orphan.webp has none
+        (getDocs as any)
+            // First findUsages call: pages
+            .mockResolvedValueOnce({ docs: [{ id: 'home', data: () => ({ name: 'Home', blocks: [{ src: 'https://example/used' }] }) }] })
+            // links, forms
+            .mockResolvedValueOnce({ docs: [] })
+            .mockResolvedValueOnce({ docs: [] })
+            // Second findUsages call: pages
+            .mockResolvedValueOnce({ docs: [{ id: 'home', data: () => ({ name: 'Home', blocks: [{ src: 'https://example/used' }] }) }] })
+            .mockResolvedValueOnce({ docs: [] })
+            .mockResolvedValueOnce({ docs: [] });
+        (getDoc as any).mockResolvedValue({ exists: () => false }); // business never matches
+
+        const result = await importExistingMedia('s1', 'user-1');
+        expect(result).toEqual({ imported: 1, skipped: 1 });
+        expect(setDoc).toHaveBeenCalledTimes(1);
     });
 });
