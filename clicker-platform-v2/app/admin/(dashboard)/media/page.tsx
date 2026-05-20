@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Upload as UploadIcon, Trash2, RefreshCw, Loader2 } from 'lucide-react';
+import { Upload as UploadIcon, RefreshCw, Loader2 } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
 import { auth } from '@/lib/firebase';
 import { logger } from '@/lib/logger-edge';
@@ -156,20 +156,9 @@ export default function MediaPage() {
                 siteId={siteId}
                 onClose={() => setActive(null)}
                 onChange={(next) => setItems(prev => prev.map(i => i.id === next.id ? next : i))}
+                onDelete={onDelete}
+                deleting={!!active && busy === `del-${active.id}`}
             />
-
-            {active && (
-                <div className="fixed bottom-4 right-[420px] z-40">
-                    <button
-                        onClick={() => onDelete(active.id)}
-                        disabled={busy === `del-${active.id}`}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md bg-red-600 text-white disabled:opacity-60"
-                    >
-                        {busy === `del-${active.id}` ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
-                        Delete
-                    </button>
-                </div>
-            )}
 
             <MediaUsageModal
                 open={!!usageBlock}
