@@ -107,16 +107,16 @@ function containsUrl(value: unknown, url: string): boolean {
 export async function findUsages(siteId: string, url: string): Promise<MediaUsage[]> {
     const usages: MediaUsage[] = [];
 
-    // Pages
+    // Pages — scan full doc; some templates store media at root (coverImage, etc.) not only in blocks.
     const pagesSnap = await getDocs(collection(db, 'sites', siteId, 'pages'));
     for (const d of pagesSnap.docs) {
         const data = d.data() as any;
-        if (containsUrl(data.blocks, url)) {
+        if (containsUrl(data, url)) {
             usages.push({
                 type: 'page',
                 id: d.id,
                 label: `Page: ${data.name || data.title || d.id}`,
-                location: 'Page blocks',
+                location: 'Page content',
             });
         }
     }
