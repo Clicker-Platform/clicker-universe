@@ -31,14 +31,20 @@ export function MediaPicker({ open, onClose, onSelect, accept = 'image', initial
 
     useEffect(() => {
         if (!open) return;
+        // Reset per-session state so reopening doesn't carry over stale URL input or error.
+        setUrlInput('');
+        setError('');
         setLoading(true);
+        let cancelled = false;
         listMedia({ siteId, folder: initialFolder })
-            .then(setItems)
+            .then((data) => { if (!cancelled) setItems(data); })
             .catch((e) => {
+                if (cancelled) return;
                 logger.error('admin.media.picker.load', { error: e });
                 setError(e.message);
             })
-            .finally(() => setLoading(false));
+            .finally(() => { if (!cancelled) setLoading(false); });
+        return () => { cancelled = true; };
     }, [open, siteId, initialFolder]);
 
     if (!open) return null;
@@ -119,6 +125,7 @@ export function MediaPicker({ open, onClose, onSelect, accept = 'image', initial
                                 <MediaLibraryGrid
                                     items={items}
                                     onSelect={(item) => { onSelect({ url: item.url, item }); onClose(); }}
+                                    emptyMessage={error ? 'Could not load media.' : undefined}
                                 />
                             </>
                         )
