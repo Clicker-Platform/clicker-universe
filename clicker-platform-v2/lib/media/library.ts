@@ -93,9 +93,11 @@ export async function listMedia({
     return items;
 }
 
-export async function updateMedia(siteId: string, id: string, patch: Partial<MediaItem>): Promise<void> {
+export type MediaPatch = Partial<Pick<MediaItem, 'fileName' | 'folder' | 'tags'>>;
+
+export async function updateMedia(siteId: string, id: string, patch: MediaPatch): Promise<void> {
     const ref = doc(db, 'sites', siteId, 'mediaLibrary', id);
-    await updateDoc(ref, patch as any);
+    await updateDoc(ref, patch);
 }
 
 export async function findUsages(_siteId: string, _url: string): Promise<MediaUsage[]> {
