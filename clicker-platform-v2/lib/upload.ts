@@ -76,7 +76,8 @@ async function convertImage(file: File, quality = 0.85): Promise<{ blob: Blob; e
 /**
  * Upload a file directly to Firebase Storage from the client.
  * Images are converted to WebP (or AVIF if WebP unavailable) before upload.
- * Returns the download URL and actual stored content type of the uploaded file.
+ * Returns the download URL, actual stored content type, and stored byte size
+ * — the latter two reflect the post-conversion blob, not the original file.
  */
 export async function uploadToStorage({
     file,
@@ -84,7 +85,7 @@ export async function uploadToStorage({
     siteId,
     convertToWebP = true,
     webpQuality = 0.85,
-}: UploadOptions): Promise<{ url: string; contentType: string }> {
+}: UploadOptions): Promise<{ url: string; contentType: string; sizeBytes: number }> {
     const storagePrefix = (!siteId || siteId === 'platform')
         ? folder
         : `sites/${siteId}/${folder}`;
@@ -99,5 +100,5 @@ export async function uploadToStorage({
 
     await uploadBytes(storageRef, blob, { contentType });
 
-    return { url: await getDownloadURL(storageRef), contentType };
+    return { url: await getDownloadURL(storageRef), contentType, sizeBytes: blob.size };
 }

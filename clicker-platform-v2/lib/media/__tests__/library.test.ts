@@ -64,7 +64,11 @@ describe('registerMedia', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         mockImageBehavior = { kind: 'error' };
-        (uploadToStorage as any).mockResolvedValue({ url: 'https://storage.example/sites/s1/media/abc.webp', contentType: 'image/webp' });
+        (uploadToStorage as any).mockResolvedValue({
+            url: 'https://storage.example/sites/s1/media/abc.webp',
+            contentType: 'image/webp',
+            sizeBytes: 4321,
+        });
     });
 
     it('uploads to Storage and writes a Firestore record with defaults', async () => {
@@ -89,6 +93,9 @@ describe('registerMedia', () => {
         expect(item.fileName).toBe('hero.png');
         expect(item.uploadedBy).toBe('user-1');
         expect(item.mimeType).toBe('image/webp');
+        // sizeBytes reflects the post-conversion blob size from uploadToStorage,
+        // not file.size (12345) — the WebP/AVIF blob is typically much smaller than the source.
+        expect(item.sizeBytes).toBe(4321);
     });
 
     it('applies provided folder and tags', async () => {
