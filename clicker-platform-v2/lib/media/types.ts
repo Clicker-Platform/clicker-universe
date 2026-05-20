@@ -33,5 +33,5 @@ export class MediaInUseError extends Error {
     }
 }
 
-export const DEFAULT_FOLDER = 'uncategorized';
+export const DEFAULT_FOLDER = 'Uncategorized';
 export const IMPORTED_FOLDER = 'Imported';

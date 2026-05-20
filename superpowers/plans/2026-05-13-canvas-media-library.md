@@ -96,7 +96,7 @@ export class MediaInUseError extends Error {
     }
 }
 
-export const DEFAULT_FOLDER = 'uncategorized';
+export const DEFAULT_FOLDER = 'Uncategorized';
 export const IMPORTED_FOLDER = 'Imported';
 ```
 
@@ -219,7 +219,7 @@ describe('registerMedia', () => {
         }));
         expect(setDoc).toHaveBeenCalledTimes(1);
         expect(item.url).toBe('https://storage.example/sites/s1/media/abc.webp');
-        expect(item.folder).toBe('uncategorized');
+        expect(item.folder).toBe('Uncategorized');
         expect(item.tags).toEqual([]);
         expect(item.fileName).toBe('hero.png');
         expect(item.uploadedBy).toBe('user-1');
@@ -350,7 +350,7 @@ describe('listMedia', () => {
     it('returns items ordered by uploadedAt desc', async () => {
         (getDocs as any).mockResolvedValue({
             docs: [
-                { id: 'b', data: () => ({ id: 'b', fileName: 'b.png', folder: 'uncategorized', tags: [] }) },
+                { id: 'b', data: () => ({ id: 'b', fileName: 'b.png', folder: 'Uncategorized', tags: [] }) },
                 { id: 'a', data: () => ({ id: 'a', fileName: 'a.png', folder: 'heroes', tags: ['hero'] }) },
             ],
         });
@@ -362,7 +362,7 @@ describe('listMedia', () => {
         (getDocs as any).mockResolvedValue({
             docs: [
                 { id: 'a', data: () => ({ id: 'a', folder: 'heroes', tags: [], fileName: 'a' }) },
-                { id: 'b', data: () => ({ id: 'b', folder: 'uncategorized', tags: [], fileName: 'b' }) },
+                { id: 'b', data: () => ({ id: 'b', folder: 'Uncategorized', tags: [], fileName: 'b' }) },
             ],
         });
         const items = await listMedia({ siteId: 's1', folder: 'heroes' });
@@ -1045,7 +1045,7 @@ vi.mock('firebase/firestore', () => ({
 function mkItem(over: Partial<MediaItem>): MediaItem {
     return {
         id: 'i', url: 'https://x/i', storagePath: 'p', fileName: 'i.png',
-        mimeType: 'image/png', sizeBytes: 0, folder: 'uncategorized', tags: [],
+        mimeType: 'image/png', sizeBytes: 0, folder: 'Uncategorized', tags: [],
         uploadedAt: ({ toMillis: () => 0 } as any),
         uploadedBy: 'u',
         ...over,
@@ -1436,7 +1436,7 @@ export function MediaItemDrawer({ item, siteId, onClose, onChange }: Props) {
         setSaving(true);
         const patch = {
             fileName,
-            folder: folder || 'uncategorized',
+            folder: folder || 'Uncategorized',
             tags: tagsInput.split(',').map(t => t.trim()).filter(Boolean),
         };
         await updateMedia(siteId, item.id, patch);
