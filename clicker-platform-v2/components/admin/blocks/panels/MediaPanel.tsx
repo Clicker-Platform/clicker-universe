@@ -28,7 +28,7 @@ export function MediaPanel() {
             .then((res) => { if (!cancelled) setItems(res); })
             .catch((e) => {
                 if (cancelled) return;
-                logger.error('admin.media.panel.load', { error: e });
+                logger.error('admin.media.panel.load', { siteId, error: e });
             })
             .finally(() => { if (!cancelled) setLoading(false); });
         return () => { cancelled = true; };

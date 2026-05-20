@@ -45,7 +45,7 @@ export function MediaPicker({ open, onClose, onSelect, accept = 'image', initial
             .then((data) => { if (!cancelled) setItems(data); })
             .catch((e) => {
                 if (cancelled) return;
-                logger.error('admin.media.picker.load', { error: e });
+                logger.error('admin.media.picker.load', { siteId, error: e });
                 setError(e.message);
             })
             .finally(() => { if (!cancelled) setLoading(false); });
@@ -68,7 +68,7 @@ export function MediaPicker({ open, onClose, onSelect, accept = 'image', initial
             onSelect({ url: item.url, item });
             onClose();
         } catch (e: any) {
-            logger.error('admin.media.picker.upload', { error: e });
+            logger.error('admin.media.picker.upload', { siteId, error: e });
             setError(e.message || 'Upload failed');
         } finally {
             setUploadBusy(false);

@@ -29,7 +29,7 @@ export default function MediaPage() {
             const next = await listMedia({ siteId });
             setItems(next);
         } catch (e) {
-            logger.error('admin.media.load', { error: e });
+            logger.error('admin.media.load', { siteId, error: e });
             setToast((e as Error).message || 'Could not load media');
         } finally {
             setLoading(false);
@@ -47,7 +47,7 @@ export default function MediaPage() {
             .then((next) => { if (!cancelled) setItems(next); })
             .catch((e) => {
                 if (cancelled) return;
-                logger.error('admin.media.load', { error: e });
+                logger.error('admin.media.load', { siteId, error: e });
                 setToast((e as Error).message || 'Could not load media');
             })
             .finally(() => { if (!cancelled) setLoading(false); });
@@ -69,7 +69,7 @@ export default function MediaPage() {
             const item = await registerMedia({ siteId, file, uploadedBy: uid });
             setItems(prev => [item, ...prev]);
         } catch (e) {
-            logger.error('admin.media.upload', { error: e });
+            logger.error('admin.media.upload', { siteId, error: e });
             setToast((e as Error).message);
         } finally {
             setBusy(null);
@@ -87,7 +87,7 @@ export default function MediaPage() {
             if (e instanceof MediaInUseError) {
                 setUsageBlock({ id, usages: e.usages });
             } else {
-                logger.error('admin.media.delete', { error: e });
+                logger.error('admin.media.delete', { siteId, error: e });
                 setToast((e as Error).message);
             }
         } finally {
@@ -104,7 +104,7 @@ export default function MediaPage() {
             setToast(`Imported ${res.imported} files, skipped ${res.skipped} orphans.`);
             await refresh();
         } catch (e) {
-            logger.error('admin.media.import', { error: e });
+            logger.error('admin.media.import', { siteId, error: e });
             setToast((e as Error).message);
         } finally {
             setBusy(null);
