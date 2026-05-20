@@ -34,4 +34,9 @@ describe('MediaLibraryGrid', () => {
         expect(screen.queryByAltText('logo.png')).toBeNull();
         expect(screen.getByAltText('hero.png')).toBeTruthy();
     });
+
+    it('shows emptyMessage when no items match', () => {
+        render(<MediaLibraryGrid items={[]} onSelect={() => {}} emptyMessage="Nothing here." />);
+        expect(screen.getByText('Nothing here.')).toBeTruthy();
+    });
 });

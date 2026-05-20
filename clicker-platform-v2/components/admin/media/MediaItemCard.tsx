@@ -13,6 +13,7 @@ export function MediaItemCard({ item, selected, onClick }: Props) {
         <button
             type="button"
             onClick={onClick}
+            aria-pressed={selected}
             className={`group relative aspect-square overflow-hidden rounded-lg border bg-white dark:bg-neutral-900 transition-colors ${
                 selected ? 'border-blue-500 ring-2 ring-blue-500/30' : 'border-gray-200 dark:border-neutral-800 hover:border-blue-400'
             }`}

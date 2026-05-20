@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Search } from 'lucide-react';
 import type { MediaItem } from '@/lib/media/types';
 import { MediaItemCard } from './MediaItemCard';
@@ -19,6 +19,15 @@ export function MediaLibraryGrid({ items, onSelect, selectedId, emptyMessage }: 
 
     const folders = useMemo(() => Array.from(new Set(items.map(i => i.folder))).sort(), [items]);
     const tags = useMemo(() => Array.from(new Set(items.flatMap(i => i.tags))).sort(), [items]);
+
+    // Clear filter selections that no longer correspond to any available option
+    // (e.g. after items reload and the previously-selected folder is gone).
+    useEffect(() => {
+        if (folder && !folders.includes(folder)) setFolder('');
+    }, [folders, folder]);
+    useEffect(() => {
+        if (tag && !tags.includes(tag)) setTag('');
+    }, [tags, tag]);
 
     const filtered = useMemo(() => {
         return items.filter(i => {
