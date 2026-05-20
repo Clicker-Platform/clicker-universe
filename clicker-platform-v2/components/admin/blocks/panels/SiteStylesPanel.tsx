@@ -7,7 +7,11 @@ import { ComingSoonTile } from './site-styles/ComingSoonTile';
 
 type View = 'index' | 'fonts';
 
-export function SiteStylesPanel() {
+type Props = {
+  templateId?: string | null;
+};
+
+export function SiteStylesPanel({ templateId }: Props) {
   const [view, setView] = useState<View>('index');
 
   if (view === 'fonts') {
@@ -20,7 +24,7 @@ export function SiteStylesPanel() {
         >
           <ChevronLeft className="h-4 w-4" /> Site Styles
         </button>
-        <FontsSection />
+        <FontsSection templateId={templateId} />
       </div>
     );
   }

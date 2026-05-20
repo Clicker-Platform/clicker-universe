@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import {
-  Figtree,
   Space_Mono,
   Inter,
   Inter_Tight,
@@ -19,7 +18,6 @@ import {
 import { Toaster } from 'sonner';
 import "./globals.css";
 
-const figtree = Figtree({ subsets: ["latin"], variable: "--font-jakarta", weight: ['400','500','600','700','800'], display: 'swap' });
 const spaceMono = Space_Mono({ subsets: ["latin"], variable: "--font-space", weight: ['400','700'], display: 'swap' });
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", weight: ['400','500','600','700'], display: 'swap' });
@@ -37,7 +35,7 @@ const quicksand = Quicksand({ subsets: ["latin"], variable: "--font-quicksand", 
 const montserrat = Montserrat({ subsets: ["latin"], variable: "--font-montserrat", weight: ['400','500','600','700'], display: 'swap' });
 
 const FONT_CLASS_NAMES = [
-  figtree.variable, spaceMono.variable,
+  spaceMono.variable,
   inter.variable, interTight.variable, outfit.variable, dmSans.variable,
   playfair.variable, lora.variable, fraunces.variable,
   archivo.variable, archivoBlack.variable, spaceGrotesk.variable,
@@ -104,7 +102,12 @@ export default async function RootLayout({
     : [null, { fontPackId: null }];
 
   return (
-    <html lang="id" className="notranslate" translate="no" suppressHydrationWarning>
+    <html
+      lang="id"
+      className={`notranslate ${FONT_CLASS_NAMES}`}
+      translate="no"
+      suppressHydrationWarning
+    >
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -114,7 +117,7 @@ export default async function RootLayout({
       </head>
       <body
         suppressHydrationWarning
-        className={`${FONT_CLASS_NAMES} antialiased font-sans`}
+        className="antialiased font-sans"
       >
         <PostHogProvider>
           <SiteProvider siteId={siteId} tenantSlug={tenantSlug} isSubdomain={isSubdomain}>

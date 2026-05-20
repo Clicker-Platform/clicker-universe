@@ -16,6 +16,7 @@ export const BurgerHeader: React.FC<VariantProps> = ({
   typographyClass,
   onItemClick,
   forceMobile = false,
+  logoFontStyle,
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { theme } = useTemplate();
@@ -33,7 +34,7 @@ export const BurgerHeader: React.FC<VariantProps> = ({
 
   return (
     <div className="flex items-center justify-between w-full relative">
-      <NavLogo profile={profile} siteId={siteId} />
+      <NavLogo profile={profile} siteId={siteId} logoFontStyle={logoFontStyle} />
 
       <div className="flex items-center gap-3">
         <NavCTA cta={cta} typographyClass={typographyClass} onItemClick={onItemClick} />

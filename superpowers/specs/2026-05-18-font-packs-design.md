@@ -1,8 +1,36 @@
 # Font Packs in Canvas Studio — Design Spec
 
 **Date:** 2026-05-18
-**Status:** Approved (brainstorm), pending implementation plan
+**Status:** Shipped 2026-05-19 (after extended migration to remove competing font systems)
 **Author:** Brainstorm session with Andre
+
+## Final architecture (as shipped)
+
+The first-slice design evolved during implementation. The actually-shipped system has stricter boundaries than the original spec:
+
+1. **Font Pack is the SOLE source of public-site fonts.** The legacy `settings.fontFamily` field and its dropdown UI were removed. The `fonts: { heading, body }` field on `TemplateConfig` was removed. The `--font-jakarta` CSS variable and Figtree font were removed entirely.
+2. **Each template ships with a `defaultFontPackId`** (mappings below). Sites without a Font Pack chosen fall back to the template's default; templates without a default fall back to Clean Minimal (universal).
+3. **Admin chrome uses the system font stack** (`system-ui, -apple-system, ...`) — never picks up Font Pack changes.
+4. **`next/font/google` CSS variables are attached to `<html>`** (not `<body>`), so SSR-injected `:root { --font-heading: var(--font-X) }` rules can substitute them. This was the final bug — see `feedback_css_var_reachability_at_root` memory.
+
+Template → default pack mappings:
+
+|Template|defaultFontPackId|Heading|Body|
+|-|-|-|-|
+|classic|clean-minimal|Inter|Inter Tight|
+|modern|brutalist|Space Grotesk|Inter|
+|sojourner|clean-minimal|Inter|Inter Tight|
+|shuvo|editorial-serif|Playfair Display|Lora|
+|mrb|bold-display|Archivo Black|Archivo|
+|mrb-light|clean-minimal|Inter|Inter Tight|
+
+## Lessons learned (recorded in memory)
+
+- `feedback_grep_existing_css_var_writers.md` — Inline `style={vars}` writes beat `:root` rules by specificity. Always audit.
+- `feedback_css_var_reachability_at_root.md` — `:root { --x: var(--y) }` silently fails if `--y` lives below `<html>`. Variables inherit downward only.
+- The original first-slice scope kept templates as a font source ("graceful default"). User feedback was that this was the wrong abstraction — templates should be tokens-only, not font owners. Required a follow-up migration (M1–M7 + legacy removal) to align with stated architecture.
+
+---
 
 ---
 

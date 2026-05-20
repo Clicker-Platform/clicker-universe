@@ -18,8 +18,6 @@
 
   --shadow-sticker: 4px 4px 0px 0px var(--theme-border);
   --shadow-sticker-hover: 2px 2px 0px 0px var(--theme-border);
-
-  --font-jakarta: var(--font-jakarta);
 }
 
 :root {
@@ -45,7 +43,7 @@ html, body {
 
 body {
   background-color: var(--theme-background);
-  font-family: var(--font-jakarta), sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
   color: var(--theme-foreground);
   transition: background-color 0.3s ease, color 0.3s ease;
 }
@@ -53,26 +51,35 @@ body {
 /*
  * Block typography foundation — spec §4.3
  * Scoped to [data-template] so admin chrome (sidebar, dashboard) keeps its
- * own font stack. Inside any TemplateProvider, headings inherit --font-heading
- * and body text inherits --font-body. Tenant-customizable via theme.fonts.
+ * own system-stack font. Inside any TemplateProvider:
+ *   - headings (h1–h6) consume --font-heading
+ *   - everything else consumes --font-body
+ * Both populated by the active Font Pack (ThemeRegistry SSR +
+ * applyFontVarsToDocument).
+ *
+ * The :not(:is(h1…)) selector covers nav links, logo text, buttons,
+ * inputs, and any future element type without maintaining a tag list.
+ *
+ * !important is required to beat Tailwind v4's body cascade, which has
+ * equal specificity but loads later and would otherwise win.
  */
-/* !important is required to beat Tailwind v4's font-sans utility, which has
- * equal specificity (0,0,1,1) but loads later in the cascade and would
- * otherwise win for inherited font-family on headings and body text. */
 [data-template] :is(h1, h2, h3, h4, h5, h6) {
-  font-family: var(--font-heading, var(--font-jakarta), system-ui, sans-serif) !important;
+  font-family: var(--font-heading, system-ui, sans-serif) !important;
 }
 
-[data-template] :is(p, li, dd, dt, td, th, input, button, textarea, select, blockquote) {
-  font-family: var(--font-body, var(--font-jakarta), system-ui, sans-serif) !important;
-}
-
-[data-template] .prose {
-  font-family: var(--font-body, var(--font-jakarta), system-ui, sans-serif) !important;
+[data-template] :not(:is(h1, h2, h3, h4, h5, h6)) {
+  font-family: var(--font-body, system-ui, sans-serif) !important;
 }
 
 [data-template] .prose :where(h1, h2, h3, h4, h5, h6) {
-  font-family: var(--font-heading, var(--font-jakarta), system-ui, sans-serif) !important;
+  font-family: var(--font-heading, system-ui, sans-serif) !important;
+}
+
+/* Logo text: opts into a configurable font slot via --nav-logo-font.
+ * Higher specificity (the .nav-logo-text class) lets this beat the
+ * generic [data-template] h1 rule above. */
+[data-template] h1.nav-logo-text {
+  font-family: var(--nav-logo-font, var(--font-heading, system-ui, sans-serif)) !important;
 }
 
 /* Admin: override brand-green body background so it never bleeds through admin UI gaps */

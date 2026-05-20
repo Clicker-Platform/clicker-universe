@@ -775,7 +775,7 @@ This is the canonical pattern when one module's behavior depends on whether anot
 
 ## 8. Template & Theme System
 
-A **template** is the visual skin applied to a tenant's public site (biolink/website). Each template ships with a color palette, font pair, layout config, card style, and (optionally) custom header + block renderers. Tenants pick one in admin → Appearance.
+A **template** is the visual skin applied to a tenant's public site (biolink/website). Each template ships with a color palette, layout config, card style, and (optionally) custom header + block renderers. Templates **do not own fonts** — see §8a Font Pack System below. Tenants pick a template in admin → Appearance and pick fonts independently via Canvas Studio → Site Styles → Fonts.
 
 ### Six Built-in Templates
 
@@ -800,7 +800,7 @@ lib/templates/
 ├── registry.ts      ← Maps template ID → header/background/block components
 ├── layoutUtils.ts   ← containerWidth, navMode, grid helpers
 ├── service.ts       ← Template load/merge logic (used by Server Components)
-└── types.ts         ← TemplateDefinition, ThemeColors, ThemeFonts, etc.
+└── types.ts         ← TemplateDefinition, ThemeColors, etc. (ThemeFonts removed 2026-05-19)
 ```
 
 ### `TemplateConfig` Shape
@@ -810,7 +810,7 @@ Excerpted from `lib/templates/types.ts` — the canonical type:
 ```typescript
 interface TemplateConfig {
     colors: ThemeColors;          // primary, accent, background, foreground, surface, border, +extended tokens
-    fonts: ThemeFonts;            // heading, body
+    defaultFontPackId: string;    // Font Pack id used when site has no override (see §8a)
     borderRadius: string;
     cardStyle: 'brutalist' | 'clean' | 'glass';        // Deprecated in favor of cardVariant
     cardVariant: 'shadow' | 'outlined' | 'flat';        // Explicit card surface treatment
@@ -851,10 +851,100 @@ The override chain (template → module → default) is described in §9.
 
 Quick checklist (full version in §24):
 
-1. Append a `TemplateDefinition` entry to `lib/templates/definitions.ts`.
+1. Append a `TemplateDefinition` entry to `lib/templates/definitions.ts` (include `defaultFontPackId`).
 2. Register components (header, background, optional block overrides) in `lib/templates/registry.ts`.
 3. Create the header component under `components/headers/` if not reusing an existing one.
 4. Create any custom block renderers under `components/blocks/{templateId}/`.
+
+---
+
+## 8a. Font Pack System
+
+Fonts are owned by the **Font Pack** system, not by templates. Shipped 2026-05-19.
+
+### Resolution chain
+
+`ThemeRegistry` resolves the active Font Pack in this order on every page render:
+
+1. **Site-level override** — `sites/{siteId}/appearance/styles.fontPackId` (set when user picks a pack in Canvas Studio → Site Styles → Fonts).
+2. **Template default** — `template.config.defaultFontPackId` from the active template.
+3. **Universal fallback** — `getDefaultPack()` returns the pack matching `DEFAULT_PACK_ID` (`clean-minimal`).
+
+The resolved pack's CSS variables are emitted at `:root`:
+
+```css
+:root {
+    --font-heading: var(--font-fraunces);
+    --font-body: var(--font-inter);
+}
+```
+
+Public CSS rules in `globals.css` consume these:
+
+```css
+[data-template] :is(h1, h2, h3, h4, h5, h6) {
+    font-family: var(--font-heading, system-ui, sans-serif) !important;
+}
+[data-template] :is(p, li, ...) {
+    font-family: var(--font-body, system-ui, sans-serif) !important;
+}
+```
+
+### Curated catalog
+
+`lib/fonts/packs.ts` ships 8 starter packs. Adding a pack requires (a) `next/font/google` import in `app/layout.tsx` registering the family with a `--font-{slug}` variable, (b) a `FontPack` entry referencing that variable. The integrity test in `lib/fonts/__tests__/packs.test.ts` enforces that every pack's `cssVar` resolves to a known variable.
+
+### Files
+
+```text
+lib/fonts/
+├── types.ts           ← FontPack, FontSlot
+├── packs.ts           ← FONT_PACKS, KNOWN_CSS_VARS, getPackById, getDefaultPack, DEFAULT_PACK_ID
+└── __tests__/packs.test.ts
+
+lib/appearance/
+├── types.ts           ← AppearanceStyles { fontPackId }
+└── api.ts             ← getAppearanceStyles, setFontPackId (client SDK)
+
+components/admin/blocks/panels/
+├── SiteStylesPanel.tsx                  ← Slide-over root (Fonts active, others coming-soon)
+└── site-styles/
+    ├── FontsSection.tsx                 ← Header strip + card list + optimistic write
+    ├── FontPackCard.tsx                 ← Single pack tile, real-font preview
+    └── ComingSoonTile.tsx               ← Disabled section placeholder
+
+components/ThemeRegistry.tsx             ← SSR-injects :root { --font-heading; --font-body }
+lib/fetchData.ts                         ← fetchAppearanceStyles SSR helper
+```
+
+### Critical invariants (do not violate)
+
+1. **`next/font/google` `.variable` classNames must be attached to `<html>`, not `<body>`.** The SSR-injected `:root { --font-heading: var(--font-X) }` rule substitutes `var(--font-X)` at the matching element (`<html>`). CSS custom properties inherit downward only, so if `--font-X` lives on `<body>`, the substitution fails at `<html>` and `--font-heading` reads as empty everywhere. Reference: `feedback_css_var_reachability_at_root` memory.
+2. **`!important` is required on `[data-template]` typography rules** in globals.css — they share specificity (0,0,1,1) with Tailwind v4's body cascade, which loads later and would otherwise win.
+3. **Admin chrome must never render with Font Pack fonts.** Achieved by scoping all Font Pack consumers under `[data-template]` and keeping `<html>`/`<body>` body rule on system stack.
+4. **No `template.config.fonts` field exists.** Removed 2026-05-19. Anyone reading `template.config.fonts.heading` will get a TypeScript error.
+
+### Default pack mappings
+
+|Template|defaultFontPackId|Heading|Body|
+|-|-|-|-|
+|classic|clean-minimal|Inter|Inter Tight|
+|modern|brutalist|Space Grotesk|Inter|
+|sojourner|clean-minimal|Inter|Inter Tight|
+|shuvo|editorial-serif|Playfair Display|Lora|
+|mrb|bold-display|Archivo Black|Archivo|
+|mrb-light|clean-minimal|Inter|Inter Tight|
+
+### Firestore rule
+
+```javascript
+match /appearance/{docId} {
+  allow read: if true;                          // SSR reads this on every page load
+  allow write: if hasSiteAccess(siteId);
+}
+```
+
+Path: `sites/{siteId}/appearance/styles` (single doc, merge-write, `fontPackId: string | null`).
 
 ---
 

@@ -437,6 +437,19 @@ export function HeaderNavPanel() {
                     />
                 </div>
 
+                {/* Logo Font Style */}
+                <div className="space-y-1.5">
+                    <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">Logo Font</label>
+                    <SegmentedControl<'heading' | 'body'>
+                        value={header.logoFontStyle || 'heading'}
+                        onChange={(v) => updateHeader({ logoFontStyle: v })}
+                        options={[
+                            { value: 'heading', label: 'Heading' },
+                            { value: 'body', label: 'Body' },
+                        ]}
+                    />
+                </div>
+
                 {/* Scroll Behavior */}
                 <div className="space-y-1.5">
                     <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">Scroll behavior</label>
@@ -642,6 +655,31 @@ export function HeaderNavPanel() {
                         {advancedTypographyOpen && (
                             <div className="px-3 pb-3 space-y-3 border-t border-gray-200 dark:border-neutral-700 bg-gray-50/50 dark:bg-neutral-800/30">
                                 <div className="space-y-1.5 pt-3">
+                                    <label className="block text-[10px] text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">Size Override</label>
+                                    <SegmentedControl<'sm' | 'md' | 'lg'>
+                                        value={header.typography?.sizeOverride || 'sm'}
+                                        onChange={(v) => updateHeader({ typography: { ...header.typography, preset: header.typography?.preset || 'default', sizeOverride: v } })}
+                                        options={[
+                                            { value: 'sm', label: 'Normal' },
+                                            { value: 'md', label: 'Medium' },
+                                            { value: 'lg', label: 'Large' },
+                                        ]}
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="block text-[10px] text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">Weight Override</label>
+                                    <SegmentedControl<'normal' | 'medium' | 'semibold' | 'bold'>
+                                        value={header.typography?.weightOverride || 'medium'}
+                                        onChange={(v) => updateHeader({ typography: { ...header.typography, preset: header.typography?.preset || 'default', weightOverride: v } })}
+                                        options={[
+                                            { value: 'normal', label: 'Normal' },
+                                            { value: 'medium', label: 'Medium' },
+                                            { value: 'semibold', label: 'Semibold' },
+                                            { value: 'bold', label: 'Bold' },
+                                        ]}
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
                                     <label className="block text-[10px] text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">Tracking Override</label>
                                     <SegmentedControl<'normal' | 'tight' | 'wide'>
                                         value={header.typography?.trackingOverride || 'normal'}

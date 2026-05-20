@@ -28,11 +28,6 @@ export interface ThemeColors {
     overlay?: string;           // semi-transparent scrim for photo badges, modals
 }
 
-export interface ThemeFonts {
-    heading: string;
-    body: string;
-}
-
 export interface BackgroundElement {
     icon: string;
     position: string; // Tailwind class e.g. "top-10 left-4"
@@ -43,7 +38,7 @@ export interface BackgroundElement {
 
 export interface TemplateConfig {
     colors: ThemeColors;
-    fonts: ThemeFonts;
+    defaultFontPackId: string;
     borderRadius: string;
     // Deprecated: cardStyle in favor of cardVariant, but keeping for compatibility
     cardStyle: 'brutalist' | 'clean' | 'glass';

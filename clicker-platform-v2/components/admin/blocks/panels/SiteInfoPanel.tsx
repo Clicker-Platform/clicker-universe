@@ -109,7 +109,6 @@ export function SiteInfoPanel() {
         ogImageUrl: '',
         themeColor: '#B6FF2E',
         accentColor: '#0E3B2E',
-        fontFamily: 'Plus Jakarta Sans',
         templateId: 'classic',
         backgroundImageUrl: '',
     });

@@ -81,3 +81,9 @@ export function getPackById(id: string | null | undefined): FontPack | undefined
   if (!id) return undefined;
   return FONT_PACKS.find(p => p.id === id);
 }
+
+export function getDefaultPack(): FontPack {
+  const pack = FONT_PACKS.find(p => p.id === DEFAULT_PACK_ID);
+  if (!pack) throw new Error('DEFAULT_PACK_ID references missing pack: ' + DEFAULT_PACK_ID);
+  return pack;
+}

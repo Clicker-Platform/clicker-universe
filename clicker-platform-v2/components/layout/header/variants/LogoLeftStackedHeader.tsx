@@ -20,6 +20,7 @@ export const LogoLeftStackedHeader: React.FC<VariantProps> = ({
   typographyClass,
   onItemClick,
   forceMobile = false,
+  logoFontStyle,
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { theme } = useTemplate();
@@ -28,7 +29,7 @@ export const LogoLeftStackedHeader: React.FC<VariantProps> = ({
   return (
     <div className="flex flex-col w-full py-2 gap-2 relative">
       <div className="flex items-center justify-between w-full">
-        <NavLogo profile={profile} siteId={siteId} />
+        <NavLogo profile={profile} siteId={siteId} logoFontStyle={logoFontStyle} />
         <div className="flex items-center gap-3">
           <div className={forceMobile ? 'hidden' : 'hidden lg:block'}>
             <NavCTA cta={cta} typographyClass={typographyClass} onItemClick={onItemClick} />

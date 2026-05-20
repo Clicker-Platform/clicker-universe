@@ -888,7 +888,7 @@ export function CanvasStudio({
                     {slideOverPanel === 'products' && <ProductsPanel />}
                     {slideOverPanel === 'siteinfo' && <SiteInfoPanel />}
                     {slideOverPanel === 'branding' && <BrandingPanel />}
-                    {slideOverPanel === 'sitestyles' && <SiteStylesPanel />}
+                    {slideOverPanel === 'sitestyles' && <SiteStylesPanel templateId={templateId} />}
                 </MobileBottomSheet>
             </div>
         );
@@ -997,7 +997,7 @@ export function CanvasStudio({
                     {slideOverPanel === 'products' && <ProductsPanel />}
                     {slideOverPanel === 'siteinfo' && <SiteInfoPanel />}
                     {slideOverPanel === 'branding' && <BrandingPanel />}
-                    {slideOverPanel === 'sitestyles' && <SiteStylesPanel />}
+                    {slideOverPanel === 'sitestyles' && <SiteStylesPanel templateId={templateId} />}
                 </SlideOverPanel>
             )}
 

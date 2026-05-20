@@ -37,4 +37,33 @@ describe('resolveHeaderTypographyClass', () => {
     const result = resolveHeaderTypographyClass(cfg);
     expect(result).toContain('uppercase');
   });
+
+  it('applies size override and replaces preset size', () => {
+    const cfg: HeaderTypography = { preset: 'default', sizeOverride: 'lg' };
+    const result = resolveHeaderTypographyClass(cfg);
+    expect(result).toContain('text-lg');
+    expect(result).not.toContain('text-sm');
+  });
+
+  it('applies weight override and replaces preset weight', () => {
+    const cfg: HeaderTypography = { preset: 'spacious', weightOverride: 'normal' };
+    const result = resolveHeaderTypographyClass(cfg);
+    expect(result).toContain('font-normal');
+    expect(result).not.toContain('font-bold');
+  });
+
+  it('combines size + weight overrides with other overrides cleanly', () => {
+    const cfg: HeaderTypography = {
+      preset: 'spacious',
+      sizeOverride: 'md',
+      weightOverride: 'semibold',
+      caseOverride: 'none',
+    };
+    const result = resolveHeaderTypographyClass(cfg);
+    expect(result).toContain('text-base');
+    expect(result).toContain('font-semibold');
+    expect(result).not.toContain('text-xs');
+    expect(result).not.toContain('font-bold');
+    expect(result).not.toContain('uppercase');
+  });
 });

@@ -133,7 +133,7 @@ export default async function CatalogPage({
                                         className="font-bold text-lg tracking-wide uppercase"
                                         style={{
                                             color: template.config.colors.foreground,
-                                            fontFamily: template.config.fonts.heading
+                                            fontFamily: 'var(--font-heading)'
                                         }}
                                     >
                                         Home

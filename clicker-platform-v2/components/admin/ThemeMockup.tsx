@@ -33,7 +33,6 @@ export const ThemeMockup: React.FC<ThemeMockupProps> = ({ template, settings: cu
         description: customSettings?.description || 'Your tagline here',
         themeColor: customSettings?.themeColor || config.colors.primary,
         accentColor: customSettings?.accentColor || config.colors.accent,
-        fontFamily: customSettings?.fontFamily || (template.id === 'shuvo' ? 'Playfair Display' : 'Plus Jakarta Sans'),
         borderRadius: customSettings?.borderRadius || 'large',
         faviconUrl: customSettings?.faviconUrl || '',
         ogImageUrl: customSettings?.ogImageUrl || '',

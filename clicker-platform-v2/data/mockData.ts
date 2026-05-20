@@ -155,7 +155,6 @@ export interface SiteSettings {
     ogImageUrl: string;
     themeColor: string;
     accentColor: string;
-    fontFamily: string;
     templateId: TemplateId;
     /** @deprecated Use templateId instead. Kept for backward compatibility with existing Firestore data. */
     layoutStyle?: TemplateId;
@@ -227,6 +226,8 @@ export interface HeaderTypography {
     preset: HeaderNavTextPreset;
     trackingOverride?: 'normal' | 'tight' | 'wide';
     caseOverride?: 'uppercase' | 'none';
+    sizeOverride?: 'sm' | 'md' | 'lg';
+    weightOverride?: 'normal' | 'medium' | 'semibold' | 'bold';
 }
 
 export interface HeaderCTA {
@@ -254,6 +255,8 @@ export interface HeaderNavigationConfig {
     showBorder?: boolean;
     typography: HeaderTypography;
     scrolledAppearance: HeaderScrolledAppearance;
+    /** Font family for the logo text. 'heading' uses --font-heading; 'body' uses --font-body. Defaults to 'heading'. */
+    logoFontStyle?: 'heading' | 'body';
 }
 
 export interface SocialLinkItem {
