@@ -25,11 +25,29 @@ export default function MediaPage() {
 
     const refresh = async () => {
         setLoading(true);
-        const next = await listMedia({ siteId });
-        setItems(next);
-        setLoading(false);
+        try {
+            const next = await listMedia({ siteId });
+            setItems(next);
+        } catch (e) {
+            logger.error('admin.media.load', { error: e });
+            setToast((e as Error).message || 'Could not load media');
+        } finally {
+            setLoading(false);
+        }
     };
-    useEffect(() => { refresh(); }, [siteId]); // eslint-disable-line react-hooks/exhaustive-deps
+    useEffect(() => {
+        let cancelled = false;
+        setLoading(true);
+        listMedia({ siteId })
+            .then((next) => { if (!cancelled) setItems(next); })
+            .catch((e) => {
+                if (cancelled) return;
+                logger.error('admin.media.load', { error: e });
+                setToast((e as Error).message || 'Could not load media');
+            })
+            .finally(() => { if (!cancelled) setLoading(false); });
+        return () => { cancelled = true; };
+    }, [siteId]);
 
     // Auto-dismiss toast after 3 seconds
     useEffect(() => {
@@ -99,7 +117,12 @@ export default function MediaPage() {
                             type="file"
                             accept="image/*"
                             className="hidden"
-                            onChange={(e) => e.target.files?.[0] && onUpload(e.target.files[0])}
+                            onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                // Reset the input so the same file can be re-selected (browsers won't refire change otherwise)
+                                e.target.value = '';
+                                if (file) onUpload(file);
+                            }}
                         />
                     </label>
                     <button
