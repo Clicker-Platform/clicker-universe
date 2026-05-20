@@ -32,20 +32,26 @@ export function MediaUsageModal({ open, usages, onCancel, onForceDelete }: Props
                     </button>
                 </div>
                 <div className="p-4 space-y-2 max-h-80 overflow-y-auto">
-                    <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                        Deleting will break the following references:
-                    </p>
-                    <ul className="text-sm space-y-1">
-                        {usages.map((u, i) => (
-                            <li
-                                key={i}
-                                className="flex justify-between border-b border-gray-100 dark:border-neutral-800 py-1.5"
-                            >
-                                <span>{u.label}</span>
-                                <span className="text-neutral-400">{u.location}</span>
-                            </li>
-                        ))}
-                    </ul>
+                    {usages.length === 0 ? (
+                        <p className="text-sm text-neutral-500">No references found.</p>
+                    ) : (
+                        <>
+                            <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                                Deleting will break the following references:
+                            </p>
+                            <ul className="text-sm space-y-1">
+                                {usages.map((u, i) => (
+                                    <li
+                                        key={i}
+                                        className="flex justify-between border-b border-gray-100 dark:border-neutral-800 py-1.5"
+                                    >
+                                        <span>{u.label}</span>
+                                        <span className="text-neutral-400">{u.location}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </>
+                    )}
                 </div>
                 <div className="flex justify-end gap-2 px-4 py-3 border-t border-gray-200 dark:border-neutral-800">
                     <button
@@ -56,7 +62,8 @@ export function MediaUsageModal({ open, usages, onCancel, onForceDelete }: Props
                     </button>
                     <button
                         onClick={onForceDelete}
-                        className="px-3 py-1.5 text-sm rounded-md bg-red-600 text-white hover:bg-red-700 transition-colors"
+                        disabled={usages.length === 0}
+                        className="px-3 py-1.5 text-sm rounded-md bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         Force delete
                     </button>

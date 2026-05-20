@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { X, Loader2 } from 'lucide-react';
 import { updateMedia } from '@/lib/media/library';
 import type { MediaItem } from '@/lib/media/types';
+import { DEFAULT_FOLDER } from '@/lib/media/types';
 
 interface Props {
     item: MediaItem | null;
@@ -28,10 +29,11 @@ export function MediaItemDrawer({ item, siteId, onClose, onChange }: Props) {
     if (!item) return null;
 
     const save = async () => {
+        if (saving) return;
         setSaving(true);
         const patch = {
-            fileName,
-            folder: folder || 'Uncategorized',
+            fileName: fileName.trim(),
+            folder: folder.trim() || DEFAULT_FOLDER,
             tags: tagsInput.split(',').map((t) => t.trim()).filter(Boolean),
         };
         await updateMedia(siteId, item.id, patch);
