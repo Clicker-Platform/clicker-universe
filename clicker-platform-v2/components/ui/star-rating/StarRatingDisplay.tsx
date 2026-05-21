@@ -17,7 +17,7 @@ export const StarRatingDisplay: React.FC<StarRatingDisplayProps> = ({
             className={className}
             role="img"
             aria-label={`${rating} out of 5 stars`}
-            style={{ display: 'inline-flex', gap: 2 }}
+            style={{ display: 'inline-flex', gap: Math.max(2, Math.round(size * 0.125)) }}
         >
             {[1, 2, 3, 4, 5].map((n) => {
                 const filled = n <= rating;
