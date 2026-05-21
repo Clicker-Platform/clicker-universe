@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { ChevronUp, ChevronDown, Trash2 } from 'lucide-react';
 
 interface CardToolbarProps {
@@ -19,6 +19,10 @@ interface CardToolbarProps {
  *
  * Positioning is the caller's responsibility — render this absolutely
  * positioned relative to the card wrapper (top-aligned, slightly above).
+ *
+ * Delete is two-step: first click swaps the toolbar to Confirm/Cancel.
+ * Selecting a different card unmounts this toolbar, which resets the
+ * confirming state — that's the intended cancel-on-other-action behavior.
  */
 export function CardToolbar({
     label,
@@ -28,6 +32,8 @@ export function CardToolbar({
     onMoveDown,
     onDelete,
 }: CardToolbarProps) {
+    const [confirming, setConfirming] = useState(false);
+
     const stop = (fn: () => void) => (e: React.MouseEvent) => {
         e.stopPropagation();
         fn();
@@ -51,33 +57,54 @@ export function CardToolbar({
         >
             <span className="px-2 py-0.5 text-neutral-700 select-none">{label}</span>
             <span className="w-px h-4 bg-neutral-200 mx-0.5" />
-            <button
-                type="button"
-                aria-label="Move up"
-                disabled={!canMoveUp}
-                onClick={stop(onMoveUp)}
-                className={btn}
-            >
-                <ChevronUp size={14} />
-            </button>
-            <button
-                type="button"
-                aria-label="Move down"
-                disabled={!canMoveDown}
-                onClick={stop(onMoveDown)}
-                className={btn}
-            >
-                <ChevronDown size={14} />
-            </button>
-            <span className="w-px h-4 bg-neutral-200 mx-0.5" />
-            <button
-                type="button"
-                aria-label="Delete card"
-                onClick={stop(onDelete)}
-                className={`${btn} hover:text-red-600`}
-            >
-                <Trash2 size={13} />
-            </button>
+            {confirming ? (
+                <>
+                    <button
+                        type="button"
+                        onClick={stop(onDelete)}
+                        className="px-2.5 py-1 rounded-md bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+                    >
+                        Confirm
+                    </button>
+                    <button
+                        type="button"
+                        onClick={stop(() => setConfirming(false))}
+                        className="px-2.5 py-1 rounded-md text-neutral-600 hover:bg-neutral-100 transition-colors"
+                    >
+                        Cancel
+                    </button>
+                </>
+            ) : (
+                <>
+                    <button
+                        type="button"
+                        aria-label="Move up"
+                        disabled={!canMoveUp}
+                        onClick={stop(onMoveUp)}
+                        className={btn}
+                    >
+                        <ChevronUp size={14} />
+                    </button>
+                    <button
+                        type="button"
+                        aria-label="Move down"
+                        disabled={!canMoveDown}
+                        onClick={stop(onMoveDown)}
+                        className={btn}
+                    >
+                        <ChevronDown size={14} />
+                    </button>
+                    <span className="w-px h-4 bg-neutral-200 mx-0.5" />
+                    <button
+                        type="button"
+                        aria-label="Delete card"
+                        onClick={stop(() => setConfirming(true))}
+                        className={`${btn} hover:text-red-600`}
+                    >
+                        <Trash2 size={13} />
+                    </button>
+                </>
+            )}
         </div>
     );
 }
