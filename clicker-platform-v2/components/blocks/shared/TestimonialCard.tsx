@@ -77,8 +77,9 @@ export const TestimonialCard: React.FC<TestimonialCardProps> = ({
                         <img
                             src={item.brandLogo}
                             alt={item.brandName ?? 'Brand'}
+                            width={80}
                             height={20}
-                            style={{ objectFit: 'contain' }}
+                            style={{ objectFit: 'contain', maxWidth: '100%', width: 'auto' }}
                         />
                     )}
                     {item.brandName && (
