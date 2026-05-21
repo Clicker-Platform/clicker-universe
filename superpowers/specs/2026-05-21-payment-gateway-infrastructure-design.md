@@ -5,7 +5,7 @@
 
 ## Goal
 
-Bangun shared payment gateway infrastructure di Clicker Platform menggunakan Xendit. Mendukung dua mode: Clicker collect semua payment (default), atau tenant connect Xendit account sendiri (own-key). Satu webhook endpoint handle semua tenant. Module registry pattern — modul baru tinggal register handler tanpa touch core. Buyer identity di-snapshot ke tenant saat transaksi.
+Bangun shared payment gateway infrastructure di Clicker Platform menggunakan Xendit. Mendukung dua mode: Clicker collect semua payment (default), atau tenant connect Xendit account sendiri (own-key). Satu webhook endpoint handle semua tenant. Module registry pattern — modul baru tinggal register handler tanpa touch core. Customer identity di-snapshot ke tenant saat transaksi.
 
 ## End-to-End Flow
 
@@ -43,10 +43,10 @@ Bangun shared payment gateway infrastructure di Clicker Platform menggunakan Xen
   └─────────────────────────────────────────────────┘
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  PHASE 2: BUYER ONBOARDING
+  PHASE 2: CUSTOMER ONBOARDING
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  Buyer
+  Customer
     │  1. Kunjungi tenant page (kopi.clicker.id)
     ▼
   Klik produk → trigger login gate
@@ -55,14 +55,14 @@ Bangun shared payment gateway infrastructure di Clicker Platform menggunakan Xen
   Auth Gateway → Firebase Auth UID terbentuk
     │  → Custom token → redirect balik ke tenant
     ▼
-  Buyer punya Clicker Account
+  Customer punya Clicker Account
   (1 account, bisa beli dari tenant manapun)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   PHASE 3: PURCHASE FLOW
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  Buyer (sudah login)
+  Customer (sudah login)
     │  1. Pilih produk/layanan → klik "Bayar"
     ▼
   createInvoice({ siteId, module, referenceId, amount })
@@ -75,7 +75,7 @@ Bangun shared payment gateway infrastructure di Clicker Platform menggunakan Xen
   Simpan → platform/payments/invoices/{id} (status: pending)
     │
     ▼
-  Buyer redirect → Xendit Hosted Page
+  Customer redirect → Xendit Hosted Page
   (QRIS / VA / GoPay / OVO / Dana / Kartu)
     │
     ▼  bayar ✓
@@ -84,7 +84,7 @@ Bangun shared payment gateway infrastructure di Clicker Platform menggunakan Xen
     ├── verify token (clicker atau tenant)
     ├── idempotency check
     ├── update invoice → 'paid'
-    ├── snapshot buyer → sites/{siteId}/buyers/{uid}
+    ├── snapshot customer → sites/{siteId}/customers/{uid}
     └── dispatch module registry
     │
     ▼
@@ -104,12 +104,12 @@ Bangun shared payment gateway infrastructure di Clicker Platform menggunakan Xen
   ┌─────────────────────────────────────────────────┐
   │  TENANT lihat:                                  │
   │  → Transaksi di tenant mereka                   │
-  │  → Buyer: nama, email, HP, history di tenant    │
+  │  → Customer: nama, email, HP, history di tenant    │
   ├─────────────────────────────────────────────────┤
   │  CLICKER lihat:                                 │
   │  → Semua transaksi cross-tenant                 │
   │  → Volume, platform fee, tenant activity        │
-  │  → Buyer yang beli di multiple tenant           │
+  │  → Customer yang beli di multiple tenant           │
   └─────────────────────────────────────────────────┘
 ```
 
@@ -117,7 +117,7 @@ Bangun shared payment gateway infrastructure di Clicker Platform menggunakan Xen
 
 Clicker adalah SaaS platform. Ada dua layer payment:
 1. **Tenant bayar ke Clicker** — beli/subscribe modul (existing, out of scope)
-2. **Buyer bayar ke Tenant** — beli produk/service milik tenant via Clicker infra (this spec)
+2. **Customer bayar ke Tenant** — beli produk/service milik tenant via Clicker infra (this spec)
 
 Spec ini cover layer 2.
 
@@ -154,7 +154,7 @@ Module panggil createInvoice({ siteId, module, referenceId, amount, ... })
   → buat Xendit Invoice
   → simpan invoice record ke platform/payments/invoices/{invoiceId}
   → return { invoiceId, invoiceUrl }
-Module redirect buyer ke invoiceUrl
+Module redirect customer ke invoiceUrl
 ```
 
 ### Flow: Webhook
@@ -167,7 +167,7 @@ Xendit POST /api/webhook/xendit
   → mode 'own'     → decrypt tenant xenditCallbackToken → verify
   → cek idempotency: invoice status sudah 'paid'? skip
   → update invoice status → 'paid', paidAt
-  → snapshot buyer → sites/{siteId}/buyers/{uid} (upsert)
+  → snapshot customer → sites/{siteId}/customers/{uid} (upsert)
   → getHandler(module) → dispatch PaymentContext
   → handler update state modul (mark order paid, activate plan, dll)
   → return 200 (selalu, setelah verify)
@@ -238,11 +238,11 @@ registerPaymentHandler('pos', async (ctx) => {
 
 Modul baru tinggal tambah 1 file — tidak touch webhook route.
 
-## Buyer Identity Snapshot
+## Customer Identity Snapshot
 
-Saat webhook `invoice.paid` diproses, buyer di-snapshot ke Firestore tenant (upsert):
+Saat webhook `invoice.paid` diproses, customer di-snapshot ke Firestore tenant (upsert):
 
-**Firestore: `sites/{siteId}/buyers/{uid}`**
+**Firestore: `sites/{siteId}/customers/{uid}`**
 ```ts
 {
   uid: string,                  // Firebase Auth UID
@@ -255,13 +255,13 @@ Saat webhook `invoice.paid` diproses, buyer di-snapshot ke Firestore tenant (ups
 }
 ```
 
-Data ini dari Firebase Auth profile buyer (server-side lookup via Admin SDK). Tenant bisa query collection ini untuk lihat semua buyer mereka.
+Data ini dari Firebase Auth profile customer (server-side lookup via Admin SDK). Tenant bisa query collection ini untuk lihat semua customer mereka.
 
-`PaymentContext` tambah field `buyerUid` untuk enable snapshot:
+`PaymentContext` tambah field `customerUid` untuk enable snapshot:
 ```ts
 interface PaymentContext {
   ...
-  buyerUid: string
+  customerUid: string
 }
 ```
 
@@ -392,7 +392,7 @@ if (payload.metadata?.source === 'ai_topup') {
 
 ## Fase Berikutnya (Out of Scope)
 
-- **Buyer Library** — buyer bisa lihat semua produk yang pernah dibeli cross-tenant di satu halaman
+- **Customer Library** — customer bisa lihat semua produk yang pernah dibeli cross-tenant di satu halaman
 - **Platform Fee Settlement** — mekanisme Clicker transfer sisa ke tenant (setelah potong fee), settlement report
 - Notifikasi ke tenant setelah payment sukses (email + feed)
 - Backyard payment dashboard (audit semua transaksi cross-tenant)
