@@ -213,7 +213,14 @@ export const BlockRenderer = ({
                     : <HeadingBlock data={block.data} onInlineChange={onInlineChange} onFieldFocus={onFieldFocus} onFieldBlur={onFieldBlur} />;
 
             case 'feature_cards':
-                return <FeatureCardsBlock data={block.data} theme={theme} previewMode={previewMode} />;
+                return (
+                    <FeatureCardsBlock
+                        data={block.data}
+                        theme={theme}
+                        previewMode={previewMode}
+                        containerBlockId={block.id}
+                    />
+                );
 
             case 'columns':
                 return <ColumnsContainerBlock data={block.data} containerBlockId={block.id} previewMode={previewMode} showGuides={showGuides} passthroughProps={{ theme, siteId, tenantSlug, templateId, phoneNumber, whatsappSettings, onInlineChange, onFieldFocus, onFieldBlur, links, contact, branches, featuredProduct, products, businessHours, businessSchedule, linkSettings, productSettings, profile, reservationServices, reservationStaff, reservationSettings, showGuides, isHydrating }} />;
