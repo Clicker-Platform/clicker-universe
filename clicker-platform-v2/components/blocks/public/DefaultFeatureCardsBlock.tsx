@@ -132,8 +132,8 @@ export function DefaultFeatureCardsBlock({ data, theme: themeProp, previewMode, 
     // dv() emits the right classes for canvas previews + responsive viewport.
     const containerClass = dv(
         deviceView,
-        'flex items-stretch gap-3 overflow-x-auto px-4 pb-2 snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
-        `md:grid ${desktopCols} md:gap-4 md:items-stretch md:px-4 md:max-w-6xl md:mx-auto md:overflow-visible md:pb-0`
+        'flex items-stretch gap-3 overflow-x-auto overflow-y-visible px-4 pt-9 pb-2 snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+        `md:grid ${desktopCols} md:gap-4 md:items-stretch md:px-4 md:max-w-6xl md:mx-auto md:overflow-visible md:pt-0 md:pb-0`
     );
 
     return (
