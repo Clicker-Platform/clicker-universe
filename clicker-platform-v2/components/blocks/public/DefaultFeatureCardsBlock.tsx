@@ -130,10 +130,12 @@ export function DefaultFeatureCardsBlock({ data, theme: themeProp, previewMode, 
 
     // Mobile: horizontal scroll. Desktop: grid.
     // dv() emits the right classes for canvas previews + responsive viewport.
+    // pt-9 is only needed in the admin canvas so the CardToolbar has room to render above the row.
+    const adminTopPad = isAdminCanvas ? 'pt-9 md:pt-0' : '';
     const containerClass = dv(
         deviceView,
-        'flex items-stretch gap-3 overflow-x-auto overflow-y-visible px-4 pt-9 pb-2 snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
-        `md:grid ${desktopCols} md:gap-4 md:items-stretch md:px-4 md:max-w-6xl md:mx-auto md:overflow-visible md:pt-0 md:pb-0`
+        `flex items-stretch gap-3 overflow-x-auto overflow-y-visible px-4 pb-2 snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${adminTopPad}`,
+        `md:grid ${desktopCols} md:gap-4 md:items-stretch md:px-4 md:max-w-6xl md:mx-auto md:overflow-visible md:pb-0`
     );
 
     return (
