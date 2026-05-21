@@ -139,7 +139,7 @@ export const BlockFormRenderer = memo(({ block, onChange, templateId = 'classic'
         case 'inline_form': return renderWithLayoutPicker(<InlineFormBlockForm data={block.data} onChange={handleDataChange} />);
 
         case 'heading': return <HeadingForm data={block.data} onChange={handleDataChange} />;
-        case 'feature_cards': return <FeatureCardsForm data={block.data} onChange={handleDataChange} />;
+        case 'feature_cards': return <FeatureCardsForm data={block.data} onChange={handleDataChange} containerBlockId={block.id} />;
         case 'columns': return <ColumnsForm data={block.data} containerBlockId={block.id} onChange={handleDataChange} templateId={templateId} onOpenSlideOver={onOpenSlideOver} />;
         case 'grid': return <GridForm data={block.data} containerBlockId={block.id} onChange={handleDataChange} templateId={templateId} onOpenSlideOver={onOpenSlideOver} />;
         case 'marquee': return <MarqueeForm data={block.data} onChange={handleDataChange} />;

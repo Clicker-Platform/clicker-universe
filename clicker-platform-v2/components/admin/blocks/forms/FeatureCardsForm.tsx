@@ -30,6 +30,9 @@ const sectionClass = "p-3 bg-gray-50 dark:bg-neutral-900/50 rounded-xl border bo
 interface Props {
     data: FeatureCardsData;
     onChange: (data: FeatureCardsData) => void;
+    /** The FeatureCards block's id. Used to filter selection events so this
+     *  form only reacts when a card in THIS block is selected. */
+    containerBlockId: string;
 }
 
 function TagInput({ tags, onChange }: { tags: string[]; onChange: (tags: string[]) => void }) {
@@ -215,11 +218,13 @@ function CardItem({
     );
 }
 
-export function FeatureCardsForm({ data, onChange }: Props) {
+export function FeatureCardsForm({ data, onChange, containerBlockId }: Props) {
     const { selection } = useEditor();
 
     const selectedCardId: string | null =
-        selection.kind === 'slots' && selection.ids.length === 1
+        selection.kind === 'slots'
+        && selection.containerId === containerBlockId
+        && selection.ids.length === 1
             ? selection.ids[0]
             : null;
 
