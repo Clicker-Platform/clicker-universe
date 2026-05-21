@@ -23,6 +23,7 @@ const FeatureCardsBlock = dynamic(() => import('./public/DefaultFeatureCardsBloc
 const ColumnsContainerBlock = dynamic(() => import('./public/DefaultColumnsBlock').then(mod => mod.DefaultColumnsBlock));
 const GridContainerBlock = dynamic(() => import('./public/DefaultGridBlock').then(mod => mod.DefaultGridBlock));
 const MarqueeBlock = dynamic(() => import('./public/DefaultMarqueeBlock').then(mod => mod.DefaultMarqueeBlock));
+const TestimonialsBlock = dynamic(() => import('./public/DefaultTestimonialsBlock').then(mod => mod.DefaultTestimonialsBlock));
 
 // System blocks (from PublicPageRenderer)
 const QuickActions = dynamic(() => import('./public/DefaultQuickActionsBlock').then(mod => mod.DefaultQuickActionsBlock));
@@ -229,6 +230,9 @@ export const BlockRenderer = ({
 
             case 'marquee':
                 return <MarqueeBlock data={block.data} />;
+
+            case 'testimonials':
+                return <TestimonialsBlock data={block.data} />;
 
             default:
                 return <ModuleBlockLoader type={block.type} data={block.data} siteId={siteId} />;
