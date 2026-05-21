@@ -65,10 +65,12 @@ export const MarqueeTrack: React.FC<MarqueeTrackProps> = ({
         animationPlayState: 'running',
     };
 
-    const hoverClass = pauseOnHover ? 'marquee-pause-on-hover' : '';
+    const wrapperClass = ['marquee-wrapper', className, pauseOnHover ? 'marquee-pause-on-hover' : null]
+        .filter(Boolean)
+        .join(' ');
 
     return (
-        <div className={`marquee-wrapper ${className ?? ''} ${hoverClass}`} style={wrapperStyle}>
+        <div className={wrapperClass} style={wrapperStyle}>
             <div className="marquee-track" style={trackStyle}>
                 {children}
                 {children}

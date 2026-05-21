@@ -43,4 +43,22 @@ describe('MarqueeTrack', () => {
         const track = container.querySelector('.marquee-track') as HTMLElement;
         expect(track.style.animationDuration).toBe('18s');
     });
+
+    it('adds marquee-pause-on-hover class when pauseOnHover=true', () => {
+        const { container } = render(
+            <MarqueeTrack direction="left" speed="normal" pauseOnHover gap="normal">
+                <span>X</span>
+            </MarqueeTrack>
+        );
+        expect(container.firstChild).toHaveClass('marquee-pause-on-hover');
+    });
+
+    it('omits marquee-pause-on-hover class when pauseOnHover=false', () => {
+        const { container } = render(
+            <MarqueeTrack direction="left" speed="normal" pauseOnHover={false} gap="normal">
+                <span>X</span>
+            </MarqueeTrack>
+        );
+        expect(container.firstChild).not.toHaveClass('marquee-pause-on-hover');
+    });
 });
