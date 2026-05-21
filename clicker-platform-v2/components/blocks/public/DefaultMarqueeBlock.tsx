@@ -1,3 +1,4 @@
+// components/blocks/public/DefaultMarqueeBlock.tsx
 'use client';
 
 import React from 'react';
@@ -6,12 +7,11 @@ import { Star } from 'lucide-react';
 import {
     MarqueeBlockData,
     MarqueeItem,
-    MARQUEE_SPEED_SECONDS,
     MARQUEE_ICON_PX,
     MARQUEE_GAP_PX,
-    MARQUEE_MASK_GUTTER_PX,
 } from '@/components/blocks/marquee/types';
 import { SafeSvgIcon } from './SafeSvgIcon';
+import { MarqueeTrack } from '@/components/blocks/shared/MarqueeTrack';
 
 interface DefaultMarqueeBlockProps {
     data: MarqueeBlockData;
@@ -35,29 +35,8 @@ export const DefaultMarqueeBlock: React.FC<DefaultMarqueeBlockProps> = ({ data }
         );
     }
 
-    const durationSec = MARQUEE_SPEED_SECONDS[data.speed] ?? 30;
     const iconPx = MARQUEE_ICON_PX[data.iconSize] ?? 20;
     const gapPx = MARQUEE_GAP_PX[data.itemGap] ?? 48;
-    const animationName = data.direction === 'right' ? 'marquee-right' : 'marquee-left';
-
-    const maskImage = `linear-gradient(to right, transparent 0, black ${MARQUEE_MASK_GUTTER_PX}px, black calc(100% - ${MARQUEE_MASK_GUTTER_PX}px), transparent 100%)`;
-
-    const doubled = [...items, ...items];
-
-    const wrapperStyle: React.CSSProperties = {
-        overflow: 'hidden',
-        WebkitMaskImage: maskImage,
-        maskImage,
-        color: data.color || 'inherit',
-        fontSize: `${iconPx}px`,
-    };
-
-    const trackStyle: React.CSSProperties = {
-        display: 'flex',
-        width: 'max-content',
-        gap: `${gapPx}px`,
-        animation: `${animationName} ${durationSec}s linear infinite`,
-    };
 
     const itemStyle: React.CSSProperties = {
         display: 'inline-flex',
@@ -67,19 +46,28 @@ export const DefaultMarqueeBlock: React.FC<DefaultMarqueeBlockProps> = ({ data }
         flexShrink: 0,
     };
 
+    const wrapperStyle: React.CSSProperties = {
+        color: data.color || 'inherit',
+        fontSize: `${iconPx}px`,
+    };
+
     return (
-        <div className="marquee-wrapper" style={wrapperStyle}>
-            <div className="marquee-track" style={trackStyle}>
-                {doubled.map((item, idx) => (
-                    <span key={`${item.id}-${idx}`} className="marquee-item" style={itemStyle}>
-                        {renderIcon(item, iconPx)}
-                        <span style={{ fontSize: `${Math.max(12, Math.round(iconPx * 0.8))}px`, fontWeight: 500, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-                            {item.label}
-                        </span>
+        <MarqueeTrack
+            direction={data.direction}
+            speed={data.speed}
+            pauseOnHover={true}
+            gap={data.itemGap}
+            style={wrapperStyle}
+        >
+            {items.map((item) => (
+                <span key={item.id} className="marquee-item" style={itemStyle}>
+                    {renderIcon(item, iconPx)}
+                    <span style={{ fontSize: `${Math.max(12, Math.round(iconPx * 0.8))}px`, fontWeight: 500, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                        {item.label}
                     </span>
-                ))}
-            </div>
-        </div>
+                </span>
+            ))}
+        </MarqueeTrack>
     );
 };
 
