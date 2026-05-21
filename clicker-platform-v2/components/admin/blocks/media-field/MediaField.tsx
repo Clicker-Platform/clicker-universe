@@ -1,12 +1,14 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { Image as ImageIcon, Film, Sparkles, Upload, X, Loader2 } from 'lucide-react';
+import { Image as ImageIcon, Film, Sparkles, Upload, X } from 'lucide-react';
 import { uploadToStorage } from '@/lib/upload';
 import { useSite } from '@/lib/site-context';
 import { MediaFieldValue, MediaType, MediaAspectRatio, MediaObjectFit, DEFAULT_MEDIA } from './types';
 import { detectVideoProvider } from '@/components/admin/blocks/rich-text/VideoEmbedExtension';
 import { getRecommendedSize, isBelowRecommended } from '@/lib/media/recommendations';
+import { MediaPicker } from '@/components/admin/media/MediaPicker';
+import type { MediaItem } from '@/lib/media/types';
 
 interface MediaFieldProps {
     value?: MediaFieldValue;
@@ -25,10 +27,10 @@ const inputClass = 'w-full px-3 py-2 bg-white dark:bg-neutral-900 border border-
 export function MediaField({ value, onChange }: MediaFieldProps) {
     const media = value ?? DEFAULT_MEDIA;
     const { siteId } = useSite();
-    const imageInputRef = useRef<HTMLInputElement>(null);
     const lottieInputRef = useRef<HTMLInputElement>(null);
     const posterInputRef = useRef<HTMLInputElement>(null);
-    const [uploading, setUploading] = useState<null | 'image' | 'lottie' | 'poster'>(null);
+    const [uploading, setUploading] = useState<null | 'lottie' | 'poster'>(null);
+    const [pickerOpen, setPickerOpen] = useState(false);
     const [error, setError] = useState('');
     const [sizeWarning, setSizeWarning] = useState('');
     // Tab is local UI state only — does NOT write to block data until user provides new content
@@ -48,26 +50,21 @@ export function MediaField({ value, onChange }: MediaFieldProps) {
         onChange(clean({ ...media, ...extraPatch, type: selectedTab, src }));
     };
 
-    const readImageDimensions = (file: File): Promise<{ width: number; height: number } | null> =>
-        new Promise((resolve) => {
-            const url = URL.createObjectURL(file);
-            const img = new Image();
-            img.onload = () => {
-                resolve({ width: img.naturalWidth, height: img.naturalHeight });
-                URL.revokeObjectURL(url);
-            };
-            img.onerror = () => {
-                resolve(null);
-                URL.revokeObjectURL(url);
-            };
-            img.src = url;
-        });
+    const handlePickerSelect = ({ url, item }: { url: string; item?: MediaItem }) => {
+        setSizeWarning('');
+        if (item?.width && item?.height && isBelowRecommended({ width: item.width, height: item.height }, media.aspectRatio)) {
+            setSizeWarning(
+                `Image ${item.width}×${item.height}px is smaller than recommended (${recommended.label}). The image may appear blurry.`,
+            );
+        }
+        commit(url);
+        setPickerOpen(false);
+    };
 
-    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, target: 'image' | 'poster') => {
+    const handlePosterUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
         setError('');
-        setSizeWarning('');
         if (!file.type.startsWith('image/')) {
             setError('Please select an image file.');
             return;
@@ -76,26 +73,14 @@ export function MediaField({ value, onChange }: MediaFieldProps) {
             setError('Max 10MB.');
             return;
         }
-
-        if (target === 'image') {
-            const dims = await readImageDimensions(file);
-            if (dims && isBelowRecommended(dims, media.aspectRatio)) {
-                setSizeWarning(
-                    `Uploaded ${dims.width}×${dims.height}px is smaller than recommended (${recommended.label}). The image may appear blurry.`,
-                );
-            }
-        }
-
-        setUploading(target);
+        setUploading('poster');
         try {
-            const url = await uploadToStorage({ file, folder: 'content-showcase', siteId });
-            if (target === 'image') commit(url);
-            else update({ poster: url });
+            const { url } = await uploadToStorage({ file, folder: 'content-showcase', siteId });
+            update({ poster: url });
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Upload failed');
         } finally {
             setUploading(null);
-            if (imageInputRef.current) imageInputRef.current.value = '';
             if (posterInputRef.current) posterInputRef.current.value = '';
         }
     };
@@ -114,7 +99,7 @@ export function MediaField({ value, onChange }: MediaFieldProps) {
         }
         setUploading('lottie');
         try {
-            const url = await uploadToStorage({ file, folder: 'content-showcase-lottie', siteId, convertToWebP: false });
+            const { url } = await uploadToStorage({ file, folder: 'content-showcase-lottie', siteId, convertToWebP: false });
             commit(url);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Upload failed');
@@ -135,7 +120,7 @@ export function MediaField({ value, onChange }: MediaFieldProps) {
                         <button
                             key={t.id}
                             type="button"
-                            onClick={() => { setSelectedTab(t.id); setError(''); }}
+                            onClick={() => { setSelectedTab(t.id); setError(''); setSizeWarning(''); }}
                             className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-bold rounded-md transition-all ${
                                 active
                                     ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 shadow-sm'
@@ -153,7 +138,6 @@ export function MediaField({ value, onChange }: MediaFieldProps) {
                 <div className="space-y-3">
                     <div>
                         <label className={labelClass}>Image</label>
-                        <input type="file" ref={imageInputRef} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'image')} />
                         {media.type === 'image' && media.src ? (
                             <div className="relative group">
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -169,12 +153,11 @@ export function MediaField({ value, onChange }: MediaFieldProps) {
                         ) : (
                             <button
                                 type="button"
-                                onClick={() => imageInputRef.current?.click()}
-                                disabled={uploading === 'image'}
-                                className="w-full h-32 flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-300 dark:border-neutral-700 rounded-lg text-neutral-500 hover:border-blue-500 hover:text-blue-500 transition-colors disabled:opacity-50"
+                                onClick={() => setPickerOpen(true)}
+                                className="w-full h-32 flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-300 dark:border-neutral-700 rounded-lg text-neutral-500 hover:border-blue-500 hover:text-blue-500 transition-colors"
                             >
-                                {uploading === 'image' ? <Loader2 size={20} className="animate-spin" /> : <Upload size={20} />}
-                                <span className="text-xs font-bold">{uploading === 'image' ? 'Uploading…' : 'Click to upload'}</span>
+                                <Upload size={20} />
+                                <span className="text-xs font-bold">Click to upload</span>
                             </button>
                         )}
                         <p className="text-[10px] text-neutral-500 mt-1">
@@ -219,7 +202,7 @@ export function MediaField({ value, onChange }: MediaFieldProps) {
                     {detectVideoProvider(media.src || '')?.provider === 'mp4' && (
                         <div>
                             <label className={labelClass}>Poster image (optional)</label>
-                            <input type="file" ref={posterInputRef} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'poster')} />
+                            <input type="file" ref={posterInputRef} className="hidden" accept="image/*" onChange={handlePosterUpload} />
                             {media.poster ? (
                                 <div className="flex items-center gap-2">
                                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -306,6 +289,13 @@ export function MediaField({ value, onChange }: MediaFieldProps) {
                     </div>
                 </div>
             )}
+
+            <MediaPicker
+                open={pickerOpen}
+                onClose={() => setPickerOpen(false)}
+                onSelect={handlePickerSelect}
+                accept="image"
+            />
         </div>
     );
 }

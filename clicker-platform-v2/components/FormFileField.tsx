@@ -36,7 +36,7 @@ export const FormFileField: React.FC<FormFileFieldProps> = ({ label, required, o
             const webpBlob = await convertToWebP(file);
             const webpFile = new File([webpBlob], file.name.replace(/\.[^/.]+$/, "") + ".webp", { type: 'image/webp' });
 
-            const url = await uploadToStorage({ file: webpFile, folder: 'form-uploads', siteId });
+            const { url } = await uploadToStorage({ file: webpFile, folder: 'form-uploads', siteId });
             onChange(url);
         } catch (err) {
             console.error('Upload Error:', err);

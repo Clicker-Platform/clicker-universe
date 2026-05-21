@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { LayoutDashboard, LogOut, Menu, X, Palette, Inbox, Box, Users, Sun, Moon, PanelLeftClose, PanelLeftOpen, User, Building2, ChevronUp, ChevronDown, Layers, MessageCircle, Activity } from 'lucide-react';
+import { LayoutDashboard, LogOut, Menu, X, Palette, Inbox, Box, Users, Sun, Moon, PanelLeftClose, PanelLeftOpen, User, Building2, ChevronUp, ChevronDown, Layers, MessageCircle, Activity, Image as ImageIcon } from 'lucide-react';
 import { collection, query, where, onSnapshot, doc } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase';
 import { signOut, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
@@ -155,6 +155,7 @@ export function AdminSidebar() {
         const allCoreItems = [
             { icon: LayoutDashboard, label: 'Overview', href: `${baseUrl}/admin`, permission: null },
             { icon: Box, label: 'Canvas Studio', href: `${baseUrl}/admin/canvas`, permission: 'biolink' },
+            { icon: ImageIcon, label: 'Media', href: `${baseUrl}/admin/media`, permission: 'biolink' },
             { icon: Palette, label: 'Template', href: `${baseUrl}/admin/template`, permission: 'biolink' },
             { icon: Layers, label: 'Services', href: `${baseUrl}/admin/services`, permission: null },
             ...(process.env.NEXT_PUBLIC_ENABLE_WHATSAPP === 'true' ? [{ icon: MessageCircle, label: 'WhatsApp', href: `${baseUrl}/admin/whatsapp`, permission: null }] : []),

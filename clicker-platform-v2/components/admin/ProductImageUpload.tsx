@@ -38,7 +38,7 @@ export function ProductImageUpload({ currentImageUrl, onUpload, onRemove }: Prod
         setUploading(true);
 
         try {
-            const url = await uploadToStorage({ file, folder: 'products', siteId });
+            const { url } = await uploadToStorage({ file, folder: 'products', siteId });
             onUpload(url);
         } catch (err: any) {
             console.error(err);

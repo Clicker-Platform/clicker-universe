@@ -39,7 +39,7 @@ export function CompactImageUpload({ currentUrl, onUpload, onRemove, label = "Up
         setUploading(true);
 
         try {
-            const url = await uploadToStorage({ file, folder: 'assets', siteId });
+            const { url } = await uploadToStorage({ file, folder: 'assets', siteId });
             onUpload(url);
         } catch (err: any) {
             console.error(err);

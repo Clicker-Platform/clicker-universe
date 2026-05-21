@@ -153,6 +153,12 @@ service cloud.firestore {
         allow write: if isValidUser(siteId) && isOwner(siteId);
       }
 
+      // MEDIA LIBRARY (Canvas/Site uploads — Canva-style gallery)
+      match /mediaLibrary/{mediaId} {
+        allow read: if isValidUser(siteId);
+        allow create, update, delete: if isValidUser(siteId) && isOwner(siteId);
+      }
+
       // APPEARANCE (Site Styles — Font Pack, future Colors/Buttons/Forms)
       // Public read so SSR can apply the chosen pack on every page load.
       // Write requires site access (owner/manager); finer-grained access can be
