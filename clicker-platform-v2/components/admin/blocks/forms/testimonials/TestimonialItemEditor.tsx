@@ -34,19 +34,9 @@ export const TestimonialItemEditor: React.FC<TestimonialItemEditorProps> = ({
     const overLimit = item.content.length > TESTIMONIAL_CONTENT_SOFT_LIMIT;
 
     return (
-        <div
-            className="testimonial-item-editor"
-            style={{
-                border: '1px solid var(--border, #e5e7eb)',
-                borderRadius: 8,
-                padding: 12,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 10,
-            }}
-        >
+        <div className="testimonial-item-editor border border-gray-200 dark:border-neutral-800 rounded-lg p-3 flex flex-col gap-2.5 bg-white dark:bg-neutral-900/30">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: 12, opacity: 0.6 }}>Testimonial</span>
+                <span className="text-xs text-neutral-500 dark:text-neutral-400">Testimonial</span>
                 {canRemove && onRemove && (
                     <button type="button" onClick={onRemove} className="text-xs text-red-600 hover:underline">
                         Remove
@@ -55,23 +45,23 @@ export const TestimonialItemEditor: React.FC<TestimonialItemEditorProps> = ({
             </div>
 
             <label className="block text-sm">
-                <span className="text-xs opacity-70">Person name *</span>
+                <span className="text-xs text-neutral-500 dark:text-neutral-400">Person name *</span>
                 <input
                     type="text"
                     value={item.personName}
                     onChange={(e) => update('personName', e.target.value)}
-                    className="mt-1 w-full border rounded px-2 py-1"
+                    className="mt-1 w-full border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 rounded px-2 py-1 text-neutral-900 dark:text-neutral-200"
                     required
                 />
             </label>
 
             <label className="block text-sm">
-                <span className="text-xs opacity-70">Role / title</span>
+                <span className="text-xs text-neutral-500 dark:text-neutral-400">Role / title</span>
                 <input
                     type="text"
                     value={item.personRole ?? ''}
                     onChange={(e) => update('personRole', e.target.value || undefined)}
-                    className="mt-1 w-full border rounded px-2 py-1"
+                    className="mt-1 w-full border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 rounded px-2 py-1 text-neutral-900 dark:text-neutral-200"
                     placeholder="e.g. Marketing Director"
                 />
             </label>
@@ -84,12 +74,12 @@ export const TestimonialItemEditor: React.FC<TestimonialItemEditorProps> = ({
             />
 
             <label className="block text-sm">
-                <span className="text-xs opacity-70">Brand name</span>
+                <span className="text-xs text-neutral-500 dark:text-neutral-400">Brand name</span>
                 <input
                     type="text"
                     value={item.brandName ?? ''}
                     onChange={(e) => update('brandName', e.target.value || undefined)}
-                    className="mt-1 w-full border rounded px-2 py-1"
+                    className="mt-1 w-full border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 rounded px-2 py-1 text-neutral-900 dark:text-neutral-200"
                     placeholder="e.g. Acme Corp"
                 />
             </label>
@@ -102,14 +92,14 @@ export const TestimonialItemEditor: React.FC<TestimonialItemEditorProps> = ({
             />
 
             <label className="block text-sm">
-                <span className="text-xs opacity-70">Rating</span>
+                <span className="text-xs text-neutral-500 dark:text-neutral-400">Rating</span>
                 <select
                     value={item.rating ?? ''}
                     onChange={(e) => {
                         const v = e.target.value;
                         update('rating', v === '' ? undefined : (Number(v) as TestimonialRating));
                     }}
-                    className="mt-1 w-full border rounded px-2 py-1"
+                    className="mt-1 w-full border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 rounded px-2 py-1 text-neutral-900 dark:text-neutral-200"
                 >
                     {RATING_OPTIONS.map((opt) => (
                         <option key={String(opt.value)} value={opt.value}>{opt.label}</option>
@@ -118,22 +108,16 @@ export const TestimonialItemEditor: React.FC<TestimonialItemEditorProps> = ({
             </label>
 
             <label className="block text-sm">
-                <span className="text-xs opacity-70">Quote *</span>
+                <span className="text-xs text-neutral-500 dark:text-neutral-400">Quote *</span>
                 <textarea
                     value={item.content}
                     onChange={(e) => update('content', e.target.value)}
                     rows={4}
-                    className="mt-1 w-full border rounded px-2 py-1"
+                    className="mt-1 w-full border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 rounded px-2 py-1 text-neutral-900 dark:text-neutral-200"
                     required
                 />
                 <div
-                    style={{
-                        display: 'flex',
-                        justifyContent: 'flex-end',
-                        fontSize: 11,
-                        marginTop: 2,
-                        color: overLimit ? '#b91c1c' : 'inherit',
-                    }}
+                    className={`flex justify-end mt-0.5 text-[11px] ${overLimit ? 'text-red-700 dark:text-red-400' : 'text-neutral-500 dark:text-neutral-400'}`}
                 >
                     {item.content.length} / {TESTIMONIAL_CONTENT_SOFT_LIMIT}
                     {overLimit && ' — long testimonials may be hard to read'}
