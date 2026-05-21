@@ -63,6 +63,8 @@ export const BlockFormRenderer = memo(({ block, onChange, templateId = 'classic'
             'heading': 'Heading',
             'feature_cards': 'Feature Cards',
             'columns': 'Columns', 'grid': 'Grid',
+            'marquee': 'Marquee',
+            'testimonials': 'Testimonials',
         };
 
         if (coreLabels[block.type]) {

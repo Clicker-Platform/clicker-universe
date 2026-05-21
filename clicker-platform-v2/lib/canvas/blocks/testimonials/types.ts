@@ -36,11 +36,13 @@ export function makeDefaultTestimonialItem(): TestimonialItem {
     };
 }
 
-export const DEFAULT_TESTIMONIALS_BLOCK_DATA: TestimonialsBlockData = {
-    variant: 'single',
-    items: [makeDefaultTestimonialItem()],
-    marqueeDirection: 'left',
-    marqueeSpeed: 'normal',
-    marqueePauseOnHover: true,
-    marqueeGap: 'normal',
-};
+export function makeDefaultTestimonialsBlockData(): TestimonialsBlockData {
+    return {
+        variant: 'single',
+        items: [makeDefaultTestimonialItem()],
+        marqueeDirection: 'left',
+        marqueeSpeed: 'normal',
+        marqueePauseOnHover: true,
+        marqueeGap: 'normal',
+    };
+}

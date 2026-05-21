@@ -4,7 +4,7 @@ import { DEFAULT_SHOWCASE_DATA, newRow } from '@/components/blocks/content-showc
 import { DEFAULT_MEDIA } from '@/components/admin/blocks/media-field/types';
 import { makeDefaultCard } from '@/components/blocks/feature-cards/types';
 import { makeDefaultMarqueeItem } from '@/components/blocks/marquee/types';
-import { DEFAULT_TESTIMONIALS_BLOCK_DATA } from '@/lib/canvas/blocks/testimonials/types';
+import { makeDefaultTestimonialsBlockData } from '@/lib/canvas/blocks/testimonials/types';
 
 export const BLOCK_OPTIONS: { type: BlockType; label: string; icon: React.ElementType }[] = [
     { type: 'hero', label: 'Hero Section', icon: Layout },
@@ -169,7 +169,7 @@ export function getDefaultData(type: BlockType, _templateId = 'classic'): any {
         case 'testimonials':
             return {
                 ...baseData,
-                ...DEFAULT_TESTIMONIALS_BLOCK_DATA,
+                ...makeDefaultTestimonialsBlockData(),
             };
         default:
             return baseData;
