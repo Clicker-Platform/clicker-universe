@@ -504,7 +504,7 @@ export const DefaultMarqueeBlock: React.FC<DefaultMarqueeBlockProps> = ({ data }
         <MarqueeTrack
             direction={data.direction}
             speed={data.speed}
-            pauseOnHover={false}
+            pauseOnHover={true}
             gap={data.itemGap}
             style={wrapperStyle}
         >
@@ -523,7 +523,7 @@ export const DefaultMarqueeBlock: React.FC<DefaultMarqueeBlockProps> = ({ data }
 export default DefaultMarqueeBlock;
 ```
 
-Note: the existing block did not have pause-on-hover; we pass `pauseOnHover={false}` to preserve behavior. `MarqueeTrack` duplicates children internally, so the explicit `doubled` loop is removed.
+Note: the existing block did pause on hover via a legacy `.marquee-wrapper:hover` CSS rule (now removed). To preserve that behavior we pass `pauseOnHover={true}`. `MarqueeTrack` duplicates children internally, so the explicit `doubled` loop is removed.
 
 - [ ] **Step 5: Re-run snapshot test, expect failure (DOM changed slightly)**
 
