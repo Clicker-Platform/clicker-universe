@@ -49,7 +49,14 @@ export const TestimonialCard: React.FC<TestimonialCardProps> = ({
                             alt={item.personName}
                             width={photoPx}
                             height={photoPx}
-                            style={{ borderRadius: '50%', objectFit: 'cover' }}
+                            style={{
+                                width: photoPx,
+                                height: photoPx,
+                                flexShrink: 0,
+                                borderRadius: '50%',
+                                objectFit: 'cover',
+                                aspectRatio: '1 / 1',
+                            }}
                         />
                     )}
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
