@@ -197,38 +197,52 @@ export function ColumnsForm({ data, containerBlockId, onChange, templateId, onOp
         <legend className="text-xs font-semibold uppercase text-neutral-500 dark:text-neutral-400 tracking-wide">
           Layout
         </legend>
-        <label className="block text-sm">
-          <span className="text-neutral-700 dark:text-neutral-300">Column gap (px)</span>
-          <input
-            type="number"
-            min={0}
-            value={safeData.gap ?? 16}
-            onChange={(e) => updateField('gap', Number(e.target.value))}
-            className="mt-1 w-full px-2 py-1 border border-gray-300 dark:border-neutral-700 rounded bg-white dark:bg-neutral-900"
-          />
-          <p className="mt-1 text-xs text-neutral-400 dark:text-neutral-500">Horizontal space between columns.</p>
-        </label>
-        <label className="block text-sm">
-          <span className="text-neutral-700 dark:text-neutral-300">Block gap (px)</span>
-          <input
-            type="number"
-            min={0}
-            value={safeData.blockGap ?? 16}
-            onChange={(e) => updateField('blockGap', Number(e.target.value))}
-            className="mt-1 w-full px-2 py-1 border border-gray-300 dark:border-neutral-700 rounded bg-white dark:bg-neutral-900"
-          />
-          <p className="mt-1 text-xs text-neutral-400 dark:text-neutral-500">Vertical space between blocks stacked inside each column.</p>
-        </label>
-        <label className="block text-sm">
-          <span className="text-neutral-700 dark:text-neutral-300">Padding (px)</span>
-          <input
-            type="number"
-            min={0}
-            value={safeData.padding ?? 16}
-            onChange={(e) => updateField('padding', Number(e.target.value))}
-            className="mt-1 w-full px-2 py-1 border border-gray-300 dark:border-neutral-700 rounded bg-white dark:bg-neutral-900"
-          />
-        </label>
+        <div className="grid grid-cols-2 gap-2">
+          <label className="block text-sm">
+            <span className="text-xs text-neutral-700 dark:text-neutral-300">Column gap (px)</span>
+            <input
+              type="number"
+              min={0}
+              value={safeData.gap ?? 16}
+              onChange={(e) => updateField('gap', Number(e.target.value))}
+              className="mt-1 w-full px-2 py-1 border border-gray-300 dark:border-neutral-700 rounded bg-white dark:bg-neutral-900"
+            />
+          </label>
+          <label className="block text-sm">
+            <span className="text-xs text-neutral-700 dark:text-neutral-300">Block gap (px)</span>
+            <input
+              type="number"
+              min={0}
+              value={safeData.blockGap ?? 16}
+              onChange={(e) => updateField('blockGap', Number(e.target.value))}
+              className="mt-1 w-full px-2 py-1 border border-gray-300 dark:border-neutral-700 rounded bg-white dark:bg-neutral-900"
+            />
+          </label>
+          <label className="block text-sm">
+            <span className="text-xs text-neutral-700 dark:text-neutral-300">Padding (px)</span>
+            <input
+              type="number"
+              min={0}
+              value={safeData.padding ?? 16}
+              onChange={(e) => updateField('padding', Number(e.target.value))}
+              className="mt-1 w-full px-2 py-1 border border-gray-300 dark:border-neutral-700 rounded bg-white dark:bg-neutral-900"
+            />
+          </label>
+          <label className="block text-sm">
+            <span className="text-xs text-neutral-700 dark:text-neutral-300">Max width</span>
+            <select
+              value={safeData.maxWidth ?? 'full'}
+              onChange={(e) => updateField('maxWidth', e.target.value)}
+              className="mt-1 w-full px-2 py-1 border border-gray-300 dark:border-neutral-700 rounded bg-white dark:bg-neutral-900"
+            >
+              <option value="full">Full width</option>
+              <option value="xl">XL (1280)</option>
+              <option value="lg">LG (1024)</option>
+              <option value="md">MD (768)</option>
+              <option value="sm">SM (640)</option>
+            </select>
+          </label>
+        </div>
         <label className="flex items-center gap-2 text-sm">
           <input
             type="checkbox"
@@ -236,20 +250,6 @@ export function ColumnsForm({ data, containerBlockId, onChange, templateId, onOp
             onChange={(e) => updateField('stackOnMobile', e.target.checked)}
           />
           <span className="text-neutral-700 dark:text-neutral-300">Stack on mobile</span>
-        </label>
-        <label className="block text-sm">
-          <span className="text-neutral-700 dark:text-neutral-300">Max width</span>
-          <select
-            value={safeData.maxWidth ?? 'full'}
-            onChange={(e) => updateField('maxWidth', e.target.value)}
-            className="mt-1 w-full px-2 py-1 border border-gray-300 dark:border-neutral-700 rounded bg-white dark:bg-neutral-900"
-          >
-            <option value="full">Full width</option>
-            <option value="xl">XL (1280)</option>
-            <option value="lg">LG (1024)</option>
-            <option value="md">MD (768)</option>
-            <option value="sm">SM (640)</option>
-          </select>
         </label>
       </fieldset>
 

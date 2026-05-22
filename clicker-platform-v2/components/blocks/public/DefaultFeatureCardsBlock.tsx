@@ -1,6 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useContext } from 'react';
+import { EditorContext } from '@/components/admin/blocks/EditorContext';
+import { CardToolbar } from '@/components/admin/blocks/inline/CardToolbar';
 import { useTemplate } from '@/components/TemplateProvider';
 import { useDeviceView, dv } from '@/components/DeviceViewContext';
 import { MediaView } from './MediaView';
@@ -99,12 +101,26 @@ interface DefaultFeatureCardsBlockProps {
     data: FeatureCardsData;
     theme?: any;
     previewMode?: boolean;
+    /** Set by BlockRenderer in admin canvas. Used as `selection.containerId`
+     *  when a child card is selected. Undefined on the public site. */
+    containerBlockId?: string;
 }
 
-export function DefaultFeatureCardsBlock({ data, theme: themeProp, previewMode: _previewMode }: DefaultFeatureCardsBlockProps) {
+export function DefaultFeatureCardsBlock({ data, theme: themeProp, previewMode, containerBlockId }: DefaultFeatureCardsBlockProps) {
     const { theme: contextTheme } = useTemplate();
     const theme = (themeProp && typeof themeProp === 'object') ? themeProp : contextTheme;
     const deviceView = useDeviceView();
+
+    const editor = useContext(EditorContext);
+    const isAdminCanvas = !!(editor && previewMode && containerBlockId);
+
+    const selectedCardId: string | null =
+        isAdminCanvas
+        && editor!.selection.kind === 'slots'
+        && editor!.selection.containerId === containerBlockId
+        && editor!.selection.ids.length === 1
+            ? editor!.selection.ids[0]
+            : null;
 
     if (!data) return null;
 
@@ -114,9 +130,11 @@ export function DefaultFeatureCardsBlock({ data, theme: themeProp, previewMode: 
 
     // Mobile: horizontal scroll. Desktop: grid.
     // dv() emits the right classes for canvas previews + responsive viewport.
+    // pt-9 is only needed in the admin canvas so the CardToolbar has room to render above the row.
+    const adminTopPad = isAdminCanvas ? 'pt-9 md:pt-0' : '';
     const containerClass = dv(
         deviceView,
-        'flex items-stretch gap-3 overflow-x-auto px-4 pb-2 snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+        `flex items-stretch gap-3 overflow-x-auto overflow-y-visible px-4 pb-2 snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${adminTopPad}`,
         `md:grid ${desktopCols} md:gap-4 md:items-stretch md:px-4 md:max-w-6xl md:mx-auto md:overflow-visible md:pb-0`
     );
 
@@ -138,14 +156,61 @@ export function DefaultFeatureCardsBlock({ data, theme: themeProp, previewMode: 
             )}
             {cards.length > 0 && (
                 <div className={containerClass}>
-                    {cards.map((card) => {
-                        const cardWrapperClass = dv(
+                    {cards.map((card, index) => {
+                        const cardWrapperBase = dv(
                             deviceView,
                             'snap-start shrink-0 w-[72vw] max-w-[280px] flex flex-col',
                             'md:w-auto md:max-w-none flex flex-col'
                         );
+
+                        const isSelected = selectedCardId === card.id;
+                        const selectionRing = isAdminCanvas && isSelected
+                            ? 'ring-2 ring-blue-500 rounded-2xl'
+                            : '';
+
+                        const handleClick = isAdminCanvas
+                            ? (e: React.MouseEvent) => {
+                                e.stopPropagation();
+                                editor!.setSelection({
+                                    kind: 'slots',
+                                    containerId: containerBlockId!,
+                                    ids: [card.id],
+                                });
+                            }
+                            : undefined;
+
+                        const handleMoveUp = () => {
+                            const next = [...cards];
+                            [next[index - 1], next[index]] = [next[index], next[index - 1]];
+                            editor!.updateBlockData(containerBlockId!, { cards: next });
+                        };
+                        const handleMoveDown = () => {
+                            const next = [...cards];
+                            [next[index + 1], next[index]] = [next[index], next[index + 1]];
+                            editor!.updateBlockData(containerBlockId!, { cards: next });
+                        };
+                        const handleDelete = () => {
+                            const next = cards.filter((_, i) => i !== index);
+                            editor!.updateBlockData(containerBlockId!, { cards: next });
+                            editor!.setSelection({ kind: 'blocks', ids: [containerBlockId!] });
+                        };
+
                         return (
-                            <div key={card.id} className={cardWrapperClass}>
+                            <div
+                                key={card.id}
+                                onClick={handleClick}
+                                className={`${cardWrapperBase} relative ${selectionRing} ${isAdminCanvas ? 'cursor-pointer' : ''}`}
+                            >
+                                {isAdminCanvas && isSelected && (
+                                    <CardToolbar
+                                        label={`Card #${index + 1}`}
+                                        canMoveUp={index > 0}
+                                        canMoveDown={index < cards.length - 1}
+                                        onMoveUp={handleMoveUp}
+                                        onMoveDown={handleMoveDown}
+                                        onDelete={handleDelete}
+                                    />
+                                )}
                                 <CardItem card={card} cardStyle={theme?.cardStyle} theme={theme} />
                             </div>
                         );

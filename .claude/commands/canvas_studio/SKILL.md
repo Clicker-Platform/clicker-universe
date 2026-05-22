@@ -400,7 +400,7 @@ Contexts:
   components/admin/blocks/EditorContext.tsx      ← blocks, selection, device view
 
 Main editor:
-  components/admin/blocks/CanvasStudio.tsx       ← 3-panel layout + L/F/B/I slide-over
+  components/admin/blocks/CanvasStudio.tsx       ← 3-panel layout + L/F/B/I/G/T/M slide-over
   components/admin/blocks/StudioTopBar.tsx       ← top bar
   components/admin/blocks/BlockManager.tsx       ← navigator + DnD
   components/admin/blocks/BlockOutlineItem.tsx   ← single navigator item
@@ -445,20 +445,26 @@ Block rendering (shared admin + public):
   components/blocks/public/proseConfig.ts        ← proseClass, proseGlassClass, getProseClass(cardStyle) — shared prose plugin styling
   components/blocks/mrb/                        ← MRB template-specific block overrides (MrbHero, MrbQuickActions, MrbOperatingHours)
 
-Image/media uploads in blocks:
-  components/admin/blocks/BlockImageUploader.tsx    ← image upload/preview widget
-  components/admin/blocks/BackgroundMediaEditor.tsx ← background media editor (used by page/canvas background settings)
+Image/media uploads in blocks (all route through <MediaPicker>; see /file_upload skill):
+  components/admin/blocks/media-field/MediaField.tsx ← full media slot (image/video/lottie); image tab opens MediaPicker
+  components/admin/blocks/BlockImageUploader.tsx     ← single-image slot; opens MediaPicker internally
+  components/admin/blocks/BackgroundMediaEditor.tsx  ← page/canvas background editor; opens MediaPicker for image mode
+  components/admin/media/MediaPicker.tsx             ← shared Library/Upload/URL modal (Canvas Media Library)
+  components/admin/media/MediaLibraryGrid.tsx        ← reusable grid with search/folder/tag filters
+  lib/media/library.ts                                ← registerMedia/listMedia/updateMedia/deleteMedia/findUsages/importExistingMedia
 
 Legacy block editor (deprecated — use BlockFormRenderer + CanvasStudio):
   components/admin/blocks/BlockEditor.tsx        ← older inline-expand editor, still present but superseded
 
 Slide-over panels:
-  components/admin/blocks/SlideOverPanel.tsx     ← slide-over container used by L/F/B/I shortcuts
-  components/admin/blocks/panels/LinksPanel.tsx
-  components/admin/blocks/panels/FormsPanel.tsx
-  components/admin/blocks/panels/ProductsPanel.tsx
-  components/admin/blocks/panels/SiteInfoPanel.tsx
-  components/admin/blocks/panels/BrandingPanel.tsx  ← branding slide-over (no keyboard hotkey)
+  components/admin/blocks/SlideOverPanel.tsx     ← slide-over container used by L/F/B/I/G/T/M shortcuts
+  components/admin/blocks/panels/LinksPanel.tsx           ← L
+  components/admin/blocks/panels/FormsPanel.tsx           ← F
+  components/admin/blocks/panels/ProductsPanel.tsx        ← B
+  components/admin/blocks/panels/SiteInfoPanel.tsx        ← I
+  components/admin/blocks/panels/BrandingPanel.tsx        ← G
+  components/admin/blocks/panels/SiteStylesPanel.tsx      ← T (Site Styles — font pack, theme)
+  components/admin/blocks/panels/MediaPanel.tsx           ← M (Media library browse + copy-URL toast; "Manage" deep-links to /admin/media)
   components/admin/blocks/panels/HeaderNavPanel.tsx
   components/admin/blocks/panels/ChromeBottomNavProperties.tsx
 

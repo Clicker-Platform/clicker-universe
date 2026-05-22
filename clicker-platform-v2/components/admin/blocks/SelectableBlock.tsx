@@ -57,6 +57,7 @@ export function SelectableBlock({
     }
     const { selection, setSelection, showGuides } = editor;
     const isSelected = selection.kind === 'blocks' && selection.ids.includes(blockId);
+    const hasChildSelection = selection.kind === 'slots' && selection.containerId === blockId;
 
     const handleClick = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -87,7 +88,8 @@ export function SelectableBlock({
         blockType === 'hero' ||
         blockType === 'heading' ||
         blockType === 'columns' ||
-        blockType === 'grid';
+        blockType === 'grid' ||
+        blockType === 'feature_cards';
 
     return (
         <div
@@ -95,7 +97,7 @@ export function SelectableBlock({
             className={`min-w-0 relative ${isSelected ? 'z-20' : 'cursor-pointer'}`}
             onClick={handleClick}
         >
-            <SelectionChrome selected={isSelected} hoverGuide={showGuides && !isSelected} />
+            <SelectionChrome selected={isSelected} hoverGuide={showGuides && !isSelected && !hasChildSelection} />
 
             <div className={allowsPointerEvents ? 'pointer-events-auto' : 'pointer-events-none'}>
                 {children}

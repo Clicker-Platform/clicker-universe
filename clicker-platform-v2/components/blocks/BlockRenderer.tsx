@@ -23,6 +23,7 @@ const FeatureCardsBlock = dynamic(() => import('./public/DefaultFeatureCardsBloc
 const ColumnsContainerBlock = dynamic(() => import('./public/DefaultColumnsBlock').then(mod => mod.DefaultColumnsBlock));
 const GridContainerBlock = dynamic(() => import('./public/DefaultGridBlock').then(mod => mod.DefaultGridBlock));
 const MarqueeBlock = dynamic(() => import('./public/DefaultMarqueeBlock').then(mod => mod.DefaultMarqueeBlock));
+const TestimonialsBlock = dynamic(() => import('./public/DefaultTestimonialsBlock').then(mod => mod.DefaultTestimonialsBlock));
 
 // System blocks (from PublicPageRenderer)
 const QuickActions = dynamic(() => import('./public/DefaultQuickActionsBlock').then(mod => mod.DefaultQuickActionsBlock));
@@ -213,7 +214,14 @@ export const BlockRenderer = ({
                     : <HeadingBlock data={block.data} onInlineChange={onInlineChange} onFieldFocus={onFieldFocus} onFieldBlur={onFieldBlur} />;
 
             case 'feature_cards':
-                return <FeatureCardsBlock data={block.data} theme={theme} previewMode={previewMode} />;
+                return (
+                    <FeatureCardsBlock
+                        data={block.data}
+                        theme={theme}
+                        previewMode={previewMode}
+                        containerBlockId={block.id}
+                    />
+                );
 
             case 'columns':
                 return <ColumnsContainerBlock data={block.data} containerBlockId={block.id} previewMode={previewMode} showGuides={showGuides} passthroughProps={{ theme, siteId, tenantSlug, templateId, phoneNumber, whatsappSettings, onInlineChange, onFieldFocus, onFieldBlur, links, contact, branches, featuredProduct, products, businessHours, businessSchedule, linkSettings, productSettings, profile, reservationServices, reservationStaff, reservationSettings, showGuides, isHydrating }} />;
@@ -222,6 +230,9 @@ export const BlockRenderer = ({
 
             case 'marquee':
                 return <MarqueeBlock data={block.data} />;
+
+            case 'testimonials':
+                return <TestimonialsBlock data={block.data} />;
 
             default:
                 return <ModuleBlockLoader type={block.type} data={block.data} siteId={siteId} />;

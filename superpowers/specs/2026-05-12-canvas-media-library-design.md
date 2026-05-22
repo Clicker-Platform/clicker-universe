@@ -1,8 +1,9 @@
 # Canvas Media Library — Design Spec
 
-**Date:** 2026-05-12
-**Status:** Approved for planning
+**Date:** 2026-05-12 (design) · **Shipped:** 2026-05-20
+**Status:** Shipped on `dev` (see "Shipped notes" at bottom for as-built deltas)
 **Owner:** Canvas Studio / Platform Core
+**Skills:** `/file_upload` (canonical entry point), `/canvas_studio` (block-side surfaces)
 
 ## Purpose
 
@@ -13,11 +14,13 @@ Today every uploader (`MediaField`, `BlockImageUploader`, `BackgroundMediaEditor
 ## Scope
 
 **In scope (v1):**
+
 - Canvas Studio block uploaders: `MediaField`, `BlockImageUploader`, `BackgroundMediaEditor`, Tiptap image embeds inside blocks.
 - General site content: Pages/Links editors, Forms (admin-side uploads), Inbox attachments, business profile/logo.
 - Images only.
 
 **Out of scope (v1):**
+
 - POS product images and other module-owned assets (inventory, service-records, etc.).
 - ai-marketing's existing `assets` collection — keeps its own gallery for now.
 - Usage-count badges live in the grid.
@@ -49,6 +52,7 @@ interface MediaItem {
 ```
 
 Notes:
+
 - Folder is a flat string field, not a path. Single-level hierarchy.
 - No `usedIn` field — usage is computed on demand via `findUsages`.
 - No soft-delete. Deletes are hard (with usage check).
@@ -57,14 +61,17 @@ Notes:
 ## Components
 
 ### `<MediaPicker>` — primary picker surface
+
 Location: `components/admin/media/MediaPicker.tsx`
 
 Modal with three tabs:
+
 - **Library** (default) — `<MediaLibraryGrid>` with folder dropdown, tag filter, filename search.
 - **Upload** — drop zone; on file drop runs `registerMedia()` and auto-selects the new item.
 - **URL** — paste an external URL (no Storage write, no Firestore record).
 
 Props:
+
 ```ts
 interface MediaPickerProps {
   open: boolean;
@@ -78,14 +85,17 @@ interface MediaPickerProps {
 Returns a URL on confirm (plus the `MediaItem` if it came from the library/upload tabs).
 
 ### `<MediaLibraryGrid>` — reusable grid
+
 Location: `components/admin/media/MediaLibraryGrid.tsx`
 
 Presentational grid of thumbnails with filter controls. Used by both `<MediaPicker>`'s Library tab and the standalone `/admin/media` page.
 
 ### `/admin/media` — management page
+
 Location: `app/admin/(dashboard)/media/page.tsx`
 
 Full-screen management view:
+
 - `<MediaLibraryGrid>` with multi-select.
 - Bulk actions: delete, move to folder, edit tags.
 - Single-item drawer: rename, edit tags, change folder.
@@ -151,18 +161,21 @@ class MediaInUseError extends Error {
 ## Flows
 
 ### Upload via a block (e.g., `MediaField`)
+
 1. User clicks image slot → `<MediaPicker>` opens on Library tab.
 2. User picks an existing item → `onSelect({ url, item })` fires → block updated.
 3. *Or* user switches to Upload tab, drops a file → `registerMedia()` runs (`uploadToStorage` + Firestore write) → newly created item is auto-selected → `onSelect` fires.
 4. *Or* user switches to URL tab, pastes a URL → `onSelect({ url })` (no library record created).
 
 ### Delete from `/admin/media`
+
 1. User selects items, clicks Delete.
 2. `findUsages` runs for each.
 3. If no usages → confirm → `deleteMedia(force: false)` → Storage + Firestore deletion.
 4. If usages found → modal lists them grouped by item ("hero.jpg is used on: Page 'Home' (hero block), Form 'Contact' (background)") with two actions: **Cancel** or **Force delete (will break these references)**.
 
 ### Import existing files
+
 1. User clicks "Import existing files" on `/admin/media`.
 2. Scan: list Storage at `sites/{siteId}/`, filter image MIME types, cross-check `findUsages` for each.
 3. For referenced files: create Firestore record with `folder: "Imported"`, `fileName` from path stem, `tags: []`.
@@ -183,6 +196,7 @@ Replace direct `uploadToStorage` calls with `<MediaPicker>` (UI) or `registerMed
 - Business profile / logo upload (`app/admin/(dashboard)/business/`)
 
 Non-retrofitted (explicitly skipped, keep current behavior):
+
 - ai-marketing `AssetUploadModal`
 - POS product image uploads
 - Module-owned uploaders (inventory, service-records, etc.)
@@ -201,9 +215,55 @@ Non-retrofitted (explicitly skipped, keep current behavior):
 ## Open questions
 
 None blocking. Future iterations may revisit:
+
 - Live usage badges (requires a derived index or scheduled rollup).
 - Multi-level folder hierarchy.
 - Storage path consolidation under `sites/{siteId}/media/`.
 - Folding ai-marketing's gallery into the unified library.
 - Background orphan-cleanup job.
 - Video / Lottie support.
+
+---
+
+## Shipped notes (as-built deltas, 2026-05-20)
+
+The v1 implementation matches the spec above except for these refinements that surfaced during build and review. Future maintainers should trust this section over the design body when they conflict.
+
+**API shape changes:**
+
+- `uploadToStorage` (in `lib/upload.ts`) now returns `{ url, contentType, sizeBytes }`, not a bare string. All callers updated. Required so `registerMedia` could record the actual stored content type (WebP after conversion) and the actual stored blob size (not the source PNG/JPEG size).
+- `updateMedia(siteId, id, patch)` accepts a whitelist `MediaPatch = Partial<Pick<MediaItem, 'fileName' | 'folder' | 'tags'>>` instead of `Partial<MediaItem>`, so callers can't accidentally overwrite immutable identity fields.
+- `MediaInUseError` re-exported from both `@/lib/media/types` and `@/lib/media/library` (kept the re-export; the original plan said to drop it).
+- New: `reconcileMediaSizes(siteId, items)` — background fix-up function for historical items with stale `sizeBytes` (see post-launch fixes below).
+
+**Behavior changes:**
+
+- `findUsages` scans the **full page document**, not just `data.blocks`. Some templates store media at root (`coverImage`, etc.) and the original blocks-only scan silently missed them.
+- Business profile path is `sites/{siteId}/content/business`, NOT `settings/business` as the original plan said.
+- `DEFAULT_FOLDER = 'Uncategorized'` (title-case) to match `IMPORTED_FOLDER = 'Imported'`.
+- `importExistingMedia` dedupes by `storagePath` so re-running the import doesn't double-write Firestore records.
+- All media reads guard against sentinel siteIds (`'platform'`, `'default'`, `'pending'`) before calling `listMedia`, to avoid Firestore rule rejections during the brief TokenBootstrap handoff window.
+
+**UI changes vs wireframe:**
+
+- Delete button lives **inside** `MediaItemDrawer`'s footer (left-aligned, opposite Cancel/Save), not floating beside the drawer. Original `right-[420px]` floating position overflowed on narrow viewports.
+- `MediaItemDrawer` includes a read-only **Metadata** section (Dimensions, Size, Type, Uploaded, By) below the editable fields — wireframe showed this; original implementation omitted it.
+- `MediaPicker` modal shows "Could not load media." as its grid empty-state when a load failed, distinguishing failure from genuinely empty library.
+
+**Post-launch fixes worth knowing:**
+
+- `reconcileMediaSizes` runs once-per-session in the background on `/admin/media` page load, fetching real Storage object sizes via `getMetadata` and patching any Firestore records that overstate them. Added because items uploaded before the `sizeBytes` fix were carrying inflated source-file sizes; this self-heals them without a user-facing button.
+- Firestore rules for `mediaLibrary` (read by valid site user, write by site owner) were deployed to `clicker-universe-stagging` — must be deployed separately to production before the feature works there.
+
+**Storage paths — important caveat:**
+
+Per the spec, paths were intentionally NOT consolidated. `registerMedia` uploads to `sites/{siteId}/media/`, but historical uploads from before this work live at `uploads/content/`, `blocks/`, `assets/`, `content-showcase/`, `products/`, etc. `importExistingMedia` only scans `sites/{siteId}/media/`, so historical images do NOT appear in the library — they keep rendering on existing pages but aren't browseable. Tenants populate the library organically as they edit pages going forward. Broadening the import scan to walk all `sites/{siteId}/` subfolders is the natural follow-up if a tenant complains.
+
+**Out of v1 (deferred to follow-ups):**
+
+- Drag-to-block from the slide-over (see project memory `project_media_library_future.md`).
+- "Use this image in…" placement flow from `/admin/media`.
+- Bulk apply (one image → many blocks).
+- Pages/Links/Forms standalone editor retrofits + business profile logo retrofit (only block uploaders + Tiptap were retrofitted in v1).
+- Focus trap + ESC handler on `MediaPicker` / `MediaUsageModal`.
+- Storage rules audit at `sites/{siteId}/media/**`.

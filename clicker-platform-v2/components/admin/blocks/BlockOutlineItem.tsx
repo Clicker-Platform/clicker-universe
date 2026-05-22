@@ -4,7 +4,8 @@ import { PageBlock } from '@/data/mockData';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Trash2, Box } from 'lucide-react';
-import { memo } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
+import { useEditor } from './EditorContext';
 
 // Shared utility to get a readable label for a block type
 export const getBlockLabel = (type: string, moduleInfoName?: string) => {
@@ -52,6 +53,37 @@ export const BlockOutlineItem = memo(({ block, isSelected, onClick, onDelete, mo
         transition,
     };
 
+    const { updateBlockData } = useEditor();
+    const defaultLabel = getBlockLabel(block.type, moduleLabel);
+    const displayLabel = block.data?.label?.trim() || defaultLabel;
+
+    const [isEditing, setIsEditing] = useState(false);
+    const [draft, setDraft] = useState(displayLabel);
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        if (isEditing) {
+            inputRef.current?.focus();
+            inputRef.current?.select();
+        }
+    }, [isEditing]);
+
+    const commit = () => {
+        const next = draft.trim();
+        const current = block.data?.label?.trim() || '';
+        if (next === defaultLabel) {
+            if (current) updateBlockData(block.id, { label: '' });
+        } else if (next !== current) {
+            updateBlockData(block.id, { label: next });
+        }
+        setIsEditing(false);
+    };
+
+    const cancel = () => {
+        setDraft(displayLabel);
+        setIsEditing(false);
+    };
+
     return (
         <div
             ref={setNodeRef}
@@ -74,7 +106,38 @@ export const BlockOutlineItem = memo(({ block, isSelected, onClick, onDelete, mo
 
             <Box size={13} className={`flex-shrink-0 ${isSelected ? 'text-blue-400' : 'text-neutral-400 dark:text-neutral-500'}`} />
 
-            <span className="flex-1 text-xs font-medium truncate">{getBlockLabel(block.type, moduleLabel)}</span>
+            {isEditing ? (
+                <input
+                    ref={inputRef}
+                    type="text"
+                    value={draft}
+                    onChange={(e) => setDraft(e.target.value)}
+                    onClick={(e) => e.stopPropagation()}
+                    onBlur={commit}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            commit();
+                        } else if (e.key === 'Escape') {
+                            e.preventDefault();
+                            cancel();
+                        }
+                    }}
+                    className="flex-1 min-w-0 text-xs font-medium bg-white dark:bg-neutral-900 border border-blue-500 rounded px-1 py-0.5 text-neutral-900 dark:text-neutral-100 outline-none"
+                />
+            ) : (
+                <span
+                    className="flex-1 text-xs font-medium truncate"
+                    onDoubleClick={(e) => {
+                        e.stopPropagation();
+                        setDraft(displayLabel);
+                        setIsEditing(true);
+                    }}
+                    title="Double-click to rename"
+                >
+                    {displayLabel}
+                </span>
+            )}
 
             <button
                 type="button"

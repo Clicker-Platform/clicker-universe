@@ -1,7 +1,8 @@
 'use client';
 
 import { Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useEditor } from '@/components/admin/blocks/EditorContext';
 import { v4 as uuidv4 } from 'uuid';
 import { MediaField } from '@/components/admin/blocks/media-field/MediaField';
 import { DEFAULT_MEDIA } from '@/components/admin/blocks/media-field/types';
@@ -29,6 +30,9 @@ const sectionClass = "p-3 bg-gray-50 dark:bg-neutral-900/50 rounded-xl border bo
 interface Props {
     data: FeatureCardsData;
     onChange: (data: FeatureCardsData) => void;
+    /** The FeatureCards block's id. Used to filter selection events so this
+     *  form only reacts when a card in THIS block is selected. */
+    containerBlockId: string;
 }
 
 function TagInput({ tags, onChange }: { tags: string[]; onChange: (tags: string[]) => void }) {
@@ -73,15 +77,27 @@ function TagInput({ tags, onChange }: { tags: string[]; onChange: (tags: string[
     );
 }
 
-function CardItem({ card, index, total, onChange, onDelete, onMove }: {
+function CardItem({
+    card,
+    index,
+    total,
+    expanded,
+    onToggleExpanded,
+    onChange,
+    onDelete,
+    onMove,
+    registerHeadlineRef,
+}: {
     card: FeatureCard;
     index: number;
     total: number;
+    expanded: boolean;
+    onToggleExpanded: () => void;
     onChange: (card: FeatureCard) => void;
     onDelete: () => void;
     onMove: (dir: 'up' | 'down') => void;
+    registerHeadlineRef?: (el: HTMLInputElement | null) => void;
 }) {
-    const [expanded, setExpanded] = useState(true);
     const [showMedia, setShowMedia] = useState(!!card.media?.src);
 
     const set = (field: keyof FeatureCard, value: any) => {
@@ -97,7 +113,7 @@ function CardItem({ card, index, total, onChange, onDelete, onMove }: {
     return (
         <div className="bg-gray-100 dark:bg-neutral-800 rounded-xl border border-gray-200 dark:border-neutral-700 overflow-hidden">
             <div className="flex items-center gap-2 px-3 py-2.5">
-                <button type="button" onClick={() => setExpanded(e => !e)} className="flex-1 flex items-center gap-2 text-left">
+                <button type="button" onClick={onToggleExpanded} className="flex-1 flex items-center gap-2 text-left">
                     <span className="text-xs font-bold text-neutral-400">#{index + 1}</span>
                     <span className="text-sm font-medium text-neutral-700 dark:text-neutral-200 truncate">{card.headline || 'Untitled Card'}</span>
                     {expanded ? <ChevronUp size={14} className="ml-auto text-neutral-400" /> : <ChevronDown size={14} className="ml-auto text-neutral-400" />}
@@ -113,7 +129,13 @@ function CardItem({ card, index, total, onChange, onDelete, onMove }: {
                 <div className="p-3 space-y-3 border-t border-gray-200 dark:border-neutral-700">
                     <div>
                         <label className={labelClass}>Headline *</label>
-                        <input value={card.headline} onChange={e => set('headline', e.target.value)} className={inputClass} placeholder="Card Headline" />
+                        <input
+                            ref={(el) => { registerHeadlineRef?.(el); }}
+                            value={card.headline}
+                            onChange={e => set('headline', e.target.value)}
+                            className={inputClass}
+                            placeholder="Card Headline"
+                        />
                     </div>
 
                     <div>
@@ -196,7 +218,44 @@ function CardItem({ card, index, total, onChange, onDelete, onMove }: {
     );
 }
 
-export function FeatureCardsForm({ data, onChange }: Props) {
+export function FeatureCardsForm({ data, onChange, containerBlockId }: Props) {
+    const { selection } = useEditor();
+
+    const selectedCardId: string | null =
+        selection.kind === 'slots'
+        && selection.containerId === containerBlockId
+        && selection.ids.length === 1
+            ? selection.ids[0]
+            : null;
+
+    const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+    const toggleExpanded = (cardId: string) => {
+        setCollapsed(prev => {
+            const next = new Set(prev);
+            if (next.has(cardId)) next.delete(cardId);
+            else next.add(cardId);
+            return next;
+        });
+    };
+
+    const headlineRefs = useRef<Record<string, HTMLInputElement | null>>({});
+    const cardItemRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+    useEffect(() => {
+        if (!selectedCardId) return;
+        setCollapsed(prev => {
+            if (!prev.has(selectedCardId)) return prev;
+            const next = new Set(prev);
+            next.delete(selectedCardId);
+            return next;
+        });
+        const id = requestAnimationFrame(() => {
+            cardItemRefs.current[selectedCardId]?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            headlineRefs.current[selectedCardId]?.focus();
+        });
+        return () => cancelAnimationFrame(id);
+    }, [selectedCardId]);
+
     const safeData: FeatureCardsData = {
         title: data?.title ?? '',
         subtitle: data?.subtitle ?? '',
@@ -275,15 +334,22 @@ export function FeatureCardsForm({ data, onChange }: Props) {
 
                 <div className="space-y-2">
                     {safeData.cards.map((card, i) => (
-                        <CardItem
+                        <div
                             key={card.id}
-                            card={card}
-                            index={i}
-                            total={safeData.cards.length}
-                            onChange={c => updateCard(i, c)}
-                            onDelete={() => deleteCard(i)}
-                            onMove={dir => moveCard(i, dir)}
-                        />
+                            ref={(el) => { cardItemRefs.current[card.id] = el; }}
+                        >
+                            <CardItem
+                                card={card}
+                                index={i}
+                                total={safeData.cards.length}
+                                expanded={!collapsed.has(card.id)}
+                                onToggleExpanded={() => toggleExpanded(card.id)}
+                                onChange={c => updateCard(i, c)}
+                                onDelete={() => deleteCard(i)}
+                                onMove={dir => moveCard(i, dir)}
+                                registerHeadlineRef={(el) => { headlineRefs.current[card.id] = el; }}
+                            />
+                        </div>
                     ))}
                 </div>
             </div>

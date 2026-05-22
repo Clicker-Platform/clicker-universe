@@ -20,14 +20,14 @@ describe('DefaultMarqueeBlock', () => {
         const { container } = render(<DefaultMarqueeBlock data={DEFAULT_MARQUEE_DATA} />);
         const track = container.querySelector('.marquee-track') as HTMLElement;
         expect(track).not.toBeNull();
-        expect(track.style.animation).toContain('marquee-left');
+        expect(track.style.animationName).toBe('marquee-left');
     });
 
     it('applies right animation when direction=right', () => {
         const data: MarqueeBlockData = { ...DEFAULT_MARQUEE_DATA, direction: 'right' };
         const { container } = render(<DefaultMarqueeBlock data={data} />);
         const track = container.querySelector('.marquee-track') as HTMLElement;
-        expect(track.style.animation).toContain('marquee-right');
+        expect(track.style.animationName).toBe('marquee-right');
     });
 
     it('renders inline SVG icon via SafeSvgIcon when icon.kind=svg', () => {
