@@ -29,7 +29,7 @@
         "overrides": {
             "fast-xml-parser": "^5.8.0",
             "node-forge": ">=1.4.0",
-            "path-to-regexp": ">=0.1.13",
+            "path-to-regexp": "0.1.13",
             "picomatch": ">=4.0.4",
             "protobufjs": ">=7.5.6",
             "fast-uri": ">=3.1.2",
@@ -44,7 +44,7 @@
     "overrides": {
         "fast-xml-parser": "^5.8.0",
         "node-forge": ">=1.4.0",
-        "path-to-regexp": ">=0.1.13",
+        "path-to-regexp": "0.1.13",
         "picomatch": ">=4.0.4",
         "protobufjs": ">=7.5.6",
         "fast-uri": ">=3.1.2",
