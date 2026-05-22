@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import { Clock, Trash2, Archive, Download, ExternalLink } from 'lucide-react';
 import { Submission } from '@/data/mockData';
+import { ConfirmButton } from '@/components/ui/ConfirmButton';
 
 interface SubmissionCardProps {
     submission: Submission;
@@ -85,18 +86,13 @@ export const SubmissionCard = memo(function SubmissionCard({
                                 <Archive size={18} />
                             </button>
                         )}
-                        <button
-                            onClick={() => {
-                                if (confirm('Are you sure you want to delete this submission?')) {
-                                    onAction(sub.id, 'delete');
-                                }
-                            }}
+                        <ConfirmButton
+                            onConfirm={() => onAction(sub.id, 'delete')}
+                            iconOnly
+                            triggerIcon={<Trash2 size={18} />}
+                            triggerTitle="Delete"
                             disabled={loadingId === sub.id}
-                            className="p-2 hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-400 dark:text-neutral-500 hover:text-red-500 dark:hover:text-red-400 rounded-lg transition-colors"
-                            title="Delete"
-                        >
-                            <Trash2 size={18} />
-                        </button>
+                        />
                     </div>
                 </div>
             </div>
