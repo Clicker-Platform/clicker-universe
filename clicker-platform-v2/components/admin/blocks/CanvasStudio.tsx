@@ -710,25 +710,31 @@ export function CanvasStudio({
                 })()
             ) : selection.kind === 'slots' && selection.containerId ? (
                 // Slot-kind selection (empty Columns/Grid slot, or a FeatureCards card).
-                // The container itself can be top-level OR nested inside another container,
-                // so resolve it through findBlockPath rather than the top-level array.
+                // The container can be top-level OR nested inside another container.
+                // - Top-level: render the container's own form.
+                // - Nested in Columns/Grid: render the outer container's form, which
+                //   drills into the inner container so its own form is shown (with the
+                //   proper nested updateBlockData wired up).
                 (() => {
                     const path = findBlockPath(blocks, selection.containerId);
-                    if (path) {
+                    if (!path) {
                         return (
-                            <BlockFormRenderer
-                                block={path.block}
-                                onChange={updateBlockData}
-                                templateId={templateId}
-                                onOpenSlideOver={toggleSlideOverPanel}
-                            />
+                            <div className="flex flex-col items-center justify-center h-full text-center text-neutral-400 dark:text-neutral-500 gap-3">
+                                <Box size={32} className="opacity-20" />
+                                <p className="text-sm">Container not found</p>
+                            </div>
                         );
                     }
+                    const block = (path.kind === 'columns-child' || path.kind === 'grid-cell')
+                        ? path.parentBlock
+                        : path.block;
                     return (
-                        <div className="flex flex-col items-center justify-center h-full text-center text-neutral-400 dark:text-neutral-500 gap-3">
-                            <Box size={32} className="opacity-20" />
-                            <p className="text-sm">Container not found</p>
-                        </div>
+                        <BlockFormRenderer
+                            block={block}
+                            onChange={updateBlockData}
+                            templateId={templateId}
+                            onOpenSlideOver={toggleSlideOverPanel}
+                        />
                     );
                 })()
             ) : (

@@ -73,18 +73,25 @@ export function ColumnsForm({ data, containerBlockId, onChange, templateId, onOp
   // and we drill into that block. When they click "← Back to Columns",
   // setDrilledBlockId(null) writes a slot selection so the canvas highlight +
   // form tab follow the user's intent.
-  const drilledBlockId = (
-    selection.kind === 'blocks' && selection.ids.length === 1
-      ? (() => {
-          const blockId = selection.ids[0];
-          // Verify it's actually a nested block in this container.
-          for (const col of columns) {
-            if (col.blocks.some(b => b.id === blockId)) return blockId;
-          }
-          return null;
-        })()
-      : null
-  );
+  // Two ways to be drilled into a column-child block:
+  //  1. selection.kind === 'blocks' targeting the child block directly.
+  //  2. selection.kind === 'slots' whose containerId IS the child block
+  //     (e.g. a card inside a FeatureCards block nested in this column).
+  //     Without this branch, the child block's form is never reachable from
+  //     the right-panel and edits silently no-op.
+  const drilledBlockId = (() => {
+    const candidate =
+      selection.kind === 'blocks' && selection.ids.length === 1
+        ? selection.ids[0]
+        : selection.kind === 'slots' && selection.containerId
+        ? selection.containerId
+        : null;
+    if (!candidate) return null;
+    for (const col of columns) {
+      if (col.blocks.some(b => b.id === candidate)) return candidate;
+    }
+    return null;
+  })();
 
   const drilledLocation = useMemo(() => {
     if (!drilledBlockId) return null;
