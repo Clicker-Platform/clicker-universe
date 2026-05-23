@@ -7,15 +7,6 @@ vi.mock('@/lib/site-context', () => ({
   useSite: () => ({ siteId: 'site-a' }),
 }));
 
-// Mock module-enabled subscription (returns whatever we set on this var)
-let mockEnabledModuleIds: string[] = [];
-vi.mock('@/lib/modules/registry', () => ({
-  subscribeToEnabledModules: (cb: (mods: Array<{ id: string }>) => void) => {
-    cb(mockEnabledModuleIds.map(id => ({ id })));
-    return () => {};
-  },
-}));
-
 // Mock the site doc snapshot (which modules are enabled for THIS site)
 let mockSiteModules: Record<string, boolean> = {};
 vi.mock('firebase/firestore', async () => {
@@ -42,12 +33,12 @@ const fetchMock = vi.fn();
 beforeEach(() => {
   fetchMock.mockReset();
   global.fetch = fetchMock as unknown as typeof fetch;
+  sessionStorage.clear();
 });
-afterEach(() => { mockSiteModules = {}; mockEnabledModuleIds = []; });
+afterEach(() => { mockSiteModules = {}; });
 
 describe('useAICreditStatus', () => {
   it('returns shouldRender=false and skips fetch when no AI module enabled', async () => {
-    mockEnabledModuleIds = ['pos', 'reservation'];
     mockSiteModules = { pos: true, reservation: true };
 
     const { result } = renderHook(() => useAICreditStatus());
@@ -58,7 +49,6 @@ describe('useAICreditStatus', () => {
   });
 
   it('fetches and classifies as healthy when balance is ≥50% of baseline', async () => {
-    mockEnabledModuleIds = ['ai_sales_agent', 'pos'];
     mockSiteModules = { ai_sales_agent: true, pos: true };
     fetchMock.mockResolvedValueOnce({
       ok: true,
@@ -74,7 +64,6 @@ describe('useAICreditStatus', () => {
   });
 
   it('classifies as warn between 10% and 50%', async () => {
-    mockEnabledModuleIds = ['stocklens'];
     mockSiteModules = { stocklens: true };
     fetchMock.mockResolvedValueOnce({
       ok: true, json: async () => ({ balance: 1.8, lifetimeUsed: 8.2 }),
@@ -86,7 +75,6 @@ describe('useAICreditStatus', () => {
   });
 
   it('classifies as critical below 10%', async () => {
-    mockEnabledModuleIds = ['stocklens'];
     mockSiteModules = { stocklens: true };
     fetchMock.mockResolvedValueOnce({
       ok: true, json: async () => ({ balance: 0.6, lifetimeUsed: 9.4 }),
@@ -97,7 +85,6 @@ describe('useAICreditStatus', () => {
   });
 
   it('classifies as out at zero', async () => {
-    mockEnabledModuleIds = ['stocklens'];
     mockSiteModules = { stocklens: true };
     fetchMock.mockResolvedValueOnce({
       ok: true, json: async () => ({ balance: 0, lifetimeUsed: 10 }),
@@ -108,7 +95,6 @@ describe('useAICreditStatus', () => {
   });
 
   it('refetches on window focus', async () => {
-    mockEnabledModuleIds = ['stocklens'];
     mockSiteModules = { stocklens: true };
     fetchMock
       .mockResolvedValueOnce({ ok: true, json: async () => ({ balance: 5, lifetimeUsed: 5 }) })
@@ -124,5 +110,26 @@ describe('useAICreditStatus', () => {
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
     await waitFor(() => expect(result.current.balanceUSD).toBe(4));
+  });
+
+  it('hydrates from sessionStorage instantly and overwrites with fresh fetch', async () => {
+    mockSiteModules = { stocklens: true };
+    sessionStorage.setItem(
+      'clicker_ai_credit_status_site-a',
+      JSON.stringify({ balance: 9, lifetimeUsed: 1 }),
+    );
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ balance: 7, lifetimeUsed: 3 }),
+    });
+
+    const { result } = renderHook(() => useAICreditStatus());
+
+    // shouldRender flips true from the cached value before fetch resolves
+    await waitFor(() => expect(result.current.shouldRender).toBe(true));
+    // Eventually replaced by the fresh fetched value
+    await waitFor(() => expect(result.current.balanceUSD).toBe(7));
+    expect(JSON.parse(sessionStorage.getItem('clicker_ai_credit_status_site-a')!))
+      .toEqual({ balance: 7, lifetimeUsed: 3 });
   });
 });

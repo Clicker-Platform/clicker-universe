@@ -4,7 +4,6 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase';
 import { useSite } from '@/lib/site-context';
-import { subscribeToEnabledModules } from '@/lib/modules/registry';
 import { usdToCredits } from '@/lib/ai/credits-display';
 import {
   AI_CONSUMER_MODULE_IDS,
@@ -29,6 +28,29 @@ export interface AICreditStatus {
 
 interface ApiResponse { balance: number; lifetimeUsed: number; }
 
+// sessionStorage cache: shows the last-known balance immediately on remount
+// while a fresh fetch runs in the background. Eliminates the perceived
+// cold-start delay (Firestore snapshot + token mint + API round-trip).
+const CACHE_KEY = (siteId: string) => `clicker_ai_credit_status_${siteId}`;
+
+function readCache(siteId: string): ApiResponse | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = sessionStorage.getItem(CACHE_KEY(siteId));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (typeof parsed?.balance === 'number' && typeof parsed?.lifetimeUsed === 'number') {
+      return { balance: parsed.balance, lifetimeUsed: parsed.lifetimeUsed };
+    }
+    return null;
+  } catch { return null; }
+}
+
+function writeCache(siteId: string, value: ApiResponse): void {
+  if (typeof window === 'undefined') return;
+  try { sessionStorage.setItem(CACHE_KEY(siteId), JSON.stringify(value)); } catch {}
+}
+
 function classify(balanceUSD: number, lifetimeUsedUSD: number): { state: CreditState; pct: number | undefined } {
   if (balanceUSD <= 0) return { state: 'out', pct: 0 };
 
@@ -50,21 +72,16 @@ function classify(balanceUSD: number, lifetimeUsedUSD: number): { state: CreditS
 
 export function useAICreditStatus(): AICreditStatus {
   const { siteId } = useSite();
-  const [registeredModules, setRegisteredModules] = useState<Set<string>>(new Set());
   const [siteEnabled, setSiteEnabled] = useState<Record<string, boolean>>({});
   const [data, setData] = useState<ApiResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [tick, setTick] = useState(0); // bumped by refresh() / focus
 
-  // Subscribe to globally-registered modules
-  useEffect(() => {
-    const unsub = subscribeToEnabledModules((mods) => {
-      setRegisteredModules(new Set(mods.map(m => m.id)));
-    });
-    return () => unsub();
-  }, []);
-
-  // Subscribe to per-site module flags
+  // Subscribe to per-site module flags.
+  // We deliberately do NOT consult the global module registry — gating only
+  // needs to know whether the tenant has the module flag enabled. Skipping
+  // that second subscription removes one network round-trip from the cold
+  // path before the pill can render.
   useEffect(() => {
     if (!siteId || siteId === 'default' || siteId === 'pending') return;
     const unsub = onSnapshot(doc(db, 'sites', siteId), (snap) => {
@@ -75,13 +92,18 @@ export function useAICreditStatus(): AICreditStatus {
     return () => unsub();
   }, [siteId]);
 
-  // Module-gating check: is this tenant eligible to fetch AI credit data?
-  const gatingEnabled = useMemo(() => {
-    for (const id of AI_CONSUMER_MODULE_IDS) {
-      if (registeredModules.has(id) && siteEnabled[id]) return true;
-    }
-    return false;
-  }, [registeredModules, siteEnabled]);
+  const gatingEnabled = useMemo(
+    () => AI_CONSUMER_MODULE_IDS.some(id => siteEnabled[id]),
+    [siteEnabled],
+  );
+
+  // Hydrate from sessionStorage on siteId change — shows the previous-session
+  // balance instantly while the background fetch runs.
+  useEffect(() => {
+    if (!siteId) { setData(null); return; }
+    const cached = readCache(siteId);
+    setData(cached);
+  }, [siteId]);
 
   // Fetch when gating allows
   useEffect(() => {
@@ -97,17 +119,17 @@ export function useAICreditStatus(): AICreditStatus {
         });
         if (!res.ok) { if (!cancelled) setLoading(false); return; }
         const json = (await res.json()) as ApiResponse;
-        if (!cancelled) { setData(json); setLoading(false); }
+        if (!cancelled) {
+          setData(json);
+          writeCache(siteId, json);
+          setLoading(false);
+        }
       } catch {
         if (!cancelled) setLoading(false);
       }
     })();
     return () => { cancelled = true; };
   }, [gatingEnabled, siteId, tick]);
-
-  // Clear stale data when the active tenant changes — prevents flashing the
-  // previous tenant's balance during the refetch window.
-  useEffect(() => { setData(null); }, [siteId]);
 
   // Refresh on tab becoming visible
   useEffect(() => {
@@ -125,12 +147,9 @@ export function useAICreditStatus(): AICreditStatus {
   const lifetimeUsedUSD = data?.lifetimeUsed ?? 0;
   const { state, pct } = classify(balanceUSD, lifetimeUsedUSD);
 
-  // shouldRender: gating is met AND we have fetched data at least once.
-  // Using `data !== null` ensures shouldRender only flips to true after the first fetch
-  // completes — consumers can then safely read `state` without racing the async fetch.
-  // Note: a debt-override branch was considered (show indicator even when gating is false
-  // if balance < 0) but the same gating gate also gates fetching, so `data` is always null
-  // when gatingEnabled is false — the override would be dead code.
+  // shouldRender flips true as soon as gating allows AND we have any data
+  // (either cached or freshly fetched). Cached hydration means this is
+  // typically instantaneous on warm sessions.
   const shouldRender = gatingEnabled && data !== null;
 
   return {
