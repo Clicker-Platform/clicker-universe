@@ -35,10 +35,11 @@ export const DefaultButtonBlock = ({ data, previewMode, siteId: siteIdProp }: { 
     const isClean = theme.cardStyle === 'clean';
     const isGlass = theme.cardStyle === 'glass';
 
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [formData, setFormData] = useState<any>(null);
-    const [isLoadingForm, setIsLoadingForm] = useState(false);
-    const [formError, setFormError] = useState<string | null>(null);
+    type ButtonKey = 'primary' | 'secondary';
+    const [modalOpenFor, setModalOpenFor] = useState<ButtonKey | null>(null);
+    const [formDataByKey, setFormDataByKey] = useState<Partial<Record<ButtonKey, any>>>({});
+    const [loadingFor, setLoadingFor] = useState<ButtonKey | null>(null);
+    const [errorByKey, setErrorByKey] = useState<Partial<Record<ButtonKey, string>>>({});
 
     const alignClass = {
         left: 'text-left',
@@ -71,37 +72,41 @@ export const DefaultButtonBlock = ({ data, previewMode, siteId: siteIdProp }: { 
 
     const buttonStyle = { borderRadius: 'calc(var(--theme-radius) * 0.75)' };
 
-    const handleFormClick = async (e: React.MouseEvent) => {
+    const handleFormClick = (key: ButtonKey, cfg: TriggerConfig) => async (e: React.MouseEvent) => {
         e.preventDefault();
         if (previewMode || !siteId) return;
-        setFormError(null);
-        if (!formData) {
-            setIsLoadingForm(true);
+        setErrorByKey(prev => ({ ...prev, [key]: undefined }));
+        if (!formDataByKey[key]) {
+            setLoadingFor(key);
             try {
-                const res = await fetch(`/api/forms?id=${data.formId}&siteId=${siteId}`);
+                const res = await fetch(`/api/forms?id=${cfg.formId}&siteId=${siteId}`);
                 if (res.ok) {
-                    setFormData(await res.json());
-                    setIsModalOpen(true);
+                    const formJson = await res.json();
+                    setFormDataByKey(prev => ({ ...prev, [key]: formJson }));
+                    setModalOpenFor(key);
                 } else if (res.status === 404) {
-                    setFormError('Form not found or unpublished.');
+                    setErrorByKey(prev => ({ ...prev, [key]: 'Form not found or unpublished.' }));
                 } else {
-                    setFormError('Could not load form. Please try again.');
+                    setErrorByKey(prev => ({ ...prev, [key]: 'Could not load form. Please try again.' }));
                 }
             } catch {
-                setFormError('Network error. Please check your connection.');
+                setErrorByKey(prev => ({ ...prev, [key]: 'Network error. Please check your connection.' }));
             }
-            setIsLoadingForm(false);
+            setLoadingFor(null);
         } else {
-            setIsModalOpen(true);
+            setModalOpenFor(key);
         }
     };
 
-    // Auto-dismiss error after 4s
+    // Auto-dismiss per-key errors after 4s
     React.useEffect(() => {
-        if (!formError) return;
-        const t = setTimeout(() => setFormError(null), 4000);
-        return () => clearTimeout(t);
-    }, [formError]);
+        const keys = (Object.keys(errorByKey) as ButtonKey[]).filter(k => errorByKey[k]);
+        if (keys.length === 0) return;
+        const timers = keys.map(k =>
+            setTimeout(() => setErrorByKey(prev => ({ ...prev, [k]: undefined })), 4000)
+        );
+        return () => timers.forEach(clearTimeout);
+    }, [errorByKey]);
 
     const wrapperClass = `${data.align === 'full' ? '' : alignClass}`;
 
@@ -171,19 +176,27 @@ export const DefaultButtonBlock = ({ data, previewMode, siteId: siteIdProp }: { 
         );
     };
 
-    const isFormLink = data.linkType === 'form' && !!data.formId;
+    const primaryCfg: TriggerConfig = {
+        label: data.label,
+        variant: data.variant,
+        linkType: data.linkType,
+        url: data.url,
+        formId: data.formId,
+        openInNewTab: data.openInNewTab,
+    };
+    const primaryTrigger = buildTrigger(primaryCfg, 'primary', {
+        isLoadingForm: loadingFor === 'primary',
+        onFormClick: handleFormClick('primary', primaryCfg),
+    });
 
-    const primaryTrigger = buildTrigger(
-        { label: data.label, variant: data.variant, linkType: data.linkType, url: data.url, formId: data.formId, openInNewTab: data.openInNewTab },
-        'primary',
-        { isLoadingForm, onFormClick: handleFormClick }
-    );
+    const primaryError = errorByKey.primary;
+    const primaryIsFormLink = data.linkType === 'form' && !!data.formId;
 
     return (
         <>
             <div className={wrapperClass}>
                 {primaryTrigger}
-                {formError && (
+                {primaryError && (
                     <div
                         role="alert"
                         className="mt-2 inline-block text-xs font-medium px-3 py-1.5 rounded-lg border"
@@ -193,12 +206,17 @@ export const DefaultButtonBlock = ({ data, previewMode, siteId: siteIdProp }: { 
                             borderColor: 'var(--theme-error-bg)',
                         }}
                     >
-                        {formError}
+                        {primaryError}
                     </div>
                 )}
             </div>
-            {isFormLink && isModalOpen && formData && (
-                <FormModal form={formData} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} siteId={siteId} />
+            {primaryIsFormLink && modalOpenFor === 'primary' && formDataByKey.primary && (
+                <FormModal
+                    form={formDataByKey.primary}
+                    isOpen={true}
+                    onClose={() => setModalOpenFor(null)}
+                    siteId={siteId}
+                />
             )}
         </>
     );
