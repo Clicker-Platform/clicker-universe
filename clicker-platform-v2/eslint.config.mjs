@@ -69,10 +69,37 @@ const typographyEnforcement = {
     },
 };
 
+// ─── Destructive-action confirmation enforcement ──────────────────────────────
+//
+// Bans window.confirm / bare confirm() for destructive UI. Use the
+// <ConfirmButton> primitive (components/ui/ConfirmButton.tsx) instead — it
+// inlines a soft-red Confirm / Cancel pair so a slip can't fire the action.
+const confirmDialogEnforcement = {
+    rules: {
+        "no-restricted-globals": [
+            "error",
+            {
+                name: "confirm",
+                message:
+                    "Don't use window.confirm() for destructive actions. Use <ConfirmButton> from @/components/ui/ConfirmButton — it renders an inline Confirm/Cancel pair on click.",
+            },
+        ],
+        "no-restricted-syntax": [
+            "error",
+            {
+                selector: "CallExpression[callee.object.name='window'][callee.property.name='confirm']",
+                message:
+                    "Don't use window.confirm() for destructive actions. Use <ConfirmButton> from @/components/ui/ConfirmButton.",
+            },
+        ],
+    },
+};
+
 const eslintConfig = defineConfig([
     ...nextVitals,
     ...nextTs,
     typographyEnforcement,
+    confirmDialogEnforcement,
     // Override default ignores of eslint-config-next.
     globalIgnores([
         // Default ignores of eslint-config-next:

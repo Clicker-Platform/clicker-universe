@@ -38,6 +38,7 @@ Rule packs are pinned in the `Makefile` (`SEMGREP_CONFIGS`) and must match `.git
 5. **DB paths** — use constants from `lib/modules/{name}/constants.ts`, never raw strings.
 6. **Cross-module promo imports** — modules may import from `@/lib/modules/promo/api` (the facade only). Designated exception to rule 1, same as `@/lib/modules/membership/api`.
 7. **New module = seed global registry** — adding a module requires a Firestore doc at `modules/{id}` with at least `{ id, displayName, enabled: true, icon, version }`. Without it, Backyard's per-tenant toggle silently fails: `sites/{id}.modules.{moduleId} = true` is written, but the module never renders in sidebar/Overview because `subscribeToEnabledModules` queries `modules` WHERE `enabled == true`. Run `pnpm tsx scripts/seed-modules.ts` (or insert via MCP) when introducing a new module. Module IDs use **underscore** (`promo`, `ai_marketing`, `sales_pipeline`), not dash.
+8. **Destructive actions use `<ConfirmButton>`** — never `window.confirm()` or a bare red button that fires immediately. Use [`components/ui/ConfirmButton.tsx`](clicker-platform-v2/components/ui/ConfirmButton.tsx); it inlines a soft-red Confirm / Cancel pair on first click. ESLint will reject `window.confirm` / `confirm()` calls.
 
 ## Skills Available
 

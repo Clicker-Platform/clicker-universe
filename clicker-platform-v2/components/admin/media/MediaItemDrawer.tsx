@@ -5,6 +5,7 @@ import { X, Loader2, Trash2 } from 'lucide-react';
 import { updateMedia } from '@/lib/media/library';
 import type { MediaItem } from '@/lib/media/types';
 import { DEFAULT_FOLDER } from '@/lib/media/types';
+import { ConfirmButton } from '@/components/ui/ConfirmButton';
 
 interface Props {
     item: MediaItem | null;
@@ -122,14 +123,13 @@ export function MediaItemDrawer({ item, siteId, onClose, onChange, onDelete, del
             </div>
             <div className="flex items-center justify-between gap-2 px-4 py-3 border-t border-gray-200 dark:border-neutral-800">
                 {onDelete ? (
-                    <button
-                        onClick={() => onDelete(item.id)}
+                    <ConfirmButton
+                        onConfirm={() => onDelete(item.id)}
+                        label="Delete"
+                        triggerIcon={deleting ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
+                        loading={deleting}
                         disabled={deleting}
-                        className="px-3 py-1.5 text-sm rounded-md bg-red-600 text-white flex items-center gap-1 hover:bg-red-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-                    >
-                        {deleting ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
-                        Delete
-                    </button>
+                    />
                 ) : <span />}
                 <div className="flex gap-2">
                     <button

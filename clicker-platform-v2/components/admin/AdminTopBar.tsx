@@ -13,6 +13,8 @@ import { useAdminNavGroups, NavGroup } from '@/lib/use-admin-nav-groups';
 import { useTopBarSlots } from '@/lib/top-bar-slot-context';
 import { useInboxPanel } from '@/lib/inbox-panel-context';
 import { useAdminUnreadCounts } from '@/lib/use-admin-unread-counts';
+import { AICreditPill } from '@/components/admin/ai-credit/AICreditPill';
+import { AICreditStatusProvider } from '@/components/admin/ai-credit/AICreditStatusContext';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -324,6 +326,7 @@ export function AdminTopBar() {
     ];
 
     return (
+      <AICreditStatusProvider>
         <div className="hidden md:flex items-center justify-between px-3 h-12 bg-gray-50 dark:bg-neutral-900 border-b border-gray-200 dark:border-neutral-800 flex-shrink-0">
 
             {/* Left — app menu trigger + page title */}
@@ -388,6 +391,8 @@ export function AdminTopBar() {
             {/* Right — page action slot + persistent controls */}
             <div className="flex-1 flex items-center justify-end gap-1">
                 {slots.right}
+
+                <AICreditPill />
 
                 {/* Inbox */}
                 <button
@@ -458,5 +463,6 @@ export function AdminTopBar() {
                 </div>
             </div>
         </div>
+      </AICreditStatusProvider>
     );
 }
