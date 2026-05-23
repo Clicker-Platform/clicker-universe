@@ -709,15 +709,15 @@ export function CanvasStudio({
                     );
                 })()
             ) : selection.kind === 'slots' && selection.containerId ? (
-                // Empty container slot selected — render the parent container's form.
-                // The container form (ColumnsForm / GridForm) reads `selection` to
-                // pick the active tab and show the slot's properties / picker.
+                // Slot-kind selection (empty Columns/Grid slot, or a FeatureCards card).
+                // The container itself can be top-level OR nested inside another container,
+                // so resolve it through findBlockPath rather than the top-level array.
                 (() => {
-                    const container = blocks.find(b => b.id === selection.containerId);
-                    if (container) {
+                    const path = findBlockPath(blocks, selection.containerId);
+                    if (path) {
                         return (
                             <BlockFormRenderer
-                                block={container}
+                                block={path.block}
                                 onChange={updateBlockData}
                                 templateId={templateId}
                                 onOpenSlideOver={toggleSlideOverPanel}
