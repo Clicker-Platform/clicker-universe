@@ -9,6 +9,7 @@ import { useTemplate } from '@/components/TemplateProvider';
 import { useDeviceView, dv, type DeviceView } from '@/components/DeviceViewContext';
 import { FieldSelectionChrome, EditableText } from '@/components/blocks/shared/EditablePrimitives';
 import { H4, BODY_LG, BUTTON_TEXT } from './typography';
+import { UnifiedButton } from '@/components/ui/UnifiedButton';
 
 // ─── Colour helpers ───────────────────────────────────────────────────────────
 
@@ -69,15 +70,13 @@ interface CtaBtn { label?: string; url?: string; type?: string; formId?: string;
 // ─── CTA button row ───────────────────────────────────────────────────────────
 
 const CtaButtons = ({
-    primary, secondary, dark = false, align = 'center', onFieldFocus,
+    primary, secondary, align = 'center', onFieldFocus,
 }: {
     primary?: CtaBtn | null;
     secondary?: CtaBtn | null;
-    dark?: boolean;
     align?: string;
     onFieldFocus?: (field: string, rect: DOMRect) => void;
 }) => {
-    const d = useDeviceView();
     const primaryRef = useRef<HTMLDivElement>(null);
     const secondaryRef = useRef<HTMLDivElement>(null);
     const [focusedBtn, setFocusedBtn] = useState<'primary' | 'secondary' | null>(null);
@@ -112,17 +111,13 @@ const CtaButtons = ({
                     style={{ overflow: 'visible' }}
                     onClick={() => handleBtnClick('primary', primaryRef)}
                 >
-                    <a
+                    <UnifiedButton
+                        tier="primary"
+                        size="lg"
                         href={onFieldFocus ? undefined : (primary?.type === 'form' ? `#form-${primary.formId}` : primary.url || '#')}
-                        className={`inline-flex items-center px-6 py-2.5 ${BUTTON_TEXT(d)} transition-all shadow-sm ${
-                            dark
-                                ? 'bg-white text-gray-900 hover:bg-white/90'
-                                : 'bg-theme-primary text-white hover:opacity-90'
-                        }`}
-                        style={{ borderRadius: 'var(--theme-radius)' }}
                     >
                         {primary.label}
-                    </a>
+                    </UnifiedButton>
                     {onFieldFocus && focusedBtn === 'primary' && <FieldSelectionChrome />}
                 </div>
             )}
@@ -133,17 +128,13 @@ const CtaButtons = ({
                     style={{ overflow: 'visible' }}
                     onClick={() => handleBtnClick('secondary', secondaryRef)}
                 >
-                    <a
+                    <UnifiedButton
+                        tier="secondary"
+                        size="lg"
                         href={onFieldFocus ? undefined : (secondary?.type === 'form' ? `#form-${secondary.formId}` : secondary.url || '#')}
-                        className={`inline-flex items-center px-6 py-2.5 ${BUTTON_TEXT(d)} border-2 transition-all ${
-                            dark
-                                ? 'border-white/50 text-white hover:bg-white/10'
-                                : 'border-theme-border text-theme-foreground hover:bg-black/5'
-                        }`}
-                        style={{ borderRadius: 'var(--theme-radius)' }}
                     >
                         {secondary.label}
-                    </a>
+                    </UnifiedButton>
                     {onFieldFocus && focusedBtn === 'secondary' && <FieldSelectionChrome />}
                 </div>
             )}
@@ -282,7 +273,7 @@ export const DefaultHeroBlock = ({ data, theme, isFirst = true, onInlineChange, 
                             style={{ color: data?.subtitleColor || defaultSubtitleColor }}
                         />
                     )}
-                    <CtaButtons primary={primaryBtn} secondary={secondaryBtn} dark={isDark} align={ctaAlign} onFieldFocus={onFieldFocus} />
+                    <CtaButtons primary={primaryBtn} secondary={secondaryBtn} align={ctaAlign} onFieldFocus={onFieldFocus} />
                 </div>
                 {/* Right panel: image or colour fill */}
                 <div className={`flex-1 relative ${dv(d, 'min-h-[300px]', 'md:min-h-full')} ${bgMode !== 'image' ? '' : 'bg-gray-100'}`}
@@ -374,7 +365,7 @@ export const DefaultHeroBlock = ({ data, theme, isFirst = true, onInlineChange, 
                             style={{ color: data?.subtitleColor || defaultSubtitleColor }}
                         />
                     )}
-                    <CtaButtons primary={primaryBtn} secondary={secondaryBtn} dark={isDark} align={ctaAlign} onFieldFocus={onFieldFocus} />
+                    <CtaButtons primary={primaryBtn} secondary={secondaryBtn} align={ctaAlign} onFieldFocus={onFieldFocus} />
                 </div>
             </section>
         );
@@ -461,7 +452,7 @@ export const DefaultHeroBlock = ({ data, theme, isFirst = true, onInlineChange, 
                         style={{ color: data?.subtitleColor || defaultSubtitleColor }}
                     />
                 )}
-                <CtaButtons primary={primaryBtn} secondary={secondaryBtn} dark={isDark} align={ctaAlign} onFieldFocus={onFieldFocus} />
+                <CtaButtons primary={primaryBtn} secondary={secondaryBtn} align={ctaAlign} onFieldFocus={onFieldFocus} />
             </div>
         </section>
     );
