@@ -127,16 +127,19 @@ export function DefaultFeatureCardsBlock({ data, theme: themeProp, previewMode, 
     const columns = data.columns || 3;
     const desktopCols = DESKTOP_COLS_CLASS[columns] || DESKTOP_COLS_CLASS[3];
     const cards = data.cards || [];
+    const isSingle = cards.length === 1;
 
     // Mobile: horizontal scroll. Desktop: grid.
     // dv() emits the right classes for canvas previews + responsive viewport.
     // pt-9 is only needed in the admin canvas so the CardToolbar has room to render above the row.
     const adminTopPad = isAdminCanvas ? 'pt-9 md:pt-0' : '';
-    const containerClass = dv(
-        deviceView,
-        `flex items-stretch gap-3 overflow-x-auto overflow-y-visible px-4 pb-2 snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${adminTopPad}`,
-        `md:grid ${desktopCols} md:gap-4 md:items-stretch md:px-4 md:max-w-6xl md:mx-auto md:overflow-visible md:pb-0`
-    );
+    const containerClass = isSingle
+        ? 'flex justify-center px-4 md:px-4 md:max-w-6xl md:mx-auto'
+        : dv(
+            deviceView,
+            `flex items-stretch gap-3 overflow-x-auto overflow-y-visible px-4 pb-2 snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${adminTopPad}`,
+            `md:grid ${desktopCols} md:gap-4 md:items-stretch md:px-4 md:max-w-6xl md:mx-auto md:overflow-visible md:pb-0`
+        );
 
     return (
         <section className="w-full min-w-0 py-8">
@@ -157,11 +160,13 @@ export function DefaultFeatureCardsBlock({ data, theme: themeProp, previewMode, 
             {cards.length > 0 && (
                 <div className={containerClass}>
                     {cards.map((card, index) => {
-                        const cardWrapperBase = dv(
-                            deviceView,
-                            'snap-start shrink-0 w-[72vw] max-w-[280px] flex flex-col',
-                            'md:w-auto md:max-w-none flex flex-col'
-                        );
+                        const cardWrapperBase = isSingle
+                            ? 'w-full flex flex-col'
+                            : dv(
+                                deviceView,
+                                'snap-start shrink-0 w-[72vw] max-w-[280px] flex flex-col',
+                                'md:w-auto md:max-w-none flex flex-col'
+                            );
 
                         const isSelected = selectedCardId === card.id;
                         const selectionRing = isAdminCanvas && isSelected
