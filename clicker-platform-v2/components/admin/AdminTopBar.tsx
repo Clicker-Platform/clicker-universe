@@ -14,7 +14,6 @@ import { useTopBarSlots } from '@/lib/top-bar-slot-context';
 import { useInboxPanel } from '@/lib/inbox-panel-context';
 import { useAdminUnreadCounts } from '@/lib/use-admin-unread-counts';
 import { AICreditPill } from '@/components/admin/ai-credit/AICreditPill';
-import { AICreditCard } from '@/components/admin/ai-credit/AICreditCard';
 import { AICreditStatusProvider } from '@/components/admin/ai-credit/AICreditStatusContext';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -166,11 +165,6 @@ function AppMenu({ groups, pathname, baseUrl, siteId, onClose }: AppMenuProps) {
                         <Image src="/clicker_brand_logo.png" alt="Clicker" fill sizes="20px" className="object-contain rounded-full" />
                     </div>
                     <span className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Clicker</span>
-                </div>
-
-                {/* AI credit card — renders null for tenants without AI modules */}
-                <div className="px-1 mb-2">
-                    <AICreditCard variant="launcher" onNavigate={onClose} />
                 </div>
 
                 <p className="px-2 pt-1 pb-1 text-[10px] font-bold text-gray-400 dark:text-neutral-600 uppercase tracking-wider">

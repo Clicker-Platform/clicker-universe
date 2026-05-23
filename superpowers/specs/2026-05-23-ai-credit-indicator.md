@@ -41,21 +41,17 @@ A compact pill in the admin top bar, left of the inbox / profile icons.
 - Default state: `⚡ 642 credits` — neutral slate/blue.
 - Click → opens detail popover (see §3 below).
 
-### 2. Launcher-popover card
+### 2. ~~Launcher-popover card~~ (removed 2026-05-23)
 
-A card inside the app-launcher popover (the panel opened by the top-left 4-dot button), positioned **directly under the CLICKER brand row, above the "CORE" section.**
-
-- Visual: rounded card with title row + progress bar + footer line.
-- Same visual language as Claude's "Credits" card (reference image discussed in brainstorm).
-- Click on card → routes to the AI Platform usage page (`/admin/ai-platform/usage`) if available, otherwise no-op.
+> **Removed post-launch.** Originally a card was mounted inside the app-launcher popover, directly under the CLICKER brand row. After shipping, this surface felt redundant with the always-visible top-bar pill and competed with the launcher's primary job (app navigation). Surface removed. The pill remains the single always-visible signal; the pill-click popover (§3 below) is the single detail view. If we ever want a card-style surface again, fold it into a dedicated AI Usage admin page rather than the launcher popover.
 
 ### 3. Pill-click popover (detail)
 
 When the pill is clicked, a small popover (anchored to the pill) opens containing:
 
-- The same card design as §2 (re-used component).
-- One muted line: *"Used by AI Sales Agent, Stocklens scanner, and knowledge sync. Resets on \<date\>."*
-- A `Need more? Contact admin →` link.
+- An inline mini-card (title row → progress bar → balance + state footer) — same visual language as the pill but with full detail. Self-contained in `AICreditPopover`; no shared card component.
+- One muted line: *"Used by AI Sales Agent, Stocklens scanner, and other AI features."*
+- A `Need more? Contact admin →` link (mailto).
 
 ---
 
