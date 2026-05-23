@@ -117,7 +117,7 @@ describe('useAICreditStatus', () => {
     const { result } = renderHook(() => useAICreditStatus());
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
 
-    act(() => {
+    await act(async () => {
       Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true });
       document.dispatchEvent(new Event('visibilitychange'));
     });

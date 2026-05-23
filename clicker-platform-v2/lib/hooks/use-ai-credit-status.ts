@@ -91,11 +91,11 @@ export function useAICreditStatus(): AICreditStatus {
     (async () => {
       try {
         const token = await auth.currentUser?.getIdToken();
-        if (!token) { setLoading(false); return; }
+        if (!token) { if (!cancelled) setLoading(false); return; }
         const res = await fetch('/api/admin/ai-credits', {
           headers: { Authorization: `Bearer ${token}`, 'x-site-id': siteId },
         });
-        if (!res.ok) { setLoading(false); return; }
+        if (!res.ok) { if (!cancelled) setLoading(false); return; }
         const json = (await res.json()) as ApiResponse;
         if (!cancelled) { setData(json); setLoading(false); }
       } catch {
@@ -121,13 +121,13 @@ export function useAICreditStatus(): AICreditStatus {
   const lifetimeUsedUSD = data?.lifetimeUsed ?? 0;
   const { state, pct } = classify(balanceUSD, lifetimeUsedUSD);
 
-  // shouldRender: gating is met AND we have fetched data at least once (or debt scenario).
+  // shouldRender: gating is met AND we have fetched data at least once.
   // Using `data !== null` ensures shouldRender only flips to true after the first fetch
   // completes — consumers can then safely read `state` without racing the async fetch.
-  // The debt safety case (balance < 0) overrides even if gating is not met.
-  const shouldRender = gatingEnabled
-    ? data !== null
-    : (data !== null && data.balance < 0);
+  // Note: a debt-override branch was considered (show indicator even when gating is false
+  // if balance < 0) but the same gating gate also gates fetching, so `data` is always null
+  // when gatingEnabled is false — the override would be dead code.
+  const shouldRender = gatingEnabled && data !== null;
 
   return {
     loading,
