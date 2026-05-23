@@ -257,8 +257,6 @@ export function FeatureCardsForm({ data, onChange, containerBlockId }: Props) {
     }, [selectedCardId]);
 
     const safeData: FeatureCardsData = {
-        title: data?.title ?? '',
-        subtitle: data?.subtitle ?? '',
         columns: data?.columns ?? 3,
         cards: data?.cards ?? [],
     };
@@ -290,17 +288,9 @@ export function FeatureCardsForm({ data, onChange, containerBlockId }: Props) {
         <div className="space-y-5">
             <div className={sectionClass}>
                 <div>
-                    <label className={labelClass}>Block title (optional)</label>
-                    <input value={safeData.title} onChange={e => update({ title: e.target.value })} className={inputClass} placeholder="Why Choose Us" />
-                </div>
-                <div>
-                    <label className={labelClass}>Subtitle (optional)</label>
-                    <input value={safeData.subtitle} onChange={e => update({ subtitle: e.target.value })} className={inputClass} placeholder="A short supporting line" />
-                </div>
-                <div>
-                    <label className={labelClass}>Columns</label>
+                    <label className={labelClass}>Max per row</label>
                     <div className="flex gap-2">
-                        {([2, 3, 4] as const).map(n => (
+                        {([1, 2, 3, 4] as const).map(n => (
                             <button
                                 key={n}
                                 type="button"
@@ -311,6 +301,7 @@ export function FeatureCardsForm({ data, onChange, containerBlockId }: Props) {
                             </button>
                         ))}
                     </div>
+                    <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1.5">Cards wrap to a new row when they exceed this number.</p>
                 </div>
             </div>
 

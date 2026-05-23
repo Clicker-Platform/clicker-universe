@@ -13,9 +13,7 @@ export interface FeatureCard {
 }
 
 export interface FeatureCardsData {
-    title?: string;
-    subtitle?: string;
-    columns: 2 | 3 | 4;
+    columns: 1 | 2 | 3 | 4;
     cards: FeatureCard[];
 }
 
@@ -24,8 +22,6 @@ export function makeDefaultCard(): FeatureCard {
 }
 
 export const DEFAULT_FEATURE_CARDS_DATA: FeatureCardsData = {
-    title: '',
-    subtitle: '',
     columns: 3,
     cards: [
         { id: uuidv4(), headline: 'First Card' },

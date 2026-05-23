@@ -19,8 +19,6 @@ vi.mock('../MediaView', () => ({
 }));
 
 const BASE_DATA: FeatureCardsData = {
-    title: '',
-    subtitle: '',
     columns: 3,
     cards: [],
 };
@@ -40,21 +38,6 @@ describe('Suite 2 — DefaultFeatureCardsBlock', () => {
     it('2.2 — renders nothing when cards array is empty (no title)', () => {
         const { container } = render(<DefaultFeatureCardsBlock data={{ ...BASE_DATA, cards: [] }} />);
         expect(container.querySelector('[class*="grid"]')).toBeNull();
-    });
-
-    it('2.3 — renders block title when provided', () => {
-        render(<DefaultFeatureCardsBlock data={{ ...BASE_DATA, title: 'Why Choose Us', cards: [] }} />);
-        expect(screen.getByText('Why Choose Us')).toBeInTheDocument();
-    });
-
-    it('2.4 — renders block subtitle when provided', () => {
-        render(<DefaultFeatureCardsBlock data={{ ...BASE_DATA, subtitle: 'A short line', cards: [] }} />);
-        expect(screen.getByText('A short line')).toBeInTheDocument();
-    });
-
-    it('2.5 — does not render title section when both title and subtitle are empty', () => {
-        render(<DefaultFeatureCardsBlock data={{ ...BASE_DATA, title: '', subtitle: '', cards: [makeCard()] }} />);
-        expect(screen.queryByRole('heading', { level: 2 })).toBeNull();
     });
 
     it('2.6 — renders headline for each card', () => {
