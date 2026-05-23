@@ -2,7 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Zap } from 'lucide-react';
-import { useAICreditStatus, type CreditState } from '@/lib/hooks/use-ai-credit-status';
+import { type CreditState } from '@/lib/hooks/use-ai-credit-status';
+import { useAICreditStatusContext } from './AICreditStatusContext';
 import { formatCreditsShort } from '@/lib/ai/credits-display';
 import { AICreditPopover } from './AICreditPopover';
 
@@ -21,7 +22,7 @@ const RING_CLASSES: Record<CreditState, string> = {
 };
 
 export function AICreditPill() {
-  const status = useAICreditStatus();
+  const status = useAICreditStatusContext();
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
 
@@ -49,7 +50,7 @@ export function AICreditPill() {
         )}
       </button>
 
-      <AICreditPopover open={open} onClose={() => setOpen(false)} />
+      <AICreditPopover open={open} onClose={() => setOpen(false)} triggerRef={wrapRef} />
     </div>
   );
 }

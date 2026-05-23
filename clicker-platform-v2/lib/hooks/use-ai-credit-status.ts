@@ -105,6 +105,10 @@ export function useAICreditStatus(): AICreditStatus {
     return () => { cancelled = true; };
   }, [gatingEnabled, siteId, tick]);
 
+  // Clear stale data when the active tenant changes — prevents flashing the
+  // previous tenant's balance during the refetch window.
+  useEffect(() => { setData(null); }, [siteId]);
+
   // Refresh on tab becoming visible
   useEffect(() => {
     if (!gatingEnabled) return;

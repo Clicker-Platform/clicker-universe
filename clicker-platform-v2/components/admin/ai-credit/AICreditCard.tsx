@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { Zap } from 'lucide-react';
-import { useAICreditStatus, type CreditState } from '@/lib/hooks/use-ai-credit-status';
+import { type CreditState } from '@/lib/hooks/use-ai-credit-status';
+import { useAICreditStatusContext } from './AICreditStatusContext';
 import { formatCredits } from '@/lib/ai/credits-display';
 import { useSite } from '@/lib/site-context';
 
@@ -48,7 +49,7 @@ function footerText(state: CreditState): string {
 }
 
 export function AICreditCard({ variant, onNavigate }: Props) {
-  const status = useAICreditStatus();
+  const status = useAICreditStatusContext();
   const { tenantSlug, isSubdomain } = useSite();
   if (!status.shouldRender || status.loading) return null;
 

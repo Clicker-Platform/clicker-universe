@@ -15,6 +15,7 @@ import { useInboxPanel } from '@/lib/inbox-panel-context';
 import { useAdminUnreadCounts } from '@/lib/use-admin-unread-counts';
 import { AICreditPill } from '@/components/admin/ai-credit/AICreditPill';
 import { AICreditCard } from '@/components/admin/ai-credit/AICreditCard';
+import { AICreditStatusProvider } from '@/components/admin/ai-credit/AICreditStatusContext';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -331,6 +332,7 @@ export function AdminTopBar() {
     ];
 
     return (
+      <AICreditStatusProvider>
         <div className="hidden md:flex items-center justify-between px-3 h-12 bg-gray-50 dark:bg-neutral-900 border-b border-gray-200 dark:border-neutral-800 flex-shrink-0">
 
             {/* Left — app menu trigger + page title */}
@@ -467,5 +469,6 @@ export function AdminTopBar() {
                 </div>
             </div>
         </div>
+      </AICreditStatusProvider>
     );
 }

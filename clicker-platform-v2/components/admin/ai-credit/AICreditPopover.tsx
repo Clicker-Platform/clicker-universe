@@ -1,20 +1,24 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type RefObject } from 'react';
 import { AICreditCard } from './AICreditCard';
 
 interface Props {
   open: boolean;
   onClose: () => void;
+  triggerRef?: RefObject<HTMLElement | null>;
 }
 
-export function AICreditPopover({ open, onClose }: Props) {
+export function AICreditPopover({ open, onClose, triggerRef }: Props) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) return;
     const onDown = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) onClose();
+      const target = e.target as Node;
+      if (ref.current && ref.current.contains(target)) return;
+      if (triggerRef?.current && triggerRef.current.contains(target)) return;
+      onClose();
     };
     const onEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('mousedown', onDown);
@@ -23,7 +27,7 @@ export function AICreditPopover({ open, onClose }: Props) {
       document.removeEventListener('mousedown', onDown);
       document.removeEventListener('keydown', onEsc);
     };
-  }, [open, onClose]);
+  }, [open, onClose, triggerRef]);
 
   if (!open) return null;
 
@@ -31,6 +35,7 @@ export function AICreditPopover({ open, onClose }: Props) {
     <div
       ref={ref}
       role="dialog"
+      aria-modal="false"
       aria-label="AI credit details"
       className="absolute right-0 top-full mt-1 z-50 w-72 bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-xl shadow-2xl p-3 animate-in fade-in duration-150"
     >
