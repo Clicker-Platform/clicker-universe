@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { CheckCircle, Loader } from 'lucide-react';
+import { CheckCircle } from 'lucide-react';
 import { Form } from '@/data/mockData';
 import { useFormSubmit } from '@/lib/forms/useFormSubmit';
 import { FormFieldsRenderer } from '@/components/forms/FormFieldsRenderer';
@@ -12,6 +12,7 @@ import { useTemplate } from '@/components/TemplateProvider';
 import { getCardClasses, getGlassStyle, getHeadingColor, getMutedColor } from './cardStyles';
 import { useDeviceView } from '@/components/DeviceViewContext';
 import { H2, H3, BODY, BODY_SM, BUTTON_TEXT } from './typography';
+import { UnifiedButton } from '@/components/ui/UnifiedButton';
 
 interface Props {
     data: {
@@ -126,12 +127,6 @@ export function DefaultInlineFormBlock({ data, siteId }: Props) {
         ? { borderRadius: 'var(--theme-radius)' }
         : undefined;
 
-    const hoverClass = isBold
-        ? 'hover:-translate-y-1'
-        : isGlass
-        ? 'hover:brightness-110'
-        : 'hover:opacity-90';
-
     return (
         <section className="w-full px-4 py-10 max-w-2xl mx-auto">
             <div className={cardClasses} style={cardStyle}>
@@ -170,25 +165,15 @@ export function DefaultInlineFormBlock({ data, siteId }: Props) {
                             <p className={BODY_SM(d)} style={{ color: 'var(--theme-error)' }}>{error}</p>
                         )}
 
-                        <button
+                        <UnifiedButton
+                            tier="primary"
+                            size="md"
                             type="submit"
-                            disabled={submitting}
-                            className={`w-full py-4 ${BUTTON_TEXT(d)} transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${hoverClass} ${
-                                isBold ? 'border-[3px]' : ''
-                            }`}
-                            style={{
-                                backgroundColor: isBold ? colors.foreground : colors.primary,
-                                color: isBold ? colors.background : primaryContrastColor,
-                                borderColor: isBold ? colors.foreground : undefined,
-                                borderRadius: 'calc(var(--theme-radius) * 0.6)',
-                                boxShadow: isBold
-                                    ? `4px 4px 0px 0px ${colors.border ?? colors.foreground}`
-                                    : '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-                            }}
+                            fullWidth
+                            loading={submitting}
                         >
-                            {submitting && <Loader size={20} className="animate-spin" />}
                             {form.buttonText || 'Submit'}
-                        </button>
+                        </UnifiedButton>
                     </form>
                 )}
             </div>
