@@ -39,9 +39,9 @@ const STATE_CLASSES: Record<CreditState, { card: string; bar: string; foot: stri
   },
 };
 
-function footerText(state: CreditState): string {
+function footerText(state: CreditState): string | null {
   switch (state) {
-    case 'healthy': return 'AI credits available';
+    case 'healthy': return null;
     case 'warn':    return 'Running low — top up soon';
     case 'critical':return 'Critical — top up now';
     case 'out':     return 'AI features paused — top up to resume';
@@ -64,16 +64,13 @@ export function AICreditCard({ variant, onNavigate }: Props) {
   const baseUrl = (tenantSlug && !isSubdomain) ? `/${tenantSlug}` : '';
   const usageHref = `${baseUrl}/admin/ai-usage`;
 
+  const foot = footerText(state);
+
   const inner = (
     <div className={`block w-full rounded-lg border px-3 py-2.5 transition-colors hover:brightness-[.98] ${cls.card}`}>
-      <div className="flex items-center justify-between mb-1.5">
-        <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-neutral-400">
-          <Zap size={11} className="text-studio-blue" />
-          AI Credits
-        </div>
-        <div className="text-xs font-semibold text-neutral-800 dark:text-neutral-100 tabular-nums">
-          {formatCredits(balanceUSD)}
-        </div>
+      <div className="flex items-center gap-1.5 mb-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-neutral-400">
+        <Zap size={11} className="text-studio-blue" />
+        AI Credits
       </div>
       <div className="h-1.5 rounded-full bg-gray-200 dark:bg-neutral-700 overflow-hidden">
         <div
@@ -81,12 +78,16 @@ export function AICreditCard({ variant, onNavigate }: Props) {
           style={{ width: `${barPct}%` }}
         />
       </div>
-      <div className={`mt-1.5 flex items-center gap-1.5 text-[11px] ${cls.foot}`}>
-        <span className={`inline-block w-1.5 h-1.5 rounded-full ${cls.dot}`} aria-hidden="true" />
-        {footerText(state)}
-        {variant === 'popover' && state !== 'healthy' && (
-          <span className="ml-auto opacity-75">{balanceCredits.toLocaleString('en-US')} credits</span>
-        )}
+      <div className="mt-1.5 flex items-center gap-1.5">
+        {foot ? (
+          <div className={`flex items-center gap-1.5 text-[11px] ${cls.foot}`}>
+            <span className={`inline-block w-1.5 h-1.5 rounded-full ${cls.dot}`} aria-hidden="true" />
+            {foot}
+          </div>
+        ) : null}
+        <div className={`text-[11px] font-semibold text-neutral-800 dark:text-neutral-100 tabular-nums ${foot ? 'ml-auto' : ''}`}>
+          {formatCredits(balanceUSD)}
+        </div>
       </div>
     </div>
   );
