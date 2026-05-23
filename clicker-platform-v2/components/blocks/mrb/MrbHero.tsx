@@ -11,6 +11,7 @@ import { useTemplate } from '@/components/TemplateProvider';
 import { useDeviceView, dv, type DeviceView } from '@/components/DeviceViewContext';
 import { FieldSelectionChrome, EditableText } from '@/components/blocks/shared/EditablePrimitives';
 import { H4, BODY_LG, BUTTON_TEXT } from '@/components/blocks/public/typography';
+import { UnifiedButton } from '@/components/ui/UnifiedButton';
 
 // ─── Colour helpers ───────────────────────────────────────────────────────────
 
@@ -71,17 +72,12 @@ const H1_BASE = 'font-extrabold leading-[1.1] tracking-tight';
 
 interface CtaBtn { label?: string; url?: string; }
 
-function CtaButtons({ primary, secondary, ctaJustify, primaryColor, bgColor, defaultTextColor, titleColor, onFieldFocus }: {
+function CtaButtons({ primary, secondary, ctaJustify, onFieldFocus }: {
     primary?: CtaBtn | null;
     secondary?: CtaBtn | null;
     ctaJustify: string;
-    primaryColor: string;
-    bgColor: string;
-    defaultTextColor: string;
-    titleColor?: string;
     onFieldFocus?: (field: string, rect: DOMRect) => void;
 }) {
-    const d = useDeviceView();
     const primaryRef = useRef<HTMLDivElement>(null);
     const secondaryRef = useRef<HTMLDivElement>(null);
     const [focusedBtn, setFocusedBtn] = useState<'primary' | 'secondary' | null>(null);
@@ -112,13 +108,13 @@ function CtaButtons({ primary, secondary, ctaJustify, primaryColor, bgColor, def
                     style={{ overflow: 'visible' }}
                     onClick={() => handleClick('primary', primaryRef)}
                 >
-                    <a
+                    <UnifiedButton
+                        tier="primary"
+                        size="lg"
                         href={onFieldFocus ? undefined : (primary.url || '#')}
-                        className={`inline-flex items-center px-6 py-3 rounded-xl ${BUTTON_TEXT(d)} transition-all active:scale-[0.98] shadow-lg`}
-                        style={{ backgroundColor: primaryColor, color: bgColor }}
                     >
                         {primary.label}
-                    </a>
+                    </UnifiedButton>
                     {onFieldFocus && focusedBtn === 'primary' && <FieldSelectionChrome />}
                 </div>
             )}
@@ -129,13 +125,13 @@ function CtaButtons({ primary, secondary, ctaJustify, primaryColor, bgColor, def
                     style={{ overflow: 'visible' }}
                     onClick={() => handleClick('secondary', secondaryRef)}
                 >
-                    <a
+                    <UnifiedButton
+                        tier="secondary"
+                        size="lg"
                         href={onFieldFocus ? undefined : (secondary.url || '#')}
-                        className={`inline-flex items-center px-6 py-3 rounded-xl ${BUTTON_TEXT(d)} border-2 transition-all active:scale-[0.98]`}
-                        style={{ borderColor: `${primaryColor}66`, color: titleColor || defaultTextColor }}
                     >
                         {secondary.label}
-                    </a>
+                    </UnifiedButton>
                     {onFieldFocus && focusedBtn === 'secondary' && <FieldSelectionChrome />}
                 </div>
             )}
@@ -375,10 +371,6 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, isFirst = true,
                     primary={primaryBtn}
                     secondary={secondaryBtn}
                     ctaJustify={ctaJustify}
-                    primaryColor={theme.colors.primary}
-                    bgColor={theme.colors.background}
-                    defaultTextColor={defaultTextColor}
-                    titleColor={data?.titleColor}
                     onFieldFocus={onFieldFocus}
                 />
             )}
