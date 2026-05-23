@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Admin · Products List — Digital Goods Wireframe</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-900">
+
+<!-- Mock admin shell -->
+<div class="flex min-h-screen">
+
+  <!-- Sidebar (mock) -->
+  <aside class="w-56 bg-white border-r p-4 hidden lg:block">
+    <div class="text-xs font-bold uppercase tracking-wider text-gray-500 mb-4">Tenant Admin</div>
+    <nav class="space-y-1 text-sm">
+      <div class="px-3 py-2 text-gray-500">Dashboard</div>
+      <div class="px-3 py-2 text-gray-500">POS</div>
+      <div class="px-3 py-2 text-gray-500">Reservations</div>
+      <div class="px-3 py-2 text-gray-500">Members</div>
+      <div class="px-3 py-2 bg-gray-900 text-white rounded">Digital Goods</div>
+      <div class="ml-3 mt-1 space-y-1 text-xs">
+        <div class="px-3 py-1.5 bg-gray-100 rounded">Products</div>
+        <div class="px-3 py-1.5 text-gray-500">Orders</div>
+        <div class="px-3 py-1.5 text-gray-500">Settings</div>
+      </div>
+      <div class="px-3 py-2 text-gray-500">Promo</div>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <main class="flex-1 p-6 max-w-6xl">
+    <header class="flex items-start justify-between mb-6">
+      <div>
+        <div class="text-xs uppercase tracking-wider text-gray-500 mb-1">/admin/digital-goods</div>
+        <h1 class="text-2xl font-bold">Products</h1>
+        <p class="text-sm text-gray-600 mt-1">Sell PDFs, videos, and other digital products.</p>
+      </div>
+      <button class="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
+        <span>+</span> New Product
+      </button>
+    </header>
+
+    <!-- Products table -->
+    <div class="bg-white border rounded-xl overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50 text-left text-xs uppercase tracking-wider text-gray-500">
+          <tr>
+            <th class="px-4 py-3">Title</th>
+            <th class="px-4 py-3">Price</th>
+            <th class="px-4 py-3">Type</th>
+            <th class="px-4 py-3">Status</th>
+            <th class="px-4 py-3 w-24"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="border-t hover:bg-gray-50">
+            <td class="px-4 py-3 font-medium">Pinjol Survival Kit (Ebook)</td>
+            <td class="px-4 py-3">Rp 149.000</td>
+            <td class="px-4 py-3 text-gray-600">PDF</td>
+            <td class="px-4 py-3"><span class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded">published</span></td>
+            <td class="px-4 py-3 text-gray-400">
+              <span class="mr-2">✎</span>
+              <span class="text-red-500">🗑</span>
+            </td>
+          </tr>
+          <tr class="border-t hover:bg-gray-50">
+            <td class="px-4 py-3 font-medium">Cara Lapor SLIK OJK</td>
+            <td class="px-4 py-3">Rp 79.000</td>
+            <td class="px-4 py-3 text-gray-600">PDF</td>
+            <td class="px-4 py-3"><span class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded">published</span></td>
+            <td class="px-4 py-3 text-gray-400">
+              <span class="mr-2">✎</span>
+              <span class="text-red-500">🗑</span>
+            </td>
+          </tr>
+          <tr class="border-t hover:bg-gray-50">
+            <td class="px-4 py-3 font-medium">Workshop Restrukturisasi Hutang (Video)</td>
+            <td class="px-4 py-3">Rp 299.000</td>
+            <td class="px-4 py-3 text-gray-600">YOUTUBE</td>
+            <td class="px-4 py-3"><span class="text-xs px-2 py-1 bg-gray-200 text-gray-600 rounded">draft</span></td>
+            <td class="px-4 py-3 text-gray-400">
+              <span class="mr-2">✎</span>
+              <span class="text-red-500">🗑</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Annotation -->
+    <div class="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-900">
+      <strong>Wireframe notes:</strong>
+      <ul class="list-disc list-inside mt-1 space-y-1">
+        <li>Empty state (no products yet) shows large dashed card with shopping-bag icon and CTA — not pictured here.</li>
+        <li>Delete uses <code>ConfirmButton</code> (CLAUDE.md rule #8) — first click reveals soft-red Confirm / Cancel pair.</li>
+        <li>Edit and delete icons real-world will be Lucide <code>Pencil</code> / <code>Trash2</code>.</li>
+      </ul>
+    </div>
+
+    <div class="mt-4 text-xs text-gray-500">
+      <a href="index.html" class="underline">← Back to wireframe index</a>
+    </div>
+  </main>
+</div>
+
+</body>
+</html>
