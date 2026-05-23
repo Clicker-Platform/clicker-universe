@@ -18,6 +18,15 @@ function isExternalProtocol(href: string): boolean {
     return /^(https?:\/\/|mailto:|tel:)/i.test(href);
 }
 
+interface TriggerConfig {
+    label: string;
+    variant?: 'primary' | 'secondary' | 'outline';
+    linkType?: 'url' | 'page' | 'form';
+    url?: string;
+    formId?: string;
+    openInNewTab?: boolean;
+}
+
 export const DefaultButtonBlock = ({ data, previewMode, siteId: siteIdProp }: { data: any; previewMode?: boolean; siteId?: string }) => {
     const { theme } = useTemplate();
     const d = useDeviceView();
@@ -38,47 +47,29 @@ export const DefaultButtonBlock = ({ data, previewMode, siteId: siteIdProp }: { 
         full: 'text-center w-full'
     }[data.align as string] || 'text-center';
 
-    const getVariantClass = () => {
+    const getVariantClass = (variant?: string) => {
         if (isGlass) {
-            switch (data.variant) {
+            switch (variant) {
                 case 'secondary': return 'bg-white/10 border border-white/20 text-white hover:bg-white/20';
                 case 'outline': return 'bg-transparent border border-white/30 text-white hover:border-[var(--theme-primary)] hover:text-[var(--theme-primary)]';
                 default: return 'bg-[var(--theme-primary)] text-[var(--theme-background)] hover:opacity-90';
             }
         }
         if (isClean) {
-            switch (data.variant) {
+            switch (variant) {
                 case 'secondary': return 'bg-[var(--theme-surface)] border-2 border-[var(--theme-border)] text-[var(--theme-foreground)] hover:border-[var(--theme-primary)] hover:text-[var(--theme-primary)]';
                 case 'outline': return 'bg-transparent border-2 border-[var(--theme-foreground)] text-[var(--theme-foreground)] hover:bg-[var(--theme-foreground)] hover:text-[var(--theme-background)]';
                 default: return 'bg-[var(--theme-foreground)] text-[var(--theme-background)] hover:bg-[var(--theme-primary)] hover:shadow-lg';
             }
         }
-        switch (data.variant) {
+        switch (variant) {
             case 'secondary': return 'bg-[var(--theme-primary)] text-[var(--theme-foreground)] hover:opacity-80';
             case 'outline': return 'bg-transparent border-[3px] border-[var(--theme-foreground)] text-[var(--theme-foreground)] hover:bg-[var(--theme-foreground)] hover:text-[var(--theme-background)]';
             default: return 'bg-[var(--theme-foreground)] text-[var(--theme-background)] hover:opacity-80';
         }
     };
 
-    const className = `inline-block py-3 px-6 ${BUTTON_TEXT(d)} transition-all transform ${isClean ? 'shadow-sm hover:-translate-y-0.5' : isGlass ? 'hover:-translate-y-0.5 hover:shadow-lg' : 'hover:-translate-y-1 hover:shadow-lg'} ${getVariantClass()} ${data.align === 'full' ? 'w-full block' : ''}`;
-
     const buttonStyle = { borderRadius: 'calc(var(--theme-radius) * 0.75)' };
-    const label = data.label || 'Click Here';
-    const linkType = data.linkType || 'url';
-    const isFormLink = linkType === 'form' && !!data.formId;
-
-    // Resolve href:
-    //   form  → handled via overlay (no href; render <button>)
-    //   page  → tenant-aware via resolveNavHref(stored '/slug', ...)
-    //   url   → as-stored
-    const rawUrl = typeof data.url === 'string' ? data.url.trim() : '';
-    const resolvedHref = linkType === 'page'
-        ? resolveNavHref(rawUrl, tenantSlug, isSubdomain)
-        : rawUrl;
-
-    const safe = isSafeHref(resolvedHref);
-    const external = safe && isExternalProtocol(resolvedHref);
-    const openInNewTab = external || data.openInNewTab === true;
 
     const handleFormClick = async (e: React.MouseEvent) => {
         e.preventDefault();
@@ -114,36 +105,64 @@ export const DefaultButtonBlock = ({ data, previewMode, siteId: siteIdProp }: { 
 
     const wrapperClass = `${data.align === 'full' ? '' : alignClass}`;
 
-    let trigger: React.ReactNode;
-    if (previewMode || (!isFormLink && !safe)) {
-        trigger = <span className={className} style={buttonStyle}>{label}</span>;
-    } else if (isFormLink) {
-        trigger = (
-            <button
-                type="button"
-                onClick={handleFormClick}
-                className={className}
-                style={buttonStyle}
-                disabled={isLoadingForm}
-            >
-                {isLoadingForm ? 'Loading…' : label}
-            </button>
-        );
-    } else if (external) {
-        trigger = (
-            <a
-                href={resolvedHref}
-                className={className}
-                style={buttonStyle}
-                target={openInNewTab ? '_blank' : undefined}
-                rel={openInNewTab ? 'noopener noreferrer' : undefined}
-            >
-                {label}
-            </a>
-        );
-    } else {
-        trigger = (
+    const buildTrigger = (
+        cfg: TriggerConfig,
+        key: 'primary' | 'secondary',
+        formState: {
+            isLoadingForm: boolean;
+            onFormClick: (e: React.MouseEvent) => void;
+        }
+    ): React.ReactNode => {
+        const label = cfg.label || 'Click Here';
+        const linkType = cfg.linkType || 'url';
+        const isFormLink = linkType === 'form' && !!cfg.formId;
+
+        const rawUrl = typeof cfg.url === 'string' ? cfg.url.trim() : '';
+        const resolvedHref = linkType === 'page'
+            ? resolveNavHref(rawUrl, tenantSlug, isSubdomain)
+            : rawUrl;
+
+        const safe = isSafeHref(resolvedHref);
+        const external = safe && isExternalProtocol(resolvedHref);
+        const openInNewTab = external || cfg.openInNewTab === true;
+
+        const variantClass = getVariantClass(cfg.variant);
+        const className = `inline-block py-3 px-6 ${BUTTON_TEXT(d)} transition-all transform ${isClean ? 'shadow-sm hover:-translate-y-0.5' : isGlass ? 'hover:-translate-y-0.5 hover:shadow-lg' : 'hover:-translate-y-1 hover:shadow-lg'} ${variantClass} ${data.align === 'full' ? 'w-full block' : ''}`;
+
+        if (previewMode || (!isFormLink && !safe)) {
+            return <span key={key} className={className} style={buttonStyle}>{label}</span>;
+        }
+        if (isFormLink) {
+            return (
+                <button
+                    key={key}
+                    type="button"
+                    onClick={formState.onFormClick}
+                    className={className}
+                    style={buttonStyle}
+                    disabled={formState.isLoadingForm}
+                >
+                    {formState.isLoadingForm ? 'Loading…' : label}
+                </button>
+            );
+        }
+        if (external) {
+            return (
+                <a
+                    key={key}
+                    href={resolvedHref}
+                    className={className}
+                    style={buttonStyle}
+                    target={openInNewTab ? '_blank' : undefined}
+                    rel={openInNewTab ? 'noopener noreferrer' : undefined}
+                >
+                    {label}
+                </a>
+            );
+        }
+        return (
             <Link
+                key={key}
                 href={resolvedHref}
                 className={className}
                 style={buttonStyle}
@@ -153,12 +172,20 @@ export const DefaultButtonBlock = ({ data, previewMode, siteId: siteIdProp }: { 
                 {label}
             </Link>
         );
-    }
+    };
+
+    const isFormLink = data.linkType === 'form' && !!data.formId;
+
+    const primaryTrigger = buildTrigger(
+        { label: data.label, variant: data.variant, linkType: data.linkType, url: data.url, formId: data.formId, openInNewTab: data.openInNewTab },
+        'primary',
+        { isLoadingForm, onFormClick: handleFormClick }
+    );
 
     return (
         <>
             <div className={wrapperClass}>
-                {trigger}
+                {primaryTrigger}
                 {formError && (
                     <div
                         role="alert"
