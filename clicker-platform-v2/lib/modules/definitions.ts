@@ -87,6 +87,15 @@ export const STATIC_MODULE_DEFINITIONS: Record<string, Partial<ModuleDefinition>
         dashboardAction: { label: 'View Entries', href: '/admin/fintrack/entries' },
         adminDashboardWidget: { componentKey: 'fintrack:DashboardWidget' },
     },
+    'digital_goods': {
+        adminRoutes: [
+            { label: 'Products',  path: '/admin/digital-goods',               icon: 'shopping-bag', componentKey: 'digital_goods:ProductsList' },
+            { label: 'New Product', path: '/admin/digital-goods/products/new', icon: 'plus',        componentKey: 'digital_goods:ProductEditor', hidden: true },
+            { label: 'Edit Product', path: '/admin/digital-goods/products/edit', icon: 'edit',     componentKey: 'digital_goods:ProductEditor', hidden: true },
+            { label: 'Settings',  path: '/admin/digital-goods/settings',      icon: 'settings',     componentKey: 'digital_goods:Settings', permission: 'settings' }
+        ],
+        dashboardAction: { label: 'New Product', href: '/admin/digital-goods/products/new' },
+    },
     'promo': {
         adminRoutes: [
             { label: 'Promotions', path: '/admin/promo', icon: 'tag', componentKey: 'promo:PromoAdminPage' },
