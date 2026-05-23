@@ -233,18 +233,26 @@ export const fetchSiteSettings = cache(async function fetchSiteSettings(siteId: 
 
 // Font pack fields are fetched fresh on every request — no Redis cache.
 // Font pack changes should be instantly visible in the editor (same reasoning as fetchThemeSettings).
-export const fetchAppearanceStyles = cache(async function fetchAppearanceStyles(siteId: string): Promise<{ fontPackId: string | null }> {
+export const fetchAppearanceStyles = cache(async function fetchAppearanceStyles(siteId: string): Promise<{
+    fontPackId: string | null;
+    buttonPackId: string | null;
+    buttonColors: Record<string, string> | null;
+}> {
     if (!siteId || siteId === 'default' || siteId === 'pending' || siteId.startsWith('.')) {
-        return { fontPackId: null };
+        return { fontPackId: null, buttonPackId: null, buttonColors: null };
     }
     try {
         const snap = await getDoc(doc(db, "sites", siteId, "appearance", "styles"));
-        if (!snap.exists()) return { fontPackId: null };
+        if (!snap.exists()) return { fontPackId: null, buttonPackId: null, buttonColors: null };
         const data = snap.data() ?? {};
-        return { fontPackId: typeof data.fontPackId === 'string' ? data.fontPackId : null };
+        return {
+            fontPackId: typeof data.fontPackId === 'string' ? data.fontPackId : null,
+            buttonPackId: typeof data.buttonPackId === 'string' ? data.buttonPackId : null,
+            buttonColors: data.buttonColors && typeof data.buttonColors === 'object' ? data.buttonColors : null,
+        };
     } catch (e) {
         logDebug(`fetchAppearanceStyles: Error ${e}`);
-        return { fontPackId: null };
+        return { fontPackId: null, buttonPackId: null, buttonColors: null };
     }
 });
 

@@ -47,6 +47,7 @@ import ThemeRegistry from "@/components/ThemeRegistry";
 import { headers } from "next/headers";
 import { SiteProvider } from "@/lib/site-context";
 import { PostHogProvider } from "@/lib/analytics/PostHogProvider";
+import { resolveButtonPack } from "@/lib/buttonPacks/resolve";
 
 export const revalidate = 3600; // Enable ISR for layout
 
@@ -99,7 +100,11 @@ export default async function RootLayout({
         fetchSiteSettings(siteId),
         fetchAppearanceStyles(siteId),
       ])
-    : [null, { fontPackId: null }];
+    : [null, { fontPackId: null, buttonPackId: null, buttonColors: null }];
+
+  // Resolve the active button pack so we can stamp data-tertiary-style on <html>
+  // before any content renders (prevents tertiary-button style flash on first paint).
+  const activeButtonPack = resolveButtonPack(appearanceStyles, settings?.templateId ?? null);
 
   return (
     <html
@@ -107,6 +112,7 @@ export default async function RootLayout({
       className={`notranslate ${FONT_CLASS_NAMES}`}
       translate="no"
       suppressHydrationWarning
+      data-tertiary-style={activeButtonPack.tertiaryStyle}
     >
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
