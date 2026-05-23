@@ -189,30 +189,88 @@ export const DefaultButtonBlock = ({ data, previewMode, siteId: siteIdProp }: { 
         onFormClick: handleFormClick('primary', primaryCfg),
     });
 
+    const secondaryCfg: TriggerConfig | null = data.secondary
+        ? {
+            label: data.secondary.label,
+            variant: data.secondary.variant,
+            linkType: data.secondary.linkType,
+            url: data.secondary.url,
+            formId: data.secondary.formId,
+            openInNewTab: data.secondary.openInNewTab,
+        }
+        : null;
+
+    const secondaryTrigger = secondaryCfg
+        ? buildTrigger(secondaryCfg, 'secondary', {
+            isLoadingForm: loadingFor === 'secondary',
+            onFormClick: handleFormClick('secondary', secondaryCfg),
+        })
+        : null;
+
     const primaryError = errorByKey.primary;
+    const secondaryError = errorByKey.secondary;
     const primaryIsFormLink = data.linkType === 'form' && !!data.formId;
+    const secondaryIsFormLink = !!data.secondary && data.secondary.linkType === 'form' && !!data.secondary.formId;
+
+    const pairJustify =
+        data.align === 'left' ? 'justify-start' :
+        data.align === 'right' ? 'justify-end' :
+        'justify-center';
+    const isFull = data.align === 'full';
+
+    const triggers = secondaryTrigger ? (
+        <div className={`@container w-full ${isFull ? '' : `flex ${pairJustify}`}`}>
+            <div className={`flex flex-col @[320px]:flex-row gap-3 ${isFull ? 'w-full' : ''}`}>
+                {isFull ? (
+                    <>
+                        <div className="flex-1 [&>*]:w-full [&>*]:block">{primaryTrigger}</div>
+                        <div className="flex-1 [&>*]:w-full [&>*]:block">{secondaryTrigger}</div>
+                    </>
+                ) : (
+                    <>
+                        {primaryTrigger}
+                        {secondaryTrigger}
+                    </>
+                )}
+            </div>
+        </div>
+    ) : (
+        primaryTrigger
+    );
+
+    const errorBoxClass = 'mt-2 inline-block text-xs font-medium px-3 py-1.5 rounded-lg border';
+    const errorBoxStyle = {
+        backgroundColor: 'var(--theme-error-bg)',
+        color: 'var(--theme-error)',
+        borderColor: 'var(--theme-error-bg)',
+    };
 
     return (
         <>
             <div className={wrapperClass}>
-                {primaryTrigger}
+                {triggers}
                 {primaryError && (
-                    <div
-                        role="alert"
-                        className="mt-2 inline-block text-xs font-medium px-3 py-1.5 rounded-lg border"
-                        style={{
-                            backgroundColor: 'var(--theme-error-bg)',
-                            color: 'var(--theme-error)',
-                            borderColor: 'var(--theme-error-bg)',
-                        }}
-                    >
+                    <div role="alert" className={errorBoxClass} style={errorBoxStyle}>
                         {primaryError}
+                    </div>
+                )}
+                {secondaryError && (
+                    <div role="alert" className={errorBoxClass} style={errorBoxStyle}>
+                        {secondaryError}
                     </div>
                 )}
             </div>
             {primaryIsFormLink && modalOpenFor === 'primary' && formDataByKey.primary && (
                 <FormModal
                     form={formDataByKey.primary}
+                    isOpen={true}
+                    onClose={() => setModalOpenFor(null)}
+                    siteId={siteId}
+                />
+            )}
+            {secondaryIsFormLink && modalOpenFor === 'secondary' && formDataByKey.secondary && (
+                <FormModal
+                    form={formDataByKey.secondary}
                     isOpen={true}
                     onClose={() => setModalOpenFor(null)}
                     siteId={siteId}
