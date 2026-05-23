@@ -59,6 +59,7 @@ export function UnifiedButton({
         <a
           {...dataProps}
           href={isDisabled ? undefined : href}
+          tabIndex={isDisabled ? -1 : undefined}
           target="_blank"
           rel="noopener noreferrer"
           onClick={isDisabled ? (e) => e.preventDefault() : onClick}
@@ -71,6 +72,7 @@ export function UnifiedButton({
       <Link
         {...dataProps}
         href={isDisabled ? '#' : href}
+        tabIndex={isDisabled ? -1 : undefined}
         onClick={isDisabled ? (e) => e.preventDefault() : onClick}
       >
         {label}
