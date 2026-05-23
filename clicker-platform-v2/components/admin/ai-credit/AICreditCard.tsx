@@ -42,9 +42,9 @@ const STATE_CLASSES: Record<CreditState, { card: string; bar: string; foot: stri
 function footerText(state: CreditState): string | null {
   switch (state) {
     case 'healthy': return null;
-    case 'warn':    return 'Running low — top up soon';
-    case 'critical':return 'Critical — top up now';
-    case 'out':     return 'AI features paused — top up to resume';
+    case 'warn':    return 'Running low, top up soon';
+    case 'critical':return 'Critical, top up now';
+    case 'out':     return 'AI features paused, top up to resume';
   }
 }
 
