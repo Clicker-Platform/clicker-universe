@@ -165,10 +165,11 @@ shouldRenderAICreditIndicator(siteId) =
      module(ai_sales_agent).enabled
   || module(stocklens).enabled
   || module(knowledge_sync).enabled        // when it lands
-  || balance < 0                            // safety: never silently leave a tenant in debt
 ```
 
-The first three are read from the existing per-site module flags (`sites/{id}.modules.{moduleId}`). If a fourth AI-consuming module is later added, it must be added to this list — call this out in the implementation plan.
+The three are read from the existing per-site module flags (`sites/{id}.modules.{moduleId}`). If a fourth AI-consuming module is later added, it must be added to this list — call this out in the implementation plan.
+
+> **Note (2026-05-23, post-implementation):** an earlier draft included `|| balance < 0` as a "tenant-in-debt safety override". That branch was removed during implementation because the same gating gate also gates fetching — when no AI module is enabled, the hook never fetches, `data` stays null, and the override would be unreachable. If we later want this safety, fetching must run unconditionally (or be triggered by a side channel like a Backyard flag). Deferred.
 
 A non-AI tenant therefore sees:
 - No pill in the top bar.
