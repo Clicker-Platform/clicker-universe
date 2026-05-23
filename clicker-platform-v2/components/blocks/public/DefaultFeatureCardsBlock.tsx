@@ -134,7 +134,7 @@ export function DefaultFeatureCardsBlock({ data, theme: themeProp, previewMode, 
     // pt-9 is only needed in the admin canvas so the CardToolbar has room to render above the row.
     const adminTopPad = isAdminCanvas ? 'pt-9 md:pt-0' : '';
     const containerClass = isSingle
-        ? 'flex justify-center px-4 md:px-4 md:max-w-6xl md:mx-auto'
+        ? `flex justify-center px-4 md:max-w-6xl md:mx-auto ${adminTopPad}`
         : dv(
             deviceView,
             `flex items-stretch gap-3 overflow-x-auto overflow-y-visible px-4 pb-2 snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${adminTopPad}`,
