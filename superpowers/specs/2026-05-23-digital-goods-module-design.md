@@ -154,9 +154,16 @@ Digital_goods has **no dependency on the membership module** for authentication 
 - **Auto-provision:** the first time an authenticated session reaches any digital_goods page that requires identity (checkout, library), digital_goods upserts the buyer record itself. Email comes from the Firebase Auth user; `fullName` is collected at first checkout if missing.
 - Digital_goods does NOT read, write, or depend on any other module's data for identity. There is no `Member` doc reference, no `memberId` FK, no cross-module helper call for identity resolution.
 
-### Email branding (platform primitive)
+### Cross-tenant identity invisibility (intentional architecture)
 
-- Magic-link emails use the platform Resend integration with per-tenant from-name and template branding — the buyer never sees "Clicker" branding. This is platform infra; not a module dependency.
+A single buyer may end up purchasing from multiple Clicker tenants over time. The platform's architecture intentionally hides this from the buyer — each tenant feels like a wholly separate brand. This works because of four design properties stacked together:
+
+1. **Firebase Auth de-dupes by email.** Under the hood there is one Firebase Auth user per email address. If the same buyer authenticates on Tenant A's site and later on Tenant B's site with the same email, both sessions resolve to the same Firebase UID. This is Firebase's default behavior — not custom code.
+2. **Per-tenant buyer records.** Each tenant gets its own `modules/digital_goods/buyers/{uid}` doc on its own site. So even though the UID is shared, the buyer's name, library, and purchase history on Tenant A are completely separate documents from those on Tenant B. No data leaks across tenants.
+3. **No "account exists" branch in magic-link.** Magic-link login has only one flow: "enter email → get link → click link → you're in." There is no signup-vs-login distinction, no "this email is already registered" prompt, no password recovery branch. So a returning buyer on Tenant B sees the **same UX as a brand-new buyer** — they have no way of detecting that Firebase recognized them.
+4. **Per-tenant email branding via Resend.** Magic-link emails (and all transactional emails) are sent through the platform Resend integration with per-tenant from-name, reply-to, subject template, and body template. The buyer sees an email from "Tenant A" on Tenant A's flow and "Tenant B" on Tenant B's flow. The Clicker platform name appears nowhere.
+
+Combined, these four properties produce a buyer experience that is indistinguishable from "Tenant A built their own custom auth system, Tenant B built their own." The fact that they share a Firebase substrate is a backend reality with **zero buyer-facing surface area**. This invisibility is also what makes custom-domain tenants viable — the buyer believes they are interacting with one merchant brand on one merchant domain, end to end.
 
 ### Relationship to the membership module
 
