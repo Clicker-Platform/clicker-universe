@@ -130,12 +130,11 @@ export const DefaultButtonBlock = ({ data, previewMode, siteId: siteIdProp }: { 
         const className = `inline-block py-3 px-6 ${BUTTON_TEXT(d)} transition-all transform ${isClean ? 'shadow-sm hover:-translate-y-0.5' : isGlass ? 'hover:-translate-y-0.5 hover:shadow-lg' : 'hover:-translate-y-1 hover:shadow-lg'} ${variantClass} ${data.align === 'full' ? 'w-full block' : ''}`;
 
         if (previewMode || (!isFormLink && !safe)) {
-            return <span key={key} className={className} style={buttonStyle}>{label}</span>;
+            return <span className={className} style={buttonStyle}>{label}</span>;
         }
         if (isFormLink) {
             return (
                 <button
-                    key={key}
                     type="button"
                     onClick={formState.onFormClick}
                     className={className}
@@ -149,7 +148,6 @@ export const DefaultButtonBlock = ({ data, previewMode, siteId: siteIdProp }: { 
         if (external) {
             return (
                 <a
-                    key={key}
                     href={resolvedHref}
                     className={className}
                     style={buttonStyle}
@@ -162,7 +160,6 @@ export const DefaultButtonBlock = ({ data, previewMode, siteId: siteIdProp }: { 
         }
         return (
             <Link
-                key={key}
                 href={resolvedHref}
                 className={className}
                 style={buttonStyle}
