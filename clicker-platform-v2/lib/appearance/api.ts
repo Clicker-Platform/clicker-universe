@@ -37,6 +37,9 @@ export async function setButtonPackId(siteId: string, packId: ButtonPackId | nul
 
 export async function setButtonColors(siteId: string, patch: Partial<ButtonColors>): Promise<void> {
   const updates: Record<string, unknown> = {};
+  // Iterate via Object.keys so we visit keys whose value is explicitly `undefined` —
+  // those signal "delete this field" and must be translated to deleteField().
+  // Object.entries would silently skip them.
   for (const k of Object.keys(patch) as Array<keyof ButtonColors>) {
     const v = patch[k];
     updates[`buttonColors.${k}`] = v === undefined ? deleteField() : v;
