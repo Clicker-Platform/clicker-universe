@@ -19,7 +19,7 @@ import {
     verticalListSortingStrategy
 } from '@dnd-kit/sortable';
 import { Lock } from 'lucide-react';
-import { BlockOutlineItem } from './BlockOutlineItem';
+import { BlockTreeNode } from './BlockTreeNode';
 import { useEditor } from './EditorContext';
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 import { subscribeToEnabledModules } from '@/lib/modules/registry';
@@ -36,8 +36,6 @@ export const BlockManager = ({ blocks, onChange, templateId, onAddClick }: Block
     // Helper booleans for the chrome rows; for top-level blocks we inline the check.
     const isChromeSelected = (chromeId: 'header' | 'footer' | 'bottomnav') =>
         selection.kind === 'chrome' && selection.chromeId === chromeId;
-    const isBlockSelected = (blockId: string) =>
-        selection.kind === 'blocks' && selection.ids.includes(blockId);
     const [blockToDelete, setBlockToDelete] = useState<string | null>(null);
     const [moduleBlockLabels, setModuleBlockLabels] = useState<Record<string, string>>({});
 
@@ -127,13 +125,12 @@ export const BlockManager = ({ blocks, onChange, templateId, onAddClick }: Block
                         >
                             <div>
                                 {blocks.map(block => (
-                                    <BlockOutlineItem
+                                    <BlockTreeNode
                                         key={block.id}
                                         block={block}
-                                        isSelected={isBlockSelected(block.id)}
-                                        onClick={() => setSelection({ kind: 'blocks', ids: [block.id] })}
+                                        depth={0}
+                                        moduleBlockLabels={moduleBlockLabels}
                                         onDelete={deleteBlock}
-                                        moduleLabel={moduleBlockLabels[block.type]}
                                     />
                                 ))}
                             </div>
