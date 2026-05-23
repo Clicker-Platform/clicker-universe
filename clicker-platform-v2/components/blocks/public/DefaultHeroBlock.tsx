@@ -8,7 +8,7 @@ const ALIGN_CLASS = { left: 'text-left', center: 'text-center', right: 'text-rig
 import { useTemplate } from '@/components/TemplateProvider';
 import { useDeviceView, dv, type DeviceView } from '@/components/DeviceViewContext';
 import { FieldSelectionChrome, EditableText } from '@/components/blocks/shared/EditablePrimitives';
-import { H4, BODY_LG, BUTTON_TEXT } from './typography';
+import { H4, BODY_LG } from './typography';
 import { UnifiedButton } from '@/components/ui/UnifiedButton';
 
 // ─── Colour helpers ───────────────────────────────────────────────────────────
@@ -52,11 +52,11 @@ function resolveTextOnBg(
 
 // User-selectable title size. 'md' is the spec H1 default (text-4xl md:text-6xl).
 // All sizes share the H1 weight/leading/tracking via H1_BASE below.
-const TITLE_SIZES = (d: DeviceView): Record<string, string> => ({
-    sm: dv(d, 'text-3xl', 'md:text-4xl'),
-    md: dv(d, 'text-4xl', 'md:text-6xl'),  // spec H1
-    lg: dv(d, 'text-5xl', 'md:text-7xl'),
-    xl: dv(d, 'text-6xl', 'md:text-8xl'),
+const TITLE_SIZES = (deviceView: DeviceView): Record<string, string> => ({
+    sm: dv(deviceView, 'text-3xl', 'md:text-4xl'),
+    md: dv(deviceView, 'text-4xl', 'md:text-6xl'),  // spec H1
+    lg: dv(deviceView, 'text-5xl', 'md:text-7xl'),
+    xl: dv(deviceView, 'text-6xl', 'md:text-8xl'),
 });
 
 // Non-size half of H1 — shared by all size tiers and applied uniformly,
@@ -155,7 +155,6 @@ export const DefaultHeroBlock = ({ data, theme, isFirst = true, onInlineChange, 
     if (!data) return null;
 
     const deviceView = useDeviceView();
-    const d = deviceView;
 
     let cardStyle = 'brutalist';
     let themeColors: any = null;
@@ -182,7 +181,7 @@ export const DefaultHeroBlock = ({ data, theme, isFirst = true, onInlineChange, 
 
     const variant = data?.layoutVariant || 'centered';
     const imgPos = data?.imagePosition || 'center';
-    const titleSizeClass = TITLE_SIZES(d)[data?.titleSize || 'md'];
+    const titleSizeClass = TITLE_SIZES(deviceView)[data?.titleSize || 'md'];
     const primaryBtn: CtaBtn | null = data?.primaryBtn || null;
     const secondaryBtn: CtaBtn | null = data?.secondaryBtn || null;
 
@@ -223,7 +222,7 @@ export const DefaultHeroBlock = ({ data, theme, isFirst = true, onInlineChange, 
 
         return (
             <section
-                className={`flex ${dv(d, 'flex-col', 'md:flex-row')} items-stretch w-full overflow-hidden ${
+                className={`flex ${dv(deviceView, 'flex-col', 'md:flex-row')} items-stretch w-full overflow-hidden ${
                     bgMode === 'image' ? (isClean ? 'border border-gray-200 shadow-sm' : isGlass ? 'bg-white/5 backdrop-blur-md border border-white/10 shadow-xl' : 'bg-white border-[3px] border-theme-border shadow-sticker') : ''
                 }`}
                 style={{
@@ -231,7 +230,7 @@ export const DefaultHeroBlock = ({ data, theme, isFirst = true, onInlineChange, 
                     ...(bgMode !== 'image' ? splitBgStyle : {}),
                 }}
             >
-                <div className={`flex-1 ${dv(d, 'p-8', 'md:p-12')} flex flex-col justify-center`}>
+                <div className={`flex-1 ${dv(deviceView, 'p-8', 'md:p-12')} flex flex-col justify-center`}>
                     {(data?.tagline != null && data.tagline !== '' && (data.tagline || onInlineChange)) && (
                         <EditableText
                             tag="p"
@@ -241,7 +240,7 @@ export const DefaultHeroBlock = ({ data, theme, isFirst = true, onInlineChange, 
                             onInlineChange={onInlineChange}
                             onFieldFocus={onFieldFocus}
                             onFieldBlur={onFieldBlur}
-                            className={`${H4(d)} mb-2 ${taC}`}
+                            className={`${H4(deviceView)} mb-2 ${taC}`}
                             style={data?.taglineColor
                                 ? { color: data.taglineColor }
                                 : defaultTaglineColor
@@ -269,14 +268,14 @@ export const DefaultHeroBlock = ({ data, theme, isFirst = true, onInlineChange, 
                             onInlineChange={onInlineChange}
                             onFieldFocus={onFieldFocus}
                             onFieldBlur={onFieldBlur}
-                            className={`${BODY_LG(d)} ${suC} ${data?.subtitleWeight ? `font-${data.subtitleWeight}` : ''}`}
+                            className={`${BODY_LG(deviceView)} ${suC} ${data?.subtitleWeight ? `font-${data.subtitleWeight}` : ''}`}
                             style={{ color: data?.subtitleColor || defaultSubtitleColor }}
                         />
                     )}
                     <CtaButtons primary={primaryBtn} secondary={secondaryBtn} align={ctaAlign} onFieldFocus={onFieldFocus} />
                 </div>
                 {/* Right panel: image or colour fill */}
-                <div className={`flex-1 relative ${dv(d, 'min-h-[300px]', 'md:min-h-full')} ${bgMode !== 'image' ? '' : 'bg-gray-100'}`}
+                <div className={`flex-1 relative ${dv(deviceView, 'min-h-[300px]', 'md:min-h-full')} ${bgMode !== 'image' ? '' : 'bg-gray-100'}`}
                     style={bgMode === 'color' ? { backgroundColor: bgColor } : bgMode === 'transparent' ? {} : {}}>
                     {bgMode === 'image' && hasImage && (
                         <Image
@@ -335,7 +334,7 @@ export const DefaultHeroBlock = ({ data, theme, isFirst = true, onInlineChange, 
                             onInlineChange={onInlineChange}
                             onFieldFocus={onFieldFocus}
                             onFieldBlur={onFieldBlur}
-                            className={`${H4(d)} mb-2 ${taC}`}
+                            className={`${H4(deviceView)} mb-2 ${taC}`}
                             style={data?.taglineColor
                                 ? { color: data.taglineColor }
                                 : { color: isTransparentAuto ? 'var(--theme-foreground)' : isDark ? 'rgba(255,255,255,0.60)' : 'rgba(0,0,0,0.50)' }}
@@ -361,7 +360,7 @@ export const DefaultHeroBlock = ({ data, theme, isFirst = true, onInlineChange, 
                             onInlineChange={onInlineChange}
                             onFieldFocus={onFieldFocus}
                             onFieldBlur={onFieldBlur}
-                            className={`${BODY_LG(d)} ${suC} ${data?.subtitleWeight ? `font-${data.subtitleWeight}` : ''}`}
+                            className={`${BODY_LG(deviceView)} ${suC} ${data?.subtitleWeight ? `font-${data.subtitleWeight}` : ''}`}
                             style={{ color: data?.subtitleColor || defaultSubtitleColor }}
                         />
                     )}
@@ -393,7 +392,7 @@ export const DefaultHeroBlock = ({ data, theme, isFirst = true, onInlineChange, 
     return (
         <section
             className={`relative py-16 px-6 overflow-hidden ${cardClasses} ${
-                fullWidth ? `${dv(d, '-mx-4 w-[calc(100%+2rem)]', 'md:-mx-6 md:w-[calc(100%+3rem)]')}` : 'w-full'
+                fullWidth ? `${dv(deviceView, '-mx-4 w-[calc(100%+2rem)]', 'md:-mx-6 md:w-[calc(100%+3rem)]')}` : 'w-full'
             }`}
             style={sectionStyle}
         >
@@ -424,7 +423,7 @@ export const DefaultHeroBlock = ({ data, theme, isFirst = true, onInlineChange, 
                         value={data?.tagline}
                         placeholder="Add tagline…"
                         onInlineChange={onInlineChange}
-                        className={`${H4(d)} mb-2 ${taC}`}
+                        className={`${H4(deviceView)} mb-2 ${taC}`}
                         style={data?.taglineColor
                             ? { color: data.taglineColor }
                             : { color: isTransparentAuto ? 'var(--theme-foreground)' : isDark ? 'rgba(255,255,255,0.55)' : undefined }}
@@ -448,7 +447,7 @@ export const DefaultHeroBlock = ({ data, theme, isFirst = true, onInlineChange, 
                         value={data?.subtitle}
                         placeholder="Add subtitle…"
                         onInlineChange={onInlineChange}
-                        className={`${BODY_LG(d)} ${suC} ${data?.subtitleWeight ? `font-${data.subtitleWeight}` : ''}`}
+                        className={`${BODY_LG(deviceView)} ${suC} ${data?.subtitleWeight ? `font-${data.subtitleWeight}` : ''}`}
                         style={{ color: data?.subtitleColor || defaultSubtitleColor }}
                     />
                 )}

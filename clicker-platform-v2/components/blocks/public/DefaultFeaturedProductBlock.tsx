@@ -10,7 +10,7 @@ import { FullScreenGallery } from '@/components/common/FullScreenGallery';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getCardClasses, getGlassStyle, getHeadingColor, getLabelColor } from './cardStyles';
 import { useDeviceView } from '@/components/DeviceViewContext';
-import { H2, H4, BUTTON_TEXT } from './typography';
+import { H2, H4 } from './typography';
 import { UnifiedButton } from '@/components/ui/UnifiedButton';
 
 interface WhatsAppSettings {

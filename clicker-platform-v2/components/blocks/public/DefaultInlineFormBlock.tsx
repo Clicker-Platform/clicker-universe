@@ -11,7 +11,7 @@ import { FormFieldsRenderer } from '@/components/forms/FormFieldsRenderer';
 import { useTemplate } from '@/components/TemplateProvider';
 import { getCardClasses, getGlassStyle, getHeadingColor, getMutedColor } from './cardStyles';
 import { useDeviceView } from '@/components/DeviceViewContext';
-import { H2, H3, BODY, BODY_SM, BUTTON_TEXT } from './typography';
+import { H2, H3, BODY, BODY_SM } from './typography';
 import { UnifiedButton } from '@/components/ui/UnifiedButton';
 
 interface Props {

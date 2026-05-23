@@ -10,7 +10,7 @@ import { BusinessProfile } from '@/data/mockData';
 import { useTemplate } from '@/components/TemplateProvider';
 import { useDeviceView, dv, type DeviceView } from '@/components/DeviceViewContext';
 import { FieldSelectionChrome, EditableText } from '@/components/blocks/shared/EditablePrimitives';
-import { H4, BODY_LG, BUTTON_TEXT } from '@/components/blocks/public/typography';
+import { H4, BODY_LG } from '@/components/blocks/public/typography';
 import { UnifiedButton } from '@/components/ui/UnifiedButton';
 
 // ─── Colour helpers ───────────────────────────────────────────────────────────
