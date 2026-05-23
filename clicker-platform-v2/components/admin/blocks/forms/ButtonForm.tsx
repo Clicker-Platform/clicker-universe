@@ -9,7 +9,10 @@ interface ButtonFormProps {
 
 interface SecondaryButtonData {
     label?: string;
+    /** @deprecated use tier instead; kept for back-compat */
     variant?: 'primary' | 'secondary' | 'outline';
+    tier?: 'primary' | 'secondary' | 'tertiary';
+    size?: 'sm' | 'md' | 'lg';
     linkType?: 'url' | 'page' | 'form';
     url?: string;
     pageId?: string | null;
@@ -64,7 +67,8 @@ export const ButtonForm = ({ data, onChange }: ButtonFormProps) => {
             ...safeData,
             secondary: {
                 label: 'Learn More',
-                variant: 'outline',
+                tier: 'secondary',
+                size: 'md',
                 linkType: 'url',
                 url: '',
             },
@@ -117,15 +121,27 @@ export const ButtonForm = ({ data, onChange }: ButtonFormProps) => {
                     </label>
                 </div>
                 <div>
-                    <label className={labelClass}>Style</label>
+                    <label className={labelClass}>Tier</label>
                     <select
-                        value={safeData.variant || 'primary'}
-                        onChange={(e) => handleChange('variant', e.target.value)}
+                        value={safeData.tier || 'primary'}
+                        onChange={(e) => handleChange('tier', e.target.value)}
                         className={`${inputClass} appearance-none cursor-pointer`}
                     >
-                        <option value="primary">Solid (Brand)</option>
+                        <option value="primary">Primary</option>
                         <option value="secondary">Secondary</option>
-                        <option value="outline">Outline</option>
+                        <option value="tertiary">Tertiary</option>
+                    </select>
+                </div>
+                <div>
+                    <label className={labelClass}>Size</label>
+                    <select
+                        value={safeData.size || 'md'}
+                        onChange={(e) => handleChange('size', e.target.value)}
+                        className={`${inputClass} appearance-none cursor-pointer`}
+                    >
+                        <option value="sm">Small</option>
+                        <option value="md">Medium</option>
+                        <option value="lg">Large</option>
                     </select>
                 </div>
                 <div>
@@ -190,15 +206,27 @@ export const ButtonForm = ({ data, onChange }: ButtonFormProps) => {
                             </label>
                         </div>
                         <div>
-                            <label className={labelClass}>Style</label>
+                            <label className={labelClass}>Tier</label>
                             <select
-                                value={secondary.variant || 'outline'}
-                                onChange={(e) => updateSecondary({ variant: e.target.value as SecondaryButtonData['variant'] })}
+                                value={secondary.tier || 'secondary'}
+                                onChange={(e) => updateSecondary({ tier: e.target.value as SecondaryButtonData['tier'] })}
                                 className={`${inputClass} appearance-none cursor-pointer`}
                             >
-                                <option value="primary">Solid (Brand)</option>
+                                <option value="primary">Primary</option>
                                 <option value="secondary">Secondary</option>
-                                <option value="outline">Outline</option>
+                                <option value="tertiary">Tertiary</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className={labelClass}>Size</label>
+                            <select
+                                value={secondary.size || 'md'}
+                                onChange={(e) => updateSecondary({ size: e.target.value as SecondaryButtonData['size'] })}
+                                className={`${inputClass} appearance-none cursor-pointer`}
+                            >
+                                <option value="sm">Small</option>
+                                <option value="md">Medium</option>
+                                <option value="lg">Large</option>
                             </select>
                         </div>
                     </div>
