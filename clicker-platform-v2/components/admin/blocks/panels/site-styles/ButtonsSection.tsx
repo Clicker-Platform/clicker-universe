@@ -3,9 +3,11 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { BUTTON_PACKS } from '@/lib/buttonPacks/packs';
-import { getAppearanceStyles, setButtonPackId } from '@/lib/appearance/api';
+import { getAppearanceStyles, setButtonPackId, setButtonColors } from '@/lib/appearance/api';
 import { useSite } from '@/lib/site-context';
 import { ButtonPackCard } from './ButtonPackCard';
+import { ButtonColorsEditor } from './ButtonColorsEditor';
+import { ButtonsPreviewTile } from './ButtonsPreviewTile';
 import type { ButtonPackId, ButtonColors } from '@/lib/buttonPacks/types';
 import { DEFAULT_BUTTON_COLORS } from '@/lib/buttonPacks/types';
 
@@ -39,6 +41,17 @@ export function ButtonsSection() {
     }
   };
 
+  const handleColorChange = async (patch: Partial<ButtonColors>) => {
+    const prev = colors;
+    setColors({ ...colors, ...patch });
+    try {
+      await setButtonColors(siteId, patch);
+    } catch {
+      setColors(prev);
+      toast.error("Couldn't save colors. Try again.");
+    }
+  };
+
   if (loading) return <div className="text-sm text-neutral-500">Loading…</div>;
 
   return (
@@ -56,7 +69,8 @@ export function ButtonsSection() {
           ))}
         </div>
       </div>
-      {/* Colors editor + preview tile arrive in Task 11 */}
+      <ButtonColorsEditor colors={colors} onChange={handleColorChange} />
+      <ButtonsPreviewTile packId={activeId} colors={colors} />
     </div>
   );
 }
