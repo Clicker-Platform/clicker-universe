@@ -1,12 +1,12 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import Link from 'next/link';
 import { Calendar } from 'lucide-react';
 import { useTemplate } from '@/components/TemplateProvider';
 import { getGlassStyle, getHeadingColor } from './cardStyles';
 import { useDeviceView } from '@/components/DeviceViewContext';
-import { H2, BUTTON_TEXT } from './typography';
+import { H2 } from './typography';
+import { UnifiedButton } from '@/components/ui/UnifiedButton';
 
 // Animated skeleton bar — uses CSS vars from TemplateProvider so it works across all themes.
 // Renders inside the dynamic() loading prop which shows while JS chunk downloads.
@@ -69,35 +69,16 @@ export const ReservationBlock = ({ data, siteId, initialServices, initialStaff, 
     if (data.mode === 'button') {
         const buttonText = data.buttonText || "Book Now";
 
-        // Contrast color for text on top of theme.primary / theme.foreground.
-        const primaryContrastColor =
-            theme.colors.accentForeground ??
-            (theme.colors.accent && theme.colors.accent !== theme.colors.primary ? theme.colors.accent : undefined) ??
-            theme.colors.background ??
-            '#ffffff';
-
-        const buttonChrome = isGlass
-            ? 'rounded-xl hover:opacity-90 shadow-lg'
-            : isClean
-            ? 'rounded-xl shadow-sm hover:opacity-90 hover:shadow-md'
-            : 'border-[3px] shadow-sticker hover:-translate-y-1 hover:shadow-sticker-hover';
-
-        const buttonInlineStyle: React.CSSProperties = isGlass
-            ? { backgroundColor: theme.colors.primary, color: primaryContrastColor }
-            : isClean
-            ? { backgroundColor: theme.colors.foreground, color: theme.colors.background }
-            : { backgroundColor: theme.colors.foreground, color: theme.colors.background, borderColor: theme.colors.foreground };
-
         return (
             <div className="py-8 text-center">
-                <Link
+                <UnifiedButton
+                    tier="primary"
+                    size="md"
                     href={data.href || "/book"}
-                    className={`inline-flex items-center gap-2 px-8 py-4 ${BUTTON_TEXT(d)} transition-all ${buttonChrome}`}
-                    style={{ ...buttonInlineStyle, borderRadius: 'calc(var(--theme-radius) * 0.75)' }}
                 >
-                    <Calendar size={20} strokeWidth={isGlass ? 2 : isClean ? 2 : 2.5} />
+                    <Calendar size={20} strokeWidth={2} />
                     {buttonText}
-                </Link>
+                </UnifiedButton>
             </div>
         );
     }
