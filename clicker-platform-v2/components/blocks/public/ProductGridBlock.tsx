@@ -24,7 +24,8 @@ async function fetchProducts(siteId: string, limit: number): Promise<DigitalProd
 
 export default async function ProductGridBlock({ data }: { data: ProductGridBlockData }) {
   const headersList = await headers();
-  const siteId = headersList.get('x-site-id') || 'default';
+  const siteId = headersList.get('x-site-id');
+  if (!siteId) return null;
   const limit = data.limit ?? 12;
   const columns = data.columns ?? 3;
 
