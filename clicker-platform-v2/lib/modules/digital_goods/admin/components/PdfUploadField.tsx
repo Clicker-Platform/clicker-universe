@@ -58,16 +58,16 @@ export default function PdfUploadField({ siteId, value, onChange }: Props) {
 
   if (value) {
     return (
-      <div className="border rounded-lg p-4 flex items-center gap-3 bg-gray-50">
-        <FileText className="text-gray-500" size={20} />
+      <div className="border border-gray-200 dark:border-neutral-700 rounded-lg p-4 flex items-center gap-3 bg-gray-50 dark:bg-neutral-800/50">
+        <FileText className="text-gray-500 dark:text-neutral-500" size={20} />
         <div className="flex-1 min-w-0">
-          <div className="font-medium truncate">{value.name}</div>
-          <div className="text-xs text-gray-500">{(value.sizeBytes / 1024 / 1024).toFixed(2)} MB</div>
+          <div className="font-medium text-gray-900 dark:text-neutral-100 truncate">{value.name}</div>
+          <div className="text-xs text-gray-500 dark:text-neutral-500">{(value.sizeBytes / 1024 / 1024).toFixed(2)} MB</div>
         </div>
         <button
           type="button"
           onClick={() => onChange(null)}
-          className="p-1 text-gray-500 hover:text-red-600"
+          className="p-1 text-gray-500 dark:text-neutral-500 hover:text-red-600"
           aria-label="Remove file"
         >
           <X size={18} />
@@ -78,16 +78,16 @@ export default function PdfUploadField({ siteId, value, onChange }: Props) {
 
   return (
     <div>
-      <label className="block border-2 border-dashed border-gray-200 rounded-lg p-6 text-center cursor-pointer hover:border-brand-dark transition">
+      <label className="block border-2 border-dashed border-gray-200 dark:border-neutral-700 rounded-lg p-6 text-center cursor-pointer hover:border-brand-dark dark:hover:border-brand-dark transition">
         {uploading ? (
-          <div className="flex items-center justify-center gap-2 text-gray-500">
+          <div className="flex items-center justify-center gap-2 text-gray-500 dark:text-neutral-500">
             <Loader2 className="animate-spin" size={18} /> Uploading...
           </div>
         ) : (
           <>
-            <FileText className="mx-auto mb-2 text-gray-400" size={28} />
-            <div className="font-medium">Click to upload PDF</div>
-            <div className="text-xs text-gray-500 mt-1">Max {MAX_PDF_MB} MB</div>
+            <FileText className="mx-auto mb-2 text-gray-400 dark:text-neutral-600" size={28} />
+            <div className="font-medium text-gray-700 dark:text-neutral-300">Click to upload PDF</div>
+            <div className="text-xs text-gray-500 dark:text-neutral-500 mt-1">Max {MAX_PDF_MB} MB</div>
           </>
         )}
         <input
@@ -102,7 +102,7 @@ export default function PdfUploadField({ siteId, value, onChange }: Props) {
           }}
         />
       </label>
-      {error && <div className="mt-2 text-sm text-red-600">{error}</div>}
+      {error && <div className="mt-2 text-sm text-red-600 dark:text-red-400">{error}</div>}
     </div>
   );
 }

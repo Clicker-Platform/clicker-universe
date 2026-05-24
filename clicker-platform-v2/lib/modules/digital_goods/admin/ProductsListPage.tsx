@@ -44,11 +44,11 @@ export default function ProductsListPage() {
   if (!siteId) return null;
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
+    <div className="space-y-5">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Digital Goods</h1>
-          <p className="text-sm text-gray-500">Sell PDFs, videos, and other digital products.</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">Digital Goods</h1>
+          <p className="text-sm text-gray-500 dark:text-neutral-500">Sell PDFs, videos, and other digital products.</p>
         </div>
         <Link
           href={ROUTES.productNew}
@@ -59,16 +59,16 @@ export default function ProductsListPage() {
       </div>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded">{error}</div>
+        <div className="p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/40 text-red-700 dark:text-red-400 rounded">{error}</div>
       )}
 
       {loading ? (
-        <div className="text-gray-500">Loading...</div>
+        <div className="text-gray-500 dark:text-neutral-500">Loading...</div>
       ) : products.length === 0 ? (
-        <div className="border-2 border-dashed border-gray-200 rounded-xl p-12 text-center">
-          <ShoppingBag size={32} className="mx-auto mb-3 text-gray-400" />
-          <p className="text-gray-600 font-medium mb-1">No products yet</p>
-          <p className="text-sm text-gray-400 mb-4">Create your first digital product to start selling.</p>
+        <div className="border-2 border-dashed border-gray-200 dark:border-neutral-700 rounded-xl p-12 text-center">
+          <ShoppingBag size={32} className="mx-auto mb-3 text-gray-400 dark:text-neutral-600" />
+          <p className="text-gray-600 dark:text-neutral-400 font-medium mb-1">No products yet</p>
+          <p className="text-sm text-gray-400 dark:text-neutral-600 mb-4">Create your first digital product to start selling.</p>
           <Link
             href={ROUTES.productNew}
             className="inline-flex items-center gap-2 bg-brand-dark text-white px-4 py-2 rounded-lg"
@@ -77,9 +77,9 @@ export default function ProductsListPage() {
           </Link>
         </div>
       ) : (
-        <div className="border rounded-xl overflow-hidden">
+        <div className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl overflow-hidden">
           <table className="w-full">
-            <thead className="bg-gray-50 text-left text-sm text-gray-600">
+            <thead className="bg-gray-50 dark:bg-neutral-800 text-left text-sm text-gray-600 dark:text-neutral-400">
               <tr>
                 <th className="px-4 py-3">Title</th>
                 <th className="px-4 py-3">Price</th>
@@ -90,15 +90,15 @@ export default function ProductsListPage() {
             </thead>
             <tbody>
               {products.map(p => (
-                <tr key={p.id} className="border-t hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium">{p.title}</td>
-                  <td className="px-4 py-3">Rp {p.price.toLocaleString('id-ID')}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{p.contentKind.toUpperCase()}</td>
+                <tr key={p.id} className="border-t border-gray-200 dark:border-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-800">
+                  <td className="px-4 py-3 font-medium text-gray-900 dark:text-neutral-100">{p.title}</td>
+                  <td className="px-4 py-3 text-gray-700 dark:text-neutral-300">Rp {p.price.toLocaleString('id-ID')}</td>
+                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-neutral-400">{p.contentKind.toUpperCase()}</td>
                   <td className="px-4 py-3">
                     <span className={`text-xs px-2 py-1 rounded ${
                       p.status === 'published'
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-gray-100 text-gray-600'
+                        ? 'bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-400'
+                        : 'bg-gray-100 dark:bg-neutral-800 text-gray-600 dark:text-neutral-400'
                     }`}>
                       {p.status}
                     </span>
@@ -107,7 +107,7 @@ export default function ProductsListPage() {
                     <div className="flex items-center gap-2">
                       <Link
                         href={`${ROUTES.productEdit}?id=${p.id}`}
-                        className="p-2 text-gray-600 hover:text-brand-dark rounded-lg hover:bg-gray-100 transition-colors"
+                        className="p-2 text-gray-600 dark:text-neutral-400 hover:text-brand-dark rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
                         aria-label="Edit"
                       >
                         <Pencil size={16} />

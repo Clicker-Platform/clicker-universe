@@ -137,52 +137,52 @@ export default function ProductForm() {
     }
   }
 
-  if (loading) return <div className="p-6 text-gray-500">Loading...</div>;
+  if (loading) return <div className="p-6 text-gray-500 dark:text-neutral-500">Loading...</div>;
 
   return (
-    <form onSubmit={handleSubmit} className="p-6 max-w-3xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold">{isEdit ? 'Edit Product' : 'New Product'}</h1>
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">{isEdit ? 'Edit Product' : 'New Product'}</h1>
 
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded">{error}</div>
+        <div className="p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/40 text-red-700 dark:text-red-400 rounded">{error}</div>
       )}
 
       <div>
-        <label className="block text-sm font-medium mb-1">Title <span className="text-red-500">*</span></label>
+        <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-neutral-300">Title <span className="text-red-500">*</span></label>
         <input
           type="text"
           value={form.title}
           onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-          className="w-full border rounded-lg px-3 py-2"
+          className="w-full border border-gray-200 dark:border-neutral-700 rounded-lg px-3 py-2 bg-white dark:bg-neutral-800 text-gray-900 dark:text-neutral-200 placeholder-gray-400 dark:placeholder-neutral-600"
           required
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1">Description (markdown supported)</label>
+        <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-neutral-300">Description (markdown supported)</label>
         <textarea
           value={form.description}
           onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
           rows={6}
-          className="w-full border rounded-lg px-3 py-2 font-mono text-sm"
+          className="w-full border border-gray-200 dark:border-neutral-700 rounded-lg px-3 py-2 font-mono text-sm bg-white dark:bg-neutral-800 text-gray-900 dark:text-neutral-200 placeholder-gray-400 dark:placeholder-neutral-600"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1">Price (IDR) <span className="text-red-500">*</span></label>
+        <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-neutral-300">Price (IDR) <span className="text-red-500">*</span></label>
         <input
           type="number"
           min="0"
           step="1"
           value={form.price}
           onChange={e => setForm(f => ({ ...f, price: e.target.value }))}
-          className="w-full border rounded-lg px-3 py-2"
+          className="w-full border border-gray-200 dark:border-neutral-700 rounded-lg px-3 py-2 bg-white dark:bg-neutral-800 text-gray-900 dark:text-neutral-200 placeholder-gray-400 dark:placeholder-neutral-600"
           required
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-2">Content type</label>
+        <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-neutral-300">Content type</label>
         <div className="flex gap-2">
           {(['pdf', 'youtube'] as const).map(kind => (
             <button
@@ -192,7 +192,7 @@ export default function ProductForm() {
               className={`px-4 py-2 rounded-lg border ${
                 form.contentKind === kind
                   ? 'bg-brand-dark text-white border-brand-dark'
-                  : 'bg-white text-gray-700 border-gray-200'
+                  : 'bg-white dark:bg-neutral-900 text-gray-700 dark:text-neutral-300 border-gray-200 dark:border-neutral-700'
               }`}
             >
               {kind === 'pdf' ? 'PDF' : 'YouTube (unlisted)'}
@@ -203,7 +203,7 @@ export default function ProductForm() {
 
       {form.contentKind === 'pdf' ? (
         <div>
-          <label className="block text-sm font-medium mb-1">PDF file <span className="text-red-500">*</span></label>
+          <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-neutral-300">PDF file <span className="text-red-500">*</span></label>
           <PdfUploadField
             siteId={siteId!}
             value={form.pdfFile}
@@ -212,20 +212,20 @@ export default function ProductForm() {
         </div>
       ) : (
         <div>
-          <label className="block text-sm font-medium mb-1">YouTube URL <span className="text-red-500">*</span></label>
+          <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-neutral-300">YouTube URL <span className="text-red-500">*</span></label>
           <input
             type="url"
             value={form.youtubeUrl}
             onChange={e => setForm(f => ({ ...f, youtubeUrl: e.target.value }))}
             placeholder="https://youtube.com/watch?v=..."
-            className="w-full border rounded-lg px-3 py-2"
+            className="w-full border border-gray-200 dark:border-neutral-700 rounded-lg px-3 py-2 bg-white dark:bg-neutral-800 text-gray-900 dark:text-neutral-200 placeholder-gray-400 dark:placeholder-neutral-600"
           />
-          <p className="text-xs text-gray-500 mt-1">Set the video to <strong>Unlisted</strong> in YouTube. Public/Private will not work as expected.</p>
+          <p className="text-xs text-gray-500 dark:text-neutral-500 mt-1">Set the video to <strong>Unlisted</strong> in YouTube. Public/Private will not work as expected.</p>
         </div>
       )}
 
       <div>
-        <label className="block text-sm font-medium mb-2">Status</label>
+        <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-neutral-300">Status</label>
         <div className="flex gap-2">
           {(['draft', 'published'] as const).map(s => (
             <button
@@ -235,7 +235,7 @@ export default function ProductForm() {
               className={`px-4 py-2 rounded-lg border ${
                 form.status === s
                   ? 'bg-brand-dark text-white border-brand-dark'
-                  : 'bg-white text-gray-700 border-gray-200'
+                  : 'bg-white dark:bg-neutral-900 text-gray-700 dark:text-neutral-300 border-gray-200 dark:border-neutral-700'
               }`}
             >
               {s}
@@ -244,7 +244,7 @@ export default function ProductForm() {
         </div>
       </div>
 
-      <div className="flex items-center gap-3 pt-4 border-t">
+      <div className="flex items-center gap-3 pt-4 border-t border-gray-200 dark:border-neutral-800">
         <button
           type="submit"
           disabled={saving}
@@ -256,7 +256,7 @@ export default function ProductForm() {
         <button
           type="button"
           onClick={() => router.push(ROUTES.list)}
-          className="px-6 py-2 rounded-lg border"
+          className="px-6 py-2 rounded-lg border border-gray-200 dark:border-neutral-700 text-gray-700 dark:text-neutral-300"
         >
           Cancel
         </button>

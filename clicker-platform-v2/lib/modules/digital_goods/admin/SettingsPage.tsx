@@ -72,84 +72,84 @@ export default function SettingsPage() {
     }
   }
 
-  if (loading) return <div className="p-6 text-gray-500">Loading...</div>;
+  if (loading) return <div className="p-6 text-gray-500 dark:text-neutral-500">Loading...</div>;
 
   return (
-    <form onSubmit={handleSave} className="p-6 max-w-2xl mx-auto space-y-6">
+    <form onSubmit={handleSave} className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Digital Goods — Payment Settings</h1>
-        <p className="text-sm text-gray-500">Buyers will see these details on the checkout page.</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">Digital Goods — Payment Settings</h1>
+        <p className="text-sm text-gray-500 dark:text-neutral-500">Buyers will see these details on the checkout page.</p>
       </div>
 
       {message && (
         <div className={`p-3 rounded border ${
           message.kind === 'ok'
-            ? 'bg-green-50 border-green-200 text-green-700'
-            : 'bg-red-50 border-red-200 text-red-700'
+            ? 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-900/40 text-green-700 dark:text-green-400'
+            : 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-900/40 text-red-700 dark:text-red-400'
         }`}>{message.text}</div>
       )}
 
       <div>
-        <label className="block text-sm font-medium mb-1">Bank name <span className="text-red-500">*</span></label>
+        <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-neutral-300">Bank name <span className="text-red-500">*</span></label>
         <input
           type="text"
           value={settings.bankName}
           onChange={e => setSettings(s => ({ ...s, bankName: e.target.value }))}
           placeholder="e.g. BCA"
-          className="w-full border rounded-lg px-3 py-2"
+          className="w-full border border-gray-200 dark:border-neutral-700 rounded-lg px-3 py-2 bg-white dark:bg-neutral-800 text-gray-900 dark:text-neutral-200 placeholder-gray-400 dark:placeholder-neutral-600"
           required
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1">Account number <span className="text-red-500">*</span></label>
+        <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-neutral-300">Account number <span className="text-red-500">*</span></label>
         <input
           type="text"
           value={settings.accountNumber}
           onChange={e => setSettings(s => ({ ...s, accountNumber: e.target.value }))}
           placeholder="e.g. 1234567890"
-          className="w-full border rounded-lg px-3 py-2"
+          className="w-full border border-gray-200 dark:border-neutral-700 rounded-lg px-3 py-2 bg-white dark:bg-neutral-800 text-gray-900 dark:text-neutral-200 placeholder-gray-400 dark:placeholder-neutral-600"
           required
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1">Account holder name <span className="text-red-500">*</span></label>
+        <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-neutral-300">Account holder name <span className="text-red-500">*</span></label>
         <input
           type="text"
           value={settings.accountName}
           onChange={e => setSettings(s => ({ ...s, accountName: e.target.value }))}
           placeholder="e.g. Andre Setiawan"
-          className="w-full border rounded-lg px-3 py-2"
+          className="w-full border border-gray-200 dark:border-neutral-700 rounded-lg px-3 py-2 bg-white dark:bg-neutral-800 text-gray-900 dark:text-neutral-200 placeholder-gray-400 dark:placeholder-neutral-600"
           required
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1">QRIS image (optional)</label>
+        <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-neutral-300">QRIS image (optional)</label>
         {settings.qrisImageUrl ? (
-          <div className="border rounded-lg p-3 flex items-center gap-3 bg-gray-50">
-            <ImageIcon className="text-gray-500" size={20} />
-            <div className="flex-1 text-sm text-gray-700 truncate">{settings.qrisImageUrl}</div>
+          <div className="border border-gray-200 dark:border-neutral-700 rounded-lg p-3 flex items-center gap-3 bg-gray-50 dark:bg-neutral-800/50">
+            <ImageIcon className="text-gray-500 dark:text-neutral-500" size={20} />
+            <div className="flex-1 text-sm text-gray-700 dark:text-neutral-300 truncate">{settings.qrisImageUrl}</div>
             <button
               type="button"
               onClick={() => setSettings(s => ({ ...s, qrisImageUrl: undefined }))}
-              className="p-1 text-gray-500 hover:text-red-600"
+              className="p-1 text-gray-500 dark:text-neutral-500 hover:text-red-600"
               aria-label="Remove QRIS image"
             >
               <X size={18} />
             </button>
           </div>
         ) : (
-          <label className="block border-2 border-dashed border-gray-200 rounded-lg p-6 text-center cursor-pointer hover:border-brand-dark">
+          <label className="block border-2 border-dashed border-gray-200 dark:border-neutral-700 rounded-lg p-6 text-center cursor-pointer hover:border-brand-dark dark:hover:border-brand-dark">
             {uploadingQris ? (
-              <div className="flex items-center justify-center gap-2 text-gray-500">
+              <div className="flex items-center justify-center gap-2 text-gray-500 dark:text-neutral-500">
                 <Loader2 className="animate-spin" size={18} /> Uploading...
               </div>
             ) : (
               <>
-                <ImageIcon className="mx-auto mb-2 text-gray-400" size={24} />
-                <div className="text-sm">Click to upload QRIS image</div>
+                <ImageIcon className="mx-auto mb-2 text-gray-400 dark:text-neutral-600" size={24} />
+                <div className="text-sm text-gray-700 dark:text-neutral-300">Click to upload QRIS image</div>
               </>
             )}
             <input
@@ -167,7 +167,7 @@ export default function SettingsPage() {
         )}
       </div>
 
-      <div className="pt-4 border-t">
+      <div className="pt-4 border-t border-gray-200 dark:border-neutral-800">
         <button
           type="submit"
           disabled={saving}
