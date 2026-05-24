@@ -394,6 +394,21 @@ service cloud.firestore {
         }
       }
 
+      // 8. DIGITAL GOODS (Strictly Nested)
+      match /modules/digital_goods/products/{productId} {
+        // Public can read published products; admins can read all
+        allow read: if resource.data.status == 'published'
+                    || (request.auth != null && isValidUser(siteId));
+        // Owner/staff only for writes
+        allow write: if isValidUser(siteId) && hasRole(siteId, ['owner', 'staff']);
+      }
+      match /modules/digital_goods/settings/{docId} {
+        allow read, write: if isValidUser(siteId) && isOwner(siteId);
+      }
+      // Reserved for Plan 2 (orders + library). Commented out until Plan 2.
+      // match /modules/digital_goods/orders/{orderId} { ... }
+      // match /modules/digital_goods/library/{entryId} { ... }
+
       // Note: Generic "Catch-all" REMOVED to enforce strict modularity.
       // Every module must be explicitly defined above.
 
