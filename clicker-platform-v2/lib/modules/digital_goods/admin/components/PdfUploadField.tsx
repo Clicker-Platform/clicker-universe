@@ -78,7 +78,7 @@ export default function PdfUploadField({ siteId, value, onChange }: Props) {
 
   return (
     <div>
-      <label className="block border-2 border-dashed border-gray-200 dark:border-neutral-700 rounded-lg p-6 text-center cursor-pointer hover:border-brand-dark dark:hover:border-brand-dark transition">
+      <label className="block border-2 border-dashed border-gray-200 dark:border-neutral-700 rounded-lg p-6 text-center cursor-pointer hover:border-studio-blue dark:hover:border-studio-blue transition">
         {uploading ? (
           <div className="flex items-center justify-center gap-2 text-gray-500 dark:text-neutral-500">
             <Loader2 className="animate-spin" size={18} /> Uploading...

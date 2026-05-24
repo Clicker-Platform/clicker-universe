@@ -191,7 +191,7 @@ export default function ProductForm() {
               onClick={() => setForm(f => ({ ...f, contentKind: kind }))}
               className={`px-4 py-2 rounded-lg border ${
                 form.contentKind === kind
-                  ? 'bg-brand-dark text-white border-brand-dark'
+                  ? 'bg-studio-blue text-white border-studio-blue'
                   : 'bg-white dark:bg-neutral-900 text-gray-700 dark:text-neutral-300 border-gray-200 dark:border-neutral-700'
               }`}
             >
@@ -234,7 +234,7 @@ export default function ProductForm() {
               onClick={() => setForm(f => ({ ...f, status: s }))}
               className={`px-4 py-2 rounded-lg border ${
                 form.status === s
-                  ? 'bg-brand-dark text-white border-brand-dark'
+                  ? 'bg-studio-blue text-white border-studio-blue'
                   : 'bg-white dark:bg-neutral-900 text-gray-700 dark:text-neutral-300 border-gray-200 dark:border-neutral-700'
               }`}
             >
@@ -248,9 +248,9 @@ export default function ProductForm() {
         <button
           type="submit"
           disabled={saving}
-          className="bg-brand-dark text-white px-6 py-2 rounded-lg flex items-center gap-2 disabled:opacity-50"
+          className="flex items-center gap-1.5 bg-studio-blue text-white px-3 py-2 rounded-lg text-sm font-semibold transition-colors hover:bg-studio-blue/90 active:scale-95 disabled:opacity-50"
         >
-          {saving && <Loader2 className="animate-spin" size={16} />}
+          {saving && <Loader2 className="animate-spin w-4 h-4" />}
           {isEdit ? 'Save changes' : 'Create product'}
         </button>
         <button

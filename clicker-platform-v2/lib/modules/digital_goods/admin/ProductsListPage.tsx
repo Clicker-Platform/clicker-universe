@@ -52,9 +52,9 @@ export default function ProductsListPage() {
         </div>
         <Link
           href={ROUTES.productNew}
-          className="flex items-center gap-2 bg-brand-dark text-white px-4 py-2 rounded-lg hover:opacity-90"
+          className="flex items-center gap-1.5 bg-studio-blue text-white px-3 py-2 rounded-lg text-sm font-semibold transition-colors hover:bg-studio-blue/90 active:scale-95"
         >
-          <Plus size={16} /> New Product
+          <Plus className="w-4 h-4" /> New Product
         </Link>
       </div>
 
@@ -71,9 +71,9 @@ export default function ProductsListPage() {
           <p className="text-sm text-gray-400 dark:text-neutral-600 mb-4">Create your first digital product to start selling.</p>
           <Link
             href={ROUTES.productNew}
-            className="inline-flex items-center gap-2 bg-brand-dark text-white px-4 py-2 rounded-lg"
+            className="inline-flex items-center gap-1.5 bg-studio-blue text-white px-3 py-2 rounded-lg text-sm font-semibold transition-colors hover:bg-studio-blue/90 active:scale-95"
           >
-            <Plus size={16} /> New Product
+            <Plus className="w-4 h-4" /> New Product
           </Link>
         </div>
       ) : (
@@ -107,7 +107,7 @@ export default function ProductsListPage() {
                     <div className="flex items-center gap-2">
                       <Link
                         href={`${ROUTES.productEdit}?id=${p.id}`}
-                        className="p-2 text-gray-600 dark:text-neutral-400 hover:text-brand-dark rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
+                        className="p-2 text-gray-600 dark:text-neutral-400 hover:text-studio-blue dark:hover:text-studio-blue rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
                         aria-label="Edit"
                       >
                         <Pencil size={16} />

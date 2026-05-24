@@ -141,7 +141,7 @@ export default function SettingsPage() {
             </button>
           </div>
         ) : (
-          <label className="block border-2 border-dashed border-gray-200 dark:border-neutral-700 rounded-lg p-6 text-center cursor-pointer hover:border-brand-dark dark:hover:border-brand-dark">
+          <label className="block border-2 border-dashed border-gray-200 dark:border-neutral-700 rounded-lg p-6 text-center cursor-pointer hover:border-studio-blue dark:hover:border-studio-blue">
             {uploadingQris ? (
               <div className="flex items-center justify-center gap-2 text-gray-500 dark:text-neutral-500">
                 <Loader2 className="animate-spin" size={18} /> Uploading...
@@ -171,9 +171,9 @@ export default function SettingsPage() {
         <button
           type="submit"
           disabled={saving}
-          className="bg-brand-dark text-white px-6 py-2 rounded-lg flex items-center gap-2 disabled:opacity-50"
+          className="flex items-center gap-1.5 bg-studio-blue text-white px-3 py-2 rounded-lg text-sm font-semibold transition-colors hover:bg-studio-blue/90 active:scale-95 disabled:opacity-50"
         >
-          {saving && <Loader2 className="animate-spin" size={16} />}
+          {saving && <Loader2 className="animate-spin w-4 h-4" />}
           Save settings
         </button>
       </div>
