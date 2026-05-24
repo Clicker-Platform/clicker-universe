@@ -73,6 +73,11 @@ const FT_SettingsPage    = dynamic(() => import('@/lib/modules/fintrack/admin/Se
 const MemberListPage = dynamic(() => import('@/lib/modules/membership/admin/MemberListPage'));
 const MembershipSettingsPage = dynamic(() => import('@/lib/modules/membership/admin/SettingsPage'));
 
+// Admin Pages (Digital Goods)
+const DG_ProductsListPage  = dynamic(() => import('@/lib/modules/digital_goods/admin/ProductsListPage'));
+const DG_ProductEditorPage = dynamic(() => import('@/lib/modules/digital_goods/admin/ProductEditorPage'));
+const DG_SettingsPage      = dynamic(() => import('@/lib/modules/digital_goods/admin/SettingsPage'));
+
 // Module Block Components
 const ReservationWidget = dynamic(() => import('@/lib/modules/reservation/public/ReservationWidget'));
 const UpcomingReservationsWidget = dynamic(() => import('@/lib/modules/reservation/public/UpcomingReservationsWidget'));
@@ -164,4 +169,9 @@ export const MODULE_COMPONENTS: Record<string, any> = {
     'ai_marketing:CampaignDetail': MktCampaignDetail,
     'ai_marketing:Analytics': MktAnalytics,
     'ai_marketing:Settings': MktSettings,
+
+    // Digital Goods Module
+    'digital_goods:ProductsList':   DG_ProductsListPage,
+    'digital_goods:ProductEditor':  DG_ProductEditorPage,
+    'digital_goods:Settings':       DG_SettingsPage,
 };
