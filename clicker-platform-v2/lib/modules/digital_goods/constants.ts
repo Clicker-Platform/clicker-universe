@@ -18,10 +18,8 @@ export const MAX_PDF_BYTES = MAX_PDF_MB * 1024 * 1024;
 
 // Admin route paths
 export const ROUTES = {
-  list:        '/admin/digital-goods',
-  productNew:  '/admin/digital-goods/products/new',
-  productEdit: '/admin/digital-goods/products/edit',
-  settings:    '/admin/digital-goods/settings',
+  list:     '/admin/digital-goods',
+  settings: '/admin/digital-goods/settings',
 } as const;
 
 // Permission key (registered in RBAC)
