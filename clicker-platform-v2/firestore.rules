@@ -416,14 +416,14 @@ service cloud.firestore {
 
       // Plan 2: orders — buyer reads own; admin reads; all writes server-only
       match /modules/digital_goods/orders/{orderId} {
-        allow read: if (request.auth != null && resource.data.buyerUid == request.auth.uid)
+        allow read: if (request.auth != null && resource.data.buyerId == request.auth.uid)
                     || (request.auth != null && isValidUser(siteId));
         allow write: if false; // Server-only via Admin SDK
       }
 
       // Plan 2: library — buyer reads own entries; admin reads; all writes server-only
       match /modules/digital_goods/library/{entryId} {
-        allow read: if (request.auth != null && resource.data.buyerUid == request.auth.uid)
+        allow read: if (request.auth != null && resource.data.buyerId == request.auth.uid)
                     || (request.auth != null && isValidUser(siteId));
         allow write: if false; // Server-only via Admin SDK
       }
