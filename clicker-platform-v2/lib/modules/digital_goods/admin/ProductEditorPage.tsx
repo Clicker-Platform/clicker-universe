@@ -1,10 +1,12 @@
 'use client';
 
+import { Suspense } from 'react';
+import ProductForm from './components/ProductForm';
+
 export default function ProductEditorPage() {
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold">Digital Goods — Product Editor</h1>
-      <p className="text-gray-500">Placeholder. Built in Task 10.</p>
-    </div>
+    <Suspense fallback={<div className="p-6 text-gray-500">Loading...</div>}>
+      <ProductForm />
+    </Suspense>
   );
 }
