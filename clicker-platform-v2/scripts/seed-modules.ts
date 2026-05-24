@@ -243,7 +243,26 @@ const MODULES = [
             'modules/ai_marketing/campaigns',
         ],
         settings: {}
-    }
+    },
+    {
+        id: 'digital_goods',
+        displayName: 'Digital Goods',
+        description: 'Sell digital products (PDF, video) with gated buyer library and manual payment.',
+        icon: 'shopping-bag',
+        version: '1.0.0',
+        enabled: true,
+        adminRoutes: [
+            { label: 'Products',     path: '/admin/digital-goods',          icon: 'shopping-bag', componentKey: 'digital_goods:ProductsList' },
+            { label: 'Settings',     path: '/admin/digital-goods/settings', icon: 'settings',     componentKey: 'digital_goods:Settings', permission: 'settings' },
+        ],
+        collections: [
+            'modules/digital_goods/buyers',
+            'modules/digital_goods/products',
+            'modules/digital_goods/orders',
+            'modules/digital_goods/library',
+        ],
+        settings: {}
+    },
 ];
 
 async function seedModules() {

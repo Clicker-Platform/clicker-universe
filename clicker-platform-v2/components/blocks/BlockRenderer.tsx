@@ -110,7 +110,7 @@ export const BlockRenderer = ({
             case 'hero':
                 return customBlocks?.Hero ?
                     React.createElement(customBlocks.Hero, { profile, theme, data: block.data, isFirst, previewMode, onInlineChange, onFieldFocus, onFieldBlur }) :
-                    <HeroBlock data={block.data} theme={theme} isFirst={isFirst} onInlineChange={onInlineChange} onFieldFocus={onFieldFocus} onFieldBlur={onFieldBlur} />;
+                    <HeroBlock data={block.data} theme={theme} isFirst={isFirst} previewMode={previewMode} onInlineChange={onInlineChange} onFieldFocus={onFieldFocus} onFieldBlur={onFieldBlur} />;
             case 'text':
                 return customBlocks?.Text ?
                     React.createElement(customBlocks.Text, { data: block.data }) :

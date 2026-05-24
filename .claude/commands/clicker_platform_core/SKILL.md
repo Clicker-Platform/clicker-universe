@@ -12,6 +12,9 @@ description: >
 ---
 
 > **Architecture Reference:** Always read [`docs/ARCHITECTURE.md`](../../../clicker-platform-v2/docs/ARCHITECTURE.md) before making any changes.
+>
+> **CLAUDE.md Rule 9 (mandatory):** Before writing **any** file in `lib/modules/<id>/admin/` (or scaffolding a new module), open an existing module's equivalent file and match its conventions — layout, page wrapper, buttons, colors, forms, tables, dark mode, top-bar reliance.
+> Canonical references: `lib/modules/promo/components/PromoListPage.tsx`, `lib/modules/promo/admin/SettingsPage.tsx`, `lib/modules/byod_pos/admin/`. The platform's working code is the source of truth — never infer styling from spec snippets.
 
 
 # /clicker_platform_core — System Architecture & Core Rules

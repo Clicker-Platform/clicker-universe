@@ -8,6 +8,8 @@ description: >
 
 # /create_block — Add a New Block Type
 
+> **CLAUDE.md Rule 9 (mandatory):** Before writing the renderer or the form, open at least one existing block of similar shape (e.g. `components/blocks/public/FeatureCardsBlock.tsx` for grid-of-cards blocks, `components/blocks/public/HeroBlock.tsx` for hero-style blocks) and mirror its conventions: typography (load `typography_system` skill), theme tokens, `cardStyle` usage, dv() responsive helper, no hardcoded colors. The platform's working code is the source of truth — never infer styling from spec snippets.
+
 Blocks are stored as `PageBlock` JSON in Firestore and rendered in two places: the admin Canvas Studio editor and the public site. Every new block requires **7 touch points**, in this order.
 
 ---
