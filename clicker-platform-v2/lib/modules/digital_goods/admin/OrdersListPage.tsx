@@ -135,6 +135,7 @@ export default function OrdersListPage() {
       {editingOrder && (
         <OrderDetailForm
           order={editingOrder}
+          siteId={siteId}
           onClose={() => setEditingOrder(null)}
           onUpdated={load}
         />

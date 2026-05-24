@@ -1,20 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { headers } from 'next/headers';
-import { adminAuth } from '@/lib/firebase-admin';
+import { requireAuthedMember } from '@/lib/api-auth';
 import { cancelOrderAdmin } from '@/lib/modules/digital_goods/server-api';
 
 export const runtime = 'nodejs';
 
 export async function POST(req: NextRequest) {
-  const headersList = await headers();
-  const siteId = headersList.get('x-site-id');
-  if (!siteId) return NextResponse.json({ error: 'no_site' }, { status: 400 });
-
-  const sessionCookie = req.cookies.get('__session')?.value;
-  if (!sessionCookie) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-
-  try { await adminAuth.verifySessionCookie(sessionCookie, true); }
-  catch { return NextResponse.json({ error: 'unauthorized' }, { status: 401 }); }
+  const auth = await requireAuthedMember(req);
+  if (!auth.ok) return auth.res;
+  const { siteId } = auth.session;
 
   const body = await req.json().catch(() => ({}));
   const { orderId } = body as { orderId?: string };

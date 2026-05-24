@@ -2,15 +2,17 @@
 
 import { useState } from 'react';
 import { X, Receipt, Loader2 } from 'lucide-react';
+import { auth } from '@/lib/firebase';
 import type { DigitalOrder } from '../../types';
 
 interface Props {
   order: DigitalOrder;
+  siteId: string;
   onClose: () => void;
   onUpdated: () => void;
 }
 
-export function OrderDetailForm({ order, onClose, onUpdated }: Props) {
+export function OrderDetailForm({ order, siteId, onClose, onUpdated }: Props) {
   const [paymentRef, setPaymentRef] = useState(order.paymentRef ?? '');
   const [acting, setActing] = useState<null | 'confirm' | 'cancel'>(null);
   const [error, setError] = useState<string | null>(null);
@@ -18,9 +20,15 @@ export function OrderDetailForm({ order, onClose, onUpdated }: Props) {
   const isPending = order.status === 'awaiting_confirmation';
 
   async function callEndpoint(path: string, body: object) {
+    const idToken = await auth.currentUser?.getIdToken();
+    if (!idToken) throw new Error('Not authenticated');
     const res = await fetch(path, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${idToken}`,
+        'x-site-id': siteId,
+      },
       body: JSON.stringify(body),
     });
     const data = await res.json();

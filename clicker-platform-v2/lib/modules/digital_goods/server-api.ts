@@ -124,15 +124,17 @@ export async function cancelOrderAdmin(
   siteId: string, orderId: string,
 ): Promise<void> {
   const ref = adminDb.doc(`sites/${siteId}/${COLLECTION_ORDERS}/${orderId}`);
-  const snap = await ref.get();
-  if (!snap.exists) throw new Error('Order not found.');
-  const order = snap.data() as DigitalOrder;
-  if (!canTransition(order.status, 'cancelled')) {
-    throw new Error(`Cannot cancel order in ${order.status} state.`);
-  }
-  await ref.update({
-    status: 'cancelled',
-    updatedAt: FieldValue.serverTimestamp(),
+  await adminDb.runTransaction(async tx => {
+    const snap = await tx.get(ref);
+    if (!snap.exists) throw new Error('Order not found.');
+    const order = snap.data() as DigitalOrder;
+    if (!canTransition(order.status, 'cancelled')) {
+      throw new Error(`Cannot cancel order in ${order.status} state.`);
+    }
+    tx.update(ref, {
+      status: 'cancelled',
+      updatedAt: FieldValue.serverTimestamp(),
+    });
   });
 }
 
