@@ -74,7 +74,7 @@ export default function ProductGridBlock({ data }: { data: ProductGridBlockData 
               >
                 <div className="aspect-video bg-gray-100 flex items-center justify-center text-gray-400 text-xs">
                   {p.coverImage
-                    ? <img src={`/api/storage-image?path=${encodeURIComponent(p.coverImage)}`} alt={p.title} className="w-full h-full object-cover" />
+                    ? <img src={p.coverImage} alt={p.title} className="w-full h-full object-cover" />
                     : 'No cover'}
                 </div>
                 <div className="p-4">

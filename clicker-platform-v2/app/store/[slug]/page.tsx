@@ -45,7 +45,7 @@ export default async function StoreItemPage({
       <div className="max-w-3xl mx-auto bg-white rounded-xl border border-gray-200 overflow-hidden">
         {product.coverImage && (
           <div className="aspect-video bg-gray-100">
-            <img src={`/api/storage-image?path=${encodeURIComponent(product.coverImage)}`} alt={product.title} className="w-full h-full object-cover" />
+            <img src={product.coverImage} alt={product.title} className="w-full h-full object-cover" />
           </div>
         )}
         <div className="p-6">

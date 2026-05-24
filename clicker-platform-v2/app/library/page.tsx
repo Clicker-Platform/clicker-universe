@@ -57,7 +57,7 @@ export default async function LibraryPage() {
               >
                 <div className="aspect-video bg-gray-100 flex items-center justify-center text-xs text-gray-400">
                   {e.productSnapshot.coverImage
-                    ? <img src={`/api/storage-image?path=${encodeURIComponent(e.productSnapshot.coverImage)}`} alt={e.productSnapshot.title} className="w-full h-full object-cover" />
+                    ? <img src={e.productSnapshot.coverImage} alt={e.productSnapshot.title} className="w-full h-full object-cover" />
                     : 'Cover'}
                 </div>
                 <div className="p-4">

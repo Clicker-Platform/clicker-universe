@@ -42,7 +42,7 @@ export default async function LibraryEntryPage({
       <div className="max-w-3xl mx-auto bg-white rounded-xl border border-gray-200 overflow-hidden">
         {entry.productSnapshot.coverImage && (
           <div className="aspect-video bg-gray-100">
-            <img src={`/api/storage-image?path=${encodeURIComponent(entry.productSnapshot.coverImage)}`} alt={entry.productSnapshot.title} className="w-full h-full object-cover" />
+            <img src={entry.productSnapshot.coverImage} alt={entry.productSnapshot.title} className="w-full h-full object-cover" />
           </div>
         )}
         <div className="p-6">
