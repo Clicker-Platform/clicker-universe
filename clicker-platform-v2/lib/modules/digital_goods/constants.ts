@@ -19,6 +19,7 @@ export const MAX_PDF_BYTES = MAX_PDF_MB * 1024 * 1024;
 // Admin route paths
 export const ROUTES = {
   list:     '/admin/digital-goods',
+  orders:   '/admin/digital-goods/orders',
   settings: '/admin/digital-goods/settings',
 } as const;
 
@@ -27,3 +28,29 @@ export const PERM_MANAGE = 'digital_goods.manage';
 
 // Defaults
 export const DEFAULT_CURRENCY = 'IDR' as const;
+
+// Plan 2 — Public buyer routes
+// IMPORTANT: login is owned by digital_goods (NOT /member/login which lives in the loyalty module
+// by accident — see CLAUDE.md rule 10). Route built in Plan 2 Task 4b.
+export const PUBLIC_ROUTES = {
+  store:       '/store',
+  storeItem:   '/store',                 // append /[slug]
+  checkout:    '/store',                 // append /[slug]/checkout
+  library:     '/library',
+  libraryEntry:'/library',               // append /[entryId]
+  orderStatus: '/library/orders',        // append /[orderId]
+  login:       '/store/login',
+  loginVerify: '/store/login/verify',
+} as const;
+
+// Plan 2 — Storage subfolders
+export const STORAGE_FOLDER_PRODUCT_FILES = `${STORAGE_FOLDER_PRODUCTS}/files`;
+
+// Plan 2 — Signed URL TTL for PDF downloads (15 minutes)
+export const SIGNED_URL_TTL_SECONDS = 15 * 60;
+
+// Plan 2 — Email template alias KEYS (looked up via getTemplateAliases())
+export const EMAIL_ALIAS_KEYS = {
+  newOrderTenant: 'digitalGoodsNewOrderTenant',
+  orderPaidBuyer: 'digitalGoodsOrderPaidBuyer',
+} as const;
