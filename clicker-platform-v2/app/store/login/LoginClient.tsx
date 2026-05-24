@@ -10,7 +10,8 @@ import { PUBLIC_ROUTES } from '@/lib/modules/digital_goods/constants';
 
 export function LoginClient() {
   const searchParams = useSearchParams();
-  const next = searchParams.get('next') || PUBLIC_ROUTES.store;
+  const raw = searchParams.get('next') || PUBLIC_ROUTES.store;
+  const next = (raw.startsWith('/') && !raw.startsWith('//')) ? raw : PUBLIC_ROUTES.store;
 
   const [email, setEmail] = useState('');
   const [step, setStep] = useState<'INPUT' | 'SENT'>('INPUT');

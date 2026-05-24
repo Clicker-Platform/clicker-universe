@@ -23,23 +23,28 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'invalid_token' }, { status: 401 });
   }
 
-  // Auto-provision the buyer record
-  await upsertBuyerAdmin(siteId, decoded.uid, {
-    email: decoded.email ?? '',
-  });
+  try {
+    // Auto-provision the buyer record
+    await upsertBuyerAdmin(siteId, decoded.uid, {
+      email: decoded.email ?? '',
+    });
 
-  // Mint a session cookie so subsequent server requests can verify
-  const sessionCookie = await adminAuth.createSessionCookie(idToken, {
-    expiresIn: 60 * 60 * 24 * 7 * 1000, // 7 days in ms
-  });
-  const cookieStore = await cookies();
-  cookieStore.set('__session', sessionCookie, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
-    maxAge: 60 * 60 * 24 * 7,
-  });
+    // Mint a session cookie so subsequent server requests can verify
+    const sessionCookie = await adminAuth.createSessionCookie(idToken, {
+      expiresIn: 60 * 60 * 24 * 7 * 1000, // 7 days in ms
+    });
+    const cookieStore = await cookies();
+    cookieStore.set('__session', sessionCookie, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7,
+    });
+  } catch (e) {
+    logger.error('digital_goods.buyer.init.failed', { siteId, uid: decoded.uid, error: e });
+    return NextResponse.json({ error: 'init_failed' }, { status: 500 });
+  }
 
   return NextResponse.json({ ok: true, uid: decoded.uid });
 }

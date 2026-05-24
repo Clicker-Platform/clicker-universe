@@ -11,7 +11,8 @@ import { PUBLIC_ROUTES } from '@/lib/modules/digital_goods/constants';
 export default function StoreLoginVerifyPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const next = searchParams.get('next') || PUBLIC_ROUTES.store;
+  const raw = searchParams.get('next') || PUBLIC_ROUTES.store;
+  const next = (raw.startsWith('/') && !raw.startsWith('//')) ? raw : PUBLIC_ROUTES.store;
   const [status, setStatus] = useState<'WORKING' | 'ERROR'>('WORKING');
   const [error, setError] = useState<string | null>(null);
 
