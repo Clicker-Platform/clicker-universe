@@ -13,16 +13,6 @@ interface Props {
   onChange: (file: PdfFile | null) => void;
 }
 
-/**
- * Extract the Firebase Storage object path from a download URL.
- * Download URLs have the form:
- *   https://firebasestorage.googleapis.com/v0/b/{bucket}/o/{encoded-path}?...
- */
-function storagePathFromUrl(url: string): string {
-  const match = /\/o\/([^?]+)/.exec(url);
-  if (!match) throw new Error('Cannot parse storage path from URL');
-  return decodeURIComponent(match[1]);
-}
 
 export default function PdfUploadField({ siteId, value, onChange }: Props) {
   const [uploading, setUploading] = useState(false);
@@ -53,9 +43,9 @@ export default function PdfUploadField({ siteId, value, onChange }: Props) {
         id: crypto.randomUUID(),
         kind: 'pdf',
         name: file.name,
-        storagePath: storagePathFromUrl(result.url),
+        storagePath: result.path,
         sizeBytes: result.sizeBytes,
-        mimeType: file.type,
+        mimeType: result.contentType,
       });
     } catch (e) {
       logger.error('digital_goods.pdf.upload.failed', { siteId, error: e });
