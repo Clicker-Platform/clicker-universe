@@ -3,16 +3,18 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { subscribeOrder } from '@/lib/modules/digital_goods/orders';
-import { PUBLIC_ROUTES } from '@/lib/modules/digital_goods/constants';
+import { publicRoutes } from '@/lib/modules/digital_goods/constants';
 import type { DigitalOrder } from '@/lib/modules/digital_goods/types';
 
 interface Props {
+  tenant: string;
   siteId: string;
   orderId: string;
   initialOrder: DigitalOrder;
 }
 
-export function OrderStatusClient({ siteId, orderId, initialOrder }: Props) {
+export function OrderStatusClient({ tenant, siteId, orderId, initialOrder }: Props) {
+  const routes = publicRoutes(tenant);
   const [order, setOrder] = useState<DigitalOrder>(initialOrder);
   const [libraryEntryId, setLibraryEntryId] = useState<string | null>(null);
 
@@ -21,15 +23,15 @@ export function OrderStatusClient({ siteId, orderId, initialOrder }: Props) {
     return () => unsub();
   }, [siteId, orderId]);
 
-  // When the order flips to paid, the server creates a library entry. We don't know its ID until lookup.
   useEffect(() => {
     if (order.status !== 'paid') return;
-    // Best-effort: query the library for this orderId
-    fetch(`/api/digital-goods/lookup-library?orderId=${orderId}`)
+    fetch(`/api/digital-goods/lookup-library?orderId=${orderId}`, {
+      headers: { 'x-site-id': siteId },
+    })
       .then(r => r.ok ? r.json() : null)
       .then(d => d?.libraryEntryId && setLibraryEntryId(d.libraryEntryId))
       .catch(() => {});
-  }, [order.status, orderId]);
+  }, [order.status, orderId, siteId]);
 
   return (
     <div className="space-y-5">
@@ -47,7 +49,7 @@ export function OrderStatusClient({ siteId, orderId, initialOrder }: Props) {
         )}
         {order.status === 'paid' && libraryEntryId && (
           <Link
-            href={`${PUBLIC_ROUTES.library}/${libraryEntryId}`}
+            href={routes.libraryEntry(libraryEntryId)}
             className="inline-block mt-3 bg-studio-blue text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-studio-blue/90"
           >
             Lihat di Library →

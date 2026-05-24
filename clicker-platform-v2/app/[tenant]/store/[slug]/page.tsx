@@ -1,4 +1,3 @@
-import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { adminDb } from '@/lib/firebase-admin';
 import { COLLECTION_PRODUCTS } from '@/lib/modules/digital_goods/constants';
@@ -22,12 +21,10 @@ async function fetchProductBySlug(siteId: string, slug: string): Promise<Digital
 export default async function StoreItemPage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ tenant: string; slug: string }>;
 }) {
-  const { slug } = await params;
-  const headersList = await headers();
-  const siteId = headersList.get('x-site-id');
-  if (!siteId) notFound();
+  const { tenant, slug } = await params;
+  const siteId = tenant;
 
   const product = await fetchProductBySlug(siteId, slug);
   if (!product) notFound();
@@ -55,7 +52,7 @@ export default async function StoreItemPage({
           {product.description && (
             <p className="text-gray-700 mt-4 whitespace-pre-wrap">{product.description}</p>
           )}
-          <StoreProductClient siteId={siteId} product={serialized as any} />
+          <StoreProductClient tenant={tenant} siteId={siteId} product={serialized as any} />
         </div>
       </div>
     </main>

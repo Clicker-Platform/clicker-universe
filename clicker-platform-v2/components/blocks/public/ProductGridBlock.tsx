@@ -69,7 +69,7 @@ export default function ProductGridBlock({ data }: { data: ProductGridBlockData 
             {products.map(p => (
               <Link
                 key={p.id}
-                href={`/store/${p.slug}`}
+                href={`/${siteId}/store/${p.slug}`}
                 className="block rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition bg-white"
               >
                 <div className="aspect-video bg-gray-100 flex items-center justify-center text-gray-400 text-xs">

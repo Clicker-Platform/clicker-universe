@@ -29,19 +29,19 @@ export const PERM_MANAGE = 'digital_goods.manage';
 // Defaults
 export const DEFAULT_CURRENCY = 'IDR' as const;
 
-// Plan 2 — Public buyer routes
+// Plan 2 — Public buyer routes (tenant-scoped — see feedback memory: tenant routes under [tenant])
 // IMPORTANT: login is owned by digital_goods (NOT /member/login which lives in the loyalty module
 // by accident — see CLAUDE.md rule 10). Route built in Plan 2 Task 4b.
-export const PUBLIC_ROUTES = {
-  store:       '/store',
-  storeItem:   '/store',                 // append /[slug]
-  checkout:    '/store',                 // append /[slug]/checkout
-  library:     '/library',
-  libraryEntry:'/library',               // append /[entryId]
-  orderStatus: '/library/orders',        // append /[orderId]
-  login:       '/store/login',
-  loginVerify: '/store/login/verify',
-} as const;
+export const publicRoutes = (tenant: string) => ({
+  store:        `/${tenant}/store`,
+  storeItem:    (slug: string)     => `/${tenant}/store/${slug}`,
+  checkout:     (slug: string)     => `/${tenant}/store/${slug}/checkout`,
+  library:      `/${tenant}/library`,
+  libraryEntry: (entryId: string)  => `/${tenant}/library/${entryId}`,
+  orderStatus:  (orderId: string)  => `/${tenant}/library/orders/${orderId}`,
+  login:        `/${tenant}/store/login`,
+  loginVerify:  `/${tenant}/store/login/verify`,
+});
 
 // Plan 2 — Storage subfolders
 export const STORAGE_FOLDER_PRODUCT_FILES = `${STORAGE_FOLDER_PRODUCTS}/files`;

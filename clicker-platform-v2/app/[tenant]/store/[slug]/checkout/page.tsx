@@ -1,7 +1,7 @@
-import { headers, cookies } from 'next/headers';
+import { cookies } from 'next/headers';
 import { redirect, notFound } from 'next/navigation';
 import { adminAuth, adminDb } from '@/lib/firebase-admin';
-import { COLLECTION_PRODUCTS, DOC_SETTINGS, PUBLIC_ROUTES } from '@/lib/modules/digital_goods/constants';
+import { COLLECTION_PRODUCTS, DOC_SETTINGS, publicRoutes } from '@/lib/modules/digital_goods/constants';
 import type { DigitalProduct, DigitalGoodsSettings } from '@/lib/modules/digital_goods/types';
 import { CheckoutClient } from './CheckoutClient';
 
@@ -10,24 +10,23 @@ export const revalidate = 0;
 export default async function CheckoutPage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ tenant: string; slug: string }>;
 }) {
-  const { slug } = await params;
-  const headersList = await headers();
-  const siteId = headersList.get('x-site-id');
-  if (!siteId) notFound();
+  const { tenant, slug } = await params;
+  const siteId = tenant;
+  const routes = publicRoutes(tenant);
 
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get('__session')?.value;
   if (!sessionCookie) {
-    redirect(`${PUBLIC_ROUTES.login}?next=${encodeURIComponent(`${PUBLIC_ROUTES.store}/${slug}/checkout`)}`);
+    redirect(`${routes.login}?next=${encodeURIComponent(routes.checkout(slug))}`);
   }
 
   let decoded;
   try {
     decoded = await adminAuth.verifySessionCookie(sessionCookie, true);
   } catch {
-    redirect(`${PUBLIC_ROUTES.login}?next=${encodeURIComponent(`${PUBLIC_ROUTES.store}/${slug}/checkout`)}`);
+    redirect(`${routes.login}?next=${encodeURIComponent(routes.checkout(slug))}`);
   }
 
   const productSnap = await adminDb
@@ -58,6 +57,7 @@ export default async function CheckoutPage({
       <div className="max-w-2xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-900 mb-6">Checkout</h1>
         <CheckoutClient
+          tenant={tenant}
           siteId={siteId}
           productId={product.id}
           productTitle={product.title}

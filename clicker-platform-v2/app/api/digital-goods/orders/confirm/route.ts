@@ -3,7 +3,7 @@ import { requireAuthedMember } from '@/lib/api-auth';
 import { confirmOrderPaidAdmin } from '@/lib/modules/digital_goods/server-api';
 import { sendOrderPaidBuyerEmail } from '@/lib/modules/digital_goods/emails';
 import { adminDb } from '@/lib/firebase-admin';
-import { PUBLIC_ROUTES, COLLECTION_BUYERS } from '@/lib/modules/digital_goods/constants';
+import { publicRoutes, COLLECTION_BUYERS } from '@/lib/modules/digital_goods/constants';
 import { logger } from '@/lib/logger-edge';
 
 export const runtime = 'nodejs';
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     if (buyerEmail) {
       const proto = req.headers.get('x-forwarded-proto') || 'https';
       const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || '';
-      const libraryUrl = `${proto}://${host}${PUBLIC_ROUTES.library}/${libraryEntryId}`;
+      const libraryUrl = `${proto}://${host}${publicRoutes(siteId).libraryEntry(libraryEntryId)}`;
       sendOrderPaidBuyerEmail(siteId, {
         buyerEmail,
         productTitle: order.productSnapshot.title,

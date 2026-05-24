@@ -3,9 +3,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
-import { PUBLIC_ROUTES } from '@/lib/modules/digital_goods/constants';
+import { publicRoutes } from '@/lib/modules/digital_goods/constants';
 
 interface Props {
+  tenant: string;
   siteId: string;
   productId: string;
   productTitle: string;
@@ -19,6 +20,7 @@ interface Props {
 
 export function CheckoutClient(props: Props) {
   const router = useRouter();
+  const routes = publicRoutes(props.tenant);
   const [buyerNote, setBuyerNote] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,12 +31,12 @@ export function CheckoutClient(props: Props) {
     try {
       const res = await fetch('/api/digital-goods/checkout', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-site-id': props.siteId },
         body: JSON.stringify({ productId: props.productId, buyerNote }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'submit_failed');
-      router.push(`${PUBLIC_ROUTES.orderStatus}/${data.orderId}`);
+      router.push(routes.orderStatus(data.orderId));
     } catch (e: any) {
       setError(e?.message ?? 'Failed to submit order.');
       setSubmitting(false);

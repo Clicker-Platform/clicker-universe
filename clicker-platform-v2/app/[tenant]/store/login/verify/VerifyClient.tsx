@@ -6,13 +6,18 @@ import { isSignInWithEmailLink, signInWithEmailLink } from 'firebase/auth';
 import { Loader2 } from 'lucide-react';
 import { auth } from '@/lib/firebase';
 import { logger } from '@/lib/logger-edge';
-import { PUBLIC_ROUTES } from '@/lib/modules/digital_goods/constants';
+import { publicRoutes } from '@/lib/modules/digital_goods/constants';
 
-export default function StoreLoginVerifyPage() {
+interface Props {
+  tenant: string;
+}
+
+export function VerifyClient({ tenant }: Props) {
   const router = useRouter();
+  const routes = publicRoutes(tenant);
   const searchParams = useSearchParams();
-  const raw = searchParams.get('next') || PUBLIC_ROUTES.store;
-  const next = (raw.startsWith('/') && !raw.startsWith('//')) ? raw : PUBLIC_ROUTES.store;
+  const raw = searchParams.get('next') || routes.store;
+  const next = (raw.startsWith('/') && !raw.startsWith('//')) ? raw : routes.store;
   const [status, setStatus] = useState<'WORKING' | 'ERROR'>('WORKING');
   const [error, setError] = useState<string | null>(null);
 
@@ -30,11 +35,10 @@ export default function StoreLoginVerifyPage() {
         const result = await signInWithEmailLink(auth, email, window.location.href);
         window.localStorage.removeItem('digitalGoodsEmailForSignIn');
 
-        // Tell the server to create the buyer record + set the session cookie
         const idToken = await result.user.getIdToken();
         const res = await fetch('/api/digital-goods/buyer/init', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'x-site-id': tenant },
           body: JSON.stringify({ idToken }),
         });
         if (!res.ok) throw new Error('Failed to initialize buyer session.');
@@ -46,7 +50,7 @@ export default function StoreLoginVerifyPage() {
         setStatus('ERROR');
       }
     })();
-  }, [next, router]);
+  }, [next, router, tenant]);
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
@@ -59,7 +63,7 @@ export default function StoreLoginVerifyPage() {
         ) : (
           <>
             <p className="text-sm text-red-600 mb-2">{error}</p>
-            <a href={PUBLIC_ROUTES.login} className="text-sm text-studio-blue underline">Kembali ke login</a>
+            <a href={routes.login} className="text-sm text-studio-blue underline">Kembali ke login</a>
           </>
         )}
       </div>

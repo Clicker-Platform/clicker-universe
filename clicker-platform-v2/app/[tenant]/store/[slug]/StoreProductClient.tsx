@@ -6,16 +6,18 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { ArrowRight } from 'lucide-react';
 import { auth } from '@/lib/firebase';
 import { hasLibraryEntryForProduct } from '@/lib/modules/digital_goods/library';
-import { PUBLIC_ROUTES } from '@/lib/modules/digital_goods/constants';
+import { publicRoutes } from '@/lib/modules/digital_goods/constants';
 import type { DigitalProduct, LibraryEntry } from '@/lib/modules/digital_goods/types';
 
 interface Props {
+  tenant: string;
   siteId: string;
   product: DigitalProduct;
 }
 
-export function StoreProductClient({ siteId, product }: Props) {
+export function StoreProductClient({ tenant, siteId, product }: Props) {
   const router = useRouter();
+  const routes = publicRoutes(tenant);
   const [user, loadingAuth] = useAuthState(auth);
   const [owned, setOwned] = useState<LibraryEntry | null>(null);
   const [checking, setChecking] = useState(true);
@@ -37,7 +39,7 @@ export function StoreProductClient({ siteId, product }: Props) {
   if (owned) {
     return (
       <button
-        onClick={() => router.push(`${PUBLIC_ROUTES.library}/${owned.id}`)}
+        onClick={() => router.push(routes.libraryEntry(owned.id))}
         className="mt-6 w-full bg-green-600 text-white px-6 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-green-700 transition"
       >
         Open in Library <ArrowRight size={18} />
@@ -46,9 +48,9 @@ export function StoreProductClient({ siteId, product }: Props) {
   }
 
   function handleBuy() {
-    const nextUrl = `${PUBLIC_ROUTES.store}/${product.slug}/checkout`;
+    const nextUrl = routes.checkout(product.slug);
     if (!user) {
-      router.push(`${PUBLIC_ROUTES.login}?next=${encodeURIComponent(nextUrl)}`);
+      router.push(`${routes.login}?next=${encodeURIComponent(nextUrl)}`);
     } else {
       router.push(nextUrl);
     }

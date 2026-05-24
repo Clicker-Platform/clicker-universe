@@ -6,12 +6,17 @@ import { sendSignInLinkToEmail } from 'firebase/auth';
 import { Mail, Loader2, CheckCircle2 } from 'lucide-react';
 import { auth } from '@/lib/firebase';
 import { logger } from '@/lib/logger-edge';
-import { PUBLIC_ROUTES } from '@/lib/modules/digital_goods/constants';
+import { publicRoutes } from '@/lib/modules/digital_goods/constants';
 
-export function LoginClient() {
+interface Props {
+  tenant: string;
+}
+
+export function LoginClient({ tenant }: Props) {
+  const routes = publicRoutes(tenant);
   const searchParams = useSearchParams();
-  const raw = searchParams.get('next') || PUBLIC_ROUTES.store;
-  const next = (raw.startsWith('/') && !raw.startsWith('//')) ? raw : PUBLIC_ROUTES.store;
+  const raw = searchParams.get('next') || routes.store;
+  const next = (raw.startsWith('/') && !raw.startsWith('//')) ? raw : routes.store;
 
   const [email, setEmail] = useState('');
   const [step, setStep] = useState<'INPUT' | 'SENT'>('INPUT');
@@ -23,7 +28,7 @@ export function LoginClient() {
     if (!email) { setError('Email diperlukan.'); return; }
     setSubmitting(true); setError(null);
     try {
-      const verifyUrl = `${window.location.origin}${PUBLIC_ROUTES.loginVerify}?next=${encodeURIComponent(next)}`;
+      const verifyUrl = `${window.location.origin}${routes.loginVerify}?next=${encodeURIComponent(next)}`;
       await sendSignInLinkToEmail(auth, email, {
         url: verifyUrl,
         handleCodeInApp: true,

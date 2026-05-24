@@ -4,13 +4,14 @@ import { useState } from 'react';
 import { Download, Loader2 } from 'lucide-react';
 
 interface Props {
+  siteId: string;
   productId: string;
   pdfStoragePath: string | null;
   pdfFilename: string | null;
   youtubeUrl: string | null;
 }
 
-export function LibraryEntryClient({ productId, pdfStoragePath, pdfFilename, youtubeUrl }: Props) {
+export function LibraryEntryClient({ siteId, productId, pdfStoragePath, pdfFilename, youtubeUrl }: Props) {
   const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,7 +21,7 @@ export function LibraryEntryClient({ productId, pdfStoragePath, pdfFilename, you
     try {
       const res = await fetch(`/api/digital-goods/files/${encodeURIComponent(productId)}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-site-id': siteId },
         body: JSON.stringify({ productId, storagePath: pdfStoragePath }),
       });
       const data = await res.json();

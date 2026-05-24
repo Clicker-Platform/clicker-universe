@@ -1,8 +1,8 @@
-import { headers, cookies } from 'next/headers';
-import { redirect, notFound } from 'next/navigation';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { adminAuth, adminDb } from '@/lib/firebase-admin';
-import { COLLECTION_LIBRARY, PUBLIC_ROUTES } from '@/lib/modules/digital_goods/constants';
+import { COLLECTION_LIBRARY, publicRoutes } from '@/lib/modules/digital_goods/constants';
 import type { LibraryEntry } from '@/lib/modules/digital_goods/types';
 
 export const revalidate = 0;
@@ -16,20 +16,25 @@ async function fetchLibrary(siteId: string, uid: string): Promise<LibraryEntry[]
   return snap.docs.map(d => ({ id: d.id, ...d.data() } as LibraryEntry));
 }
 
-export default async function LibraryPage() {
-  const headersList = await headers();
-  const siteId = headersList.get('x-site-id');
-  if (!siteId) notFound();
+export default async function LibraryPage({
+  params,
+}: {
+  params: Promise<{ tenant: string }>;
+}) {
+  const { tenant } = await params;
+  const siteId = tenant;
+  const routes = publicRoutes(tenant);
+
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get('__session')?.value;
 
   if (!sessionCookie) {
-    redirect(`${PUBLIC_ROUTES.login}?next=${encodeURIComponent(PUBLIC_ROUTES.library)}`);
+    redirect(`${routes.login}?next=${encodeURIComponent(routes.library)}`);
   }
 
   let decoded;
   try { decoded = await adminAuth.verifySessionCookie(sessionCookie, true); }
-  catch { redirect(`${PUBLIC_ROUTES.login}?next=${encodeURIComponent(PUBLIC_ROUTES.library)}`); }
+  catch { redirect(`${routes.login}?next=${encodeURIComponent(routes.library)}`); }
 
   const entries = await fetchLibrary(siteId, decoded.uid);
 
@@ -43,7 +48,7 @@ export default async function LibraryPage() {
         {entries.length === 0 ? (
           <div className="bg-white border-2 border-dashed border-gray-200 rounded-xl p-12 text-center">
             <p className="text-gray-600 font-medium mb-2">Your library is empty</p>
-            <Link href={PUBLIC_ROUTES.store} className="inline-block bg-studio-blue text-white px-4 py-2 rounded-lg text-sm hover:bg-studio-blue/90">
+            <Link href={routes.store} className="inline-block bg-studio-blue text-white px-4 py-2 rounded-lg text-sm hover:bg-studio-blue/90">
               Browse Store
             </Link>
           </div>
@@ -52,7 +57,7 @@ export default async function LibraryPage() {
             {entries.map(e => (
               <Link
                 key={e.id}
-                href={`${PUBLIC_ROUTES.library}/${e.id}`}
+                href={routes.libraryEntry(e.id)}
                 className="block bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition"
               >
                 <div className="aspect-video bg-gray-100 flex items-center justify-center text-xs text-gray-400">

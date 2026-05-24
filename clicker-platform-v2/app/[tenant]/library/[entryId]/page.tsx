@@ -1,7 +1,7 @@
-import { headers, cookies } from 'next/headers';
+import { cookies } from 'next/headers';
 import { redirect, notFound } from 'next/navigation';
 import { adminAuth, adminDb } from '@/lib/firebase-admin';
-import { COLLECTION_LIBRARY, COLLECTION_PRODUCTS, PUBLIC_ROUTES } from '@/lib/modules/digital_goods/constants';
+import { COLLECTION_LIBRARY, COLLECTION_PRODUCTS, publicRoutes } from '@/lib/modules/digital_goods/constants';
 import type { LibraryEntry, DigitalProduct, PdfFile, YouTubeFile } from '@/lib/modules/digital_goods/types';
 import { LibraryEntryClient } from './LibraryEntryClient';
 
@@ -10,26 +10,25 @@ export const revalidate = 0;
 export default async function LibraryEntryPage({
   params,
 }: {
-  params: Promise<{ entryId: string }>;
+  params: Promise<{ tenant: string; entryId: string }>;
 }) {
-  const { entryId } = await params;
-  const headersList = await headers();
-  const siteId = headersList.get('x-site-id');
-  if (!siteId) notFound();
+  const { tenant, entryId } = await params;
+  const siteId = tenant;
+  const routes = publicRoutes(tenant);
+
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get('__session')?.value;
-  if (!sessionCookie) redirect(`${PUBLIC_ROUTES.login}?next=${encodeURIComponent(`${PUBLIC_ROUTES.library}/${entryId}`)}`);
+  if (!sessionCookie) redirect(`${routes.login}?next=${encodeURIComponent(routes.libraryEntry(entryId))}`);
 
   let decoded;
   try { decoded = await adminAuth.verifySessionCookie(sessionCookie, true); }
-  catch { redirect(`${PUBLIC_ROUTES.login}?next=${encodeURIComponent(`${PUBLIC_ROUTES.library}/${entryId}`)}`); }
+  catch { redirect(`${routes.login}?next=${encodeURIComponent(routes.libraryEntry(entryId))}`); }
 
   const entrySnap = await adminDb.doc(`sites/${siteId}/${COLLECTION_LIBRARY}/${entryId}`).get();
   if (!entrySnap.exists) notFound();
   const entry = { id: entrySnap.id, ...entrySnap.data() } as LibraryEntry;
   if (entry.buyerId !== decoded.uid) notFound();
 
-  // Load the underlying product to access files[]
   const productSnap = await adminDb.doc(`sites/${siteId}/${COLLECTION_PRODUCTS}/${entry.productId}`).get();
   if (!productSnap.exists) notFound();
   const product = productSnap.data() as DigitalProduct;
@@ -51,6 +50,7 @@ export default async function LibraryEntryPage({
 
           <div className="mt-6">
             <LibraryEntryClient
+              siteId={siteId}
               productId={entry.productId}
               pdfStoragePath={pdf?.storagePath ?? null}
               pdfFilename={pdf?.name ?? null}
