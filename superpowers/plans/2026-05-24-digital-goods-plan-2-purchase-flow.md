@@ -85,7 +85,7 @@
 
 ---
 
-## Phase 1 — Buyer identity + access plumbing (Tasks 1–4)
+## Phase 1 — Buyer identity + access plumbing (Tasks 1–4, plus 4b login route)
 
 ### Task 1: Extend constants for Plan 2
 
@@ -105,7 +105,8 @@ export const PUBLIC_ROUTES = {
   library:    '/library',
   libraryEntry:  '/library',             // append /[entryId]
   orderStatus:   '/library/orders',      // append /[orderId]
-  login:      '/member/login',
+  login:      '/store/login',            // OWNED BY digital_goods. NOT /member/login (which lives in the loyalty module by accident — see CLAUDE.md rule 10).
+  loginVerify:'/store/login/verify',
 } as const;
 
 // Plan 2 — Storage subfolders
@@ -690,6 +691,288 @@ git commit -m "feat(digital_goods): server-only API + signed-URL endpoint"
 
 ---
 
+### Task 4b: Buyer login route (digital_goods-owned)
+
+> **CLAUDE.md rule 10 — NON-NEGOTIABLE:** This task builds digital_goods's OWN login UI. It must NOT import from `lib/modules/membership/`. It must NOT redirect to `/member/login`. It must NOT call any membership facade. The membership module is loyalty-only. The fact that an existing `/member/login` page lives in membership's code is a historical accident — we are deliberately NOT reusing it.
+>
+> Firebase Auth is platform-level; this route consumes it directly via the platform's `lib/firebase.ts` and `lib/firebase-admin.ts`. Mirror the **shape** of the existing `/member/login` flow (magic-link send + verify pattern) **without copying its imports**. Write fresh code that lives entirely within `digital_goods`.
+
+**Files:**
+
+- Create: `app/store/login/page.tsx` — server component that renders the login form (delegates to client component below).
+- Create: `app/store/login/LoginClient.tsx` — client component, magic-link form (email input + send).
+- Create: `app/store/login/verify/page.tsx` — client component that completes `signInWithEmailLink`, creates the `buyers/{uid}` record server-side via the existing `/api/digital-goods/checkout` server endpoint (or a dedicated `/api/digital-goods/buyer/init` endpoint — choose one and stick with it; recommended: dedicated endpoint), then redirects to the `?next` URL.
+- Create: `app/api/digital-goods/buyer/init/route.ts` — POST endpoint that takes the freshly minted Firebase session, calls `upsertBuyerAdmin`, returns the buyer doc.
+
+### Step 1: Verify nothing is imported from membership module
+
+Before writing any code, confirm the rule:
+
+```bash
+echo "Files about to be created must NOT import from membership. Verify after creation:"
+grep -rn "from '@/lib/modules/membership" app/store/login/ app/api/digital-goods/buyer/ 2>/dev/null && echo "FAIL — coupling detected" || echo "OK — no coupling"
+```
+
+(The grep returns nothing because the files don't exist yet. After Step 4, re-run and confirm "OK".)
+
+### Step 2: Write `app/store/login/page.tsx`
+
+```tsx
+import { Suspense } from 'react';
+import { LoginClient } from './LoginClient';
+
+export const dynamic = 'force-dynamic';
+
+export default function StoreLoginPage() {
+  return (
+    <main className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
+      <div className="w-full max-w-md bg-white rounded-xl shadow border border-gray-200 p-8">
+        <Suspense fallback={<div className="text-sm text-gray-500">Loading...</div>}>
+          <LoginClient />
+        </Suspense>
+      </div>
+    </main>
+  );
+}
+```
+
+### Step 3: Write `app/store/login/LoginClient.tsx`
+
+```tsx
+'use client';
+
+import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { sendSignInLinkToEmail } from 'firebase/auth';
+import { Mail, Loader2, CheckCircle2 } from 'lucide-react';
+import { auth } from '@/lib/firebase';
+import { logger } from '@/lib/logger-edge';
+import { PUBLIC_ROUTES } from '@/lib/modules/digital_goods/constants';
+
+export function LoginClient() {
+  const searchParams = useSearchParams();
+  const next = searchParams.get('next') || PUBLIC_ROUTES.store;
+
+  const [email, setEmail] = useState('');
+  const [step, setStep] = useState<'INPUT' | 'SENT'>('INPUT');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email) { setError('Email diperlukan.'); return; }
+    setSubmitting(true); setError(null);
+    try {
+      const verifyUrl = `${window.location.origin}${PUBLIC_ROUTES.loginVerify}?next=${encodeURIComponent(next)}`;
+      await sendSignInLinkToEmail(auth, email, {
+        url: verifyUrl,
+        handleCodeInApp: true,
+      });
+      window.localStorage.setItem('digitalGoodsEmailForSignIn', email);
+      setStep('SENT');
+    } catch (e: any) {
+      logger.error('digital_goods.login.send.failed', { error: e });
+      setError(e?.message ?? 'Failed to send login link.');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  if (step === 'SENT') {
+    return (
+      <div className="text-center">
+        <CheckCircle2 className="mx-auto text-green-600 mb-3" size={32} />
+        <h1 className="text-xl font-bold text-gray-900">Cek email Anda</h1>
+        <p className="text-sm text-gray-600 mt-2">Kami sudah mengirim link login ke <strong>{email}</strong>. Klik link tersebut untuk masuk.</p>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="text-center mb-6">
+        <Mail className="mx-auto text-gray-400 mb-2" size={28} />
+        <h1 className="text-2xl font-bold text-gray-900">Masuk</h1>
+        <p className="text-sm text-gray-500 mt-1">Kami akan kirim link login ke email Anda.</p>
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+        <input
+          type="email"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          required
+          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+          placeholder="you@example.com"
+        />
+      </div>
+      {error && <p className="text-sm text-red-600">{error}</p>}
+      <button
+        type="submit"
+        disabled={submitting}
+        className="w-full bg-studio-blue text-white px-6 py-3 rounded-lg font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
+      >
+        {submitting && <Loader2 className="animate-spin w-4 h-4" />}
+        Kirim link login
+      </button>
+    </form>
+  );
+}
+```
+
+### Step 4: Write `app/store/login/verify/page.tsx`
+
+```tsx
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { isSignInWithEmailLink, signInWithEmailLink } from 'firebase/auth';
+import { Loader2 } from 'lucide-react';
+import { auth } from '@/lib/firebase';
+import { logger } from '@/lib/logger-edge';
+import { PUBLIC_ROUTES } from '@/lib/modules/digital_goods/constants';
+
+export default function StoreLoginVerifyPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const next = searchParams.get('next') || PUBLIC_ROUTES.store;
+  const [status, setStatus] = useState<'WORKING' | 'ERROR'>('WORKING');
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        if (!isSignInWithEmailLink(auth, window.location.href)) {
+          throw new Error('Invalid or expired link.');
+        }
+        let email = window.localStorage.getItem('digitalGoodsEmailForSignIn');
+        if (!email) {
+          email = window.prompt('Confirm your email to complete sign-in:');
+          if (!email) throw new Error('Email required.');
+        }
+        const result = await signInWithEmailLink(auth, email, window.location.href);
+        window.localStorage.removeItem('digitalGoodsEmailForSignIn');
+
+        // Tell the server to create the buyer record + set the session cookie
+        const idToken = await result.user.getIdToken();
+        const res = await fetch('/api/digital-goods/buyer/init', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ idToken }),
+        });
+        if (!res.ok) throw new Error('Failed to initialize buyer session.');
+
+        router.replace(next);
+      } catch (e: any) {
+        logger.error('digital_goods.login.verify.failed', { error: e });
+        setError(e?.message ?? 'Failed to complete sign-in.');
+        setStatus('ERROR');
+      }
+    })();
+  }, [next, router]);
+
+  return (
+    <main className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
+      <div className="w-full max-w-md bg-white rounded-xl shadow border border-gray-200 p-8 text-center">
+        {status === 'WORKING' ? (
+          <>
+            <Loader2 className="animate-spin mx-auto text-studio-blue mb-3" size={32} />
+            <p className="text-sm text-gray-600">Memverifikasi...</p>
+          </>
+        ) : (
+          <>
+            <p className="text-sm text-red-600 mb-2">{error}</p>
+            <a href={PUBLIC_ROUTES.login} className="text-sm text-studio-blue underline">Kembali ke login</a>
+          </>
+        )}
+      </div>
+    </main>
+  );
+}
+```
+
+### Step 5: Write `app/api/digital-goods/buyer/init/route.ts`
+
+```ts
+import { NextRequest, NextResponse } from 'next/server';
+import { headers, cookies } from 'next/headers';
+import { adminAuth } from '@/lib/firebase-admin';
+import { upsertBuyerAdmin } from '@/lib/modules/digital_goods/server-api';
+import { logger } from '@/lib/logger-edge';
+
+export const runtime = 'nodejs';
+
+export async function POST(req: NextRequest) {
+  const headersList = await headers();
+  const siteId = headersList.get('x-site-id');
+  if (!siteId) return NextResponse.json({ error: 'no_site' }, { status: 400 });
+
+  const body = await req.json().catch(() => ({}));
+  const { idToken } = body as { idToken?: string };
+  if (!idToken) return NextResponse.json({ error: 'missing_token' }, { status: 400 });
+
+  let decoded;
+  try {
+    decoded = await adminAuth.verifyIdToken(idToken, true);
+  } catch (e) {
+    logger.error('digital_goods.buyer.init.verify.failed', { siteId, error: e });
+    return NextResponse.json({ error: 'invalid_token' }, { status: 401 });
+  }
+
+  // Auto-provision the buyer record
+  await upsertBuyerAdmin(siteId, decoded.uid, {
+    email: decoded.email ?? '',
+  });
+
+  // Mint a session cookie so subsequent server requests can verify
+  const sessionCookie = await adminAuth.createSessionCookie(idToken, {
+    expiresIn: 60 * 60 * 24 * 7 * 1000, // 7 days in ms
+  });
+  const cookieStore = await cookies();
+  cookieStore.set('__session', sessionCookie, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 60 * 60 * 24 * 7,
+  });
+
+  return NextResponse.json({ ok: true, uid: decoded.uid });
+}
+```
+
+### Step 6: Verify no coupling
+
+```bash
+grep -rn "from '@/lib/modules/membership" app/store/login/ app/api/digital-goods/buyer/ 2>/dev/null && echo "FAIL — coupling detected" || echo "OK — no coupling"
+```
+
+Expected: `OK — no coupling`.
+
+```bash
+grep -rn "/member/login" app/store/login/ app/api/digital-goods/buyer/ 2>/dev/null && echo "FAIL — references membership-owned route" || echo "OK"
+```
+
+Expected: `OK`.
+
+### Step 7: TypeScript check
+
+```bash
+pnpm exec tsc --noEmit 2>&1 | grep -E "(digital_goods|store/login|buyer/init)" | head
+```
+
+Expected: empty.
+
+### Step 8: Commit
+
+```bash
+git add clicker-platform-v2/app/store/login/ clicker-platform-v2/app/api/digital-goods/buyer/
+git commit -m "feat(digital_goods): self-owned magic-link login route (no membership coupling)"
+```
+
+---
+
 ## Phase 2 — Public store block + product detail (Tasks 5–7)
 
 ### Task 5: ProductGrid block + auto-page creation
@@ -1023,7 +1306,7 @@ export function StoreProductClient({ siteId, product }: Props) {
 }
 ```
 
-> **Dependency note:** `react-firebase-hooks` should already be installed (used by `/member/login`). Verify with `grep react-firebase-hooks package.json`. If absent, install via `pnpm add react-firebase-hooks`.
+> **Dependency note:** `react-firebase-hooks` should already be installed at the platform level. Verify with `grep react-firebase-hooks package.json`. If absent, install via `pnpm add react-firebase-hooks`.
 
 - [ ] **Step 3: TypeScript check**
 
@@ -1067,7 +1350,7 @@ Navigate to `tenant.localhost:3000/store` (resolved by the platform's custom-pag
 - Empty state shows if no published products exist.
 - Published products from Plan 1 appear in the grid using the configured columns / limit.
 - Click a product → `/store/[slug]` detail page renders.
-- Click "Buy Now" while logged out → redirects to `/member/login?next=/store/[slug]/checkout`.
+- Click "Buy Now" while logged out → redirects to `/store/login?next=/store/[slug]/checkout` (digital_goods's own login).
 
 - [ ] **Step 5: Verify tenant can move the block**
 
@@ -2518,7 +2801,7 @@ Use a known dev tenant subdomain (e.g. `tenant.localhost:3000`).
 
 1. Browse `/store` while logged out → product grid renders.
 2. Click a product → detail page shows; "Buy Now" visible.
-3. Click "Buy Now" → bounced to `/member/login?next=...` → enter email → click magic link → bounced to checkout page.
+3. Click "Buy Now" → bounced to `/store/login?next=...` (digital_goods's own login route — NOT membership) → enter email → click magic link → land on `/store/login/verify` → buyer record auto-provisioned → bounced to checkout page.
 4. Verify bank instructions display.
 5. Add a buyer note → click "Saya sudah transfer" → redirected to `/library/orders/[orderId]` with status "awaiting confirmation".
 6. As the tenant (in another browser/incognito as admin), navigate to `/admin/digital-goods/orders` → see the pending order at the top of the table (amber row) → click pencil → slide-over opens with order details → paste an optional bank ref → click "Tandai Lunas".
@@ -2544,7 +2827,7 @@ Only mark complete if every step above succeeds. If any step fails, file an issu
 
 ## Done — Plan 2 outcome
 
-After all 15 tasks:
+After all 16 tasks (15 original + Task 4b login route):
 - Buyer can discover (`/store`), browse, log in via magic link, place a manual-transfer order, see live order status, get notified on payment confirmation, and download their PDF (or watch their YouTube embed).
 - Tenant can see pending orders, confirm payment with a "Tandai Lunas" action that creates the library entry transactionally, or cancel.
 - Email notifications wire both sides (tenant gets new-order notification, buyer gets paid-confirmation with library deep link).
