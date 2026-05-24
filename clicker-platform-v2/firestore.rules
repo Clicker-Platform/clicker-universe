@@ -405,9 +405,28 @@ service cloud.firestore {
       match /modules/digital_goods/settings/{docId} {
         allow read, write: if isValidUser(siteId) && isOwner(siteId);
       }
-      // Reserved for Plan 2 (orders + library). Commented out until Plan 2.
-      // match /modules/digital_goods/orders/{orderId} { ... }
-      // match /modules/digital_goods/library/{entryId} { ... }
+      // Plan 2: buyer profile (self r/w + admin read)
+      match /modules/digital_goods/buyers/{uid} {
+        // Buyer reads/writes their own doc; admin staff can read
+        allow read: if (request.auth != null && request.auth.uid == uid)
+                    || (request.auth != null && isValidUser(siteId));
+        allow write: if (request.auth != null && request.auth.uid == uid)
+                    || (request.auth != null && isValidUser(siteId) && hasRole(siteId, ['owner', 'staff']));
+      }
+
+      // Plan 2: orders — buyer reads own; admin reads; all writes server-only
+      match /modules/digital_goods/orders/{orderId} {
+        allow read: if (request.auth != null && resource.data.buyerUid == request.auth.uid)
+                    || (request.auth != null && isValidUser(siteId));
+        allow write: if false; // Server-only via Admin SDK
+      }
+
+      // Plan 2: library — buyer reads own entries; admin reads; all writes server-only
+      match /modules/digital_goods/library/{entryId} {
+        allow read: if (request.auth != null && resource.data.buyerUid == request.auth.uid)
+                    || (request.auth != null && isValidUser(siteId));
+        allow write: if false; // Server-only via Admin SDK
+      }
 
       // Note: Generic "Catch-all" REMOVED to enforce strict modularity.
       // Every module must be explicitly defined above.
