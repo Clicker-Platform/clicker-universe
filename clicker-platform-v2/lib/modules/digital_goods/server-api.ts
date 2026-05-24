@@ -6,12 +6,12 @@ import 'server-only';
 import { adminDb, adminStorage } from '@/lib/firebase-admin';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import {
-  COLLECTION_BUYERS, COLLECTION_ORDERS, COLLECTION_LIBRARY,
+  COLLECTION_BUYERS, COLLECTION_ORDERS, COLLECTION_LIBRARY, COLLECTION_PRODUCTS,
   SIGNED_URL_TTL_SECONDS,
 } from './constants';
 import { canTransition } from './orders';
 import type {
-  DigitalGoodsBuyer, DigitalOrder, LibraryEntry,
+  DigitalGoodsBuyer, DigitalOrder, DigitalProduct, LibraryEntry,
   PaymentInstructions, ProductSnapshot,
 } from './types';
 
@@ -158,6 +158,17 @@ export async function issueSignedUrlForFile(
   //  but we can defend by requiring the path matches the expected prefix)
   const expectedPrefix = `sites/${siteId}/modules/digital_goods/products/`;
   if (!storagePath.startsWith(expectedPrefix)) throw new Error('forbidden');
+
+  // Verify the storagePath is one of this product's actual PDF files (IDOR fix)
+  const productSnap = await adminDb
+    .doc(`sites/${siteId}/${COLLECTION_PRODUCTS}/${productId}`)
+    .get();
+  if (!productSnap.exists) throw new Error('forbidden');
+  const product = productSnap.data() as DigitalProduct;
+  const fileMatch = (product.files ?? []).some(
+    f => f.kind === 'pdf' && (f as { storagePath: string }).storagePath === storagePath,
+  );
+  if (!fileMatch) throw new Error('forbidden');
 
   const file = adminStorage.bucket().file(storagePath);
   const [exists] = await file.exists();
