@@ -30,12 +30,16 @@
 | `lib/modules/digital_goods/library.ts` | Client-side library CRUD: `getLibraryForBuyer()`, `getLibraryEntry()`, `hasLibraryEntryForProduct()`. |
 | `lib/modules/digital_goods/__tests__/orders.test.ts` | Vitest for order helpers (status transitions, snapshot serialization). |
 
-### New files (public buyer pages)
+### New files (public buyer surfaces — block-based, NOT standalone /store)
+
+**Decision (vs spec §12):** The buyer-facing catalog is implemented as a **Canvas Studio block** (`digital_goods:ProductGrid`), NOT a standalone `/store` route. The lesson from `byod_pos` is that standalone tenant-facing pages get abandoned because tenants want full layout control. Activating the module auto-creates a Custom Page named "Store" with the block pre-placed, so the tenant gets a working storefront out of the box but can rearrange, rename, theme, or move the block anywhere. Product detail and checkout remain as routes because they're transactional flows, not browse surfaces.
 
 | Path | Responsibility |
 | --- | --- |
-| `app/store/page.tsx` | Server component — public catalog listing all published products for current tenant. |
-| `app/store/[slug]/page.tsx` | Server component — product detail page with "Buy Now" CTA. |
+| `components/blocks/public/ProductGridBlock.tsx` | Block renderer — server component that fetches published products for current tenant and renders a responsive grid. Reads block props: `title?`, `subtitle?`, `limit?`, `columns?`. |
+| `components/admin/blocks/forms/ProductGridBlockForm.tsx` | Admin block-form — fields for title, subtitle, limit, columns. Standard `BlockFormRenderer` pattern. |
+| `lib/modules/digital_goods/auto-page.ts` | Server-only — `ensureStorePageExists(siteId)` creates a Custom Page with id `digital-goods-store` containing one `digital_goods:ProductGrid` block, if absent. Idempotent. |
+| `app/store/[slug]/page.tsx` | Server component — product detail page with "Buy Now" CTA. Route remains because it's the canonical deep-link target from the block's product cards. |
 | `app/store/[slug]/StoreProductClient.tsx` | Client component — handles "Buy Now" click, login redirect, "Already in your library" guard. |
 | `app/store/[slug]/checkout/page.tsx` | Server component — auth-gated checkout shell. Resolves session, loads product + settings, renders client. |
 | `app/store/[slug]/checkout/CheckoutClient.tsx` | Client component — payment instructions, "Saya sudah transfer" button, creates order via server action. |
@@ -686,82 +690,89 @@ git commit -m "feat(digital_goods): server-only API + signed-URL endpoint"
 
 ---
 
-## Phase 2 — Public store (Tasks 5–7)
+## Phase 2 — Public store block + product detail (Tasks 5–7)
 
-### Task 5: Public store catalog page
+### Task 5: ProductGrid block + auto-page creation
+
+Per CLAUDE.md rule 9 — before writing this task, READ the `create_block` skill end-to-end and at least one reference block (e.g. `components/blocks/public/FeatureCardsBlock.tsx` for grid layout, `components/blocks/public/ProductsBlock.tsx` for fetching tenant data). The 7 touchpoints from the `create_block` skill apply here.
 
 **Files:**
-- Create: `app/store/page.tsx`
 
-- [ ] **Step 1: Read the reference**
+- Create: `components/blocks/public/ProductGridBlock.tsx`
+- Create: `components/admin/blocks/forms/ProductGridBlockForm.tsx`
+- Create: `lib/modules/digital_goods/auto-page.ts`
+- Modify: `data/mockData.ts` (add `digital_goods_product_grid` to `BlockType` if string-typed enum is closed; otherwise no change)
+- Modify: `components/blocks/BlockRenderer.tsx` (register the block renderer)
+- Modify: `components/admin/blocks/BlockFormRenderer.tsx` (register the block form)
+- Modify: `lib/modules/digital_goods/server-api.ts` (export `ensureStorePageExists` call from Task 4 — actually we'll add a new file `auto-page.ts` for separation)
 
-Before writing this file, read `app/catalog/page.tsx` end-to-end. Note: it uses `headers()` to extract `x-site-id`, calls `fetchPublicData(siteId)`, and renders `<HeaderNavigation>` + `<Footer>` wrappers. Mirror that shell pattern.
+> **Read first (Rule 9):** Run `pnpm exec ls components/blocks/public/ | head` to see existing block names. Read `components/blocks/public/FeatureCardsBlock.tsx` for grid layout. Read `components/blocks/public/ProductsBlock.tsx` for tenant-data fetch pattern. Read the `create_block` skill's 7-touchpoint list before writing.
 
-- [ ] **Step 2: Write the page**
+### Step 1: Write the block renderer
 
-Create `app/store/page.tsx`:
+Create `components/blocks/public/ProductGridBlock.tsx`:
 
 ```tsx
-import { headers } from 'next/headers';
 import Link from 'next/link';
+import { headers } from 'next/headers';
 import { ShoppingBag } from 'lucide-react';
 import { adminDb } from '@/lib/firebase-admin';
-import { COLLECTION_PRODUCTS, PUBLIC_ROUTES } from '@/lib/modules/digital_goods/constants';
-import { isModuleEnabled } from '@/lib/modules/registry';
+import { COLLECTION_PRODUCTS } from '@/lib/modules/digital_goods/constants';
 import type { DigitalProduct } from '@/lib/modules/digital_goods/types';
 
-export const revalidate = 0;
+export interface ProductGridBlockData {
+  title?: string;
+  subtitle?: string;
+  limit?: number;     // max products to show (default 12)
+  columns?: 2 | 3 | 4; // default 3
+}
 
-async function fetchPublishedProducts(siteId: string): Promise<DigitalProduct[]> {
+async function fetchProducts(siteId: string, limit: number): Promise<DigitalProduct[]> {
   const snap = await adminDb
     .collection(`sites/${siteId}/${COLLECTION_PRODUCTS}`)
     .where('status', '==', 'published')
     .orderBy('publishedAt', 'desc')
+    .limit(limit)
     .get();
   return snap.docs.map(d => ({ id: d.id, ...d.data() } as DigitalProduct));
 }
 
-export default async function StorePage() {
+export default async function ProductGridBlock({ data }: { data: ProductGridBlockData }) {
   const headersList = await headers();
   const siteId = headersList.get('x-site-id') || 'default';
+  const limit = data.limit ?? 12;
+  const columns = data.columns ?? 3;
 
-  const enabled = await isModuleEnabled('digital_goods');
-  if (!enabled) {
-    return (
-      <main className="min-h-screen flex items-center justify-center p-8 bg-gray-50">
-        <div className="text-center text-gray-500">
-          <h1 className="text-2xl font-bold text-gray-800">Store unavailable</h1>
-          <p className="mt-1">The digital store is currently disabled.</p>
-        </div>
-      </main>
-    );
-  }
+  const products = await fetchProducts(siteId, limit);
 
-  const products = await fetchPublishedProducts(siteId);
+  const gridCols = columns === 2 ? 'sm:grid-cols-2' : columns === 4 ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-2 lg:grid-cols-3';
 
   return (
-    <main className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-5xl mx-auto">
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Store</h1>
-          <p className="text-sm text-gray-500 mt-1">Browse and buy digital products.</p>
-        </header>
-
+    <section className="py-12">
+      <div className="max-w-5xl mx-auto px-4">
+        {(data.title || data.subtitle) && (
+          <header className="mb-8 text-center">
+            {data.title && <h2 className="text-3xl font-bold">{data.title}</h2>}
+            {data.subtitle && <p className="text-sm text-gray-500 mt-2">{data.subtitle}</p>}
+          </header>
+        )}
         {products.length === 0 ? (
-          <div className="border-2 border-dashed border-gray-200 bg-white rounded-xl p-12 text-center">
+          <div className="border-2 border-dashed border-gray-200 rounded-xl p-12 text-center">
             <ShoppingBag size={32} className="mx-auto mb-3 text-gray-400" />
             <p className="text-gray-600 font-medium">No products yet</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className={`grid grid-cols-1 ${gridCols} gap-4`}>
             {products.map(p => (
               <Link
                 key={p.id}
-                href={`${PUBLIC_ROUTES.store}/${p.slug}`}
-                className="block bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition"
+                href={`/store/${p.slug}`}
+                className="block rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition bg-white"
               >
                 <div className="aspect-video bg-gray-100 flex items-center justify-center text-gray-400 text-xs">
-                  {p.coverImage ? <img src={`/api/storage-image?path=${encodeURIComponent(p.coverImage)}`} alt={p.title} className="w-full h-full object-cover" /> : 'No cover'}
+                  {p.coverImage
+                    ? <img src={`/api/storage-image?path=${encodeURIComponent(p.coverImage)}`} alt={p.title} className="w-full h-full object-cover" />
+                    : 'No cover'}
                 </div>
                 <div className="p-4">
                   <h3 className="font-semibold text-gray-900 line-clamp-2">{p.title}</h3>
@@ -773,26 +784,94 @@ export default async function StorePage() {
           </div>
         )}
       </div>
-    </main>
+    </section>
   );
 }
 ```
 
-> **Note on cover image:** `/api/storage-image` is the existing platform helper for resolving storage paths to displayable URLs. If it doesn't exist, the `img` will 404 gracefully — cover images are optional. Plan 3 can replace this with a dedicated module endpoint.
+### Step 2: Write the block-form (admin editor)
 
-- [ ] **Step 3: TypeScript check**
+Create `components/admin/blocks/forms/ProductGridBlockForm.tsx` mirroring the pattern of existing block forms in `components/admin/blocks/forms/`. The form must expose: `title`, `subtitle`, `limit` (number), `columns` (select 2/3/4). Use the standard block-form chrome — check `components/admin/blocks/forms/FeatureCardsBlockForm.tsx` (or similar) as the reference. Save to disk only after reading at least one existing form.
+
+### Step 3: Register the block
+
+In `components/blocks/BlockRenderer.tsx`, add the case for `'digital_goods_product_grid'` that dynamically imports and renders `ProductGridBlock`. In `components/admin/blocks/BlockFormRenderer.tsx`, add the analogous case for the form. In `data/mockData.ts`, ensure `BlockType` includes the new type string (the type allows `| string` so this is documentation, not a hard requirement — but add it for explicitness).
+
+### Step 4: Write the auto-page helper
+
+Create `lib/modules/digital_goods/auto-page.ts`:
+
+```ts
+import 'server-only';
+import { adminDb } from '@/lib/firebase-admin';
+import { FieldValue } from 'firebase-admin/firestore';
+
+const STORE_PAGE_ID = 'digital-goods-store';
+const STORE_PAGE_SLUG = 'store';
+
+/**
+ * Idempotently create a Custom Page named "Store" with a ProductGrid block pre-placed.
+ * Called when the digital_goods module is first enabled on a tenant.
+ */
+export async function ensureStorePageExists(siteId: string): Promise<void> {
+  const pageRef = adminDb.doc(`sites/${siteId}/pages/${STORE_PAGE_ID}`);
+  const snap = await pageRef.get();
+  if (snap.exists) return;
+
+  await pageRef.set({
+    id: STORE_PAGE_ID,
+    title: 'Store',
+    slug: STORE_PAGE_SLUG,
+    visible: true,
+    blocks: [
+      {
+        id: 'product-grid-default',
+        type: 'digital_goods_product_grid',
+        data: {
+          title: 'Store',
+          subtitle: 'Browse and buy digital products.',
+          limit: 12,
+          columns: 3,
+        },
+      },
+    ],
+    createdAt: FieldValue.serverTimestamp(),
+    updatedAt: FieldValue.serverTimestamp(),
+    createdBy: 'system:digital_goods',
+  });
+}
+```
+
+**Note on the pages collection path:** Verify by reading `app/admin/(dashboard)/pages/page.tsx` — the actual path may be `sites/{siteId}/pages` or `sites/{siteId}/customPages` or similar. If the existing custom-pages module uses a different shape, adapt the field names (e.g. `name` vs `title`, `slug` field omitted if Firestore doc ID is the slug). Do NOT invent fields — match the existing schema.
+
+### Step 5: Wire the auto-page into module activation
+
+This requires knowing where the platform handles "module enabled for tenant" transitions. Inspect:
 
 ```bash
-pnpm exec tsc --noEmit 2>&1 | grep -E "(digital_goods|app/store)" | head
+grep -rn "modules\.\${moduleId}\|setEnabled.*module\|enableModule" lib backyard --include="*.ts" --include="*.tsx" | head -10
+```
+
+If there's an obvious hook (e.g. in Backyard's module-toggle code or a Cloud Function), add a one-line call to `ensureStorePageExists(siteId)` when `digital_goods` flips from disabled to enabled. If no such hook exists, the safer fallback is: call `ensureStorePageExists(siteId)` once on every successful order creation (Task 8) — but only as a fire-and-forget side effect, never blocking the order. Document the choice in the commit message.
+
+### Step 6: TypeScript check
+
+```bash
+pnpm exec tsc --noEmit 2>&1 | grep -E "(digital_goods|ProductGridBlock|auto-page)" | head
 ```
 
 Expected: empty.
 
-- [ ] **Step 4: Commit**
+### Step 7: Commit
 
 ```bash
-git add clicker-platform-v2/app/store/page.tsx
-git commit -m "feat(digital_goods): public store catalog page"
+git add clicker-platform-v2/components/blocks/public/ProductGridBlock.tsx \
+        clicker-platform-v2/components/admin/blocks/forms/ProductGridBlockForm.tsx \
+        clicker-platform-v2/components/blocks/BlockRenderer.tsx \
+        clicker-platform-v2/components/admin/blocks/BlockFormRenderer.tsx \
+        clicker-platform-v2/data/mockData.ts \
+        clicker-platform-v2/lib/modules/digital_goods/auto-page.ts
+git commit -m "feat(digital_goods): ProductGrid block + auto-create Store custom page"
 ```
 
 ---
@@ -963,7 +1042,7 @@ git commit -m "feat(digital_goods): product detail page with Buy Now + already-p
 
 ---
 
-### Task 7: Smoke-test the public store
+### Task 7: Smoke-test the store block + product detail
 
 **Files:** (none — manual verification)
 
@@ -973,15 +1052,28 @@ git commit -m "feat(digital_goods): product detail page with Buy Now + already-p
 pnpm dev
 ```
 
-- [ ] **Step 2: Browse the store**
+- [ ] **Step 2: Verify auto-created Store page**
 
-Navigate to a tenant URL `tenant.localhost:3000/store` (replace `tenant` with a known dev tenant subdomain). Confirm:
+In the tenant admin, navigate to `/admin/pages`. Confirm a page titled "Store" (slug: `store`) exists with one `digital_goods_product_grid` block pre-placed. If absent, manually trigger `ensureStorePageExists(siteId)` (or re-enable the digital_goods module) — either should idempotently create it.
+
+- [ ] **Step 3: Confirm block edit UX**
+
+Open the Store page in Canvas Studio. Click the ProductGrid block. The right-side block-form panel should show title / subtitle / limit / columns inputs. Edit title to "Toko Saya" and save. Verify the change persists.
+
+- [ ] **Step 4: Browse the live page**
+
+Navigate to `tenant.localhost:3000/store` (resolved by the platform's custom-page routing). Confirm:
+
 - Empty state shows if no published products exist.
-- Published products from Plan 1 appear in the grid.
-- Click a product → detail page renders.
+- Published products from Plan 1 appear in the grid using the configured columns / limit.
+- Click a product → `/store/[slug]` detail page renders.
 - Click "Buy Now" while logged out → redirects to `/member/login?next=/store/[slug]/checkout`.
 
-- [ ] **Step 3: Mark task complete**
+- [ ] **Step 5: Verify tenant can move the block**
+
+In Canvas Studio, drag the ProductGrid block to a different page (e.g., the homepage). Confirm it renders correctly there too. This is the customization win — the whole reason we chose block over standalone route.
+
+- [ ] **Step 6: Mark task complete**
 
 If all the above works, mark task complete. No commit.
 
