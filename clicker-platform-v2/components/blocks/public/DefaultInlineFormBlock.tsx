@@ -84,12 +84,13 @@ export function DefaultInlineFormBlock({ data, siteId }: Props) {
     });
 
     // Per-cardStyle input styling.
-    const labelClassName = isGlass ? 'text-white/80' : 'text-theme-foreground';
+    const labelClassName = `block text-sm font-bold mb-1 ${isGlass ? 'text-white/80' : 'text-theme-foreground'}`;
+    const inputBase = 'w-full px-4 py-3 rounded-xl border focus:ring-0 transition-colors font-medium';
     const inputClassName = isGlass
-        ? 'bg-white/5 border-white/10 text-white placeholder-white/30 focus:border-[var(--theme-primary)]/50'
+        ? `${inputBase} bg-white/5 border-white/10 text-white placeholder-white/30 focus:border-[var(--theme-primary)]/50`
         : isBold
-        ? 'bg-white border-[3px] border-theme-border text-theme-foreground focus:border-[var(--theme-primary)]'
-        : 'bg-white border border-gray-200 text-theme-foreground focus:border-[var(--theme-primary)]';
+        ? `${inputBase} bg-white border-[3px] border-theme-border text-theme-foreground focus:border-[var(--theme-primary)]`
+        : `${inputBase} bg-white border border-gray-200 text-theme-foreground focus:border-[var(--theme-primary)]`;
 
     // Success state
     if (submitted) {

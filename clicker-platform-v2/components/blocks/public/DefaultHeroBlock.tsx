@@ -10,6 +10,8 @@ import { useDeviceView, dv, type DeviceView } from '@/components/DeviceViewConte
 import { FieldSelectionChrome, EditableText } from '@/components/blocks/shared/EditablePrimitives';
 import { H4, BODY_LG } from './typography';
 import { UnifiedButton } from '@/components/ui/UnifiedButton';
+import { FormModal } from '@/components/FormModal';
+import { useSite } from '@/lib/site-context';
 
 // ─── Colour helpers ───────────────────────────────────────────────────────────
 
@@ -69,17 +71,24 @@ interface CtaBtn { label?: string; url?: string; type?: string; formId?: string;
 
 // ─── CTA button row ───────────────────────────────────────────────────────────
 
+type BtnKey = 'primary' | 'secondary';
+
 const CtaButtons = ({
-    primary, secondary, align = 'center', onFieldFocus,
+    primary, secondary, align = 'center', onFieldFocus, previewMode,
 }: {
     primary?: CtaBtn | null;
     secondary?: CtaBtn | null;
     align?: string;
     onFieldFocus?: (field: string, rect: DOMRect) => void;
+    previewMode?: boolean;
 }) => {
+    const { siteId } = useSite();
     const primaryRef = useRef<HTMLDivElement>(null);
     const secondaryRef = useRef<HTMLDivElement>(null);
-    const [focusedBtn, setFocusedBtn] = useState<'primary' | 'secondary' | null>(null);
+    const [focusedBtn, setFocusedBtn] = useState<BtnKey | null>(null);
+    const [modalOpenFor, setModalOpenFor] = useState<BtnKey | null>(null);
+    const [formDataByKey, setFormDataByKey] = useState<Partial<Record<BtnKey, any>>>({});
+    const [loadingFor, setLoadingFor] = useState<BtnKey | null>(null);
 
     useEffect(() => {
         if (!focusedBtn) return;
@@ -96,58 +105,90 @@ const CtaButtons = ({
 
     const justifyClass = align === 'left' ? 'justify-start' : align === 'right' ? 'justify-end' : 'justify-center';
 
-    const handleBtnClick = (btn: 'primary' | 'secondary', ref: React.RefObject<HTMLDivElement | null>) => {
+    const handleBtnClick = (btn: BtnKey, ref: React.RefObject<HTMLDivElement | null>) => {
         if (!onFieldFocus || !ref.current) return;
         setFocusedBtn(btn);
         onFieldFocus('buttons', ref.current.getBoundingClientRect());
     };
 
+    const openForm = async (key: BtnKey, btn: CtaBtn) => {
+        if (!siteId || !btn.formId) return;
+        if (formDataByKey[key]) { setModalOpenFor(key); return; }
+        setLoadingFor(key);
+        try {
+            const res = await fetch(`/api/forms?id=${btn.formId}&siteId=${siteId}`);
+            if (res.ok) {
+                const formJson = await res.json();
+                setFormDataByKey(prev => ({ ...prev, [key]: formJson }));
+                setModalOpenFor(key);
+            }
+        } catch { /* swallow */ }
+        setLoadingFor(null);
+    };
+
+    const renderBtn = (key: BtnKey, btn: CtaBtn, tier: 'primary' | 'secondary', ref: React.RefObject<HTMLDivElement | null>) => {
+        const isFormLink = btn.type === 'form' && !!btn.formId;
+        const href = onFieldFocus || isFormLink ? undefined : (btn.url || '#');
+        const onClick = isFormLink && !onFieldFocus && !previewMode
+            ? (e: React.MouseEvent) => { e.preventDefault(); openForm(key, btn); }
+            : undefined;
+        return (
+            <div
+                ref={ref}
+                className="relative inline-flex"
+                style={{ overflow: 'visible' }}
+                onClick={() => handleBtnClick(key, ref)}
+            >
+                <UnifiedButton
+                    tier={tier}
+                    size="lg"
+                    href={href}
+                    onClick={onClick}
+                    loading={loadingFor === key}
+                >
+                    {btn.label}
+                </UnifiedButton>
+                {onFieldFocus && focusedBtn === key && <FieldSelectionChrome />}
+            </div>
+        );
+    };
+
+    const primaryIsForm = primary?.type === 'form' && !!primary.formId;
+    const secondaryIsForm = secondary?.type === 'form' && !!secondary.formId;
+
     return (
-        <div className={`flex flex-wrap gap-3 mt-6 ${justifyClass}`}>
-            {primary?.label && (
-                <div
-                    ref={primaryRef}
-                    className="relative inline-flex"
-                    style={{ overflow: 'visible' }}
-                    onClick={() => handleBtnClick('primary', primaryRef)}
-                >
-                    <UnifiedButton
-                        tier="primary"
-                        size="lg"
-                        href={onFieldFocus ? undefined : (primary?.type === 'form' ? `#form-${primary.formId}` : primary.url || '#')}
-                    >
-                        {primary.label}
-                    </UnifiedButton>
-                    {onFieldFocus && focusedBtn === 'primary' && <FieldSelectionChrome />}
-                </div>
+        <>
+            <div className={`flex flex-wrap gap-3 mt-6 ${justifyClass}`}>
+                {primary?.label && renderBtn('primary', primary, 'primary', primaryRef)}
+                {secondary?.label && renderBtn('secondary', secondary, 'secondary', secondaryRef)}
+            </div>
+            {primaryIsForm && modalOpenFor === 'primary' && formDataByKey.primary && (
+                <FormModal
+                    form={formDataByKey.primary}
+                    isOpen={true}
+                    onClose={() => setModalOpenFor(null)}
+                    siteId={siteId || undefined}
+                />
             )}
-            {secondary?.label && (
-                <div
-                    ref={secondaryRef}
-                    className="relative inline-flex"
-                    style={{ overflow: 'visible' }}
-                    onClick={() => handleBtnClick('secondary', secondaryRef)}
-                >
-                    <UnifiedButton
-                        tier="secondary"
-                        size="lg"
-                        href={onFieldFocus ? undefined : (secondary?.type === 'form' ? `#form-${secondary.formId}` : secondary.url || '#')}
-                    >
-                        {secondary.label}
-                    </UnifiedButton>
-                    {onFieldFocus && focusedBtn === 'secondary' && <FieldSelectionChrome />}
-                </div>
+            {secondaryIsForm && modalOpenFor === 'secondary' && formDataByKey.secondary && (
+                <FormModal
+                    form={formDataByKey.secondary}
+                    isOpen={true}
+                    onClose={() => setModalOpenFor(null)}
+                    siteId={siteId || undefined}
+                />
             )}
-        </div>
+        </>
     );
 };
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export const DefaultHeroBlock = ({ data, theme, isFirst = true, onInlineChange, onFieldFocus, onFieldBlur }: {
+export const DefaultHeroBlock = ({ data, theme, isFirst = true, previewMode, onInlineChange, onFieldFocus, onFieldBlur }: {
     data: any;
     theme?: any;
     isFirst?: boolean;
+    previewMode?: boolean;
     onInlineChange?: (field: string, value: string) => void;
     onFieldFocus?: (field: string, rect: DOMRect) => void;
     onFieldBlur?: () => void;
@@ -272,7 +313,7 @@ export const DefaultHeroBlock = ({ data, theme, isFirst = true, onInlineChange, 
                             style={{ color: data?.subtitleColor || defaultSubtitleColor }}
                         />
                     )}
-                    <CtaButtons primary={primaryBtn} secondary={secondaryBtn} align={ctaAlign} onFieldFocus={onFieldFocus} />
+                    <CtaButtons primary={primaryBtn} secondary={secondaryBtn} align={ctaAlign} onFieldFocus={onFieldFocus} previewMode={previewMode} />
                 </div>
                 {/* Right panel: image or colour fill */}
                 <div className={`flex-1 relative ${dv(deviceView, 'min-h-[300px]', 'md:min-h-full')} ${bgMode !== 'image' ? '' : 'bg-gray-100'}`}
@@ -364,7 +405,7 @@ export const DefaultHeroBlock = ({ data, theme, isFirst = true, onInlineChange, 
                             style={{ color: data?.subtitleColor || defaultSubtitleColor }}
                         />
                     )}
-                    <CtaButtons primary={primaryBtn} secondary={secondaryBtn} align={ctaAlign} onFieldFocus={onFieldFocus} />
+                    <CtaButtons primary={primaryBtn} secondary={secondaryBtn} align={ctaAlign} onFieldFocus={onFieldFocus} previewMode={previewMode} />
                 </div>
             </section>
         );
@@ -451,7 +492,7 @@ export const DefaultHeroBlock = ({ data, theme, isFirst = true, onInlineChange, 
                         style={{ color: data?.subtitleColor || defaultSubtitleColor }}
                     />
                 )}
-                <CtaButtons primary={primaryBtn} secondary={secondaryBtn} align={ctaAlign} onFieldFocus={onFieldFocus} />
+                <CtaButtons primary={primaryBtn} secondary={secondaryBtn} align={ctaAlign} onFieldFocus={onFieldFocus} previewMode={previewMode} />
             </div>
         </section>
     );
