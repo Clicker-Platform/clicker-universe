@@ -35,6 +35,7 @@ export function LibraryEntryClient({ productId, pdfStoragePath, pdfFilename, you
 
   if (youtubeUrl) {
     const embedUrl = toYouTubeEmbed(youtubeUrl);
+    if (!embedUrl) return <p className="text-gray-500 text-sm">Invalid video URL.</p>;
     return (
       <div className="aspect-video bg-gray-900 rounded-lg overflow-hidden">
         <iframe src={embedUrl} className="w-full h-full" allow="autoplay; encrypted-media" allowFullScreen />
@@ -61,11 +62,18 @@ export function LibraryEntryClient({ productId, pdfStoragePath, pdfFilename, you
   return <p className="text-gray-500 text-sm">No content available.</p>;
 }
 
-function toYouTubeEmbed(url: string): string {
-  // Convert youtube.com/watch?v=ID or youtu.be/ID to youtube.com/embed/ID
-  const u = new URL(url);
-  let id = '';
-  if (u.hostname.includes('youtu.be')) id = u.pathname.slice(1);
-  else id = u.searchParams.get('v') ?? '';
-  return `https://www.youtube.com/embed/${id}`;
+const YOUTUBE_HOSTNAMES = new Set(['www.youtube.com', 'youtube.com', 'youtu.be']);
+const YOUTUBE_ID_RE = /^[\w-]{5,15}$/;
+
+function toYouTubeEmbed(url: string): string | null {
+  try {
+    const u = new URL(url);
+    if (u.protocol !== 'https:') return null;
+    if (!YOUTUBE_HOSTNAMES.has(u.hostname)) return null;
+    const id = u.hostname === 'youtu.be' ? u.pathname.slice(1) : (u.searchParams.get('v') ?? '');
+    if (!YOUTUBE_ID_RE.test(id)) return null;
+    return `https://www.youtube.com/embed/${id}`;
+  } catch {
+    return null;
+  }
 }
