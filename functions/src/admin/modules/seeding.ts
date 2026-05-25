@@ -149,6 +149,40 @@ export async function seedSalesPipelineData(db: admin.firestore.Firestore, siteI
     });
 }
 
+const STORE_PAGE_ID = 'digital-goods-store';
+
+/**
+ * Seeds Digital Goods Module Data
+ * - Auto-creates a "Store" custom page with a ProductGrid block if not already present.
+ */
+export async function seedDigitalGoodsData(db: admin.firestore.Firestore, siteId: string) {
+    console.log(`[Seeding] Digital Goods Store page for ${siteId}`);
+    const pageRef = db.doc(`sites/${siteId}/pages/${STORE_PAGE_ID}`);
+    const snap = await pageRef.get();
+    if (snap.exists) return;
+
+    await pageRef.set({
+        id: STORE_PAGE_ID,
+        title: 'Store',
+        slug: 'store',
+        content: '',
+        blocks: [
+            {
+                id: 'product-grid-default',
+                type: 'digital_goods_product_grid',
+                data: {
+                    title: 'Store',
+                    subtitle: 'Browse and buy digital products.',
+                    limit: 12,
+                    columns: 3,
+                },
+            },
+        ],
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+}
+
 /**
  * Seeding Router - Calls specific seeders based on enabled modules
  */
@@ -158,6 +192,7 @@ export async function seedModules(db: admin.firestore.Firestore, siteId: string,
     if (modules.inventory) tasks.push(seedInventoryData(db, siteId));
     if (modules.membership) tasks.push(seedMembershipData(db, siteId));
     if (modules.sales_pipeline) tasks.push(seedSalesPipelineData(db, siteId));
+    if (modules.digital_goods) tasks.push(seedDigitalGoodsData(db, siteId));
 
     await Promise.all(tasks);
 }

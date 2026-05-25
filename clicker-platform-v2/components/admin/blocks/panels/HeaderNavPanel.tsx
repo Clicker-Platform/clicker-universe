@@ -310,12 +310,8 @@ export function HeaderNavPanel() {
         if (hydratedSiteIdRef.current !== siteId) return;
         if (JSON.stringify(header) === lastSavedSnapshotRef.current) return;
         setStatus('pending');
-        let fired = false;
-        const timer = setTimeout(() => { fired = true; saveToFirestore(header); }, 600);
-        return () => {
-            clearTimeout(timer);
-            if (!fired) saveToFirestore(header);
-        };
+        const timer = setTimeout(() => { saveToFirestore(header); }, 600);
+        return () => { clearTimeout(timer); };
     }, [header, hydrated, siteId, saveToFirestore]);
 
     // ── Single update helper ──

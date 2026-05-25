@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, ShoppingBag, Loader2 } from 'lucide-react';
+import { X, ShoppingBag, Loader2, ImagePlus, Trash2 } from 'lucide-react';
 import { logger } from '@/lib/logger-edge';
+import { MediaPicker } from '@/components/admin/media/MediaPicker';
 import {
   createProduct, updateProduct,
   generateSlug, ensureUniqueSlug, getAllSlugs,
@@ -27,6 +28,7 @@ interface FormState {
   contentKind: ContentKind;
   pdfFile: PdfFile | null;
   youtubeUrl: string;
+  coverImage: string;
   status: ProductStatus;
 }
 
@@ -41,6 +43,7 @@ function initState(product?: DigitalProduct): FormState {
       contentKind: product.contentKind,
       pdfFile:     pdf ?? null,
       youtubeUrl:  yt?.url ?? '',
+      coverImage:  product.coverImage ?? '',
       status:      product.status,
     };
   }
@@ -51,6 +54,7 @@ function initState(product?: DigitalProduct): FormState {
     contentKind: 'pdf',
     pdfFile:     null,
     youtubeUrl:  '',
+    coverImage:  '',
     status:      'draft',
   };
 }
@@ -64,6 +68,7 @@ export function ProductForm({ siteId, product, onClose, onSaved }: ProductFormPr
   const [form, setForm]     = useState<FormState>(() => initState(product));
   const [saving, setSaving] = useState(false);
   const [error, setError]   = useState<string | null>(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   useEffect(() => {
     setForm(initState(product));
@@ -116,6 +121,7 @@ export function ProductForm({ siteId, product, onClose, onSaved }: ProductFormPr
         files,
         slug,
         status:      form.status,
+        ...(form.coverImage ? { coverImage: form.coverImage } : {}),
       };
 
       if (isEdit && product) {
@@ -183,6 +189,45 @@ export function ProductForm({ siteId, product, onClose, onSaved }: ProductFormPr
                   />
                 </div>
               </div>
+            </div>
+
+            {/* Cover image */}
+            <div>
+              <p className={sectionCls}>Cover Image</p>
+              {form.coverImage ? (
+                <div className="relative group">
+                  <img
+                    src={form.coverImage}
+                    alt="Cover preview"
+                    className="w-full aspect-video object-cover rounded-lg border border-gray-200 dark:border-neutral-700"
+                  />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors rounded-lg flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+                    <button
+                      type="button"
+                      onClick={() => setPickerOpen(true)}
+                      className="px-3 py-1.5 text-xs rounded-lg bg-white text-gray-900 font-medium"
+                    >
+                      Replace
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => set('coverImage', '')}
+                      className="px-3 py-1.5 text-xs rounded-lg bg-red-600 text-white font-medium flex items-center gap-1"
+                    >
+                      <Trash2 size={12} /> Remove
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setPickerOpen(true)}
+                  className="w-full aspect-video border-2 border-dashed border-gray-300 dark:border-neutral-700 rounded-lg flex flex-col items-center justify-center gap-2 text-gray-500 dark:text-neutral-400 hover:border-studio-blue hover:text-studio-blue transition-colors"
+                >
+                  <ImagePlus size={28} />
+                  <span className="text-sm font-medium">Add cover image</span>
+                </button>
+              )}
             </div>
 
             {/* Pricing */}
@@ -307,6 +352,12 @@ export function ProductForm({ siteId, product, onClose, onSaved }: ProductFormPr
           </div>
         </form>
       </div>
+      <MediaPicker
+        open={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        onSelect={({ url }) => { set('coverImage', url); setPickerOpen(false); }}
+        accept="image"
+      />
     </div>
   );
 }

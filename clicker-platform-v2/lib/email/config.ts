@@ -13,7 +13,10 @@ interface EmailPlatformConfig {
 }
 
 const DEFAULTS: EmailPlatformConfig = {
-  templates: {},
+  templates: {
+    digitalGoodsNewOrderTenant: 'digital-goods-new-order-tenant',
+    digitalGoodsOrderPaidBuyer: 'digital-goods-order-paid-buyer',
+  },
   sender: {
     domain:    'clicker.id',
     localPart: 'noreply',
