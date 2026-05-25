@@ -100,6 +100,15 @@ export const STATIC_MODULE_DEFINITIONS: Record<string, Partial<ModuleDefinition>
             { label: 'Settings',   path: '/admin/promo/settings', icon: 'settings', componentKey: 'promo:PromoAdminPage', permission: 'settings' },
         ]
     },
+    'digital_goods': {
+        displayName: 'Digital Goods',
+        description: 'Sell digital products (PDF, video) with gated buyer library and manual payment.',
+        adminRoutes: [
+            { label: 'Products', path: '/admin/digital-goods',          icon: 'shopping-bag', componentKey: 'digital_goods:ProductsList' },
+            { label: 'Orders',   path: '/admin/digital-goods/orders',   icon: 'receipt',      componentKey: 'digital_goods:OrdersList' },
+            { label: 'Settings', path: '/admin/digital-goods/settings', icon: 'settings',     componentKey: 'digital_goods:Settings', permission: 'settings' },
+        ]
+    },
 };
 
 // Helper for UI iterators (Backyard)
