@@ -25,18 +25,24 @@ const REGION  = "us-central1";
 
 let _prodApp: admin.app.App | null = null;
 
+const PROD_PROJECT_ID = "clicker-universe";
+const PROD_BUCKET = "clicker-universe.firebasestorage.app";
+
 function getProdApp(): admin.app.App {
     if (_prodApp) return _prodApp;
     const existing = admin.apps.find(a => a?.name === "prod-mirror");
     if (existing) { _prodApp = existing; return _prodApp; }
 
-    const prodSA = require("../service-account-prod.json");
+    // Use Application Default Credentials (ADC) — staging compute SA has
+    // cross-project IAM bindings on prod (roles/datastore.user, roles/storage.objectAdmin).
+    // No service account JSON or secret needed.
     _prodApp = admin.initializeApp({
-        credential:    admin.credential.cert(prodSA),
-        storageBucket: "clicker-universe.firebasestorage.app",
+        credential:    admin.credential.applicationDefault(),
+        projectId:     PROD_PROJECT_ID,
+        storageBucket: PROD_BUCKET,
     }, "prod-mirror");
 
-    console.log("[sync-to-prod] Production app initialized");
+    console.log("[sync-to-prod] Production app initialized via ADC");
     return _prodApp;
 }
 
