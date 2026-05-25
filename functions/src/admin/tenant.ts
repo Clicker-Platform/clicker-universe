@@ -60,23 +60,32 @@ export const createTenant = functions.https.onCall(async (request) => {
             slugUpdatedAt: FieldValue.serverTimestamp()
         }, { merge: true });
 
-        // 4. Assign 'owner' role. Create user if not exists and password provided.
+        // 4. Assign 'owner' role. Create user if not exists, update password if exists.
         const { password } = request.data;
         let userRecord;
 
         try {
             userRecord = await admin.auth().getUserByEmail(ownerEmail);
+            // User exists — update password if provided so Backyard-set password takes effect
+            if (password) {
+                await admin.auth().updateUser(userRecord.uid, { password });
+                console.log(`[createTenant] Updated password for existing user ${ownerEmail}`);
+            }
         } catch (e: any) {
-            if (e.code === 'auth/user-not-found' && password) {
-                console.log(`[createTenant] Creating new user for ${ownerEmail}`);
-                userRecord = await admin.auth().createUser({
-                    email: ownerEmail,
-                    password: password,
-                    displayName: `Owner - ${name}`,
-                    emailVerified: true
-                });
+            if (e.code === 'auth/user-not-found') {
+                if (password) {
+                    console.log(`[createTenant] Creating new user for ${ownerEmail}`);
+                    userRecord = await admin.auth().createUser({
+                        email: ownerEmail,
+                        password: password,
+                        displayName: `Owner - ${name}`,
+                        emailVerified: true
+                    });
+                } else {
+                    console.warn(`User ${ownerEmail} not found and no password provided. Role not assigned.`);
+                }
             } else {
-                console.warn(`User ${ownerEmail} not found and no password provided. Role not assigned.`);
+                throw e;
             }
         }
 
@@ -86,13 +95,18 @@ export const createTenant = functions.https.onCall(async (request) => {
                 siteId: siteId
             });
 
-            // 4b. Create Member Document for Owner
+            // 4b. Set ownerId on the site document now that we have the UID
+            await db.collection('sites').doc(siteId).update({
+                ownerId: userRecord.uid,
+            });
+
+            // 4c. Create Member Document for Owner (idempotent)
             await db.collection('sites').doc(siteId).collection('members').doc(userRecord.uid).set({
                 email: ownerEmail,
                 role: 'owner',
                 status: 'active',
                 joinedAt: FieldValue.serverTimestamp()
-            });
+            }, { merge: true });
         }
 
         // 5. Automated Seed Data (Unified Logic)
