@@ -379,7 +379,7 @@ export function CanvasStudio({
 
                                     {/* Blocks */}
                                     <div className="grid gap-6" style={{ gridTemplateColumns: 'minmax(0, 1fr)' }}>
-                                            {blocks.map((block) => (
+                                            {blocks.filter(b => !b.hidden).map((block) => (
                                                 <SelectableBlock
                                                     key={block.id}
                                                     blockId={block.id}

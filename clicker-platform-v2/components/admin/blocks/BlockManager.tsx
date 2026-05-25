@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { PageBlock } from '@/data/mockData';
 import {
     DndContext,
@@ -21,8 +21,64 @@ import {
 import { Lock } from 'lucide-react';
 import { BlockTreeNode } from './BlockTreeNode';
 import { useEditor } from './EditorContext';
-import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
 import { subscribeToEnabledModules } from '@/lib/modules/registry';
+
+function toggleHiddenDeep(blocks: PageBlock[], id: string): PageBlock[] {
+    return blocks.map(block => {
+        if (block.id === id) return { ...block, hidden: !block.hidden };
+
+        if (block.type === 'columns' && Array.isArray(block.data?.columns)) {
+            const nextColumns = block.data.columns.map((col: any) => ({
+                ...col,
+                blocks: Array.isArray(col.blocks) ? toggleHiddenDeep(col.blocks, id) : col.blocks,
+            }));
+            return { ...block, data: { ...block.data, columns: nextColumns } };
+        }
+
+        if (block.type === 'grid' && Array.isArray(block.data?.cells)) {
+            const nextCells = block.data.cells.map((cell: any) => {
+                if (!cell.block) return cell;
+                const [next] = toggleHiddenDeep([cell.block], id);
+                return { ...cell, block: next };
+            });
+            return { ...block, data: { ...block.data, cells: nextCells } };
+        }
+
+        return block;
+    });
+}
+
+function removeBlockDeep(blocks: PageBlock[], id: string): PageBlock[] {
+    const result: PageBlock[] = [];
+    for (const block of blocks) {
+        if (block.id === id) continue;
+
+        if (block.type === 'columns' && Array.isArray(block.data?.columns)) {
+            const nextColumns = block.data.columns.map((col: any) => ({
+                ...col,
+                blocks: Array.isArray(col.blocks) ? removeBlockDeep(col.blocks, id) : col.blocks,
+            }));
+            result.push({ ...block, data: { ...block.data, columns: nextColumns } });
+            continue;
+        }
+
+        if (block.type === 'grid' && Array.isArray(block.data?.cells)) {
+            const nextCells = block.data.cells.map((cell: any) => {
+                if (cell.block && cell.block.id === id) return { ...cell, block: null };
+                if (cell.block) {
+                    const [stripped] = removeBlockDeep([cell.block], id);
+                    return { ...cell, block: stripped ?? null };
+                }
+                return cell;
+            });
+            result.push({ ...block, data: { ...block.data, cells: nextCells } });
+            continue;
+        }
+
+        result.push(block);
+    }
+    return result;
+}
 
 interface BlockManagerProps {
     blocks: PageBlock[];
@@ -36,7 +92,6 @@ export const BlockManager = ({ blocks, onChange, templateId, onAddClick }: Block
     // Helper booleans for the chrome rows; for top-level blocks we inline the check.
     const isChromeSelected = (chromeId: 'header' | 'footer' | 'bottomnav') =>
         selection.kind === 'chrome' && selection.chromeId === chromeId;
-    const [blockToDelete, setBlockToDelete] = useState<string | null>(null);
     const [moduleBlockLabels, setModuleBlockLabels] = useState<Record<string, string>>({});
 
     useEffect(() => {
@@ -74,15 +129,12 @@ export const BlockManager = ({ blocks, onChange, templateId, onAddClick }: Block
     }, [blocks, onChange]);
 
     const deleteBlock = useCallback((id: string) => {
-        setBlockToDelete(id);
-    }, []);
+        onChange(removeBlockDeep(blocks, id));
+    }, [blocks, onChange]);
 
-    const confirmDelete = useCallback(() => {
-        if (blockToDelete) {
-            onChange(blocks.filter(b => b.id !== blockToDelete));
-            setBlockToDelete(null);
-        }
-    }, [blockToDelete, blocks, onChange]);
+    const toggleHidden = useCallback((id: string) => {
+        onChange(toggleHiddenDeep(blocks, id));
+    }, [blocks, onChange]);
 
     return (
         <div>
@@ -131,6 +183,7 @@ export const BlockManager = ({ blocks, onChange, templateId, onAddClick }: Block
                                         depth={0}
                                         moduleBlockLabels={moduleBlockLabels}
                                         onDelete={deleteBlock}
+                                        onToggleHidden={toggleHidden}
                                     />
                                 ))}
                             </div>
@@ -165,14 +218,6 @@ export const BlockManager = ({ blocks, onChange, templateId, onAddClick }: Block
                 <span className="flex-1 text-xs font-medium truncate">Bottom Navigation</span>
             </div>
 
-            <ConfirmationDialog
-                isOpen={!!blockToDelete}
-                title="Delete Block"
-                message="Are you sure you want to delete this block? This action cannot be undone."
-                onConfirm={confirmDelete}
-                onCancel={() => setBlockToDelete(null)}
-                confirmLabel="Delete Block"
-            />
         </div>
     );
 };

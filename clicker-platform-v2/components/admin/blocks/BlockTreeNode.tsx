@@ -12,9 +12,10 @@ interface BlockTreeNodeProps {
     depth: number;
     moduleBlockLabels: Record<string, string>;
     onDelete: (id: string) => void;
+    onToggleHidden: (id: string) => void;
 }
 
-export function BlockTreeNode({ block, depth, moduleBlockLabels, onDelete }: BlockTreeNodeProps) {
+export function BlockTreeNode({ block, depth, moduleBlockLabels, onDelete, onToggleHidden }: BlockTreeNodeProps) {
     const { selection, setSelection } = useEditor();
     const [expanded, setExpanded] = useState(true);
 
@@ -36,6 +37,7 @@ export function BlockTreeNode({ block, depth, moduleBlockLabels, onDelete }: Blo
             isSelected={isSelected}
             onClick={onClickBlock}
             onDelete={onDelete}
+            onToggleHidden={onToggleHidden}
             moduleLabel={moduleBlockLabels[block.type]}
             expandable={expandable}
             expanded={expanded}
@@ -47,6 +49,7 @@ export function BlockTreeNode({ block, depth, moduleBlockLabels, onDelete }: Blo
             isSelected={isSelected}
             onClick={onClickBlock}
             onDelete={onDelete}
+            onToggleHidden={onToggleHidden}
             moduleLabel={moduleBlockLabels[block.type]}
             depth={depth}
             expandable={expandable}
@@ -66,6 +69,7 @@ export function BlockTreeNode({ block, depth, moduleBlockLabels, onDelete }: Blo
                     depth={depth + 1}
                     moduleBlockLabels={moduleBlockLabels}
                     onDelete={onDelete}
+                    onToggleHidden={onToggleHidden}
                 />
             ))}
             {expanded && children.kind === 'grid' && children.slots.map(slot => (
@@ -76,6 +80,7 @@ export function BlockTreeNode({ block, depth, moduleBlockLabels, onDelete }: Blo
                     depth={depth + 1}
                     moduleBlockLabels={moduleBlockLabels}
                     onDelete={onDelete}
+                    onToggleHidden={onToggleHidden}
                 />
             ))}
             {expanded && children.kind === 'feature_cards' && children.cards.map((card, i) => (
@@ -131,13 +136,14 @@ function SlotRow({
 }
 
 function ColumnsSlotNode({
-    containerId, slot, depth, moduleBlockLabels, onDelete,
+    containerId, slot, depth, moduleBlockLabels, onDelete, onToggleHidden,
 }: {
     containerId: string;
     slot: { id: string; label: string; blocks: PageBlock[] };
     depth: number;
     moduleBlockLabels: Record<string, string>;
     onDelete: (id: string) => void;
+    onToggleHidden: (id: string) => void;
 }) {
     return (
         <>
@@ -155,6 +161,7 @@ function ColumnsSlotNode({
                     depth={depth + 1}
                     moduleBlockLabels={moduleBlockLabels}
                     onDelete={onDelete}
+                    onToggleHidden={onToggleHidden}
                 />
             ))}
         </>
@@ -162,13 +169,14 @@ function ColumnsSlotNode({
 }
 
 function GridSlotNode({
-    containerId, slot, depth, moduleBlockLabels, onDelete,
+    containerId, slot, depth, moduleBlockLabels, onDelete, onToggleHidden,
 }: {
     containerId: string;
     slot: { id: string; label: string; block: PageBlock | null };
     depth: number;
     moduleBlockLabels: Record<string, string>;
     onDelete: (id: string) => void;
+    onToggleHidden: (id: string) => void;
 }) {
     return (
         <>
@@ -185,6 +193,7 @@ function GridSlotNode({
                     depth={depth + 1}
                     moduleBlockLabels={moduleBlockLabels}
                     onDelete={onDelete}
+                    onToggleHidden={onToggleHidden}
                 />
             )}
         </>

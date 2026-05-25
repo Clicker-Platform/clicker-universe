@@ -3,9 +3,10 @@
 import { PageBlock } from '@/data/mockData';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Trash2, Box, ChevronDown, ChevronRight } from 'lucide-react';
+import { GripVertical, Trash2, Box, ChevronDown, ChevronRight, Eye, EyeOff } from 'lucide-react';
 import { memo, ReactNode, useEffect, useRef, useState } from 'react';
 import { useEditor } from './EditorContext';
+import { ConfirmButton } from '@/components/ui/ConfirmButton';
 
 export const getBlockLabel = (type: string, moduleInfoName?: string) => {
     if (moduleInfoName) return moduleInfoName;
@@ -44,6 +45,7 @@ interface BlockOutlineRowProps {
     isSelected: boolean;
     onClick: () => void;
     onDelete?: (id: string) => void;
+    onToggleHidden?: (id: string) => void;
     moduleLabel?: string;
     depth?: number;
     expandable?: boolean;
@@ -57,6 +59,7 @@ export const BlockOutlineRow = memo(({
     isSelected,
     onClick,
     onDelete,
+    onToggleHidden,
     moduleLabel,
     depth = 0,
     expandable = false,
@@ -71,6 +74,7 @@ export const BlockOutlineRow = memo(({
     const [isEditing, setIsEditing] = useState(false);
     const [draft, setDraft] = useState(displayLabel);
     const inputRef = useRef<HTMLInputElement>(null);
+    const rowRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (isEditing) {
@@ -78,6 +82,12 @@ export const BlockOutlineRow = memo(({
             inputRef.current?.select();
         }
     }, [isEditing]);
+
+    useEffect(() => {
+        if (isSelected) {
+            rowRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
+    }, [isSelected]);
 
     const commit = () => {
         const next = draft.trim();
@@ -97,6 +107,7 @@ export const BlockOutlineRow = memo(({
 
     return (
         <div
+            ref={rowRef}
             className={`flex items-center gap-1.5 px-2 py-1.5 cursor-pointer transition-colors group ${
                 isSelected
                 ? 'bg-blue-500/10 text-blue-400'
@@ -119,7 +130,7 @@ export const BlockOutlineRow = memo(({
                 <span className="w-3 flex-shrink-0" />
             )}
 
-            <Box size={13} className={`flex-shrink-0 ${isSelected ? 'text-blue-400' : 'text-neutral-400 dark:text-neutral-500'}`} />
+            <Box size={13} className={`flex-shrink-0 ${isSelected ? 'text-blue-400' : 'text-neutral-400 dark:text-neutral-500'} ${block.hidden ? 'opacity-40' : ''}`} />
 
             {isEditing ? (
                 <input
@@ -137,27 +148,48 @@ export const BlockOutlineRow = memo(({
                 />
             ) : (
                 <span
-                    className="flex-1 text-xs font-medium truncate"
+                    className={`flex-1 text-xs font-medium truncate ${block.hidden ? 'opacity-40' : ''}`}
                     onDoubleClick={(e) => {
                         e.stopPropagation();
                         setDraft(displayLabel);
                         setIsEditing(true);
                     }}
-                    title="Double-click to rename"
+                    title={block.hidden ? 'Hidden — double-click to rename' : 'Double-click to rename'}
                 >
                     {displayLabel}
                 </span>
             )}
 
-            {onDelete && (
+            {onToggleHidden && (
                 <button
                     type="button"
-                    onClick={(e) => { e.stopPropagation(); onDelete(block.id); }}
-                    className="p-1 text-neutral-400 dark:text-neutral-600 hover:text-red-400 rounded opacity-0 group-hover:opacity-100 transition-all focus:opacity-100 flex-shrink-0"
-                    title="Delete block"
+                    onClick={(e) => { e.stopPropagation(); onToggleHidden(block.id); }}
+                    className={`w-5 h-5 inline-flex items-center justify-center rounded transition-all flex-shrink-0 outline-none focus:outline-none focus-visible:ring-1 focus-visible:ring-blue-400 ${
+                        block.hidden
+                            ? 'text-neutral-500 dark:text-neutral-400 opacity-100 hover:text-neutral-700 dark:hover:text-neutral-200'
+                            : 'text-neutral-400 dark:text-neutral-600 opacity-0 group-hover:opacity-100 hover:text-neutral-700 dark:hover:text-neutral-200'
+                    }`}
+                    title={block.hidden ? 'Show block' : 'Hide block'}
                 >
-                    <Trash2 size={12} />
+                    {block.hidden ? <EyeOff size={12} /> : <Eye size={12} />}
                 </button>
+            )}
+
+            {onDelete && (
+                <span
+                    className="opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-all flex-shrink-0"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <ConfirmButton
+                        onConfirm={() => onDelete(block.id)}
+                        iconOnly
+                        triggerIcon={<Trash2 size={12} />}
+                        triggerTitle="Delete block"
+                        triggerClassName="w-5 h-5 inline-flex items-center justify-center rounded text-neutral-400 dark:text-neutral-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors outline-none focus:outline-none focus-visible:ring-1 focus-visible:ring-red-400"
+                        confirmClassName="px-1.5 py-0.5 text-[10px] font-semibold rounded bg-red-100 text-red-600 ring-1 ring-red-200 dark:bg-red-500/15 dark:text-red-400 dark:ring-red-500/30 hover:bg-red-200 dark:hover:bg-red-500/25 transition-colors"
+                        cancelClassName="px-1.5 py-0.5 text-[10px] rounded border border-gray-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors"
+                    />
+                </span>
             )}
         </div>
     );
@@ -172,6 +204,7 @@ interface BlockOutlineItemProps {
     isSelected: boolean;
     onClick: () => void;
     onDelete: (id: string) => void;
+    onToggleHidden?: (id: string) => void;
     moduleLabel?: string;
     expandable?: boolean;
     expanded?: boolean;
@@ -183,6 +216,7 @@ export const BlockOutlineItem = memo(({
     isSelected,
     onClick,
     onDelete,
+    onToggleHidden,
     moduleLabel,
     expandable,
     expanded,
@@ -214,6 +248,7 @@ export const BlockOutlineItem = memo(({
                 isSelected={isSelected}
                 onClick={onClick}
                 onDelete={onDelete}
+                onToggleHidden={onToggleHidden}
                 moduleLabel={moduleLabel}
                 expandable={expandable}
                 expanded={expanded}

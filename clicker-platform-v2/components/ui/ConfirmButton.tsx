@@ -23,9 +23,19 @@ interface Props {
     disabled?: boolean;
     /** Tailwind classes for the trigger button (override or extend default red treatment). */
     triggerClassName?: string;
+    /** Tailwind classes for the confirm button shown after first click. */
+    confirmClassName?: string;
+    /** Tailwind classes for the cancel button shown after first click. */
+    cancelClassName?: string;
     /** className for the outer wrapper. */
     className?: string;
 }
+
+const DEFAULT_CONFIRM =
+    'px-3 py-1.5 text-sm font-semibold rounded-md bg-red-100 text-red-600 ring-1 ring-red-200 dark:bg-red-500/15 dark:text-red-400 dark:ring-red-500/30 inline-flex items-center gap-1 hover:bg-red-200 dark:hover:bg-red-500/25 transition-colors disabled:opacity-60 disabled:cursor-not-allowed';
+
+const DEFAULT_CANCEL =
+    'px-3 py-1.5 text-sm rounded-md border border-gray-200 dark:border-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors';
 
 const DEFAULT_LABELED_TRIGGER =
     'px-3 py-1.5 text-sm rounded-md bg-red-600 text-white inline-flex items-center gap-1 hover:bg-red-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed';
@@ -51,6 +61,8 @@ export function ConfirmButton({
     loading,
     disabled,
     triggerClassName,
+    confirmClassName,
+    cancelClassName,
     className,
 }: Props) {
     const [confirming, setConfirming] = useState(false);
@@ -81,7 +93,7 @@ export function ConfirmButton({
                     type="button"
                     onClick={() => { if (!disabled && !loading) onConfirm(); }}
                     disabled={disabled || loading}
-                    className="px-3 py-1.5 text-sm font-semibold rounded-md bg-red-100 text-red-600 ring-1 ring-red-200 dark:bg-red-500/15 dark:text-red-400 dark:ring-red-500/30 inline-flex items-center gap-1 hover:bg-red-200 dark:hover:bg-red-500/25 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                    className={confirmClassName ?? DEFAULT_CONFIRM}
                 >
                     {loading && <Loader2 size={12} className="animate-spin" />}
                     {confirmLabel}
@@ -89,7 +101,7 @@ export function ConfirmButton({
                 <button
                     type="button"
                     onClick={() => setConfirming(false)}
-                    className="px-3 py-1.5 text-sm rounded-md border border-gray-200 dark:border-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors"
+                    className={cancelClassName ?? DEFAULT_CANCEL}
                 >
                     {cancelLabel}
                 </button>

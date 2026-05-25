@@ -68,9 +68,29 @@ export function EditorProvider({ children, blocks, onChange }: { children: React
     }, [deviceView]);
 
     const updateBlockData = useCallback((id: string, data: any) => {
-        onChange(prev => prev.map(block =>
-            block.id === id ? { ...block, data: { ...block.data, ...data } } : block
-        ));
+        const walk = (list: PageBlock[]): PageBlock[] => list.map(block => {
+            if (block.id === id) return { ...block, data: { ...block.data, ...data } };
+
+            if (block.type === 'columns' && Array.isArray(block.data?.columns)) {
+                const nextColumns = block.data.columns.map((col: any) => ({
+                    ...col,
+                    blocks: Array.isArray(col.blocks) ? walk(col.blocks) : col.blocks,
+                }));
+                return { ...block, data: { ...block.data, columns: nextColumns } };
+            }
+
+            if (block.type === 'grid' && Array.isArray(block.data?.cells)) {
+                const nextCells = block.data.cells.map((cell: any) => {
+                    if (!cell.block) return cell;
+                    const [next] = walk([cell.block]);
+                    return { ...cell, block: next };
+                });
+                return { ...block, data: { ...block.data, cells: nextCells } };
+            }
+
+            return block;
+        });
+        onChange(walk);
     }, [onChange]);
 
     const addBlock = useCallback((block: PageBlock) => {
