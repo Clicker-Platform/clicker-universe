@@ -24,6 +24,7 @@ const ColumnsContainerBlock = dynamic(() => import('./public/DefaultColumnsBlock
 const GridContainerBlock = dynamic(() => import('./public/DefaultGridBlock').then(mod => mod.DefaultGridBlock));
 const MarqueeBlock = dynamic(() => import('./public/DefaultMarqueeBlock').then(mod => mod.DefaultMarqueeBlock));
 const TestimonialsBlock = dynamic(() => import('./public/DefaultTestimonialsBlock').then(mod => mod.DefaultTestimonialsBlock));
+const ProductGridBlock = dynamic(() => import('./public/ProductGridBlock'));
 
 // System blocks (from PublicPageRenderer)
 const QuickActions = dynamic(() => import('./public/DefaultQuickActionsBlock').then(mod => mod.DefaultQuickActionsBlock));
@@ -233,6 +234,9 @@ export const BlockRenderer = ({
 
             case 'testimonials':
                 return <TestimonialsBlock data={block.data} />;
+
+            case 'digital_goods_product_grid':
+                return <ProductGridBlock data={block.data} />;
 
             default:
                 return <ModuleBlockLoader type={block.type} data={block.data} siteId={siteId} />;

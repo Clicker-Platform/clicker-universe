@@ -39,6 +39,7 @@ const ColumnsForm = dynamic(() => import('./forms/ColumnsForm').then(mod => mod.
 const GridForm = dynamic(() => import('./forms/GridForm').then(mod => mod.GridForm), { loading: () => <FormSkeleton /> });
 const MarqueeForm = dynamic(() => import('./forms/MarqueeForm').then(mod => mod.MarqueeForm), { loading: () => <FormSkeleton /> });
 const TestimonialsBlockForm = dynamic(() => import('./forms/testimonials/TestimonialsBlockForm').then(mod => mod.TestimonialsBlockForm), { loading: () => <FormSkeleton /> });
+const ProductGridBlockForm = dynamic(() => import('./forms/ProductGridBlockForm').then(mod => mod.ProductGridBlockForm), { loading: () => <FormSkeleton /> });
 
 interface BlockFormRendererProps {
     block: PageBlock;
@@ -65,6 +66,7 @@ export const BlockFormRenderer = memo(({ block, onChange, templateId = 'classic'
             'columns': 'Columns', 'grid': 'Grid',
             'marquee': 'Marquee',
             'testimonials': 'Testimonials',
+            'digital_goods_product_grid': 'Digital Product Grid',
         };
 
         if (coreLabels[block.type]) {
@@ -147,6 +149,7 @@ export const BlockFormRenderer = memo(({ block, onChange, templateId = 'classic'
         case 'grid': return <GridForm data={block.data} containerBlockId={block.id} onChange={handleDataChange} templateId={templateId} onOpenSlideOver={onOpenSlideOver} />;
         case 'marquee': return <MarqueeForm data={block.data} onChange={handleDataChange} />;
         case 'testimonials': return <TestimonialsBlockForm data={block.data} onChange={handleDataChange} />;
+        case 'digital_goods_product_grid': return <ProductGridBlockForm data={block.data} onChange={handleDataChange} />;
 
         case 'quick_actions':
             return <QuickActionsBlockForm data={block.data} onChange={handleDataChange} onOpenLinks={onOpenSlideOver ? () => onOpenSlideOver('links') : undefined} />;

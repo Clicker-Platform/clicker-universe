@@ -13,6 +13,13 @@ service firebase.storage {
       allow read: if true;
     }
 
+    // Digital Goods product files — signed-URL-only (no direct public read)
+    // MUST be above the wildcard /sites/{siteId}/{allPaths=**} rule
+    match /sites/{siteId}/modules/digital_goods/products/files/{allPaths=**} {
+      allow read: if false;
+      allow write: if isAuthenticated();
+    }
+
     // Tenant Writes: /sites/{siteId}/...
     match /sites/{siteId}/{allPaths=**} {
       allow read: if true;

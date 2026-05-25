@@ -29,7 +29,7 @@ export interface DigitalProduct {
   type: ProductType;
   title: string;
   description: string;          // markdown supported
-  coverImage?: string;          // Firebase Storage path
+  coverImage?: string;          // Full URL (from MediaPicker)
   price: number;                // integer IDR
   currency: 'IDR';
   contentKind: ContentKind;

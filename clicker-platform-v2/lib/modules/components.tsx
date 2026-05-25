@@ -75,6 +75,7 @@ const MembershipSettingsPage = dynamic(() => import('@/lib/modules/membership/ad
 
 // Admin Pages (Digital Goods)
 const DG_ProductsListPage = dynamic(() => import('@/lib/modules/digital_goods/admin/ProductsListPage'));
+const DG_OrdersListPage   = dynamic(() => import('@/lib/modules/digital_goods/admin/OrdersListPage'));
 const DG_SettingsPage     = dynamic(() => import('@/lib/modules/digital_goods/admin/SettingsPage'));
 
 // Module Block Components
@@ -171,5 +172,6 @@ export const MODULE_COMPONENTS: Record<string, any> = {
 
     // Digital Goods Module
     'digital_goods:ProductsList': DG_ProductsListPage,
+    'digital_goods:OrdersList':   DG_OrdersListPage,
     'digital_goods:Settings':     DG_SettingsPage,
 };
