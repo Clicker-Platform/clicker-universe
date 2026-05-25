@@ -9,6 +9,8 @@ description: >
 # /create_block — Add a New Block Type
 
 > **CLAUDE.md Rule 9 (mandatory):** Before writing the renderer or the form, open at least one existing block of similar shape (e.g. `components/blocks/public/FeatureCardsBlock.tsx` for grid-of-cards blocks, `components/blocks/public/HeroBlock.tsx` for hero-style blocks) and mirror its conventions: typography (load `typography_system` skill), theme tokens, `cardStyle` usage, dv() responsive helper, no hardcoded colors. The platform's working code is the source of truth — never infer styling from spec snippets.
+>
+> **MOBILE + TABLET + DESKTOP PARITY IS NON-NEGOTIABLE.** Every block MUST be fully operable on mobile (≤640px), tablet (641–1024px), AND desktop. No "we'll polish mobile later." No "this block is desktop-only." Tablet is part of the mobility story (operators use iPads at the counter) — never collapse it into "just a smaller desktop." If you can't show the block working at 360px, 768px, AND ≥1024px, you're not done. See [Section 8: Responsive Layout](#8-responsive-layout-mandatory) — required before claiming any block complete.
 
 Blocks are stored as `PageBlock` JSON in Firestore and rendered in two places: the admin Canvas Studio editor and the public site. Every new block requires **7 touch points**, in this order.
 
@@ -192,6 +194,87 @@ For blocks with complex data, create:
 **File:** `clicker-platform-v2/components/blocks/your-block/types.ts`
 
 Export interfaces, constants, and a `DEFAULT_*` object. Import from both the form and public renderer (see `content-showcase/types.ts` as a reference).
+
+---
+
+## 8. Responsive Layout (MANDATORY)
+
+**Every block MUST work on mobile (≤640px) AND desktop.** No exceptions. The platform's value prop is that operators run their business on a phone — a block that's "desktop only" or "we'll fix mobile later" is broken and cannot ship.
+
+### The two-environment problem
+
+Blocks render in two places that interpret breakpoints differently:
+
+| Environment | How Tailwind breakpoints behave |
+| --- | --- |
+| **Public site** (real browser) | `sm:` `md:` `lg:` fire on real viewport width. Works as normal. |
+| **Canvas Studio preview** (mobile/tablet/desktop frame) | `sm:` `md:` `lg:` fire on the **outer browser viewport**, NOT the preview frame. A `md:flex-row` set on a block inside the 375px mobile preview will still apply because the editor browser is 1440px wide. |
+
+So `sm:hidden` on a "mobile scroller" wrapper hides it in Canvas mobile preview (because the outer viewport is desktop), even though it works correctly on a real phone. This is the trap that wastes the most time.
+
+### Canonical pattern: production + Canvas-aware branching
+
+For any block with **different layouts per breakpoint** (column count, scroll vs stack, flex direction, hidden elements), use this template:
+
+```tsx
+'use client';
+import { useDeviceView } from '@/components/DeviceViewContext';
+
+export default function MyBlock({ data }: Props) {
+  const deviceView = useDeviceView();
+  // ... data fetching ...
+
+  const mobileLayout = <div className="flex overflow-x-auto snap-x ...">{/* scroller */}</div>;
+  const desktopLayout = <div className="grid grid-cols-3 gap-4">{/* grid */}</div>;
+
+  return (
+    <section className="py-12">
+      {deviceView === 'mobile' ? mobileLayout :
+       deviceView === 'tablet' || deviceView === 'desktop' ? desktopLayout :
+       (
+         // 'responsive' = public site, let real viewport decide via Tailwind
+         <>
+           <div className="sm:hidden">{mobileLayout}</div>
+           <div className="hidden sm:block">{desktopLayout}</div>
+         </>
+       )}
+    </section>
+  );
+}
+```
+
+`useDeviceView()` returns `'mobile' | 'tablet' | 'desktop' | 'responsive'`. On the public site there's no `DeviceViewProvider`, so it defaults to `'responsive'` → Tailwind classes run normally. In Canvas it returns the selected preview device → render that branch directly, bypassing breakpoint utilities.
+
+### Simpler `dv()` helper for class-only swaps
+
+When you're only swapping classes (not whole subtrees), use `dv()` from the same file. Example from `DefaultHeroBlock.tsx`:
+
+```tsx
+const headingClass = dv(deviceView, 'text-3xl', 'md:text-4xl');
+// responsive: "text-3xl md:text-4xl"  (Tailwind decides)
+// mobile:     "text-3xl"
+// desktop:    "text-3xl md:text-4xl"  (md: fires on real desktop)
+```
+
+Use `dv()` for typography, padding, gap; use the branching template above for structural differences (grid vs flex, hidden subtrees).
+
+### Anti-patterns
+
+| Don't | Why |
+| --- | --- |
+| `sm:hidden` / `hidden sm:block` alone (no `deviceView` branch) | Canvas mobile preview hides the mobile branch because outer viewport is desktop. |
+| `useDeviceView()` only, no `'responsive'` fallback | Public site never gets a layout — `deviceView` is `'responsive'` and you forgot that branch. |
+| `md:flex-row` on narrow Canvas column block | Fires on real desktop even inside a 320px Canvas column. Wrap with `dv()`. |
+| Skipping mobile or tablet because "user will only use this on desktop" | The platform is built for operators running their business on phones AND tablets. Build mobile-first, then verify tablet, then desktop. |
+
+### Verification before claiming done
+
+1. **Local dev → Chrome DevTools mobile (360px)** — the golden path must work end-to-end.
+2. **Local dev → Chrome DevTools desktop** — must also work.
+3. **Canvas Studio → toggle mobile / tablet / desktop preview** — all three must render correctly.
+4. **If layout differs across breakpoints, you used the canonical template above.** If you wrote only `sm:hidden` and called it done, you didn't verify Canvas.
+
+If you cannot show the block working on a 360px viewport, the block is incomplete. Do not register, commit, or report success.
 
 ---
 
