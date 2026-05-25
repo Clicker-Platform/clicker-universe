@@ -1,9 +1,10 @@
 import { BlockType } from '@/data/mockData';
-import { Type, Image as ImageIcon, Layout, Box, HelpCircle, AlignCenter, Link, Map, List, Clock, Star, MapPin, Play, Columns2, ClipboardList, LayoutGrid, Columns3, Megaphone } from 'lucide-react';
+import { Type, Image as ImageIcon, Layout, Box, HelpCircle, AlignCenter, Link, Map, List, Clock, Star, MapPin, Play, Columns2, ClipboardList, LayoutGrid, Columns3, Megaphone, Quote } from 'lucide-react';
 import { DEFAULT_SHOWCASE_DATA, newRow } from '@/components/blocks/content-showcase/types';
 import { DEFAULT_MEDIA } from '@/components/admin/blocks/media-field/types';
 import { makeDefaultCard } from '@/components/blocks/feature-cards/types';
 import { makeDefaultMarqueeItem } from '@/components/blocks/marquee/types';
+import { makeDefaultTestimonialsBlockData } from '@/lib/canvas/blocks/testimonials/types';
 
 export const BLOCK_OPTIONS: { type: BlockType; label: string; icon: React.ElementType }[] = [
     { type: 'hero', label: 'Hero Section', icon: Layout },
@@ -27,6 +28,7 @@ export const BLOCK_OPTIONS: { type: BlockType; label: string; icon: React.Elemen
     { type: 'columns', label: 'Columns', icon: Columns3 },
     { type: 'grid', label: 'Grid', icon: LayoutGrid },
     { type: 'marquee', label: 'Marquee', icon: Megaphone },
+    { type: 'testimonials', label: 'Testimonials', icon: Quote },
 ];
 
 // Block-owned default layout variants. Industry-standard: the block defines its own
@@ -98,8 +100,6 @@ export function getDefaultData(type: BlockType, _templateId = 'classic'): any {
         case 'feature_cards':
             return {
                 ...baseData,
-                title: '',
-                subtitle: '',
                 columns: 3,
                 cards: [
                     makeDefaultCard(),
@@ -163,6 +163,11 @@ export function getDefaultData(type: BlockType, _templateId = 'classic'): any {
                 direction: 'left',
                 iconSize: 'md',
                 itemGap: 'normal',
+            };
+        case 'testimonials':
+            return {
+                ...baseData,
+                ...makeDefaultTestimonialsBlockData(),
             };
         default:
             return baseData;

@@ -90,6 +90,11 @@ export function CanvasStudio({
     // Desktop state
     const [activePanel, setActivePanel] = useState<'page' | 'seo' | 'background' | null>('page');
     const [rightPanelOpen, setRightPanelOpen] = useState(true);
+    // True when the user explicitly opened the panel via an icon click while no
+    // block was selected. Distinguishes "open because something is selected"
+    // from "open because the user asked." Reset when selection arrives or when
+    // the user clicks outside the panel.
+    const [manuallyOpened, setManuallyOpened] = useState(false);
     const [host] = useState(() => typeof window !== 'undefined' ? window.location.host : '');
     const [tooltip, setTooltip] = useState<{ label: string; top: number; left: number; side?: boolean; sideLeft?: boolean } | null>(null);
     const [leftPanel, setLeftPanel] = useState<'pages' | 'add' | 'layers' | null>('layers');
@@ -147,14 +152,19 @@ export function CanvasStudio({
         if (hasSelectionForForm) {
             setActivePanel(null);
             setRightPanelOpen(true);
+            setManuallyOpened(false);
         } else if (activePageId === null) {
             setActivePanel('page');
             setRightPanelOpen(true);
-        } else {
-            setActivePanel(prev => prev === null ? 'page' : prev);
+        } else if (!manuallyOpened) {
+            // Nothing selected and user hasn't explicitly opened a tab —
+            // collapse so the canvas gets more room.
+            setRightPanelOpen(false);
+            setActivePanel(null);
         }
         // Clear inline field toolbar when selection changes
         setInlineFocus(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isMobile, hasSelectionForForm, activePageId]);
 
     // Calculate active background config
@@ -334,7 +344,7 @@ export function CanvasStudio({
 
                             <main
                                 className="w-full flex-1 relative overflow-x-clip pt-0 pb-12"
-                                onClick={() => setSelection({ kind: 'none' })}
+                                onClick={() => { setSelection({ kind: 'none' }); setManuallyOpened(false); }}
                             >
                                 {/* Base Background Fallback */}
                                 <div className="absolute inset-0 -z-20 pointer-events-none" style={{ backgroundColor: pageBackgroundColor }} />
@@ -699,26 +709,32 @@ export function CanvasStudio({
                     );
                 })()
             ) : selection.kind === 'slots' && selection.containerId ? (
-                // Empty container slot selected — render the parent container's form.
-                // The container form (ColumnsForm / GridForm) reads `selection` to
-                // pick the active tab and show the slot's properties / picker.
+                // Slot-kind selection (empty Columns/Grid slot, or a FeatureCards card).
+                // The container can be top-level OR nested inside another container.
+                // - Top-level: render the container's own form.
+                // - Nested in Columns/Grid: render the outer container's form, which
+                //   drills into the inner container so its own form is shown (with the
+                //   proper nested updateBlockData wired up).
                 (() => {
-                    const container = blocks.find(b => b.id === selection.containerId);
-                    if (container) {
+                    const path = findBlockPath(blocks, selection.containerId);
+                    if (!path) {
                         return (
-                            <BlockFormRenderer
-                                block={container}
-                                onChange={updateBlockData}
-                                templateId={templateId}
-                                onOpenSlideOver={toggleSlideOverPanel}
-                            />
+                            <div className="flex flex-col items-center justify-center h-full text-center text-neutral-400 dark:text-neutral-500 gap-3">
+                                <Box size={32} className="opacity-20" />
+                                <p className="text-sm">Container not found</p>
+                            </div>
                         );
                     }
+                    const block = (path.kind === 'columns-child' || path.kind === 'grid-cell')
+                        ? path.parentBlock
+                        : path.block;
                     return (
-                        <div className="flex flex-col items-center justify-center h-full text-center text-neutral-400 dark:text-neutral-500 gap-3">
-                            <Box size={32} className="opacity-20" />
-                            <p className="text-sm">Container not found</p>
-                        </div>
+                        <BlockFormRenderer
+                            block={block}
+                            onChange={updateBlockData}
+                            templateId={templateId}
+                            onOpenSlideOver={toggleSlideOverPanel}
+                        />
                     );
                 })()
             ) : (
@@ -1011,7 +1027,7 @@ export function CanvasStudio({
 
             {/* Right Sidebar - Properties */}
             {rightPanelOpen ? (
-                <div className="w-80 bg-gray-50 dark:bg-neutral-900 border-l border-gray-200 dark:border-neutral-800 flex flex-col z-10 flex-shrink-0">
+                <div className="w-80 bg-gray-50 dark:bg-neutral-900 border-l border-gray-200 dark:border-neutral-800 flex flex-col z-10 flex-shrink-0 animate-in slide-in-from-right-2 fade-in duration-150 ease-out">
                     <div className="px-4 h-10 border-b border-gray-200 dark:border-neutral-800 font-bold text-sm text-neutral-900 dark:text-neutral-200 flex items-center gap-2 flex-shrink-0">
                         <span className="flex-1">
                             {activePanel === 'page' ? 'Title & Slug' : activePanel === 'seo' ? 'SEO & Analytics' : activePanel === 'background' ? 'Page Background' : 'Properties'}
@@ -1020,8 +1036,8 @@ export function CanvasStudio({
                             <button
                                 type="button"
                                 onClick={() => {
-                                    if (activePanel === 'page') { setRightPanelOpen(false); setActivePanel(null); }
-                                    else { setActivePanel('page'); }
+                                    if (activePanel === 'page') { setRightPanelOpen(false); setActivePanel(null); setManuallyOpened(false); }
+                                    else { setActivePanel('page'); setManuallyOpened(true); }
                                 }}
                                 onMouseEnter={(e) => { const r = e.currentTarget.getBoundingClientRect(); setTooltip({ label: 'Title & Slug', top: r.bottom + 6, left: r.left + r.width / 2 }); }}
                                 onMouseLeave={() => setTooltip(null)}
@@ -1035,8 +1051,8 @@ export function CanvasStudio({
                             <button
                                 type="button"
                                 onClick={() => {
-                                    if (activePanel === 'seo') { setRightPanelOpen(false); setActivePanel(null); }
-                                    else { setActivePanel('seo'); }
+                                    if (activePanel === 'seo') { setRightPanelOpen(false); setActivePanel(null); setManuallyOpened(false); }
+                                    else { setActivePanel('seo'); setManuallyOpened(true); }
                                 }}
                                 onMouseEnter={(e) => { const r = e.currentTarget.getBoundingClientRect(); setTooltip({ label: 'SEO & Analytics', top: r.bottom + 6, left: r.left + r.width / 2 }); }}
                                 onMouseLeave={() => setTooltip(null)}
@@ -1050,8 +1066,8 @@ export function CanvasStudio({
                             <button
                                 type="button"
                                 onClick={() => {
-                                    if (activePanel === 'background') { setRightPanelOpen(false); setActivePanel(null); }
-                                    else { setActivePanel('background'); }
+                                    if (activePanel === 'background') { setRightPanelOpen(false); setActivePanel(null); setManuallyOpened(false); }
+                                    else { setActivePanel('background'); setManuallyOpened(true); }
                                 }}
                                 onMouseEnter={(e) => { const r = e.currentTarget.getBoundingClientRect(); setTooltip({ label: 'Page Background', top: r.bottom + 6, left: r.left + r.width / 2 }); }}
                                 onMouseLeave={() => setTooltip(null)}
@@ -1064,7 +1080,7 @@ export function CanvasStudio({
                             </button>
                             <button
                                 type="button"
-                                onClick={() => { setRightPanelOpen(false); setActivePanel(null); }}
+                                onClick={() => { setRightPanelOpen(false); setActivePanel(null); setManuallyOpened(false); }}
                                 onMouseEnter={(e) => { const r = e.currentTarget.getBoundingClientRect(); setTooltip({ label: 'Close panel', top: r.bottom + 6, left: r.left + r.width / 2 }); }}
                                 onMouseLeave={() => setTooltip(null)}
                                 className="p-1.5 rounded-md text-neutral-400 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
@@ -1077,9 +1093,9 @@ export function CanvasStudio({
                 </div>
             ) : (
                 /* Collapsed right strip */
-                <div className="w-12 bg-gray-50 dark:bg-neutral-900 border-l border-gray-200 dark:border-neutral-800 flex flex-col items-center pt-2 gap-0.5 flex-shrink-0 z-10">
+                <div className="w-12 bg-gray-50 dark:bg-neutral-900 border-l border-gray-200 dark:border-neutral-800 flex flex-col items-center pt-2 gap-0.5 flex-shrink-0 z-10 animate-in fade-in duration-150 ease-out">
                     <button
-                        onClick={() => { setRightPanelOpen(true); setActivePanel('page'); }}
+                        onClick={() => { setRightPanelOpen(true); setActivePanel('page'); setManuallyOpened(true); }}
                         onMouseEnter={(e) => { const r = e.currentTarget.getBoundingClientRect(); setTooltip({ label: 'Title & Slug', top: r.top + r.height / 2, left: r.left - 8, sideLeft: true }); }}
                         onMouseLeave={() => setTooltip(null)}
                         className="w-9 h-9 flex items-center justify-center rounded-lg text-neutral-400 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
@@ -1087,7 +1103,7 @@ export function CanvasStudio({
                         <FileText size={17} />
                     </button>
                     <button
-                        onClick={() => { setRightPanelOpen(true); setActivePanel('seo'); }}
+                        onClick={() => { setRightPanelOpen(true); setActivePanel('seo'); setManuallyOpened(true); }}
                         onMouseEnter={(e) => { const r = e.currentTarget.getBoundingClientRect(); setTooltip({ label: 'SEO & Analytics', top: r.top + r.height / 2, left: r.left - 8, sideLeft: true }); }}
                         onMouseLeave={() => setTooltip(null)}
                         className="w-9 h-9 flex items-center justify-center rounded-lg text-neutral-400 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
@@ -1095,7 +1111,7 @@ export function CanvasStudio({
                         <BarChart2 size={17} />
                     </button>
                     <button
-                        onClick={() => { setRightPanelOpen(true); setActivePanel('background'); }}
+                        onClick={() => { setRightPanelOpen(true); setActivePanel('background'); setManuallyOpened(true); }}
                         onMouseEnter={(e) => { const r = e.currentTarget.getBoundingClientRect(); setTooltip({ label: 'Page Background', top: r.top + r.height / 2, left: r.left - 8, sideLeft: true }); }}
                         onMouseLeave={() => setTooltip(null)}
                         className="w-9 h-9 flex items-center justify-center rounded-lg text-neutral-400 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
@@ -1103,7 +1119,7 @@ export function CanvasStudio({
                         <ImageIcon size={17} />
                     </button>
                     <button
-                        onClick={() => { setRightPanelOpen(true); setActivePanel(null); }}
+                        onClick={() => { setRightPanelOpen(true); setActivePanel(null); setManuallyOpened(true); }}
                         onMouseEnter={(e) => { const r = e.currentTarget.getBoundingClientRect(); setTooltip({ label: 'Properties', top: r.top + r.height / 2, left: r.left - 8, sideLeft: true }); }}
                         onMouseLeave={() => setTooltip(null)}
                         className="w-9 h-9 flex items-center justify-center rounded-lg text-neutral-400 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"

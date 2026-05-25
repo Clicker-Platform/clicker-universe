@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Buyer · Product Detail — Digital Goods Wireframe</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-white text-gray-900">
+
+<!-- Mock tenant-branded header -->
+<header class="border-b">
+  <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="font-bold">Tenant Brand</div>
+    <nav class="flex gap-4 text-sm text-gray-600">
+      <span>Home</span>
+      <span class="font-medium text-gray-900">Store</span>
+      <span>About</span>
+      <span>Library</span>
+    </nav>
+  </div>
+</header>
+
+<main class="max-w-5xl mx-auto px-4 py-10">
+  <div class="text-xs uppercase tracking-wider text-gray-500 mb-2">/store/pinjol-survival-kit</div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+    <!-- Cover image -->
+    <div>
+      <div class="aspect-[3/4] bg-gradient-to-br from-orange-200 to-pink-200 rounded-2xl flex items-center justify-center text-gray-700 text-sm">
+        [ Cover image — 3:4 aspect ]
+      </div>
+    </div>
+
+    <!-- Detail -->
+    <div>
+      <div class="text-xs uppercase tracking-wider text-gray-500 mb-1">📄 PDF · 42 pages</div>
+      <h1 class="text-3xl font-bold mb-2">Pinjol Survival Kit</h1>
+      <div class="text-2xl font-bold text-gray-900 mb-6">Rp 149.000</div>
+
+      <p class="text-sm text-gray-700 leading-relaxed mb-6">
+        Panduan praktis lepas dari jeratan pinjol legal & ilegal. Berisi strategi negosiasi cicilan,
+        cara lapor ke OJK, dan template surat untuk debt collector. Ditulis berdasarkan 3 tahun pengalaman
+        membantu lebih dari 500 klien restrukturisasi hutang.
+      </p>
+
+      <div class="space-y-2 mb-6 text-sm text-gray-700">
+        <div class="flex items-start gap-2"><span class="text-green-600">✓</span> Strategi negosiasi step-by-step</div>
+        <div class="flex items-start gap-2"><span class="text-green-600">✓</span> 5 template surat siap pakai</div>
+        <div class="flex items-start gap-2"><span class="text-green-600">✓</span> Cara lapor SLIK OJK</div>
+        <div class="flex items-start gap-2"><span class="text-green-600">✓</span> Update gratis selamanya</div>
+      </div>
+
+      <button class="w-full bg-gray-900 text-white px-6 py-4 rounded-lg text-lg font-semibold mb-3">
+        Buy Now
+      </button>
+      <div class="text-xs text-gray-500 text-center">Akses langsung setelah pembayaran dikonfirmasi.</div>
+    </div>
+  </div>
+
+  <!-- Already-purchased variant -->
+  <div class="mt-16 border-t pt-10">
+    <h2 class="text-sm font-semibold text-gray-700 mb-3">Variant: Already-purchased guard</h2>
+    <div class="max-w-md p-6 border-2 border-gray-300 rounded-xl bg-green-50">
+      <div class="text-sm text-green-700 mb-2">✓ Already in your library</div>
+      <button class="w-full bg-green-600 text-white px-6 py-3 rounded-lg font-medium">
+        Open in Library →
+      </button>
+    </div>
+    <p class="text-xs text-gray-500 mt-2">
+      Shown when logged-in buyer already has a paid order or library entry for this product.
+    </p>
+  </div>
+
+  <div class="mt-10 p-4 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-900">
+    <strong>Wireframe notes:</strong>
+    <ul class="list-disc list-inside mt-1 space-y-1">
+      <li>Page is public — no login required to view.</li>
+      <li>Buy Now → not logged in → bounce to <code>/member/login?next=...</code> → magic link round-trip → return.</li>
+      <li>For YouTube products, the cover area shows a video poster + play overlay; behavior on Buy Now identical.</li>
+      <li>Header is the tenant's own — no Clicker branding anywhere.</li>
+    </ul>
+  </div>
+
+  <div class="mt-4 text-xs text-gray-500">
+    <a href="index.html" class="underline">← Back to wireframe index</a>
+  </div>
+</main>
+
+</body>
+</html>

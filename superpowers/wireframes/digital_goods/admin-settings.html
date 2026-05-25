@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Admin · Payment Settings — Digital Goods Wireframe</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-900">
+
+<div class="flex min-h-screen">
+
+  <aside class="w-56 bg-white border-r p-4 hidden lg:block">
+    <div class="text-xs font-bold uppercase tracking-wider text-gray-500 mb-4">Tenant Admin</div>
+    <nav class="space-y-1 text-sm">
+      <div class="px-3 py-2 text-gray-500">Dashboard</div>
+      <div class="px-3 py-2 text-gray-500">POS</div>
+      <div class="px-3 py-2 text-gray-500">Members</div>
+      <div class="px-3 py-2 bg-gray-900 text-white rounded">Digital Goods</div>
+      <div class="ml-3 mt-1 space-y-1 text-xs">
+        <div class="px-3 py-1.5 text-gray-500">Products</div>
+        <div class="px-3 py-1.5 text-gray-500">Orders</div>
+        <div class="px-3 py-1.5 bg-gray-100 rounded">Settings</div>
+      </div>
+    </nav>
+  </aside>
+
+  <main class="flex-1 p-6 max-w-2xl">
+    <div class="text-xs uppercase tracking-wider text-gray-500 mb-1">/admin/digital-goods/settings</div>
+    <h1 class="text-2xl font-bold">Payment Settings</h1>
+    <p class="text-sm text-gray-600 mt-1 mb-6">Buyers will see these details on the checkout page.</p>
+
+    <form class="space-y-5 bg-white border rounded-xl p-6">
+      <div>
+        <label class="block text-sm font-medium mb-1">Bank name <span class="text-red-500">*</span></label>
+        <input type="text" placeholder="e.g. BCA" value="BCA"
+               class="w-full border rounded-lg px-3 py-2 text-sm" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Account number <span class="text-red-500">*</span></label>
+        <input type="text" placeholder="1234567890" value="1234567890"
+               class="w-full border rounded-lg px-3 py-2 text-sm font-mono" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Account holder name <span class="text-red-500">*</span></label>
+        <input type="text" placeholder="e.g. Andre Setiawan" value="Andre Setiawan"
+               class="w-full border rounded-lg px-3 py-2 text-sm" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">QRIS image <span class="text-gray-400 font-normal">(optional)</span></label>
+        <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center text-gray-500 text-sm">
+          🖼 &nbsp; Click to upload QRIS image
+        </div>
+      </div>
+
+      <div class="pt-4 border-t">
+        <button type="submit" class="bg-gray-900 text-white px-6 py-2 rounded-lg text-sm font-medium">
+          Save settings
+        </button>
+      </div>
+    </form>
+
+    <!-- Forward-look hint -->
+    <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-900">
+      <strong>v2 (deferred):</strong> This page will gain a second "Payment Methods" card for Online Payment (Midtrans/Xendit) where the tenant pastes their PG credentials. MVP is manual-transfer only.
+    </div>
+
+    <div class="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-900">
+      <strong>Wireframe notes:</strong>
+      <ul class="list-disc list-inside mt-1 space-y-1">
+        <li>After upload, QRIS field shows filename + remove button (same pattern as PDF upload).</li>
+        <li>Save shows green "Settings saved" toast / message bar above form.</li>
+        <li>Bank fields are all required; QRIS is optional.</li>
+      </ul>
+    </div>
+
+    <div class="mt-4 text-xs text-gray-500">
+      <a href="index.html" class="underline">← Back to wireframe index</a>
+    </div>
+  </main>
+</div>
+
+</body>
+</html>

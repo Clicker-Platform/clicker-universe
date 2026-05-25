@@ -73,18 +73,25 @@ export function ColumnsForm({ data, containerBlockId, onChange, templateId, onOp
   // and we drill into that block. When they click "← Back to Columns",
   // setDrilledBlockId(null) writes a slot selection so the canvas highlight +
   // form tab follow the user's intent.
-  const drilledBlockId = (
-    selection.kind === 'blocks' && selection.ids.length === 1
-      ? (() => {
-          const blockId = selection.ids[0];
-          // Verify it's actually a nested block in this container.
-          for (const col of columns) {
-            if (col.blocks.some(b => b.id === blockId)) return blockId;
-          }
-          return null;
-        })()
-      : null
-  );
+  // Two ways to be drilled into a column-child block:
+  //  1. selection.kind === 'blocks' targeting the child block directly.
+  //  2. selection.kind === 'slots' whose containerId IS the child block
+  //     (e.g. a card inside a FeatureCards block nested in this column).
+  //     Without this branch, the child block's form is never reachable from
+  //     the right-panel and edits silently no-op.
+  const drilledBlockId = (() => {
+    const candidate =
+      selection.kind === 'blocks' && selection.ids.length === 1
+        ? selection.ids[0]
+        : selection.kind === 'slots' && selection.containerId
+        ? selection.containerId
+        : null;
+    if (!candidate) return null;
+    for (const col of columns) {
+      if (col.blocks.some(b => b.id === candidate)) return candidate;
+    }
+    return null;
+  })();
 
   const drilledLocation = useMemo(() => {
     if (!drilledBlockId) return null;
@@ -197,38 +204,52 @@ export function ColumnsForm({ data, containerBlockId, onChange, templateId, onOp
         <legend className="text-xs font-semibold uppercase text-neutral-500 dark:text-neutral-400 tracking-wide">
           Layout
         </legend>
-        <label className="block text-sm">
-          <span className="text-neutral-700 dark:text-neutral-300">Column gap (px)</span>
-          <input
-            type="number"
-            min={0}
-            value={safeData.gap ?? 16}
-            onChange={(e) => updateField('gap', Number(e.target.value))}
-            className="mt-1 w-full px-2 py-1 border border-gray-300 dark:border-neutral-700 rounded bg-white dark:bg-neutral-900"
-          />
-          <p className="mt-1 text-xs text-neutral-400 dark:text-neutral-500">Horizontal space between columns.</p>
-        </label>
-        <label className="block text-sm">
-          <span className="text-neutral-700 dark:text-neutral-300">Block gap (px)</span>
-          <input
-            type="number"
-            min={0}
-            value={safeData.blockGap ?? 16}
-            onChange={(e) => updateField('blockGap', Number(e.target.value))}
-            className="mt-1 w-full px-2 py-1 border border-gray-300 dark:border-neutral-700 rounded bg-white dark:bg-neutral-900"
-          />
-          <p className="mt-1 text-xs text-neutral-400 dark:text-neutral-500">Vertical space between blocks stacked inside each column.</p>
-        </label>
-        <label className="block text-sm">
-          <span className="text-neutral-700 dark:text-neutral-300">Padding (px)</span>
-          <input
-            type="number"
-            min={0}
-            value={safeData.padding ?? 16}
-            onChange={(e) => updateField('padding', Number(e.target.value))}
-            className="mt-1 w-full px-2 py-1 border border-gray-300 dark:border-neutral-700 rounded bg-white dark:bg-neutral-900"
-          />
-        </label>
+        <div className="grid grid-cols-2 gap-2">
+          <label className="block text-sm">
+            <span className="text-xs text-neutral-700 dark:text-neutral-300">Column gap (px)</span>
+            <input
+              type="number"
+              min={0}
+              value={safeData.gap ?? 16}
+              onChange={(e) => updateField('gap', Number(e.target.value))}
+              className="mt-1 w-full px-2 py-1 border border-gray-300 dark:border-neutral-700 rounded bg-white dark:bg-neutral-900"
+            />
+          </label>
+          <label className="block text-sm">
+            <span className="text-xs text-neutral-700 dark:text-neutral-300">Block gap (px)</span>
+            <input
+              type="number"
+              min={0}
+              value={safeData.blockGap ?? 16}
+              onChange={(e) => updateField('blockGap', Number(e.target.value))}
+              className="mt-1 w-full px-2 py-1 border border-gray-300 dark:border-neutral-700 rounded bg-white dark:bg-neutral-900"
+            />
+          </label>
+          <label className="block text-sm">
+            <span className="text-xs text-neutral-700 dark:text-neutral-300">Padding (px)</span>
+            <input
+              type="number"
+              min={0}
+              value={safeData.padding ?? 16}
+              onChange={(e) => updateField('padding', Number(e.target.value))}
+              className="mt-1 w-full px-2 py-1 border border-gray-300 dark:border-neutral-700 rounded bg-white dark:bg-neutral-900"
+            />
+          </label>
+          <label className="block text-sm">
+            <span className="text-xs text-neutral-700 dark:text-neutral-300">Max width</span>
+            <select
+              value={safeData.maxWidth ?? 'full'}
+              onChange={(e) => updateField('maxWidth', e.target.value)}
+              className="mt-1 w-full px-2 py-1 border border-gray-300 dark:border-neutral-700 rounded bg-white dark:bg-neutral-900"
+            >
+              <option value="full">Full width</option>
+              <option value="xl">XL (1280)</option>
+              <option value="lg">LG (1024)</option>
+              <option value="md">MD (768)</option>
+              <option value="sm">SM (640)</option>
+            </select>
+          </label>
+        </div>
         <label className="flex items-center gap-2 text-sm">
           <input
             type="checkbox"
@@ -236,20 +257,6 @@ export function ColumnsForm({ data, containerBlockId, onChange, templateId, onOp
             onChange={(e) => updateField('stackOnMobile', e.target.checked)}
           />
           <span className="text-neutral-700 dark:text-neutral-300">Stack on mobile</span>
-        </label>
-        <label className="block text-sm">
-          <span className="text-neutral-700 dark:text-neutral-300">Max width</span>
-          <select
-            value={safeData.maxWidth ?? 'full'}
-            onChange={(e) => updateField('maxWidth', e.target.value)}
-            className="mt-1 w-full px-2 py-1 border border-gray-300 dark:border-neutral-700 rounded bg-white dark:bg-neutral-900"
-          >
-            <option value="full">Full width</option>
-            <option value="xl">XL (1280)</option>
-            <option value="lg">LG (1024)</option>
-            <option value="md">MD (768)</option>
-            <option value="sm">SM (640)</option>
-          </select>
         </label>
       </fieldset>
 

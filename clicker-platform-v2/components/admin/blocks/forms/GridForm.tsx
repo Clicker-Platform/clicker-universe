@@ -81,10 +81,22 @@ export function GridForm({ data, containerBlockId, onChange, templateId, onOpenS
   };
 
   // ── Drilled-into block (form-internal nav, derived from selection) ──
+  // Two ways to be drilled into a cell's block:
+  //  1. selection.kind === 'blocks' targeting the child block directly.
+  //  2. selection.kind === 'slots' whose containerId IS the child block
+  //     (e.g. a card inside a FeatureCards block nested in this Grid cell).
+  //     Without this, the child block's form is never reachable from the
+  //     right-panel and edits silently no-op.
   const drilledCell = useMemo<GridCell | null>(() => {
-    if (selection.kind !== 'blocks' || selection.ids.length !== 1) return null;
-    const blockId = selection.ids[0];
-    return cells.find(c => c.block?.id === blockId) ?? null;
+    if (selection.kind === 'blocks' && selection.ids.length === 1) {
+      const blockId = selection.ids[0];
+      return cells.find(c => c.block?.id === blockId) ?? null;
+    }
+    if (selection.kind === 'slots' && selection.containerId) {
+      const cId = selection.containerId;
+      return cells.find(c => c.block?.id === cId) ?? null;
+    }
+    return null;
   }, [selection, cells]);
   const drilledCellId = drilledCell?.id ?? null;
 
@@ -249,16 +261,32 @@ export function GridForm({ data, containerBlockId, onChange, templateId, onOpenS
             />
           </label>
         </div>
-        <label className="block text-sm">
-          <span className="text-neutral-700 dark:text-neutral-300">Padding (px)</span>
-          <input
-            type="number"
-            min={0}
-            value={safeData.padding ?? 16}
-            onChange={(e) => updateField('padding', Number(e.target.value))}
-            className="mt-1 w-full px-2 py-1 border border-gray-300 dark:border-neutral-700 rounded bg-white dark:bg-neutral-900"
-          />
-        </label>
+        <div className="grid grid-cols-2 gap-2">
+          <label className="block text-sm">
+            <span className="text-neutral-700 dark:text-neutral-300">Padding (px)</span>
+            <input
+              type="number"
+              min={0}
+              value={safeData.padding ?? 16}
+              onChange={(e) => updateField('padding', Number(e.target.value))}
+              className="mt-1 w-full px-2 py-1 border border-gray-300 dark:border-neutral-700 rounded bg-white dark:bg-neutral-900"
+            />
+          </label>
+          <label className="block text-sm">
+            <span className="text-neutral-700 dark:text-neutral-300">Max width</span>
+            <select
+              value={safeData.maxWidth ?? 'full'}
+              onChange={(e) => updateField('maxWidth', e.target.value)}
+              className="mt-1 w-full px-2 py-1 border border-gray-300 dark:border-neutral-700 rounded bg-white dark:bg-neutral-900"
+            >
+              <option value="full">Full width</option>
+              <option value="xl">XL (1280)</option>
+              <option value="lg">LG (1024)</option>
+              <option value="md">MD (768)</option>
+              <option value="sm">SM (640)</option>
+            </select>
+          </label>
+        </div>
         <label className="flex items-center gap-2 text-sm">
           <input
             type="checkbox"
@@ -266,20 +294,6 @@ export function GridForm({ data, containerBlockId, onChange, templateId, onOpenS
             onChange={(e) => updateField('stackOnMobile', e.target.checked)}
           />
           <span className="text-neutral-700 dark:text-neutral-300">Stack on mobile</span>
-        </label>
-        <label className="block text-sm">
-          <span className="text-neutral-700 dark:text-neutral-300">Max width</span>
-          <select
-            value={safeData.maxWidth ?? 'full'}
-            onChange={(e) => updateField('maxWidth', e.target.value)}
-            className="mt-1 w-full px-2 py-1 border border-gray-300 dark:border-neutral-700 rounded bg-white dark:bg-neutral-900"
-          >
-            <option value="full">Full width</option>
-            <option value="xl">XL (1280)</option>
-            <option value="lg">LG (1024)</option>
-            <option value="md">MD (768)</option>
-            <option value="sm">SM (640)</option>
-          </select>
         </label>
       </fieldset>
 

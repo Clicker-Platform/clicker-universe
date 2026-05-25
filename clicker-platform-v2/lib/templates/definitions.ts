@@ -181,6 +181,7 @@ const rawTemplateDefinitions: Record<string, Omit<TemplateDefinition, 'component
                 textSubtle: '#64748b',  // slate-500
             },
             defaultFontPackId: 'bold-display',
+            defaultButtonPackId: 'glass',
             borderRadius: '1rem',
             cardStyle: 'glass',
             cardVariant: 'outlined',

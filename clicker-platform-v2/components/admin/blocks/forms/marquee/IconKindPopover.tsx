@@ -33,19 +33,19 @@ export const IconKindPopover: React.FC<IconKindPopoverProps> = ({ icon, onChange
         <div className="relative inline-block" ref={ref}>
             <span onClick={() => setOpen((v) => !v)}>{trigger}</span>
             {open && (
-                <div className="absolute z-50 left-0 top-full mt-1 w-80 bg-white border border-gray-200 rounded-md shadow-lg p-3">
-                    <div className="flex gap-1 mb-3 border-b border-gray-100">
+                <div className="absolute z-50 left-0 top-full mt-1 w-80 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 rounded-md shadow-lg p-3">
+                    <div className="flex gap-1 mb-3 border-b border-gray-100 dark:border-neutral-800">
                         <button
                             type="button"
                             onClick={() => setTab('pick')}
-                            className={`px-3 py-1 text-sm ${tab === 'pick' ? 'border-b-2 border-blue-500 font-medium' : 'text-gray-500'}`}
+                            className={`px-3 py-1 text-sm ${tab === 'pick' ? 'border-b-2 border-blue-500 font-medium text-gray-900 dark:text-neutral-100' : 'text-gray-500 dark:text-neutral-500'}`}
                         >
                             Pick
                         </button>
                         <button
                             type="button"
                             onClick={() => setTab('paste')}
-                            className={`px-3 py-1 text-sm ${tab === 'paste' ? 'border-b-2 border-blue-500 font-medium' : 'text-gray-500'}`}
+                            className={`px-3 py-1 text-sm ${tab === 'paste' ? 'border-b-2 border-blue-500 font-medium text-gray-900 dark:text-neutral-100' : 'text-gray-500 dark:text-neutral-500'}`}
                         >
                             Paste SVG
                         </button>
@@ -64,7 +64,7 @@ export const IconKindPopover: React.FC<IconKindPopoverProps> = ({ icon, onChange
 
                     {tab === 'paste' && (
                         <div className="space-y-2">
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-gray-500 dark:text-neutral-500">
                                 Paste SVG markup from <a href="https://lucide.dev" target="_blank" rel="noreferrer" className="underline">lucide.dev</a> (&quot;Copy SVG&quot;), Heroicons, etc.
                             </p>
                             <textarea
@@ -72,20 +72,20 @@ export const IconKindPopover: React.FC<IconKindPopoverProps> = ({ icon, onChange
                                 onChange={(e) => setSvgDraft(e.target.value)}
                                 placeholder="<svg xmlns=...>...</svg>"
                                 rows={5}
-                                className="w-full px-2 py-1 text-xs font-mono border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                className="w-full px-2 py-1 text-xs font-mono border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:placeholder-neutral-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                             />
                             <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2 text-xs text-gray-500">
+                                <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-neutral-500">
                                     <span>Preview:</span>
-                                    <span className="inline-flex items-center justify-center w-6 h-6 border border-gray-200 rounded" style={{ fontSize: 20 }}>
-                                        {previewSafe ? <SafeSvgIcon svg={svgDraft} /> : <span className="text-gray-300">—</span>}
+                                    <span className="inline-flex items-center justify-center w-6 h-6 border border-gray-200 dark:border-neutral-700 rounded" style={{ fontSize: 20 }}>
+                                        {previewSafe ? <SafeSvgIcon svg={svgDraft} /> : <span className="text-gray-300 dark:text-neutral-600">—</span>}
                                     </span>
                                 </div>
                                 <div className="flex gap-1">
                                     <button
                                         type="button"
                                         onClick={() => { setSvgDraft(''); onChange({ kind: 'lucide', name: 'Star' }); }}
-                                        className="px-2 py-1 text-xs text-gray-500 hover:text-gray-700"
+                                        className="px-2 py-1 text-xs text-gray-500 dark:text-neutral-500 hover:text-gray-700 dark:hover:text-neutral-300"
                                     >
                                         Clear
                                     </button>
@@ -93,7 +93,7 @@ export const IconKindPopover: React.FC<IconKindPopoverProps> = ({ icon, onChange
                                         type="button"
                                         disabled={!previewSafe}
                                         onClick={() => { onChange({ kind: 'svg', svg: svgDraft }); setOpen(false); }}
-                                        className="px-2 py-1 text-xs bg-blue-500 text-white rounded disabled:bg-gray-300"
+                                        className="px-2 py-1 text-xs bg-blue-500 text-white rounded disabled:bg-gray-300 dark:disabled:bg-neutral-700 dark:disabled:text-neutral-500"
                                     >
                                         Apply
                                     </button>

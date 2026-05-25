@@ -29,13 +29,13 @@ const GAPS: MarqueeItemGap[] = ['tight', 'normal', 'loose'];
 
 function Segmented<T extends string>({ value, options, onChange, labels }: { value: T; options: T[]; onChange: (v: T) => void; labels?: Record<string, string> }) {
     return (
-        <div className="flex w-56 border border-gray-200 rounded overflow-hidden">
+        <div className="flex w-56 border border-gray-200 dark:border-neutral-700 rounded overflow-hidden">
             {options.map((opt) => (
                 <button
                     key={opt}
                     type="button"
                     onClick={() => onChange(opt)}
-                    className={`flex-1 px-3 py-1 text-xs capitalize text-center ${value === opt ? 'bg-gray-900 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+                    className={`flex-1 px-3 py-1 text-xs capitalize text-center ${value === opt ? 'bg-gray-900 dark:bg-neutral-700 text-white dark:text-neutral-100' : 'bg-white dark:bg-neutral-800 text-gray-700 dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-neutral-700'}`}
                 >
                     {labels?.[opt] ?? opt}
                 </button>
@@ -59,7 +59,7 @@ export const MarqueeForm: React.FC<MarqueeFormProps> = ({ data, onChange }) => {
     return (
         <div className="space-y-4 p-3">
             <section>
-                <h3 className="text-sm font-medium text-gray-700 mb-2">Items</h3>
+                <h3 className="text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">Items</h3>
                 <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                     <SortableContext items={data.items.map((i) => i.id)} strategy={verticalListSortingStrategy}>
                         <div className="space-y-2">
@@ -84,22 +84,22 @@ export const MarqueeForm: React.FC<MarqueeFormProps> = ({ data, onChange }) => {
                 <button
                     type="button"
                     onClick={() => onChange({ ...data, items: [...data.items, makeDefaultMarqueeItem()] })}
-                    className="mt-2 inline-flex items-center gap-1 px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 rounded"
+                    className="mt-2 inline-flex items-center gap-1 px-2 py-1 text-xs text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30 rounded"
                 >
                     <Plus size={14} /> Add item
                 </button>
             </section>
 
             <section className="space-y-3">
-                <h3 className="text-sm font-medium text-gray-700">Layout & motion</h3>
+                <h3 className="text-sm font-medium text-gray-700 dark:text-neutral-300">Layout & motion</h3>
 
                 <div className="flex items-center gap-3">
-                    <label className="w-20 shrink-0 text-xs text-gray-600 whitespace-nowrap">Speed</label>
+                    <label className="w-20 shrink-0 text-xs text-gray-600 dark:text-neutral-500 whitespace-nowrap">Speed</label>
                     <Segmented<MarqueeSpeed> value={data.speed} options={SPEEDS} onChange={(v) => onChange({ ...data, speed: v })} />
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <label className="w-20 shrink-0 text-xs text-gray-600 whitespace-nowrap">Direction</label>
+                    <label className="w-20 shrink-0 text-xs text-gray-600 dark:text-neutral-500 whitespace-nowrap">Direction</label>
                     <Segmented<MarqueeDirection>
                         value={data.direction}
                         options={['left', 'right']}
@@ -109,39 +109,39 @@ export const MarqueeForm: React.FC<MarqueeFormProps> = ({ data, onChange }) => {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <label className="w-20 shrink-0 text-xs text-gray-600 whitespace-nowrap">Icon size</label>
+                    <label className="w-20 shrink-0 text-xs text-gray-600 dark:text-neutral-500 whitespace-nowrap">Icon size</label>
                     <Segmented<MarqueeIconSize> value={data.iconSize} options={SIZES} onChange={(v) => onChange({ ...data, iconSize: v })} />
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <label className="w-20 shrink-0 text-xs text-gray-600 whitespace-nowrap">Item gap</label>
+                    <label className="w-20 shrink-0 text-xs text-gray-600 dark:text-neutral-500 whitespace-nowrap">Item gap</label>
                     <Segmented<MarqueeItemGap> value={data.itemGap} options={GAPS} onChange={(v) => onChange({ ...data, itemGap: v })} />
                 </div>
             </section>
 
             <section>
-                <h3 className="text-sm font-medium text-gray-700 mb-2">Color</h3>
+                <h3 className="text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">Color</h3>
                 <div className="flex items-center gap-2">
                     <input
                         type="color"
                         value={data.color || '#374151'}
                         onChange={(e) => onChange({ ...data, color: e.target.value })}
-                        className="w-8 h-8 border border-gray-200 rounded cursor-pointer"
+                        className="w-8 h-8 border border-gray-200 dark:border-neutral-700 rounded cursor-pointer bg-white dark:bg-neutral-800"
                     />
                     <input
                         type="text"
                         value={data.color || ''}
                         onChange={(e) => onChange({ ...data, color: e.target.value })}
                         placeholder="#374151 or theme token"
-                        className="flex-1 px-2 py-1 text-xs border border-gray-200 rounded"
+                        className="flex-1 px-2 py-1 text-xs border border-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:placeholder-neutral-600 rounded"
                     />
                     {data.color && (
-                        <button type="button" onClick={() => onChange({ ...data, color: undefined })} className="text-xs text-gray-500 hover:text-gray-700">
+                        <button type="button" onClick={() => onChange({ ...data, color: undefined })} className="text-xs text-gray-500 dark:text-neutral-500 hover:text-gray-700 dark:hover:text-neutral-300">
                             Reset
                         </button>
                     )}
                 </div>
-                <p className="mt-1 text-xs text-gray-400">Drives icon stroke + label color via currentColor.</p>
+                <p className="mt-1 text-xs text-gray-400 dark:text-neutral-500">Drives icon stroke + label color via currentColor.</p>
             </section>
         </div>
     );

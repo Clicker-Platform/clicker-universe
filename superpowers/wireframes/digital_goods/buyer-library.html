@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Buyer · Library — Digital Goods Wireframe</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-900">
+
+<header class="border-b bg-white">
+  <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="font-bold">Tenant Brand</div>
+    <div class="text-sm text-gray-500">budi@example.com · <a href="#" class="underline">Sign out</a></div>
+  </div>
+</header>
+
+<main class="max-w-5xl mx-auto px-4 py-10">
+  <div class="text-xs uppercase tracking-wider text-gray-500 mb-1">/library</div>
+  <h1 class="text-2xl font-bold mb-1">My Library</h1>
+  <p class="text-sm text-gray-600 mb-8">Everything you've purchased, ready to access anytime.</p>
+
+  <!-- Pending order callout -->
+  <div class="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg text-sm flex items-center justify-between">
+    <div>
+      <strong>1 order awaiting payment confirmation.</strong>
+      <span class="text-amber-800">"Cara Lapor SLIK OJK" — penjual akan konfirmasi pembayaran Anda.</span>
+    </div>
+    <a href="#" class="text-amber-900 underline whitespace-nowrap">View order →</a>
+  </div>
+
+  <!-- Library items -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+    <!-- PDF item -->
+    <article class="bg-white border rounded-xl overflow-hidden flex flex-col">
+      <div class="aspect-[3/4] bg-gradient-to-br from-orange-200 to-pink-200 flex items-center justify-center text-gray-700 text-xs">
+        Cover
+      </div>
+      <div class="p-4 flex-1 flex flex-col">
+        <div class="text-xs uppercase tracking-wider text-gray-500 mb-1">📄 PDF</div>
+        <div class="font-bold mb-1">Pinjol Survival Kit</div>
+        <div class="text-xs text-gray-500 mb-4">Purchased 5 days ago</div>
+        <button class="mt-auto bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium">
+          Download PDF
+        </button>
+      </div>
+    </article>
+
+    <!-- YouTube item -->
+    <article class="bg-white border rounded-xl overflow-hidden flex flex-col">
+      <div class="aspect-[3/4] bg-gradient-to-br from-red-200 to-purple-200 flex items-center justify-center text-gray-700 text-xs">
+        Video poster
+      </div>
+      <div class="p-4 flex-1 flex flex-col">
+        <div class="text-xs uppercase tracking-wider text-gray-500 mb-1">▶ Video</div>
+        <div class="font-bold mb-1">Workshop Restrukturisasi Hutang</div>
+        <div class="text-xs text-gray-500 mb-4">Purchased 2 weeks ago</div>
+        <button class="mt-auto bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium">
+          Watch Video
+        </button>
+      </div>
+    </article>
+
+    <!-- PDF item 2 -->
+    <article class="bg-white border rounded-xl overflow-hidden flex flex-col">
+      <div class="aspect-[3/4] bg-gradient-to-br from-blue-200 to-teal-200 flex items-center justify-center text-gray-700 text-xs">
+        Cover
+      </div>
+      <div class="p-4 flex-1 flex flex-col">
+        <div class="text-xs uppercase tracking-wider text-gray-500 mb-1">📄 PDF</div>
+        <div class="font-bold mb-1">Panduan Keuangan Keluarga Muda</div>
+        <div class="text-xs text-gray-500 mb-4">Purchased 1 month ago</div>
+        <button class="mt-auto bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium">
+          Download PDF
+        </button>
+      </div>
+    </article>
+
+  </div>
+
+  <!-- Detail page preview -->
+  <h2 class="text-sm font-semibold text-gray-700 mt-12 mb-3">Library detail page (click "Watch Video")</h2>
+  <div class="bg-white border-2 border-gray-300 rounded-xl overflow-hidden max-w-2xl">
+    <div class="aspect-video bg-gray-900 flex items-center justify-center text-gray-400 text-sm">
+      [ YouTube iframe embed ]
+    </div>
+    <div class="p-6">
+      <div class="text-xs uppercase tracking-wider text-gray-500 mb-1">▶ Video</div>
+      <h3 class="text-xl font-bold mb-1">Workshop Restrukturisasi Hutang</h3>
+      <div class="text-xs text-gray-500 mb-3">Purchased 2 weeks ago · Order #1A2B12</div>
+      <p class="text-sm text-gray-700">
+        Workshop 2-jam membahas strategi restrukturisasi hutang multi-pinjol...
+      </p>
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  <h2 class="text-sm font-semibold text-gray-700 mt-12 mb-3">Empty state (no purchases yet)</h2>
+  <div class="bg-white border-2 border-dashed border-gray-300 rounded-xl p-12 text-center max-w-2xl">
+    <div class="text-4xl mb-3">📚</div>
+    <div class="font-medium mb-1">Your library is empty</div>
+    <div class="text-sm text-gray-500 mb-4">Purchases will appear here.</div>
+    <a href="buyer-product-detail.html" class="inline-block bg-gray-900 text-white px-4 py-2 rounded-lg text-sm">Browse Store</a>
+  </div>
+
+  <div class="mt-10 p-4 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-900">
+    <strong>Wireframe notes:</strong>
+    <ul class="list-disc list-inside mt-1 space-y-1">
+      <li>"Download PDF" generates a 15-min signed URL on click — never embedded directly in DOM.</li>
+      <li>"Watch Video" navigates to library detail page with YouTube iframe (cover thumbnail is YouTube's auto poster).</li>
+      <li>Pending order callout deep-links to <code>/library/orders/[orderId]</code> — the order status page (not pictured separately; same shape as checkout but read-only with live status).</li>
+      <li>Bundle (v1.1) would show a single tile that opens to a list of files inside.</li>
+    </ul>
+  </div>
+
+  <div class="mt-4 text-xs text-gray-500">
+    <a href="index.html" class="underline">← Back to wireframe index</a>
+  </div>
+</main>
+
+</body>
+</html>

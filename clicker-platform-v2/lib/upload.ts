@@ -85,7 +85,7 @@ export async function uploadToStorage({
     siteId,
     convertToWebP = true,
     webpQuality = 0.85,
-}: UploadOptions): Promise<{ url: string; contentType: string; sizeBytes: number }> {
+}: UploadOptions): Promise<{ url: string; contentType: string; sizeBytes: number; path: string }> {
     const storagePrefix = (!siteId || siteId === 'platform')
         ? folder
         : `sites/${siteId}/${folder}`;
@@ -100,5 +100,5 @@ export async function uploadToStorage({
 
     await uploadBytes(storageRef, blob, { contentType });
 
-    return { url: await getDownloadURL(storageRef), contentType, sizeBytes: blob.size };
+    return { url: await getDownloadURL(storageRef), contentType, sizeBytes: blob.size, path: fileName };
 }

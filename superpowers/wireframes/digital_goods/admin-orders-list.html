@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Admin · Orders List — Digital Goods Wireframe</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-900">
+
+<div class="flex min-h-screen">
+
+  <aside class="w-56 bg-white border-r p-4 hidden lg:block">
+    <div class="text-xs font-bold uppercase tracking-wider text-gray-500 mb-4">Tenant Admin</div>
+    <nav class="space-y-1 text-sm">
+      <div class="px-3 py-2 text-gray-500">Dashboard</div>
+      <div class="px-3 py-2 text-gray-500">POS</div>
+      <div class="px-3 py-2 text-gray-500">Members</div>
+      <div class="px-3 py-2 bg-gray-900 text-white rounded">Digital Goods</div>
+      <div class="ml-3 mt-1 space-y-1 text-xs">
+        <div class="px-3 py-1.5 text-gray-500">Products</div>
+        <div class="px-3 py-1.5 bg-gray-100 rounded">Orders</div>
+        <div class="px-3 py-1.5 text-gray-500">Settings</div>
+      </div>
+    </nav>
+  </aside>
+
+  <main class="flex-1 p-6 max-w-6xl">
+    <div class="text-xs uppercase tracking-wider text-gray-500 mb-1">/admin/digital-goods/orders</div>
+    <header class="flex items-start justify-between mb-6">
+      <div>
+        <h1 class="text-2xl font-bold">Orders</h1>
+        <p class="text-sm text-gray-600 mt-1">Confirm bank transfers and manage buyer purchases.</p>
+      </div>
+      <div class="flex gap-2 text-sm">
+        <select class="border rounded-lg px-3 py-2 bg-white">
+          <option>All statuses</option>
+          <option>Awaiting confirmation</option>
+          <option>Paid</option>
+          <option>Cancelled</option>
+        </select>
+        <input type="text" placeholder="Search by buyer email…" class="border rounded-lg px-3 py-2" />
+      </div>
+    </header>
+
+    <!-- Pending callout -->
+    <div class="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm flex items-center justify-between">
+      <span><strong>2 orders</strong> awaiting your confirmation</span>
+      <a href="#" class="text-amber-900 underline">Filter pending →</a>
+    </div>
+
+    <div class="bg-white border rounded-xl overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50 text-left text-xs uppercase tracking-wider text-gray-500">
+          <tr>
+            <th class="px-4 py-3">Order</th>
+            <th class="px-4 py-3">Buyer</th>
+            <th class="px-4 py-3">Product</th>
+            <th class="px-4 py-3">Amount</th>
+            <th class="px-4 py-3">Status</th>
+            <th class="px-4 py-3">Created</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="border-t bg-amber-50/40">
+            <td class="px-4 py-3 font-mono text-xs text-gray-600">#1A2B3C</td>
+            <td class="px-4 py-3">budi@example.com</td>
+            <td class="px-4 py-3 text-gray-700">Pinjol Survival Kit</td>
+            <td class="px-4 py-3 font-medium">Rp 149.000</td>
+            <td class="px-4 py-3"><span class="text-xs px-2 py-1 bg-amber-100 text-amber-700 rounded">awaiting confirmation</span></td>
+            <td class="px-4 py-3 text-gray-500">5 min ago</td>
+          </tr>
+          <tr class="border-t bg-amber-50/40">
+            <td class="px-4 py-3 font-mono text-xs text-gray-600">#1A2B3D</td>
+            <td class="px-4 py-3">siti@example.com</td>
+            <td class="px-4 py-3 text-gray-700">Cara Lapor SLIK OJK</td>
+            <td class="px-4 py-3 font-medium">Rp 79.000</td>
+            <td class="px-4 py-3"><span class="text-xs px-2 py-1 bg-amber-100 text-amber-700 rounded">awaiting confirmation</span></td>
+            <td class="px-4 py-3 text-gray-500">18 min ago</td>
+          </tr>
+          <tr class="border-t">
+            <td class="px-4 py-3 font-mono text-xs text-gray-600">#1A2B3A</td>
+            <td class="px-4 py-3">anita@example.com</td>
+            <td class="px-4 py-3 text-gray-700">Pinjol Survival Kit</td>
+            <td class="px-4 py-3 font-medium">Rp 149.000</td>
+            <td class="px-4 py-3"><span class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded">paid</span></td>
+            <td class="px-4 py-3 text-gray-500">Today, 09:14</td>
+          </tr>
+          <tr class="border-t">
+            <td class="px-4 py-3 font-mono text-xs text-gray-600">#1A2B39</td>
+            <td class="px-4 py-3">rina@example.com</td>
+            <td class="px-4 py-3 text-gray-700">Cara Lapor SLIK OJK</td>
+            <td class="px-4 py-3 font-medium">Rp 79.000</td>
+            <td class="px-4 py-3"><span class="text-xs px-2 py-1 bg-gray-200 text-gray-600 rounded">cancelled</span></td>
+            <td class="px-4 py-3 text-gray-500">Yesterday</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Order detail panel (slide-over preview) -->
+    <h2 class="text-sm font-semibold text-gray-700 mt-8 mb-2">Order detail (slide-over on click)</h2>
+    <div class="bg-white border-2 border-gray-300 rounded-xl p-6 max-w-md">
+      <div class="flex items-start justify-between mb-4">
+        <div>
+          <div class="text-xs text-gray-500">Order #1A2B3C</div>
+          <h3 class="font-bold text-lg">Pinjol Survival Kit</h3>
+        </div>
+        <span class="text-xs px-2 py-1 bg-amber-100 text-amber-700 rounded h-fit">awaiting confirmation</span>
+      </div>
+      <dl class="space-y-2 text-sm border-t pt-3">
+        <div class="flex justify-between"><dt class="text-gray-500">Buyer</dt><dd>budi@example.com</dd></div>
+        <div class="flex justify-between"><dt class="text-gray-500">Amount</dt><dd class="font-medium">Rp 149.000</dd></div>
+        <div class="flex justify-between"><dt class="text-gray-500">Method</dt><dd>Manual transfer</dd></div>
+        <div class="flex justify-between"><dt class="text-gray-500">Bank</dt><dd>BCA · 1234567890</dd></div>
+        <div class="flex justify-between"><dt class="text-gray-500">Buyer note</dt><dd class="text-right max-w-[200px]">"Ref BCA TRF20260523-001"</dd></div>
+        <div class="flex justify-between"><dt class="text-gray-500">Created</dt><dd>5 min ago</dd></div>
+      </dl>
+      <div class="border-t mt-4 pt-4 space-y-2">
+        <label class="block text-xs text-gray-500">Bank reference (optional)</label>
+        <input type="text" placeholder="BCA TRF20260523-001" class="w-full border rounded-lg px-3 py-2 text-sm" />
+      </div>
+      <div class="flex gap-2 mt-4">
+        <button class="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium">Tandai Lunas</button>
+        <button class="px-4 py-2 rounded-lg border border-red-300 text-red-600 text-sm">Cancel</button>
+      </div>
+    </div>
+
+    <div class="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-900">
+      <strong>Wireframe notes:</strong>
+      <ul class="list-disc list-inside mt-1 space-y-1">
+        <li>Pending callout at the top makes it impossible for tenant to miss new orders even if email is missed.</li>
+        <li>"Mark as paid" should use <code>ConfirmButton</code> pattern — destructive in the sense that it grants permanent library access.</li>
+        <li>Cancel also uses <code>ConfirmButton</code>; transitions order to <code>cancelled</code>, no library entry created.</li>
+        <li>Plan 2 deliverable (not Plan 1).</li>
+      </ul>
+    </div>
+
+    <div class="mt-4 text-xs text-gray-500">
+      <a href="index.html" class="underline">← Back to wireframe index</a>
+    </div>
+  </main>
+</div>
+
+</body>
+</html>

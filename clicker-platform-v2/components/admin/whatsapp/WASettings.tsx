@@ -8,6 +8,7 @@ import { usePermission } from '@/components/admin/PermissionGuard';
 import { WA_ROOT, WA_CONFIG_DOC } from '@/lib/whatsapp/constants';
 import type { WAConfig } from '@/lib/whatsapp/types';
 import { CheckCircle, AlertCircle, Loader2, RefreshCw, Unlink, Phone, Shield, Activity } from 'lucide-react';
+import { ConfirmButton } from '@/components/ui/ConfirmButton';
 
 function formatPhoneE164(raw: string): string {
   let digits = raw.replace(/[^\d+]/g, '');
@@ -60,7 +61,6 @@ export function WASettings({ onDisconnect }: { onDisconnect: () => void }) {
 
   async function handleDisconnect() {
     if (!!isViewOnly || !siteId) return;
-    if (!confirm('Apakah kamu yakin ingin memutuskan koneksi WhatsApp? Semua pesan akan tetap tersimpan.')) return;
     setDisconnecting(true);
     try {
       await fetch('/api/admin/whatsapp/disconnect', {
@@ -197,14 +197,14 @@ export function WASettings({ onDisconnect }: { onDisconnect: () => void }) {
         <p className="text-xs text-gray-500 dark:text-neutral-400 mb-3">
           Menghapus koneksi WA dari Clicker. Data percakapan tetap tersimpan.
         </p>
-        <button
-          onClick={handleDisconnect}
+        <ConfirmButton
+          onConfirm={handleDisconnect}
+          label="Putuskan Koneksi WhatsApp"
+          triggerIcon={disconnecting ? <Loader2 size={14} className="animate-spin" /> : <Unlink size={14} />}
+          loading={disconnecting}
           disabled={disconnecting || !!isViewOnly}
-          className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50"
-        >
-          {disconnecting ? <Loader2 size={14} className="animate-spin" /> : <Unlink size={14} />}
-          Putuskan Koneksi WhatsApp
-        </button>
+          triggerClassName="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50"
+        />
       </div>
     </div>
   );

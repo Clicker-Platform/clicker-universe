@@ -1,181 +1,246 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
-import { useTemplate } from '@/components/TemplateProvider';
 import { useSite } from '@/lib/site-context';
 import { resolveNavHref } from '@/lib/resolveNavHref';
 import { FormModal } from '@/components/FormModal';
-import { useDeviceView } from '@/components/DeviceViewContext';
-import { BUTTON_TEXT } from './typography';
+import { UnifiedButton } from '@/components/ui/UnifiedButton';
+import type { ButtonTier, ButtonSize } from '@/lib/buttonPacks/types';
 
 function isSafeHref(href: string | undefined | null): boolean {
-    if (!href) return false;
-    return /^(https?:\/\/|\/|#|mailto:|tel:)/i.test(href);
+  if (!href) return false;
+  return /^(https?:\/\/|\/|#|mailto:|tel:)/i.test(href);
 }
 
-function isExternalProtocol(href: string): boolean {
-    return /^(https?:\/\/|mailto:|tel:)/i.test(href);
+function resolveTier(d: any, fallback: ButtonTier = 'primary'): ButtonTier {
+  if (d?.tier === 'primary' || d?.tier === 'secondary' || d?.tier === 'tertiary') return d.tier;
+  if (d?.variant === 'outline') return 'secondary';
+  if (d?.variant === 'secondary') return 'secondary';
+  if (d?.variant === 'primary') return 'primary';
+  return fallback;
 }
 
-export const DefaultButtonBlock = ({ data, previewMode, siteId: siteIdProp }: { data: any; previewMode?: boolean; siteId?: string }) => {
-    const { theme } = useTemplate();
-    const d = useDeviceView();
-    const { siteId: ctxSiteId, tenantSlug, isSubdomain } = useSite();
-    const siteId = siteIdProp || ctxSiteId;
-    const isClean = theme.cardStyle === 'clean';
-    const isGlass = theme.cardStyle === 'glass';
+function resolveSize(d: any): ButtonSize {
+  return d?.size === 'sm' || d?.size === 'lg' ? d.size : 'md';
+}
 
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [formData, setFormData] = useState<any>(null);
-    const [isLoadingForm, setIsLoadingForm] = useState(false);
-    const [formError, setFormError] = useState<string | null>(null);
+type ButtonKey = 'primary' | 'secondary';
 
-    const alignClass = {
-        left: 'text-left',
-        center: 'text-center',
-        right: 'text-right',
-        full: 'text-center w-full'
-    }[data.align as string] || 'text-center';
+interface ButtonCfg {
+  label: string;
+  tier: ButtonTier;
+  size: ButtonSize;
+  linkType: string;
+  url?: string;
+  formId?: string;
+  openInNewTab?: boolean;
+  fullWidth: boolean;
+}
 
-    const getVariantClass = () => {
-        if (isGlass) {
-            switch (data.variant) {
-                case 'secondary': return 'bg-white/10 border border-white/20 text-white hover:bg-white/20';
-                case 'outline': return 'bg-transparent border border-white/30 text-white hover:border-[var(--theme-primary)] hover:text-[var(--theme-primary)]';
-                default: return 'bg-[var(--theme-primary)] text-[var(--theme-background)] hover:opacity-90';
-            }
+export const DefaultButtonBlock = ({
+  data,
+  previewMode,
+  siteId: siteIdProp,
+}: { data: any; previewMode?: boolean; siteId?: string }) => {
+  const { siteId: ctxSiteId, tenantSlug, isSubdomain } = useSite();
+  const siteId = siteIdProp || ctxSiteId;
+
+  const [modalOpenFor, setModalOpenFor] = useState<ButtonKey | null>(null);
+  const [formDataByKey, setFormDataByKey] = useState<Partial<Record<ButtonKey, any>>>({});
+  const [loadingFor, setLoadingFor] = useState<ButtonKey | null>(null);
+  const [errorByKey, setErrorByKey] = useState<Partial<Record<ButtonKey, string>>>({});
+
+  const isFull = data.align === 'full';
+
+  const alignClass =
+    isFull ? ''
+    : data.align === 'left' ? 'text-left'
+    : data.align === 'right' ? 'text-right'
+    : 'text-center';
+
+  const pairJustify =
+    data.align === 'left' ? 'justify-start'
+    : data.align === 'right' ? 'justify-end'
+    : 'justify-center';
+
+  const wrapperClass = isFull ? '' : alignClass;
+
+  // Auto-dismiss per-key errors after 4s
+  React.useEffect(() => {
+    const keys = (Object.keys(errorByKey) as ButtonKey[]).filter(k => errorByKey[k]);
+    if (keys.length === 0) return;
+    const timers = keys.map(k =>
+      setTimeout(() => setErrorByKey(prev => ({ ...prev, [k]: undefined })), 4000)
+    );
+    return () => timers.forEach(clearTimeout);
+  }, [errorByKey]);
+
+  const handleFormClick = (key: ButtonKey, cfg: ButtonCfg) => async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (previewMode || !siteId) return;
+    setErrorByKey(prev => ({ ...prev, [key]: undefined }));
+    if (!formDataByKey[key]) {
+      setLoadingFor(key);
+      try {
+        const res = await fetch(`/api/forms?id=${cfg.formId}&siteId=${siteId}`);
+        if (res.ok) {
+          const formJson = await res.json();
+          setFormDataByKey(prev => ({ ...prev, [key]: formJson }));
+          setModalOpenFor(key);
+        } else if (res.status === 404) {
+          setErrorByKey(prev => ({ ...prev, [key]: 'Form not found or unpublished.' }));
+        } else {
+          setErrorByKey(prev => ({ ...prev, [key]: 'Could not load form. Please try again.' }));
         }
-        if (isClean) {
-            switch (data.variant) {
-                case 'secondary': return 'bg-[var(--theme-surface)] border-2 border-[var(--theme-border)] text-[var(--theme-foreground)] hover:border-[var(--theme-primary)] hover:text-[var(--theme-primary)]';
-                case 'outline': return 'bg-transparent border-2 border-[var(--theme-foreground)] text-[var(--theme-foreground)] hover:bg-[var(--theme-foreground)] hover:text-[var(--theme-background)]';
-                default: return 'bg-[var(--theme-foreground)] text-[var(--theme-background)] hover:bg-[var(--theme-primary)] hover:shadow-lg';
-            }
-        }
-        switch (data.variant) {
-            case 'secondary': return 'bg-[var(--theme-primary)] text-[var(--theme-foreground)] hover:opacity-80';
-            case 'outline': return 'bg-transparent border-[3px] border-[var(--theme-foreground)] text-[var(--theme-foreground)] hover:bg-[var(--theme-foreground)] hover:text-[var(--theme-background)]';
-            default: return 'bg-[var(--theme-foreground)] text-[var(--theme-background)] hover:opacity-80';
-        }
-    };
+      } catch {
+        setErrorByKey(prev => ({ ...prev, [key]: 'Network error. Please check your connection.' }));
+      }
+      setLoadingFor(null);
+    } else {
+      setModalOpenFor(key);
+    }
+  };
 
-    const className = `inline-block py-3 px-6 ${BUTTON_TEXT(d)} transition-all transform ${isClean ? 'shadow-sm hover:-translate-y-0.5' : isGlass ? 'hover:-translate-y-0.5 hover:shadow-lg' : 'hover:-translate-y-1 hover:shadow-lg'} ${getVariantClass()} ${data.align === 'full' ? 'w-full block' : ''}`;
+  const buildTrigger = (
+    cfg: ButtonCfg,
+    key: ButtonKey,
+  ): React.ReactNode => {
+    const { label, tier, size, linkType, fullWidth } = cfg;
+    const isFormLink = linkType === 'form' && !!cfg.formId;
 
-    const buttonStyle = { borderRadius: 'calc(var(--theme-radius) * 0.75)' };
-    const label = data.label || 'Click Here';
-    const linkType = data.linkType || 'url';
-    const isFormLink = linkType === 'form' && !!data.formId;
-
-    // Resolve href:
-    //   form  → handled via overlay (no href; render <button>)
-    //   page  → tenant-aware via resolveNavHref(stored '/slug', ...)
-    //   url   → as-stored
-    const rawUrl = typeof data.url === 'string' ? data.url.trim() : '';
-    const resolvedHref = linkType === 'page'
+    const rawUrl = typeof cfg.url === 'string' ? cfg.url.trim() : '';
+    const resolvedHref =
+      linkType === 'page'
         ? resolveNavHref(rawUrl, tenantSlug, isSubdomain)
         : rawUrl;
-
     const safe = isSafeHref(resolvedHref);
-    const external = safe && isExternalProtocol(resolvedHref);
-    const openInNewTab = external || data.openInNewTab === true;
+    const external = safe && /^(https?:\/\/|mailto:|tel:)/i.test(resolvedHref);
+    const openInNewTab = external || cfg.openInNewTab === true;
 
-    const handleFormClick = async (e: React.MouseEvent) => {
-        e.preventDefault();
-        if (previewMode || !siteId) return;
-        setFormError(null);
-        if (!formData) {
-            setIsLoadingForm(true);
-            try {
-                const res = await fetch(`/api/forms?id=${data.formId}&siteId=${siteId}`);
-                if (res.ok) {
-                    setFormData(await res.json());
-                    setIsModalOpen(true);
-                } else if (res.status === 404) {
-                    setFormError('Form not found or unpublished.');
-                } else {
-                    setFormError('Could not load form. Please try again.');
-                }
-            } catch {
-                setFormError('Network error. Please check your connection.');
-            }
-            setIsLoadingForm(false);
-        } else {
-            setIsModalOpen(true);
-        }
-    };
-
-    // Auto-dismiss error after 4s
-    React.useEffect(() => {
-        if (!formError) return;
-        const t = setTimeout(() => setFormError(null), 4000);
-        return () => clearTimeout(t);
-    }, [formError]);
-
-    const wrapperClass = `${data.align === 'full' ? '' : alignClass}`;
-
-    let trigger: React.ReactNode;
     if (previewMode || (!isFormLink && !safe)) {
-        trigger = <span className={className} style={buttonStyle}>{label}</span>;
-    } else if (isFormLink) {
-        trigger = (
-            <button
-                type="button"
-                onClick={handleFormClick}
-                className={className}
-                style={buttonStyle}
-                disabled={isLoadingForm}
-            >
-                {isLoadingForm ? 'Loading…' : label}
-            </button>
-        );
-    } else if (external) {
-        trigger = (
-            <a
-                href={resolvedHref}
-                className={className}
-                style={buttonStyle}
-                target={openInNewTab ? '_blank' : undefined}
-                rel={openInNewTab ? 'noopener noreferrer' : undefined}
-            >
-                {label}
-            </a>
-        );
-    } else {
-        trigger = (
-            <Link
-                href={resolvedHref}
-                className={className}
-                style={buttonStyle}
-                target={openInNewTab ? '_blank' : undefined}
-                rel={openInNewTab ? 'noopener noreferrer' : undefined}
-            >
-                {label}
-            </Link>
-        );
+      return (
+        <UnifiedButton tier={tier} size={size} fullWidth={fullWidth}>
+          {label}
+        </UnifiedButton>
+      );
     }
-
+    if (isFormLink) {
+      return (
+        <UnifiedButton
+          tier={tier}
+          size={size}
+          fullWidth={fullWidth}
+          onClick={handleFormClick(key, cfg)}
+          loading={loadingFor === key}
+        >
+          {label}
+        </UnifiedButton>
+      );
+    }
     return (
-        <>
-            <div className={wrapperClass}>
-                {trigger}
-                {formError && (
-                    <div
-                        role="alert"
-                        className="mt-2 inline-block text-xs font-medium px-3 py-1.5 rounded-lg border"
-                        style={{
-                            backgroundColor: 'var(--theme-error-bg)',
-                            color: 'var(--theme-error)',
-                            borderColor: 'var(--theme-error-bg)',
-                        }}
-                    >
-                        {formError}
-                    </div>
-                )}
-            </div>
-            {isFormLink && isModalOpen && formData && (
-                <FormModal form={formData} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} siteId={siteId} />
-            )}
-        </>
+      <UnifiedButton
+        tier={tier}
+        size={size}
+        fullWidth={fullWidth}
+        href={resolvedHref}
+        external={openInNewTab}
+      >
+        {label}
+      </UnifiedButton>
     );
+  };
+
+  const primaryCfg: ButtonCfg = {
+    label: data.label || 'Click Here',
+    tier: resolveTier(data, 'primary'),
+    size: resolveSize(data),
+    linkType: data.linkType || 'url',
+    url: data.url,
+    formId: data.formId,
+    openInNewTab: data.openInNewTab,
+    fullWidth: isFull,
+  };
+
+  const secondaryCfg: ButtonCfg | null = data.secondary
+    ? {
+        label: data.secondary.label || 'Learn More',
+        tier: resolveTier(data.secondary, 'secondary'),
+        size: resolveSize(data.secondary),
+        linkType: data.secondary.linkType || 'url',
+        url: data.secondary.url,
+        formId: data.secondary.formId,
+        openInNewTab: data.secondary.openInNewTab,
+        fullWidth: isFull,
+      }
+    : null;
+
+  const primaryTrigger = buildTrigger(primaryCfg, 'primary');
+  const secondaryTrigger = secondaryCfg ? buildTrigger(secondaryCfg, 'secondary') : null;
+
+  const primaryError = errorByKey.primary;
+  const secondaryError = errorByKey.secondary;
+  const primaryIsFormLink = data.linkType === 'form' && !!data.formId;
+  const secondaryIsFormLink =
+    !!data.secondary && data.secondary.linkType === 'form' && !!data.secondary.formId;
+
+  const errorBoxClass = 'mt-2 inline-block text-xs font-medium px-3 py-1.5 rounded-lg border';
+  const errorBoxStyle = {
+    backgroundColor: 'var(--theme-error-bg)',
+    color: 'var(--theme-error)',
+    borderColor: 'var(--theme-error-bg)',
+  };
+
+  const triggers = secondaryTrigger ? (
+    <div className={`@container w-full ${isFull ? '' : `flex ${pairJustify}`}`}>
+      <div className={`flex flex-col @[320px]:flex-row gap-3 ${isFull ? 'w-full' : ''}`}>
+        {isFull ? (
+          <>
+            <div className="flex-1 [&>*]:w-full [&>*]:block">{primaryTrigger}</div>
+            <div className="flex-1 [&>*]:w-full [&>*]:block">{secondaryTrigger}</div>
+          </>
+        ) : (
+          <>
+            {primaryTrigger}
+            {secondaryTrigger}
+          </>
+        )}
+      </div>
+    </div>
+  ) : (
+    primaryTrigger
+  );
+
+  return (
+    <>
+      <div className={wrapperClass}>
+        {triggers}
+        {primaryError && (
+          <div role="alert" className={errorBoxClass} style={errorBoxStyle}>
+            {primaryError}
+          </div>
+        )}
+        {secondaryError && (
+          <div role="alert" className={errorBoxClass} style={errorBoxStyle}>
+            {secondaryError}
+          </div>
+        )}
+      </div>
+      {primaryIsFormLink && modalOpenFor === 'primary' && formDataByKey.primary && (
+        <FormModal
+          form={formDataByKey.primary}
+          isOpen={true}
+          onClose={() => setModalOpenFor(null)}
+          siteId={siteId}
+        />
+      )}
+      {secondaryIsFormLink && modalOpenFor === 'secondary' && formDataByKey.secondary && (
+        <FormModal
+          form={formDataByKey.secondary}
+          isOpen={true}
+          onClose={() => setModalOpenFor(null)}
+          siteId={siteId}
+        />
+      )}
+    </>
+  );
 };

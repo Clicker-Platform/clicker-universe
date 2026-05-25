@@ -74,8 +74,16 @@ export function EditorProvider({ children, blocks, onChange }: { children: React
     }, [onChange]);
 
     const addBlock = useCallback((block: PageBlock) => {
-        onChange(prev => [...prev, block]);
-    }, [onChange]);
+        const activeId = singleBlockId(selection);
+        onChange(prev => {
+            if (!activeId) return [...prev, block];
+            const idx = prev.findIndex(b => b.id === activeId);
+            if (idx === -1) return [...prev, block];
+            const next = [...prev];
+            next.splice(idx + 1, 0, block);
+            return next;
+        });
+    }, [onChange, selection]);
 
     const removeBlock = useCallback((id: string) => {
         onChange(prev => prev.filter(block => block.id !== id));
