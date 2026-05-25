@@ -16,8 +16,8 @@ Lets a Clicker tenant sell digital products to buyers and deliver them via a gat
 
 - Clicker is **not** a marketplace. Each tenant runs their own brand on their own (often custom) domain.
 - The buyer is a member **of the tenant**, not of Clicker. Branding, emails, and login flow feel native to the tenant.
-- Same underlying Firebase Auth identity is reused across tenants (Firebase's default behavior — same email = same UID), but each tenant has its own `Member` doc. The buyer never perceives Clicker.
-- The existing `membership` module is loyalty-focused. It is **not** renamed; the new module reuses `Member` as the buyer-identity record and optionally awards loyalty points via the existing `addPoints` API.
+- Same underlying Firebase Auth identity is reused across tenants (Firebase's default behavior — same email = same UID), but each tenant has its own digital_goods buyer record. The buyer never perceives Clicker.
+- Digital_goods owns its own buyer-identity collection (`modules/digital_goods/buyers/{uid}`). It has **no identity dependency** on the existing `membership` module. The membership module is touched only when optional loyalty integration is enabled (§11) — and even then, via a fire-and-forget facade call.
 
 ## 3. Module shape
 
@@ -35,13 +35,28 @@ Standard Clicker module under `lib/modules/digital_goods/` with `api.ts`, `const
 
 ### Firestore paths
 
-All digital_goods data lives under the module's own path (`sites/{siteId}/modules/digital_goods/...`) per the platform convention — no module's data lives in another module's path. Buyer identity is referenced by `memberId` (foreign key), not by physical nesting under the membership module.
+All digital_goods data lives under the module's own path (`sites/{siteId}/modules/digital_goods/...`) per the platform convention. Digital_goods owns its own **buyer** record — it does not depend on any other module for identity storage. The only platform primitive it relies on is Firebase Auth (UID).
 
 ```text
+sites/{siteId}/modules/digital_goods/buyers/{uid}              // digital_goods's own buyer record, keyed by Firebase Auth UID
 sites/{siteId}/modules/digital_goods/products/{productId}
 sites/{siteId}/modules/digital_goods/orders/{orderId}
 sites/{siteId}/modules/digital_goods/library/{libraryEntryId}
 sites/{siteId}/modules/digital_goods/settings/config           // single-doc, holds bank details
+```
+
+### `buyers/{uid}`
+
+Digital_goods's own buyer-identity record. Document ID is the Firebase Auth UID, so lookups by current session are direct (`doc(buyers, request.auth.uid)`) — no FK indirection. This collection is owned entirely by digital_goods. The membership module is not involved.
+
+```ts
+{
+  uid: string,                            // matches doc ID; Firebase Auth UID
+  email: string,                          // from Firebase Auth at first verify
+  fullName?: string,                      // collected at first checkout if missing
+  createdAt: Timestamp,
+  updatedAt: Timestamp,
+}
 ```
 
 ### `products/{productId}`
@@ -72,7 +87,7 @@ sites/{siteId}/modules/digital_goods/settings/config           // single-doc, ho
 
 ```ts
 {
-  memberId: string,
+  buyerId: string,                        // FK to digital_goods's own buyers/{uid}
   productId: string,
   productSnapshot: {                      // denormalized at order time, immutable
     title, coverImage, price, currency, contentKind, type
@@ -97,11 +112,11 @@ sites/{siteId}/modules/digital_goods/settings/config           // single-doc, ho
 
 ### `library/{libraryEntryId}`
 
-Flat collection keyed by `memberId` field, not nested under member docs. Owned by digital_goods (no entanglement with the membership module's path).
+Flat collection. Keyed by `buyerId` field (FK to digital_goods's own `buyers/{uid}`). Owned by digital_goods.
 
 ```ts
 {
-  memberId: string,                       // FK to sites/{siteId}/modules/membership/members
+  buyerId: string,                        // FK to sites/{siteId}/modules/digital_goods/buyers
   productId: string,
   orderId: string,
   productSnapshot: { title, coverImage, type, contentKind },
@@ -110,7 +125,7 @@ Flat collection keyed by `memberId` field, not nested under member docs. Owned b
 }
 ```
 
-Read pattern for "this member's library": `query(library, where('memberId', '==', X), orderBy('purchasedAt', 'desc'))` — needs a composite index on `(memberId, purchasedAt desc)`. Firestore prompts for index creation on first query in dev.
+Read pattern for "this buyer's library": `query(library, where('buyerId', '==', uid), orderBy('purchasedAt', 'desc'))` — needs a composite index on `(buyerId, purchasedAt desc)`. Firestore prompts for index creation on first query in dev.
 
 ### `settings/config` (single doc)
 
@@ -126,34 +141,58 @@ Read pattern for "this member's library": `query(library, where('memberId', '=='
 
 ## 5. Authentication & identity
 
-- Reuses existing magic-link flow at `/member/login` → `/member/login/verify` (owned by the membership module).
-- The `Member` doc lives at `sites/{siteId}/modules/membership/members/{memberId}` and is owned by the membership module. Digital_goods **references** it by `memberId` but never writes to it directly.
-- **Auto-provision on first verify:** the membership module's existing verify handler creates the `Member` doc if absent. Digital_goods does not duplicate or sidecar this logic — it consumes whatever member-resolution helper the membership module exposes (e.g., `getOrCreateMemberByUid(siteId, uid)`). If this helper doesn't yet exist, the plan will add it inside the membership module (one targeted change), then call it from digital_goods.
-- Name is collected on first library visit if missing — via the same membership-module update path, not a digital_goods write.
-- Magic-link emails are sent via existing Resend integration with per-tenant from-name and template branding — the buyer never sees "Clicker" branding.
+Digital_goods has **no dependency on the membership module** for authentication or buyer identity. It uses two platform-level primitives (Firebase Auth, Resend) and owns its own buyer record.
+
+### Auth (platform primitive)
+
+- Buyer authentication is Firebase Auth via the magic-link flow. The flow lives at `/member/login` → `/member/login/verify` today. Whichever module currently owns that route is irrelevant to digital_goods — digital_goods only needs the resulting Firebase Auth session (UID + email).
+- If a tenant has digital_goods enabled but no other module that provides a buyer login route, the plan adds a thin digital_goods-owned login route. Either way, the auth primitive is Firebase, not "the membership module."
+
+### Buyer identity (owned by digital_goods)
+
+- Digital_goods maintains its own buyer record at `sites/{siteId}/modules/digital_goods/buyers/{uid}`, keyed by Firebase Auth UID. Shape defined in §4.
+- **Auto-provision:** the first time an authenticated session reaches any digital_goods page that requires identity (checkout, library), digital_goods upserts the buyer record itself. Email comes from the Firebase Auth user; `fullName` is collected at first checkout if missing.
+- Digital_goods does NOT read, write, or depend on any other module's data for identity. There is no `Member` doc reference, no `memberId` FK, no cross-module helper call for identity resolution.
+
+### Cross-tenant identity invisibility (intentional architecture)
+
+A single buyer may end up purchasing from multiple Clicker tenants over time. The platform's architecture intentionally hides this from the buyer — each tenant feels like a wholly separate brand. This works because of four design properties stacked together:
+
+1. **Firebase Auth de-dupes by email.** Under the hood there is one Firebase Auth user per email address. If the same buyer authenticates on Tenant A's site and later on Tenant B's site with the same email, both sessions resolve to the same Firebase UID. This is Firebase's default behavior — not custom code.
+2. **Per-tenant buyer records.** Each tenant gets its own `modules/digital_goods/buyers/{uid}` doc on its own site. So even though the UID is shared, the buyer's name, library, and purchase history on Tenant A are completely separate documents from those on Tenant B. No data leaks across tenants.
+3. **No "account exists" branch in magic-link.** Magic-link login has only one flow: "enter email → get link → click link → you're in." There is no signup-vs-login distinction, no "this email is already registered" prompt, no password recovery branch. So a returning buyer on Tenant B sees the **same UX as a brand-new buyer** — they have no way of detecting that Firebase recognized them.
+4. **Per-tenant email branding via Resend.** Magic-link emails (and all transactional emails) are sent through the platform Resend integration with per-tenant from-name, reply-to, subject template, and body template. The buyer sees an email from "Tenant A" on Tenant A's flow and "Tenant B" on Tenant B's flow. The Clicker platform name appears nowhere.
+
+Combined, these four properties produce a buyer experience that is indistinguishable from "Tenant A built their own custom auth system, Tenant B built their own." The fact that they share a Firebase substrate is a backend reality with **zero buyer-facing surface area**. This invisibility is also what makes custom-domain tenants viable — the buyer believes they are interacting with one merchant brand on one merchant domain, end to end.
+
+### Relationship to the membership module
+
+- **None for MVP identity.** A tenant can run digital_goods without the membership module enabled. No data, no facade calls, no shared paths.
+- **Only on optional loyalty integration** (§11): when a purchase completes AND the tenant has the membership module enabled AND loyalty is on, digital_goods performs a fire-and-forget facade call to membership's `addPoints` (and, if needed, an upsert via membership's facade to create a Member doc for the same UID). This integration is the **sole** membership touchpoint and is failure-tolerant — the purchase succeeds whether or not loyalty award succeeds.
 
 ## 6. Access control
 
 ### Server-side guard (every signed-URL endpoint and library detail)
 
 ```ts
-// helper from membership module — read-only resolution of the current member
-const member = await getMemberFromSession(siteId);
-if (!member) return redirect('/member/login?next=...');
+// Resolve current Firebase Auth session — platform primitive, no module dependency
+const session = await getServerSession();
+if (!session?.uid) return redirect('/member/login?next=...');
 
 // digital_goods API — owns library queries on its own collection
-const entry = await getLibraryEntryForProduct(siteId, member.id, productId);
+const entry = await getLibraryEntryForProduct(siteId, session.uid, productId);
 if (!entry) return forbidden();
 // issue 15-min signed URL for PDF download or render YouTube embed
 ```
 
 ### Firestore security rules
 
-All rules live alongside other module rules in `firestore.rules` under the `sites/{siteId}/modules/digital_goods/...` path. No rules touch the membership module's path.
+All rules live alongside other module rules in `firestore.rules` under the `sites/{siteId}/modules/digital_goods/...` path. No rules touch any other module's path.
 
+- `modules/digital_goods/buyers/{uid}` — buyer reads/writes own (`request.auth.uid == uid`); admin reads all (for support).
 - `modules/digital_goods/products/{id}` — public read for `status === 'published'`; admin write (requires `digital_goods.manage` permission).
-- `modules/digital_goods/orders/{id}` — buyer reads own (where `request.auth.uid` resolves to the order's `memberId`); admin reads/writes all in their tenant.
-- `modules/digital_goods/library/{id}` — buyer reads own (same `memberId` check); server writes via Admin SDK only (no client-side writes ever).
+- `modules/digital_goods/orders/{id}` — buyer reads own (`request.auth.uid == resource.data.buyerId`); admin reads/writes all in their tenant.
+- `modules/digital_goods/library/{id}` — buyer reads own (`request.auth.uid == resource.data.buyerId`); server writes via Admin SDK only (no client-side writes ever).
 - `modules/digital_goods/settings/config` — admin read/write only.
 
 ### File delivery
@@ -223,21 +262,19 @@ Every cross-module touchpoint is enumerated here. The rule: digital_goods may **
 | Integration | Direction | Mechanism |
 | --- | --- | --- |
 | Firebase Auth | digital_goods consumes session | Existing `lib/firebase` client / Admin SDK in server actions. Platform infrastructure, not a module. |
-| **Membership module — member resolution** | digital_goods calls facade | `getMemberFromSession(siteId)` and `getOrCreateMemberByUid(siteId, uid)` exported from `@/lib/modules/membership/api`. Digital_goods never reads/writes `members/*` directly. If either helper doesn't exist yet, the plan adds it inside membership module. |
-| **Membership module — loyalty award (optional)** | digital_goods calls facade | On `Order.status === 'paid'`, if `membership` module is enabled and loyalty is on, call `addPoints(siteId, memberId, points, source)` via `@/lib/modules/membership/api` (designated facade exception per CLAUDE.md rule #6). Failure is non-fatal — log and continue; the purchase still succeeds. |
 | Firebase Storage | digital_goods owns its files | All files at `sites/{siteId}/modules/digital_goods/...`. No shared storage paths. Signed-URL issuance handled server-side via Admin SDK in `app/api/digital-goods/files/[fileId]/route.ts` (digital_goods's own endpoint). |
 | Resend email | digital_goods calls platform helper | `sendEmail({ siteId, to, templateAlias, variables })` from `lib/email/...`. Platform infrastructure, not a module. New template aliases owned by digital_goods: `digital_goods.new_order_tenant` and `digital_goods.order_paid_buyer`. |
 | PostHog | digital_goods emits events | `digital_goods.purchase_completed`, `digital_goods.product_published`. Uses platform PostHog wiring with `siteId` super-property. |
 | Site context | digital_goods consumes | `useSite()` for `siteId` per CLAUDE.md rule #3. Platform infrastructure. |
 | RBAC | digital_goods registers permission | New permission `digital_goods.manage` added to platform RBAC registry. `canEdit()` check per rule #4. |
+| **Membership module — loyalty award (optional, integration-only)** | digital_goods calls facade | On `Order.status === 'paid'`, if `membership` module is enabled and loyalty is on, call `addPoints(...)` via `@/lib/modules/membership/api` (designated facade exception per CLAUDE.md rule #6). If membership requires a Member doc to attach points to, the same facade is used to upsert one (keyed by the buyer's UID/email). Both calls are fire-and-forget — failure is logged but does not block the purchase. This is the **sole** touchpoint with the membership module. |
 
 ### Cross-module audit findings (fixed in this spec)
 
-- ✗→✓ Library originally placed under `members/{memberId}/library` (membership module's path). **Fixed:** library lives under `modules/digital_goods/library` with `memberId` as a FK field.
-- ✗→✓ Originally said "auto-provision a Member doc" without specifying who owns the write. **Fixed:** the write happens inside the membership module via its `getOrCreateMemberByUid` helper. Digital_goods only calls it.
-- ✗→✓ Originally said "Name is collected on first library visit" without specifying which module writes it. **Fixed:** name update goes through a membership-module helper (e.g., `updateMemberProfile`). Digital_goods does not write `members/*`.
+- ✗→✓ Library originally placed under `members/{memberId}/library` (membership module's path). **Fixed:** library lives under `modules/digital_goods/library` with `buyerId` as a FK field pointing at digital_goods's own buyer collection.
+- ✗→✓ Originally hard-coupled buyer identity to the membership module's `Member` doc + `getOrCreateMemberByUid` facade call. **Fixed:** digital_goods owns its own `buyers/{uid}` collection. Membership module is no longer an identity dependency — only an optional loyalty integration target.
 - ✗→✓ Storage path originally `sites/{siteId}/digital_products/...` (top-level, outside the module's namespace). **Fixed:** nested under `sites/{siteId}/modules/digital_goods/...` to mirror Firestore convention.
-- ✓ Loyalty integration was correctly designed as a facade call from the start.
+- ✓ Loyalty integration was correctly designed as a facade call from the start (and now stands alone as the only membership touchpoint).
 
 ## 12. Out of MVP (explicit non-goals)
 
@@ -261,16 +298,17 @@ Every cross-module touchpoint is enumerated here. The rule: digital_goods may **
 |---|---|
 | Module scaffolding, registry, Firestore seed | 0.5 day |
 | Schema, types, security rules | 0.5 day |
+| Buyer record + auto-provision on first authed visit | 0.25 day |
 | Admin: products list + editor + image/PDF upload | 1.5 days |
 | Admin: orders list + manual-confirm flow | 1 day |
 | Admin: payment settings (bank details + QRIS) | 0.5 day |
 | Public: product detail + checkout pages | 1 day |
 | Public: library + signed-URL endpoint | 1 day |
 | Buyer + tenant emails (Resend templates) | 0.5 day |
-| Loyalty integration (optional points award) | 0.25 day |
+| Loyalty integration (optional points award, fire-and-forget) | 0.25 day |
 | Already-purchased guard | 0.25 day |
 | Testing, polish, dogfooding with the creator | 1.5 days |
-| **Total** | **~8.5 working days** |
+| **Total** | **~8.75 working days** |
 
 Comfortably ships in 3 weeks if no surprises. Mid-June launch realistic.
 

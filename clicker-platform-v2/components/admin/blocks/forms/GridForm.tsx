@@ -81,10 +81,22 @@ export function GridForm({ data, containerBlockId, onChange, templateId, onOpenS
   };
 
   // ── Drilled-into block (form-internal nav, derived from selection) ──
+  // Two ways to be drilled into a cell's block:
+  //  1. selection.kind === 'blocks' targeting the child block directly.
+  //  2. selection.kind === 'slots' whose containerId IS the child block
+  //     (e.g. a card inside a FeatureCards block nested in this Grid cell).
+  //     Without this, the child block's form is never reachable from the
+  //     right-panel and edits silently no-op.
   const drilledCell = useMemo<GridCell | null>(() => {
-    if (selection.kind !== 'blocks' || selection.ids.length !== 1) return null;
-    const blockId = selection.ids[0];
-    return cells.find(c => c.block?.id === blockId) ?? null;
+    if (selection.kind === 'blocks' && selection.ids.length === 1) {
+      const blockId = selection.ids[0];
+      return cells.find(c => c.block?.id === blockId) ?? null;
+    }
+    if (selection.kind === 'slots' && selection.containerId) {
+      const cId = selection.containerId;
+      return cells.find(c => c.block?.id === cId) ?? null;
+    }
+    return null;
   }, [selection, cells]);
   const drilledCellId = drilledCell?.id ?? null;
 

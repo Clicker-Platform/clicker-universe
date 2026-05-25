@@ -100,8 +100,6 @@ export function getDefaultData(type: BlockType, _templateId = 'classic'): any {
         case 'feature_cards':
             return {
                 ...baseData,
-                title: '',
-                subtitle: '',
                 columns: 3,
                 cards: [
                     makeDefaultCard(),

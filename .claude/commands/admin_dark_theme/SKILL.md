@@ -10,6 +10,8 @@ description: >
 ---
 
 > **Architecture Reference:** Always read [`docs/ARCHITECTURE.md`](../../../clicker-platform-v2/docs/ARCHITECTURE.md) before making any changes.
+>
+> **CLAUDE.md Rule 9 (mandatory):** This skill covers the **color mapping layer only** (dark mode variants). The full admin UI pattern — page wrapper, button color (`bg-studio-blue`), button shape, toggle pills, top-bar reliance — lives in the reference modules. Before writing any file in `lib/modules/<id>/admin/`, open and mirror: `lib/modules/promo/components/PromoListPage.tsx`, `lib/modules/promo/admin/SettingsPage.tsx`, `lib/modules/byod_pos/admin/`. This skill is only enough for color choices.
 
 
 # /admin_dark_theme — Admin Dashboard Dark Theme

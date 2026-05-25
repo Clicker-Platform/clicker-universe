@@ -6,10 +6,17 @@ import { useServerInsertedHTML, usePathname } from 'next/navigation';
 import { SiteSettings } from '@/data/mockData';
 import { getPackById, getDefaultPack } from '@/lib/fonts/packs';
 import { getTemplate } from '@/lib/templates/registry';
+import { buildButtonCssVars } from '@/components/ButtonPackProvider';
+import { resolveButtonPack, resolveButtonColors } from '@/lib/buttonPacks/resolve';
+import type { ButtonPackId, ButtonColors } from '@/lib/buttonPacks/types';
 
 type Props = {
   initialSettings: SiteSettings | null;
-  appearanceStyles?: { fontPackId: string | null } | null;
+  appearanceStyles?: {
+    fontPackId: string | null;
+    buttonPackId?: ButtonPackId | string | null;
+    buttonColors?: Partial<ButtonColors> | Record<string, string> | null;
+  } | null;
   templateId?: string | null;
 };
 
@@ -27,6 +34,7 @@ export default function ThemeRegistry({ initialSettings, appearanceStyles, templ
         if (inserted.current) return null;
         inserted.current = true;
 
+        // --- Font pack resolution ---
         const sitePack = getPackById(appearanceStyles?.fontPackId);
         let pack;
         if (sitePack) {
@@ -40,8 +48,14 @@ export default function ThemeRegistry({ initialSettings, appearanceStyles, templ
         const headingVar = 'var(' + pack.heading.cssVar + ')';
         const bodyVar = 'var(' + pack.body.cssVar + ')';
 
-        // In admin we only emit the font vars so the canvas (inside the admin
-        // shell) inherits the tenant's Font Pack. Brand colors and the body
+        // --- Button pack resolution ---
+        const buttonPack = resolveButtonPack(appearanceStyles, templateId);
+        const buttonColors = resolveButtonColors(appearanceStyles);
+        const btnVars = buildButtonCssVars(buttonPack, buttonColors);
+        const btnVarsCss = Object.entries(btnVars).map(([k, v]) => `${k}: ${v};`).join(' ');
+
+        // In admin we only emit the font + button vars so the canvas (inside the
+        // admin shell) inherits the tenant's packs. Brand colors and the body
         // background rule stay off admin to avoid bleeding tenant brand
         // styling into the admin chrome.
         if (isAdmin) {
@@ -49,7 +63,7 @@ export default function ThemeRegistry({ initialSettings, appearanceStyles, templ
                 <style
                     data-theme-registry
                     dangerouslySetInnerHTML={{
-                        __html: ':root { --font-heading: ' + headingVar + '; --font-body: ' + bodyVar + '; }',
+                        __html: ':root { --font-heading: ' + headingVar + '; --font-body: ' + bodyVar + '; ' + btnVarsCss + ' }',
                     }}
                 />
             );
@@ -63,6 +77,7 @@ export default function ThemeRegistry({ initialSettings, appearanceStyles, templ
                     --color-brand-dark: ${settings.accentColor || '#0E3B2E'};
                     --font-heading: ${headingVar};
                     --font-body: ${bodyVar};
+                    ${btnVarsCss}
                 }
                 body {
                     background-color: var(--color-brand-green);

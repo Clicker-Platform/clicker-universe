@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Admin · Product Editor — Digital Goods Wireframe</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-900">
+
+<div class="flex min-h-screen">
+
+  <!-- Sidebar (mock) -->
+  <aside class="w-56 bg-white border-r p-4 hidden lg:block">
+    <div class="text-xs font-bold uppercase tracking-wider text-gray-500 mb-4">Tenant Admin</div>
+    <nav class="space-y-1 text-sm">
+      <div class="px-3 py-2 text-gray-500">Dashboard</div>
+      <div class="px-3 py-2 text-gray-500">POS</div>
+      <div class="px-3 py-2 text-gray-500">Members</div>
+      <div class="px-3 py-2 bg-gray-900 text-white rounded">Digital Goods</div>
+      <div class="ml-3 mt-1 space-y-1 text-xs">
+        <div class="px-3 py-1.5 bg-gray-100 rounded">Products</div>
+        <div class="px-3 py-1.5 text-gray-500">Orders</div>
+        <div class="px-3 py-1.5 text-gray-500">Settings</div>
+      </div>
+    </nav>
+  </aside>
+
+  <main class="flex-1 p-6 max-w-3xl">
+    <div class="text-xs uppercase tracking-wider text-gray-500 mb-1">/admin/digital-goods/products/new</div>
+    <h1 class="text-2xl font-bold mb-6">New Product</h1>
+
+    <form class="space-y-6">
+      <!-- Title -->
+      <div>
+        <label class="block text-sm font-medium mb-1">Title <span class="text-red-500">*</span></label>
+        <input type="text" placeholder="e.g. Pinjol Survival Kit"
+               class="w-full border rounded-lg px-3 py-2 text-sm" />
+      </div>
+
+      <!-- Description -->
+      <div>
+        <label class="block text-sm font-medium mb-1">Description <span class="text-gray-400 font-normal">(markdown supported)</span></label>
+        <textarea rows="5" placeholder="Apa yang pembeli dapat..."
+                  class="w-full border rounded-lg px-3 py-2 text-sm font-mono"></textarea>
+      </div>
+
+      <!-- Cover image -->
+      <div>
+        <label class="block text-sm font-medium mb-1">Cover image</label>
+        <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center text-gray-500 text-sm">
+          📷 &nbsp; Click to upload cover image
+        </div>
+      </div>
+
+      <!-- Price -->
+      <div>
+        <label class="block text-sm font-medium mb-1">Price (IDR) <span class="text-red-500">*</span></label>
+        <input type="number" placeholder="149000"
+               class="w-full border rounded-lg px-3 py-2 text-sm" />
+      </div>
+
+      <!-- Content type toggle -->
+      <div>
+        <label class="block text-sm font-medium mb-2">Content type</label>
+        <div class="flex gap-2">
+          <button type="button" class="px-4 py-2 rounded-lg bg-gray-900 text-white text-sm font-medium">PDF</button>
+          <button type="button" class="px-4 py-2 rounded-lg bg-white border border-gray-300 text-sm">YouTube (unlisted)</button>
+        </div>
+      </div>
+
+      <!-- PDF upload field (active variant) -->
+      <div>
+        <label class="block text-sm font-medium mb-1">PDF file <span class="text-red-500">*</span></label>
+        <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center text-gray-500 text-sm">
+          📄 &nbsp; Click to upload PDF
+          <div class="text-xs mt-1">Max 50 MB</div>
+        </div>
+      </div>
+
+      <!-- Filled PDF variant (showing after upload) -->
+      <div>
+        <div class="text-xs text-gray-500 mb-1">After upload, the field becomes:</div>
+        <div class="border rounded-lg p-3 flex items-center gap-3 bg-gray-50">
+          <span class="text-gray-500">📄</span>
+          <div class="flex-1">
+            <div class="text-sm font-medium">pinjol-survival-kit.pdf</div>
+            <div class="text-xs text-gray-500">3.42 MB</div>
+          </div>
+          <button type="button" class="text-gray-400 hover:text-red-600 text-sm">✕</button>
+        </div>
+      </div>
+
+      <!-- Status toggle -->
+      <div>
+        <label class="block text-sm font-medium mb-2">Status</label>
+        <div class="flex gap-2">
+          <button type="button" class="px-4 py-2 rounded-lg bg-gray-900 text-white text-sm font-medium">draft</button>
+          <button type="button" class="px-4 py-2 rounded-lg bg-white border border-gray-300 text-sm">published</button>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex items-center gap-3 pt-4 border-t">
+        <button type="submit" class="bg-gray-900 text-white px-6 py-2 rounded-lg text-sm font-medium">
+          Create product
+        </button>
+        <button type="button" class="px-6 py-2 rounded-lg border border-gray-300 text-sm">Cancel</button>
+      </div>
+    </form>
+
+    <div class="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-900">
+      <strong>Wireframe notes:</strong>
+      <ul class="list-disc list-inside mt-1 space-y-1">
+        <li>YouTube variant: PDF upload field is replaced by a URL input + hint to set video to <em>Unlisted</em>.</li>
+        <li>On edit (<code>?id=X</code>), all fields populate from existing product; submit button reads "Save changes".</li>
+        <li>Slug auto-generated from title (URL-safe, uniqued per site). Not shown in form for MVP.</li>
+        <li>"Mark as Published" sets <code>publishedAt</code> timestamp on first transition; draft→published→draft preserves original <code>publishedAt</code>.</li>
+      </ul>
+    </div>
+
+    <div class="mt-4 text-xs text-gray-500">
+      <a href="index.html" class="underline">← Back to wireframe index</a>
+    </div>
+  </main>
+</div>
+
+</body>
+</html>

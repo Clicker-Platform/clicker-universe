@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Digital Goods — Wireframes</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+</style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+<div class="max-w-4xl mx-auto p-8">
+  <header class="mb-8">
+    <div class="text-xs uppercase tracking-wider text-gray-500 mb-1">Wireframes</div>
+    <h1 class="text-3xl font-bold">Digital Goods Module</h1>
+    <p class="text-sm text-gray-600 mt-2">Low-fidelity layout sketches for the 7 MVP screens. Spec: <code class="bg-gray-200 px-1.5 py-0.5 rounded text-xs">2026-05-23-digital-goods-module-design.md</code></p>
+  </header>
+
+  <section class="mb-10">
+    <h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">Admin (tenant-facing)</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <a href="admin-products-list.html" class="block bg-white border rounded-lg p-4 hover:border-gray-900 hover:shadow-sm transition">
+        <div class="font-semibold mb-1">Products List</div>
+        <div class="text-xs text-gray-500 font-mono">/admin/digital-goods</div>
+        <div class="text-xs text-gray-600 mt-2">Plan 1 · Task 9</div>
+      </a>
+      <a href="admin-product-editor.html" class="block bg-white border rounded-lg p-4 hover:border-gray-900 hover:shadow-sm transition">
+        <div class="font-semibold mb-1">Product Editor</div>
+        <div class="text-xs text-gray-500 font-mono">/admin/digital-goods/products/new</div>
+        <div class="text-xs text-gray-600 mt-2">Plan 1 · Task 11</div>
+      </a>
+      <a href="admin-settings.html" class="block bg-white border rounded-lg p-4 hover:border-gray-900 hover:shadow-sm transition">
+        <div class="font-semibold mb-1">Payment Settings</div>
+        <div class="text-xs text-gray-500 font-mono">/admin/digital-goods/settings</div>
+        <div class="text-xs text-gray-600 mt-2">Plan 1 · Task 12</div>
+      </a>
+      <a href="admin-orders-list.html" class="block bg-white border rounded-lg p-4 hover:border-gray-900 hover:shadow-sm transition">
+        <div class="font-semibold mb-1">Orders List</div>
+        <div class="text-xs text-gray-500 font-mono">/admin/digital-goods/orders</div>
+        <div class="text-xs text-gray-600 mt-2">Plan 2</div>
+      </a>
+    </div>
+  </section>
+
+  <section class="mb-10">
+    <h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">Buyer (public)</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <a href="buyer-product-detail.html" class="block bg-white border rounded-lg p-4 hover:border-gray-900 hover:shadow-sm transition">
+        <div class="font-semibold mb-1">Product Detail</div>
+        <div class="text-xs text-gray-500 font-mono">/store/[slug]</div>
+        <div class="text-xs text-gray-600 mt-2">Plan 2</div>
+      </a>
+      <a href="buyer-checkout.html" class="block bg-white border rounded-lg p-4 hover:border-gray-900 hover:shadow-sm transition">
+        <div class="font-semibold mb-1">Checkout</div>
+        <div class="text-xs text-gray-500 font-mono">/store/[slug]/checkout</div>
+        <div class="text-xs text-gray-600 mt-2">Plan 2</div>
+      </a>
+      <a href="buyer-library.html" class="block bg-white border rounded-lg p-4 hover:border-gray-900 hover:shadow-sm transition">
+        <div class="font-semibold mb-1">Library</div>
+        <div class="text-xs text-gray-500 font-mono">/library</div>
+        <div class="text-xs text-gray-600 mt-2">Plan 2</div>
+      </a>
+    </div>
+  </section>
+
+  <footer class="text-xs text-gray-500 border-t pt-4 mt-12">
+    Wireframes are layout-only. Real visual styling comes from the platform theme system (typography_system, font_pack, template MRB/etc) at implementation time.
+  </footer>
+</div>
+</body>
+</html>

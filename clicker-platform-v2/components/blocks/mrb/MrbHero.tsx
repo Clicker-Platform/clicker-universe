@@ -10,7 +10,10 @@ import { BusinessProfile } from '@/data/mockData';
 import { useTemplate } from '@/components/TemplateProvider';
 import { useDeviceView, dv, type DeviceView } from '@/components/DeviceViewContext';
 import { FieldSelectionChrome, EditableText } from '@/components/blocks/shared/EditablePrimitives';
-import { H4, BODY_LG, BUTTON_TEXT } from '@/components/blocks/public/typography';
+import { H4, BODY_LG } from '@/components/blocks/public/typography';
+import { UnifiedButton } from '@/components/ui/UnifiedButton';
+import { FormModal } from '@/components/FormModal';
+import { useSite } from '@/lib/site-context';
 
 // ─── Colour helpers ───────────────────────────────────────────────────────────
 
@@ -69,22 +72,24 @@ const TITLE_SIZES = (d: DeviceView): Record<string, string> => ({
 // leading-[1.1] for the same reason as DefaultHeroBlock: Hero titles wrap.
 const H1_BASE = 'font-extrabold leading-[1.1] tracking-tight';
 
-interface CtaBtn { label?: string; url?: string; }
+interface CtaBtn { label?: string; url?: string; type?: string; formId?: string; pageId?: string; }
 
-function CtaButtons({ primary, secondary, ctaJustify, primaryColor, bgColor, defaultTextColor, titleColor, onFieldFocus }: {
+type BtnKey = 'primary' | 'secondary';
+
+function CtaButtons({ primary, secondary, ctaJustify, onFieldFocus, previewMode }: {
     primary?: CtaBtn | null;
     secondary?: CtaBtn | null;
     ctaJustify: string;
-    primaryColor: string;
-    bgColor: string;
-    defaultTextColor: string;
-    titleColor?: string;
     onFieldFocus?: (field: string, rect: DOMRect) => void;
+    previewMode?: boolean;
 }) {
-    const d = useDeviceView();
+    const { siteId } = useSite();
     const primaryRef = useRef<HTMLDivElement>(null);
     const secondaryRef = useRef<HTMLDivElement>(null);
-    const [focusedBtn, setFocusedBtn] = useState<'primary' | 'secondary' | null>(null);
+    const [focusedBtn, setFocusedBtn] = useState<BtnKey | null>(null);
+    const [modalOpenFor, setModalOpenFor] = useState<BtnKey | null>(null);
+    const [formDataByKey, setFormDataByKey] = useState<Partial<Record<BtnKey, any>>>({});
+    const [loadingFor, setLoadingFor] = useState<BtnKey | null>(null);
 
     useEffect(() => {
         if (!focusedBtn) return;
@@ -97,49 +102,80 @@ function CtaButtons({ primary, secondary, ctaJustify, primaryColor, bgColor, def
         return () => document.removeEventListener('mousedown', handler);
     }, [focusedBtn]);
 
-    const handleClick = (btn: 'primary' | 'secondary', ref: React.RefObject<HTMLDivElement | null>) => {
+    const handleClick = (btn: BtnKey, ref: React.RefObject<HTMLDivElement | null>) => {
         if (!onFieldFocus || !ref.current) return;
         setFocusedBtn(btn);
         onFieldFocus('buttons', ref.current.getBoundingClientRect());
     };
 
+    const openForm = async (key: BtnKey, btn: CtaBtn) => {
+        if (!siteId || !btn.formId) return;
+        if (formDataByKey[key]) { setModalOpenFor(key); return; }
+        setLoadingFor(key);
+        try {
+            const res = await fetch(`/api/forms?id=${btn.formId}&siteId=${siteId}`);
+            if (res.ok) {
+                const formJson = await res.json();
+                setFormDataByKey(prev => ({ ...prev, [key]: formJson }));
+                setModalOpenFor(key);
+            }
+        } catch { /* swallow */ }
+        setLoadingFor(null);
+    };
+
+    const renderBtn = (key: BtnKey, btn: CtaBtn, tier: 'primary' | 'secondary', ref: React.RefObject<HTMLDivElement | null>) => {
+        const isFormLink = btn.type === 'form' && !!btn.formId;
+        const href = onFieldFocus || isFormLink ? undefined : (btn.url || '#');
+        const onClick = isFormLink && !onFieldFocus && !previewMode
+            ? (e: React.MouseEvent) => { e.preventDefault(); openForm(key, btn); }
+            : undefined;
+        return (
+            <div
+                ref={ref}
+                className="relative inline-flex"
+                style={{ overflow: 'visible' }}
+                onClick={() => handleClick(key, ref)}
+            >
+                <UnifiedButton
+                    tier={tier}
+                    size="lg"
+                    href={href}
+                    onClick={onClick}
+                    loading={loadingFor === key}
+                >
+                    {btn.label}
+                </UnifiedButton>
+                {onFieldFocus && focusedBtn === key && <FieldSelectionChrome />}
+            </div>
+        );
+    };
+
+    const primaryIsForm = primary?.type === 'form' && !!primary.formId;
+    const secondaryIsForm = secondary?.type === 'form' && !!secondary.formId;
+
     return (
-        <div className={`flex flex-wrap gap-4 relative z-10 w-full ${ctaJustify}`}>
-            {primary?.label && (
-                <div
-                    ref={primaryRef}
-                    className="relative inline-flex"
-                    style={{ overflow: 'visible' }}
-                    onClick={() => handleClick('primary', primaryRef)}
-                >
-                    <a
-                        href={onFieldFocus ? undefined : (primary.url || '#')}
-                        className={`inline-flex items-center px-6 py-3 rounded-xl ${BUTTON_TEXT(d)} transition-all active:scale-[0.98] shadow-lg`}
-                        style={{ backgroundColor: primaryColor, color: bgColor }}
-                    >
-                        {primary.label}
-                    </a>
-                    {onFieldFocus && focusedBtn === 'primary' && <FieldSelectionChrome />}
-                </div>
+        <>
+            <div className={`flex flex-wrap gap-4 relative z-10 w-full ${ctaJustify}`}>
+                {primary?.label && renderBtn('primary', primary, 'primary', primaryRef)}
+                {secondary?.label && renderBtn('secondary', secondary, 'secondary', secondaryRef)}
+            </div>
+            {primaryIsForm && modalOpenFor === 'primary' && formDataByKey.primary && (
+                <FormModal
+                    form={formDataByKey.primary}
+                    isOpen={true}
+                    onClose={() => setModalOpenFor(null)}
+                    siteId={siteId || undefined}
+                />
             )}
-            {secondary?.label && (
-                <div
-                    ref={secondaryRef}
-                    className="relative inline-flex"
-                    style={{ overflow: 'visible' }}
-                    onClick={() => handleClick('secondary', secondaryRef)}
-                >
-                    <a
-                        href={onFieldFocus ? undefined : (secondary.url || '#')}
-                        className={`inline-flex items-center px-6 py-3 rounded-xl ${BUTTON_TEXT(d)} border-2 transition-all active:scale-[0.98]`}
-                        style={{ borderColor: `${primaryColor}66`, color: titleColor || defaultTextColor }}
-                    >
-                        {secondary.label}
-                    </a>
-                    {onFieldFocus && focusedBtn === 'secondary' && <FieldSelectionChrome />}
-                </div>
+            {secondaryIsForm && modalOpenFor === 'secondary' && formDataByKey.secondary && (
+                <FormModal
+                    form={formDataByKey.secondary}
+                    isOpen={true}
+                    onClose={() => setModalOpenFor(null)}
+                    siteId={siteId || undefined}
+                />
             )}
-        </div>
+        </>
     );
 }
 
@@ -180,7 +216,7 @@ interface MrbHeroProps {
     };
 }
 
-export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, isFirst = true, onInlineChange, onFieldFocus, onFieldBlur }) => {
+export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, isFirst = true, previewMode, onInlineChange, onFieldFocus, onFieldBlur }) => {
     const { theme } = useTemplate();
     const d = useDeviceView();
 
@@ -375,11 +411,8 @@ export const MrbHero: React.FC<MrbHeroProps> = ({ profile, data, isFirst = true,
                     primary={primaryBtn}
                     secondary={secondaryBtn}
                     ctaJustify={ctaJustify}
-                    primaryColor={theme.colors.primary}
-                    bgColor={theme.colors.background}
-                    defaultTextColor={defaultTextColor}
-                    titleColor={data?.titleColor}
                     onFieldFocus={onFieldFocus}
+                    previewMode={previewMode}
                 />
             )}
         </div>

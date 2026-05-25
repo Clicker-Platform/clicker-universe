@@ -1,5 +1,6 @@
 'use client';
 
+import type { CSSProperties } from 'react';
 import { FormField } from '@/data/mockData';
 import { FormFileField } from '@/components/FormFileField';
 
@@ -9,6 +10,8 @@ interface FormFieldsRendererProps {
     onChange: (fieldId: string, value: string) => void;
     labelClassName: string;
     inputClassName: string;
+    labelStyle?: CSSProperties;
+    inputStyle?: CSSProperties;
 }
 
 export function FormFieldsRenderer({
@@ -17,13 +20,15 @@ export function FormFieldsRenderer({
     onChange,
     labelClassName,
     inputClassName,
+    labelStyle,
+    inputStyle,
 }: FormFieldsRendererProps) {
     return (
         <>
             {fields.map((field) => (
                 <div key={field.id}>
                     {field.type !== 'file' && (
-                        <label className={`block text-sm font-bold mb-1 ${labelClassName}`}>
+                        <label className={`block ${labelClassName}`} style={labelStyle}>
                             {field.label}{' '}
                             {field.required && <span className="text-red-500">*</span>}
                         </label>
@@ -35,14 +40,16 @@ export function FormFieldsRenderer({
                             placeholder={field.placeholder}
                             value={formData[field.id] || ''}
                             onChange={(e) => onChange(field.id, e.target.value)}
-                            className={`w-full px-4 py-3 rounded-xl border focus:ring-0 transition-colors font-medium resize-none h-32 ${inputClassName}`}
+                            className={`${inputClassName} resize-none h-32`}
+                            style={inputStyle}
                         />
                     ) : field.type === 'select' ? (
                         <select
                             required={field.required}
                             value={formData[field.id] || ''}
                             onChange={(e) => onChange(field.id, e.target.value)}
-                            className={`w-full px-4 py-3 rounded-xl border focus:ring-0 transition-colors font-medium appearance-none ${inputClassName}`}
+                            className={`${inputClassName} appearance-none`}
+                            style={inputStyle}
                         >
                             <option value="">Select an option...</option>
                             {field.options?.map((opt) => (
@@ -65,7 +72,8 @@ export function FormFieldsRenderer({
                             placeholder={field.placeholder}
                             value={formData[field.id] || ''}
                             onChange={(e) => onChange(field.id, e.target.value)}
-                            className={`w-full px-4 py-3 rounded-xl border focus:ring-0 transition-colors font-medium ${inputClassName}`}
+                            className={inputClassName}
+                            style={inputStyle}
                         />
                     )}
                 </div>

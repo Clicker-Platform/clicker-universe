@@ -7,7 +7,7 @@ import { useTemplate } from '@/components/TemplateProvider';
 import { useDeviceView, dv } from '@/components/DeviceViewContext';
 import { MediaView } from './MediaView';
 import { getCardClasses, getHeadingColor, getBodyColor, getMutedColor, getLabelColor, hexWithOpacity } from './cardStyles';
-import { H2, H3, H4, BODY, BODY_SM } from './typography';
+import { H3, H4, BODY_SM } from './typography';
 import type { FeatureCardsData, FeatureCard } from '@/components/blocks/feature-cards/types';
 
 function isLightColor(hex: string): boolean {
@@ -24,6 +24,7 @@ function isLightColor(hex: string): boolean {
 }
 
 const DESKTOP_COLS_CLASS: Record<number, string> = {
+    1: 'md:grid-cols-1',
     2: 'md:grid-cols-2',
     3: 'md:grid-cols-3',
     4: 'md:grid-cols-4',
@@ -127,41 +128,37 @@ export function DefaultFeatureCardsBlock({ data, theme: themeProp, previewMode, 
     const columns = data.columns || 3;
     const desktopCols = DESKTOP_COLS_CLASS[columns] || DESKTOP_COLS_CLASS[3];
     const cards = data.cards || [];
+    const isSingle = cards.length === 1;
+    // columns=1 with multiple cards: vertical stack on every viewport. The horizontal-scroll
+    // carousel only makes sense when the row is meant to fit multiple cards.
+    const isStack = columns === 1 && !isSingle;
 
     // Mobile: horizontal scroll. Desktop: grid.
     // dv() emits the right classes for canvas previews + responsive viewport.
     // pt-9 is only needed in the admin canvas so the CardToolbar has room to render above the row.
     const adminTopPad = isAdminCanvas ? 'pt-9 md:pt-0' : '';
-    const containerClass = dv(
-        deviceView,
-        `flex items-stretch gap-3 overflow-x-auto overflow-y-visible px-4 pb-2 snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${adminTopPad}`,
-        `md:grid ${desktopCols} md:gap-4 md:items-stretch md:px-4 md:max-w-6xl md:mx-auto md:overflow-visible md:pb-0`
-    );
+    const containerClass = isSingle
+        ? `flex justify-center px-4 md:max-w-6xl md:mx-auto ${adminTopPad}`
+        : isStack
+        ? `flex flex-col gap-4 px-4 md:max-w-6xl md:mx-auto ${adminTopPad}`
+        : dv(
+            deviceView,
+            `flex items-stretch gap-3 overflow-x-auto overflow-y-visible px-4 pb-2 snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${adminTopPad}`,
+            `md:grid ${desktopCols} md:gap-4 md:items-stretch md:px-4 md:max-w-6xl md:mx-auto md:overflow-visible md:pb-0`
+        );
 
     return (
         <section className="w-full min-w-0 py-8">
-            {(data.title || data.subtitle) && (
-                <div className="mb-8 px-4 text-center max-w-2xl mx-auto">
-                    {data.title && (
-                        <h2 className={H2(deviceView)} style={{ color: getHeadingColor(theme?.cardStyle, theme) }}>
-                            {data.title}
-                        </h2>
-                    )}
-                    {data.subtitle && (
-                        <p className={`${BODY(deviceView)} mt-2`} style={{ color: getMutedColor(theme?.cardStyle, theme) }}>
-                            {data.subtitle}
-                        </p>
-                    )}
-                </div>
-            )}
             {cards.length > 0 && (
                 <div className={containerClass}>
                     {cards.map((card, index) => {
-                        const cardWrapperBase = dv(
-                            deviceView,
-                            'snap-start shrink-0 w-[72vw] max-w-[280px] flex flex-col',
-                            'md:w-auto md:max-w-none flex flex-col'
-                        );
+                        const cardWrapperBase = (isSingle || isStack)
+                            ? 'w-full flex flex-col'
+                            : dv(
+                                deviceView,
+                                'snap-start shrink-0 w-[72vw] max-w-[280px] flex flex-col',
+                                'md:w-auto md:max-w-none flex flex-col'
+                            );
 
                         const isSelected = selectedCardId === card.id;
                         const selectionRing = isAdminCanvas && isSelected

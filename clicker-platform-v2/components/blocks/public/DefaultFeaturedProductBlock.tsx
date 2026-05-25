@@ -10,7 +10,8 @@ import { FullScreenGallery } from '@/components/common/FullScreenGallery';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getCardClasses, getGlassStyle, getHeadingColor, getLabelColor } from './cardStyles';
 import { useDeviceView } from '@/components/DeviceViewContext';
-import { H2, H4, BUTTON_TEXT } from './typography';
+import { H2, H4 } from './typography';
+import { UnifiedButton } from '@/components/ui/UnifiedButton';
 
 interface WhatsAppSettings {
     label?: string;
@@ -256,23 +257,14 @@ export function DefaultFeaturedProductBlock({
                         {product.name}
                     </h3>
 
-                    <button
+                    <UnifiedButton
+                        tier="primary"
+                        size="md"
+                        fullWidth
                         onClick={handleOrderClick}
-                        className={`w-full py-4 rounded-xl flex items-center justify-center gap-2 transition-all duration-300 ${BUTTON_TEXT(d)}`}
-                        style={{
-                            borderRadius: 'calc(var(--theme-radius) * 0.6)',
-                            backgroundColor: isBold ? colors.foreground : colors.primary,
-                            color: isBold ? colors.background : primaryContrastColor,
-                            border: isBold
-                                ? `3px solid ${colors.foreground}`
-                                : `1px solid ${colors.border || colors.primary}`,
-                            boxShadow: isBold
-                                ? `4px 4px 0px 0px ${colors.border}`
-                                : '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-                        }}
                     >
-                        {buttonText} <ArrowRight size={24} strokeWidth={isBold ? 3 : 2} />
-                    </button>
+                        {buttonText} <ArrowRight size={24} strokeWidth={2} />
+                    </UnifiedButton>
                 </div>
             </div>
 

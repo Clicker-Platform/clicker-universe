@@ -1,4 +1,5 @@
 import React from 'react';
+import type { ButtonPackId } from '@/lib/buttonPacks/types';
 
 // Keep existing TemplateId for backward compatibility during migration, 
 // but allow string for dynamic IDs.
@@ -39,6 +40,7 @@ export interface BackgroundElement {
 export interface TemplateConfig {
     colors: ThemeColors;
     defaultFontPackId: string;
+    defaultButtonPackId?: ButtonPackId;
     borderRadius: string;
     // Deprecated: cardStyle in favor of cardVariant, but keeping for compatibility
     cardStyle: 'brutalist' | 'clean' | 'glass';

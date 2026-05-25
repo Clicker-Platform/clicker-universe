@@ -32,9 +32,11 @@ Companion notes to [spec](../specs/2026-05-23-digital-goods-module-design.md) an
 
 ## Cross-module audit (corrections made mid-spec)
 
-Originally placed library entries under `sites/{siteId}/members/{memberId}/library/...` — i.e., **inside the membership module's path**. User caught this. Corrected to flat collection `sites/{siteId}/modules/digital_goods/library/` with `memberId` as a foreign-key field. Same correction applied to other paths (top-level `digital_products` → nested under `modules/digital_goods/`).
+**Round 1 (paths):** Originally placed library entries under `sites/{siteId}/members/{memberId}/library/...` — i.e., **inside the membership module's path**. User caught this. Corrected to flat collection `sites/{siteId}/modules/digital_goods/library/` with a FK field. Same correction applied to other paths (top-level `digital_products` → nested under `modules/digital_goods/`).
 
-**Rule reinforced:** every module's data lives under `sites/{siteId}/modules/{moduleId}/`. Cross-module references use FK fields + facade calls per CLAUDE.md rules #1 and #6. Storage paths mirror Firestore paths.
+**Round 2 (identity ownership — same evening):** Even after Round 1, §5 still said "reuse the membership module's `Member` doc as buyer identity via `getOrCreateMemberByUid` facade." User pushed back: "Membership module has nothing to do with this except for loyalty, even that only happens after integration." Rewrote §5, §4, §6, §11 to make digital_goods **own its own buyer record** at `modules/digital_goods/buyers/{uid}`. Membership module is now touched ONLY by the optional loyalty integration in §11 — and even that is fire-and-forget (purchase succeeds whether or not loyalty award succeeds). Renamed `memberId` → `buyerId` everywhere. The strict-separation rule now holds end-to-end.
+
+**Rule reinforced:** every module's data lives under `sites/{siteId}/modules/{moduleId}/`. Cross-module references use FK fields + facade calls per CLAUDE.md rules #1 and #6. Storage paths mirror Firestore paths. **AND:** don't conflate "modules can call each other's facades" with "this module should depend on another module for its primary data primitive." Identity is a primary primitive — own it locally unless there's a strong reason to share.
 
 ## What MVP forward-compat checklist preserves
 
@@ -50,6 +52,7 @@ Originally placed library entries under `sites/{siteId}/members/{memberId}/libra
 ## Plan structure
 
 User chose B: three sub-plans, each ships working software.
+
 - **Plan 1 — Foundation** (written, committed): scaffolding + admin products CRUD + settings. ~3 days, 16 tasks.
 - **Plan 2 — Purchase flow** (not written): public store + checkout + orders + manual-confirm + emails + library + signed URLs. ~4 days, ~60 steps.
 - **Plan 3 — Polish** (not written): loyalty integration + already-purchased guard + PostHog + dogfood. ~1.5 days, ~25 steps.

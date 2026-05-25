@@ -68,6 +68,7 @@ Create `lib/modules/digital_goods/constants.ts`:
 export const MODULE_ID = 'digital_goods';
 
 // Firestore collection paths (relative to sites/{siteId}/)
+export const COLLECTION_BUYERS   = 'modules/digital_goods/buyers';     // Plan 2 (auto-provisioned on first authed visit)
 export const COLLECTION_PRODUCTS = 'modules/digital_goods/products';
 export const COLLECTION_ORDERS   = 'modules/digital_goods/orders';     // Plan 2
 export const COLLECTION_LIBRARY  = 'modules/digital_goods/library';    // Plan 2
@@ -184,7 +185,7 @@ export interface ProductSnapshot {
 
 export interface DigitalOrder {
   id: string;
-  memberId: string;
+  buyerId: string;                // FK to sites/{siteId}/modules/digital_goods/buyers/{uid}
   productId: string;
   productSnapshot: ProductSnapshot;
   amount: number;
@@ -211,11 +212,21 @@ export interface LibraryEntrySnapshot {
 
 export interface LibraryEntry {
   id: string;
-  memberId: string;
+  buyerId: string;                // FK to sites/{siteId}/modules/digital_goods/buyers/{uid}
   productId: string;
   orderId: string;
   productSnapshot: LibraryEntrySnapshot;
   purchasedAt: Timestamp;
+}
+
+// --- Buyer Identity (Plan 2 — auto-provisioned on first authed visit) ---
+
+export interface DigitalGoodsBuyer {
+  uid: string;                    // matches doc ID; Firebase Auth UID
+  email: string;
+  fullName?: string;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
 }
 
 // --- Settings ---
@@ -679,6 +690,7 @@ Open `scripts/seed-modules.ts`. Find the `MODULES` array (starts around line 41)
             { label: 'Settings',     path: '/admin/digital-goods/settings', icon: 'settings',     componentKey: 'digital_goods:Settings', permission: 'settings' },
         ],
         collections: [
+            'modules/digital_goods/buyers',
             'modules/digital_goods/products',
             'modules/digital_goods/orders',
             'modules/digital_goods/library',

@@ -709,26 +709,32 @@ export function CanvasStudio({
                     );
                 })()
             ) : selection.kind === 'slots' && selection.containerId ? (
-                // Empty container slot selected — render the parent container's form.
-                // The container form (ColumnsForm / GridForm) reads `selection` to
-                // pick the active tab and show the slot's properties / picker.
+                // Slot-kind selection (empty Columns/Grid slot, or a FeatureCards card).
+                // The container can be top-level OR nested inside another container.
+                // - Top-level: render the container's own form.
+                // - Nested in Columns/Grid: render the outer container's form, which
+                //   drills into the inner container so its own form is shown (with the
+                //   proper nested updateBlockData wired up).
                 (() => {
-                    const container = blocks.find(b => b.id === selection.containerId);
-                    if (container) {
+                    const path = findBlockPath(blocks, selection.containerId);
+                    if (!path) {
                         return (
-                            <BlockFormRenderer
-                                block={container}
-                                onChange={updateBlockData}
-                                templateId={templateId}
-                                onOpenSlideOver={toggleSlideOverPanel}
-                            />
+                            <div className="flex flex-col items-center justify-center h-full text-center text-neutral-400 dark:text-neutral-500 gap-3">
+                                <Box size={32} className="opacity-20" />
+                                <p className="text-sm">Container not found</p>
+                            </div>
                         );
                     }
+                    const block = (path.kind === 'columns-child' || path.kind === 'grid-cell')
+                        ? path.parentBlock
+                        : path.block;
                     return (
-                        <div className="flex flex-col items-center justify-center h-full text-center text-neutral-400 dark:text-neutral-500 gap-3">
-                            <Box size={32} className="opacity-20" />
-                            <p className="text-sm">Container not found</p>
-                        </div>
+                        <BlockFormRenderer
+                            block={block}
+                            onChange={updateBlockData}
+                            templateId={templateId}
+                            onOpenSlideOver={toggleSlideOverPanel}
+                        />
                     );
                 })()
             ) : (
