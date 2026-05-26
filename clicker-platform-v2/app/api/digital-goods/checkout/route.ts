@@ -73,6 +73,7 @@ export async function POST(req: NextRequest) {
 
   const orderId = await createOrderAdmin(siteId, {
     buyerId: decoded.uid,
+    buyerEmail: decoded.email ?? undefined,
     productId,
     productSnapshot,
     amount: product.price,

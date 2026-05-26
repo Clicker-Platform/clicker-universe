@@ -51,7 +51,8 @@ export function BuyerAuthBar({ tenant, email }: Props) {
       <button
         type="button"
         onClick={() => setOpen(v => !v)}
-        className="flex items-center gap-2 bg-white border border-gray-200 rounded-full pl-3 pr-2 py-1.5 shadow-sm hover:shadow-md transition text-sm text-gray-700"
+        aria-label={`Menu akun ${email}`}
+        className="flex items-center gap-1.5 bg-white border border-gray-200 rounded-full shadow-sm hover:shadow-md transition text-sm text-gray-700 px-2 py-1.5 sm:pl-3 sm:pr-2 sm:gap-2"
       >
         <User className="w-4 h-4 text-gray-500" />
         <span className="hidden sm:inline max-w-[160px] truncate">{email}</span>

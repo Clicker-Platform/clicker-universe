@@ -70,6 +70,7 @@ export interface ProductSnapshot {
 export interface DigitalOrder {
   id: string;
   buyerId: string;                // FK to sites/{siteId}/modules/digital_goods/buyers/{uid}
+  buyerEmail?: string;            // denormalized for admin display (post-2026-05-26)
   productId: string;
   productSnapshot: ProductSnapshot;
   amount: number;

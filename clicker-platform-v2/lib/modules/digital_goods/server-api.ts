@@ -95,6 +95,7 @@ export async function buyerNeedsOnboarding(siteId: string, uid: string): Promise
 
 export type CreateOrderInput = {
   buyerId: string;
+  buyerEmail?: string;
   productId: string;
   productSnapshot: ProductSnapshot;
   amount: number;

@@ -19,6 +19,7 @@ export default async function CheckoutPage({
 
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get('__session')?.value;
+  console.log('[CHECKOUT] cookie present=', !!sessionCookie, 'len=', sessionCookie?.length ?? 0, 'first40=', sessionCookie?.slice(0,40), 'last20=', sessionCookie?.slice(-20));
   if (!sessionCookie) {
     redirect(`${routes.login}?next=${encodeURIComponent(routes.checkout(slug))}`);
   }
@@ -26,7 +27,9 @@ export default async function CheckoutPage({
   let decoded;
   try {
     decoded = await adminAuth.verifySessionCookie(sessionCookie, true);
-  } catch {
+    console.log('[CHECKOUT] session valid uid=', decoded.uid);
+  } catch (e) {
+    console.log('[CHECKOUT] verifySessionCookie threw:', (e as Error).message);
     redirect(`${routes.login}?next=${encodeURIComponent(routes.checkout(slug))}`);
   }
 

@@ -84,8 +84,15 @@ export function OrderDetailForm({ order, siteId, onClose, onUpdated }: Props) {
             <p className="text-sm font-medium text-gray-900 dark:text-neutral-100 mt-0.5">{order.productSnapshot.title}</p>
           </div>
           <div>
-            <p className="text-xs text-gray-500 dark:text-neutral-500 uppercase tracking-wider">Buyer ID</p>
-            <p className="text-sm font-mono text-gray-700 dark:text-neutral-300 mt-0.5">{order.buyerId}</p>
+            <p className="text-xs text-gray-500 dark:text-neutral-500 uppercase tracking-wider">Buyer</p>
+            {order.buyerEmail ? (
+              <>
+                <p className="text-sm text-gray-900 dark:text-neutral-100 mt-0.5">{order.buyerEmail}</p>
+                <p className="text-xs font-mono text-gray-400 dark:text-neutral-500 mt-0.5 truncate">{order.buyerId}</p>
+              </>
+            ) : (
+              <p className="text-sm font-mono text-gray-700 dark:text-neutral-300 mt-0.5">{order.buyerId}</p>
+            )}
           </div>
           <div>
             <p className="text-xs text-gray-500 dark:text-neutral-500 uppercase tracking-wider">Amount</p>

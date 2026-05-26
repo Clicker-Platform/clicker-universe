@@ -545,6 +545,16 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // Magic-link sign-in tokens — Admin SDK only.
+    match /signInTokens/{tokenId} {
+      allow read, write: if false;
+    }
+
+    // Magic-link / abuse rate-limit counters — Admin SDK only.
+    match /rateLimits/{bucket}/entries/{key} {
+      allow read, write: if false;
+    }
+
     // Default Deny
     match /{document=**} {
       allow read, write: if false;
