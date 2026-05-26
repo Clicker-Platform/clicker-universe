@@ -102,15 +102,16 @@ export async function uploadToStorage({
         ? folder
         : `sites/${siteId}/${folder}`;
 
-    // Upload files as-is. The canvas re-encode pass was destructive — even at
-    // high quality, browser WebP encoders soften text edges on UI screenshots.
-    // Next.js handles per-request format conversion and downscaling at serve
-    // time via /_next/image, so a pre-upload encode adds nothing but quality loss.
-    const ext = file.name.split('.').pop() || 'jpg';
-    const blob = file;
-    const contentType = file.type;
-    // Reference unused params to keep the function signature stable for callers.
-    void convertToWebP; void webpQuality; void maxWidth;
+    // Skip re-encoding for files already in efficient formats. Canvas re-encoding
+    // is lossy — running an already-compressed WebP/AVIF through it just degrades
+    // quality for no compression benefit.
+    const SKIP_FORMATS = new Set(['image/webp', 'image/avif', 'image/gif', 'image/svg+xml']);
+    const shouldConvert = convertToWebP
+        && file.type.startsWith('image/')
+        && !SKIP_FORMATS.has(file.type);
+    const { blob, ext, contentType } = shouldConvert
+        ? await convertImage(file, webpQuality, maxWidth)
+        : { blob: file, ext: file.name.split('.').pop() || 'jpg', contentType: file.type };
 
     const fileName = `${storagePrefix}/${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
     const storageRef = ref(storage, fileName);
