@@ -68,3 +68,4 @@ semgrep.sarif
 
 # Service account keys (gitignored — never commit)
 scripts/
+.tmp-firebase-config/

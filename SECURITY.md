@@ -57,7 +57,7 @@ Located at `.bare/hooks/pre-commit` (shared across all worktrees via bare repo).
 
 Blocks:
 - Filenames matching: `*firebase-adminsdk*.json`, `*service-account*.json`, `.env*.local`, `.env.production`
-- Content patterns: `BEGIN<space>PRIVATE<space>KEY`, `BEGIN<space>RSA<space>PRIVATE<space>KEY`, `private<underscore>key<underscore>id":`, AWS keys, Stripe live keys, GitHub PATs, Google API keys (literal tokens redacted in this doc to avoid self-triggering the hook)
+- Content patterns: `BEGIN PRIVATE KEY`, `BEGIN RSA PRIVATE KEY`, `private_key_id":`, AWS keys, Stripe live keys, GitHub PATs, Google API keys
 
 **Bypass (use sparingly):**
 ```bash
