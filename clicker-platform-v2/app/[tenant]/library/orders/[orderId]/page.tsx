@@ -3,6 +3,7 @@ import { redirect, notFound } from 'next/navigation';
 import { adminAuth, adminDb } from '@/lib/firebase-admin';
 import { COLLECTION_ORDERS, publicRoutes } from '@/lib/modules/digital_goods/constants';
 import type { DigitalOrder } from '@/lib/modules/digital_goods/types';
+import { buyerNeedsOnboarding } from '@/lib/modules/digital_goods/server-api';
 import { OrderStatusClient } from './OrderStatusClient';
 
 export const revalidate = 0;
@@ -23,6 +24,10 @@ export default async function OrderStatusPage({
   let decoded;
   try { decoded = await adminAuth.verifySessionCookie(sessionCookie, true); }
   catch { redirect(`${routes.login}?next=${encodeURIComponent(routes.orderStatus(orderId))}`); }
+
+  if (await buyerNeedsOnboarding(siteId, decoded!.uid)) {
+    redirect(`${routes.onboarding}?next=${encodeURIComponent(routes.orderStatus(orderId))}`);
+  }
 
   const snap = await adminDb.doc(`sites/${siteId}/${COLLECTION_ORDERS}/${orderId}`).get();
   if (!snap.exists) notFound();

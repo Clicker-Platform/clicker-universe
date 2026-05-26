@@ -3,6 +3,7 @@ import { redirect, notFound } from 'next/navigation';
 import { adminAuth, adminDb } from '@/lib/firebase-admin';
 import { COLLECTION_LIBRARY, COLLECTION_PRODUCTS, publicRoutes } from '@/lib/modules/digital_goods/constants';
 import type { LibraryEntry, DigitalProduct, PdfFile, YouTubeFile } from '@/lib/modules/digital_goods/types';
+import { buyerNeedsOnboarding } from '@/lib/modules/digital_goods/server-api';
 import { LibraryEntryClient } from './LibraryEntryClient';
 
 export const revalidate = 0;
@@ -23,6 +24,10 @@ export default async function LibraryEntryPage({
   let decoded;
   try { decoded = await adminAuth.verifySessionCookie(sessionCookie, true); }
   catch { redirect(`${routes.login}?next=${encodeURIComponent(routes.libraryEntry(entryId))}`); }
+
+  if (await buyerNeedsOnboarding(siteId, decoded.uid)) {
+    redirect(`${routes.onboarding}?next=${encodeURIComponent(routes.libraryEntry(entryId))}`);
+  }
 
   const entrySnap = await adminDb.doc(`sites/${siteId}/${COLLECTION_LIBRARY}/${entryId}`).get();
   if (!entrySnap.exists) notFound();

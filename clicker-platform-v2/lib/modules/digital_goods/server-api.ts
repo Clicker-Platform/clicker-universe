@@ -72,6 +72,25 @@ export async function getBuyerAdmin(siteId: string, uid: string): Promise<Digita
   return { uid, ...snap.data() } as DigitalGoodsBuyer;
 }
 
+export async function updateBuyerProfileAdmin(
+  siteId: string,
+  uid: string,
+  data: { fullName?: string },
+): Promise<void> {
+  const ref = adminDb.doc(`sites/${siteId}/${COLLECTION_BUYERS}/${uid}`);
+  const clean = stripUndefined(data);
+  await ref.set({ ...clean, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
+}
+
+// Returns true when the buyer still needs to fill the onboarding form
+// (no buyer doc, or fullName empty/whitespace).
+export async function buyerNeedsOnboarding(siteId: string, uid: string): Promise<boolean> {
+  const buyer = await getBuyerAdmin(siteId, uid);
+  if (!buyer) return true;
+  const name = (buyer.fullName ?? '').trim();
+  return name.length === 0;
+}
+
 // --- Create order (called from checkout server action) ---
 
 export type CreateOrderInput = {

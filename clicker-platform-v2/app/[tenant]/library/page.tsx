@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { adminAuth, adminDb } from '@/lib/firebase-admin';
 import { COLLECTION_LIBRARY, publicRoutes } from '@/lib/modules/digital_goods/constants';
 import type { LibraryEntry } from '@/lib/modules/digital_goods/types';
+import { buyerNeedsOnboarding } from '@/lib/modules/digital_goods/server-api';
 
 export const revalidate = 0;
 
@@ -35,6 +36,10 @@ export default async function LibraryPage({
   let decoded;
   try { decoded = await adminAuth.verifySessionCookie(sessionCookie, true); }
   catch { redirect(`${routes.login}?next=${encodeURIComponent(routes.library)}`); }
+
+  if (await buyerNeedsOnboarding(siteId, decoded.uid)) {
+    redirect(`${routes.onboarding}?next=${encodeURIComponent(routes.library)}`);
+  }
 
   const entries = await fetchLibrary(siteId, decoded.uid);
 

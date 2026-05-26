@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 import { isSignInWithEmailLink, signInWithEmailLink } from 'firebase/auth';
 import { Loader2 } from 'lucide-react';
 import { auth } from '@/lib/firebase';
@@ -13,12 +12,14 @@ interface Props {
 }
 
 export function VerifyClient({ tenant }: Props) {
-  const router = useRouter();
   const routes = publicRoutes(tenant);
   const [status, setStatus] = useState<'WORKING' | 'ERROR'>('WORKING');
   const [error, setError] = useState<string | null>(null);
+  const startedRef = useRef(false);
 
   useEffect(() => {
+    if (startedRef.current) return;
+    startedRef.current = true;
     (async () => {
       try {
         if (!isSignInWithEmailLink(auth, window.location.href)) {
@@ -46,14 +47,18 @@ export function VerifyClient({ tenant }: Props) {
         });
         if (!res.ok) throw new Error('Failed to initialize buyer session.');
 
-        router.replace(next);
+        // Force full navigation so the new __session cookie is sent on the
+        // next request. router.replace is SPA-only and the server-rendered
+        // target page would otherwise read cookies from the request that
+        // preceded the Set-Cookie response and bounce back to login.
+        window.location.assign(next);
       } catch (e: any) {
         logger.error('digital_goods.login.verify.failed', { error: e });
         setError(e?.message ?? 'Failed to complete sign-in.');
         setStatus('ERROR');
       }
     })();
-  }, [router, routes.store, tenant]);
+  }, [routes.store, tenant]);
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-gray-50 p-6">

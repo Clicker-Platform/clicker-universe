@@ -3,6 +3,7 @@ import { redirect, notFound } from 'next/navigation';
 import { adminAuth, adminDb } from '@/lib/firebase-admin';
 import { COLLECTION_PRODUCTS, DOC_SETTINGS, publicRoutes } from '@/lib/modules/digital_goods/constants';
 import type { DigitalProduct, DigitalGoodsSettings } from '@/lib/modules/digital_goods/types';
+import { buyerNeedsOnboarding } from '@/lib/modules/digital_goods/server-api';
 import { CheckoutClient } from './CheckoutClient';
 
 export const revalidate = 0;
@@ -27,6 +28,10 @@ export default async function CheckoutPage({
     decoded = await adminAuth.verifySessionCookie(sessionCookie, true);
   } catch {
     redirect(`${routes.login}?next=${encodeURIComponent(routes.checkout(slug))}`);
+  }
+
+  if (await buyerNeedsOnboarding(siteId, decoded!.uid)) {
+    redirect(`${routes.onboarding}?next=${encodeURIComponent(routes.checkout(slug))}`);
   }
 
   const productSnap = await adminDb
