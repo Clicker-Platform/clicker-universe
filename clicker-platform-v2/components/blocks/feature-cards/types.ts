@@ -4,12 +4,15 @@ import type { MediaFieldValue } from '@/components/admin/blocks/media-field/type
 export interface FeatureCard {
     id: string;
     media?: MediaFieldValue;
+    /** Public small caption above the headline (the existing "label"). */
     label?: string;
     headline: string;
     body?: string;
     tags?: string[];
     bgColor?: string;
     textColor?: string;
+    /** Private navigator-only label. Falls back to headline when empty. */
+    navLabel?: string;
 }
 
 export interface FeatureCardsData {

@@ -18,10 +18,41 @@ import {
     sortableKeyboardCoordinates,
     verticalListSortingStrategy
 } from '@dnd-kit/sortable';
-import { Lock } from 'lucide-react';
+import { Lock, ChevronsDownUp, ChevronsUpDown, Layers } from 'lucide-react';
 import { BlockTreeNode } from './BlockTreeNode';
 import { useEditor } from './EditorContext';
 import { subscribeToEnabledModules } from '@/lib/modules/registry';
+
+/** Walks the tree and collects every container ID (block.id for columns/grid
+ *  blocks, slot.id for each column slot or grid cell with children). */
+function collectCollapsibleIds(blocks: PageBlock[]): string[] {
+    const ids: string[] = [];
+    const walk = (list: PageBlock[]) => {
+        for (const block of list) {
+            if (block.type === 'columns' && Array.isArray(block.data?.columns)) {
+                ids.push(block.id);
+                for (const col of block.data.columns) {
+                    if (Array.isArray(col?.blocks) && col.blocks.length > 0) {
+                        ids.push(col.id);
+                        walk(col.blocks);
+                    }
+                }
+            } else if (block.type === 'grid' && Array.isArray(block.data?.cells)) {
+                ids.push(block.id);
+                for (const cell of block.data.cells) {
+                    if (cell?.block) {
+                        ids.push(cell.id);
+                        walk([cell.block]);
+                    }
+                }
+            } else if (block.type === 'feature_cards' && Array.isArray(block.data?.cards) && block.data.cards.length > 0) {
+                ids.push(block.id);
+            }
+        }
+    };
+    walk(blocks);
+    return ids;
+}
 
 function toggleHiddenDeep(blocks: PageBlock[], id: string): PageBlock[] {
     return blocks.map(block => {
@@ -85,14 +116,42 @@ interface BlockManagerProps {
     onChange: (blocks: PageBlock[]) => void;
     templateId?: string;
     onAddClick?: () => void;
+    /** When true, BlockManager renders its own "Layers" title bar with the
+     *  expand/collapse toggle. Mobile sheet has its own title — pass false. */
+    renderTitle?: boolean;
 }
 
-export const BlockManager = ({ blocks, onChange, templateId, onAddClick }: BlockManagerProps) => {
+export const BlockManager = ({ blocks, onChange, templateId, onAddClick, renderTitle = false }: BlockManagerProps) => {
     const { selection, setSelection } = useEditor();
     // Helper booleans for the chrome rows; for top-level blocks we inline the check.
     const isChromeSelected = (chromeId: 'header' | 'footer' | 'bottomnav') =>
         selection.kind === 'chrome' && selection.chromeId === chromeId;
     const [moduleBlockLabels, setModuleBlockLabels] = useState<Record<string, string>>({});
+    const [collapsedIds, setCollapsedIds] = useState<Set<string>>(() => new Set());
+
+    const toggleCollapsed = useCallback((id: string) => {
+        setCollapsedIds(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id); else next.add(id);
+            return next;
+        });
+    }, []);
+
+    const expandAll = useCallback(() => {
+        setCollapsedIds(new Set());
+    }, []);
+
+    const collapseAll = useCallback(() => {
+        setCollapsedIds(new Set(collectCollapsibleIds(blocks)));
+    }, [blocks]);
+
+    const collapsibleIds = collectCollapsibleIds(blocks);
+    const anyCollapsible = collapsibleIds.length > 0;
+    const allCollapsed = anyCollapsible && collapsibleIds.every(id => collapsedIds.has(id));
+
+    const toggleAll = useCallback(() => {
+        if (allCollapsed) expandAll(); else collapseAll();
+    }, [allCollapsed, expandAll, collapseAll]);
 
     useEffect(() => {
         const unsubscribe = subscribeToEnabledModules((modules) => {
@@ -136,8 +195,69 @@ export const BlockManager = ({ blocks, onChange, templateId, onAddClick }: Block
         onChange(toggleHiddenDeep(blocks, id));
     }, [blocks, onChange]);
 
-    return (
-        <div>
+    /** Rename a column slot, grid cell, or card by its slotId. Empty/whitespace
+     *  label clears the field so the navigator falls back to the default
+     *  ("Column N" / "Cell N" / headline-or-"Untitled Card"). */
+    const renameSlot = useCallback((slotId: string, nextLabel: string) => {
+        const trimmed = nextLabel.trim();
+        const renameInBlocks = (list: PageBlock[]): PageBlock[] => list.map(block => {
+            if (block.type === 'columns' && Array.isArray(block.data?.columns)) {
+                let changed = false;
+                const nextColumns = block.data.columns.map((col: any) => {
+                    if (col?.id === slotId) {
+                        changed = true;
+                        const { label: _drop, ...rest } = col;
+                        return trimmed ? { ...col, label: trimmed } : rest;
+                    }
+                    if (Array.isArray(col?.blocks)) {
+                        const recursed = renameInBlocks(col.blocks);
+                        if (recursed !== col.blocks) {
+                            changed = true;
+                            return { ...col, blocks: recursed };
+                        }
+                    }
+                    return col;
+                });
+                return changed ? { ...block, data: { ...block.data, columns: nextColumns } } : block;
+            }
+            if (block.type === 'grid' && Array.isArray(block.data?.cells)) {
+                let changed = false;
+                const nextCells = block.data.cells.map((cell: any) => {
+                    if (cell?.id === slotId) {
+                        changed = true;
+                        const { label: _drop, ...rest } = cell;
+                        return trimmed ? { ...cell, label: trimmed } : rest;
+                    }
+                    if (cell?.block) {
+                        const [recursed] = renameInBlocks([cell.block]);
+                        if (recursed !== cell.block) {
+                            changed = true;
+                            return { ...cell, block: recursed };
+                        }
+                    }
+                    return cell;
+                });
+                return changed ? { ...block, data: { ...block.data, cells: nextCells } } : block;
+            }
+            if (block.type === 'feature_cards' && Array.isArray(block.data?.cards)) {
+                let changed = false;
+                const nextCards = block.data.cards.map((card: any) => {
+                    if (card?.id === slotId) {
+                        changed = true;
+                        const { navLabel: _drop, ...rest } = card;
+                        return trimmed ? { ...card, navLabel: trimmed } : rest;
+                    }
+                    return card;
+                });
+                return changed ? { ...block, data: { ...block.data, cards: nextCards } } : block;
+            }
+            return block;
+        });
+        onChange(renameInBlocks(blocks));
+    }, [blocks, onChange]);
+
+    const body = (
+        <>
             {/* Pinned Header */}
             <div
                 className={`flex items-center gap-1.5 px-2 py-1.5 cursor-pointer transition-colors ${
@@ -184,6 +304,9 @@ export const BlockManager = ({ blocks, onChange, templateId, onAddClick }: Block
                                         moduleBlockLabels={moduleBlockLabels}
                                         onDelete={deleteBlock}
                                         onToggleHidden={toggleHidden}
+                                        collapsedIds={collapsedIds}
+                                        onToggleCollapsed={toggleCollapsed}
+                                        onRenameSlot={renameSlot}
                                     />
                                 ))}
                             </div>
@@ -217,7 +340,32 @@ export const BlockManager = ({ blocks, onChange, templateId, onAddClick }: Block
                 <Lock size={13} className="flex-shrink-0 text-neutral-400 dark:text-neutral-600" />
                 <span className="flex-1 text-xs font-medium truncate">Bottom Navigation</span>
             </div>
+        </>
+    );
 
+    if (!renderTitle) {
+        return <div>{body}</div>;
+    }
+
+    return (
+        <div className="flex flex-col flex-1 min-h-0">
+            <div className="px-3 h-10 border-b border-gray-200 dark:border-neutral-800 font-bold text-sm text-neutral-900 dark:text-neutral-200 flex items-center gap-2 flex-shrink-0">
+                <Layers size={15} className="text-neutral-500 dark:text-neutral-400" />
+                <span className="flex-1">Layers</span>
+                {anyCollapsible && (
+                    <button
+                        type="button"
+                        onClick={toggleAll}
+                        title={allCollapsed ? 'Expand all' : 'Collapse all'}
+                        className="p-1 rounded text-neutral-400 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
+                    >
+                        {allCollapsed ? <ChevronsUpDown size={14} /> : <ChevronsDownUp size={14} />}
+                    </button>
+                )}
+            </div>
+            <div className="overflow-y-auto flex-1 custom-scrollbar py-1">
+                {body}
+            </div>
         </div>
     );
 };

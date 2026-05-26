@@ -344,9 +344,14 @@ function CardSlot({
     };
 
     const handleChangeField = (field: 'label' | 'headline' | 'body', value: string) => {
-        const next = cards.map((c, i) =>
-            i === index ? { ...c, [field]: value || undefined } : c
-        );
+        const next = cards.map((c, i) => {
+            if (i !== index) return c;
+            // headline is required: keep as empty string. Optional fields (label, body)
+            // collapse to undefined when emptied so the card returns to its
+            // "no-content" layout (matches public render).
+            const writeValue = field === 'headline' ? value : (value || undefined);
+            return { ...c, [field]: writeValue };
+        });
         editor!.updateBlockData(containerBlockId!, { cards: next });
     };
 

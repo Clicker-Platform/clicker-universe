@@ -987,19 +987,12 @@ export function CanvasStudio({
                             />
                         )}
                         {leftPanel === 'layers' && (
-                            <>
-                                <div className="px-3 h-10 border-b border-gray-200 dark:border-neutral-800 font-bold text-sm text-neutral-900 dark:text-neutral-200 flex items-center gap-2 flex-shrink-0">
-                                    <Layers size={15} className="text-neutral-500 dark:text-neutral-400" />
-                                    <span className="flex-1">Layers</span>
-                                </div>
-                                <div className="overflow-y-auto flex-1 custom-scrollbar py-1">
-                                    <BlockManager
-                                        blocks={blocks}
-                                        onChange={setBlocks}
-                                        onAddClick={() => setLeftPanel('add')}
-                                    />
-                                </div>
-                            </>
+                            <BlockManager
+                                blocks={blocks}
+                                onChange={setBlocks}
+                                onAddClick={() => setLeftPanel('add')}
+                                renderTitle
+                            />
                         )}
                     </div>
                 )}
