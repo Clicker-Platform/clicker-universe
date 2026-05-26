@@ -13,7 +13,7 @@ interface UploadOptions {
     convertToWebP?: boolean;
     /** Encoding quality 0–1. Defaults to 0.85. */
     webpQuality?: number;
-    /** If set, the image is downscaled (preserving aspect) so its longest edge ≤ maxEdge before encoding. Despite the legacy name, both width and height are capped — works for portrait, landscape, and square. */
+    /** If set, the image is downscaled (preserving aspect ratio) so its longest edge ≤ this value before encoding. Caps both width and height — works for portrait, landscape, and square images. */
     maxWidth?: number;
 }
 
