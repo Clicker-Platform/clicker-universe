@@ -2,9 +2,9 @@ name: Semgrep
 
 on:
   pull_request:
-    branches: [main, dev]
+    branches: [main , dev]
   push:
-    branches: [main, dev]
+    branches: [main , dev]
 
 permissions:
   contents: read
@@ -15,8 +15,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  semgrep-oss:
-    name: Static analysis (OSS)
+  semgrep:
+    name: Static analysis
     runs-on: ubuntu-latest
     container:
       image: semgrep/semgrep
@@ -24,7 +24,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Run Semgrep OSS
+      - name: Run Semgrep
         run: |
           semgrep scan \
             --sarif --output semgrep.sarif \
@@ -42,19 +42,4 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: semgrep.sarif
-          category: semgrep-oss
-
-  semgrep-pro:
-    name: Static analysis (Pro)
-    runs-on: ubuntu-latest
-    container:
-      image: semgrep/semgrep
-    env:
-      SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Run Semgrep CI (Pro engine)
-        run: semgrep ci
-        continue-on-error: true
+          category: semgrep
