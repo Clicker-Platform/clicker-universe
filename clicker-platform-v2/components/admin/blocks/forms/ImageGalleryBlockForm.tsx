@@ -21,39 +21,40 @@ export const ImageGalleryBlockForm = ({ data, onChange }: ImageGalleryBlockFormP
     const [pickerOpen, setPickerOpen] = useState(false);
 
     const images = safeData.images || [];
-    const coverImage = safeData.coverImage || (images.length > 0 ? images[0] : '');
+    const thumbnails = safeData.thumbnails || [];
+    const coverImage = safeData.coverImage || (thumbnails[0] || images[0] || '');
 
-    const handleSelect = (url: string) => {
+    const handleSelect = (url: string, thumbnailUrl?: string) => {
         if (images.length >= MAX_IMAGES) return;
         const newImages = [...images, url];
-        const next: typeof safeData = {
+        const newThumbs = [...thumbnails, thumbnailUrl || url];
+        const newCover = coverImage || newThumbs[0];
+        onChange({
             ...safeData,
             images: newImages,
-            coverImage: coverImage || url,
-        };
-        // Drop legacy thumbnails field so the public block falls back to images
-        delete next.thumbnails;
-        onChange(next);
+            thumbnails: newThumbs,
+            coverImage: newCover,
+        });
     };
 
     const removeImage = (index: number) => {
-        const removed = images[index];
+        const removedFull = images[index];
+        const removedThumb = thumbnails[index];
         const newImages = images.filter((_, i) => i !== index);
-        const newCover = coverImage === removed
-            ? (newImages[0] || '')
+        const newThumbs = thumbnails.filter((_, i) => i !== index);
+        const newCover = coverImage === removedFull || coverImage === removedThumb
+            ? (newThumbs[0] || newImages[0] || '')
             : coverImage;
-        const next: typeof safeData = { ...safeData, images: newImages, coverImage: newCover };
-        delete next.thumbnails;
-        onChange(next);
+        onChange({ ...safeData, images: newImages, thumbnails: newThumbs, coverImage: newCover });
     };
 
     const setCover = (index: number) => {
-        const next: typeof safeData = { ...safeData, coverImage: images[index] };
-        delete next.thumbnails;
-        onChange(next);
+        const thumbUrl = thumbnails[index] || images[index];
+        onChange({ ...safeData, coverImage: thumbUrl });
     };
 
-    const isCover = (index: number) => coverImage === images[index];
+    const isCover = (index: number) =>
+        coverImage === images[index] || coverImage === thumbnails[index];
 
     return (
         <div className="space-y-4">
@@ -84,7 +85,7 @@ export const ImageGalleryBlockForm = ({ data, onChange }: ImageGalleryBlockFormP
                     {images.map((url, index) => (
                         <div key={`${url}-${index}`} className="group relative aspect-square bg-gray-100 dark:bg-neutral-900 rounded-lg overflow-hidden border border-gray-200 dark:border-neutral-800 shadow-inner">
                             <Image
-                                src={url}
+                                src={thumbnails[index] || url}
                                 alt={`Gallery ${index + 1}`}
                                 fill
                                 sizes="(max-width: 640px) 50vw, 200px"
@@ -128,7 +129,7 @@ export const ImageGalleryBlockForm = ({ data, onChange }: ImageGalleryBlockFormP
             <MediaPicker
                 open={pickerOpen}
                 onClose={() => setPickerOpen(false)}
-                onSelect={({ url }) => { handleSelect(url); setPickerOpen(false); }}
+                onSelect={({ url, item }) => { handleSelect(url, item?.thumbnailUrl); setPickerOpen(false); }}
                 accept="image"
             />
         </div>
