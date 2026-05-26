@@ -184,9 +184,16 @@ export async function deleteMedia(
         if (usages.length > 0) throw new MediaInUseError(usages);
     }
 
-    await deleteObject(storageRef(storage, item.storagePath)).catch(() => {
-        // Storage object may already be gone — non-fatal
-    });
+    const paths = [item.storagePath, item.thumbnailStoragePath].filter(
+        (p): p is string => typeof p === 'string' && p.length > 0,
+    );
+    await Promise.all(
+        paths.map(p =>
+            deleteObject(storageRef(storage, p)).catch(() => {
+                // Storage object may already be gone — non-fatal
+            }),
+        ),
+    );
     await deleteDoc(ref);
 }
 
