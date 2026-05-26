@@ -84,13 +84,9 @@ export const DefaultImageGalleryBlock = ({ data, isFirst = false }: ImageGallery
     const [initialIndex, setInitialIndex] = useState(0);
 
     const images = (data.images || []).filter(url => url && url.trim() !== '');
-    // Fall back to full URLs for galleries uploaded before thumbnails were introduced
-    const thumbnails = Array.isArray(data.thumbnails) && data.thumbnails.length === images.length
-        ? data.thumbnails
-        : images;
 
     const validCover = data.coverImage?.trim() || null;
-    const coverThumb = validCover || (thumbnails.length > 0 ? thumbnails[0] : null);
+    const coverThumb = validCover || (images.length > 0 ? images[0] : null);
 
     if (!images.length) return null;
 
@@ -143,14 +139,14 @@ export const DefaultImageGalleryBlock = ({ data, isFirst = false }: ImageGallery
                 className="hidden md:grid grid-cols-2 gap-2"
                 style={{ borderRadius: 'var(--theme-radius)' }}
             >
-                {thumbnails.map((thumb, idx) => (
+                {images.map((url, idx) => (
                     <GalleryTile
                         key={idx}
-                        src={thumb}
+                        src={url}
                         alt={`Gallery image ${idx + 1}`}
                         onClick={() => openAt(idx)}
                         priority={isFirst && idx < 2}
-                        badge={idx === thumbnails.length - 1 && images.length > 1 ? photoBadge : undefined}
+                        badge={idx === images.length - 1 && images.length > 1 ? photoBadge : undefined}
                         cardClass={cardClass}
                     />
                 ))}

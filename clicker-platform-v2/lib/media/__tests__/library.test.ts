@@ -64,19 +64,10 @@ describe('registerMedia', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         mockImageBehavior = { kind: 'error' };
-        (uploadToStorage as any).mockImplementation(async (opts: { maxWidth?: number }) => {
-            if (opts.maxWidth && opts.maxWidth <= 600) {
-                return {
-                    url: 'https://storage.example/sites/s1/media/abc_thumb.webp',
-                    contentType: 'image/webp',
-                    sizeBytes: 800,
-                };
-            }
-            return {
-                url: 'https://storage.example/sites/s1/media/abc.webp',
-                contentType: 'image/webp',
-                sizeBytes: 4321,
-            };
+        (uploadToStorage as any).mockResolvedValue({
+            url: 'https://storage.example/sites/s1/media/abc.webp',
+            contentType: 'image/webp',
+            sizeBytes: 4321,
         });
     });
 
@@ -95,16 +86,8 @@ describe('registerMedia', () => {
             folder: 'media',
             siteId: 's1',
         }));
-        expect(uploadToStorage).toHaveBeenCalledTimes(2);
-        expect(uploadToStorage).toHaveBeenNthCalledWith(1, expect.objectContaining({ maxWidth: 1920 }));
-        expect(uploadToStorage).toHaveBeenNthCalledWith(2, expect.objectContaining({ maxWidth: 600 }));
-
-        const setDocCall = (setDoc as any).mock.calls[0];
-        const writtenItem = setDocCall[1];
-        expect(writtenItem.url).toBe('https://storage.example/sites/s1/media/abc.webp');
-        expect(writtenItem.thumbnailUrl).toBe('https://storage.example/sites/s1/media/abc_thumb.webp');
-        expect(writtenItem.thumbnailStoragePath).toContain('abc_thumb.webp');
-
+        expect(uploadToStorage).toHaveBeenCalledTimes(1);
+        expect(uploadToStorage).toHaveBeenCalledWith(expect.objectContaining({ maxWidth: 1920 }));
         expect(setDoc).toHaveBeenCalledTimes(1);
         expect(item.url).toBe('https://storage.example/sites/s1/media/abc.webp');
         expect(item.folder).toBe('Uncategorized');

@@ -47,23 +47,20 @@ export async function registerMedia({
     tags?: string[];
     uploadedBy: string;
 }): Promise<MediaItem> {
-    const [full, thumb] = await Promise.all([
-        uploadToStorage({ file, folder: 'media', siteId, convertToWebP: true, maxWidth: 1920 }),
-        uploadToStorage({ file, folder: 'media', siteId, convertToWebP: true, maxWidth: 600, webpQuality: 0.8 }),
-    ]);
+    const { url, contentType, sizeBytes } = await uploadToStorage({
+        file, folder: 'media', siteId, convertToWebP: true, maxWidth: 1920,
+    });
     const dims = await readImageDimensions(file);
     const colRef = collection(db, 'sites', siteId, 'mediaLibrary');
     const docRef = doc(colRef);
 
     const item: MediaItem = {
         id: docRef.id,
-        url: full.url,
-        storagePath: extractStoragePath(full.url),
-        thumbnailUrl: thumb.url,
-        thumbnailStoragePath: extractStoragePath(thumb.url),
+        url,
+        storagePath: extractStoragePath(url),
         fileName: file.name,
-        mimeType: full.contentType,
-        sizeBytes: full.sizeBytes,
+        mimeType: contentType,
+        sizeBytes,
         ...(dims ? { width: dims.width, height: dims.height } : {}),
         folder: folder ?? DEFAULT_FOLDER,
         tags: tags ?? [],
