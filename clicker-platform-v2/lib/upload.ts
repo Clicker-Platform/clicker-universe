@@ -11,7 +11,7 @@ interface UploadOptions {
     siteId?: string;
     /** Convert to modern format before upload. Defaults to true for image/* files. */
     convertToWebP?: boolean;
-    /** Encoding quality 0–1. Defaults to 0.85. */
+    /** Encoding quality 0–1. Defaults to 0.92. */
     webpQuality?: number;
     /** If set, the image is downscaled (preserving aspect ratio) so its longest edge ≤ this value before encoding. Caps both width and height — works for portrait, landscape, and square images. */
     maxWidth?: number;
@@ -35,7 +35,7 @@ function canvasToBlob(canvas: HTMLCanvasElement, mimeType: string, quality: numb
  */
 async function convertImage(
     file: File,
-    quality = 0.85,
+    quality = 0.92,
     maxWidth?: number,
 ): Promise<{ blob: Blob; ext: string; contentType: string }> {
     return new Promise((resolve, reject) => {
@@ -95,7 +95,7 @@ export async function uploadToStorage({
     folder,
     siteId,
     convertToWebP = true,
-    webpQuality = 0.85,
+    webpQuality = 0.92,
     maxWidth,
 }: UploadOptions): Promise<{ url: string; contentType: string; sizeBytes: number; path: string }> {
     const storagePrefix = (!siteId || siteId === 'platform')

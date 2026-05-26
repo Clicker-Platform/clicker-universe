@@ -13,7 +13,7 @@ const nextConfig = {
     ],
     allowedDevOrigins: ['192.168.0.100'],
     images: {
-        formats: ['image/avif', 'image/webp'],
+        formats: ['image/webp'],
         minimumCacheTTL: 2592000,
         qualities: [10, 40, 75, 85],
         remotePatterns: [
