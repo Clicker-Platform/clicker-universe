@@ -33,6 +33,7 @@ export interface PageBlock {
     id: string;
     type: BlockType;
     data: any;
+    hidden?: boolean;
 }
 
 export interface BackgroundMediaBase {

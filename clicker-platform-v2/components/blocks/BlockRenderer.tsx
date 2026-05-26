@@ -99,6 +99,8 @@ export const BlockRenderer = ({
     isHydrating?: boolean,
     activeContainerSlotId?: string | null,
 }) => {
+    if (block.hidden) return null;
+
     const fullTemplate = getTemplate(templateId || 'classic');
 
     const renderBlock = () => {

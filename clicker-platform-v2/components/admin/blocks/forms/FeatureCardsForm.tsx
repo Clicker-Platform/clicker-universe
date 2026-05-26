@@ -131,7 +131,7 @@ function CardItem({
                         <label className={labelClass}>Headline *</label>
                         <input
                             ref={(el) => { registerHeadlineRef?.(el); }}
-                            value={card.headline}
+                            value={card.headline ?? ''}
                             onChange={e => set('headline', e.target.value)}
                             className={inputClass}
                             placeholder="Card Headline"
