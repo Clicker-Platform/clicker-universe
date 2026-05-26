@@ -1,6 +1,7 @@
 'use client';
 
 import type { MediaItem } from '@/lib/media/types';
+import { getDisplayThumbnail } from '@/lib/media/thumbnail';
 
 interface Props {
     item: MediaItem;
@@ -20,7 +21,7 @@ export function MediaItemCard({ item, selected, onClick }: Props) {
         >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-                src={item.url}
+                src={getDisplayThumbnail(item)}
                 alt={item.fileName}
                 className="h-full w-full object-cover"
                 loading="lazy"
