@@ -13,7 +13,6 @@ const BLUR_PLACEHOLDER =
 interface ImageGalleryBlockProps {
     data: {
         images?: string[];
-        thumbnails?: string[];
         coverImage?: string;
     };
     isFirst?: boolean;
@@ -69,7 +68,7 @@ function GalleryTile({
                 blurDataURL={BLUR_PLACEHOLDER}
                 onLoad={() => setLoaded(true)}
                 className={`object-cover object-center transition-all duration-500 group-hover:scale-105 ${loaded ? 'opacity-100' : 'opacity-0'}`}
-                sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 400px"
+                sizes="(max-width: 768px) 100vw, 50vw"
             />
             {badge}
         </div>

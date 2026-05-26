@@ -117,7 +117,7 @@ describe('Suite 1 — DefaultImageGalleryBlock', () => {
             img => img.getAttribute('alt') === 'Gallery Cover'
         );
         expect(coverImg!.getAttribute('data-sizes')).toBe(
-            '(max-width: 768px) 100vw, 240px'
+            '(max-width: 768px) 100vw, 50vw'
         );
     });
 
