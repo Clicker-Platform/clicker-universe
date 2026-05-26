@@ -92,9 +92,9 @@ export default {
         // RESERVED SUBDOMAINS (Special Routing)
         // ============================================
 
-        // www.clicker.id → Marketing website (v16)
+        // www.clicker.id → 301 redirect ke apex (clicker.id = tenant "go")
         if (subdomain === 'www') {
-            return proxyRequest(request, HOSTS.website, pathname, null, startTime);
+            return Response.redirect(`https://clicker.id${pathname}${url.search}`, 301);
         }
 
         // backyard.clicker.id → Backyard Admin Console

@@ -28,6 +28,24 @@ let _prodApp: admin.app.App | null = null;
 const PROD_PROJECT_ID = "clicker-universe";
 const PROD_BUCKET = "clicker-universe.firebasestorage.app";
 
+// Self-loop guard: this module mirrors staging → prod. If deployed to prod
+// itself, the trigger on sites/go/* would fire on its OWN writes, causing an
+// infinite write loop (10k+ writes/sec, caused the May 25 incident).
+// Detect host project via GCP env vars and short-circuit any handler.
+const CURRENT_PROJECT_ID =
+    process.env.GCP_PROJECT
+    || process.env.GCLOUD_PROJECT
+    || process.env.GOOGLE_CLOUD_PROJECT
+    || '';
+const IS_PROD_DEPLOY = CURRENT_PROJECT_ID === PROD_PROJECT_ID;
+if (IS_PROD_DEPLOY) {
+    console.warn(
+        `[sync-to-prod] DISABLED: this module is deployed in prod project ` +
+        `(${CURRENT_PROJECT_ID}). Mirror direction is staging→prod only — running ` +
+        `in prod would create a self-write loop. All handlers will no-op.`
+    );
+}
+
 function getProdApp(): admin.app.App {
     if (_prodApp) return _prodApp;
     const existing = admin.apps.find(a => a?.name === "prod-mirror");
@@ -67,6 +85,7 @@ async function mirrorDoc(
 export const syncGoFirestore = onDocumentWritten(
     { document: `sites/${SITE_ID}/{col}/{docId}`, region: REGION },
     async (event) => {
+        if (IS_PROD_DEPLOY) return;
         const { col, docId } = event.params;
         const prodRef = getProdDb()
             .collection("sites").doc(SITE_ID)
@@ -82,6 +101,7 @@ export const syncGoFirestore = onDocumentWritten(
 export const syncGoFirestoreDeep = onDocumentWritten(
     { document: `sites/${SITE_ID}/{col}/{docId}/{subCol}/{subDocId}`, region: REGION },
     async (event) => {
+        if (IS_PROD_DEPLOY) return;
         const { col, docId, subCol, subDocId } = event.params;
         const prodRef = getProdDb()
             .collection("sites").doc(SITE_ID)
@@ -98,6 +118,7 @@ export const syncGoFirestoreDeep = onDocumentWritten(
 export const syncGoFirestoreLevel3 = onDocumentWritten(
     { document: `sites/${SITE_ID}/{col}/{docId}/{subCol}/{subDocId}/{deepCol}/{deepDocId}`, region: REGION },
     async (event) => {
+        if (IS_PROD_DEPLOY) return;
         const { col, docId, subCol, subDocId, deepCol, deepDocId } = event.params;
         const prodRef = getProdDb()
             .collection("sites").doc(SITE_ID)
@@ -115,6 +136,7 @@ export const syncGoFirestoreLevel3 = onDocumentWritten(
 export const syncGoStorageUpload = onObjectFinalized(
     { region: REGION },
     async (event) => {
+        if (IS_PROD_DEPLOY) return;
         const filePath = event.data.name || "";
         if (!filePath.startsWith(`sites/${SITE_ID}/`)) return;
 
@@ -139,6 +161,7 @@ export const syncGoStorageUpload = onObjectFinalized(
 export const syncGoStorageDelete = onObjectDeleted(
     { region: REGION },
     async (event) => {
+        if (IS_PROD_DEPLOY) return;
         const filePath = event.data.name || "";
         if (!filePath.startsWith(`sites/${SITE_ID}/`)) return;
 
