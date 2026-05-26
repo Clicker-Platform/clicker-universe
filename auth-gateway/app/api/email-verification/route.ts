@@ -3,7 +3,7 @@ import { adminAuth } from '@/lib/firebase-admin';
 import { logger } from '@/lib/logger';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { resolveSiteFromEmail } from '@/lib/resolve-site-from-email';
-import { sendEmail } from '@/lib/email';
+import { sendEmail, getTemplateAliases } from '@/lib/email';
 
 export async function POST(request: Request) {
   const ip = request.headers.get('x-forwarded-for') ?? 'unknown';
@@ -25,13 +25,15 @@ export async function POST(request: Request) {
     }
 
     const siteId = await resolveSiteFromEmail(email);
+    const aliases = await getTemplateAliases();
+    const alias = aliases.emailVerification ?? 'email-verification';
 
     await sendEmail({
       to: email,
       siteId,
-      templateAlias: 'email-verification',
+      templateAlias: alias,
       variables: { verifyLink },
-      tags: [{ name: 'template', value: 'email-verification' }],
+      tags: [{ name: 'template', value: alias }],
     });
   } catch (error) {
     logger.error('auth.email-verification.failed', { error });
