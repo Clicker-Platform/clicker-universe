@@ -28,7 +28,7 @@ export default async function OrderStatusPage({
   if (!snap.exists) notFound();
   const raw = snap.data() as DigitalOrder;
   if (raw.buyerId !== decoded!.uid) notFound();
-  const order = JSON.parse(JSON.stringify({ id: snap.id, ...raw })) as DigitalOrder;
+  const order = JSON.parse(JSON.stringify({ ...raw, id: snap.id })) as DigitalOrder;
 
   return (
     <main className="min-h-screen bg-gray-50 p-6">
