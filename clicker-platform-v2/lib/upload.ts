@@ -102,7 +102,13 @@ export async function uploadToStorage({
         ? folder
         : `sites/${siteId}/${folder}`;
 
-    const shouldConvert = convertToWebP && file.type.startsWith('image/') && file.type !== 'image/gif';
+    // Skip re-encoding for files already in efficient formats. Canvas re-encoding
+    // is lossy — running an already-compressed WebP/AVIF through it just degrades
+    // quality for no compression benefit.
+    const SKIP_FORMATS = new Set(['image/webp', 'image/avif', 'image/gif', 'image/svg+xml']);
+    const shouldConvert = convertToWebP
+        && file.type.startsWith('image/')
+        && !SKIP_FORMATS.has(file.type);
     const { blob, ext, contentType } = shouldConvert
         ? await convertImage(file, webpQuality, maxWidth)
         : { blob: file, ext: file.name.split('.').pop() || 'jpg', contentType: file.type };
