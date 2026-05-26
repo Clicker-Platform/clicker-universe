@@ -28,12 +28,13 @@ export function LoginClient({ tenant }: Props) {
     if (!email) { setError('Email diperlukan.'); return; }
     setSubmitting(true); setError(null);
     try {
-      const verifyUrl = `${window.location.origin}${routes.loginVerify}?next=${encodeURIComponent(next)}`;
+      const verifyUrl = `${window.location.origin}${routes.loginVerify}`;
       await sendSignInLinkToEmail(auth, email, {
         url: verifyUrl,
         handleCodeInApp: true,
       });
       window.localStorage.setItem('digitalGoodsEmailForSignIn', email);
+      window.localStorage.setItem('digitalGoodsNextForSignIn', next);
       setStep('SENT');
     } catch (e: any) {
       logger.error('digital_goods.login.send.failed', { error: e });

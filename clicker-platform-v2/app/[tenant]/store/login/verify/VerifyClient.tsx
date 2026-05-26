@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { isSignInWithEmailLink, signInWithEmailLink } from 'firebase/auth';
 import { Loader2 } from 'lucide-react';
 import { auth } from '@/lib/firebase';
@@ -15,9 +15,6 @@ interface Props {
 export function VerifyClient({ tenant }: Props) {
   const router = useRouter();
   const routes = publicRoutes(tenant);
-  const searchParams = useSearchParams();
-  const raw = searchParams.get('next') || routes.store;
-  const next = (raw.startsWith('/') && !raw.startsWith('//')) ? raw : routes.store;
   const [status, setStatus] = useState<'WORKING' | 'ERROR'>('WORKING');
   const [error, setError] = useState<string | null>(null);
 
@@ -35,6 +32,12 @@ export function VerifyClient({ tenant }: Props) {
         const result = await signInWithEmailLink(auth, email, window.location.href);
         window.localStorage.removeItem('digitalGoodsEmailForSignIn');
 
+        const storedNext = window.localStorage.getItem('digitalGoodsNextForSignIn');
+        window.localStorage.removeItem('digitalGoodsNextForSignIn');
+        const next = (storedNext && storedNext.startsWith('/') && !storedNext.startsWith('//'))
+          ? storedNext
+          : routes.store;
+
         const idToken = await result.user.getIdToken();
         const res = await fetch('/api/digital-goods/buyer/init', {
           method: 'POST',
@@ -50,7 +53,7 @@ export function VerifyClient({ tenant }: Props) {
         setStatus('ERROR');
       }
     })();
-  }, [next, router, tenant]);
+  }, [router, routes.store, tenant]);
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-gray-50 p-6">

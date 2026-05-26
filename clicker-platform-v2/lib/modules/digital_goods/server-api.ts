@@ -15,6 +15,36 @@ import type {
   PaymentInstructions, ProductSnapshot,
 } from './types';
 
+function stripUndefined<T>(value: T): T {
+  if (Array.isArray(value)) {
+    return value.map(stripUndefined) as unknown as T;
+  }
+  if (value && typeof value === 'object' && value.constructor === Object) {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      if (v !== undefined) out[k] = stripUndefined(v);
+    }
+    return out as T;
+  }
+  return value;
+}
+
+// Resolve public-facing base URL for a tenant.
+// Priority: customDomain → domain (from site doc) → fallback host (dev/preview only).
+export async function resolveTenantBaseUrl(siteId: string, fallbackHost?: string): Promise<string> {
+  const snap = await adminDb.doc(`sites/${siteId}`).get();
+  const data = snap.data() ?? {};
+  const tenantDomain =
+    (data.customDomain as string | undefined) ||
+    (data.domain as string | undefined);
+  if (tenantDomain) return `https://${tenantDomain}`;
+  if (fallbackHost) {
+    const proto = fallbackHost.startsWith('localhost') ? 'http' : 'https';
+    return `${proto}://${fallbackHost}`;
+  }
+  return 'https://clicker.id';
+}
+
 // --- Buyer auto-provision (called from server actions on first authed visit) ---
 
 export async function upsertBuyerAdmin(
@@ -23,12 +53,13 @@ export async function upsertBuyerAdmin(
   data: { email: string; fullName?: string },
 ): Promise<void> {
   const ref = adminDb.doc(`sites/${siteId}/${COLLECTION_BUYERS}/${uid}`);
+  const clean = stripUndefined(data);
   const snap = await ref.get();
   if (snap.exists) {
-    await ref.set({ ...data, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
+    await ref.set({ ...clean, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
   } else {
     await ref.set({
-      uid, ...data,
+      uid, ...clean,
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
     });
@@ -55,7 +86,7 @@ export type CreateOrderInput = {
 export async function createOrderAdmin(siteId: string, input: CreateOrderInput): Promise<string> {
   const ref = adminDb.collection(`sites/${siteId}/${COLLECTION_ORDERS}`).doc();
   await ref.set({
-    ...input,
+    ...stripUndefined(input),
     currency: 'IDR',
     paymentMethod: 'manual_transfer',
     status: 'awaiting_confirmation',
@@ -89,12 +120,12 @@ export async function confirmOrderPaidAdmin(
     }
 
     // Snapshot for library entry — derive from order.productSnapshot
-    const librarySnapshot = {
+    const librarySnapshot = stripUndefined({
       title: order.productSnapshot.title,
       coverImage: order.productSnapshot.coverImage,
       type: order.productSnapshot.type,
       contentKind: order.productSnapshot.contentKind,
-    };
+    });
 
     tx.update(orderRef, {
       status: 'paid',

@@ -26,8 +26,9 @@ export default async function OrderStatusPage({
 
   const snap = await adminDb.doc(`sites/${siteId}/${COLLECTION_ORDERS}/${orderId}`).get();
   if (!snap.exists) notFound();
-  const order = { id: snap.id, ...snap.data() } as DigitalOrder;
-  if (order.buyerId !== decoded!.uid) notFound();
+  const raw = snap.data() as DigitalOrder;
+  if (raw.buyerId !== decoded!.uid) notFound();
+  const order = JSON.parse(JSON.stringify({ id: snap.id, ...raw })) as DigitalOrder;
 
   return (
     <main className="min-h-screen bg-gray-50 p-6">
