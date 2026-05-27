@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Upload as UploadIcon, Loader2, Link as LinkIcon, Image as ImageIcon } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
 import { auth } from '@/lib/firebase';
@@ -75,7 +76,7 @@ export function MediaPicker({ open, onClose, onSelect, accept = 'image', initial
         }
     };
 
-    return (
+    return createPortal(
         <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
             onClick={onClose}
@@ -191,6 +192,7 @@ export function MediaPicker({ open, onClose, onSelect, accept = 'image', initial
                     )}
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }
