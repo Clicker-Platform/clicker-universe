@@ -54,6 +54,9 @@ importers:
       '@tiptap/core':
         specifier: ^3.20.1
         version: 3.20.1(@tiptap/pm@3.20.1)
+      '@tiptap/extension-bullet-list':
+        specifier: 3.20.1
+        version: 3.20.1(@tiptap/extension-list@3.20.1(@tiptap/core@3.20.1(@tiptap/pm@3.20.1))(@tiptap/pm@3.20.1))
       '@tiptap/extension-document':
         specifier: ^3.20.1
         version: 3.20.1(@tiptap/core@3.20.1(@tiptap/pm@3.20.1))
@@ -66,6 +69,9 @@ importers:
       '@tiptap/extension-link':
         specifier: ^3.15.3
         version: 3.20.1(@tiptap/core@3.20.1(@tiptap/pm@3.20.1))(@tiptap/pm@3.20.1)
+      '@tiptap/extension-list-item':
+        specifier: 3.20.1
+        version: 3.20.1(@tiptap/extension-list@3.20.1(@tiptap/core@3.20.1(@tiptap/pm@3.20.1))(@tiptap/pm@3.20.1))
       '@tiptap/extension-paragraph':
         specifier: ^3.20.1
         version: 3.20.1(@tiptap/core@3.20.1(@tiptap/pm@3.20.1))
