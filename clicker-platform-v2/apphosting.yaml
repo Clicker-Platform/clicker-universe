@@ -4,5 +4,4 @@ runConfig:
   minInstances: 0
   maxInstances: 10
 
-outputFiles:
-  serverDirectory: .next/standalone
+buildCommand: "next build --webpack"
