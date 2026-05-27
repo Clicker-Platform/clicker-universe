@@ -24,7 +24,7 @@ export default async function OnboardingPage({
     : routes.store;
 
   const cookieStore = await cookies();
-  const sessionCookie = cookieStore.get('__session')?.value;
+  const sessionCookie = cookieStore.get('__buyer_session')?.value;
   if (!sessionCookie) redirect(`${routes.login}?next=${encodeURIComponent(routes.onboarding)}`);
 
   let decoded;

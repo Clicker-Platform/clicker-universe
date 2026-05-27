@@ -17,7 +17,7 @@ export default async function TenantLayout({
 
     let buyerEmail: string | null = null;
     const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get('__session')?.value;
+    const sessionCookie = cookieStore.get('__buyer_session')?.value;
     if (sessionCookie) {
         try {
             const decoded = await adminAuth.verifySessionCookie(sessionCookie, true);

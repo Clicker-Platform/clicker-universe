@@ -26,9 +26,7 @@ export default async function CheckoutPage({
   let decoded;
   try {
     decoded = await adminAuth.verifySessionCookie(sessionCookie, true);
-    console.log('[CHECKOUT] session valid uid=', decoded.uid);
-  } catch (e) {
-    console.log('[CHECKOUT] verifySessionCookie threw:', (e as Error).message);
+  } catch {
     redirect(`${routes.login}?next=${encodeURIComponent(routes.checkout(slug))}`);
   }
 
