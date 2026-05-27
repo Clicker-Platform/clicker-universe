@@ -15,6 +15,8 @@ declare module '@tiptap/core' {
     }
 }
 
+const HEX_RE = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
+
 export const TokenColor = Mark.create<TokenColorOptions>({
     name: 'tokenColor',
 
@@ -38,24 +40,30 @@ export const TokenColor = Mark.create<TokenColorOptions>({
             },
             hex: {
                 default: null as string | null,
+                // Read from data-color (canonical, immune to CSSOM normalization).
+                // We do NOT read from the style attribute — browsers may have rewritten
+                // it to rgb() form on innerHTML serialization, losing the original hex.
                 parseHTML: el => {
                     if (!(el.getAttribute('class') || '').includes('rt-color-custom')) return null;
-                    const style = el.getAttribute('style') || '';
-                    const match = style.match(/color:\s*(#[0-9a-fA-F]{3,8})/);
-                    return match ? match[1] : null;
+                    const dataColor = el.getAttribute('data-color') || '';
+                    return HEX_RE.test(dataColor) ? dataColor : null;
                 },
+                // Write both data-color (canonical) and style (display).
+                // The browser may rewrite the style on serialization; data-color stays put.
                 renderHTML: attrs => {
                     if (!attrs.hex) return {};
-                    return { class: 'rt-color-custom', style: `color: ${attrs.hex}` };
+                    return {
+                        class: 'rt-color-custom',
+                        'data-color': attrs.hex,
+                        style: `color: ${attrs.hex}`,
+                    };
                 },
             },
         };
     },
 
     parseHTML() {
-        return [
-            { tag: 'span[class*="rt-color-"]' },
-        ];
+        return [{ tag: 'span[class*="rt-color-"]' }];
     },
 
     renderHTML({ HTMLAttributes }) {
@@ -69,7 +77,7 @@ export const TokenColor = Mark.create<TokenColorOptions>({
                 return commands.setMark(this.name, { token, hex: null });
             },
             setCustomColor: (hex) => ({ commands }) => {
-                if (!/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(hex)) return false;
+                if (!HEX_RE.test(hex)) return false;
                 return commands.setMark(this.name, { token: null, hex });
             },
             unsetTokenColor: () => ({ commands }) => commands.unsetMark(this.name),
