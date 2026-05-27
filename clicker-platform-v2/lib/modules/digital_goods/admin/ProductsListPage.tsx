@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Plus, ShoppingBag, Pencil, Trash2 } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
+import { useUser } from '@/lib/user-context';
 import { logger } from '@/lib/logger-edge';
 import { ConfirmButton } from '@/components/ui/ConfirmButton';
 import { getProducts, deleteProduct } from '../api';
@@ -11,6 +12,7 @@ import { ProductForm } from './components/ProductForm';
 
 export default function ProductsListPage() {
   const { siteId } = useSite();
+  const { canEdit } = useUser();
   const [products, setProducts]         = useState<DigitalProduct[]>([]);
   const [loading, setLoading]           = useState(true);
   const [error, setError]               = useState<string | null>(null);
@@ -49,7 +51,7 @@ export default function ProductsListPage() {
   }
 
   async function handleDelete(productId: string) {
-    if (!siteId) return;
+    if (!canEdit('digital_goods', 'products') || !siteId) return;
     try {
       await deleteProduct(siteId, productId);
       setProducts(prev => prev.filter(p => p.id !== productId));
@@ -68,12 +70,14 @@ export default function ProductsListPage() {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">Digital Goods</h1>
           <p className="text-sm text-gray-500 dark:text-neutral-500">Sell PDFs, videos, and other digital products.</p>
         </div>
-        <button
-          onClick={openCreate}
-          className="flex items-center gap-1.5 bg-studio-blue text-white px-3 py-2 rounded-lg text-sm font-semibold transition-colors hover:bg-studio-blue/90 active:scale-95"
-        >
-          <Plus className="w-4 h-4" /> New Product
-        </button>
+        {canEdit('digital_goods', 'products') && (
+          <button
+            onClick={openCreate}
+            className="flex items-center gap-1.5 bg-studio-blue text-white px-3 py-2 rounded-lg text-sm font-semibold transition-colors hover:bg-studio-blue/90 active:scale-95"
+          >
+            <Plus className="w-4 h-4" /> New Product
+          </button>
+        )}
       </div>
 
       {error && (
@@ -87,12 +91,14 @@ export default function ProductsListPage() {
           <ShoppingBag size={32} className="mx-auto mb-3 text-gray-400 dark:text-neutral-600" />
           <p className="text-gray-600 dark:text-neutral-400 font-medium mb-1">No products yet</p>
           <p className="text-sm text-gray-400 dark:text-neutral-600 mb-4">Create your first digital product to start selling.</p>
-          <button
-            onClick={openCreate}
-            className="inline-flex items-center gap-1.5 bg-studio-blue text-white px-3 py-2 rounded-lg text-sm font-semibold transition-colors hover:bg-studio-blue/90 active:scale-95"
-          >
-            <Plus className="w-4 h-4" /> New Product
-          </button>
+          {canEdit('digital_goods', 'products') && (
+            <button
+              onClick={openCreate}
+              className="inline-flex items-center gap-1.5 bg-studio-blue text-white px-3 py-2 rounded-lg text-sm font-semibold transition-colors hover:bg-studio-blue/90 active:scale-95"
+            >
+              <Plus className="w-4 h-4" /> New Product
+            </button>
+          )}
         </div>
       ) : (
         <div className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl overflow-hidden">
@@ -122,21 +128,23 @@ export default function ProductsListPage() {
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => openEdit(p)}
-                        aria-label="Edit"
-                        className="p-1.5 rounded-lg text-gray-400 dark:text-neutral-500 hover:bg-gray-100 dark:hover:bg-neutral-700 hover:text-studio-blue dark:hover:text-studio-blue transition-colors"
-                      >
-                        <Pencil size={16} />
-                      </button>
-                      <ConfirmButton
-                        onConfirm={() => handleDelete(p.id)}
-                        triggerIcon={<Trash2 size={16} />}
-                        iconOnly
-                        triggerTitle="Delete product"
-                      />
-                    </div>
+                    {canEdit('digital_goods', 'products') && (
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => openEdit(p)}
+                          aria-label="Edit"
+                          className="p-1.5 rounded-lg text-gray-400 dark:text-neutral-500 hover:bg-gray-100 dark:hover:bg-neutral-700 hover:text-studio-blue dark:hover:text-studio-blue transition-colors"
+                        >
+                          <Pencil size={16} />
+                        </button>
+                        <ConfirmButton
+                          onConfirm={() => handleDelete(p.id)}
+                          triggerIcon={<Trash2 size={16} />}
+                          iconOnly
+                          triggerTitle="Delete product"
+                        />
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}

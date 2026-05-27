@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Receipt, Pencil } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
+import { useUser } from '@/lib/user-context';
 import { logger } from '@/lib/logger-edge';
 import { listOrders } from '../orders';
 import type { DigitalOrder, OrderStatus } from '../types';
@@ -17,6 +18,7 @@ const FILTERS: { key: OrderStatus | 'all'; label: string }[] = [
 
 export default function OrdersListPage() {
   const { siteId } = useSite();
+  const { canEdit } = useUser();
   const [orders, setOrders] = useState<DigitalOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<OrderStatus | 'all'>('all');
@@ -117,13 +119,15 @@ export default function OrdersListPage() {
                     }`}>{o.status}</span>
                   </td>
                   <td className="px-4 py-3">
-                    <button
-                      onClick={() => setEditingOrder(o)}
-                      className="p-2 text-gray-600 dark:text-neutral-400 hover:text-studio-blue dark:hover:text-studio-blue"
-                      aria-label="View order"
-                    >
-                      <Pencil size={16} />
-                    </button>
+                    {canEdit('digital_goods', 'orders') && (
+                      <button
+                        onClick={() => setEditingOrder(o)}
+                        className="p-2 text-gray-600 dark:text-neutral-400 hover:text-studio-blue dark:hover:text-studio-blue"
+                        aria-label="View order"
+                      >
+                        <Pencil size={16} />
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
