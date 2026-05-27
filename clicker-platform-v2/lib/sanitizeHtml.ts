@@ -1,17 +1,7 @@
 import DOMPurify from 'isomorphic-dompurify';
 
-// Accepts:
-//   color: #abc | #aabbcc | #aabbccdd
-//   color: rgb(r, g, b)        — integers 0-255, decimals not allowed
-//   color: rgba(r, g, b, a)    — a is 0-1 with optional decimal
-// Browser CSSOM normalizes inline-style hex into rgb() form on innerHTML
-// serialization, so we must accept the rgb form on the round-trip even though
-// the editor's color picker only produces hex.
-const HEX_RE  = String.raw`#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})`;
-const RGB_RE  = String.raw`rgb\(\s*(?:25[0-5]|2[0-4]\d|1?\d?\d)\s*,\s*(?:25[0-5]|2[0-4]\d|1?\d?\d)\s*,\s*(?:25[0-5]|2[0-4]\d|1?\d?\d)\s*\)`;
-const RGBA_RE = String.raw`rgba\(\s*(?:25[0-5]|2[0-4]\d|1?\d?\d)\s*,\s*(?:25[0-5]|2[0-4]\d|1?\d?\d)\s*,\s*(?:25[0-5]|2[0-4]\d|1?\d?\d)\s*,\s*(?:0|1|0?\.\d+)\s*\)`;
-
-const HEX_DECLARATION = new RegExp(`^(color|background-color)\\s*:\\s*(${HEX_RE}|${RGB_RE}|${RGBA_RE})$`);
+const HEX_RE = String.raw`#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})`;
+const HEX_DECLARATION = new RegExp(`^(color|background-color)\\s*:\\s*(${HEX_RE})$`);
 
 let richTextSanitizationActive = false;
 
@@ -68,6 +58,7 @@ const RICH_TEXT_CONFIG = {
         'type',
         'colspan', 'rowspan',
         'data-video-embed', 'data-src', 'data-provider',
+        'data-color', 'data-bg-color',
     ],
     ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|tel):|[^a-z]|[a-z+.-]+(?:[^a-z+.-:]|$))/i,
     ADD_ATTR: ['target'],

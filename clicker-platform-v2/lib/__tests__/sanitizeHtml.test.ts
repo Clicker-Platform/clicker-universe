@@ -68,39 +68,20 @@ describe('sanitizeRichText — inline style allowlist', () => {
         expect(out).toContain('color: red');
     });
 
-    it('keeps color: rgb(r, g, b) — browsers normalize hex to rgb via CSSOM', () => {
-        const html = '<span style="color: rgb(161, 178, 195)">x</span>';
-        const out = sanitizeRichText(html);
-        expect(out).toMatch(/style="color:\s*rgb\(161,\s*178,\s*195\)"/);
+    it('strips rgb()/rgba() — only hex is allowed; canonical color lives in data-color', () => {
+        const html = '<span style="color: rgb(255, 0, 0)">x</span>';
+        expect(sanitizeRichText(html)).not.toMatch(/rgb/);
     });
 
-    it('keeps background-color: rgb()', () => {
-        const html = '<span style="background-color: rgb(254, 240, 138)">x</span>';
+    it('preserves data-color attribute (canonical custom-color storage)', () => {
+        const html = '<span class="rt-color-custom" data-color="#a1b2c3">x</span>';
         const out = sanitizeRichText(html);
-        expect(out).toContain('background-color: rgb(254, 240, 138)');
+        expect(out).toContain('data-color="#a1b2c3"');
     });
 
-    it('keeps color: rgba(r, g, b, a) with alpha', () => {
-        const html = '<span style="color: rgba(161, 178, 195, 0.5)">x</span>';
+    it('preserves data-bg-color attribute', () => {
+        const html = '<span class="rt-bg-custom" data-bg-color="#fde047">x</span>';
         const out = sanitizeRichText(html);
-        expect(out).toMatch(/rgba\(161,\s*178,\s*195,\s*0\.5\)/);
-    });
-
-    it('rejects rgb() with out-of-range numbers', () => {
-        const html = '<span style="color: rgb(999, 0, 0)">x</span>';
-        const out = sanitizeRichText(html);
-        expect(out).not.toMatch(/rgb\(999/);
-    });
-
-    it('rejects rgb() with non-numeric content', () => {
-        const html = '<span style="color: rgb(red, 0, 0)">x</span>';
-        const out = sanitizeRichText(html);
-        expect(out).not.toMatch(/rgb\(red/);
-    });
-
-    it('rejects rgba() with malformed alpha', () => {
-        const html = '<span style="color: rgba(0, 0, 0, 2.5)">x</span>';
-        const out = sanitizeRichText(html);
-        expect(out).not.toMatch(/rgba\(0,\s*0,\s*0,\s*2\.5/);
+        expect(out).toContain('data-bg-color="#fde047"');
     });
 });
