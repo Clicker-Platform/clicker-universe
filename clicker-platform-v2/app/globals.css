@@ -1,4 +1,6 @@
 @import "tailwindcss";
+/* Rich-text editor token classes (.rt-color-*, .rt-bg-*, .rt-size-*, .rt-lh-*, .rt-align-*) */
+@import "../components/blocks/public/rich-text-classes.css";
 @plugin "@tailwindcss/typography";
 @custom-variant dark (&:where(.dark, .dark *));
 
