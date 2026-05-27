@@ -1,0 +1,8 @@
+runConfig:
+  cpu: 1
+  memoryMiB: 2048
+  minInstances: 0
+  maxInstances: 10
+
+outputFiles:
+  serverDirectory: .next/standalone
