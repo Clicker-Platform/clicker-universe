@@ -8,11 +8,12 @@ export const runtime = 'nodejs';
 
 const NO_STORE = { 'Cache-Control': 'private, no-store, max-age=0' };
 
-function buildSessionCookie(sessionCookie: string): string {
+// Build cookie string for a given name.
+function cookieString(name: string, value: string): string {
   const maxAge = 60 * 60 * 24 * 7;
   const isProd = process.env.NODE_ENV === 'production';
   const parts = [
-    `__buyer_session=${sessionCookie}`,
+    `${name}=${value}`,
     'Path=/',
     `Max-Age=${maxAge}`,
     'HttpOnly',
@@ -20,6 +21,23 @@ function buildSessionCookie(sessionCookie: string): string {
   ];
   if (isProd) parts.push('Secure');
   return parts.join('; ');
+}
+
+// Firebase App Hosting CDN only forwards the `__session` cookie to the
+// Next.js backend. All other cookies are stripped before they reach server
+// components. We therefore emit TWO Set-Cookie headers:
+//   1. __session  — forwarded by Firebase, read by buyer server pages
+//   2. __buyer_session — read by buyer server pages on non-Firebase hosts
+//      (local dev, custom-domain deployments without CDN stripping)
+//
+// Buyer server pages try __buyer_session first, then fall back to __session.
+// Admin code only writes __session as a short siteId string (e.g. "go"),
+// which will never pass verifySessionCookie(), so no false-positive risk.
+function buildSessionCookies(sessionCookie: string): string[] {
+  return [
+    cookieString('__session', sessionCookie),
+    cookieString('__buyer_session', sessionCookie),
+  ];
 }
 
 async function processInit(siteId: string, idToken: string): Promise<
@@ -78,14 +96,9 @@ async function handleFormPost(req: NextRequest): Promise<Response> {
   }
 
   const next = isSafePath(nextRaw) ? nextRaw : `/${siteId}/store`;
-  return new Response(null, {
-    status: 302,
-    headers: {
-      ...NO_STORE,
-      Location: next,
-      'Set-Cookie': buildSessionCookie(result.sessionCookie),
-    },
-  });
+  const resHeaders = new Headers({ ...NO_STORE, Location: next });
+  for (const c of buildSessionCookies(result.sessionCookie)) resHeaders.append('Set-Cookie', c);
+  return new Response(null, { status: 302, headers: resHeaders });
 }
 
 // JSON POST handler — kept for backward compatibility with any caller that
@@ -109,14 +122,9 @@ async function handleJsonPost(req: NextRequest): Promise<Response> {
     return NextResponse.json({ error: result.error }, { status: result.status, headers: NO_STORE });
   }
 
-  return new NextResponse(JSON.stringify({ ok: true, uid: result.uid }), {
-    status: 200,
-    headers: {
-      'Content-Type': 'application/json',
-      ...NO_STORE,
-      'Set-Cookie': buildSessionCookie(result.sessionCookie),
-    },
-  });
+  const resHeaders = new Headers({ 'Content-Type': 'application/json', ...NO_STORE });
+  for (const c of buildSessionCookies(result.sessionCookie)) resHeaders.append('Set-Cookie', c);
+  return new NextResponse(JSON.stringify({ ok: true, uid: result.uid }), { status: 200, headers: resHeaders });
 }
 
 export async function POST(req: NextRequest): Promise<Response> {

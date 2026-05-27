@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { adminAuth } from '@/lib/firebase-admin';
 import { getBuyerAdmin, updateBuyerProfileAdmin } from '@/lib/modules/digital_goods/server-api';
+import { getBuyerSessionCookie } from '@/lib/modules/digital_goods/session';
 import { logger } from '@/lib/logger-edge';
 
 export const runtime = 'nodejs';
@@ -10,8 +10,7 @@ async function getAuth(req: NextRequest): Promise<{ siteId: string; uid: string 
   const siteId = req.headers.get('x-site-id');
   if (!siteId) return { error: 'no_site', status: 400 };
 
-  const cookieStore = await cookies();
-  const sessionCookie = cookieStore.get('__buyer_session')?.value;
+  const sessionCookie = await getBuyerSessionCookie();
   if (!sessionCookie) return { error: 'no_session', status: 401 };
 
   try {

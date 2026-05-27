@@ -1,9 +1,9 @@
-import { cookies } from 'next/headers';
 import { redirect, notFound } from 'next/navigation';
 import { adminAuth, adminDb } from '@/lib/firebase-admin';
 import { COLLECTION_PRODUCTS, DOC_SETTINGS, publicRoutes } from '@/lib/modules/digital_goods/constants';
 import type { DigitalProduct, DigitalGoodsSettings } from '@/lib/modules/digital_goods/types';
 import { buyerNeedsOnboarding } from '@/lib/modules/digital_goods/server-api';
+import { getBuyerSessionCookie } from '@/lib/modules/digital_goods/session';
 import { CheckoutClient } from './CheckoutClient';
 
 export const revalidate = 0;
@@ -17,8 +17,7 @@ export default async function CheckoutPage({
   const siteId = tenant;
   const routes = publicRoutes(tenant);
 
-  const cookieStore = await cookies();
-  const sessionCookie = cookieStore.get('__buyer_session')?.value;
+  const sessionCookie = await getBuyerSessionCookie();
   if (!sessionCookie) {
     redirect(`${routes.login}?next=${encodeURIComponent(routes.checkout(slug))}`);
   }

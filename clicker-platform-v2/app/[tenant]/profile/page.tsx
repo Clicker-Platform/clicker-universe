@@ -1,8 +1,8 @@
-import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { adminAuth } from '@/lib/firebase-admin';
 import { getBuyerAdmin } from '@/lib/modules/digital_goods/server-api';
 import { publicRoutes } from '@/lib/modules/digital_goods/constants';
+import { getBuyerSessionCookie } from '@/lib/modules/digital_goods/session';
 import { ProfileClient } from './ProfileClient';
 
 export const revalidate = 0;
@@ -16,8 +16,7 @@ export default async function ProfilePage({
   const siteId = tenant;
   const routes = publicRoutes(tenant);
 
-  const cookieStore = await cookies();
-  const sessionCookie = cookieStore.get('__buyer_session')?.value;
+  const sessionCookie = await getBuyerSessionCookie();
   if (!sessionCookie) redirect(`${routes.login}?next=${encodeURIComponent(routes.profile)}`);
 
   let decoded;
