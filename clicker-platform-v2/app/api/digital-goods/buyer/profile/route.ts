@@ -11,7 +11,7 @@ async function getAuth(req: NextRequest): Promise<{ siteId: string; uid: string 
   if (!siteId) return { error: 'no_site', status: 400 };
 
   const cookieStore = await cookies();
-  const sessionCookie = cookieStore.get('__session')?.value;
+  const sessionCookie = cookieStore.get('__buyer_session')?.value;
   if (!sessionCookie) return { error: 'no_session', status: 401 };
 
   try {

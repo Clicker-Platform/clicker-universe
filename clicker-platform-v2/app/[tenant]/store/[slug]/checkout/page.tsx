@@ -18,8 +18,7 @@ export default async function CheckoutPage({
   const routes = publicRoutes(tenant);
 
   const cookieStore = await cookies();
-  const sessionCookie = cookieStore.get('__session')?.value;
-  console.log('[CHECKOUT] cookie present=', !!sessionCookie, 'len=', sessionCookie?.length ?? 0, 'first40=', sessionCookie?.slice(0,40), 'last20=', sessionCookie?.slice(-20));
+  const sessionCookie = cookieStore.get('__buyer_session')?.value;
   if (!sessionCookie) {
     redirect(`${routes.login}?next=${encodeURIComponent(routes.checkout(slug))}`);
   }

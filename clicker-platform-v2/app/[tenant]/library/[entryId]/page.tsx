@@ -18,7 +18,7 @@ export default async function LibraryEntryPage({
   const routes = publicRoutes(tenant);
 
   const cookieStore = await cookies();
-  const sessionCookie = cookieStore.get('__session')?.value;
+  const sessionCookie = cookieStore.get('__buyer_session')?.value;
   if (!sessionCookie) redirect(`${routes.login}?next=${encodeURIComponent(routes.libraryEntry(entryId))}`);
 
   let decoded;

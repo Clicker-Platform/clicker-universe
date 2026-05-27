@@ -3,11 +3,11 @@ import { NextResponse } from 'next/server';
 export const runtime = 'nodejs';
 
 export async function POST() {
-  // Clear __session cookie via raw Set-Cookie header.
+  // Clear __buyer_session cookie via raw Set-Cookie header.
   // Same delivery pattern as buyer/init — survives Firebase Hosting proxy.
   const isProd = process.env.NODE_ENV === 'production';
   const cookieParts = [
-    '__session=',
+    '__buyer_session=',
     'Path=/',
     'Max-Age=0',
     'HttpOnly',

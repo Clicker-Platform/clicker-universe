@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
   const siteId = headersList.get('x-site-id');
   if (!siteId) return NextResponse.json({ error: 'no_site' }, { status: 400 });
 
-  const sessionCookie = req.cookies.get('__session')?.value;
+  const sessionCookie = req.cookies.get('__buyer_session')?.value;
   if (!sessionCookie) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 
   let decoded;

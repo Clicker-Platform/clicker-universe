@@ -12,7 +12,7 @@ function buildSessionCookie(sessionCookie: string): string {
   const maxAge = 60 * 60 * 24 * 7;
   const isProd = process.env.NODE_ENV === 'production';
   const parts = [
-    `__session=${sessionCookie}`,
+    `__buyer_session=${sessionCookie}`,
     'Path=/',
     `Max-Age=${maxAge}`,
     'HttpOnly',
