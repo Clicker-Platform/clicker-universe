@@ -29,7 +29,7 @@ export function LineHeightPopover({ editor }: { editor: Editor | null }) {
                 onMouseDown={e => e.preventDefault()}
                 onClick={() => setOpen(o => !o)}
                 title="Line height"
-                className="h-[30px] px-2 rounded-md text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800 inline-flex items-center gap-1"
+                className="h-10 md:h-[30px] px-3 md:px-2 rounded-md text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800 inline-flex items-center gap-1"
             >
                 <span>↕ {current.charAt(0).toUpperCase() + current.slice(1)}</span>
                 <ChevronDown size={10} className="text-neutral-400" />

@@ -21,7 +21,7 @@ export function HighlightPopover({ editor }: { editor: Editor | null }) {
                 onMouseDown={e => e.preventDefault()}
                 onClick={() => setOpen(o => !o)}
                 title="Highlight"
-                className="h-[30px] w-[30px] rounded-md hover:bg-gray-100 dark:hover:bg-neutral-800 inline-flex items-center justify-center"
+                className="h-10 w-10 md:h-[30px] md:w-[30px] rounded-md hover:bg-gray-100 dark:hover:bg-neutral-800 inline-flex items-center justify-center"
             >
                 <span className="px-1 rounded-sm bg-yellow-200 text-neutral-900 font-bold text-xs">A</span>
             </button>

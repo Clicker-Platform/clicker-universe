@@ -47,7 +47,7 @@ export function HeadingPopover({ editor }: Props) {
                 type="button"
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => setOpen(o => !o)}
-                className="h-[30px] px-2 rounded-md text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800 inline-flex items-center gap-1"
+                className="h-10 md:h-[30px] px-3 md:px-2 rounded-md text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800 inline-flex items-center gap-1"
                 title="Block type"
             >
                 <span>{currentLabel}</span>

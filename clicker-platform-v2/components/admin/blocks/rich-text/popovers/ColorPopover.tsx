@@ -21,7 +21,7 @@ export function ColorPopover({ editor }: { editor: Editor | null }) {
                 onMouseDown={e => e.preventDefault()}
                 onClick={() => setOpen(o => !o)}
                 title="Text color"
-                className="h-[30px] w-[30px] rounded-md hover:bg-gray-100 dark:hover:bg-neutral-800 inline-flex items-center justify-center text-neutral-700 dark:text-neutral-300 font-semibold"
+                className="h-10 w-10 md:h-[30px] md:w-[30px] rounded-md hover:bg-gray-100 dark:hover:bg-neutral-800 inline-flex items-center justify-center text-neutral-700 dark:text-neutral-300 font-semibold"
             >
                 A
             </button>

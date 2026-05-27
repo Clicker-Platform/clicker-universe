@@ -45,7 +45,7 @@ export const Toolbar = ({ editor }: ToolbarProps) => {
             onMouseDown={e => e.preventDefault()}
             onClick={onClick}
             title={title}
-            className={`h-[30px] w-[30px] rounded-md inline-flex items-center justify-center transition-colors
+            className={`h-10 w-10 md:h-[30px] md:w-[30px] rounded-md inline-flex items-center justify-center transition-colors
                 ${active
                     ? 'bg-blue-500 text-white'
                     : 'text-neutral-700 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-800'}`}

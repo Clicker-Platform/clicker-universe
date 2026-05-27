@@ -38,7 +38,7 @@ export function FontSizePopover({ editor }: { editor: Editor | null }) {
                 onMouseDown={e => e.preventDefault()}
                 onClick={() => setOpen(o => !o)}
                 title={disabled ? 'Font size applies to paragraphs only' : 'Font size'}
-                className="h-[30px] px-2 rounded-md text-xs font-medium hover:bg-gray-100 dark:hover:bg-neutral-800 inline-flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="h-10 md:h-[30px] px-3 md:px-2 rounded-md text-xs font-medium hover:bg-gray-100 dark:hover:bg-neutral-800 inline-flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed"
             >
                 <span>Aa {current ? current.toUpperCase() : 'M'}</span>
                 <ChevronDown size={10} className="text-neutral-400" />
