@@ -74,7 +74,7 @@ export const RichTextEditor = ({ value, onChange, placeholder = 'Write something
         content: value,
         editorProps: {
             attributes: {
-                class: 'prose dark:prose-invert max-w-none focus:outline-none min-h-[150px] px-4 py-4 prose-headings:font-heading dark:prose-headings:text-neutral-100 prose-p:text-neutral-700 dark:prose-p:text-neutral-200 prose-p:font-body prose-strong:text-neutral-900 dark:prose-strong:text-neutral-100 prose-ul:text-neutral-700 dark:prose-ul:text-neutral-300 prose-ol:text-neutral-700 dark:prose-ol:text-neutral-300 prose-blockquote:text-neutral-600 dark:prose-blockquote:text-neutral-300 prose-blockquote:border-l-blue-500 prose-a:text-blue-400',
+                class: 'prose dark:prose-invert max-w-none focus:outline-none min-h-[150px] px-4 py-4 prose-headings:font-heading dark:prose-headings:text-neutral-100 prose-p:text-neutral-700 dark:prose-p:text-neutral-200 prose-p:font-body prose-strong:text-neutral-900 dark:prose-strong:text-neutral-100 prose-ul:text-neutral-700 dark:prose-ul:text-neutral-300 prose-ol:text-neutral-700 dark:prose-ol:text-neutral-300 prose-blockquote:text-neutral-600 dark:prose-blockquote:text-neutral-300 prose-blockquote:border-l-blue-500 prose-a:text-blue-400 prose-ul:my-4 prose-ol:my-4 prose-li:my-1.5 prose-li:leading-snug [&_li>p]:my-0',
             },
         },
         immediatelyRender: false,
