@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    output: 'standalone',
+    outputFileTracingRoot: new URL('..', import.meta.url).pathname,
     // firebase-admin di serverExternalPackages — tidak di-bundle Turbopack/webpack.
     serverExternalPackages: [
       'firebase-admin',
