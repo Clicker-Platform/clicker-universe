@@ -1,13 +1,24 @@
 import DOMPurify from 'isomorphic-dompurify';
 
-const HEX_DECLARATION = /^(color|background-color)\s*:\s*(#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8}))$/;
+// Accepts:
+//   color: #abc | #aabbcc | #aabbccdd
+//   color: rgb(r, g, b)        — integers 0-255, decimals not allowed
+//   color: rgba(r, g, b, a)    — a is 0-1 with optional decimal
+// Browser CSSOM normalizes inline-style hex into rgb() form on innerHTML
+// serialization, so we must accept the rgb form on the round-trip even though
+// the editor's color picker only produces hex.
+const HEX_RE  = String.raw`#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})`;
+const RGB_RE  = String.raw`rgb\(\s*(?:25[0-5]|2[0-4]\d|1?\d?\d)\s*,\s*(?:25[0-5]|2[0-4]\d|1?\d?\d)\s*,\s*(?:25[0-5]|2[0-4]\d|1?\d?\d)\s*\)`;
+const RGBA_RE = String.raw`rgba\(\s*(?:25[0-5]|2[0-4]\d|1?\d?\d)\s*,\s*(?:25[0-5]|2[0-4]\d|1?\d?\d)\s*,\s*(?:25[0-5]|2[0-4]\d|1?\d?\d)\s*,\s*(?:0|1|0?\.\d+)\s*\)`;
+
+const HEX_DECLARATION = new RegExp(`^(color|background-color)\\s*:\\s*(${HEX_RE}|${RGB_RE}|${RGBA_RE})$`);
 
 let richTextSanitizationActive = false;
 
 /**
- * Keep only `color: #hex` and `background-color: #hex` style declarations.
- * Returns either a sanitized style string or empty (in which case the caller
- * drops the attribute entirely).
+ * Keep only `color` and `background-color` style declarations whose value is
+ * an accepted hex / rgb() / rgba() literal. Returns either a sanitized style
+ * string or empty (in which case the caller drops the attribute entirely).
  */
 function sanitizeStyleValue(value: string): string {
     const declarations = value.split(';').map(s => s.trim()).filter(Boolean);
