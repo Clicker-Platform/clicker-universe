@@ -134,10 +134,12 @@ import {
 } from '../tokens';
 
 describe('tokens', () => {
-    it('exposes exactly 8 color tokens with stable IDs', () => {
+    it('exposes exactly 6 color tokens with stable IDs', () => {
+        // Reduced from 8 to 6 per Task 0 finding — secondary and danger are
+        // not defined in any template; deferred to Color Styles work.
         expect(COLOR_TOKENS.map(t => t.id)).toEqual([
-            'foreground', 'muted', 'primary', 'secondary',
-            'accent', 'success', 'warning', 'danger',
+            'foreground', 'muted', 'primary',
+            'accent', 'success', 'warning',
         ]);
     });
 
@@ -204,15 +206,18 @@ export interface LineHeightToken {
     readonly multiplier: number;
 }
 
+// Per Task 0 verification (2026-05-27): the spec's 8 tokens included
+// `secondary`, `muted`, `danger` which are NOT defined in the platform's
+// theme system. Decision (option B): drop secondary + danger; remap
+// `muted` to the existing `--theme-text-muted` variable. 6 swatches total.
+// Add the dropped tokens when the Color Styles system ships.
 export const COLOR_TOKENS: readonly ColorToken[] = [
-    { id: 'foreground', label: 'Default',   cssVar: 'var(--theme-foreground)' },
-    { id: 'muted',      label: 'Muted',     cssVar: 'var(--theme-muted)' },
-    { id: 'primary',    label: 'Primary',   cssVar: 'var(--theme-primary)' },
-    { id: 'secondary',  label: 'Secondary', cssVar: 'var(--theme-secondary)' },
-    { id: 'accent',     label: 'Accent',    cssVar: 'var(--theme-accent)' },
-    { id: 'success',    label: 'Success',   cssVar: 'var(--theme-success)' },
-    { id: 'warning',    label: 'Warning',   cssVar: 'var(--theme-warning)' },
-    { id: 'danger',     label: 'Danger',    cssVar: 'var(--theme-danger)' },
+    { id: 'foreground', label: 'Default', cssVar: 'var(--theme-foreground)' },
+    { id: 'muted',      label: 'Muted',   cssVar: 'var(--theme-text-muted)' },
+    { id: 'primary',    label: 'Primary', cssVar: 'var(--theme-primary)' },
+    { id: 'accent',     label: 'Accent',  cssVar: 'var(--theme-accent)' },
+    { id: 'success',    label: 'Success', cssVar: 'var(--theme-success)' },
+    { id: 'warning',    label: 'Warning', cssVar: 'var(--theme-warning)' },
 ] as const;
 
 export const HIGHLIGHT_TOKENS: readonly ColorToken[] = [
@@ -290,15 +295,16 @@ git commit -m "feat(rich-text): add token definitions (color, size, line-height)
  * loaded inside a CSS layer that wins regardless, switch to @layer.
  */
 
-/* ---------- Token colors (use theme CSS variables) ---------- */
+/* ---------- Token colors (use theme CSS variables).
+ * 6 tokens, not the spec's 8 — secondary/danger removed (not defined
+ * in any template; deferred to Color Styles work). `muted` mapped to
+ * the canonical --theme-text-muted variable. */
 .prose .rt-color-foreground { color: var(--theme-foreground); }
-.prose .rt-color-muted      { color: var(--theme-muted); }
+.prose .rt-color-muted      { color: var(--theme-text-muted); }
 .prose .rt-color-primary    { color: var(--theme-primary); }
-.prose .rt-color-secondary  { color: var(--theme-secondary); }
 .prose .rt-color-accent     { color: var(--theme-accent); }
 .prose .rt-color-success    { color: var(--theme-success); }
 .prose .rt-color-warning    { color: var(--theme-warning); }
-.prose .rt-color-danger     { color: var(--theme-danger); }
 
 /* Freeform hex stays as inline style on the same span; .rt-color-custom
  * is a marker class only (no color rule here). The inline `style="color: #..."`
