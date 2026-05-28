@@ -23,9 +23,6 @@ export const ROUTES = {
   settings: '/admin/digital-goods/settings',
 } as const;
 
-// Permission key (registered in RBAC)
-export const PERM_MANAGE = 'digital_goods.manage';
-
 // Defaults
 export const DEFAULT_CURRENCY = 'IDR' as const;
 
