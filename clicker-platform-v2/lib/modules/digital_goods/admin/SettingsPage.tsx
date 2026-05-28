@@ -42,7 +42,7 @@ export default function SettingsPage() {
     setMessage(null);
     try {
       const result = await uploadToStorage({ file, folder: STORAGE_FOLDER_QRIS, siteId });
-      setSettings(s => ({ ...s, qrisImageUrl: result.path }));
+      setSettings(s => ({ ...s, qrisImageUrl: result.url }));
     } catch (e) {
       logger.error('digital_goods.qris.upload.failed', { siteId, error: e });
       setMessage({ kind: 'err', text: 'QRIS upload failed.' });
@@ -128,17 +128,25 @@ export default function SettingsPage() {
       <div>
         <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-neutral-300">QRIS image (optional)</label>
         {settings.qrisImageUrl ? (
-          <div className="border border-gray-200 dark:border-neutral-700 rounded-lg p-3 flex items-center gap-3 bg-gray-50 dark:bg-neutral-800/50">
-            <ImageIcon className="text-gray-500 dark:text-neutral-500" size={20} />
-            <div className="flex-1 text-sm text-gray-700 dark:text-neutral-300 truncate">{settings.qrisImageUrl}</div>
-            <button
-              type="button"
-              onClick={() => setSettings(s => ({ ...s, qrisImageUrl: undefined }))}
-              className="p-1 text-gray-500 dark:text-neutral-500 hover:text-red-600"
-              aria-label="Remove QRIS image"
-            >
-              <X size={18} />
-            </button>
+          <div className="border border-gray-200 dark:border-neutral-700 rounded-lg p-3 bg-gray-50 dark:bg-neutral-800/50">
+            <div className="flex items-start gap-3">
+              <img
+                src={settings.qrisImageUrl}
+                alt="QRIS preview"
+                className="w-32 h-32 object-contain rounded border border-gray-200 dark:border-neutral-700 bg-white"
+              />
+              <div className="flex-1 text-xs text-gray-500 dark:text-neutral-500">
+                Preview of the QRIS code buyers will see on checkout. Static QRIS — dynamic codes come when payment gateway is integrated.
+              </div>
+              <button
+                type="button"
+                onClick={() => setSettings(s => ({ ...s, qrisImageUrl: undefined }))}
+                className="p-1 text-gray-500 dark:text-neutral-500 hover:text-red-600"
+                aria-label="Remove QRIS image"
+              >
+                <X size={18} />
+              </button>
+            </div>
           </div>
         ) : (
           <label className="block border-2 border-dashed border-gray-200 dark:border-neutral-700 rounded-lg p-6 text-center cursor-pointer hover:border-studio-blue dark:hover:border-studio-blue">

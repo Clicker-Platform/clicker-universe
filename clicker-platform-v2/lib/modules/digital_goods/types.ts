@@ -120,6 +120,6 @@ export interface DigitalGoodsSettings {
   bankName: string;
   accountNumber: string;
   accountName: string;
-  qrisImageUrl?: string;        // Firebase Storage path
+  qrisImageUrl?: string;        // Public Firebase Storage URL (static QRIS — meant to be displayed publicly on checkout)
   updatedAt?: Timestamp;
 }
