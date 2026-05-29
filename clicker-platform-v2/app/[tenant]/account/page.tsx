@@ -28,14 +28,14 @@ export default function AccountHome() {
   }
 
   return (
-    <div className="max-w-5xl">
+    <div>
       <h1 className="text-[22px] font-extrabold text-gray-900 tracking-tight">
         Halo, {member.fullName} 👋
       </h1>
       <p className="text-gray-500 mt-0.5">Semua produk &amp; layanan kamu, di satu tempat.</p>
 
       <h2 className="text-sm font-bold text-gray-900 mt-6 mb-3">My Library</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
         {library.map((it, i) => (
           <LibraryCard key={it.id} item={it} index={i} />
         ))}

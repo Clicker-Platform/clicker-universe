@@ -12,7 +12,7 @@ export function AccentPicker({ value, onChange, onClose }: Props) {
   return (
     <>
       <div className="fixed inset-0 z-30" onClick={onClose} />
-      <div className="absolute right-7 top-[58px] z-40 bg-white rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.14)] p-3.5 w-[180px]">
+      <div className="absolute right-0 top-11 z-40 bg-white rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.14)] p-3.5 w-[180px]">
         <div className="font-bold text-gray-900 mb-2.5">Warna tema</div>
         <div className="flex gap-2.5">
           {(Object.keys(ACCENT_PRESETS) as AccentPresetId[]).map((id) => (

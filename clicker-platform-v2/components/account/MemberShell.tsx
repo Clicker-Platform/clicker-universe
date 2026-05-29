@@ -29,23 +29,27 @@ export function MemberShell({ tenant, children }: { tenant: string; children: Re
       style={resolveAccentVars(preset) as React.CSSProperties}
     >
       <MemberSidebar tenant={tenant} brand="Acme ☕" items={items} active={active} member={member} />
-      <main className="flex-1 px-7 py-6 relative">
-        <div className="absolute right-7 top-6 flex gap-2 z-20">
-          <button className="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center text-gray-700">
-            <Bell size={16} />
-          </button>
-          <button
-            onClick={() => setPickerOpen((o) => !o)}
-            className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold"
-            style={{ background: 'var(--member-accent)', color: 'var(--member-accent-fg)' }}
-          >
-            {initial}
-          </button>
+      <main className="flex-1 relative">
+        <div className="mx-auto w-full max-w-3xl px-6 py-8">
+          <div className="flex justify-end gap-2 mb-4">
+            <button className="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center text-gray-700">
+              <Bell size={16} />
+            </button>
+            <div className="relative">
+              <button
+                onClick={() => setPickerOpen((o) => !o)}
+                className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold"
+                style={{ background: 'var(--member-accent)', color: 'var(--member-accent-fg)' }}
+              >
+                {initial}
+              </button>
+              {pickerOpen && (
+                <AccentPicker value={preset} onChange={setPreset} onClose={() => setPickerOpen(false)} />
+              )}
+            </div>
+          </div>
+          {children}
         </div>
-        {pickerOpen && (
-          <AccentPicker value={preset} onChange={setPreset} onClose={() => setPickerOpen(false)} />
-        )}
-        {children}
       </main>
     </div>
   );
