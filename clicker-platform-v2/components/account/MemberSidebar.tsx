@@ -18,9 +18,10 @@ interface Props {
   brand: MockTenantBrand;
   items: MockSurfaceNavItem[];
   active: string;
+  onNavigate?: () => void;
 }
 
-export function MemberSidebar({ tenant, brand, items, active }: Props) {
+export function MemberSidebar({ tenant, brand, items, active, onNavigate }: Props) {
   const link = (href: string, label: string, key: string, Icon: LucideIcon) => {
     const on = active === key;
     const path = `/${tenant}/account${href ? `/${href}` : ''}`;
@@ -28,6 +29,7 @@ export function MemberSidebar({ tenant, brand, items, active }: Props) {
       <Link
         key={key}
         href={path}
+        onClick={onNavigate}
         className={`flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[15px] transition-colors ${on ? 'font-semibold' : 'font-medium'}`}
         style={
           on
@@ -41,7 +43,7 @@ export function MemberSidebar({ tenant, brand, items, active }: Props) {
   };
 
   return (
-    <aside className="w-[260px] shrink-0 bg-white border-r border-gray-100 px-5 py-6 flex flex-col">
+    <aside className="w-full h-full bg-white px-5 py-6 flex flex-col">
       <div className="mb-8 px-1 flex items-center gap-2.5 min-w-0">
         {brand.logoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element

@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { Bell } from 'lucide-react';
+import { Bell, Menu, X } from 'lucide-react';
 import { getMockMember, getMockSurfaces } from '@/lib/account/mock/providers';
 import type { MockTenantBrand } from '@/lib/account/mock/types';
 import { resolveAccentVars, type AccentPresetId } from '@/lib/account/accent';
@@ -26,6 +26,7 @@ export function MemberShell({
   const [preset, setPreset] = useState<AccentPresetId>(member.accentPreset ?? 'coral');
   const [menuOpen, setMenuOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [navOpen, setNavOpen] = useState(false);
 
   if (isAuth) return <>{children}</>;
 
@@ -39,10 +40,45 @@ export function MemberShell({
       className="min-h-screen flex bg-[#f4f4f6] font-[family-name:var(--font-outfit)]"
       style={resolveAccentVars(preset) as React.CSSProperties}
     >
-      <MemberSidebar tenant={tenant} brand={brand} items={items} active={active} />
-      <main className="flex-1 flex flex-col">
-        {/* Full-width top bar, pinned right (BMC) */}
-        <header className="flex justify-end items-center gap-2 px-7 py-4">
+      {/* Desktop: static sidebar column */}
+      <div className="hidden md:block w-[260px] shrink-0 border-r border-gray-100">
+        <MemberSidebar tenant={tenant} brand={brand} items={items} active={active} />
+      </div>
+
+      {/* Mobile: off-canvas drawer + backdrop */}
+      {navOpen && (
+        <div className="md:hidden fixed inset-0 z-50 flex">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setNavOpen(false)} />
+          <div className="relative w-[260px] max-w-[80%] h-full bg-white shadow-xl">
+            <button
+              onClick={() => setNavOpen(false)}
+              aria-label="Tutup menu"
+              className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100"
+            >
+              <X size={18} />
+            </button>
+            <MemberSidebar
+              tenant={tenant}
+              brand={brand}
+              items={items}
+              active={active}
+              onNavigate={() => setNavOpen(false)}
+            />
+          </div>
+        </div>
+      )}
+
+      <main className="flex-1 flex flex-col min-w-0">
+        {/* Top bar: hamburger (mobile) on the left, actions pinned right (BMC) */}
+        <header className="flex items-center gap-2 px-4 md:px-7 py-4">
+          <button
+            onClick={() => setNavOpen(true)}
+            aria-label="Buka menu"
+            className="md:hidden w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center text-gray-700"
+          >
+            <Menu size={18} />
+          </button>
+          <div className="flex-1" />
           <div className="relative">
             <button
               onClick={() => setNotifOpen((o) => !o)}
@@ -67,7 +103,7 @@ export function MemberShell({
               >
                 {initial}
               </span>
-              <span className="text-sm font-medium text-gray-700">{member.fullName ?? member.email}</span>
+              <span className="hidden sm:inline text-sm font-medium text-gray-700">{member.fullName ?? member.email}</span>
             </button>
             {menuOpen && (
               <AccountMenu
@@ -82,7 +118,7 @@ export function MemberShell({
           </div>
         </header>
         {/* Centered, capped-width content column */}
-        <div className="mx-auto w-full max-w-3xl px-6 pb-10">{children}</div>
+        <div className="mx-auto w-full max-w-3xl px-4 md:px-6 pb-10">{children}</div>
       </main>
     </div>
   );
