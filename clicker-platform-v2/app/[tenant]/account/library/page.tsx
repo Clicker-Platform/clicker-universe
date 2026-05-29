@@ -15,8 +15,8 @@ export default function LibraryPage() {
         <p className="text-gray-500 mt-8">Belum ada produk di library kamu.</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mt-5">
-          {library.map((it, i) => (
-            <LibraryCard key={it.id} item={it} index={i} />
+          {library.map((it) => (
+            <LibraryCard key={it.id} item={it} />
           ))}
         </div>
       )}

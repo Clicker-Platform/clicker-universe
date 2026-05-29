@@ -36,8 +36,8 @@ export default function AccountHome() {
 
       <h2 className="text-sm font-bold text-gray-900 mt-6 mb-3">My Library</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-        {library.map((it, i) => (
-          <LibraryCard key={it.id} item={it} index={i} />
+        {library.map((it) => (
+          <LibraryCard key={it.id} item={it} />
         ))}
       </div>
     </div>
