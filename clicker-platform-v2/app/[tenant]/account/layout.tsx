@@ -1,4 +1,5 @@
 import { MemberShell } from '@/components/account/MemberShell';
+import { getTenantBrand } from '@/lib/account/brand';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,5 +11,10 @@ export default async function AccountLayout({
   params: Promise<{ tenant: string }>;
 }) {
   const { tenant } = await params;
-  return <MemberShell tenant={tenant}>{children}</MemberShell>;
+  const brand = await getTenantBrand(tenant);
+  return (
+    <MemberShell tenant={tenant} brand={brand}>
+      {children}
+    </MemberShell>
+  );
 }

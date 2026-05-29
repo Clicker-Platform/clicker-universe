@@ -3,12 +3,21 @@
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { Bell } from 'lucide-react';
-import { getMockMember, getMockSurfaces, getMockTenantBrand } from '@/lib/account/mock/providers';
+import { getMockMember, getMockSurfaces } from '@/lib/account/mock/providers';
+import type { MockTenantBrand } from '@/lib/account/mock/types';
 import { resolveAccentVars, type AccentPresetId } from '@/lib/account/accent';
 import { MemberSidebar } from './MemberSidebar';
 import { AccentPicker } from './AccentPicker';
 
-export function MemberShell({ tenant, children }: { tenant: string; children: React.ReactNode }) {
+export function MemberShell({
+  tenant,
+  brand,
+  children,
+}: {
+  tenant: string;
+  brand: MockTenantBrand;
+  children: React.ReactNode;
+}) {
   const pathname = usePathname() || '';
   const isAuth = pathname.includes('/account/login');
 
@@ -28,7 +37,7 @@ export function MemberShell({ tenant, children }: { tenant: string; children: Re
       className="min-h-screen flex bg-[#f4f4f6]"
       style={resolveAccentVars(preset) as React.CSSProperties}
     >
-      <MemberSidebar tenant={tenant} brand={getMockTenantBrand()} items={items} active={active} member={member} />
+      <MemberSidebar tenant={tenant} brand={brand} items={items} active={active} member={member} />
       <main className="flex-1 flex flex-col">
         {/* Full-width top bar, pinned right (BMC) */}
         <header className="flex justify-end items-center gap-2 px-7 py-4">

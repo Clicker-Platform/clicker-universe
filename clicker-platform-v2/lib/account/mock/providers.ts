@@ -1,9 +1,5 @@
-import type { MockMember, MockSurfaceNavItem, MockLibraryItem, MockTenantBrand } from './types';
-
-export function getMockTenantBrand(): MockTenantBrand {
-  // 1b: read from the tenant site doc (name/businessName + logoUrl).
-  return { name: 'Acme', logoUrl: null };
-}
+import type { MockMember, MockSurfaceNavItem, MockLibraryItem } from './types';
+// Tenant brand is wired to the real site doc — see lib/account/brand.ts (not mocked).
 
 // 1a mock providers. Signatures mirror the real lib/account APIs that Plan 1b
 // will supply. Wiring later = replace these bodies, components stay unchanged.
