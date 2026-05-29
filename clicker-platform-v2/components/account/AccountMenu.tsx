@@ -19,7 +19,7 @@ export function AccountMenu({ member, accent, onAccentChange, onClose, onAccount
   return (
     <>
       <div className="fixed inset-0 z-30" onClick={onClose} />
-      <div className="absolute right-0 top-12 z-40 bg-white rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.14)] w-[240px] overflow-hidden">
+      <div className="absolute right-0 top-12 z-40 bg-white rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.14)] w-[calc(100vw-2rem)] max-w-[240px] overflow-hidden">
         {view === 'menu' ? (
           <>
             <div className="px-4 py-3 border-b border-gray-100">
