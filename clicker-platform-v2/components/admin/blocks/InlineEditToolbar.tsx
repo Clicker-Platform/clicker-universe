@@ -2,7 +2,7 @@
 
 import { Fragment, useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { AlignLeft, AlignCenter, AlignRight, Trash2, Type } from 'lucide-react';
+import { AlignLeft, AlignCenter, AlignRight, Trash2, Type, Bold, Underline } from 'lucide-react';
 
 export interface InlineFieldFocus {
     blockId: string;
@@ -18,6 +18,7 @@ interface Props {
 }
 
 const TITLE_SIZES = ['sm', 'md', 'lg', 'xl'] as const;
+const SUBHEADING_SIZES = ['s', 'm', 'l', 'xl'] as const;
 
 // Guard: clicking toolbar buttons fires mousedown before blur — we suppress blur commit
 // by keeping a ref that EditableText can also read. We export it so EditableText can check it.
@@ -61,9 +62,11 @@ export function InlineEditToolbar({ focus, onAction, onDismiss }: Props) {
 
     const { blockId, field, currentData } = focus;
     const isTitle = field === 'title' || field === 'heading';
+    const isSubheading = field === 'subheading';
     const titleSize = field === 'heading'
         ? (currentData.headingSize || 'xl')
         : (currentData.titleSize || 'md');
+    const subheadingSize = currentData.subheadingSize || 'm';
     const alignKey =
         field === 'tagline' ? 'taglineAlign' :
         field === 'title' ? 'titleAlign' :
@@ -116,6 +119,33 @@ export function InlineEditToolbar({ focus, onAction, onDismiss }: Props) {
                                 )}
                             </Fragment>
                         ))}
+                        {divider}
+                    </>
+                )}
+
+                {/* Sub-heading size + style — subheading field only */}
+                {isSubheading && (
+                    <>
+                        {SUBHEADING_SIZES.map(size => (
+                            <Fragment key={size}>
+                                {btn(
+                                    () => onAction(blockId, { subheadingSize: size }),
+                                    <span className="text-[11px] font-extrabold">{size.toUpperCase()}</span>,
+                                    subheadingSize === size
+                                )}
+                            </Fragment>
+                        ))}
+                        {divider}
+                        {btn(
+                            () => onAction(blockId, { subheadingBold: !currentData.subheadingBold }),
+                            <Bold size={14} />,
+                            !!currentData.subheadingBold
+                        )}
+                        {btn(
+                            () => onAction(blockId, { subheadingUnderline: !currentData.subheadingUnderline }),
+                            <Underline size={14} />,
+                            !!currentData.subheadingUnderline
+                        )}
                         {divider}
                     </>
                 )}

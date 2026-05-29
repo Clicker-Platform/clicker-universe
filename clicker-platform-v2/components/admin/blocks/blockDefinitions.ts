@@ -94,6 +94,9 @@ export function getDefaultData(type: BlockType, _templateId = 'classic'): any {
                 headingAlign: 'left',
                 subheading: null,
                 subheadingAlign: 'left',
+                subheadingSize: 'm',
+                subheadingBold: false,
+                subheadingUnderline: false,
                 verticalSpacing: 'medium',
                 horizontalPadding: 'none',
             };

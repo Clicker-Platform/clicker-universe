@@ -1,6 +1,6 @@
 'use client';
 
-import { AlignLeft, AlignCenter, AlignRight, Plus, Trash2 } from 'lucide-react';
+import { AlignLeft, AlignCenter, AlignRight, Plus, Trash2, Bold, Underline } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface HeadingFormProps {
@@ -24,6 +24,14 @@ const HEADING_SIZES = [
     { value: 'xl', label: 'XL' },
     { value: 'lg', label: 'LG' },
     { value: 'md', label: 'MD' },
+] as const;
+
+// Sub-heading size presets — all land above body text, below the heading.
+const SUBHEADING_SIZES = [
+    { value: 's',  label: 'S' },
+    { value: 'm',  label: 'M' },
+    { value: 'l',  label: 'L' },
+    { value: 'xl', label: 'XL' },
 ] as const;
 
 /**
@@ -162,6 +170,51 @@ export function HeadingForm({ data, onChange }: HeadingFormProps) {
                             placeholder="Supporting text"
                             className={inputClass}
                         />
+                        <div className="flex gap-1 p-1 mt-2 bg-gray-50 dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800">
+                            {SUBHEADING_SIZES.map(({ value, label }) => (
+                                <button
+                                    key={value}
+                                    type="button"
+                                    onClick={() => set('subheadingSize', value)}
+                                    className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                                        (safe.subheadingSize || 'm') === value
+                                            ? 'bg-blue-600 text-white shadow'
+                                            : 'text-neutral-400 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800'
+                                    }`}
+                                >
+                                    {label}
+                                </button>
+                            ))}
+                        </div>
+                        <div className="flex items-center justify-between mt-2">
+                            <span className="text-xs text-neutral-400 dark:text-neutral-500">Style</span>
+                            <div className="flex gap-0.5 flex-shrink-0">
+                                <button
+                                    type="button"
+                                    title="Bold"
+                                    onClick={() => set('subheadingBold', !safe.subheadingBold)}
+                                    className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all ${
+                                        safe.subheadingBold
+                                            ? 'bg-blue-600 text-white shadow'
+                                            : 'text-neutral-400 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800'
+                                    }`}
+                                >
+                                    <Bold size={14} />
+                                </button>
+                                <button
+                                    type="button"
+                                    title="Underline"
+                                    onClick={() => set('subheadingUnderline', !safe.subheadingUnderline)}
+                                    className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all ${
+                                        safe.subheadingUnderline
+                                            ? 'bg-blue-600 text-white shadow'
+                                            : 'text-neutral-400 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800'
+                                    }`}
+                                >
+                                    <Underline size={14} />
+                                </button>
+                            </div>
+                        </div>
                         <div className="flex items-center justify-between mt-2">
                             <span className="text-xs text-neutral-400 dark:text-neutral-500">Alignment</span>
                             {alignBtns('subheadingAlign')}

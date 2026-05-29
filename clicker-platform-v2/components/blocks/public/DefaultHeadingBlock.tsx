@@ -2,7 +2,7 @@
 
 import { EditableText } from '@/components/blocks/shared/EditablePrimitives';
 import { useDeviceView } from '@/components/DeviceViewContext';
-import { DISPLAY_3XL, DISPLAY_2XL, H1, H2, H3, BODY } from './typography';
+import { DISPLAY_3XL, DISPLAY_2XL, H1, H2, H3, SUBHEADING_SIZE, type SubheadingSize } from './typography';
 
 const ALIGN_CLASS = {
     left: 'text-left',
@@ -52,6 +52,13 @@ export function DefaultHeadingBlock({ data, onInlineChange, onFieldFocus, onFiel
     const horizontalClass = HORIZONTAL_PADDING[(data.horizontalPadding || 'none') as keyof typeof HORIZONTAL_PADDING] ?? 'px-0';
     const hasSubheading = data.subheading !== null && data.subheading !== undefined;
 
+    // Sub-heading size tier (S/M/L/XL) — all land above body, below the heading.
+    // M is the default so a freshly added sub-heading already reads as a lead.
+    const subSizeKey = (data.subheadingSize || 'm') as SubheadingSize;
+    const subSizeClass = (SUBHEADING_SIZE[subSizeKey] ?? SUBHEADING_SIZE.m)(d);
+    const subWeightClass = data.subheadingBold ? 'font-bold' : 'font-normal';
+    const subUnderlineClass = data.subheadingUnderline ? 'underline' : '';
+
     // Color overrides — fall back to the theme foreground when unset so headings
     // stay theme-driven by default (matches the no-hardcoded-color convention).
     const headingColor = data.headingColor || 'var(--theme-foreground)';
@@ -81,7 +88,7 @@ export function DefaultHeadingBlock({ data, onInlineChange, onFieldFocus, onFiel
                     onFieldBlur={onFieldBlur}
                     // Default subheading is muted to 65%; once a tenant picks an explicit
                     // colour, render it true (no opacity) so the chosen colour is accurate.
-                    className={`${BODY(d)} mt-2 ${data.subheadingColor ? '' : 'opacity-65'} ${subheadingAlignClass} m-0`}
+                    className={`${subSizeClass} ${subWeightClass} ${subUnderlineClass} mt-2 ${data.subheadingColor ? '' : 'opacity-65'} ${subheadingAlignClass} m-0`}
                     style={{ color: subheadingColor }}
                 />
             )}
