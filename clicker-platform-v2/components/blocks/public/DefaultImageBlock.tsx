@@ -41,7 +41,7 @@ export const DefaultImageBlock = ({ data, isFirst = false }: { data: any; isFirs
                 />
                 {data.caption && (
                     <p
-                        className={`${BODY_SM(d)} text-center mt-4 italic`}
+                        className={`${BODY_SM(d)} text-center mt-4`}
                         style={{ color: captionColor }}
                     >
                         {data.caption}
@@ -74,7 +74,7 @@ export const DefaultImageBlock = ({ data, isFirst = false }: { data: any; isFirs
                 </div>
                 {data.caption && (
                     <p
-                        className={`${BODY_SM(d)} text-center mt-3 px-4 italic`}
+                        className={`${BODY_SM(d)} text-center mt-3 px-4`}
                         style={{ color: captionColor }}
                     >
                         {data.caption}
@@ -139,7 +139,7 @@ export const DefaultImageBlock = ({ data, isFirst = false }: { data: any; isFirs
             </div>
             {data.caption && (
                 <p
-                    className={`${BODY_SM(d)} text-center mt-4 italic`}
+                    className={`${BODY_SM(d)} text-center mt-4`}
                     style={{ color: captionColor }}
                 >
                     {data.caption}

@@ -442,8 +442,7 @@ function RowCard({ row, index, totalRows, expanded, onToggle, onChange, onDelete
                                         options={[
                                             { value: 'primary', label: 'Primary' },
                                             { value: 'secondary', label: 'Secondary' },
-                                            { value: 'ghost', label: 'Ghost' },
-                                            { value: 'link', label: 'Link' },
+                                            { value: 'tertiary', label: 'Tertiary' },
                                         ]}
                                     />
                                 </div>

@@ -5,7 +5,9 @@ export type ShowcaseRowGap = 'sm' | 'md' | 'lg' | 'xl';
 export type ShowcaseVerticalAlign = 'top' | 'center' | 'bottom';
 export type ShowcaseLayout = 'alternate' | 'image-left' | 'image-right';
 export type RowLayout = 'inherit' | 'image-left' | 'image-right';
-export type CtaVariant = 'primary' | 'secondary' | 'ghost' | 'link';
+// Mirrors the platform's global button tiers (Button Packs). The renderer maps
+// these 1:1 onto UnifiedButton's tier prop — no block-local button styling.
+export type CtaVariant = 'primary' | 'secondary' | 'tertiary';
 
 export interface ShowcaseRowCta {
     enabled: boolean;
