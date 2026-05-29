@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Home, Library, Box } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import type { MockSurfaceNavItem } from '@/lib/account/mock/types';
+import type { MockSurfaceNavItem, MockTenantBrand } from '@/lib/account/mock/types';
 
 const SURFACE_ICONS: Record<string, LucideIcon> = {
   library: Library,
@@ -15,7 +15,7 @@ function iconFor(key: string): LucideIcon {
 
 interface Props {
   tenant: string;
-  brand: string;
+  brand: MockTenantBrand;
   items: MockSurfaceNavItem[];
   active: string;
   member: { fullName?: string; email: string };
@@ -44,7 +44,14 @@ export function MemberSidebar({ tenant, brand, items, active, member }: Props) {
 
   return (
     <aside className="w-[260px] shrink-0 bg-white border-r border-gray-100 px-5 py-6 flex flex-col">
-      <div className="font-extrabold text-gray-900 text-lg mb-8 px-1">{brand}</div>
+      <div className="mb-8 px-1">
+        {brand.logoUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={brand.logoUrl} alt={brand.name} className="h-8 w-auto max-w-[160px] object-contain" />
+        ) : (
+          <span className="font-extrabold text-gray-900 text-lg">{brand.name}</span>
+        )}
+      </div>
       <nav className="space-y-1.5">
         {link('', 'Home', 'home', Home)}
         {items.map((it) => link(it.href, it.label, it.id, iconFor(it.icon)))}

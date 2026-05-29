@@ -30,6 +30,7 @@ Providers (1a returns fakes; 1b swaps bodies for real APIs):
 - `getMockMember(): MockMember`
 - `getMockSurfaces(member): MockSurfaceNavItem[]`
 - `getMockLibrary(member): MockLibraryItem[]`
+- `getMockTenantBrand(): MockTenantBrand` — **1b: read from the tenant site doc** (`name ?? businessName ?? siteId`, `logoUrl`). Sidebar renders logo image when present, else the name.
 
 ---
 

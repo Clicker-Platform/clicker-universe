@@ -1,5 +1,10 @@
 import type { AccentPresetId } from '../accent';
 
+export interface MockTenantBrand {
+  name: string;            // 1b: site doc `name` ?? `businessName` ?? siteId
+  logoUrl: string | null;  // 1b: site doc `logoUrl`
+}
+
 export interface MockMember {
   uid: string;
   email: string;
