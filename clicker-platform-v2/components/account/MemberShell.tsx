@@ -45,15 +45,15 @@ export function MemberShell({
         <MemberSidebar tenant={tenant} brand={brand} items={items} active={active} />
       </div>
 
-      {/* Mobile: off-canvas drawer + backdrop */}
+      {/* Mobile: floating rounded panel + backdrop */}
       {navOpen && (
-        <div className="md:hidden fixed inset-0 z-50 flex">
+        <div className="md:hidden fixed inset-0 z-50">
           <div className="absolute inset-0 bg-black/40" onClick={() => setNavOpen(false)} />
-          <div className="relative w-[260px] max-w-[80%] h-full bg-white shadow-xl">
+          <div className="absolute left-4 top-4 w-[240px] max-w-[80%] bg-white rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.18)] overflow-hidden">
             <button
               onClick={() => setNavOpen(false)}
               aria-label="Tutup menu"
-              className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100"
+              className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100 z-10"
             >
               <X size={18} />
             </button>
