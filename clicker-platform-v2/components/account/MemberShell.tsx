@@ -29,27 +29,27 @@ export function MemberShell({ tenant, children }: { tenant: string; children: Re
       style={resolveAccentVars(preset) as React.CSSProperties}
     >
       <MemberSidebar tenant={tenant} brand="Acme ☕" items={items} active={active} member={member} />
-      <main className="flex-1 relative">
-        <div className="mx-auto w-full max-w-3xl px-6 py-8">
-          <div className="flex justify-end gap-2 mb-4">
-            <button className="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center text-gray-700">
-              <Bell size={16} />
+      <main className="flex-1 flex flex-col">
+        {/* Full-width top bar, pinned right (BMC) */}
+        <header className="flex justify-end items-center gap-2 px-7 py-4">
+          <button className="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center text-gray-700">
+            <Bell size={16} />
+          </button>
+          <div className="relative">
+            <button
+              onClick={() => setPickerOpen((o) => !o)}
+              className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold"
+              style={{ background: 'var(--member-accent)', color: 'var(--member-accent-fg)' }}
+            >
+              {initial}
             </button>
-            <div className="relative">
-              <button
-                onClick={() => setPickerOpen((o) => !o)}
-                className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold"
-                style={{ background: 'var(--member-accent)', color: 'var(--member-accent-fg)' }}
-              >
-                {initial}
-              </button>
-              {pickerOpen && (
-                <AccentPicker value={preset} onChange={setPreset} onClose={() => setPickerOpen(false)} />
-              )}
-            </div>
+            {pickerOpen && (
+              <AccentPicker value={preset} onChange={setPreset} onClose={() => setPickerOpen(false)} />
+            )}
           </div>
-          {children}
-        </div>
+        </header>
+        {/* Centered, capped-width content column */}
+        <div className="mx-auto w-full max-w-3xl px-6 pb-10">{children}</div>
       </main>
     </div>
   );
