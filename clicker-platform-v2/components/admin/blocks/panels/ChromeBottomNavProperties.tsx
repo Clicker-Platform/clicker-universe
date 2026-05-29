@@ -23,6 +23,7 @@ import {
     verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { SortableNavItem } from './shared/SortableNavItem';
+import { SelectMenu } from '../forms/SelectMenu';
 
 function FabIconPicker({ currentIcon, onSelect, onOpenIconPicker }: { currentIcon: string; onSelect: (icon: string) => void; onOpenIconPicker: (currentIcon: string, onSelect: (icon: string) => void) => void }) {
     const Icon = currentIcon && ICON_MAP[currentIcon as keyof typeof ICON_MAP]
@@ -404,26 +405,22 @@ export function ChromeBottomNavProperties() {
                         <div>
                             <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-1">Destination</label>
                             {fab?.type === 'form' ? (
-                                <select
+                                <SelectMenu
                                     value={fab?.formId || ''}
-                                    onChange={(e) => setFab(prev => ({ ...prev, formId: e.target.value }))}
-                                    className="w-full px-3 py-2 text-sm bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-lg text-neutral-900 dark:text-neutral-200 focus:border-blue-500/50 focus:outline-none"
-                                >
-                                    <option value="">— Select Form —</option>
-                                    {forms.map(f => <option key={f.id} value={f.id}>{f.title}</option>)}
-                                </select>
+                                    onChange={(v) => setFab(prev => ({ ...prev, formId: v }))}
+                                    placeholder="— Select Form —"
+                                    options={forms.map(f => ({ value: f.id, label: f.title || 'Untitled' }))}
+                                />
                             ) : fab?.type === 'page' ? (
-                                <select
+                                <SelectMenu
                                     value={fab?.pageId || ''}
-                                    onChange={(e) => {
-                                        const p = pages.find(pg => pg.id === e.target.value);
-                                        setFab(prev => ({ ...prev, pageId: e.target.value, value: p ? `/${p.slug}` : '#' }));
+                                    onChange={(v) => {
+                                        const p = pages.find(pg => pg.id === v);
+                                        setFab(prev => ({ ...prev, pageId: v, value: p ? `/${p.slug}` : '#' }));
                                     }}
-                                    className="w-full px-3 py-2 text-sm bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-lg text-neutral-900 dark:text-neutral-200 focus:border-blue-500/50 focus:outline-none"
-                                >
-                                    <option value="">— Select Page —</option>
-                                    {pages.map(p => <option key={p.id} value={p.id}>{p.title} (/{p.slug})</option>)}
-                                </select>
+                                    placeholder="— Select Page —"
+                                    options={pages.map(p => ({ value: p.id, label: p.title || 'Untitled', hint: `/${p.slug}` }))}
+                                />
                             ) : (
                                 <input
                                     type="text"

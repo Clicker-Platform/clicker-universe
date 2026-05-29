@@ -11,6 +11,7 @@ import { newId } from './container/types';
 import type { PageBlock } from '@/data/mockData';
 import { ChevronLeft, X } from 'lucide-react';
 import { useEditor } from '../EditorContext';
+import { SelectMenu } from './SelectMenu';
 
 interface GridFormProps {
   data: any;
@@ -274,17 +275,19 @@ export function GridForm({ data, containerBlockId, onChange, templateId, onOpenS
           </label>
           <label className="block text-sm">
             <span className="text-neutral-700 dark:text-neutral-300">Max width</span>
-            <select
+            <SelectMenu
               value={safeData.maxWidth ?? 'full'}
-              onChange={(e) => updateField('maxWidth', e.target.value)}
-              className="mt-1 w-full px-2 py-1 border border-gray-300 dark:border-neutral-700 rounded bg-white dark:bg-neutral-900"
-            >
-              <option value="full">Full width</option>
-              <option value="xl">XL (1280)</option>
-              <option value="lg">LG (1024)</option>
-              <option value="md">MD (768)</option>
-              <option value="sm">SM (640)</option>
-            </select>
+              onChange={(v) => updateField('maxWidth', v)}
+              searchable={false}
+              allowClear={false}
+              options={[
+                { value: 'full', label: 'Full width' },
+                { value: 'xl', label: 'XL (1280)' },
+                { value: 'lg', label: 'LG (1024)' },
+                { value: 'md', label: 'MD (768)' },
+                { value: 'sm', label: 'SM (640)' },
+              ]}
+            />
           </label>
         </div>
         <label className="flex items-center gap-2 text-sm">

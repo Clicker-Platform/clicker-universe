@@ -6,6 +6,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import { useSite } from '@/lib/site-context';
+import { SelectMenu } from './SelectMenu';
 
 interface HeroFormProps {
     data: any;
@@ -485,22 +486,22 @@ export const HeroForm = ({ data, onChange }: HeroFormProps) => {
                                 ))}
                             </div>
                             {primaryBtn.type === 'form' ? (
-                                <select value={primaryBtn.formId || ''}
-                                    onChange={(e) => handleChange('primaryBtn', { ...primaryBtn, formId: e.target.value })}
-                                    className={inputClass}>
-                                    <option value="">— Select Form —</option>
-                                    {forms.map(f => <option key={f.id} value={f.id}>{f.title}</option>)}
-                                </select>
+                                <SelectMenu
+                                    value={primaryBtn.formId || ''}
+                                    placeholder="— Select Form —"
+                                    options={forms.map(f => ({ value: f.id, label: f.title || 'Untitled' }))}
+                                    onChange={(formId) => handleChange('primaryBtn', { ...primaryBtn, formId: formId || null })}
+                                />
                             ) : primaryBtn.type === 'page' ? (
-                                <select value={primaryBtn.pageId || ''}
-                                    onChange={(e) => {
-                                        const page = pages.find(p => p.id === e.target.value);
-                                        handleChange('primaryBtn', { ...primaryBtn, pageId: e.target.value, url: page ? `/${page.slug}` : '' });
+                                <SelectMenu
+                                    value={primaryBtn.pageId || ''}
+                                    placeholder="— Select Page —"
+                                    options={pages.map(p => ({ value: p.id, label: p.title || 'Untitled', hint: `/${p.slug}` }))}
+                                    onChange={(pageId) => {
+                                        const page = pages.find(p => p.id === pageId);
+                                        handleChange('primaryBtn', { ...primaryBtn, pageId: pageId || null, url: page ? `/${page.slug}` : '' });
                                     }}
-                                    className={inputClass}>
-                                    <option value="">— Select Page —</option>
-                                    {pages.map(p => <option key={p.id} value={p.id}>{p.title} (/{p.slug})</option>)}
-                                </select>
+                                />
                             ) : (
                                 <input type="text" value={primaryBtn.url || ''} placeholder="https://... or /page"
                                     onChange={(e) => handleChange('primaryBtn', { ...primaryBtn, url: e.target.value })}
@@ -542,22 +543,22 @@ export const HeroForm = ({ data, onChange }: HeroFormProps) => {
                                     ))}
                                 </div>
                                 {secondaryBtn.type === 'form' ? (
-                                    <select value={secondaryBtn.formId || ''}
-                                        onChange={(e) => handleChange('secondaryBtn', { ...secondaryBtn, formId: e.target.value })}
-                                        className={inputClass}>
-                                        <option value="">— Select Form —</option>
-                                        {forms.map(f => <option key={f.id} value={f.id}>{f.title}</option>)}
-                                    </select>
+                                    <SelectMenu
+                                        value={secondaryBtn.formId || ''}
+                                        placeholder="— Select Form —"
+                                        options={forms.map(f => ({ value: f.id, label: f.title || 'Untitled' }))}
+                                        onChange={(formId) => handleChange('secondaryBtn', { ...secondaryBtn, formId: formId || null })}
+                                    />
                                 ) : secondaryBtn.type === 'page' ? (
-                                    <select value={secondaryBtn.pageId || ''}
-                                        onChange={(e) => {
-                                            const page = pages.find(p => p.id === e.target.value);
-                                            handleChange('secondaryBtn', { ...secondaryBtn, pageId: e.target.value, url: page ? `/${page.slug}` : '' });
+                                    <SelectMenu
+                                        value={secondaryBtn.pageId || ''}
+                                        placeholder="— Select Page —"
+                                        options={pages.map(p => ({ value: p.id, label: p.title || 'Untitled', hint: `/${p.slug}` }))}
+                                        onChange={(pageId) => {
+                                            const page = pages.find(p => p.id === pageId);
+                                            handleChange('secondaryBtn', { ...secondaryBtn, pageId: pageId || null, url: page ? `/${page.slug}` : '' });
                                         }}
-                                        className={inputClass}>
-                                        <option value="">— Select Page —</option>
-                                        {pages.map(p => <option key={p.id} value={p.id}>{p.title} (/{p.slug})</option>)}
-                                    </select>
+                                    />
                                 ) : (
                                     <input type="text" value={secondaryBtn.url || ''} placeholder="https://... or /page"
                                         onChange={(e) => handleChange('secondaryBtn', { ...secondaryBtn, url: e.target.value })}

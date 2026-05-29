@@ -7,6 +7,7 @@ import { Form, FormField } from '@/data/mockData';
 import { Plus, Trash2, GripVertical, ArrowLeft, Save, FileText, Loader2, ChevronDown } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
 import { purgeTenantCache } from '@/lib/admin/purgeCache';
+import { SelectMenu } from '../forms/SelectMenu';
 
 // ── Shared styles ────────────────────────────────────────────────────────
 
@@ -128,18 +129,20 @@ function FieldCard({ field, index, onChange, onRemove }: {
                     <div className="grid grid-cols-2 gap-2">
                         <div>
                             <label className={labelClass}>Type</label>
-                            <select
+                            <SelectMenu
                                 value={field.type}
-                                onChange={e => onChange({ type: e.target.value as FormField['type'] })}
-                                className={inputClass}
-                            >
-                                <option value="text">Text</option>
-                                <option value="email">Email</option>
-                                <option value="tel">Phone</option>
-                                <option value="textarea">Long Text</option>
-                                <option value="select">Dropdown</option>
-                                <option value="file">File Upload</option>
-                            </select>
+                                onChange={v => onChange({ type: v as FormField['type'] })}
+                                searchable={false}
+                                allowClear={false}
+                                options={[
+                                    { value: 'text', label: 'Text' },
+                                    { value: 'email', label: 'Email' },
+                                    { value: 'tel', label: 'Phone' },
+                                    { value: 'textarea', label: 'Long Text' },
+                                    { value: 'select', label: 'Dropdown' },
+                                    { value: 'file', label: 'File Upload' },
+                                ]}
+                            />
                         </div>
                         <div>
                             <label className={labelClass}>Label</label>

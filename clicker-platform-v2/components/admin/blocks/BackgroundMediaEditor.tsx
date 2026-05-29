@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Upload, X } from 'lucide-react';
 import { BackgroundMedia, BackgroundMediaBase } from '@/data/mockData';
 import { MediaPicker } from '@/components/admin/media/MediaPicker';
+import { SelectMenu } from './forms/SelectMenu';
 
 const inputClass = "w-full px-3 py-2 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-lg text-sm text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-600 focus:border-blue-500/50 focus:outline-none transition-colors";
 const labelClass = "block text-xs font-medium text-neutral-400 dark:text-neutral-500 mb-1";
@@ -87,16 +88,18 @@ function BackgroundBaseEditor({
         <div className="space-y-4">
             <div>
                 <label className={labelClass}>Background Type</label>
-                <select
+                <SelectMenu
                     value={mode}
-                    onChange={(e) => onChange({ mode: e.target.value as BackgroundMediaBase['mode'] })}
-                    className={inputClass}
-                >
-                    {allowInherit && <option value="inherit">{inheritLabel}</option>}
-                    <option value="color">Solid Color</option>
-                    <option value="image">Image</option>
-                    <option value="video">Video URL (YouTube/Vimeo/MP4)</option>
-                </select>
+                    onChange={(v) => onChange({ mode: v as BackgroundMediaBase['mode'] })}
+                    searchable={false}
+                    allowClear={false}
+                    options={[
+                        ...(allowInherit ? [{ value: 'inherit', label: inheritLabel }] : []),
+                        { value: 'color', label: 'Solid Color' },
+                        { value: 'image', label: 'Image' },
+                        { value: 'video', label: 'Video URL (YouTube/Vimeo/MP4)' },
+                    ]}
+                />
             </div>
 
             {mode === 'color' && (
@@ -166,26 +169,30 @@ function BackgroundBaseEditor({
                     </div>
                     <div>
                         <label className={labelClass}>Display Size</label>
-                        <select
+                        <SelectMenu
                             value={value.displaySize || 'cover'}
-                            onChange={(e) => onChange({ displaySize: e.target.value as BackgroundMediaBase['displaySize'] })}
-                            className={inputClass}
-                        >
-                            <option value="cover">Cover (Fill screen)</option>
-                            <option value="contain">Contain (Fit inside)</option>
-                            <option value="pattern">Pattern (Repeat)</option>
-                        </select>
+                            onChange={(v) => onChange({ displaySize: v as BackgroundMediaBase['displaySize'] })}
+                            searchable={false}
+                            allowClear={false}
+                            options={[
+                                { value: 'cover', label: 'Cover (Fill screen)' },
+                                { value: 'contain', label: 'Contain (Fit inside)' },
+                                { value: 'pattern', label: 'Pattern (Repeat)' },
+                            ]}
+                        />
                     </div>
                     <div>
                         <label className={labelClass}>Scroll Effect</label>
-                        <select
+                        <SelectMenu
                             value={value.scrollEffect || 'scroll'}
-                            onChange={(e) => onChange({ scrollEffect: e.target.value as BackgroundMediaBase['scrollEffect'] })}
-                            className={inputClass}
-                        >
-                            <option value="scroll">Normal Scroll</option>
-                            <option value="fixed">Fixed (Parallax effect)</option>
-                        </select>
+                            onChange={(v) => onChange({ scrollEffect: v as BackgroundMediaBase['scrollEffect'] })}
+                            searchable={false}
+                            allowClear={false}
+                            options={[
+                                { value: 'scroll', label: 'Normal Scroll' },
+                                { value: 'fixed', label: 'Fixed (Parallax effect)' },
+                            ]}
+                        />
                     </div>
                     <OverlayEditor value={value} onChange={onChange} />
                 </div>

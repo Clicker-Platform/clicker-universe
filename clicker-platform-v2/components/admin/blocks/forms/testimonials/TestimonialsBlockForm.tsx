@@ -5,6 +5,7 @@ import React from 'react';
 import type { TestimonialsBlockData, TestimonialItem } from '@/lib/canvas/blocks/testimonials/types';
 import { makeDefaultTestimonialItem } from '@/lib/canvas/blocks/testimonials/types';
 import { TestimonialItemEditor } from './TestimonialItemEditor';
+import { SelectMenu } from '../SelectMenu';
 
 interface TestimonialsBlockFormProps {
     data: TestimonialsBlockData;
@@ -29,7 +30,6 @@ export const TestimonialsBlockForm: React.FC<TestimonialsBlockFormProps> = ({ da
     const visibleItems = data.variant === 'single' ? items.slice(0, 1) : items;
     const showMarqueeConfig = data.variant === 'marquee';
 
-    const selectClass = "mt-1 w-full border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 rounded px-2 py-1 text-neutral-900 dark:text-neutral-200";
     const fieldLabelClass = "text-xs text-neutral-500 dark:text-neutral-400";
 
     return (
@@ -84,40 +84,46 @@ export const TestimonialsBlockForm: React.FC<TestimonialsBlockFormProps> = ({ da
 
                     <label className="block text-sm">
                         <span className={fieldLabelClass}>Direction</span>
-                        <select
+                        <SelectMenu
                             value={data.marqueeDirection ?? 'left'}
-                            onChange={(e) => onChange({ ...data, marqueeDirection: e.target.value as 'left' | 'right' })}
-                            className={selectClass}
-                        >
-                            <option value="left">Left</option>
-                            <option value="right">Right</option>
-                        </select>
+                            onChange={(v) => onChange({ ...data, marqueeDirection: v as 'left' | 'right' })}
+                            searchable={false}
+                            allowClear={false}
+                            options={[
+                                { value: 'left', label: 'Left' },
+                                { value: 'right', label: 'Right' },
+                            ]}
+                        />
                     </label>
 
                     <label className="block text-sm">
                         <span className={fieldLabelClass}>Speed</span>
-                        <select
+                        <SelectMenu
                             value={data.marqueeSpeed ?? 'normal'}
-                            onChange={(e) => onChange({ ...data, marqueeSpeed: e.target.value as 'slow' | 'normal' | 'fast' })}
-                            className={selectClass}
-                        >
-                            <option value="slow">Slow</option>
-                            <option value="normal">Normal</option>
-                            <option value="fast">Fast</option>
-                        </select>
+                            onChange={(v) => onChange({ ...data, marqueeSpeed: v as 'slow' | 'normal' | 'fast' })}
+                            searchable={false}
+                            allowClear={false}
+                            options={[
+                                { value: 'slow', label: 'Slow' },
+                                { value: 'normal', label: 'Normal' },
+                                { value: 'fast', label: 'Fast' },
+                            ]}
+                        />
                     </label>
 
                     <label className="block text-sm">
                         <span className={fieldLabelClass}>Gap</span>
-                        <select
+                        <SelectMenu
                             value={data.marqueeGap ?? 'normal'}
-                            onChange={(e) => onChange({ ...data, marqueeGap: e.target.value as 'tight' | 'normal' | 'loose' })}
-                            className={selectClass}
-                        >
-                            <option value="tight">Tight</option>
-                            <option value="normal">Normal</option>
-                            <option value="loose">Loose</option>
-                        </select>
+                            onChange={(v) => onChange({ ...data, marqueeGap: v as 'tight' | 'normal' | 'loose' })}
+                            searchable={false}
+                            allowClear={false}
+                            options={[
+                                { value: 'tight', label: 'Tight' },
+                                { value: 'normal', label: 'Normal' },
+                                { value: 'loose', label: 'Loose' },
+                            ]}
+                        />
                     </label>
 
                     <label className="flex items-center gap-2 text-sm text-neutral-900 dark:text-neutral-200">

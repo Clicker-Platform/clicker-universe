@@ -1,6 +1,7 @@
 'use client';
 
 import { LinkPicker, LinkValue } from './LinkPicker';
+import { SelectMenu } from './SelectMenu';
 
 interface ButtonFormProps {
     data: any;
@@ -122,40 +123,46 @@ export const ButtonForm = ({ data, onChange }: ButtonFormProps) => {
                 </div>
                 <div>
                     <label className={labelClass}>Tier</label>
-                    <select
+                    <SelectMenu
                         value={safeData.tier || 'primary'}
-                        onChange={(e) => handleChange('tier', e.target.value)}
-                        className={`${inputClass} appearance-none cursor-pointer`}
-                    >
-                        <option value="primary">Primary</option>
-                        <option value="secondary">Secondary</option>
-                        <option value="tertiary">Tertiary</option>
-                    </select>
+                        onChange={(v) => handleChange('tier', v)}
+                        searchable={false}
+                        allowClear={false}
+                        options={[
+                            { value: 'primary', label: 'Primary' },
+                            { value: 'secondary', label: 'Secondary' },
+                            { value: 'tertiary', label: 'Tertiary' },
+                        ]}
+                    />
                 </div>
                 <div>
                     <label className={labelClass}>Size</label>
-                    <select
+                    <SelectMenu
                         value={safeData.size || 'md'}
-                        onChange={(e) => handleChange('size', e.target.value)}
-                        className={`${inputClass} appearance-none cursor-pointer`}
-                    >
-                        <option value="sm">Small</option>
-                        <option value="md">Medium</option>
-                        <option value="lg">Large</option>
-                    </select>
+                        onChange={(v) => handleChange('size', v)}
+                        searchable={false}
+                        allowClear={false}
+                        options={[
+                            { value: 'sm', label: 'Small' },
+                            { value: 'md', label: 'Medium' },
+                            { value: 'lg', label: 'Large' },
+                        ]}
+                    />
                 </div>
                 <div>
                     <label className={labelClass}>Alignment</label>
-                    <select
+                    <SelectMenu
                         value={safeData.align || 'center'}
-                        onChange={(e) => handleChange('align', e.target.value)}
-                        className={`${inputClass} appearance-none cursor-pointer`}
-                    >
-                        <option value="left">Left</option>
-                        <option value="center">Center</option>
-                        <option value="right">Right</option>
-                        <option value="full">Full Width</option>
-                    </select>
+                        onChange={(v) => handleChange('align', v)}
+                        searchable={false}
+                        allowClear={false}
+                        options={[
+                            { value: 'left', label: 'Left' },
+                            { value: 'center', label: 'Center' },
+                            { value: 'right', label: 'Right' },
+                            { value: 'full', label: 'Full Width' },
+                        ]}
+                    />
                 </div>
             </div>
 
@@ -207,27 +214,31 @@ export const ButtonForm = ({ data, onChange }: ButtonFormProps) => {
                         </div>
                         <div>
                             <label className={labelClass}>Tier</label>
-                            <select
+                            <SelectMenu
                                 value={secondary.tier || 'secondary'}
-                                onChange={(e) => updateSecondary({ tier: e.target.value as SecondaryButtonData['tier'] })}
-                                className={`${inputClass} appearance-none cursor-pointer`}
-                            >
-                                <option value="primary">Primary</option>
-                                <option value="secondary">Secondary</option>
-                                <option value="tertiary">Tertiary</option>
-                            </select>
+                                onChange={(v) => updateSecondary({ tier: v as SecondaryButtonData['tier'] })}
+                                searchable={false}
+                                allowClear={false}
+                                options={[
+                                    { value: 'primary', label: 'Primary' },
+                                    { value: 'secondary', label: 'Secondary' },
+                                    { value: 'tertiary', label: 'Tertiary' },
+                                ]}
+                            />
                         </div>
                         <div>
                             <label className={labelClass}>Size</label>
-                            <select
+                            <SelectMenu
                                 value={secondary.size || 'md'}
-                                onChange={(e) => updateSecondary({ size: e.target.value as SecondaryButtonData['size'] })}
-                                className={`${inputClass} appearance-none cursor-pointer`}
-                            >
-                                <option value="sm">Small</option>
-                                <option value="md">Medium</option>
-                                <option value="lg">Large</option>
-                            </select>
+                                onChange={(v) => updateSecondary({ size: v as SecondaryButtonData['size'] })}
+                                searchable={false}
+                                allowClear={false}
+                                options={[
+                                    { value: 'sm', label: 'Small' },
+                                    { value: 'md', label: 'Medium' },
+                                    { value: 'lg', label: 'Large' },
+                                ]}
+                            />
                         </div>
                     </div>
                 </div>
