@@ -2,7 +2,7 @@
 
 import { EditableText } from '@/components/blocks/shared/EditablePrimitives';
 import { useDeviceView } from '@/components/DeviceViewContext';
-import { H1, H2, H3, BODY } from './typography';
+import { DISPLAY_3XL, DISPLAY_2XL, H1, H2, H3, BODY } from './typography';
 
 const ALIGN_CLASS = {
     left: 'text-left',
@@ -10,8 +10,11 @@ const ALIGN_CLASS = {
     right: 'text-right',
 } as const;
 
-// xl/lg/md map to H1/H2/H3 tiers. 'sm' kept for backwards compat → renders as H3.
+// Display tiers (3xl/2xl) sit above xl. xl/lg/md map to H1/H2/H3 tiers.
+// 'sm' kept for backwards compat → renders as H3. Display tiers render as h1.
 const SIZE_CONFIG = {
+    '3xl': { tag: 'h1' as const, className: DISPLAY_3XL },
+    '2xl': { tag: 'h1' as const, className: DISPLAY_2XL },
     xl: { tag: 'h1' as const, className: H1 },
     lg: { tag: 'h2' as const, className: H2 },
     md: { tag: 'h3' as const, className: H3 },
@@ -49,6 +52,11 @@ export function DefaultHeadingBlock({ data, onInlineChange, onFieldFocus, onFiel
     const horizontalClass = HORIZONTAL_PADDING[(data.horizontalPadding || 'none') as keyof typeof HORIZONTAL_PADDING] ?? 'px-0';
     const hasSubheading = data.subheading !== null && data.subheading !== undefined;
 
+    // Color overrides — fall back to the theme foreground when unset so headings
+    // stay theme-driven by default (matches the no-hardcoded-color convention).
+    const headingColor = data.headingColor || 'var(--theme-foreground)';
+    const subheadingColor = data.subheadingColor || 'var(--theme-foreground)';
+
     return (
         <section className={`w-full ${verticalClass} ${horizontalClass}`}>
             <EditableText
@@ -60,7 +68,7 @@ export function DefaultHeadingBlock({ data, onInlineChange, onFieldFocus, onFiel
                 onFieldFocus={onFieldFocus}
                 onFieldBlur={onFieldBlur}
                 className={`${sizeClass} ${headingAlignClass} m-0`}
-                style={{ color: 'var(--theme-foreground)' }}
+                style={{ color: headingColor }}
             />
             {(hasSubheading || onInlineChange) && (
                 <EditableText
@@ -71,8 +79,10 @@ export function DefaultHeadingBlock({ data, onInlineChange, onFieldFocus, onFiel
                     onInlineChange={onInlineChange}
                     onFieldFocus={onFieldFocus}
                     onFieldBlur={onFieldBlur}
-                    className={`${BODY(d)} mt-2 opacity-65 ${subheadingAlignClass} m-0`}
-                    style={{ color: 'var(--theme-foreground)' }}
+                    // Default subheading is muted to 65%; once a tenant picks an explicit
+                    // colour, render it true (no opacity) so the chosen colour is accurate.
+                    className={`${BODY(d)} mt-2 ${data.subheadingColor ? '' : 'opacity-65'} ${subheadingAlignClass} m-0`}
+                    style={{ color: subheadingColor }}
                 />
             )}
         </section>

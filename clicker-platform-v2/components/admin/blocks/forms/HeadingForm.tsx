@@ -1,6 +1,7 @@
 'use client';
 
 import { AlignLeft, AlignCenter, AlignRight, Plus, Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface HeadingFormProps {
     data: any;
@@ -16,12 +17,59 @@ const ALIGN_OPTIONS = [
     { value: 'right',  icon: AlignRight,  label: 'Right' },
 ] as const;
 
+// Display tiers (3XL/2XL) sit above XL. SM kept for back-compat.
 const HEADING_SIZES = [
+    { value: '3xl', label: '3XL' },
+    { value: '2xl', label: '2XL' },
     { value: 'xl', label: 'XL' },
     { value: 'lg', label: 'LG' },
     { value: 'md', label: 'MD' },
-    { value: 'sm', label: 'SM' },
 ] as const;
+
+/**
+ * Swatch + hex input with a clear-to-reset button. Empty value = inherit the
+ * theme foreground (shown via the placeholder). Mirrors the ColorInput pattern
+ * in HeroForm so colour controls behave identically across block forms.
+ */
+const ColorInput = ({ value, onChange, onClear }: {
+    value?: string;
+    onChange: (hex: string) => void;
+    onClear: () => void;
+}) => {
+    const [textVal, setTextVal] = useState(value || '');
+    useEffect(() => { setTextVal(value || ''); }, [value]);
+
+    const isValidHex = (s: string) => /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(s);
+    const handleText = (raw: string) => {
+        const hex = raw.startsWith('#') ? raw : `#${raw}`;
+        setTextVal(raw);
+        if (isValidHex(hex)) onChange(hex);
+    };
+    const handleNativePicker = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setTextVal(e.target.value);
+        onChange(e.target.value);
+    };
+    const swatchColor = value || '#525252';
+
+    return (
+        <div className="flex items-center gap-2">
+            <label className="w-8 h-8 rounded-lg border border-gray-400 dark:border-neutral-600 cursor-pointer overflow-hidden flex-shrink-0 relative"
+                style={{ backgroundColor: swatchColor }}>
+                <input type="color" value={swatchColor} onChange={handleNativePicker}
+                    className="opacity-0 absolute inset-0 w-full h-full cursor-pointer" />
+            </label>
+            <input type="text" value={textVal} onChange={(e) => handleText(e.target.value)}
+                placeholder="Theme default"
+                className="min-w-0 w-full px-3 py-1.5 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-lg text-xs text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-600 outline-none focus:border-blue-500 font-mono" />
+            {value && (
+                <button type="button" onClick={onClear}
+                    className="text-neutral-400 dark:text-neutral-500 hover:text-red-400 transition-colors text-xs px-1 font-bold">
+                    ×
+                </button>
+            )}
+        </div>
+    );
+};
 
 export function HeadingForm({ data, onChange }: HeadingFormProps) {
     const safe = data || {};
@@ -83,6 +131,14 @@ export function HeadingForm({ data, onChange }: HeadingFormProps) {
                     <span className="text-xs text-neutral-400 dark:text-neutral-500">Alignment</span>
                     {alignBtns('headingAlign')}
                 </div>
+                <div className="mt-2">
+                    <label className={labelClass}>Text Color</label>
+                    <ColorInput
+                        value={safe.headingColor}
+                        onChange={(hex) => set('headingColor', hex)}
+                        onClear={() => set('headingColor', null)}
+                    />
+                </div>
             </div>
 
             {/* Sub-heading */}
@@ -109,6 +165,14 @@ export function HeadingForm({ data, onChange }: HeadingFormProps) {
                         <div className="flex items-center justify-between mt-2">
                             <span className="text-xs text-neutral-400 dark:text-neutral-500">Alignment</span>
                             {alignBtns('subheadingAlign')}
+                        </div>
+                        <div className="mt-2">
+                            <label className={labelClass}>Text Color</label>
+                            <ColorInput
+                                value={safe.subheadingColor}
+                                onChange={(hex) => set('subheadingColor', hex)}
+                                onClear={() => set('subheadingColor', null)}
+                            />
                         </div>
                     </>
                 ) : (

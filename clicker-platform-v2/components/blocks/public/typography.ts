@@ -28,6 +28,14 @@ import { dv, type DeviceView } from '@/components/DeviceViewContext';
 // Headings — H1–H4
 // ──────────────────────────────────────────────────────────────────────────────
 
+/** Display 3XL — oversized hero/landing headline, one tier above 2XL. */
+export const DISPLAY_3XL = (deviceView: DeviceView) =>
+    `${dv(deviceView, 'text-6xl', 'md:text-8xl')} font-extrabold leading-[0.95] tracking-tight`;
+
+/** Display 2XL — large hero headline, one tier above H1. */
+export const DISPLAY_2XL = (deviceView: DeviceView) =>
+    `${dv(deviceView, 'text-5xl', 'md:text-7xl')} font-extrabold leading-tight tracking-tight`;
+
 /** Display — Hero title, page-level headline. */
 export const H1 = (deviceView: DeviceView) =>
     `${dv(deviceView, 'text-4xl', 'md:text-6xl')} font-extrabold leading-tight tracking-tight`;
