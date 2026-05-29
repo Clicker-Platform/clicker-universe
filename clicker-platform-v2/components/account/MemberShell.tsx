@@ -8,6 +8,7 @@ import type { MockTenantBrand } from '@/lib/account/mock/types';
 import { resolveAccentVars, type AccentPresetId } from '@/lib/account/accent';
 import { MemberSidebar } from './MemberSidebar';
 import { AccountMenu } from './AccountMenu';
+import { NotificationMenu } from './NotificationMenu';
 
 export function MemberShell({
   tenant,
@@ -24,6 +25,7 @@ export function MemberShell({
   const member = getMockMember();
   const [preset, setPreset] = useState<AccentPresetId>(member.accentPreset ?? 'coral');
   const [menuOpen, setMenuOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
 
   if (isAuth) return <>{children}</>;
 
@@ -41,9 +43,19 @@ export function MemberShell({
       <main className="flex-1 flex flex-col">
         {/* Full-width top bar, pinned right (BMC) */}
         <header className="flex justify-end items-center gap-2 px-7 py-4">
-          <button className="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center text-gray-700">
-            <Bell size={16} />
-          </button>
+          <div className="relative">
+            <button
+              onClick={() => setNotifOpen((o) => !o)}
+              className="relative w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center text-gray-700"
+            >
+              <Bell size={16} />
+              <span
+                className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full ring-2 ring-white"
+                style={{ background: 'var(--member-accent)' }}
+              />
+            </button>
+            {notifOpen && <NotificationMenu onClose={() => setNotifOpen(false)} />}
+          </div>
           <div className="relative">
             <button
               onClick={() => setMenuOpen((o) => !o)}
