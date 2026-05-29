@@ -31,7 +31,7 @@ export function AccountMenu({ member, accent, onAccentChange, onClose, onAccount
                 <User size={17} /> Account
               </button>
               <button onClick={() => setView('prefs')} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-700 hover:bg-gray-50">
-                <Palette size={17} /> Preferences
+                <Palette size={17} /> Theme
               </button>
               <button onClick={onLogout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-red-600 hover:bg-red-50">
                 <LogOut size={17} /> Logout
