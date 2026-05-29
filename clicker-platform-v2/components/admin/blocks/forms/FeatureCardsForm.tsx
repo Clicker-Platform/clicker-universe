@@ -1,6 +1,6 @@
 'use client';
 
-import { Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, Trash2, ChevronDown, ChevronUp, Info } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useEditor } from '@/components/admin/blocks/EditorContext';
 import { v4 as uuidv4 } from 'uuid';
@@ -26,6 +26,35 @@ function stripUndefined<T>(value: T): T {
 const inputClass = "w-full px-4 py-2.5 bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-600 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-medium";
 const labelClass = "block text-xs font-medium text-neutral-500 dark:text-neutral-500 mb-1";
 const sectionClass = "p-3 bg-gray-50 dark:bg-neutral-900/50 rounded-xl border border-gray-200 dark:border-neutral-800 space-y-3";
+
+/**
+ * Section label with an inline info icon. The hint text shows on hover/focus of
+ * the icon as a small bubble (and via the native title attr as a fallback),
+ * keeping the form visually clean instead of stacking help paragraphs.
+ */
+function LabelWithHint({ label, hint }: { label: string; hint: string }) {
+    return (
+        <div className="flex items-center gap-1 mb-1">
+            <span className={labelClass + ' mb-0'}>{label}</span>
+            <span className="group/hint relative inline-flex">
+                <button
+                    type="button"
+                    aria-label={`${label}: ${hint}`}
+                    title={hint}
+                    className="text-neutral-300 dark:text-neutral-600 hover:text-neutral-500 dark:hover:text-neutral-400 transition-colors cursor-help"
+                >
+                    <Info size={12} />
+                </button>
+                <span
+                    role="tooltip"
+                    className="pointer-events-none absolute left-0 top-full mt-1 z-20 w-48 rounded-lg bg-neutral-900 dark:bg-neutral-700 px-2.5 py-1.5 text-[11px] font-medium leading-snug text-white shadow-lg opacity-0 translate-y-0.5 transition-all duration-150 group-hover/hint:opacity-100 group-hover/hint:translate-y-0"
+                >
+                    {hint}
+                </span>
+            </span>
+        </div>
+    );
+}
 
 interface Props {
     data: FeatureCardsData;
@@ -259,6 +288,9 @@ export function FeatureCardsForm({ data, onChange, containerBlockId }: Props) {
     const safeData: FeatureCardsData = {
         columns: data?.columns ?? 3,
         cards: data?.cards ?? [],
+        verticalSpacing: data?.verticalSpacing ?? 'medium',
+        horizontalPadding: data?.horizontalPadding ?? 'normal',
+        cornerRadius: data?.cornerRadius ?? 'theme',
     };
 
     const update = (patch: Partial<FeatureCardsData>) => onChange(stripUndefined({ ...safeData, ...patch }));
@@ -288,7 +320,7 @@ export function FeatureCardsForm({ data, onChange, containerBlockId }: Props) {
         <div className="space-y-5">
             <div className={sectionClass}>
                 <div>
-                    <label className={labelClass}>Max per row</label>
+                    <LabelWithHint label="Max per row" hint="Cards wrap to a new row when they exceed this number." />
                     <div className="flex gap-2">
                         {([1, 2, 3, 4] as const).map(n => (
                             <button
@@ -301,7 +333,66 @@ export function FeatureCardsForm({ data, onChange, containerBlockId }: Props) {
                             </button>
                         ))}
                     </div>
-                    <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1.5">Cards wrap to a new row when they exceed this number.</p>
+                </div>
+
+                <div>
+                    <LabelWithHint label="Vertical Spacing" hint="Space above and below the cards." />
+                    <div className="flex gap-1 p-1 bg-gray-50 dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800">
+                        {(['none', 'small', 'medium', 'tall'] as const).map((v) => (
+                            <button
+                                key={v}
+                                type="button"
+                                onClick={() => update({ verticalSpacing: v })}
+                                className={`flex-1 py-1.5 rounded-lg text-xs font-bold capitalize transition-all ${
+                                    (safeData.verticalSpacing || 'medium') === v
+                                        ? 'bg-blue-600 text-white shadow'
+                                        : 'text-neutral-400 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800'
+                                }`}
+                            >
+                                {v === 'none' ? 'None' : v === 'small' ? 'Small' : v === 'medium' ? 'Medium' : 'Tall'}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                <div>
+                    <LabelWithHint label="Horizontal Padding" hint="Left/right gutter. The gap between cards stays the same." />
+                    <div className="flex gap-1 p-1 bg-gray-50 dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800">
+                        {(['none', 'normal', 'wide'] as const).map((v) => (
+                            <button
+                                key={v}
+                                type="button"
+                                onClick={() => update({ horizontalPadding: v })}
+                                className={`flex-1 py-1.5 rounded-lg text-xs font-bold capitalize transition-all ${
+                                    (safeData.horizontalPadding || 'normal') === v
+                                        ? 'bg-blue-600 text-white shadow'
+                                        : 'text-neutral-400 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800'
+                                }`}
+                            >
+                                {v === 'none' ? 'None' : v === 'normal' ? 'Normal' : 'Wide'}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                <div>
+                    <LabelWithHint label="Corner Radius" hint={'"Theme" follows the template\'s corner style. Pick a size to override.'} />
+                    <div className="flex gap-1 p-1 bg-gray-50 dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800">
+                        {(['theme', 'none', 'small', 'medium', 'large'] as const).map((v) => (
+                            <button
+                                key={v}
+                                type="button"
+                                onClick={() => update({ cornerRadius: v })}
+                                className={`flex-1 py-1.5 rounded-lg text-xs font-bold capitalize transition-all ${
+                                    (safeData.cornerRadius || 'theme') === v
+                                        ? 'bg-blue-600 text-white shadow'
+                                        : 'text-neutral-400 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800'
+                                }`}
+                            >
+                                {v === 'theme' ? 'Theme' : v === 'none' ? 'None' : v === 'small' ? 'S' : v === 'medium' ? 'M' : 'L'}
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
 
