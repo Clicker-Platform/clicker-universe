@@ -28,14 +28,14 @@ export function MemberSidebar({ tenant, brand, items, active, member }: Props) {
     return (
       <Link
         href={path}
-        className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors"
+        className="flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[15px] font-medium transition-colors"
         style={
           on
             ? { background: 'var(--member-accent-soft)', color: '#1a1a1a' }
             : { color: '#4b5563' }
         }
       >
-        <Icon size={16} /> {label}
+        <Icon size={20} /> {label}
       </Link>
     );
   };
@@ -43,9 +43,9 @@ export function MemberSidebar({ tenant, brand, items, active, member }: Props) {
   const initial = (member.fullName ?? member.email).charAt(0).toUpperCase();
 
   return (
-    <aside className="w-[200px] shrink-0 bg-white border-r border-gray-100 p-4 flex flex-col">
-      <div className="font-extrabold text-gray-900 text-base mb-5 px-1">{brand}</div>
-      <nav className="space-y-1">
+    <aside className="w-[260px] shrink-0 bg-white border-r border-gray-100 px-5 py-6 flex flex-col">
+      <div className="font-extrabold text-gray-900 text-lg mb-8 px-1">{brand}</div>
+      <nav className="space-y-1.5">
         {link('', 'Home', 'home', Home)}
         {items.map((it) => link(it.href, it.label, it.id, iconFor(it.icon)))}
       </nav>
