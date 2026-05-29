@@ -11,6 +11,7 @@ export interface MockSurfaceNavItem {
   id: string;
   label: string;
   href: string; // relative segment under /[tenant]/account/
+  icon: string; // lucide icon key (1b: comes from memberSurface.icon)
 }
 
 export interface MockLibraryItem {

@@ -1,9 +1,17 @@
 'use client';
 
 import Link from 'next/link';
-import { Home } from 'lucide-react';
+import { Home, Library, Box } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { MockSurfaceNavItem } from '@/lib/account/mock/types';
+
+const SURFACE_ICONS: Record<string, LucideIcon> = {
+  library: Library,
+};
+
+function iconFor(key: string): LucideIcon {
+  return SURFACE_ICONS[key] ?? Box;
+}
 
 interface Props {
   tenant: string;
@@ -14,7 +22,7 @@ interface Props {
 }
 
 export function MemberSidebar({ tenant, brand, items, active, member }: Props) {
-  const link = (href: string, label: string, key: string, Icon?: LucideIcon) => {
+  const link = (href: string, label: string, key: string, Icon: LucideIcon) => {
     const on = active === key;
     const path = `/${tenant}/account${href ? `/${href}` : ''}`;
     return (
@@ -23,11 +31,11 @@ export function MemberSidebar({ tenant, brand, items, active, member }: Props) {
         className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors"
         style={
           on
-            ? { background: 'var(--member-accent-soft)', color: 'var(--member-accent)' }
+            ? { background: 'var(--member-accent-soft)', color: '#1a1a1a' }
             : { color: '#4b5563' }
         }
       >
-        {Icon && <Icon size={16} />} {label}
+        <Icon size={16} /> {label}
       </Link>
     );
   };
@@ -39,7 +47,7 @@ export function MemberSidebar({ tenant, brand, items, active, member }: Props) {
       <div className="font-extrabold text-gray-900 text-base mb-5 px-1">{brand}</div>
       <nav className="space-y-1">
         {link('', 'Home', 'home', Home)}
-        {items.map((it) => link(it.href, it.label, it.id))}
+        {items.map((it) => link(it.href, it.label, it.id, iconFor(it.icon)))}
       </nav>
       <div className="mt-auto flex items-center gap-2 border-t border-gray-100 pt-3">
         <div

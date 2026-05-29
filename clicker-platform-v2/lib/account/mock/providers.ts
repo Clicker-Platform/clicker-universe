@@ -9,7 +9,7 @@ export function getMockMember(): MockMember {
 
 export function getMockSurfaces(_member: MockMember): MockSurfaceNavItem[] {
   // To preview the empty-Home state during dev, return [] here temporarily.
-  return [{ id: 'library', label: 'My Library', href: 'library' }];
+  return [{ id: 'library', label: 'My Library', href: 'library', icon: 'library' }];
 }
 
 export function getMockLibrary(_member: MockMember): MockLibraryItem[] {
