@@ -20,7 +20,7 @@ export function LoginClient({ tenant, brand }: { tenant: string; brand: TenantBr
   }
 
   return (
-    <div className="min-h-screen flex font-[family-name:var(--font-outfit)]">
+    <div className="min-h-screen flex font-[family-name:var(--font-outfit)] bg-white">
       {/* Brand panel (default accent — personalization is post-login only) */}
       <div
         className="hidden md:flex md:w-[42%] flex-col justify-between p-10"
@@ -47,7 +47,7 @@ export function LoginClient({ tenant, brand }: { tenant: string; brand: TenantBr
       </div>
 
       {/* Form side */}
-      <div className="flex-1 flex items-center justify-center px-6">
+      <div className="flex-1 flex items-center justify-center px-6 bg-white">
         <div className="w-full max-w-sm">
           {sent ? (
             <div className="text-center">
