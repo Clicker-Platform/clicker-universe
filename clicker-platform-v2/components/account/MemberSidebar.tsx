@@ -45,13 +45,20 @@ export function MemberSidebar({ tenant, brand, items, active, member }: Props) {
 
   return (
     <aside className="w-[260px] shrink-0 bg-white border-r border-gray-100 px-5 py-6 flex flex-col">
-      <div className="mb-8 px-1">
+      <div className="mb-8 px-1 flex items-center gap-2.5 min-w-0">
         {brand.logoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={brand.logoUrl} alt={brand.name} className="h-8 w-auto max-w-[160px] object-contain" />
+          <img
+            src={brand.logoUrl}
+            alt={brand.name}
+            className="w-9 h-9 rounded-full object-cover shadow-sm shrink-0"
+          />
         ) : (
-          <span className="font-extrabold text-gray-900 text-lg">{brand.name}</span>
+          <span className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center font-bold text-gray-700 shrink-0">
+            {brand.name.charAt(0).toUpperCase()}
+          </span>
         )}
+        <span className="font-extrabold text-gray-900 text-lg truncate">{brand.name}</span>
       </div>
       <nav className="space-y-1.5">
         {link('', 'Home', 'home', Home)}
