@@ -18,10 +18,9 @@ interface Props {
   brand: MockTenantBrand;
   items: MockSurfaceNavItem[];
   active: string;
-  member: { fullName?: string; email: string };
 }
 
-export function MemberSidebar({ tenant, brand, items, active, member }: Props) {
+export function MemberSidebar({ tenant, brand, items, active }: Props) {
   const link = (href: string, label: string, key: string, Icon: LucideIcon) => {
     const on = active === key;
     const path = `/${tenant}/account${href ? `/${href}` : ''}`;
@@ -40,8 +39,6 @@ export function MemberSidebar({ tenant, brand, items, active, member }: Props) {
       </Link>
     );
   };
-
-  const initial = (member.fullName ?? member.email).charAt(0).toUpperCase();
 
   return (
     <aside className="w-[260px] shrink-0 bg-white border-r border-gray-100 px-5 py-6 flex flex-col">
@@ -64,15 +61,6 @@ export function MemberSidebar({ tenant, brand, items, active, member }: Props) {
         {link('', 'Home', 'home', Home)}
         {items.map((it) => link(it.href, it.label, it.id, iconFor(it.icon)))}
       </nav>
-      <div className="mt-auto flex items-center gap-2 border-t border-gray-100 pt-3">
-        <div
-          className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
-          style={{ background: 'var(--member-accent)', color: 'var(--member-accent-fg)' }}
-        >
-          {initial}
-        </div>
-        <span className="text-sm text-gray-700 truncate">{member.fullName ?? member.email}</span>
-      </div>
     </aside>
   );
 }

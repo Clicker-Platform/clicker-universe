@@ -37,7 +37,7 @@ export function MemberShell({
       className="min-h-screen flex bg-[#f4f4f6]"
       style={resolveAccentVars(preset) as React.CSSProperties}
     >
-      <MemberSidebar tenant={tenant} brand={brand} items={items} active={active} member={member} />
+      <MemberSidebar tenant={tenant} brand={brand} items={items} active={active} />
       <main className="flex-1 flex flex-col">
         {/* Full-width top bar, pinned right (BMC) */}
         <header className="flex justify-end items-center gap-2 px-7 py-4">
@@ -47,10 +47,15 @@ export function MemberShell({
           <div className="relative">
             <button
               onClick={() => setPickerOpen((o) => !o)}
-              className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold"
-              style={{ background: 'var(--member-accent)', color: 'var(--member-accent-fg)' }}
+              className="flex items-center gap-2 pl-1 pr-3 py-1 rounded-full bg-white shadow-sm"
             >
-              {initial}
+              <span
+                className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold"
+                style={{ background: 'var(--member-accent)', color: 'var(--member-accent-fg)' }}
+              >
+                {initial}
+              </span>
+              <span className="text-sm font-medium text-gray-700">{member.fullName ?? member.email}</span>
             </button>
             {pickerOpen && (
               <AccentPicker value={preset} onChange={setPreset} onClose={() => setPickerOpen(false)} />

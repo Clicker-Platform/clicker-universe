@@ -10,7 +10,6 @@ export default function LibraryPage() {
   return (
     <div>
       <h1 className="text-[22px] font-extrabold text-gray-900 tracking-tight">My Library</h1>
-      <p className="text-gray-500 mt-0.5">Produk digital yang kamu miliki.</p>
 
       {library.length === 0 ? (
         <p className="text-gray-500 mt-8">Belum ada produk di library kamu.</p>
