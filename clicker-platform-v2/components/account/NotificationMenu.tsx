@@ -22,7 +22,7 @@ export function NotificationMenu({ onClose }: { onClose: () => void }) {
   return (
     <>
       <div className="fixed inset-0 z-30" onClick={onClose} />
-      <div className="absolute right-0 top-12 z-40 bg-white rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.14)] w-[calc(100vw-2rem)] max-w-[320px] overflow-hidden">
+      <div className="fixed left-4 right-4 top-16 sm:absolute sm:left-auto sm:right-0 sm:top-12 z-40 bg-white rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.14)] sm:w-[320px] overflow-hidden">
         <div className="px-4 py-3 border-b border-gray-100 font-bold text-gray-900">Notifikasi</div>
         <div className="max-h-[320px] overflow-y-auto">
           {DUMMY.map((n) => (
