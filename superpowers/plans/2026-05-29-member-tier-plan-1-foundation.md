@@ -1,5 +1,7 @@
 # Member Identity Tier — Plan 1: Foundation (Additive Build)
 
+> **⚠️ SEQUENCING UPDATE 2026-05-29 (frontend-first):** This plan is now the **WIRING (1b)** half. The UI is built FIRST in `2026-05-29-member-tier-plan-1a-frontend.md` against typed mock-data providers. After 1a, execute this plan as **1b**: build the real backend (accounts API, magic-link route, session, surface composition, `memberSurface` registry, digital_goods Library data), then swap 1a's mock providers (`lib/account/mock/providers.ts`) + login/verify/picker to call them. The UI **component** tasks here (Phase 4–5) are largely already built by 1a — in 1b they get re-pointed at real data, not rebuilt. Backend tasks (Phases 1–3) are unchanged.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Build the per-tenant member identity tier (`accounts/{uid}`), the separate member dashboard shell at `app/[tenant]/account/`, the registry-driven `memberSurface` contract, and re-express digital_goods Library as a member surface — all ADDITIVELY, deleting nothing. The existing buyer system keeps working in parallel until Plan 2 cuts over.
