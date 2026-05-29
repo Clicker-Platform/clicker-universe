@@ -7,7 +7,7 @@ import { getMockMember, getMockSurfaces } from '@/lib/account/mock/providers';
 import type { MockTenantBrand } from '@/lib/account/mock/types';
 import { resolveAccentVars, type AccentPresetId } from '@/lib/account/accent';
 import { MemberSidebar } from './MemberSidebar';
-import { AccentPicker } from './AccentPicker';
+import { AccountMenu } from './AccountMenu';
 
 export function MemberShell({
   tenant,
@@ -23,7 +23,7 @@ export function MemberShell({
 
   const member = getMockMember();
   const [preset, setPreset] = useState<AccentPresetId>(member.accentPreset ?? 'coral');
-  const [pickerOpen, setPickerOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   if (isAuth) return <>{children}</>;
 
@@ -46,7 +46,7 @@ export function MemberShell({
           </button>
           <div className="relative">
             <button
-              onClick={() => setPickerOpen((o) => !o)}
+              onClick={() => setMenuOpen((o) => !o)}
               className="flex items-center gap-2 pl-1 pr-3 py-1 rounded-full bg-white shadow-sm"
             >
               <span
@@ -57,8 +57,15 @@ export function MemberShell({
               </span>
               <span className="text-sm font-medium text-gray-700">{member.fullName ?? member.email}</span>
             </button>
-            {pickerOpen && (
-              <AccentPicker value={preset} onChange={setPreset} onClose={() => setPickerOpen(false)} />
+            {menuOpen && (
+              <AccountMenu
+                member={member}
+                accent={preset}
+                onAccentChange={setPreset}
+                onClose={() => setMenuOpen(false)}
+                onAccount={() => setMenuOpen(false)}
+                onLogout={() => setMenuOpen(false)}
+              />
             )}
           </div>
         </header>
