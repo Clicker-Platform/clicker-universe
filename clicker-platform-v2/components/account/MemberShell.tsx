@@ -34,7 +34,7 @@ export function MemberShell({
 
   return (
     <div
-      className="min-h-screen flex bg-[#f4f4f6]"
+      className="min-h-screen flex bg-[#f4f4f6] font-[family-name:var(--font-outfit)]"
       style={resolveAccentVars(preset) as React.CSSProperties}
     >
       <MemberSidebar tenant={tenant} brand={brand} items={items} active={active} />

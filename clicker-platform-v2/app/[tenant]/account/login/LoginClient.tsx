@@ -19,7 +19,7 @@ export function LoginClient({ tenant }: { tenant: string }) {
   }
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex font-[family-name:var(--font-outfit)]">
       {/* Brand panel */}
       <div
         className="hidden md:flex md:w-[42%] flex-col justify-between p-10 text-white"
