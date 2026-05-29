@@ -626,6 +626,11 @@ git commit -m "feat(account): registry-driven member surface composition"
 
 > NOTE: Before writing each UI file, open the corresponding admin equivalent and the existing buyer login (`app/[tenant]/store/login/`) to match conventions (CLAUDE.md rule 9). The login/verify clients below mirror `LoginClient.tsx` / `VerifyClient.tsx` but POST to `/api/account/auth/*` and `/api/account/session`.
 
+> **VISUAL DIRECTION (validated via wireframes 2026-05-29; reference mockups in `.superpowers/brainstorm/51697-*/content/`):** Build to these, not default Tailwind.
+> - **Shell (Task 11):** sidebar-only, NO top bar. Lighter consumer feel, distinct from admin. The `MemberShell` skeleton below already omits a top bar — keep it that way.
+> - **Login (Task 10):** branded split — hero panel (tenant brand color + tagline) beside the form; neutral fallback when no brand color set. The minimal-card skeleton below is a starting point; upgrade the page wrapper to the split layout.
+> - **Empty Home (Task 11, page.tsx):** friendly centered empty state — greeting + single CTA back to the storefront — shown when the member has zero visible surfaces. (Library cover-led cards live in Task 13.)
+
 ### Task 9: Member auth provider (client session context)
 
 **Files:**

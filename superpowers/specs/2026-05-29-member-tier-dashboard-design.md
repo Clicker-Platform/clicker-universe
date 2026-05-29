@@ -73,6 +73,12 @@ Member dashboard lives at **`app/[tenant]/account/`** (tenant-scoped routes live
 - `/[tenant]/account/{surfaceRoute}` — each granted module surface (e.g. `/[tenant]/account/library`).
 - **Forward-compat:** the entire `[tenant]/account` subtree can relocate to a buyer origin as one unit when the origin split happens later. Seam noted; not v1.
 
+**Visual direction (validated via wireframes 2026-05-29; mockups in `.superpowers/brainstorm/`):**
+- **Shell:** sidebar-only — NO top bar. Lighter consumer/storefront feel, deliberately distinct from the admin shell.
+- **Library surface:** cover-led cards (large cover image per item, store-like/premium), responsive grid. Video items show a play overlay; PDF items show the cover.
+- **Login (`/account/login`):** branded split — a hero panel (tenant brand color + tagline) beside the email form. Falls back gracefully to a neutral panel when the tenant has no brand color/theme tokens set.
+- **Empty Home (logged in, zero granted surfaces):** friendly centered empty state — illustration + greeting + single CTA back to the storefront ("Lihat produk →"). Must read as intentional, not broken.
+
 ### 3.3 `memberSurface` registry contract
 
 A module optionally declares a member-facing surface in its definition (mirrors existing admin-nav registry pattern):
