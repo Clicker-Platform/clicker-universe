@@ -28,7 +28,7 @@ export function MemberSidebar({ tenant, brand, items, active }: Props) {
       <Link
         key={key}
         href={path}
-        className="flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[15px] font-medium transition-colors"
+        className={`flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[15px] transition-colors ${on ? 'font-semibold' : 'font-medium'}`}
         style={
           on
             ? { background: 'var(--member-accent-soft)', color: '#1a1a1a' }
