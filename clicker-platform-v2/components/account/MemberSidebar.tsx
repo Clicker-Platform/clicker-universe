@@ -27,6 +27,7 @@ export function MemberSidebar({ tenant, brand, items, active, member }: Props) {
     const path = `/${tenant}/account${href ? `/${href}` : ''}`;
     return (
       <Link
+        key={key}
         href={path}
         className="flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[15px] font-medium transition-colors"
         style={
