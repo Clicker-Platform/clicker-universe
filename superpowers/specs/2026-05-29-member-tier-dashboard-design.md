@@ -57,6 +57,7 @@ Canonical member doc: **`sites/{siteId}/accounts/{uid}`**
 | `status` | `pending` / `registered` (doc exists, never completed a login session) → `active` (logged in ≥ once) |
 | `createdAt` | timestamp |
 | `createdVia` | `register` \| `purchase` |
+| `accentPreset` | `'yellow'\|'green'\|'coral'\|'indigo'`; optional, defaults to `'coral'` when unset. Member-chosen dashboard accent. |
 | profile basics | name, etc. (minimal v1) |
 
 - Keyed by Firebase `uid`. Provider-agnostic — no `loginMethod` field gating access.
@@ -74,10 +75,19 @@ Member dashboard lives at **`app/[tenant]/account/`** (tenant-scoped routes live
 - **Forward-compat:** the entire `[tenant]/account` subtree can relocate to a buyer origin as one unit when the origin split happens later. Seam noted; not v1.
 
 **Visual direction (validated via wireframes 2026-05-29; mockups in `.superpowers/brainstorm/`):**
-- **Shell:** sidebar-only — NO top bar. Lighter consumer/storefront feel, deliberately distinct from the admin shell.
+- **Aesthetic = Buy Me a Coffee style:** relaxed, fun, clean, consumer-first (NOT admin-like). Big rounded bold headlines, generous whitespace, low density, fully-rounded shapes (pill buttons, ~14–20px card radius), light neutral canvas (off-white/very light gray) with pure-white cards + soft shadows, friendly rounded line icons, warm human microcopy with natural emoji.
+- **The member dashboard has its OWN style system** — defined separately. It does NOT inherit the tenant's storefront appearance (Font Pack / button pack) and is NOT the admin theme. One consistent consumer aesthetic across all tenants.
+- **Shell:** sidebar-only — NO top bar. Sidebar supports quiet uppercase section-group labels (for when surfaces grow) and a soft-rounded highlight on the selected item. Top-right may carry notification + avatar/account menu.
 - **Library surface:** cover-led cards (large cover image per item, store-like/premium), responsive grid. Video items show a play overlay; PDF items show the cover.
-- **Login (`/account/login`):** branded split — a hero panel (tenant brand color + tagline) beside the email form. Falls back gracefully to a neutral panel when the tenant has no brand color/theme tokens set.
+- **Login (`/account/login`):** branded split — full-bleed accent panel one side (illustration/marketing snippet + social proof) beside a clean white form side; "Already have an account? Sign in" affordance. (Magic-link, so "sign in" = enter email.)
 - **Empty Home (logged in, zero granted surfaces):** friendly centered empty state — illustration + greeting + single CTA back to the storefront ("Lihat produk →"). Must read as intentional, not broken.
+
+**Accent color — member-chosen preset (decided 2026-05-29):**
+- Accent is a swappable **CSS-var preset triple**: `--member-accent`, `--member-accent-fg` (text/icon on accent), `--member-accent-soft` (tint for selected-nav background, highlights).
+- Preset set: **Yellow** `#FFD93D` (fg `#1a1a1a`), **Green** `#22C55E` (fg `#fff`), **Coral** `#FF6B5E` (fg `#fff`) — DEFAULT, **Indigo** `#6366F1` (fg `#fff`). Soft = a ~10–15% tint of the accent.
+- **Who picks:** the **member**, from a control inside their own dashboard (e.g. an Appearance item in the account/avatar menu). Stored on `accounts/{uid}.accentPreset`. NOT surfaced in tenant admin; not tenant-configured; not platform-fixed.
+- **Default:** brand-new member (just registered/purchased, hasn't touched settings) renders with **Coral** until they change it.
+- **Applied:** read `accountPreset` → set the three CSS vars on the dashboard shell root element; all accent usage references the vars (no hard-coded accent anywhere).
 
 ### 3.3 `memberSurface` registry contract
 

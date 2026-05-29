@@ -66,6 +66,16 @@
 // NOT sites/{siteId}/members (that is staff RBAC) — see admin-auth.ts.
 export const COLLECTION_ACCOUNTS = 'accounts'; // sites/{siteId}/accounts/{uid}
 export const ACCOUNT_MODULE_SCOPE = 'member';  // magic-link `module` scope id for this tier
+
+// Dashboard accent presets (member-chosen; default 'coral'). Each = a CSS-var triple.
+export const ACCENT_PRESETS = {
+  yellow: { accent: '#FFD93D', fg: '#1a1a1a', soft: '#FFF7D6' },
+  green:  { accent: '#22C55E', fg: '#ffffff', soft: '#DCFCE7' },
+  coral:  { accent: '#FF6B5E', fg: '#ffffff', soft: '#FFE7E3' },
+  indigo: { accent: '#6366F1', fg: '#ffffff', soft: '#EEF0FF' },
+} as const;
+export type AccentPresetId = keyof typeof ACCENT_PRESETS;
+export const DEFAULT_ACCENT_PRESET: AccentPresetId = 'coral';
 ```
 
 - [ ] **Step 2: Write types**
@@ -73,6 +83,8 @@ export const ACCOUNT_MODULE_SCOPE = 'member';  // magic-link `module` scope id f
 ```ts
 // lib/account/types.ts
 import type { Timestamp } from 'firebase/firestore';
+
+import type { AccentPresetId } from './constants';
 
 export type MemberAccountStatus = 'pending' | 'active';
 export type MemberAccountCreatedVia = 'register' | 'purchase';
@@ -83,6 +95,7 @@ export interface MemberAccount {
   fullName?: string;
   status: MemberAccountStatus;        // 'pending' until first real login, then 'active'
   createdVia: MemberAccountCreatedVia;
+  accentPreset?: AccentPresetId;      // member-chosen dashboard accent; unset → DEFAULT_ACCENT_PRESET ('coral')
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }
