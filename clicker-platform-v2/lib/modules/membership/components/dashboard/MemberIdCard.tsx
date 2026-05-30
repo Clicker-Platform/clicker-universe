@@ -1,12 +1,15 @@
 import React from 'react';
 import { QrCode, Sparkles } from 'lucide-react';
-import { Member } from '../../types';
+import { Member, TierThreshold, getTier } from '../../types';
 
 interface MemberIdCardProps {
     member: Member;
+    tierThresholds?: TierThreshold[];
 }
 
-export default function MemberIdCard({ member }: MemberIdCardProps) {
+export default function MemberIdCard({ member, tierThresholds }: MemberIdCardProps) {
+    const tier = getTier(member.currentPoints, tierThresholds);
+
     return (
         <div className="bg-gradient-to-br from-indigo-600 to-purple-700 text-white p-6 rounded-b-3xl shadow-xl relative overflow-hidden">
             <div className="absolute top-0 right-0 p-8 opacity-10"><QrCode size={120} /></div>
@@ -28,7 +31,7 @@ export default function MemberIdCard({ member }: MemberIdCardProps) {
                     </div>
                     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 flex flex-col items-center">
                         <span className="text-xs text-indigo-200 uppercase tracking-wider mb-1">Tier</span>
-                        <span className="text-xl font-bold">Gold</span>
+                        <span className="text-xl font-bold">{tier}</span>
                     </div>
                 </div>
             </div>

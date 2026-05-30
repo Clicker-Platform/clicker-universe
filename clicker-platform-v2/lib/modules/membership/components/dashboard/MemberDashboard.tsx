@@ -4,8 +4,8 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { User } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
-import { findMemberByAuthId, findMemberByEmail, updateMemberAuth } from '../../api';
-import { Member } from '../../types';
+import { findMemberByAuthId, findMemberByEmail, updateMemberAuth, getMembershipSettings } from '../../api';
+import { Member, TierThreshold } from '../../types';
 import MemberIdCard from './MemberIdCard';
 import MemberHistoryList from './MemberHistoryList';
 import { findWidgetsForLocation } from '@/lib/modules/registry';
@@ -20,6 +20,7 @@ export default function MemberDashboard() {
     const router = useRouter();
     const [user, setUser] = useState<User | null>(null);
     const [member, setMember] = useState<Member | null>(null);
+    const [tierThresholds, setTierThresholds] = useState<TierThreshold[] | undefined>(undefined);
     const [widgets, setWidgets] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [authChecking, setAuthChecking] = useState(true);
@@ -58,8 +59,12 @@ export default function MemberDashboard() {
 
             setMember(foundMember);
 
-            // C. Load Widgets
-            const foundWidgets = await findWidgetsForLocation('member_dashboard');
+            // C. Load Settings (for tier thresholds) + Widgets
+            const [settings, foundWidgets] = await Promise.all([
+                getMembershipSettings(currentSiteId),
+                findWidgetsForLocation('member_dashboard'),
+            ]);
+            setTierThresholds(settings.tierThresholds);
             setWidgets(foundWidgets);
 
         } catch (error) {
@@ -107,7 +112,7 @@ export default function MemberDashboard() {
     return (
         <div className="bg-gray-50 min-h-full pb-20 relative">
             {/* Header / ID Card */}
-            <MemberIdCard member={member} />
+            <MemberIdCard member={member} tierThresholds={tierThresholds} />
 
             {/* Content Area */}
             <div className="p-6 space-y-8">

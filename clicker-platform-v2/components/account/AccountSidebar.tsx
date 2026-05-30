@@ -21,7 +21,7 @@ interface Props {
   onNavigate?: () => void;
 }
 
-export function MemberSidebar({ tenant, brand, items, active, onNavigate }: Props) {
+export function AccountSidebar({ tenant, brand, items, active, onNavigate }: Props) {
   const link = (href: string, label: string, key: string, Icon: LucideIcon) => {
     const on = active === key;
     const path = `/${tenant}/account${href ? `/${href}` : ''}`;

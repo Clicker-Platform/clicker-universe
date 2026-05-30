@@ -6,11 +6,11 @@ import { Bell, Menu, X } from 'lucide-react';
 import { getMockMember, getMockSurfaces } from '@/lib/account/mock/providers';
 import type { MockTenantBrand } from '@/lib/account/mock/types';
 import { resolveAccentVars, type AccentPresetId } from '@/lib/account/accent';
-import { MemberSidebar } from './MemberSidebar';
+import { AccountSidebar } from './AccountSidebar';
 import { AccountMenu } from './AccountMenu';
 import { NotificationMenu } from './NotificationMenu';
 
-export function MemberShell({
+export function AccountShell({
   tenant,
   brand,
   children,
@@ -42,7 +42,7 @@ export function MemberShell({
     >
       {/* Desktop: static sidebar column */}
       <div className="hidden md:block w-[260px] shrink-0 border-r border-gray-100">
-        <MemberSidebar tenant={tenant} brand={brand} items={items} active={active} />
+        <AccountSidebar tenant={tenant} brand={brand} items={items} active={active} />
       </div>
 
       {/* Mobile: floating rounded panel + backdrop */}
@@ -57,7 +57,7 @@ export function MemberShell({
             >
               <X size={18} />
             </button>
-            <MemberSidebar
+            <AccountSidebar
               tenant={tenant}
               brand={brand}
               items={items}
