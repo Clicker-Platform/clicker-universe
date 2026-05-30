@@ -33,7 +33,7 @@ export function AccountSidebar({ tenant, brand, items, active, onNavigate }: Pro
         className={`flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[15px] transition-colors ${on ? 'font-semibold' : 'font-medium'}`}
         style={
           on
-            ? { background: 'var(--member-accent-soft)', color: '#1a1a1a' }
+            ? { background: 'var(--account-accent-soft)', color: '#1a1a1a' }
             : { color: '#4b5563' }
         }
       >

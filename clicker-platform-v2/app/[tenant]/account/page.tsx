@@ -66,7 +66,7 @@ export default function AccountHome() {
         <Link
           href={storeHref}
           className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-bold"
-          style={{ background: 'var(--member-accent)', color: 'var(--member-accent-fg)' }}
+          style={{ background: 'var(--account-accent)', color: 'var(--account-accent-fg)' }}
         >
           Lihat produk <ArrowRight size={16} />
         </Link>

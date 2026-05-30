@@ -12,8 +12,8 @@ export const DEFAULT_ACCENT_PRESET: AccentPresetId = 'coral';
 export function resolveAccentVars(preset: AccentPresetId | undefined): Record<string, string> {
   const p = ACCENT_PRESETS[preset ?? DEFAULT_ACCENT_PRESET];
   return {
-    '--member-accent': p.accent,
-    '--member-accent-fg': p.fg,
-    '--member-accent-soft': p.soft,
+    '--account-accent': p.accent,
+    '--account-accent-fg': p.fg,
+    '--account-accent-soft': p.soft,
   };
 }

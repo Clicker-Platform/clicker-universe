@@ -14,7 +14,7 @@ export function NotificationMenu({ onClose }: { onClose: () => void }) {
         <div className="px-4 py-10 flex flex-col items-center text-center">
           <div
             className="w-11 h-11 rounded-full flex items-center justify-center mb-3"
-            style={{ background: 'var(--member-accent-soft)', color: 'var(--member-accent)' }}
+            style={{ background: 'var(--account-accent-soft)', color: 'var(--account-accent)' }}
           >
             <Bell size={18} />
           </div>

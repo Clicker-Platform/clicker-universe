@@ -106,7 +106,7 @@ export function AccountShell({
       >
         <span
           className="w-8 h-8 rounded-full border-2 border-gray-200 animate-spin"
-          style={{ borderTopColor: 'var(--member-accent)' }}
+          style={{ borderTopColor: 'var(--account-accent)' }}
         />
       </div>
     );
@@ -170,7 +170,7 @@ export function AccountShell({
               <Bell size={16} />
               <span
                 className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full ring-2 ring-white"
-                style={{ background: 'var(--member-accent)' }}
+                style={{ background: 'var(--account-accent)' }}
               />
             </button>
             {notifOpen && <NotificationMenu onClose={() => setNotifOpen(false)} />}
@@ -182,7 +182,7 @@ export function AccountShell({
             >
               <span
                 className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold"
-                style={{ background: 'var(--member-accent)', color: 'var(--member-accent-fg)' }}
+                style={{ background: 'var(--account-accent)', color: 'var(--account-accent-fg)' }}
               >
                 {initial}
               </span>
