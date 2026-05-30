@@ -69,6 +69,29 @@ export function AccountShell({
     };
   }, [user, tenant]);
 
+  // Accent change: instant UI update + fire-and-forget persistence to accounts/{uid}.
+  function handleAccentChange(id: AccentPresetId) {
+    setPreset(id);
+    fetch('/api/account/preferences', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-site-id': tenant },
+      body: JSON.stringify({ accentPreset: id }),
+    }).catch(() => {
+      /* non-blocking; preference persistence is best-effort */
+    });
+  }
+
+  async function handleLogout() {
+    setMenuOpen(false);
+    try {
+      await signOut(auth);
+    } catch (e) {
+      logger.error('account.logout.signout_failed', { error: e });
+    }
+    await fetch('/api/account/logout', { method: 'POST' }).catch(() => {});
+    router.replace(`/${tenant}/account/login`);
+  }
+
   if (isAuth) return <>{children}</>;
 
   // While auth resolves (or before redirect fires) keep a minimal, on-brand frame.
@@ -166,10 +189,10 @@ export function AccountShell({
               <AccountMenu
                 member={member}
                 accent={preset}
-                onAccentChange={setPreset}
+                onAccentChange={handleAccentChange}
                 onClose={() => setMenuOpen(false)}
-                onAccount={() => setMenuOpen(false)}
-                onLogout={() => setMenuOpen(false)}
+                onAccount={() => setMenuOpen(false)} // TODO(plan-2): navigate to profile route
+                onLogout={handleLogout}
               />
             )}
           </div>
