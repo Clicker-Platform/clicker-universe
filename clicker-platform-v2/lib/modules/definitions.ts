@@ -94,6 +94,15 @@ export const STATIC_MODULE_DEFINITIONS: Record<string, Partial<ModuleDefinition>
             { label: 'Settings', path: '/admin/digital-goods/settings', icon: 'settings',     componentKey: 'digital_goods:Settings',    permission: 'settings' }
         ],
         dashboardAction: { label: 'View Products', href: '/admin/digital-goods' },
+        memberSurface: {
+            id: 'library',
+            label: 'My Library',
+            icon: 'box',
+            route: '/library',
+            componentKey: 'digital_goods:LibrarySurface',
+            // no isGranted → implicit-by-data via hasData
+            hasData: (ctx) => import('@/lib/modules/digital_goods/surface').then(m => m.libraryHasData(ctx)),
+        },
     },
     'promo': {
         adminRoutes: [

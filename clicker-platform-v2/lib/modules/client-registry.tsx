@@ -9,6 +9,7 @@ import UpcomingReservationsWidget from '@/lib/modules/reservation/public/Upcomin
 import ReservationWidget from '@/lib/modules/reservation/public/ReservationWidget';
 import MemberRewardsWidget from '@/lib/modules/promo/components/MemberRewardsWidget';
 import MyVouchersWidget from '@/lib/modules/promo/components/MyVouchersWidget';
+import LibrarySurface from '@/lib/modules/digital_goods/components/LibrarySurface';
 
 // Only include components specifically designed for Client usage
 export const CLIENT_MODULE_COMPONENTS: Record<string, any> = {
@@ -22,6 +23,9 @@ export const CLIENT_MODULE_COMPONENTS: Record<string, any> = {
     // Promo Module
     'promo:MemberRewardsWidget': MemberRewardsWidget,
     'promo:MyVouchersWidget': MyVouchersWidget,
+
+    // Digital Goods Module — account-dashboard surface
+    'digital_goods:LibrarySurface': LibrarySurface,
 
     // Add others only if verified as Client Components
 };
