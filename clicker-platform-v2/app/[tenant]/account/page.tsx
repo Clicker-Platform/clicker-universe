@@ -2,24 +2,64 @@
 
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { ArrowRight, Store } from 'lucide-react';
-import { getMockMember, getMockSurfaces, getMockLibrary } from '@/lib/account/mock/providers';
+import { useAccountAuth } from '@/components/account/AccountAuthProvider';
+import { fetchAccount, fetchSurfaces, fetchLibrary } from '@/lib/account/providers';
+import type { Account } from '@/lib/account/types';
+import type { AccountNavItem } from '@/lib/account/providers';
+import type { LibraryEntry } from '@/lib/modules/digital_goods/types';
+import type { MockLibraryItem } from '@/lib/account/mock/types';
 import { LibraryCard } from '@/components/account/LibraryCard';
+
+function toCard(e: LibraryEntry): MockLibraryItem {
+  return {
+    id: e.id,
+    title: e.productSnapshot.title,
+    kind: e.productSnapshot.contentKind,
+    cover: e.productSnapshot.coverImage,
+  };
+}
 
 export default function AccountHome() {
   const params = useParams();
   const tenant = typeof params.tenant === 'string' ? params.tenant : '';
   const storeHref = `/${tenant}/store`;
 
-  const member = getMockMember();
-  const surfaces = getMockSurfaces(member);
-  const library = getMockLibrary(member);
+  const { user, loading } = useAccountAuth();
+  const [account, setAccount] = useState<Account | null>(null);
+  const [surfaces, setSurfaces] = useState<AccountNavItem[]>([]);
+  const [library, setLibrary] = useState<LibraryEntry[]>([]);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    if (!user || !tenant) return;
+    let cancelled = false;
+    Promise.all([
+      fetchAccount(tenant, user.uid),
+      fetchSurfaces(tenant),
+      fetchLibrary(tenant, user.uid),
+    ]).then(([acc, surf, lib]) => {
+      if (cancelled) return;
+      setAccount(acc);
+      setSurfaces(surf);
+      setLibrary(lib);
+      setReady(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [user, tenant]);
+
+  if (loading || !user || !ready) return null;
+
+  const name = account?.fullName ?? account?.email ?? user.email ?? '';
 
   if (surfaces.length === 0) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center text-center">
         <div className="text-5xl mb-3">🪴</div>
-        <div className="text-xl font-extrabold text-gray-900">Halo, {member.fullName} 👋</div>
+        <div className="text-xl font-extrabold text-gray-900">Halo, {name} 👋</div>
         <p className="text-gray-500 mt-2 max-w-xs">
           Belum ada layanan di akun kamu. Jelajahi produk untuk mulai.
         </p>
@@ -39,7 +79,7 @@ export default function AccountHome() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-[22px] font-extrabold text-gray-900 tracking-tight">
-            Halo, {member.fullName} 👋
+            Halo, {name} 👋
           </h1>
           <p className="text-gray-500 mt-0.5">Semua produk &amp; layanan kamu, di satu tempat.</p>
         </div>
@@ -53,8 +93,8 @@ export default function AccountHome() {
 
       <h2 className="text-sm font-bold text-gray-900 mt-6 mb-3">My Library</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-        {library.map((it) => (
-          <LibraryCard key={it.id} item={it} />
+        {library.map((e) => (
+          <LibraryCard key={e.id} item={toCard(e)} />
         ))}
       </div>
     </div>

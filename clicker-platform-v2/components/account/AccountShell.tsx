@@ -1,11 +1,13 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { Bell, Menu, X } from 'lucide-react';
-import { getMockMember, getMockSurfaces } from '@/lib/account/mock/providers';
+import { fetchAccount, fetchSurfaces, type AccountNavItem } from '@/lib/account/providers';
+import type { Account } from '@/lib/account/types';
 import type { MockTenantBrand } from '@/lib/account/mock/types';
-import { resolveAccentVars, type AccentPresetId } from '@/lib/account/accent';
+import { resolveAccentVars, DEFAULT_ACCENT_PRESET, type AccentPresetId } from '@/lib/account/accent';
+import { useAccountAuth } from './AccountAuthProvider';
 import { AccountSidebar } from './AccountSidebar';
 import { AccountMenu } from './AccountMenu';
 import { NotificationMenu } from './NotificationMenu';
@@ -20,20 +22,75 @@ export function AccountShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname() || '';
+  const router = useRouter();
   const isAuth = pathname.includes('/account/login');
 
-  const member = getMockMember();
-  const [preset, setPreset] = useState<AccentPresetId>(member.accentPreset ?? 'coral');
+  const { user, loading } = useAccountAuth();
+
+  const [account, setAccount] = useState<Account | null>(null);
+  const [items, setItems] = useState<AccountNavItem[]>([]);
+  const [preset, setPreset] = useState<AccentPresetId>(DEFAULT_ACCENT_PRESET);
   const [menuOpen, setMenuOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
 
+  // Auth guard: bounce unauthenticated visitors to login (login routes bypass).
+  useEffect(() => {
+    if (loading || isAuth) return;
+    if (!user) {
+      const next = encodeURIComponent(pathname);
+      router.replace(`/${tenant}/account/login?next=${next}`);
+    }
+  }, [loading, isAuth, user, pathname, tenant, router]);
+
+  // Load account doc (greeting + initial accent) once we have a user.
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    fetchAccount(tenant, user.uid).then((acc) => {
+      if (cancelled) return;
+      setAccount(acc);
+      setPreset(acc?.accentPreset ?? DEFAULT_ACCENT_PRESET);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [user, tenant]);
+
+  // Load visible surfaces (sidebar nav).
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    fetchSurfaces(tenant).then((s) => {
+      if (!cancelled) setItems(s);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [user, tenant]);
+
   if (isAuth) return <>{children}</>;
 
-  const items = getMockSurfaces(member);
+  // While auth resolves (or before redirect fires) keep a minimal, on-brand frame.
+  if (loading || !user) {
+    return (
+      <div
+        className="min-h-screen flex items-center justify-center bg-[#f4f4f6] font-[family-name:var(--font-outfit)]"
+        style={resolveAccentVars(preset) as React.CSSProperties}
+      >
+        <span
+          className="w-8 h-8 rounded-full border-2 border-gray-200 animate-spin"
+          style={{ borderTopColor: 'var(--member-accent)' }}
+        />
+      </div>
+    );
+  }
+
+  const displayName = account?.fullName ?? account?.email ?? user.email ?? '';
   const seg = pathname.split('/account/')[1]?.split('/')[0] ?? '';
   const active = seg === '' ? 'home' : items.find((i) => i.href === seg)?.id ?? 'home';
-  const initial = (member.fullName ?? member.email).charAt(0).toUpperCase();
+  const initial = displayName.charAt(0).toUpperCase();
+  const member = { fullName: account?.fullName, email: displayName };
 
   return (
     <div
@@ -103,7 +160,7 @@ export function AccountShell({
               >
                 {initial}
               </span>
-              <span className="hidden sm:inline text-sm font-medium text-gray-700">{member.fullName ?? member.email}</span>
+              <span className="hidden sm:inline text-sm font-medium text-gray-700">{displayName}</span>
             </button>
             {menuOpen && (
               <AccountMenu

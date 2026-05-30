@@ -1,4 +1,5 @@
 import { AccountShell } from '@/components/account/AccountShell';
+import { AccountAuthProvider } from '@/components/account/AccountAuthProvider';
 import { getTenantBrand } from '@/lib/account/brand';
 
 export const dynamic = 'force-dynamic';
@@ -13,8 +14,10 @@ export default async function AccountLayout({
   const { tenant } = await params;
   const brand = await getTenantBrand(tenant);
   return (
-    <AccountShell tenant={tenant} brand={brand}>
-      {children}
-    </AccountShell>
+    <AccountAuthProvider>
+      <AccountShell tenant={tenant} brand={brand}>
+        {children}
+      </AccountShell>
+    </AccountAuthProvider>
   );
 }
