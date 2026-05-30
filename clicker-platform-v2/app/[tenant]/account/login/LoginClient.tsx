@@ -1,22 +1,45 @@
 'use client';
 
 import { useState } from 'react';
-import { Mail, CheckCircle2, ArrowRight } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { Mail, CheckCircle2, ArrowRight, Loader2 } from 'lucide-react';
 import { ACCENT_PRESETS, DEFAULT_ACCENT_PRESET } from '@/lib/account/accent';
 import type { TenantBrand } from '@/lib/account/brand';
+import { logger } from '@/lib/logger-edge';
 
-// Pre-auth: no member preset exists yet, so the brand panel uses the default accent.
+// Pre-auth: no account preset exists yet, so the brand panel uses the default accent.
 const ACCENT = ACCENT_PRESETS[DEFAULT_ACCENT_PRESET];
 
 export function LoginClient({ tenant, brand }: { tenant: string; brand: TenantBrand }) {
-  void tenant;
+  const searchParams = useSearchParams();
+  const rawNext = searchParams.get('next');
+  const next = rawNext && rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : `/${tenant}/account`;
+
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!email) return;
-    setSent(true); // 1a: static — no fetch
+    setSubmitting(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/account/auth/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-site-id': tenant },
+        body: JSON.stringify({ email, next }),
+      });
+      if (!res.ok) throw new Error('request_failed');
+      window.localStorage.setItem('accountEmailForSignIn', email);
+      setSent(true);
+    } catch (err) {
+      logger.error('account.login.request.failed', { error: err });
+      setError('Gagal mengirim link. Coba lagi.');
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -76,12 +99,22 @@ export function LoginClient({ tenant, brand }: { tenant: string; brand: TenantBr
                 className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm mb-3 focus:outline-none focus:ring-2"
                 style={{ ['--tw-ring-color' as string]: ACCENT.accent }}
               />
+              {error && <p className="text-sm text-red-600 mb-3">{error}</p>}
               <button
                 type="submit"
-                className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full font-bold"
+                disabled={submitting}
+                className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full font-bold disabled:opacity-60"
                 style={{ background: ACCENT.accent, color: ACCENT.fg }}
               >
-                Lanjut dengan email <ArrowRight size={16} />
+                {submitting ? (
+                  <>
+                    <Loader2 className="animate-spin" size={16} /> Mengirim…
+                  </>
+                ) : (
+                  <>
+                    Lanjut dengan email <ArrowRight size={16} />
+                  </>
+                )}
               </button>
               <p className="text-xs text-gray-400 mt-4 text-center">
                 Akun dibuat otomatis jika kamu baru pertama kali.
