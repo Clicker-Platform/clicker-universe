@@ -81,7 +81,14 @@ export function CheckoutClient(props: Props) {
           </div>
         </div>
         {props.qrisImageUrl && (
-          <p className="text-xs text-gray-500 mt-3">Atau scan QRIS (gambar tersedia di halaman setelah submit).</p>
+          <div className="mt-4 pt-4 border-t border-gray-100">
+            <p className="text-xs text-gray-500 mb-2">Atau scan QRIS</p>
+            <img
+              src={props.qrisImageUrl}
+              alt="QRIS"
+              className="w-full max-w-[260px] mx-auto rounded-lg border border-gray-200"
+            />
+          </div>
         )}
       </section>
 

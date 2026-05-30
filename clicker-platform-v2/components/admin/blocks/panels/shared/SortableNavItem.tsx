@@ -5,6 +5,7 @@ import { GripVertical, Trash2, ChevronDown, ChevronUp, Link as LinkIcon } from '
 import { ICON_MAP } from '@/data/icons';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { SelectMenu } from '../../forms/SelectMenu';
 
 export interface SortableNavItemProps {
     item: any;
@@ -107,20 +108,18 @@ export function SortableNavItem({
 
                     <div>
                         {item.type === 'form' ? (
-                            <select
+                            <SelectMenu
                                 value={item.formId || ''}
-                                onChange={(e) => onUpdate('formId', e.target.value)}
-                                className="w-full px-3 py-1.5 text-sm bg-gray-50 dark:bg-neutral-900 border border-gray-300 dark:border-neutral-700 rounded-md text-neutral-900 dark:text-neutral-200 focus:border-blue-500/50 focus:outline-none"
-                            >
-                                <option value="">— Select Form —</option>
-                                {forms.map(f => <option key={f.id} value={f.id}>{f.title}</option>)}
-                            </select>
+                                onChange={(v) => onUpdate('formId', v)}
+                                placeholder="— Select Form —"
+                                options={forms.map(f => ({ value: f.id, label: f.title || 'Untitled' }))}
+                            />
                         ) : item.type === 'page' || !item.type ? (
-                            <select
+                            <SelectMenu
                                 value={item.pageId || ''}
-                                onChange={(e) => {
-                                    const page = pages.find(p => p.id === e.target.value);
-                                    const patch: Record<string, string> = { pageId: e.target.value };
+                                onChange={(v) => {
+                                    const page = pages.find(p => p.id === v);
+                                    const patch: Record<string, string> = { pageId: v };
                                     if (page) {
                                         // Homepage uses action:homepage so the nav bar resolves it to "/"
                                         patch.value = page.slug === homepageSlug ? 'action:homepage' : `/${page.slug}`;
@@ -131,11 +130,9 @@ export function SortableNavItem({
                                     }
                                     onUpdate(patch);
                                 }}
-                                className="w-full px-3 py-1.5 text-sm bg-gray-50 dark:bg-neutral-900 border border-gray-300 dark:border-neutral-700 rounded-md text-neutral-900 dark:text-neutral-200 focus:border-blue-500/50 focus:outline-none"
-                            >
-                                <option value="">— Select Page —</option>
-                                {pages.map(p => <option key={p.id} value={p.id}>{p.title} (/{p.slug})</option>)}
-                            </select>
+                                placeholder="— Select Page —"
+                                options={pages.map(p => ({ value: p.id, label: p.title || 'Untitled', hint: `/${p.slug}` }))}
+                            />
                         ) : (
                             <input
                                 type="text"

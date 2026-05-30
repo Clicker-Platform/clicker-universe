@@ -1,0 +1,59 @@
+/* clicker-platform-v2/components/blocks/public/rich-text-classes.css
+ *
+ * Defines all `.rt-*` classes used by the rich text editor. Class names
+ * are deliberately verbose and prefixed to avoid colliding with Tailwind
+ * or template overrides.
+ *
+ * Cascade strategy: rules use the `.prose` parent selector for higher
+ * specificity than the `prose` plugin's defaults. If `prose` is later
+ * loaded inside a CSS layer that wins regardless, switch to @layer.
+ */
+
+/* ---------- Token colors (use theme CSS variables).
+ * 6 tokens, not the spec's 8 — secondary/danger removed (not defined
+ * in any template; deferred to Color Styles work). `muted` mapped to
+ * the canonical --theme-text-muted variable. */
+.prose .rt-color-foreground { color: var(--theme-foreground); }
+.prose .rt-color-muted      { color: var(--theme-text-muted); }
+.prose .rt-color-primary    { color: var(--theme-primary); }
+.prose .rt-color-accent     { color: var(--theme-accent); }
+.prose .rt-color-success    { color: var(--theme-success); }
+.prose .rt-color-warning    { color: var(--theme-warning); }
+
+/* Freeform hex stays as inline style on the same span; .rt-color-custom
+ * is a marker class only (no color rule here). The inline `style="color: #..."`
+ * is preserved by the sanitizer hook for this case. */
+.prose .rt-color-custom     { /* color comes from inline style */ }
+
+/* ---------- Highlight tokens (literal hex, not theme vars — these are
+ * deliberately constant warm/cool pastels independent of theme) ---------- */
+.prose .rt-bg-yellow { background-color: #fef08a; padding: 0 2px; border-radius: 2px; }
+.prose .rt-bg-green  { background-color: #bbf7d0; padding: 0 2px; border-radius: 2px; }
+.prose .rt-bg-blue   { background-color: #bfdbfe; padding: 0 2px; border-radius: 2px; }
+.prose .rt-bg-pink   { background-color: #fbcfe8; padding: 0 2px; border-radius: 2px; }
+.prose .rt-bg-purple { background-color: #e9d5ff; padding: 0 2px; border-radius: 2px; }
+.prose .rt-bg-orange { background-color: #fed7aa; padding: 0 2px; border-radius: 2px; }
+.prose .rt-bg-custom { padding: 0 2px; border-radius: 2px; /* bg from inline style */ }
+
+/* ---------- Font size (paragraphs only — see FontSize extension) ---------- */
+.prose .rt-size-xs { font-size: 12px; }
+.prose .rt-size-s  { font-size: 14px; }
+.prose .rt-size-m  { font-size: 16px; }
+.prose .rt-size-l  { font-size: 18px; }
+.prose .rt-size-xl { font-size: 20px; }
+
+/* ---------- Line-height presets (multipliers).
+ * Values are absolute, calibrated for each preset to read well at the
+ * 16px Body M default. Smaller / larger sizes inherit naturally because
+ * line-height is unitless and CSS multiplies by the element's font-size.
+ * That is why these are unitless — applying `tight` to an H1 stays
+ * proportional. */
+.prose .rt-lh-tight   { line-height: 1.32; }
+.prose .rt-lh-normal  { line-height: 1.55; }
+.prose .rt-lh-relaxed { line-height: 1.78; }
+.prose .rt-lh-loose   { line-height: 2.0; }
+
+/* ---------- Alignment (paragraphs and headings only) ---------- */
+.prose .rt-align-left   { text-align: left; }
+.prose .rt-align-center { text-align: center; }
+.prose .rt-align-right  { text-align: right; }

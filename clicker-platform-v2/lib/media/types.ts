@@ -4,6 +4,10 @@ export interface MediaItem {
     id: string;
     url: string;
     storagePath: string;
+    /** URL of the small (max-edge ~600px) variant used by admin thumbnails. Falls back to `url` when absent. */
+    thumbnailUrl?: string;
+    /** Storage path of the thumbnail blob, so deleteMedia can clean it up. */
+    thumbnailStoragePath?: string;
     fileName: string;
     mimeType: string;
     sizeBytes: number;

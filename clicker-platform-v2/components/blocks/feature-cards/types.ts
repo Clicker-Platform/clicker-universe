@@ -18,6 +18,11 @@ export interface FeatureCard {
 export interface FeatureCardsData {
     columns: 1 | 2 | 3 | 4;
     cards: FeatureCard[];
+    verticalSpacing?: 'none' | 'small' | 'medium' | 'tall';
+    horizontalPadding?: 'none' | 'normal' | 'wide';
+    /** Card corner radius. 'theme' (default) follows the template's --theme-radius;
+     *  any other value overrides it for every card in this block. */
+    cornerRadius?: 'theme' | 'none' | 'small' | 'medium' | 'large';
 }
 
 export function makeDefaultCard(): FeatureCard {

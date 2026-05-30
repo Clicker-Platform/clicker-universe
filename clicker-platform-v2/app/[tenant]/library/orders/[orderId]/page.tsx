@@ -1,8 +1,9 @@
-import { cookies } from 'next/headers';
 import { redirect, notFound } from 'next/navigation';
 import { adminAuth, adminDb } from '@/lib/firebase-admin';
 import { COLLECTION_ORDERS, publicRoutes } from '@/lib/modules/digital_goods/constants';
 import type { DigitalOrder } from '@/lib/modules/digital_goods/types';
+import { buyerNeedsOnboarding } from '@/lib/modules/digital_goods/server-api';
+import { getBuyerSessionCookie } from '@/lib/modules/digital_goods/session';
 import { OrderStatusClient } from './OrderStatusClient';
 
 export const revalidate = 0;
@@ -16,18 +17,22 @@ export default async function OrderStatusPage({
   const siteId = tenant;
   const routes = publicRoutes(tenant);
 
-  const cookieStore = await cookies();
-  const sessionCookie = cookieStore.get('__session')?.value;
+  const sessionCookie = await getBuyerSessionCookie();
   if (!sessionCookie) redirect(`${routes.login}?next=${encodeURIComponent(routes.orderStatus(orderId))}`);
 
   let decoded;
   try { decoded = await adminAuth.verifySessionCookie(sessionCookie, true); }
   catch { redirect(`${routes.login}?next=${encodeURIComponent(routes.orderStatus(orderId))}`); }
 
+  if (await buyerNeedsOnboarding(siteId, decoded!.uid)) {
+    redirect(`${routes.onboarding}?next=${encodeURIComponent(routes.orderStatus(orderId))}`);
+  }
+
   const snap = await adminDb.doc(`sites/${siteId}/${COLLECTION_ORDERS}/${orderId}`).get();
   if (!snap.exists) notFound();
-  const order = { id: snap.id, ...snap.data() } as DigitalOrder;
-  if (order.buyerId !== decoded!.uid) notFound();
+  const raw = snap.data() as DigitalOrder;
+  if (raw.buyerId !== decoded!.uid) notFound();
+  const order = JSON.parse(JSON.stringify({ ...raw, id: snap.id })) as DigitalOrder;
 
   return (
     <main className="min-h-screen bg-gray-50 p-6">

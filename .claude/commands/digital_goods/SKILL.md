@@ -18,11 +18,11 @@ This skill is invoked as `/digital_goods [action]`.
 
 ## 1. Status & Roadmap
 
-**Plan 1 — Foundation: SHIPPED.** Admin can create/edit/publish PDF or YouTube products, configure bank settings.
+**Plan 1 — Foundation: SHIPPED.** Admin can create/edit/publish PDF or YouTube products, configure bank/QRIS settings.
 
-**Plan 2 — Purchase flow: PENDING.** No buyer-facing flow yet (no /store, no checkout, no orders, no library).
+**Plan 2 — Purchase flow: SHIPPED (under audit).** Buyer flow is built: storefront (`/{tenant}/store`, `/{tenant}/store/[slug]`), magic-link login (`/{tenant}/store/login` + `/verify`), checkout, order status, gated library (`/{tenant}/library`, `/{tenant}/library/[entryId]`), buyer profile (`/{tenant}/profile`), admin Orders list + confirm/cancel, signed-URL PDF serving, and order/paid emails. Buyer identity lives at `modules/digital_goods/buyers/{uid}` (Firebase Auth session cookie). As of 2026-05-28 the module is being audited area-by-area; see memory `project_auth_cookie_collision` for the admin/buyer cookie-origin caveat.
 
-**Plan 3 — Polish: PENDING.** No loyalty integration, no already-purchased guard, no PostHog events.
+**Plan 3 — Polish: PARTIAL/PENDING.** Loyalty integration, already-purchased guard, and PostHog events not yet confirmed wired — verify before relying on them.
 
 ---
 
@@ -38,10 +38,16 @@ This skill is invoked as `/digital_goods [action]`.
 | Buyers Firestore (Plan 2) | `sites/{siteId}/modules/digital_goods/buyers/{uid}` |
 | Storage (PDFs) | `sites/{siteId}/modules/digital_goods/products/files/` |
 | Storage (QRIS) | `sites/{siteId}/modules/digital_goods/settings/` |
-| Admin list | `/admin/digital-goods` |
-| Admin new product | `/admin/digital-goods/products/new` |
-| Admin edit product | `/admin/digital-goods/products/edit?id=...` |
-| Admin settings | `/admin/digital-goods/settings` |
+| Admin Products list | `/admin/digital-goods` |
+| Admin Orders list | `/admin/digital-goods/orders` |
+| Admin Settings | `/admin/digital-goods/settings` |
+| Buyer storefront | `/{tenant}/store`, `/{tenant}/store/[slug]` |
+| Buyer checkout | `/{tenant}/store/[slug]/checkout` |
+| Buyer login | `/{tenant}/store/login` (+ `/verify`) — module-owned, NOT `/member/login` |
+| Buyer library | `/{tenant}/library`, `/{tenant}/library/[entryId]` |
+| Buyer order status | `/{tenant}/library/orders/[orderId]` |
+| Buyer profile | `/{tenant}/profile` |
+| Buyer APIs | `/api/digital-goods/{auth,buyer,checkout,orders,files,lookup-library}` |
 
 ---
 
@@ -50,38 +56,51 @@ This skill is invoked as `/digital_goods [action]`.
 - **Single buyer identity** at `modules/digital_goods/buyers/{uid}` (Plan 2). **No dependency on membership module for identity.**
 - **Loyalty integration** (Plan 3) is opt-in via the `membership` module facade — fire-and-forget after a paid order. No `Member` doc creation in Plan 1.
 - **All Firestore reads/writes** use constants from `constants.ts`. Never hardcode paths.
-- **Cover images and QRIS upload** via existing `lib/upload.ts` `uploadToStorage` (returns `{ url, path, contentType, sizeBytes }`).
-- **PDF storage paths** are returned by `uploadToStorage().path` and stored on the Product's `files[]` array. Plan 2 will serve via signed URLs.
+- **Cover images and QRIS upload** via existing `lib/upload.ts` `uploadToStorage({ file, folder, siteId })` (returns `{ url, path, contentType, sizeBytes }`). `coverImage` and `qrisImageUrl` store the public `.url`; PDFs store the private `.path` (served via signed URL).
+- **PDF storage paths** (`PdfFile.storagePath`) are kept private and served through `/api/digital-goods/files/[fileId]` which mints a short-lived signed URL.
 
 ---
 
 ## 4. Key Types (`lib/modules/digital_goods/types.ts`)
 
-### `Product`
+Timestamp fields use the client-SDK `Timestamp` (`firebase/firestore`), matching every other module; server code writes `FieldValue.serverTimestamp()` and reads via `as Type` casts.
+
+### `DigitalProduct`
 
 | Field | Type | Notes |
 |---|---|---|
 | `id` | `string` | Firestore doc ID |
-| `name` | `string` | Product title |
-| `description` | `string` | Rich text (Tiptap) |
-| `price` | `number` | In IDR |
-| `type` | `'pdf' \| 'youtube'` | Product type |
-| `files` | `Array<{path, url, name, sizeBytes}>` | PDFs only |
-| `youtubeUrl` | `string?` | YouTube unlisted URL (Plan 2 validates as unlisted) |
-| `coverImage` | `{url, path}?` | Cover image uploaded to Storage |
-| `published` | `boolean` | Draft vs. published state |
-| `createdAt` | `Timestamp` | Server-set |
-| `updatedAt` | `Timestamp` | Server-set |
+| `type` | `ProductType` (`'single'`) | Plan 1 only; future `'bundle' \| 'course'` |
+| `title` | `string` | Product title |
+| `description` | `string` | Markdown |
+| `coverImage` | `string?` | Public URL (from MediaPicker) |
+| `price` | `number` | Integer IDR |
+| `currency` | `'IDR'` | |
+| `contentKind` | `'pdf' \| 'youtube'` | |
+| `files` | `ProductFile[]` | Discriminated union `PdfFile \| YouTubeFile`; Plan 1 length === 1 |
+| `slug` | `string` | URL-safe, unique per site |
+| `status` | `'draft' \| 'published'` | |
+| `createdAt` / `updatedAt` | `Timestamp` | Server-set |
+| `publishedAt` | `Timestamp?` | |
 
-### `Settings`
+`PdfFile` = `{ id, kind: 'pdf', name, storagePath, sizeBytes, mimeType }` (private path, signed-URL served).
+`YouTubeFile` = `{ id, kind: 'youtube', url, title? }`.
+
+### `DigitalGoodsSettings`
 
 | Field | Type | Notes |
 |---|---|---|
-| `bankAccountName` | `string` | Account holder name |
-| `bankName` | `string` | Bank name (e.g., "BCA") |
-| `bankAccountNumber` | `string` | Account number (masked in UI) |
-| `qrisCode` | `{url, path}?` | QRIS code image |
-| `manualTransferInstructions` | `string` | Rich text instructions |
+| `bankName` | `string` | Bank name (e.g. "BCA") |
+| `accountNumber` | `string` | Account number |
+| `accountName` | `string` | Account holder name |
+| `qrisImageUrl` | `string?` | Public Storage URL — static QRIS, shown on checkout |
+| `updatedAt` | `Timestamp?` | |
+
+### Other key types
+
+- `DigitalOrder` — has `productSnapshot` (denormalized), `status` (`pending \| awaiting_confirmation \| paid \| cancelled`), `paymentInstructions`, `buyerId`/`buyerEmail?`. State transitions guarded by `canTransition`.
+- `LibraryEntry` — gated content access; created on order `paid`. Has `productSnapshot`, `orderId`, `purchasedAt`.
+- `DigitalGoodsBuyer` — `{ uid, email, fullName?, createdAt, updatedAt }`, auto-provisioned at `modules/digital_goods/buyers/{uid}` on first authed visit.
 
 ---
 
@@ -97,16 +116,16 @@ This skill is invoked as `/digital_goods [action]`.
 ## 6. Common Tasks
 
 ### Add a new admin field to a product
-1. Edit `lib/modules/digital_goods/types.ts` → add field to `Product` interface.
-2. Edit `lib/modules/digital_goods/admin/components/ProductForm.tsx` → add input.
-3. Update `lib/modules/digital_goods/admin/hooks/useProductForm.ts` if validation needed.
-4. Test: `/admin/digital-goods/products/new` and `/admin/digital-goods/products/edit?id=...`
+1. Edit `lib/modules/digital_goods/types.ts` → add field to `DigitalProduct` interface.
+2. Edit `lib/modules/digital_goods/admin/components/ProductForm.tsx` → add input + form state + save mapping (validation is inline in this component; there is no separate hook).
+3. Persist via `lib/modules/digital_goods/api.ts` (client) if a new write path is needed.
+4. Test in the ProductForm flow reached from `/admin/digital-goods`.
 
 ### Add a new admin route
-1. Register in `lib/modules/definitions.ts` → add to `digitalGoodsModuleDefinition.adminRoutes[]`.
-2. Register in `lib/modules/components.tsx` → add to `digitalGoodsAdminRoutes` with lazy-loaded component.
-3. Create the route file under `lib/modules/digital_goods/admin/routes/`.
-4. Test 3-way parity: definitions, components, and ensure Firestore module doc at `modules/digital_goods` exists with `{ id, displayName: "Digital Goods", enabled: true, icon, version }`.
+1. Register in `lib/modules/definitions.ts` → add an entry to the `'digital_goods'.adminRoutes[]` array. Only add a `permission` field for owner-restricted routes (e.g. Settings); content routes omit it so they fall back to grantable `hasAccess()`.
+2. Register the component in `lib/modules/components.tsx` → add a `dynamic()` import and map a `'digital_goods:Key'` entry.
+3. Create the page component under `lib/modules/digital_goods/admin/` (pages live directly here, e.g. `OrdersListPage.tsx`; shared bits go in `admin/components/`).
+4. Keep `scripts/seed-modules.ts` adminRoutes in sync, and ensure the Firestore module doc at `modules/digital_goods` exists with `{ id, displayName: "Digital Goods", enabled: true, icon, version }`.
 
 ### Tighten Firestore security
 Edit `firestore.rules` and deploy to `clicker-universe-stagging` with `--project clicker-universe-stagging`.
@@ -115,7 +134,7 @@ Edit `firestore.rules` and deploy to `clicker-universe-stagging` with `--project
 
 ## 7. Reference
 
-- **Upload utility:** `lib/upload.ts` → `uploadToStorage(siteId, path, file)` returns `{ url, path, contentType, sizeBytes }`
+- **Upload utility:** `lib/upload.ts` → `uploadToStorage({ file, folder, siteId })` returns `{ url, path, contentType, sizeBytes }`
 - **Module registry:** `sites/{siteId}/modules/digital_goods` (module doc must exist for admin sidebar)
 - **Client-side multi-tenancy:** Always use `useSite()` → `siteId` for all paths
 - **RBAC:** Call `canEdit()` before writes in client components

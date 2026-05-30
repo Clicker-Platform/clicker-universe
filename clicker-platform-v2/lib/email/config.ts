@@ -16,6 +16,7 @@ const DEFAULTS: EmailPlatformConfig = {
   templates: {
     digitalGoodsNewOrderTenant: 'digital-goods-new-order-tenant',
     digitalGoodsOrderPaidBuyer: 'digital-goods-order-paid-buyer',
+    authMagicLink: 'auth-magic-link',
   },
   sender: {
     domain:    'clicker.id',

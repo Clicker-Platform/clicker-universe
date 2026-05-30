@@ -11,8 +11,10 @@ interface UploadOptions {
     siteId?: string;
     /** Convert to modern format before upload. Defaults to true for image/* files. */
     convertToWebP?: boolean;
-    /** Encoding quality 0–1. Defaults to 0.85. */
+    /** Encoding quality 0–1. Defaults to 0.92. */
     webpQuality?: number;
+    /** If set, the image is downscaled (preserving aspect ratio) so its longest edge ≤ this value before encoding. Caps both width and height — works for portrait, landscape, and square images. */
+    maxWidth?: number;
 }
 
 /**
@@ -31,22 +33,31 @@ function canvasToBlob(canvas: HTMLCanvasElement, mimeType: string, quality: numb
  * Converts an image File to WebP (preferred) or AVIF (fallback).
  * Throws if neither format is supported by the browser.
  */
-async function convertImage(file: File, quality = 0.85): Promise<{ blob: Blob; ext: string; contentType: string }> {
+async function convertImage(
+    file: File,
+    quality = 0.92,
+    maxWidth?: number,
+): Promise<{ blob: Blob; ext: string; contentType: string }> {
     return new Promise((resolve, reject) => {
         const img = new Image();
         const url = URL.createObjectURL(file);
 
         img.onload = async () => {
             URL.revokeObjectURL(url);
+            // Cap the longest edge (not just width) so portrait images shrink too.
+            const longest = Math.max(img.naturalWidth, img.naturalHeight);
+            const scale = maxWidth && longest > maxWidth ? maxWidth / longest : 1;
+            const w = Math.round(img.naturalWidth * scale);
+            const h = Math.round(img.naturalHeight * scale);
             const canvas = document.createElement('canvas');
-            canvas.width = img.naturalWidth;
-            canvas.height = img.naturalHeight;
+            canvas.width = w;
+            canvas.height = h;
             const ctx = canvas.getContext('2d');
             if (!ctx) {
                 reject(new Error('Canvas 2D context unavailable'));
                 return;
             }
-            ctx.drawImage(img, 0, 0);
+            ctx.drawImage(img, 0, 0, w, h);
 
             // Try WebP first, fall back to AVIF
             const webp = await canvasToBlob(canvas, 'image/webp', quality);
@@ -84,15 +95,22 @@ export async function uploadToStorage({
     folder,
     siteId,
     convertToWebP = true,
-    webpQuality = 0.85,
+    webpQuality = 0.92,
+    maxWidth,
 }: UploadOptions): Promise<{ url: string; contentType: string; sizeBytes: number; path: string }> {
     const storagePrefix = (!siteId || siteId === 'platform')
         ? folder
         : `sites/${siteId}/${folder}`;
 
-    const shouldConvert = convertToWebP && file.type.startsWith('image/') && file.type !== 'image/gif';
+    // Skip re-encoding for files already in efficient formats. Canvas re-encoding
+    // is lossy — running an already-compressed WebP/AVIF through it just degrades
+    // quality for no compression benefit.
+    const SKIP_FORMATS = new Set(['image/webp', 'image/avif', 'image/gif', 'image/svg+xml']);
+    const shouldConvert = convertToWebP
+        && file.type.startsWith('image/')
+        && !SKIP_FORMATS.has(file.type);
     const { blob, ext, contentType } = shouldConvert
-        ? await convertImage(file, webpQuality)
+        ? await convertImage(file, webpQuality, maxWidth)
         : { blob: file, ext: file.name.split('.').pop() || 'jpg', contentType: file.type };
 
     const fileName = `${storagePrefix}/${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;

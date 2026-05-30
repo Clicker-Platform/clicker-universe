@@ -17,6 +17,7 @@ import {
 } from '@/components/blocks/content-showcase/types';
 import { MediaField } from '@/components/admin/blocks/media-field/MediaField';
 import { ConfirmationDialog } from '@/components/common/ConfirmationDialog';
+import { SelectMenu } from './SelectMenu';
 
 const RichTextEditor = dynamic(
     () => import('../rich-text/RichTextEditor').then((m) => m.RichTextEditor),
@@ -102,38 +103,62 @@ export function ContentShowcaseForm({ data, onChange }: Props) {
                 <div className="grid grid-cols-2 gap-3">
                     <div>
                         <label className={labelClass}>Max Width</label>
-                        <select value={safe.maxWidth} onChange={(e) => update({ maxWidth: e.target.value as ShowcaseMaxWidth })} className={inputClass}>
-                            <option value="sm">Small</option>
-                            <option value="md">Medium</option>
-                            <option value="lg">Large</option>
-                            <option value="xl">Extra Large</option>
-                            <option value="full">Full Width</option>
-                        </select>
+                        <SelectMenu
+                            value={safe.maxWidth}
+                            onChange={(v) => update({ maxWidth: v as ShowcaseMaxWidth })}
+                            searchable={false}
+                            allowClear={false}
+                            options={[
+                                { value: 'sm', label: 'Small' },
+                                { value: 'md', label: 'Medium' },
+                                { value: 'lg', label: 'Large' },
+                                { value: 'xl', label: 'Extra Large' },
+                                { value: 'full', label: 'Full Width' },
+                            ]}
+                        />
                     </div>
                     <div>
                         <label className={labelClass}>Row Gap</label>
-                        <select value={safe.rowGap} onChange={(e) => update({ rowGap: e.target.value as ShowcaseRowGap })} className={inputClass}>
-                            <option value="sm">Small</option>
-                            <option value="md">Medium</option>
-                            <option value="lg">Large</option>
-                            <option value="xl">Extra Large</option>
-                        </select>
+                        <SelectMenu
+                            value={safe.rowGap}
+                            onChange={(v) => update({ rowGap: v as ShowcaseRowGap })}
+                            searchable={false}
+                            allowClear={false}
+                            options={[
+                                { value: 'sm', label: 'Small' },
+                                { value: 'md', label: 'Medium' },
+                                { value: 'lg', label: 'Large' },
+                                { value: 'xl', label: 'Extra Large' },
+                            ]}
+                        />
                     </div>
                     <div>
                         <label className={labelClass}>Vertical Align</label>
-                        <select value={safe.verticalAlign} onChange={(e) => update({ verticalAlign: e.target.value as ShowcaseVerticalAlign })} className={inputClass}>
-                            <option value="top">Top</option>
-                            <option value="center">Center</option>
-                            <option value="bottom">Bottom</option>
-                        </select>
+                        <SelectMenu
+                            value={safe.verticalAlign}
+                            onChange={(v) => update({ verticalAlign: v as ShowcaseVerticalAlign })}
+                            searchable={false}
+                            allowClear={false}
+                            options={[
+                                { value: 'top', label: 'Top' },
+                                { value: 'center', label: 'Center' },
+                                { value: 'bottom', label: 'Bottom' },
+                            ]}
+                        />
                     </div>
                     <div>
                         <label className={labelClass}>Default Layout</label>
-                        <select value={safe.defaultLayout} onChange={(e) => update({ defaultLayout: e.target.value as ShowcaseLayout })} className={inputClass}>
-                            <option value="alternate">Alternate</option>
-                            <option value="image-left">Image Left</option>
-                            <option value="image-right">Image Right</option>
-                        </select>
+                        <SelectMenu
+                            value={safe.defaultLayout}
+                            onChange={(v) => update({ defaultLayout: v as ShowcaseLayout })}
+                            searchable={false}
+                            allowClear={false}
+                            options={[
+                                { value: 'alternate', label: 'Alternate' },
+                                { value: 'image-left', label: 'Image Left' },
+                                { value: 'image-right', label: 'Image Right' },
+                            ]}
+                        />
                     </div>
                 </div>
 
@@ -338,15 +363,17 @@ function RowCard({ row, index, totalRows, expanded, onToggle, onChange, onDelete
                     <div className="grid grid-cols-1 gap-3 pt-3 border-t border-gray-200 dark:border-neutral-800">
                         <div>
                             <label className={labelClass}>Layout (this row)</label>
-                            <select
+                            <SelectMenu
                                 value={row.layout}
-                                onChange={(e) => onChange({ layout: e.target.value as RowLayout })}
-                                className={inputClass}
-                            >
-                                <option value="inherit">Inherit block default</option>
-                                <option value="image-left">Image Left</option>
-                                <option value="image-right">Image Right</option>
-                            </select>
+                                onChange={(v) => onChange({ layout: v as RowLayout })}
+                                searchable={false}
+                                allowClear={false}
+                                options={[
+                                    { value: 'inherit', label: 'Inherit block default' },
+                                    { value: 'image-left', label: 'Image Left' },
+                                    { value: 'image-right', label: 'Image Right' },
+                                ]}
+                            />
                         </div>
 
                         <div className="flex items-center justify-between gap-2">
@@ -407,16 +434,17 @@ function RowCard({ row, index, totalRows, expanded, onToggle, onChange, onDelete
                                 </div>
                                 <div className="col-span-2">
                                     <label className={labelClass}>Style</label>
-                                    <select
+                                    <SelectMenu
                                         value={cta.variant}
-                                        onChange={(e) => onChange({ cta: { ...cta, variant: e.target.value as CtaVariant } })}
-                                        className={inputClass}
-                                    >
-                                        <option value="primary">Primary</option>
-                                        <option value="secondary">Secondary</option>
-                                        <option value="ghost">Ghost</option>
-                                        <option value="link">Link</option>
-                                    </select>
+                                        onChange={(v) => onChange({ cta: { ...cta, variant: v as CtaVariant } })}
+                                        searchable={false}
+                                        allowClear={false}
+                                        options={[
+                                            { value: 'primary', label: 'Primary' },
+                                            { value: 'secondary', label: 'Secondary' },
+                                            { value: 'tertiary', label: 'Tertiary' },
+                                        ]}
+                                    />
                                 </div>
                             </div>
                         )}

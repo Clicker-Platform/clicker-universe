@@ -16,7 +16,7 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
   const bccList = toArray(input.bcc);
 
   const context = await getEmailContext(input.siteId);
-  const sender = resolveDefaultSender();
+  const sender = await resolveDefaultSender();
   const fromHeader = formatFrom(context.fromName, sender);
   const replyTo = input.replyTo ?? context.replyTo ?? undefined;
 

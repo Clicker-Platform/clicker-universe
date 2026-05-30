@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useSite } from '@/lib/site-context';
+import { SelectMenu } from './SelectMenu';
 
 export type LinkType = 'page' | 'form' | 'url';
 
@@ -63,26 +64,22 @@ export const LinkPicker = ({ value, onChange, label = 'Link Type' }: LinkPickerP
                 ))}
             </div>
             {type === 'form' ? (
-                <select
+                <SelectMenu
                     value={value.formId || ''}
-                    onChange={(e) => onChange({ ...value, type: 'form', formId: e.target.value, url: '', pageId: null })}
-                    className={`${inputClass} font-medium appearance-none cursor-pointer`}
-                >
-                    <option value="">— Select Form —</option>
-                    {forms.map(f => <option key={f.id} value={f.id}>{f.title}</option>)}
-                </select>
+                    placeholder="— Select Form —"
+                    options={forms.map(f => ({ value: f.id, label: f.title || 'Untitled' }))}
+                    onChange={(formId) => onChange({ ...value, type: 'form', formId: formId || null, url: '', pageId: null })}
+                />
             ) : type === 'page' ? (
-                <select
+                <SelectMenu
                     value={value.pageId || ''}
-                    onChange={(e) => {
-                        const page = pages.find(p => p.id === e.target.value);
-                        onChange({ ...value, type: 'page', pageId: e.target.value, url: page ? `/${page.slug}` : '', formId: null });
+                    placeholder="— Select Page —"
+                    options={pages.map(p => ({ value: p.id, label: p.title || 'Untitled', hint: `/${p.slug}` }))}
+                    onChange={(pageId) => {
+                        const page = pages.find(p => p.id === pageId);
+                        onChange({ ...value, type: 'page', pageId: pageId || null, url: page ? `/${page.slug}` : '', formId: null });
                     }}
-                    className={`${inputClass} font-medium appearance-none cursor-pointer`}
-                >
-                    <option value="">— Select Page —</option>
-                    {pages.map(p => <option key={p.id} value={p.id}>{p.title} (/{p.slug})</option>)}
-                </select>
+                />
             ) : (
                 <input
                     type="text"

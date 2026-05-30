@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { useDeviceView, dv, type DeviceView } from '@/components/DeviceViewContext';
+import { useDeviceView, dv } from '@/components/DeviceViewContext';
 import { sanitizeRichText } from '@/lib/sanitizeHtml';
 import {
     ContentShowcaseData,
@@ -14,8 +14,9 @@ import {
 import { MediaView } from './MediaView';
 import { useTemplate } from '@/components/TemplateProvider';
 import { getHeadingColor } from './cardStyles';
-import { H2, BUTTON_TEXT } from './typography';
+import { H2 } from './typography';
 import { getProseClass } from './proseConfig';
+import { UnifiedButton } from '@/components/ui/UnifiedButton';
 
 function normalizeRow(row: Partial<ShowcaseRow>, i: number): ShowcaseRow {
     const base: ShowcaseRow = {
@@ -54,49 +55,6 @@ function resolveRowLayout(row: ShowcaseRow, rowIndex: number, defaultLayout: Con
 function isSafeHref(href: string | undefined | null): boolean {
     if (!href) return false;
     return /^(https?:\/\/|\/|#|mailto:|tel:)/i.test(href);
-}
-
-function ctaProps(variant: string, primaryContrastColor: string, deviceView: DeviceView): { className: string; style: React.CSSProperties } {
-    const base = `inline-flex items-center gap-1.5 ${BUTTON_TEXT(deviceView)} transition-opacity hover:opacity-90`;
-    const padded = `${base} px-5 py-2.5`;
-    const radiusSm = 'calc(var(--theme-radius) * 0.6)';
-
-    switch (variant) {
-        case 'primary':
-            return {
-                className: padded,
-                style: {
-                    backgroundColor: 'var(--theme-primary)',
-                    color: primaryContrastColor,
-                    borderRadius: radiusSm,
-                },
-            };
-        case 'secondary':
-            return {
-                className: padded,
-                style: {
-                    backgroundColor: 'var(--theme-foreground)',
-                    color: 'var(--theme-background)',
-                    borderRadius: radiusSm,
-                },
-            };
-        case 'ghost':
-            return {
-                className: `${padded} border-2 hover:bg-[var(--theme-primary)]/10 transition-colors`,
-                style: {
-                    borderColor: 'var(--theme-primary)',
-                    color: 'var(--theme-primary)',
-                    borderRadius: radiusSm,
-                },
-            };
-        case 'link':
-            return {
-                className: `${base} underline-offset-4 hover:underline`,
-                style: { color: 'var(--theme-primary)' },
-            };
-        default:
-            return { className: '', style: {} };
-    }
 }
 
 export const DefaultContentShowcaseBlock = ({ data, isFirst = false }: { data: unknown; isFirst?: boolean }) => {
@@ -145,12 +103,6 @@ function ShowcaseRowView({
     const layout = resolveRowLayout(row, index, showcase.defaultLayout);
     const isLeft = layout === 'image-left';
 
-    // Contrast color for text/icons on top of theme.primary (CTA primary variant).
-    const primaryContrastColor =
-        theme.colors.accentForeground ??
-        (theme.colors.accent && theme.colors.accent !== theme.colors.primary ? theme.colors.accent : undefined) ??
-        theme.colors.background ??
-        '#ffffff';
     const mediaWidth = Math.max(25, Math.min(75, row.mediaColumnWidth ?? showcase.mediaColumnWidth));
     const contentWidth = 100 - mediaWidth;
 
@@ -197,17 +149,14 @@ function ShowcaseRowView({
             {row.cta?.enabled && row.cta.label && (() => {
                 const href = isSafeHref(row.cta.href) ? row.cta.href : '#';
                 const isExternal = /^https?:\/\//i.test(href);
-                const cta = ctaProps(row.cta.variant, primaryContrastColor, d);
                 return (
-                    <a
+                    <UnifiedButton
+                        tier={row.cta.variant}
                         href={href}
-                        className={cta.className}
-                        style={cta.style}
-                        target={isExternal ? '_blank' : undefined}
-                        rel={isExternal ? 'noopener noreferrer' : undefined}
+                        external={isExternal}
                     >
                         {row.cta.label}
-                    </a>
+                    </UnifiedButton>
                 );
             })()}
         </div>

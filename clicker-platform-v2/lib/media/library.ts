@@ -47,7 +47,9 @@ export async function registerMedia({
     tags?: string[];
     uploadedBy: string;
 }): Promise<MediaItem> {
-    const { url, contentType, sizeBytes } = await uploadToStorage({ file, folder: 'media', siteId, convertToWebP: true });
+    const { url, contentType, sizeBytes } = await uploadToStorage({
+        file, folder: 'media', siteId, convertToWebP: true, maxWidth: 1920,
+    });
     const dims = await readImageDimensions(file);
     const colRef = collection(db, 'sites', siteId, 'mediaLibrary');
     const docRef = doc(colRef);
@@ -179,9 +181,16 @@ export async function deleteMedia(
         if (usages.length > 0) throw new MediaInUseError(usages);
     }
 
-    await deleteObject(storageRef(storage, item.storagePath)).catch(() => {
-        // Storage object may already be gone — non-fatal
-    });
+    const paths = [item.storagePath, item.thumbnailStoragePath].filter(
+        (p): p is string => typeof p === 'string' && p.length > 0,
+    );
+    await Promise.all(
+        paths.map(p =>
+            deleteObject(storageRef(storage, p)).catch(() => {
+                // Storage object may already be gone — non-fatal
+            }),
+        ),
+    );
     await deleteDoc(ref);
 }
 

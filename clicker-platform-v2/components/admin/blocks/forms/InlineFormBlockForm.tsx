@@ -5,6 +5,7 @@ import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useSite } from '@/lib/site-context';
 import { Form } from '@/data/mockData';
+import { SelectMenu } from './SelectMenu';
 
 interface Props {
     data: any;
@@ -52,18 +53,12 @@ export function InlineFormBlockForm({ data, onChange }: Props) {
                         No published forms yet — create one in Forms.
                     </p>
                 ) : (
-                    <select
+                    <SelectMenu
                         value={safe.formId || ''}
-                        onChange={(e) => handle('formId', e.target.value)}
-                        className={`${inputCls} appearance-none cursor-pointer`}
-                    >
-                        <option value="">Select a form...</option>
-                        {forms.map((f) => (
-                            <option key={f.id} value={f.id}>
-                                {f.title}
-                            </option>
-                        ))}
-                    </select>
+                        onChange={(v) => handle('formId', v)}
+                        placeholder="Select a form…"
+                        options={forms.map((f) => ({ value: f.id, label: f.title || 'Untitled' }))}
+                    />
                 )}
             </div>
 

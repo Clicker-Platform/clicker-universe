@@ -7,6 +7,7 @@ import { LinkItem } from '@/data/mockData';
 import { Loader2, Palette, RotateCcw } from 'lucide-react';
 import { useSite } from '@/lib/site-context';
 import { TemplateContext } from '@/components/TemplateProvider';
+import { SelectMenu } from './SelectMenu';
 
 interface LinkBlockFormProps {
     data: any;
@@ -41,8 +42,8 @@ export const LinkBlockForm = ({ data, onChange }: LinkBlockFormProps) => {
         fetchLinks();
     }, [siteId]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        onChange({ ...safeData, linkId: e.target.value });
+    const handleChange = (value: string) => {
+        onChange({ ...safeData, linkId: value });
     };
 
     if (loading) {
@@ -57,18 +58,15 @@ export const LinkBlockForm = ({ data, onChange }: LinkBlockFormProps) => {
                 <p className="text-xs text-neutral-400 dark:text-neutral-500 mb-4 leading-relaxed">
                     Choose an existing link from your Links page to display here.
                 </p>
-                <select
+                <SelectMenu
                     value={safeData.linkId || ''}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 bg-gray-50 dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-lg text-sm font-bold text-neutral-900 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none appearance-none cursor-pointer"
-                >
-                    <option value="" className="bg-gray-50 dark:bg-neutral-900 text-neutral-400">-- Select a Link --</option>
-                    {links.map(link => (
-                        <option key={link.id} value={link.id} className="bg-gray-50 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-200">
-                            {link.title} {link.subtitle ? `(${link.subtitle})` : ''}
-                        </option>
-                    ))}
-                </select>
+                    placeholder="-- Select a Link --"
+                    options={links.map(link => ({
+                        value: link.id,
+                        label: `${link.title}${link.subtitle ? ` (${link.subtitle})` : ''}`,
+                    }))}
+                />
                 {links.length === 0 && (
                     <div className="mt-3 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
                         <p className="text-xs font-bold text-red-400 leading-relaxed">

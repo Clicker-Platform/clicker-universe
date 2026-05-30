@@ -9,6 +9,7 @@ import { detectVideoProvider } from '@/components/admin/blocks/rich-text/VideoEm
 import { getRecommendedSize, isBelowRecommended } from '@/lib/media/recommendations';
 import { MediaPicker } from '@/components/admin/media/MediaPicker';
 import type { MediaItem } from '@/lib/media/types';
+import { SelectMenu } from '../forms/SelectMenu';
 
 interface MediaFieldProps {
     value?: MediaFieldValue;
@@ -264,28 +265,32 @@ export function MediaField({ value, onChange }: MediaFieldProps) {
                 <div className="grid grid-cols-2 gap-2 pt-2 border-t border-gray-200 dark:border-neutral-800">
                     <div>
                         <label className={labelClass}>Aspect</label>
-                        <select
+                        <SelectMenu
                             value={media.aspectRatio || '16:9'}
-                            onChange={(e) => update({ aspectRatio: e.target.value as MediaAspectRatio })}
-                            className={inputClass}
-                        >
-                            <option value="16:9">16:9</option>
-                            <option value="4:3">4:3</option>
-                            <option value="square">Square</option>
-                            <option value="3:4">3:4</option>
-                            <option value="free">Free</option>
-                        </select>
+                            onChange={(v) => update({ aspectRatio: v as MediaAspectRatio })}
+                            searchable={false}
+                            allowClear={false}
+                            options={[
+                                { value: '16:9', label: '16:9' },
+                                { value: '4:3', label: '4:3' },
+                                { value: 'square', label: 'Square' },
+                                { value: '3:4', label: '3:4' },
+                                { value: 'free', label: 'Free' },
+                            ]}
+                        />
                     </div>
                     <div>
                         <label className={labelClass}>Fit</label>
-                        <select
+                        <SelectMenu
                             value={media.objectFit || 'cover'}
-                            onChange={(e) => update({ objectFit: e.target.value as MediaObjectFit })}
-                            className={inputClass}
-                        >
-                            <option value="cover">Cover</option>
-                            <option value="contain">Contain</option>
-                        </select>
+                            onChange={(v) => update({ objectFit: v as MediaObjectFit })}
+                            searchable={false}
+                            allowClear={false}
+                            options={[
+                                { value: 'cover', label: 'Cover' },
+                                { value: 'contain', label: 'Contain' },
+                            ]}
+                        />
                     </div>
                 </div>
             )}

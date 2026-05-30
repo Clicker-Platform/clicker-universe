@@ -28,6 +28,14 @@ import { dv, type DeviceView } from '@/components/DeviceViewContext';
 // Headings — H1–H4
 // ──────────────────────────────────────────────────────────────────────────────
 
+/** Display 3XL — oversized hero/landing headline, one tier above 2XL. */
+export const DISPLAY_3XL = (deviceView: DeviceView) =>
+    `${dv(deviceView, 'text-6xl', 'md:text-8xl')} font-extrabold leading-[0.95] tracking-tight`;
+
+/** Display 2XL — large hero headline, one tier above H1. */
+export const DISPLAY_2XL = (deviceView: DeviceView) =>
+    `${dv(deviceView, 'text-5xl', 'md:text-7xl')} font-extrabold leading-tight tracking-tight`;
+
 /** Display — Hero title, page-level headline. */
 export const H1 = (deviceView: DeviceView) =>
     `${dv(deviceView, 'text-4xl', 'md:text-6xl')} font-extrabold leading-tight tracking-tight`;
@@ -70,6 +78,26 @@ export const BODY = (_deviceView: DeviceView) => 'text-base font-normal leading-
 
 /** Caption / secondary — price, address, helper text. */
 export const BODY_SM = (_deviceView: DeviceView) => 'text-sm font-normal leading-normal';
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Sub-heading scale — supporting text that sits below a heading. Deliberately
+// pitched ABOVE body but BELOW the heading tiers, so a sub-heading reads as a
+// lead/standfirst rather than a paragraph. Four presets (S/M/L/XL); M is the
+// default. Weight/style (bold, underline) are layered on separately at the call
+// site so this stays a pure size scale.
+// ──────────────────────────────────────────────────────────────────────────────
+
+// Size only — no font-weight here. Weight is applied separately at the call site
+// (font-normal / font-bold) so the bold toggle isn't fighting a baked-in weight
+// class of equal specificity (whichever Tailwind emits last would win otherwise).
+export const SUBHEADING_SIZE = {
+    s:  (deviceView: DeviceView) => `${dv(deviceView, 'text-base', 'md:text-lg')} leading-snug`,
+    m:  (deviceView: DeviceView) => `${dv(deviceView, 'text-lg', 'md:text-xl')} leading-snug`,
+    l:  (deviceView: DeviceView) => `${dv(deviceView, 'text-xl', 'md:text-2xl')} leading-snug`,
+    xl: (deviceView: DeviceView) => `${dv(deviceView, 'text-2xl', 'md:text-3xl')} leading-snug`,
+} as const;
+
+export type SubheadingSize = keyof typeof SUBHEADING_SIZE;
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Emphasis weights (use sparingly, only when default weight needs strengthening)

@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Buyer Journey — Digital Goods</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .lane-buyer { background: #eff6ff; }
+  .lane-server { background: #f5f3ff; }
+  .lane-tenant { background: #fef3c7; }
+  .arrow-down::after {
+    content: ""; display: block; width: 2px; height: 28px; margin: 6px auto;
+    background: linear-gradient(180deg, #94a3b8 0%, #94a3b8 100%);
+    position: relative;
+  }
+  .arrow-down { position: relative; }
+  .arrow-down::before {
+    content: ""; position: absolute; left: 50%; transform: translateX(-50%); bottom: -2px;
+    width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent;
+    border-top: 8px solid #94a3b8;
+  }
+  .step-pill { font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+<div class="max-w-6xl mx-auto p-6 md:p-10">
+
+  <header class="mb-8">
+    <div class="text-xs uppercase tracking-wider text-gray-500 mb-1">
+      <a href="index.html" class="hover:underline">Wireframes</a> · Buyer Journey
+    </div>
+    <h1 class="text-3xl font-bold">Browse → Checkout → Download</h1>
+    <p class="text-sm text-gray-600 mt-2 max-w-3xl">
+      End-to-end buyer flow for the Digital Goods module. Every route is tenant-scoped under
+      <code class="bg-gray-200 px-1.5 py-0.5 rounded text-xs">/{tenant}/</code>. Auth uses a
+      <code class="bg-gray-200 px-1.5 py-0.5 rounded text-xs">__session</code> cookie issued
+      after a Firebase Auth magic-link.
+    </p>
+  </header>
+
+  <!-- ───────── Entry points ───────── -->
+  <section class="mb-8 bg-white border rounded-xl p-5">
+    <h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">Two entry points lead to the same login</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+      <div class="border border-blue-200 lane-buyer rounded-lg p-4">
+        <div class="font-bold text-blue-800 mb-1">A · First-time purchase</div>
+        <div class="text-xs text-gray-700 mb-2">Buyer browses → clicks Buy → must sign in to check out.</div>
+        <div class="text-[11px] font-mono text-blue-700">/store → /store/[slug] → login → checkout</div>
+        <div class="text-[11px] text-gray-500 mt-2">Follows steps <strong>1 → 2 → 3 → 4 → 5 → 6</strong> below.</div>
+      </div>
+      <div class="border border-blue-200 lane-buyer rounded-lg p-4">
+        <div class="font-bold text-blue-800 mb-1">B · Returning buyer · check library</div>
+        <div class="text-xs text-gray-700 mb-2">Bookmark / email link / typed URL. No checkout in flight.</div>
+        <div class="text-[11px] font-mono text-blue-700">/library  →  (if no cookie)  /store/login?next=/library  →  back to /library</div>
+        <div class="text-[11px] text-gray-500 mt-2">Server-side redirect at <code>library/page.tsx:32</code>. Skips steps 1, 2, 4, 5. Goes straight to step <strong>3 → 6</strong> (library list, not single entry).</div>
+      </div>
+    </div>
+    <div class="mt-4 text-[11px] text-gray-600 bg-gray-50 border border-gray-200 rounded p-3">
+      <strong>Note:</strong> there is no separate "library login" route. <code>/store/login</code> is the single buyer login. The <code>?next=</code> query param controls where they land after verifying.
+    </div>
+  </section>
+
+  <!-- Legend -->
+  <div class="mb-8 flex flex-wrap items-center gap-4 text-xs">
+    <div class="flex items-center gap-2"><span class="w-3 h-3 rounded lane-buyer border border-blue-300"></span>Buyer browser (client)</div>
+    <div class="flex items-center gap-2"><span class="w-3 h-3 rounded lane-server border border-violet-300"></span>Server / Firestore</div>
+    <div class="flex items-center gap-2"><span class="w-3 h-3 rounded lane-tenant border border-amber-300"></span>Tenant admin</div>
+  </div>
+
+  <!-- ───────── Step 1: Browse ───────── -->
+  <section class="mb-2">
+    <div class="flex items-center gap-3 mb-3">
+      <span class="step-pill bg-gray-900 text-white text-xs font-bold rounded-full w-7 h-7 flex items-center justify-center">1</span>
+      <h2 class="text-lg font-bold">Browse the store</h2>
+    </div>
+    <div class="lane-buyer rounded-xl p-5 border border-blue-200">
+      <div class="text-xs font-mono text-blue-700 mb-2">GET  /{tenant}/store  or  any Canvas page with a digital_goods_product_grid block</div>
+      <div class="text-sm text-gray-700 mb-4">Public — no auth required. Browses published products.</div>
+      <div class="grid grid-cols-3 gap-3">
+        <div class="bg-white border rounded-lg p-3">
+          <div class="aspect-video bg-gray-100 rounded mb-2"></div>
+          <div class="text-xs font-semibold">Tokyo Night Music</div>
+          <div class="text-[10px] text-gray-500">YOUTUBE</div>
+          <div class="text-xs font-bold mt-1">Rp 35.000</div>
+        </div>
+        <div class="bg-white border rounded-lg p-3 ring-2 ring-blue-500">
+          <div class="aspect-video bg-gray-100 rounded mb-2"></div>
+          <div class="text-xs font-semibold">Deck Design Styles</div>
+          <div class="text-[10px] text-gray-500">PDF</div>
+          <div class="text-xs font-bold mt-1">Rp 79.900</div>
+          <div class="text-[10px] text-blue-600 mt-2">▼ buyer clicks this</div>
+        </div>
+        <div class="bg-white border rounded-lg p-3">
+          <div class="aspect-video bg-gray-100 rounded mb-2"></div>
+          <div class="text-xs font-semibold">SSCX Website</div>
+          <div class="text-[10px] text-gray-500">PDF</div>
+          <div class="text-xs font-bold mt-1">Rp 99.000</div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <div class="arrow-down h-12"></div>
+
+  <!-- ───────── Step 2: Product Detail ───────── -->
+  <section class="mb-2">
+    <div class="flex items-center gap-3 mb-3">
+      <span class="step-pill bg-gray-900 text-white text-xs font-bold rounded-full w-7 h-7 flex items-center justify-center">2</span>
+      <h2 class="text-lg font-bold">Product detail</h2>
+    </div>
+    <div class="lane-buyer rounded-xl p-5 border border-blue-200">
+      <div class="text-xs font-mono text-blue-700 mb-2">GET  /{tenant}/store/deck-design-styles</div>
+      <div class="text-sm text-gray-700 mb-4">Public — title, cover image, description, price. CTA: <span class="font-semibold">Buy</span>.</div>
+      <div class="bg-white border rounded-lg p-4 max-w-md mx-auto">
+        <div class="aspect-video bg-gray-100 rounded mb-3"></div>
+        <h3 class="font-bold">Deck Design Styles</h3>
+        <p class="text-xs text-gray-500 mt-1">PDF — 24 pages, design patterns reference.</p>
+        <div class="text-xl font-bold mt-3">Rp 79.900</div>
+        <button class="mt-3 w-full bg-blue-600 text-white text-sm font-semibold py-2 rounded">Buy →</button>
+      </div>
+    </div>
+  </section>
+  <div class="arrow-down h-12"></div>
+
+  <!-- ───────── Step 3: Auth Gate ───────── -->
+  <section class="mb-2">
+    <div class="flex items-center gap-3 mb-3">
+      <span class="step-pill bg-gray-900 text-white text-xs font-bold rounded-full w-7 h-7 flex items-center justify-center">3</span>
+      <h2 class="text-lg font-bold">Auth gate (first time only)</h2>
+      <span class="text-[11px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded">Skipped if __session cookie is valid</span>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- 3a. Magic link request -->
+      <div class="lane-buyer rounded-xl p-5 border border-blue-200">
+        <div class="text-xs font-bold mb-2 text-blue-700">3a · Buyer requests magic link</div>
+        <div class="text-xs font-mono text-blue-700 mb-2">GET  /{tenant}/store/login</div>
+        <div class="bg-white border rounded-lg p-3">
+          <div class="text-xs font-semibold mb-2">Sign in to buy</div>
+          <div class="text-[10px] text-gray-500 mb-3">We'll email you a one-time link.</div>
+          <input class="w-full text-xs border rounded px-2 py-1.5 mb-2" placeholder="you@email.com" />
+          <button class="w-full bg-gray-900 text-white text-xs font-semibold py-1.5 rounded">Send link</button>
+        </div>
+        <div class="text-[10px] text-gray-600 mt-2">→ Firebase Auth <code>sendSignInLinkToEmail()</code></div>
+      </div>
+
+      <!-- 3b. Verify -->
+      <div class="lane-server rounded-xl p-5 border border-violet-200">
+        <div class="text-xs font-bold mb-2 text-violet-700">3b · Buyer clicks email link</div>
+        <div class="text-xs font-mono text-violet-700 mb-2">GET  /{tenant}/store/login/verify?...</div>
+        <div class="bg-white border rounded-lg p-3 text-xs space-y-2">
+          <div>1 · <code>signInWithEmailLink()</code> → idToken</div>
+          <div>2 · POST <code>/api/digital-goods/buyer/init</code></div>
+          <div class="bg-violet-50 border border-violet-200 rounded p-2 text-[10px]">
+            Server:<br>
+            • <code>verifyIdToken(idToken)</code><br>
+            • <code>upsertBuyerAdmin(siteId, uid, &#123;email&#125;)</code><br>
+            • set 7-day cookie <code>__session</code>
+          </div>
+          <div class="text-[10px] text-gray-600 pt-1 border-t">
+            New doc created at<br>
+            <code class="text-[9px]">sites/{siteId}/modules/digital_goods/buyers/{uid}</code>
+          </div>
+        </div>
+        <div class="text-[10px] text-violet-700 mt-2">→ redirect back to checkout</div>
+      </div>
+    </div>
+  </section>
+  <div class="arrow-down h-12"></div>
+
+  <!-- ───────── Step 4: Checkout ───────── -->
+  <section class="mb-2">
+    <div class="flex items-center gap-3 mb-3">
+      <span class="step-pill bg-gray-900 text-white text-xs font-bold rounded-full w-7 h-7 flex items-center justify-center">4</span>
+      <h2 class="text-lg font-bold">Checkout (manual transfer)</h2>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="lane-buyer rounded-xl p-5 border border-blue-200">
+        <div class="text-xs font-mono text-blue-700 mb-2">GET  /{tenant}/store/deck-design-styles/checkout</div>
+        <div class="bg-white border rounded-lg p-4 text-xs space-y-3">
+          <div class="pb-2 border-b">
+            <div class="font-semibold">Order summary</div>
+            <div class="flex justify-between mt-1"><span>Deck Design Styles (PDF)</span><span>Rp 79.900</span></div>
+          </div>
+          <div>
+            <div class="font-semibold mb-1">Transfer to:</div>
+            <div class="bg-gray-50 rounded p-2">
+              <div>BCA · 1234567890</div>
+              <div>a/n Toko Brightside</div>
+              <div class="text-[10px] text-gray-500 mt-1">QRIS available below</div>
+            </div>
+          </div>
+          <button class="w-full bg-green-600 text-white font-semibold py-2 rounded">I've transferred →</button>
+        </div>
+      </div>
+
+      <div class="lane-server rounded-xl p-5 border border-violet-200">
+        <div class="text-xs font-bold mb-2 text-violet-700">On submit</div>
+        <div class="bg-white border rounded-lg p-3 text-xs space-y-2">
+          <div>POST <code>/api/digital-goods/checkout</code></div>
+          <div class="bg-violet-50 border border-violet-200 rounded p-2 text-[10px]">
+            • <code>verifySessionCookie(__session)</code><br>
+            • Read product + buyer<br>
+            • Create order doc<br>
+            • Status: <span class="font-mono bg-amber-100 text-amber-800 px-1 rounded">awaiting_confirmation</span><br>
+            • Fire "new order" email to tenant
+          </div>
+          <div class="text-[10px] text-gray-600 pt-1 border-t">
+            New doc at<br>
+            <code class="text-[9px]">sites/{siteId}/.../orders/{orderId}</code>
+          </div>
+          <div class="text-[10px] text-violet-700">Returns: { orderId }</div>
+        </div>
+        <div class="text-[10px] text-violet-700 mt-2">→ <code>router.push(orderStatus)</code></div>
+      </div>
+    </div>
+  </section>
+  <div class="arrow-down h-12"></div>
+
+  <!-- ───────── Step 5: Waiting Room ───────── -->
+  <section class="mb-2">
+    <div class="flex items-center gap-3 mb-3">
+      <span class="step-pill bg-gray-900 text-white text-xs font-bold rounded-full w-7 h-7 flex items-center justify-center">5</span>
+      <h2 class="text-lg font-bold">Waiting room ↔ tenant confirmation</h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- Buyer waits -->
+      <div class="lane-buyer rounded-xl p-5 border border-blue-200">
+        <div class="text-xs font-bold mb-2 text-blue-700">Buyer side</div>
+        <div class="text-xs font-mono text-blue-700 mb-2">GET  /{tenant}/library/orders/{orderId}</div>
+        <div class="bg-white border rounded-lg p-4 text-xs text-center">
+          <div class="w-10 h-10 mx-auto rounded-full border-4 border-amber-300 border-t-transparent animate-spin mb-3"></div>
+          <div class="font-semibold">Awaiting confirmation</div>
+          <div class="text-[10px] text-gray-500 mt-1">Refreshing every few seconds…</div>
+          <div class="mt-3 pt-3 border-t text-[10px] text-gray-600">
+            Polls <code>/api/digital-goods/lookup-library?orderId=…</code>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tenant confirms -->
+      <div class="lane-tenant rounded-xl p-5 border border-amber-300">
+        <div class="text-xs font-bold mb-2 text-amber-800">Tenant admin (separate browser)</div>
+        <div class="text-xs font-mono text-amber-800 mb-2">/admin/digital-goods/orders</div>
+        <div class="bg-white border rounded-lg p-3 text-xs space-y-2">
+          <div class="flex items-center justify-between p-2 bg-amber-50 rounded">
+            <div>
+              <div class="font-semibold">Deck Design Styles</div>
+              <div class="text-[10px] text-gray-500">buyer@email.com · Rp 79.900</div>
+            </div>
+            <button class="bg-green-600 text-white text-[10px] font-bold px-2 py-1 rounded">Mark as paid</button>
+          </div>
+          <div class="bg-amber-50 border border-amber-200 rounded p-2 text-[10px]">
+            POST <code>/api/digital-goods/orders/confirm</code><br>
+            <span class="text-amber-700">auth: requireAuthedMember (team RBAC)</span><br>
+            • order.status = <span class="font-mono bg-green-100 text-green-800 px-1 rounded">paid</span><br>
+            • Create library entry<br>
+            • Email buyer "order paid"
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-center text-xs text-gray-500 mt-4">
+      ↓ buyer's next poll returns { libraryEntryId } → auto-redirect ↓
+    </div>
+  </section>
+  <div class="arrow-down h-12"></div>
+
+  <!-- ───────── Step 6a: Library list (entry point B lands here) ───────── -->
+  <section class="mb-2">
+    <div class="flex items-center gap-3 mb-3">
+      <span class="step-pill bg-gray-900 text-white text-xs font-bold rounded-full w-7 h-7 flex items-center justify-center">6a</span>
+      <h2 class="text-lg font-bold">Library list (returning-buyer landing)</h2>
+      <span class="text-[11px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded">Entry point B lands here</span>
+    </div>
+    <div class="lane-buyer rounded-xl p-5 border border-blue-200">
+      <div class="text-xs font-mono text-blue-700 mb-2">GET  /{tenant}/library</div>
+      <div class="text-sm text-gray-700 mb-3">Server-side: reads <code>__session</code> cookie → <code>verifySessionCookie</code> → queries <code>library WHERE buyerId == uid</code>.</div>
+      <div class="bg-white border rounded-lg p-4">
+        <div class="text-sm font-semibold mb-3">My Library</div>
+        <div class="grid grid-cols-3 gap-3 text-xs">
+          <div class="border rounded-lg overflow-hidden">
+            <div class="aspect-video bg-gray-100"></div>
+            <div class="p-2"><div class="text-[9px] uppercase text-gray-500">PDF</div><div class="font-semibold">Deck Design Styles</div></div>
+          </div>
+          <div class="border rounded-lg overflow-hidden">
+            <div class="aspect-video bg-gray-100"></div>
+            <div class="p-2"><div class="text-[9px] uppercase text-gray-500">YOUTUBE</div><div class="font-semibold">Tokyo Night Music</div></div>
+          </div>
+          <div class="border rounded-lg overflow-hidden opacity-50">
+            <div class="aspect-video bg-gray-100"></div>
+            <div class="p-2 text-[10px] text-gray-400">… more</div>
+          </div>
+        </div>
+        <div class="text-[10px] text-gray-500 mt-3 pt-3 border-t">Empty state: "Your library is empty" + button to <code>/store</code>.</div>
+      </div>
+      <div class="text-[10px] text-gray-600 mt-2">→ click any card → <code>/{tenant}/library/{entryId}</code> (step 6b)</div>
+    </div>
+  </section>
+  <div class="arrow-down h-12"></div>
+
+  <!-- ───────── Step 6b: Library Entry ───────── -->
+  <section class="mb-10">
+    <div class="flex items-center gap-3 mb-3">
+      <span class="step-pill bg-gray-900 text-white text-xs font-bold rounded-full w-7 h-7 flex items-center justify-center">6b</span>
+      <h2 class="text-lg font-bold">Library entry — access the product</h2>
+      <span class="text-[11px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded">Entry point A lands here (auto-redirect from step 5)</span>
+    </div>
+    <div class="lane-buyer rounded-xl p-5 border border-blue-200">
+      <div class="text-xs font-mono text-blue-700 mb-2">GET  /{tenant}/library/{entryId}</div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="bg-white border rounded-lg p-4 text-xs">
+          <div class="text-[10px] uppercase tracking-wider text-gray-500 mb-2">If PDF</div>
+          <div class="aspect-[3/4] bg-gray-100 rounded mb-3 flex items-center justify-center text-gray-400 text-xs">📄 PDF preview</div>
+          <button class="w-full bg-blue-600 text-white font-semibold py-2 rounded mb-2">↓ Download</button>
+          <div class="text-[10px] text-gray-600 bg-blue-50 border border-blue-200 rounded p-2">
+            POST <code>/api/digital-goods/files/{productId}</code><br>
+            • <code>verifySessionCookie</code><br>
+            • Verify library entry exists for this buyer + product<br>
+            • Issue signed URL (15-min TTL) from Firebase Storage
+          </div>
+        </div>
+
+        <div class="bg-white border rounded-lg p-4 text-xs">
+          <div class="text-[10px] uppercase tracking-wider text-gray-500 mb-2">If YouTube</div>
+          <div class="aspect-video bg-gray-900 rounded mb-3 flex items-center justify-center text-gray-400 text-xs">▶ Unlisted video player</div>
+          <div class="text-[10px] text-gray-600 bg-blue-50 border border-blue-200 rounded p-2">
+            Video URL is in the library entry — embedded inline.<br>
+            URL is unlisted so it's not discoverable, but anyone with the link can view.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer notes -->
+  <section class="bg-white border rounded-xl p-6 text-sm">
+    <h3 class="font-bold mb-3">Notes</h3>
+    <ul class="space-y-2 text-gray-700">
+      <li><strong>Two entry points, one login.</strong> Entry A (first-time purchase) flows 1→2→3→4→5→6b. Entry B (returning buyer to library) flows 3→6a→6b. The login route is the same — the <code class="bg-gray-100 px-1 rounded text-xs">?next=</code> query param controls where the buyer lands after verifying.</li>
+      <li><strong>Auth happens once per 7 days.</strong> After step 3, the <code class="bg-gray-100 px-1 rounded text-xs">__session</code> cookie lasts 7 days. Steps 4 / 5 / 6 just re-verify it server-side.</li>
+      <li><strong>Buyer identity is module-scoped.</strong> Buyer doc lives only at <code class="bg-gray-100 px-1 rounded text-xs">sites/{siteId}/modules/digital_goods/buyers/{uid}</code>. No coupling to the loyalty module or the team-RBAC <code class="bg-gray-100 px-1 rounded text-xs">members</code> collection.</li>
+      <li><strong>Tenant confirmation is the human bottleneck.</strong> Step 5 can stall indefinitely if the tenant doesn't act. Plan 3 adds reminders.</li>
+      <li><strong>Two distinct auth helpers.</strong> Buyer endpoints use <code class="bg-gray-100 px-1 rounded text-xs">adminAuth.verifySessionCookie()</code> directly. Admin endpoints (confirm/cancel) use <code class="bg-gray-100 px-1 rounded text-xs">requireAuthedMember</code> = team RBAC. Buyer cookies cannot trigger admin actions.</li>
+      <li><strong>File downloads use signed URLs.</strong> Each download issues a fresh 15-min URL — so even if a URL leaks, it expires quickly.</li>
+      <li class="text-amber-700"><strong>⚠ Shared cookie name with admin/auth-gateway.</strong> Buyer auth currently uses the same <code class="bg-gray-100 px-1 rounded text-xs">__session</code> cookie as platform admin/auth-gateway. If a buyer is also a tenant operator on any site in the same browser, the two roles overwrite each other's cookie. Not an auth bypass (Firebase Auth still validates), but a UX collision. Flagged for Plan 3 to consider a separate <code class="bg-gray-100 px-1 rounded text-xs">__dg_session</code> cookie.</li>
+    </ul>
+  </section>
+
+</div>
+</body>
+</html>

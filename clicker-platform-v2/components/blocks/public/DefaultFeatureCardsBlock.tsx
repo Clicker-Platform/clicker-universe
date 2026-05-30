@@ -31,6 +31,33 @@ const DESKTOP_COLS_CLASS: Record<number, string> = {
     4: 'md:grid-cols-4',
 };
 
+const VERTICAL_SPACING = {
+    none: 'py-0',
+    small: 'py-4',
+    medium: 'py-8',
+    tall: 'py-14',
+} as const;
+
+// Outer left/right gutter only — the inter-card gap is owned by `gap-*` and is
+// intentionally left untouched so cards keep their spacing at every padding level.
+// Full literal class strings (incl. md: and scroll-pl variants) so Tailwind's JIT
+// can statically detect them — never interpolate breakpoint prefixes.
+const HORIZONTAL_PADDING = {
+    none: { base: 'px-0', md: 'md:px-0', scroll: 'scroll-pl-0' },
+    normal: { base: 'px-4', md: 'md:px-4', scroll: 'scroll-pl-4' },
+    wide: { base: 'px-8', md: 'md:px-8', scroll: 'scroll-pl-8' },
+} as const;
+
+// Card corner radius. 'theme' defers to the template's --theme-radius CSS var
+// (set by TemplateProvider); the presets are explicit overrides.
+const CORNER_RADIUS: Record<NonNullable<FeatureCardsData['cornerRadius']>, string> = {
+    theme: 'var(--theme-radius)',
+    none: '0px',
+    small: '8px',
+    medium: '16px',
+    large: '24px',
+};
+
 interface InlineEditProps {
     /** Persist a field change for this card. Field is the FeatureCard key. */
     onChangeField: (field: 'label' | 'headline' | 'body', value: string) => void;
@@ -48,10 +75,12 @@ interface CardItemProps {
     card: FeatureCard;
     cardStyle?: string;
     theme: any;
+    /** Resolved card corner radius (CSS value). Defaults to the template radius. */
+    cardRadius: string;
     edit?: InlineEditProps;
 }
 
-function CardItem({ card, cardStyle, theme, edit }: CardItemProps) {
+function CardItem({ card, cardStyle, theme, cardRadius, edit }: CardItemProps) {
     const d = useDeviceView();
     const hasCustomBg = !!card.bgColor;
 
@@ -61,13 +90,15 @@ function CardItem({ card, cardStyle, theme, edit }: CardItemProps) {
         ? (card.textColor || (isLightColor(card.bgColor) ? '#111111' : '#ffffff'))
         : undefined;
 
+    // Radius is applied via inline style (cardRadius) — not a Tailwind class — so it
+    // can follow the template's --theme-radius var or a per-block override.
     const cardClass = hasCustomBg
-        ? 'rounded-2xl overflow-hidden flex flex-col h-full'
-        : `rounded-2xl overflow-hidden flex flex-col h-full ${getCardClasses(cardStyle)}`;
+        ? 'overflow-hidden flex flex-col h-full'
+        : `overflow-hidden flex flex-col h-full ${getCardClasses(cardStyle)}`;
 
     const inlineStyle = hasCustomBg
-        ? { backgroundColor: card.bgColor, color: autoTextColor }
-        : undefined;
+        ? { backgroundColor: card.bgColor, color: autoTextColor, borderRadius: cardRadius }
+        : { borderRadius: cardRadius };
 
     const headingColor = hasCustomBg ? autoTextColor! : getHeadingColor(cardStyle, theme);
     const labelColor = hasCustomBg ? hexWithOpacity(autoTextColor!, 0.6) : getLabelColor(cardStyle, theme);
@@ -213,17 +244,21 @@ export function DefaultFeatureCardsBlock({ data, theme: themeProp, previewMode, 
     // carousel only makes sense when the row is meant to fit multiple cards.
     const isStack = columns === 1 && !isSingle;
 
+    const verticalClass = VERTICAL_SPACING[(data.verticalSpacing || 'medium') as keyof typeof VERTICAL_SPACING] ?? 'py-8';
+    const hPad = HORIZONTAL_PADDING[(data.horizontalPadding || 'normal') as keyof typeof HORIZONTAL_PADDING] ?? HORIZONTAL_PADDING.normal;
+    const cardRadius = CORNER_RADIUS[data.cornerRadius || 'theme'] ?? CORNER_RADIUS.theme;
+
     // Mobile: horizontal scroll. Desktop: grid.
     // dv() emits the right classes for canvas previews + responsive viewport.
     // CardToolbar portals out of this container, so no top padding needed in admin.
     const containerClass = isSingle
-        ? `flex justify-center px-4 md:max-w-6xl md:mx-auto`
+        ? `flex justify-center ${hPad.base} md:max-w-6xl md:mx-auto`
         : isStack
-        ? `flex flex-col gap-4 px-4 md:max-w-6xl md:mx-auto`
+        ? `flex flex-col gap-4 ${hPad.base} md:max-w-6xl md:mx-auto`
         : dv(
             deviceView,
-            `flex items-stretch gap-3 overflow-x-auto overflow-y-visible px-4 pt-1 pb-2 scroll-pl-4 snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden`,
-            `md:grid ${desktopCols} md:gap-4 md:items-stretch md:px-4 md:max-w-6xl md:mx-auto md:overflow-visible md:pt-0 md:pb-0`
+            `flex items-stretch gap-3 overflow-x-auto overflow-y-visible ${hPad.base} pt-1 pb-2 ${hPad.scroll} snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden`,
+            `md:grid ${desktopCols} md:gap-4 md:items-stretch ${hPad.md} md:max-w-6xl md:mx-auto md:overflow-visible md:pt-0 md:pb-0`
         );
 
     const cardWrapperBase = (isSingle || isStack)
@@ -240,7 +275,7 @@ export function DefaultFeatureCardsBlock({ data, theme: themeProp, previewMode, 
         !isSingle && !isStack && deviceView === 'mobile' ? 'overlay' : 'above';
 
     return (
-        <section className="w-full min-w-0 py-8">
+        <section className={`w-full min-w-0 ${verticalClass}`}>
             {cards.length > 0 && (
                 <div className={containerClass}>
                     {cards.map((card, index) => (
@@ -250,6 +285,7 @@ export function DefaultFeatureCardsBlock({ data, theme: themeProp, previewMode, 
                             index={index}
                             cards={cards}
                             theme={theme}
+                            cardRadius={cardRadius}
                             cardWrapperBase={cardWrapperBase}
                             isAdminCanvas={isAdminCanvas}
                             isSelected={selectedCardId === card.id}
@@ -273,6 +309,7 @@ interface CardSlotProps {
     index: number;
     cards: FeatureCard[];
     theme: any;
+    cardRadius: string;
     cardWrapperBase: string;
     isAdminCanvas: boolean;
     isSelected: boolean;
@@ -290,6 +327,7 @@ function CardSlot({
     index,
     cards,
     theme,
+    cardRadius,
     cardWrapperBase,
     isAdminCanvas,
     isSelected,
@@ -301,7 +339,9 @@ function CardSlot({
     setAutoFocusByCard,
     toolbarPlacement,
 }: CardSlotProps) {
-    const selectionRing = isAdminCanvas && isSelected ? 'ring-2 ring-blue-500 rounded-2xl' : '';
+    // Ring radius tracks the card radius (set via inline style) so the selection
+    // outline hugs the card corners regardless of the chosen cornerRadius.
+    const selectionRing = isAdminCanvas && isSelected ? 'ring-2 ring-blue-500' : '';
 
     const handleClick = isAdminCanvas
         ? (e: React.MouseEvent) => {
@@ -376,6 +416,7 @@ function CardSlot({
         <div
             onClick={handleClick}
             className={`${cardWrapperBase} relative ${selectionRing} ${isAdminCanvas ? 'cursor-pointer' : ''}`}
+            style={selectionRing ? { borderRadius: cardRadius } : undefined}
         >
             {isAdminCanvas && isSelected && (
                 <CardToolbar
@@ -394,6 +435,7 @@ function CardSlot({
                 card={card}
                 cardStyle={theme?.cardStyle}
                 theme={theme}
+                cardRadius={cardRadius}
                 edit={editProps}
             />
         </div>

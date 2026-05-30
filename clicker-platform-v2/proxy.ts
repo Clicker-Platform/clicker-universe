@@ -27,6 +27,20 @@ export const config = {
     ],
 };
 
+// Admin __session is a short slug (e.g. "go", "hi-clicker"). The buyer flow
+// (digital_goods) reuses the same cookie name on Firebase Hosting because the
+// CDN strips everything except `__session` — but it writes a Firebase session
+// JWT (~900 chars, starts with "eyJ"). If a buyer-shaped value reaches the
+// admin reader it poisons tenant routing (siteId becomes the JWT). Reject the
+// JWT shape so admin routing falls back to the gateway redirect / default
+// siteId path instead.
+function readAdminSessionCookie(req: NextRequest): string | undefined {
+    const v = req.cookies.get('__session')?.value;
+    if (!v) return undefined;
+    if (v.length > 80 || v.startsWith('eyJ')) return undefined;
+    return v;
+}
+
 export async function proxy(request: NextRequest) {
     const pathname = request.nextUrl.pathname;
     const segments = pathname.split('/').filter(Boolean);
@@ -127,7 +141,7 @@ export async function proxy(request: NextRequest) {
         // For admin routes, read siteId from activeSite cookie (override subdomain if set)
         if (segments[0] === 'admin') {
             // Firebase Hosting only allows '__session' cookie
-            const activeSite = request.cookies.get('__session')?.value;
+            const activeSite = readAdminSessionCookie(request);
             if (activeSite) siteId = activeSite;
 
             // Auth Gateway URL (centralized login)
@@ -236,7 +250,7 @@ export async function proxy(request: NextRequest) {
         // DETECT TENANT ADMIN ROUTE (e.g. /quattro/admin/...)
         // Need auth check before allowing access
         if (segments.length >= 2 && segments[1] === 'admin') {
-            const activeSite = request.cookies.get('__session')?.value;
+            const activeSite = readAdminSessionCookie(request);
             const hostname = request.headers.get('host') || '';
 
             // CANONICAL REDIRECT:

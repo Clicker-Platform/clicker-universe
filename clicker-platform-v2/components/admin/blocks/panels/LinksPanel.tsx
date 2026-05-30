@@ -30,6 +30,7 @@ import {
     useSortable
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { SelectMenu } from '../forms/SelectMenu';
 
 // ── Types ────────────────────────────────────────────────────────────────
 
@@ -548,36 +549,29 @@ export function LinksPanel() {
                             {newLink.type === 'form' ? (
                                 <div>
                                     <label className={labelClass}>Form</label>
-                                    <select
+                                    <SelectMenu
                                         value={newLink.formId || ''}
-                                        onChange={e => setNewLink({ ...newLink, formId: e.target.value })}
-                                        className={inputClass}
-                                        required
-                                    >
-                                        <option value="" disabled>Select a Form...</option>
-                                        {forms.map(form => (
-                                            <option key={form.id} value={form.id}>
-                                                {form.title} {form.isPublished ? '' : '(Draft)'}
-                                            </option>
-                                        ))}
-                                    </select>
+                                        onChange={v => setNewLink({ ...newLink, formId: v })}
+                                        placeholder="Select a Form..."
+                                        options={forms.map(form => ({
+                                            value: form.id,
+                                            label: `${form.title || 'Untitled'}${form.isPublished ? '' : ' (Draft)'}`,
+                                        }))}
+                                    />
                                 </div>
                             ) : newLink.type === 'page' ? (
                                 <div>
                                     <label className={labelClass}>Page</label>
-                                    <select
+                                    <SelectMenu
                                         value={newLink.pageId || ''}
-                                        onChange={e => setNewLink({ ...newLink, pageId: e.target.value })}
-                                        className={inputClass}
-                                        required
-                                    >
-                                        <option value="" disabled>Select a Page...</option>
-                                        {pages.map(page => (
-                                            <option key={page.id} value={page.id}>
-                                                {page.title} (/{page.slug})
-                                            </option>
-                                        ))}
-                                    </select>
+                                        onChange={v => setNewLink({ ...newLink, pageId: v })}
+                                        placeholder="Select a Page..."
+                                        options={pages.map(page => ({
+                                            value: page.id,
+                                            label: page.title || 'Untitled',
+                                            hint: `/${page.slug}`,
+                                        }))}
+                                    />
                                 </div>
                             ) : (
                                 <div>

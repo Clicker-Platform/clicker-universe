@@ -23,9 +23,6 @@ export const ROUTES = {
   settings: '/admin/digital-goods/settings',
 } as const;
 
-// Permission key (registered in RBAC)
-export const PERM_MANAGE = 'digital_goods.manage';
-
 // Defaults
 export const DEFAULT_CURRENCY = 'IDR' as const;
 
@@ -41,6 +38,8 @@ export const publicRoutes = (tenant: string) => ({
   orderStatus:  (orderId: string)  => `/${tenant}/library/orders/${orderId}`,
   login:        `/${tenant}/store/login`,
   loginVerify:  `/${tenant}/store/login/verify`,
+  profile:      `/${tenant}/profile`,
+  onboarding:   `/${tenant}/onboarding`,
 });
 
 // Plan 2 — Storage subfolders

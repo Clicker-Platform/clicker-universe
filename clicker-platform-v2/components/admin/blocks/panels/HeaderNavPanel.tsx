@@ -22,6 +22,7 @@ import {
     verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { SortableNavItem } from './shared/SortableNavItem';
+import { SelectMenu } from '../forms/SelectMenu';
 import { stripUndefined } from '@/lib/firestore/stripUndefined';
 import {
     HeaderNavigationConfig,
@@ -557,27 +558,23 @@ export function HeaderNavPanel() {
                         </div>
                         <div>
                             {header.cta?.linkType === 'form' ? (
-                                <select
+                                <SelectMenu
                                     value={header.cta?.formId || ''}
-                                    onChange={(e) => updateHeader({ cta: { ...header.cta, formId: e.target.value, linkValue: e.target.value } })}
-                                    className="w-full px-3 py-2 text-sm bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-lg text-neutral-900 dark:text-neutral-200 focus:border-blue-500/50 focus:outline-none"
-                                >
-                                    <option value="">— Select Form —</option>
-                                    {forms.map(f => <option key={f.id} value={f.id}>{f.title}</option>)}
-                                </select>
+                                    onChange={(v) => updateHeader({ cta: { ...header.cta, formId: v, linkValue: v } })}
+                                    placeholder="— Select Form —"
+                                    options={forms.map(f => ({ value: f.id, label: f.title || 'Untitled' }))}
+                                />
                             ) : header.cta?.linkType === 'page' ? (
-                                <select
+                                <SelectMenu
                                     value={header.cta?.pageId || ''}
-                                    onChange={(e) => {
-                                        const p = pages.find(pg => pg.id === e.target.value);
+                                    onChange={(v) => {
+                                        const p = pages.find(pg => pg.id === v);
                                         const resolvedValue = p ? (p.slug === homepageSlug ? 'action:homepage' : `/${p.slug}`) : '';
-                                        updateHeader({ cta: { ...header.cta, pageId: e.target.value, linkValue: resolvedValue } });
+                                        updateHeader({ cta: { ...header.cta, pageId: v, linkValue: resolvedValue } });
                                     }}
-                                    className="w-full px-3 py-2 text-sm bg-gray-100 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-lg text-neutral-900 dark:text-neutral-200 focus:border-blue-500/50 focus:outline-none"
-                                >
-                                    <option value="">— Select Page —</option>
-                                    {pages.map(p => <option key={p.id} value={p.id}>{p.title} (/{p.slug})</option>)}
-                                </select>
+                                    placeholder="— Select Page —"
+                                    options={pages.map(p => ({ value: p.id, label: p.title || 'Untitled', hint: `/${p.slug}` }))}
+                                />
                             ) : (
                                 <input
                                     type="text"

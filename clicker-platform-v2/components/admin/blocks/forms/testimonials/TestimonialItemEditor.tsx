@@ -5,6 +5,7 @@ import React from 'react';
 import type { TestimonialItem, TestimonialRating } from '@/lib/canvas/blocks/testimonials/types';
 import { TESTIMONIAL_CONTENT_SOFT_LIMIT } from '@/lib/canvas/blocks/testimonials/types';
 import { BlockImageUploader } from '@/components/admin/blocks/BlockImageUploader';
+import { SelectMenu } from '../SelectMenu';
 
 interface TestimonialItemEditorProps {
     item: TestimonialItem;
@@ -93,18 +94,15 @@ export const TestimonialItemEditor: React.FC<TestimonialItemEditorProps> = ({
 
             <label className="block text-sm">
                 <span className="text-xs text-neutral-500 dark:text-neutral-400">Rating</span>
-                <select
-                    value={item.rating ?? ''}
-                    onChange={(e) => {
-                        const v = e.target.value;
+                <SelectMenu
+                    value={item.rating != null ? String(item.rating) : ''}
+                    onChange={(v) => {
                         update('rating', v === '' ? undefined : (Number(v) as TestimonialRating));
                     }}
-                    className="mt-1 w-full border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 rounded px-2 py-1 text-neutral-900 dark:text-neutral-200"
-                >
-                    {RATING_OPTIONS.map((opt) => (
-                        <option key={String(opt.value)} value={opt.value}>{opt.label}</option>
-                    ))}
-                </select>
+                    searchable={false}
+                    allowClear={false}
+                    options={RATING_OPTIONS.map((opt) => ({ value: String(opt.value), label: opt.label }))}
+                />
             </label>
 
             <label className="block text-sm">

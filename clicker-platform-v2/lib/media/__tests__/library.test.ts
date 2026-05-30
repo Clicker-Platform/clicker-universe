@@ -86,6 +86,8 @@ describe('registerMedia', () => {
             folder: 'media',
             siteId: 's1',
         }));
+        expect(uploadToStorage).toHaveBeenCalledTimes(1);
+        expect(uploadToStorage).toHaveBeenCalledWith(expect.objectContaining({ maxWidth: 1920 }));
         expect(setDoc).toHaveBeenCalledTimes(1);
         expect(item.url).toBe('https://storage.example/sites/s1/media/abc.webp');
         expect(item.folder).toBe('Uncategorized');
@@ -278,5 +280,50 @@ describe('importExistingMedia', () => {
         const result = await importExistingMedia('s1', 'user-1');
         expect(result).toEqual({ imported: 1, skipped: 1 });
         expect(setDoc).toHaveBeenCalledTimes(1);
+    });
+});
+
+describe('deleteMedia thumbnail cleanup', () => {
+    it('deletes both full and thumbnail Storage objects when both exist', async () => {
+        vi.clearAllMocks();
+        (getDoc as any).mockResolvedValueOnce({
+            exists: () => true,
+            data: () => ({
+                id: 'm1',
+                url: 'https://example/full.webp',
+                storagePath: 'sites/s1/media/full.webp',
+                thumbnailUrl: 'https://example/thumb.webp',
+                thumbnailStoragePath: 'sites/s1/media/thumb.webp',
+                fileName: 'a.webp',
+            }),
+        });
+        // findUsages → no usages
+        (getDocs as any).mockResolvedValue({ docs: [] });
+        (getDoc as any).mockResolvedValueOnce({ exists: () => false });
+
+        await deleteMedia('s1', 'm1');
+
+        expect(deleteObject).toHaveBeenCalledTimes(2);
+        expect(deleteDoc).toHaveBeenCalledTimes(1);
+    });
+
+    it('still deletes when thumbnailStoragePath is missing (legacy items)', async () => {
+        vi.clearAllMocks();
+        (getDoc as any).mockResolvedValueOnce({
+            exists: () => true,
+            data: () => ({
+                id: 'm1',
+                url: 'https://example/full.webp',
+                storagePath: 'sites/s1/media/full.webp',
+                fileName: 'a.webp',
+            }),
+        });
+        (getDocs as any).mockResolvedValue({ docs: [] });
+        (getDoc as any).mockResolvedValueOnce({ exists: () => false });
+
+        await deleteMedia('s1', 'm1');
+
+        expect(deleteObject).toHaveBeenCalledTimes(1);
+        expect(deleteDoc).toHaveBeenCalledTimes(1);
     });
 });

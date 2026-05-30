@@ -123,15 +123,15 @@ beforeEach(() => {
 // Dynamic import so env vars are available
 async function getMiddleware() {
   // Clear module cache to pick up fresh env vars
-  const mod = await import('../middleware');
-  return mod.middleware;
+  const mod = await import('../proxy');
+  return mod.proxy;
 }
 
 // ─── Tests ───────────────────────────────────────────────────────
 
 describe('Middleware: Config', () => {
   it('exports a matcher config', async () => {
-    const mod = await import('../middleware');
+    const mod = await import('../proxy');
     expect(mod.config).toBeDefined();
     expect(mod.config.matcher).toBeDefined();
     expect(Array.isArray(mod.config.matcher)).toBe(true);
@@ -226,6 +226,30 @@ describe('Middleware: Admin Routes', () => {
     await mw(req);
     expect(lastResponse?.type).toBe('error');
     expect(lastResponse?.status).toBe(500);
+  });
+
+  it('ignores JWT-shaped __session (buyer cookie poisoning admin)', async () => {
+    // Buyer flow writes a Firebase session JWT (~900 chars, starts with "eyJ")
+    // into __session because Firebase Hosting CDN only forwards that cookie
+    // name. On a shared browser, that value can clobber the admin slug. The
+    // admin reader must reject it so siteId never becomes the JWT.
+    const jwt = 'eyJ' + 'a'.repeat(900);
+    const mw = await getMiddleware();
+    const req = makeRequest('/admin', { cookies: { __session: jwt } });
+    await mw(req);
+    // No valid admin session → falls through the same path as a missing cookie
+    // (gateway redirect on non-local hostnames).
+    expect(lastResponse?.type).toBe('redirect');
+    expect(lastRedirectUrl).toContain(GATEWAY_URL);
+  });
+
+  it('ignores oversize __session value even without eyJ prefix', async () => {
+    const oversize = 'x'.repeat(200);
+    const mw = await getMiddleware();
+    const req = makeRequest('/admin', { cookies: { __session: oversize } });
+    await mw(req);
+    expect(lastResponse?.type).toBe('redirect');
+    expect(lastRedirectUrl).toContain(GATEWAY_URL);
   });
 });
 
