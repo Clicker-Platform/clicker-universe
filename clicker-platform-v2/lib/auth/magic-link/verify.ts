@@ -60,7 +60,7 @@ export async function verifyMagicLink(input: MagicLinkVerifyInput): Promise<Magi
   };
 }
 
-async function getOrCreateFirebaseUser(email: string): Promise<string> {
+export async function getOrCreateFirebaseUser(email: string): Promise<string> {
   try {
     const user = await adminAuth.getUserByEmail(email);
     return user.uid;
