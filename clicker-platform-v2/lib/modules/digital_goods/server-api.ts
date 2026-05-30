@@ -29,21 +29,8 @@ function stripUndefined<T>(value: T): T {
   return value;
 }
 
-// Resolve public-facing base URL for a tenant.
-// Priority: customDomain → domain (from site doc) → fallback host (dev/preview only).
-export async function resolveTenantBaseUrl(siteId: string, fallbackHost?: string): Promise<string> {
-  const snap = await adminDb.doc(`sites/${siteId}`).get();
-  const data = snap.data() ?? {};
-  const tenantDomain =
-    (data.customDomain as string | undefined) ||
-    (data.domain as string | undefined);
-  if (tenantDomain) return `https://${tenantDomain}`;
-  if (fallbackHost) {
-    const proto = fallbackHost.startsWith('localhost') ? 'http' : 'https';
-    return `${proto}://${fallbackHost}`;
-  }
-  return 'https://clicker.id';
-}
+// Relocated to platform lib/auth. Re-exported here so existing importers keep working.
+export { resolveTenantBaseUrl } from '@/lib/auth/tenant-url';
 
 // --- Buyer auto-provision (called from server actions on first authed visit) ---
 

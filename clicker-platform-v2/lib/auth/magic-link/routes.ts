@@ -1,7 +1,7 @@
 import 'server-only';
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
-import { resolveTenantBaseUrl } from '@/lib/modules/digital_goods/server-api';
+import { resolveTenantBaseUrl } from '@/lib/auth/tenant-url';
 import { logger } from '@/lib/logger';
 import { requestMagicLink } from './send';
 import { verifyMagicLink } from './verify';
