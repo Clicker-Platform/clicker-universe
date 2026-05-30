@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { headers } from 'next/headers';
-import { adminAuth } from '@/lib/firebase-admin';
 import { issueSignedUrlForFile } from '@/lib/modules/digital_goods/server-api';
+import { getAccountSession } from '@/lib/account/session';
 import { logger } from '@/lib/logger-edge';
 
 export const runtime = 'nodejs';
@@ -18,15 +18,10 @@ export async function POST(
   const siteId = headersList.get('x-site-id');
   if (!siteId) return NextResponse.json({ error: 'no_site' }, { status: 400 });
 
-  const sessionCookie = req.cookies.get('__buyer_session')?.value;
-  if (!sessionCookie) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-
-  let decoded;
-  try {
-    decoded = await adminAuth.verifySessionCookie(sessionCookie, true);
-  } catch {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  }
+  // Authorize via the platform account session. Entitlement (library ownership)
+  // is keyed on the account uid inside issueSignedUrlForFile.
+  const session = await getAccountSession();
+  if (!session) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 
   const body = await req.json().catch(() => ({}));
   const { productId, storagePath } = body as { productId?: string; storagePath?: string };
@@ -35,7 +30,7 @@ export async function POST(
   }
 
   try {
-    const url = await issueSignedUrlForFile(siteId, decoded.uid, productId, storagePath);
+    const url = await issueSignedUrlForFile(siteId, session.uid, productId, storagePath);
     return NextResponse.json({ url });
   } catch (e: any) {
     const msg = e?.message ?? 'unknown';
