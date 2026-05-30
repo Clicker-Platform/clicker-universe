@@ -11,7 +11,6 @@ import type {
 } from '@/lib/modules/digital_goods/types';
 import { getAccountSession } from '@/lib/account/session';
 import { ensureAccount } from '@/lib/account/server-api';
-import { getOrCreateFirebaseUser } from '@/lib/auth/magic-link/verify';
 import { logger } from '@/lib/logger-edge';
 
 export const runtime = 'nodejs';
@@ -22,29 +21,18 @@ export async function POST(req: NextRequest) {
   if (!siteId) return NextResponse.json({ error: 'no_site' }, { status: 400 });
 
   const body = await req.json().catch(() => ({}));
-  const { productId, buyerNote, fullName, email: bodyEmail } = body as {
-    productId?: string; buyerNote?: string; fullName?: string; email?: string;
+  const { productId, buyerNote, fullName } = body as {
+    productId?: string; buyerNote?: string; fullName?: string;
   };
   if (!productId) return NextResponse.json({ error: 'missing_product' }, { status: 400 });
 
-  // Resolve account identity from EITHER a logged-in account session OR a posted email.
-  let uid: string;
-  let email: string;
+  // Checkout is gated: identity comes only from a verified account session. The
+  // checkout page redirects unauthenticated buyers to /account/login first, so the
+  // email here is always proven-owned (never a request-body value).
   const session = await getAccountSession();
-  if (session) {
-    uid = session.uid;
-    email = session.email;
-  } else {
-    const trimmedEmail = bodyEmail?.trim();
-    if (!trimmedEmail) return NextResponse.json({ error: 'email_required' }, { status: 400 });
-    email = trimmedEmail;
-    try {
-      uid = await getOrCreateFirebaseUser(trimmedEmail);
-    } catch (err) {
-      logger.error('digital_goods.checkout.user_resolve_failed', { siteId, error: err });
-      return NextResponse.json({ error: 'user_resolve_failed' }, { status: 500 });
-    }
-  }
+  if (!session) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  const uid = session.uid;
+  const email = session.email;
 
   // Load product + settings
   const [productSnap, settingsSnap] = await Promise.all([

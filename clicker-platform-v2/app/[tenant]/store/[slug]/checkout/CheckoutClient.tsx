@@ -22,25 +22,17 @@ export function CheckoutClient(props: Props) {
   const router = useRouter();
   const routes = publicRoutes(props.tenant);
   const [buyerNote, setBuyerNote] = useState('');
-  const [enteredEmail, setEnteredEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const isAnonymous = !props.buyerEmail;
-
   async function handleSubmit() {
-    const email = props.buyerEmail || enteredEmail.trim();
-    if (!email) {
-      setError('Email wajib diisi');
-      return;
-    }
     setSubmitting(true);
     setError(null);
     try {
       const res = await fetch('/api/digital-goods/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-site-id': props.siteId },
-        body: JSON.stringify({ productId: props.productId, buyerNote, email }),
+        body: JSON.stringify({ productId: props.productId, buyerNote }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'submit_failed');
@@ -64,9 +56,7 @@ export function CheckoutClient(props: Props) {
           <span className="font-medium">Total</span>
           <span className="font-bold">Rp {props.amount.toLocaleString('id-ID')}</span>
         </div>
-        {!isAnonymous && (
-          <p className="text-xs text-gray-500 mt-3">Logged in as <strong>{props.buyerEmail}</strong></p>
-        )}
+        <p className="text-xs text-gray-500 mt-3">Logged in as <strong>{props.buyerEmail}</strong></p>
       </section>
 
       {/* Payment instructions */}
@@ -105,20 +95,6 @@ export function CheckoutClient(props: Props) {
       {/* Confirm */}
       <section className="bg-white border border-gray-200 rounded-xl p-6">
         <h2 className="text-sm font-semibold text-gray-700 mb-3">Konfirmasi pembayaran</h2>
-        {isAnonymous && (
-          <>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email untuk kirim produk
-            </label>
-            <input
-              type="email"
-              value={enteredEmail}
-              onChange={e => setEnteredEmail(e.target.value)}
-              placeholder="nama@email.com"
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mb-4"
-            />
-          </>
-        )}
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Catatan transfer <span className="text-gray-400 font-normal">(opsional)</span>
         </label>

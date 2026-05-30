@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation';
+import { redirect, notFound } from 'next/navigation';
 import { adminDb } from '@/lib/firebase-admin';
 import { COLLECTION_PRODUCTS, DOC_SETTINGS } from '@/lib/modules/digital_goods/constants';
 import type { DigitalProduct, DigitalGoodsSettings } from '@/lib/modules/digital_goods/types';
@@ -15,7 +15,14 @@ export default async function CheckoutPage({
   const { tenant, slug } = await params;
   const siteId = tenant;
 
+  // Checkout is gated: an account session is required. A new buyer registers (and
+  // their accounts/{uid} doc is created) by going through /account/login first; an
+  // already-logged-in buyer purchases directly without re-authenticating.
   const account = await getAccountSession();
+  if (!account) {
+    const next = `/${tenant}/store/${slug}/checkout`;
+    redirect(`/${tenant}/account/login?next=${encodeURIComponent(next)}`);
+  }
 
   const productSnap = await adminDb
     .collection(`sites/${siteId}/${COLLECTION_PRODUCTS}`)
@@ -50,7 +57,7 @@ export default async function CheckoutPage({
           productId={product.id}
           productTitle={product.title}
           amount={product.price}
-          buyerEmail={account?.email ?? ''}
+          buyerEmail={account.email}
           bankName={settings.bankName}
           accountNumber={settings.accountNumber}
           accountName={settings.accountName}
