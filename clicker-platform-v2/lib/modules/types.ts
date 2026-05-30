@@ -12,6 +12,24 @@ export interface PublicRouteDefinition {
     componentKey: string; // e.g., "OrderPage" - references key in component map
 }
 
+export interface MemberSurfaceContext {
+  siteId: string;
+  uid: string;
+}
+
+export interface MemberSurfaceDefinition {
+  id: string;                 // unique surface id, e.g. 'library'
+  label: string;              // sidebar label, e.g. "My Library"
+  icon: string;               // icon key (same icon-map keys as AdminRoute.icon)
+  route: string;              // e.g. '/library' → mounts at /[tenant]/account/library
+  componentKey: string;       // key in the client component registry
+  // Explicit grant. If set, it decides visibility. If unset, falls back to hasData.
+  isGranted?: (ctx: MemberSurfaceContext) => boolean | Promise<boolean>;
+  // Implicit-by-data check used when isGranted is unset.
+  // If BOTH are unset, the surface is hidden (no way to know access).
+  hasData?: (ctx: MemberSurfaceContext) => boolean | Promise<boolean>;
+}
+
 export interface ModuleDefinition {
     id: string;
     displayName: string;
@@ -27,6 +45,7 @@ export interface ModuleDefinition {
     collections?: string[]; // Firestore collections this module owns
     requires?: string[]; // IDs of other modules this module depends on
     blocks?: ModuleBlockDefinition[]; // Custom blocks provided by this module
+    memberSurface?: MemberSurfaceDefinition; // account-dashboard surface (member-tier spec 2026-05-29)
     dashboardWidgets?: ModuleWidgetDefinition[]; // Widgets for Member Dashboard
     settings?: Record<string, any>; // Module-specific configuration
     dashboardAction?: {
