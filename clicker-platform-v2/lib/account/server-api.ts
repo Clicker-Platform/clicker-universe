@@ -39,3 +39,15 @@ export async function markAccountActive(siteId: string, uid: string): Promise<vo
     { merge: true },
   );
 }
+
+// Member-chosen dashboard accent. Caller validates accentPreset against ACCENT_PRESETS.
+export async function updateAccountAccent(
+  siteId: string,
+  uid: string,
+  accentPreset: string,
+): Promise<void> {
+  await adminDb.doc(accountPath(siteId, uid)).set(
+    { accentPreset, updatedAt: Timestamp.now() },
+    { merge: true },
+  );
+}

@@ -9,7 +9,7 @@ vi.mock('@/lib/firebase-admin', () => ({
   Timestamp: { now: () => ({ _now: true }) },
 }));
 
-import { getAccount, ensureAccount, markAccountActive } from '../server-api';
+import { getAccount, ensureAccount, markAccountActive, updateAccountAccent } from '../server-api';
 
 beforeEach(() => { docMock.mockReset(); getMock.mockReset(); setMock.mockReset(); });
 
@@ -49,6 +49,17 @@ describe('markAccountActive', () => {
     await markAccountActive('site1', 'uid1');
     expect(setMock).toHaveBeenCalledWith(
       expect.objectContaining({ status: 'active' }),
+      { merge: true },
+    );
+  });
+});
+
+describe('updateAccountAccent', () => {
+  it('merges the chosen accent preset onto the account doc', async () => {
+    await updateAccountAccent('site1', 'uid1', 'indigo');
+    expect(docMock).toHaveBeenCalledWith('sites/site1/accounts/uid1');
+    expect(setMock).toHaveBeenCalledWith(
+      expect.objectContaining({ accentPreset: 'indigo' }),
       { merge: true },
     );
   });
