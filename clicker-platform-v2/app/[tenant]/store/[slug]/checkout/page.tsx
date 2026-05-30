@@ -15,7 +15,7 @@ export default async function CheckoutPage({
   const { tenant, slug } = await params;
   const siteId = tenant;
 
-  const member = await getAccountSession();
+  const account = await getAccountSession();
 
   const productSnap = await adminDb
     .collection(`sites/${siteId}/${COLLECTION_PRODUCTS}`)
@@ -50,7 +50,7 @@ export default async function CheckoutPage({
           productId={product.id}
           productTitle={product.title}
           amount={product.price}
-          buyerEmail={member?.email ?? ''}
+          buyerEmail={account?.email ?? ''}
           bankName={settings.bankName}
           accountNumber={settings.accountNumber}
           accountName={settings.accountName}
