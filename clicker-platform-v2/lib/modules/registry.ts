@@ -163,6 +163,32 @@ export function subscribeToEnabledModules(callback: (modules: ModuleDefinition[]
     });
 }
 
+/**
+ * Returns all ENABLED modules, each merged with its STATIC definition.
+ *
+ * WHY THE MERGE: Firestore `modules/{id}` docs cannot store functions, but a
+ * module's `memberSurface` carries function predicates (`hasData`/`isGranted`).
+ * Those live ONLY in STATIC_MODULE_DEFINITIONS. Reading Firestore alone would
+ * drop them and every account-dashboard surface would silently be hidden.
+ * Static fields are spread on top so memberSurface (with its functions) survives.
+ *
+ * Firestore data provides id/enabled/displayName/icon/version; static provides
+ * adminRoutes/memberSurface/etc. A module enabled in Firestore but absent from
+ * the static defs still returns (without static extras). A module present in the
+ * static defs but NOT enabled in Firestore is NOT returned.
+ */
+export async function getEnabledModuleDefinitions(): Promise<ModuleDefinition[]> {
+    const q = query(collection(db, 'modules'), where('enabled', '==', true));
+    const snap = await getDocs(q);
+    return snap.docs.map((d) => {
+        const firestoreData = d.data();
+        const staticDef = STATIC_MODULE_DEFINITIONS[d.id] ?? {};
+        // Static def spread on top so function-valued fields (memberSurface.hasData/
+        // isGranted) survive; id always set from the doc id.
+        return { ...firestoreData, ...staticDef, id: d.id } as ModuleDefinition;
+    });
+}
+
 export async function findModuleForBlock(blockType: string): Promise<{ module: ModuleDefinition, componentKey: string } | null> {
     // Only search enabled modules
     const q = query(collection(db, 'modules'), where('enabled', '==', true));
