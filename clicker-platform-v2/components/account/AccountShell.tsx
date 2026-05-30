@@ -2,7 +2,10 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { signOut } from 'firebase/auth';
 import { Bell, Menu, X } from 'lucide-react';
+import { auth } from '@/lib/firebase';
+import { logger } from '@/lib/logger-edge';
 import { fetchAccount, fetchSurfaces, type AccountNavItem } from '@/lib/account/providers';
 import type { Account } from '@/lib/account/types';
 import type { MockTenantBrand } from '@/lib/account/mock/types';
