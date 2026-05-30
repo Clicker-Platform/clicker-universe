@@ -1,9 +1,8 @@
-import { redirect, notFound } from 'next/navigation';
-import { adminAuth, adminDb } from '@/lib/firebase-admin';
-import { COLLECTION_PRODUCTS, DOC_SETTINGS, publicRoutes } from '@/lib/modules/digital_goods/constants';
+import { notFound } from 'next/navigation';
+import { adminDb } from '@/lib/firebase-admin';
+import { COLLECTION_PRODUCTS, DOC_SETTINGS } from '@/lib/modules/digital_goods/constants';
 import type { DigitalProduct, DigitalGoodsSettings } from '@/lib/modules/digital_goods/types';
-import { buyerNeedsOnboarding } from '@/lib/modules/digital_goods/server-api';
-import { getBuyerSessionCookie } from '@/lib/modules/digital_goods/session';
+import { getAccountSession } from '@/lib/account/session';
 import { CheckoutClient } from './CheckoutClient';
 
 export const revalidate = 0;
@@ -15,23 +14,8 @@ export default async function CheckoutPage({
 }) {
   const { tenant, slug } = await params;
   const siteId = tenant;
-  const routes = publicRoutes(tenant);
 
-  const sessionCookie = await getBuyerSessionCookie();
-  if (!sessionCookie) {
-    redirect(`${routes.login}?next=${encodeURIComponent(routes.checkout(slug))}`);
-  }
-
-  let decoded;
-  try {
-    decoded = await adminAuth.verifySessionCookie(sessionCookie, true);
-  } catch {
-    redirect(`${routes.login}?next=${encodeURIComponent(routes.checkout(slug))}`);
-  }
-
-  if (await buyerNeedsOnboarding(siteId, decoded!.uid)) {
-    redirect(`${routes.onboarding}?next=${encodeURIComponent(routes.checkout(slug))}`);
-  }
+  const member = await getAccountSession();
 
   const productSnap = await adminDb
     .collection(`sites/${siteId}/${COLLECTION_PRODUCTS}`)
@@ -66,7 +50,7 @@ export default async function CheckoutPage({
           productId={product.id}
           productTitle={product.title}
           amount={product.price}
-          buyerEmail={decoded.email ?? ''}
+          buyerEmail={member?.email ?? ''}
           bankName={settings.bankName}
           accountNumber={settings.accountNumber}
           accountName={settings.accountName}
