@@ -232,8 +232,20 @@ service cloud.firestore {
          allow write: if isValidUser(siteId) && isModuleEnabled(siteId, 'sales_pipeline') && hasRole(siteId, ['owner', 'staff']);
       }
 
+      // === ACCOUNT IDENTITY TIER ===
+      // Per-tenant end-user identity (member-account tier — NOT staff members/,
+      // NOT the loyalty module). Doc id = Firebase uid.
+      // - Account holder reads/writes their own doc (self-service profile + accent).
+      // - Tenant staff may read (read-only members list — spec decision #12).
+      // - Server (Admin SDK) bypasses rules for ensure/markActive/accent writes.
+      match /accounts/{uid} {
+        allow read: if (request.auth != null && request.auth.uid == uid)
+                    || isValidUser(siteId);
+        allow write: if request.auth != null && request.auth.uid == uid;
+      }
+
       // === STRICT NESTED MODULES ===
-      
+
       // 1. BYOD POS
       match /modules/byod_pos/settings/{settingId} {
         allow read: if true;
