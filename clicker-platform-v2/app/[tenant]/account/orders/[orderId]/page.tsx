@@ -22,18 +22,26 @@ export default function AccountOrderStatusPage() {
     let cancelled = false;
 
     (async () => {
-      const o = await getOrder(tenant, orderId);
-      if (cancelled) return;
+      try {
+        const o = await getOrder(tenant, orderId);
+        if (cancelled) return;
 
-      // Entitlement check: missing order or owned by another user → not found.
-      if (!o || o.buyerId !== user.uid) {
+        // Entitlement check: missing order or owned by another user → not found.
+        if (!o || o.buyerId !== user.uid) {
+          setOrderNotFound(true);
+          setReady(true);
+          return;
+        }
+
+        setOrder(o);
+        setReady(true);
+      } catch {
+        // Firestore read failure (network/permissions) → degrade to not-found
+        // instead of hanging on a blank screen.
+        if (cancelled) return;
         setOrderNotFound(true);
         setReady(true);
-        return;
       }
-
-      setOrder(o);
-      setReady(true);
     })();
 
     return () => {

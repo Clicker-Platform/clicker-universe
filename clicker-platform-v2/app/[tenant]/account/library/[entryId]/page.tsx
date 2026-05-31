@@ -27,31 +27,39 @@ export default function AccountLibraryEntryPage() {
     let cancelled = false;
 
     (async () => {
-      const e = await getLibraryEntry(tenant, entryId);
-      if (cancelled) return;
+      try {
+        const e = await getLibraryEntry(tenant, entryId);
+        if (cancelled) return;
 
-      // Entitlement check: missing entry or owned by another user → not found.
-      if (!e || e.buyerId !== user.uid) {
+        // Entitlement check: missing entry or owned by another user → not found.
+        if (!e || e.buyerId !== user.uid) {
+          setEntryNotFound(true);
+          setReady(true);
+          return;
+        }
+
+        const psnap = await getDoc(doc(db, 'sites', tenant, COLLECTION_PRODUCTS, e.productId));
+        if (cancelled) return;
+
+        // A deleted/missing product = nothing to view → treat as not found.
+        if (!psnap.exists()) {
+          setEntryNotFound(true);
+          setReady(true);
+          return;
+        }
+
+        const product = psnap.data() as DigitalProduct;
+        setEntry(e);
+        setPdf(product.files.find((f) => f.kind === 'pdf') as PdfFile | undefined);
+        setYt(product.files.find((f) => f.kind === 'youtube') as YouTubeFile | undefined);
+        setReady(true);
+      } catch {
+        // Firestore read failure (network/permissions) → degrade to not-found
+        // instead of hanging on a blank screen.
+        if (cancelled) return;
         setEntryNotFound(true);
         setReady(true);
-        return;
       }
-
-      const psnap = await getDoc(doc(db, 'sites', tenant, COLLECTION_PRODUCTS, e.productId));
-      if (cancelled) return;
-
-      // A deleted/missing product = nothing to view → treat as not found.
-      if (!psnap.exists()) {
-        setEntryNotFound(true);
-        setReady(true);
-        return;
-      }
-
-      const product = psnap.data() as DigitalProduct;
-      setEntry(e);
-      setPdf(product.files.find((f) => f.kind === 'pdf') as PdfFile | undefined);
-      setYt(product.files.find((f) => f.kind === 'youtube') as YouTubeFile | undefined);
-      setReady(true);
     })();
 
     return () => {
