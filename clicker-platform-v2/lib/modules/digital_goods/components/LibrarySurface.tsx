@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Play, FileText } from 'lucide-react';
-import { getLibraryForAccount } from '../surface';
+import { fetchLibrary } from '@/lib/account/providers';
 import type { LibraryEntry } from '../types';
 
 // Flat (non-gradient) cover colors, cycled by title for stable per-item color.
@@ -51,7 +51,7 @@ export default function LibrarySurface({ tenant, uid }: { tenant: string; uid: s
   useEffect(() => {
     if (!uid) return;
     let active = true;
-    getLibraryForAccount({ siteId: tenant, uid })
+    fetchLibrary(tenant, uid)
       .then((rows) => {
         if (active) setEntries(rows);
       })

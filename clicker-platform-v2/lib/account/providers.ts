@@ -1,6 +1,5 @@
 import { getAccountClient } from './api';
 import type { Account } from './types';
-import { getLibraryForAccount } from '@/lib/modules/digital_goods/surface';
 import type { LibraryEntry } from '@/lib/modules/digital_goods/types';
 
 // href = route segment WITHOUT leading slash, e.g. 'library'. AccountSidebar
@@ -31,6 +30,11 @@ export async function fetchSurfaces(siteId: string): Promise<AccountNavItem[]> {
   }));
 }
 
-export async function fetchLibrary(siteId: string, uid: string): Promise<LibraryEntry[]> {
-  return getLibraryForAccount({ siteId, uid });
+// Reads the buyer's library via the server route (server-session gated + admin SDK).
+// uid is resolved server-side from __account_session; it is intentionally not sent.
+export async function fetchLibrary(siteId: string, _uid: string): Promise<LibraryEntry[]> {
+  const res = await fetch('/api/digital-goods/library', { headers: { 'x-site-id': siteId } });
+  if (!res.ok) return [];
+  const data = (await res.json()) as { entries?: LibraryEntry[] };
+  return data.entries ?? [];
 }

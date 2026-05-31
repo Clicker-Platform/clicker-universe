@@ -24,11 +24,23 @@ export function LibraryEntryClient({ siteId, productId, pdfStoragePath, pdfFilen
         headers: { 'Content-Type': 'application/json', 'x-site-id': siteId },
         body: JSON.stringify({ productId, storagePath: pdfStoragePath }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'request_failed');
-      window.open(data.url, '_blank');
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'request_failed');
+      }
+      // The server streams the file bytes directly (no shareable URL). Turn the
+      // response into a blob and trigger a save in the browser.
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = objectUrl;
+      a.download = pdfFilename || 'download.pdf';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(objectUrl);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Failed to get download link.');
+      setError(e instanceof Error ? e.message : 'Failed to download file.');
     } finally {
       setDownloading(false);
     }

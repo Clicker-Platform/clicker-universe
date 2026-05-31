@@ -11,7 +11,7 @@ import {
 } from './constants';
 import { canTransition } from './orders';
 import type {
-  DigitalOrder, DigitalProduct,
+  DigitalOrder, DigitalProduct, PdfFile,
   PaymentInstructions, ProductSnapshot,
 } from './types';
 
@@ -173,4 +173,56 @@ export async function issueSignedUrlForFile(
     expires: Date.now() + SIGNED_URL_TTL_SECONDS * 1000,
   });
   return url;
+}
+
+// --- File streaming (Option A) ---
+// Same entitlement checks as issueSignedUrlForFile, but returns the file bytes +
+// metadata so the API route can stream them to the buyer directly. No signed URL
+// ever leaves the server, so there is nothing for a buyer to re-share.
+
+export interface StreamableFile {
+  bytes: Buffer;
+  contentType: string;
+  filename: string;
+  sizeBytes: number;
+}
+
+export async function getFileForBuyer(
+  siteId: string, buyerUid: string, productId: string, storagePath: string,
+): Promise<StreamableFile> {
+  // Verify buyer has a library entry for this product
+  const librarySnap = await adminDb
+    .collection(`sites/${siteId}/${COLLECTION_LIBRARY}`)
+    .where('buyerId', '==', buyerUid)
+    .where('productId', '==', productId)
+    .limit(1)
+    .get();
+  if (librarySnap.empty) throw new Error('forbidden');
+
+  // Path must belong to this site's digital_goods products
+  const expectedPrefix = `sites/${siteId}/modules/digital_goods/products/`;
+  if (!storagePath.startsWith(expectedPrefix)) throw new Error('forbidden');
+
+  // Path must be one of this product's actual PDF files (IDOR defense)
+  const productSnap = await adminDb
+    .doc(`sites/${siteId}/${COLLECTION_PRODUCTS}/${productId}`)
+    .get();
+  if (!productSnap.exists) throw new Error('forbidden');
+  const product = productSnap.data() as DigitalProduct;
+  const matched = (product.files ?? []).find(
+    f => f.kind === 'pdf' && (f as PdfFile).storagePath === storagePath,
+  ) as PdfFile | undefined;
+  if (!matched) throw new Error('forbidden');
+
+  const file = adminStorage.bucket().file(storagePath);
+  const [exists] = await file.exists();
+  if (!exists) throw new Error('not_found');
+
+  const [bytes] = await file.download();
+  return {
+    bytes,
+    contentType: matched.mimeType || 'application/octet-stream',
+    filename: matched.name || 'download.pdf',
+    sizeBytes: matched.sizeBytes || bytes.length,
+  };
 }

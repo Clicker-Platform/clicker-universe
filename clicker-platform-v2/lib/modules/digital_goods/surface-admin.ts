@@ -13,6 +13,7 @@
 // lib/account/server-api.ts).
 import { adminDb } from '@/lib/firebase-admin';
 import { COLLECTION_LIBRARY } from './constants';
+import type { LibraryEntry } from './types';
 
 export async function libraryHasDataAdmin(siteId: string, uid: string): Promise<boolean> {
   const snap = await adminDb
@@ -21,4 +22,20 @@ export async function libraryHasDataAdmin(siteId: string, uid: string): Promise<
     .limit(1)
     .get();
   return !snap.empty;
+}
+
+// Server-side library list (admin SDK). Drives the account dashboard "My Library"
+// list. Mirrors the client-SDK getLibraryForBuyer query but runs under the trusted
+// server session (see /api/digital-goods/library) so it never depends on the
+// buyerId==request.auth.uid Firestore rule or on the client SDK's silent-empty
+// failure mode when an index is still building.
+export async function listLibraryForAccountAdmin(
+  siteId: string, uid: string,
+): Promise<LibraryEntry[]> {
+  const snap = await adminDb
+    .collection(`sites/${siteId}/${COLLECTION_LIBRARY}`)
+    .where('buyerId', '==', uid)
+    .orderBy('purchasedAt', 'desc')
+    .get();
+  return snap.docs.map(d => ({ id: d.id, ...d.data() } as LibraryEntry));
 }

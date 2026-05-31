@@ -1,14 +1,13 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { signInWithCustomToken } from 'firebase/auth';
 import { Loader2 } from 'lucide-react';
 import { auth } from '@/lib/firebase';
 import { logger } from '@/lib/logger-edge';
 
 export function VerifyClient({ tenant }: { tenant: string }) {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
 
@@ -51,13 +50,17 @@ export function VerifyClient({ tenant }: { tenant: string }) {
           redirectUrl && redirectUrl.startsWith('/') && !redirectUrl.startsWith('//')
             ? redirectUrl
             : `/${tenant}/account`;
-        router.replace(dest);
+        // Full document navigation (not router.replace) for the first authenticated
+        // load: a soft client nav can serve /account from Next's router cache rendered
+        // pre-login, leaving the sidebar surfaces empty until a manual hard refresh.
+        // A full load renders fresh with the session cookie present.
+        window.location.assign(dest);
       } catch (e) {
         logger.error('account.verify.failed', { error: e });
         setError('Gagal masuk. Minta link baru.');
       }
     })();
-  }, [token, tenant, router]);
+  }, [token, tenant]);
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-[#f4f4f6] p-6 font-[family-name:var(--font-outfit)]">
