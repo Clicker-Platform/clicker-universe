@@ -27,18 +27,12 @@ export const config = {
     ],
 };
 
-// Admin __session is a short slug (e.g. "go", "hi-clicker"). The buyer flow
-// (digital_goods) reuses the same cookie name on Firebase Hosting because the
-// CDN strips everything except `__session` — but it writes a Firebase session
-// JWT (~900 chars, starts with "eyJ"). If a buyer-shaped value reaches the
-// admin reader it poisons tenant routing (siteId becomes the JWT). Reject the
-// JWT shape so admin routing falls back to the gateway redirect / default
-// siteId path instead.
+// Admin __session is a short slug (e.g. "go", "hi-clicker"), written by the admin
+// login page / TokenBootstrap. The legacy buyer flow used to reuse this cookie with a
+// Firebase JWT, requiring a JWT-shape guard here; that system is gone — the account tier
+// uses its own __account_session cookie — so __session now only ever holds the slug.
 function readAdminSessionCookie(req: NextRequest): string | undefined {
-    const v = req.cookies.get('__session')?.value;
-    if (!v) return undefined;
-    if (v.length > 80 || v.startsWith('eyJ')) return undefined;
-    return v;
+    return req.cookies.get('__session')?.value || undefined;
 }
 
 export async function proxy(request: NextRequest) {
