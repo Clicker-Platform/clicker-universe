@@ -19,7 +19,7 @@ export default function AccountLibraryEntryPage() {
   const [entry, setEntry] = useState<LibraryEntry | null>(null);
   const [pdf, setPdf] = useState<PdfFile | undefined>(undefined);
   const [yt, setYt] = useState<YouTubeFile | undefined>(undefined);
-  const [notFound, setNotFound] = useState(false);
+  const [entryNotFound, setEntryNotFound] = useState(false);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -32,7 +32,7 @@ export default function AccountLibraryEntryPage() {
 
       // Entitlement check: missing entry or owned by another user → not found.
       if (!e || e.buyerId !== user.uid) {
-        setNotFound(true);
+        setEntryNotFound(true);
         setReady(true);
         return;
       }
@@ -40,10 +40,17 @@ export default function AccountLibraryEntryPage() {
       const psnap = await getDoc(doc(db, 'sites', tenant, COLLECTION_PRODUCTS, e.productId));
       if (cancelled) return;
 
-      const product = psnap.exists() ? (psnap.data() as DigitalProduct) : null;
+      // A deleted/missing product = nothing to view → treat as not found.
+      if (!psnap.exists()) {
+        setEntryNotFound(true);
+        setReady(true);
+        return;
+      }
+
+      const product = psnap.data() as DigitalProduct;
       setEntry(e);
-      setPdf(product?.files.find((f) => f.kind === 'pdf') as PdfFile | undefined);
-      setYt(product?.files.find((f) => f.kind === 'youtube') as YouTubeFile | undefined);
+      setPdf(product.files.find((f) => f.kind === 'pdf') as PdfFile | undefined);
+      setYt(product.files.find((f) => f.kind === 'youtube') as YouTubeFile | undefined);
       setReady(true);
     })();
 
@@ -54,7 +61,7 @@ export default function AccountLibraryEntryPage() {
 
   if (loading || !user || !ready) return null;
 
-  if (notFound || !entry) {
+  if (entryNotFound || !entry) {
     return (
       <div>
         <p className="text-gray-500 mt-8">Produk tidak ditemukan.</p>
