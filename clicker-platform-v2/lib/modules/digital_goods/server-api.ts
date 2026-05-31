@@ -4,14 +4,14 @@
 
 import 'server-only';
 import { adminDb, adminStorage } from '@/lib/firebase-admin';
-import { FieldValue, Timestamp } from 'firebase-admin/firestore';
+import { FieldValue } from 'firebase-admin/firestore';
 import {
-  COLLECTION_BUYERS, COLLECTION_ORDERS, COLLECTION_LIBRARY, COLLECTION_PRODUCTS,
+  COLLECTION_ORDERS, COLLECTION_LIBRARY, COLLECTION_PRODUCTS,
   SIGNED_URL_TTL_SECONDS,
 } from './constants';
 import { canTransition } from './orders';
 import type {
-  DigitalGoodsBuyer, DigitalOrder, DigitalProduct, LibraryEntry,
+  DigitalOrder, DigitalProduct,
   PaymentInstructions, ProductSnapshot,
 } from './types';
 
@@ -31,52 +31,6 @@ function stripUndefined<T>(value: T): T {
 
 // Relocated to platform lib/auth. Re-exported here so existing importers keep working.
 export { resolveTenantBaseUrl } from '@/lib/auth/tenant-url';
-
-// --- Buyer auto-provision (called from server actions on first authed visit) ---
-
-export async function upsertBuyerAdmin(
-  siteId: string,
-  uid: string,
-  data: { email: string; fullName?: string },
-): Promise<void> {
-  const ref = adminDb.doc(`sites/${siteId}/${COLLECTION_BUYERS}/${uid}`);
-  const clean = stripUndefined(data);
-  const snap = await ref.get();
-  if (snap.exists) {
-    await ref.set({ ...clean, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
-  } else {
-    await ref.set({
-      uid, ...clean,
-      createdAt: FieldValue.serverTimestamp(),
-      updatedAt: FieldValue.serverTimestamp(),
-    });
-  }
-}
-
-export async function getBuyerAdmin(siteId: string, uid: string): Promise<DigitalGoodsBuyer | null> {
-  const snap = await adminDb.doc(`sites/${siteId}/${COLLECTION_BUYERS}/${uid}`).get();
-  if (!snap.exists) return null;
-  return { uid, ...snap.data() } as DigitalGoodsBuyer;
-}
-
-export async function updateBuyerProfileAdmin(
-  siteId: string,
-  uid: string,
-  data: { fullName?: string },
-): Promise<void> {
-  const ref = adminDb.doc(`sites/${siteId}/${COLLECTION_BUYERS}/${uid}`);
-  const clean = stripUndefined(data);
-  await ref.set({ ...clean, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
-}
-
-// Returns true when the buyer still needs to fill the onboarding form
-// (no buyer doc, or fullName empty/whitespace).
-export async function buyerNeedsOnboarding(siteId: string, uid: string): Promise<boolean> {
-  const buyer = await getBuyerAdmin(siteId, uid);
-  if (!buyer) return true;
-  const name = (buyer.fullName ?? '').trim();
-  return name.length === 0;
-}
 
 // --- Create order (called from checkout server action) ---
 

@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuthedMember } from '@/lib/api-auth';
 import { confirmOrderPaidAdmin, resolveTenantBaseUrl } from '@/lib/modules/digital_goods/server-api';
 import { sendOrderPaidBuyerEmail } from '@/lib/modules/digital_goods/emails';
-import { adminDb } from '@/lib/firebase-admin';
-import { publicRoutes, COLLECTION_BUYERS } from '@/lib/modules/digital_goods/constants';
 import { logger } from '@/lib/logger-edge';
 
 export const runtime = 'nodejs';
@@ -24,13 +22,13 @@ export async function POST(req: NextRequest) {
       paymentRef: paymentRef?.trim() || undefined,
     });
 
-    // Look up buyer email and fire confirmation email
-    const buyerSnap = await adminDb.doc(`sites/${siteId}/${COLLECTION_BUYERS}/${order.buyerId}`).get();
-    const buyerEmail = buyerSnap.exists ? (buyerSnap.data()?.email as string | undefined) : undefined;
+    // Fire confirmation email to the buyer. The email is denormalized on the order
+    // at checkout (order.buyerEmail), so no separate identity lookup is needed.
+    const buyerEmail = order.buyerEmail;
     if (buyerEmail) {
       const fallbackHost = req.headers.get('x-forwarded-host') || req.headers.get('host') || undefined;
       const baseUrl = await resolveTenantBaseUrl(siteId, fallbackHost);
-      const libraryUrl = `${baseUrl}${publicRoutes(siteId).libraryEntry(libraryEntryId)}`;
+      const libraryUrl = `${baseUrl}/${siteId}/account/library/${libraryEntryId}`;
       sendOrderPaidBuyerEmail(siteId, {
         buyerEmail,
         productTitle: order.productSnapshot.title,

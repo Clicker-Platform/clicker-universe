@@ -69,7 +69,7 @@ export interface ProductSnapshot {
 
 export interface DigitalOrder {
   id: string;
-  buyerId: string;                // FK to sites/{siteId}/modules/digital_goods/buyers/{uid}
+  buyerId: string;                // holds the platform account uid (sites/{siteId}/accounts/{uid})
   buyerEmail?: string;            // denormalized for admin display (post-2026-05-26)
   productId: string;
   productSnapshot: ProductSnapshot;
@@ -97,21 +97,11 @@ export interface LibraryEntrySnapshot {
 
 export interface LibraryEntry {
   id: string;
-  buyerId: string;                // FK to sites/{siteId}/modules/digital_goods/buyers/{uid}
+  buyerId: string;                // holds the platform account uid (sites/{siteId}/accounts/{uid})
   productId: string;
   orderId: string;
   productSnapshot: LibraryEntrySnapshot;
   purchasedAt: Timestamp;
-}
-
-// --- Buyer Identity (Plan 2 — auto-provisioned on first authed visit) ---
-
-export interface DigitalGoodsBuyer {
-  uid: string;                    // matches doc ID; Firebase Auth UID
-  email: string;
-  fullName?: string;
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
 }
 
 // --- Settings ---

@@ -39,7 +39,7 @@ export function StoreProductClient({ tenant, siteId, product }: Props) {
   if (owned) {
     return (
       <button
-        onClick={() => router.push(routes.libraryEntry(owned.id))}
+        onClick={() => router.push(`/${tenant}/account/library/${owned.id}`)}
         className="mt-6 w-full bg-green-600 text-white px-6 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-green-700 transition"
       >
         Open in Library <ArrowRight size={18} />
@@ -50,7 +50,8 @@ export function StoreProductClient({ tenant, siteId, product }: Props) {
   function handleBuy() {
     const nextUrl = routes.checkout(product.slug);
     if (!user) {
-      router.push(`${routes.login}?next=${encodeURIComponent(nextUrl)}`);
+      // Checkout is gated; send unauthenticated buyers through the account login first.
+      router.push(`/${tenant}/account/login?next=${encodeURIComponent(nextUrl)}`);
     } else {
       router.push(nextUrl);
     }
