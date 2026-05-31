@@ -417,14 +417,9 @@ service cloud.firestore {
       match /modules/digital_goods/settings/{docId} {
         allow read, write: if isValidUser(siteId) && isOwner(siteId);
       }
-      // Plan 2: buyer profile (self r/w + admin read)
-      match /modules/digital_goods/buyers/{uid} {
-        // Buyer reads/writes their own doc; admin staff can read
-        allow read: if (request.auth != null && request.auth.uid == uid)
-                    || (request.auth != null && isValidUser(siteId));
-        allow write: if (request.auth != null && request.auth.uid == uid)
-                    || (request.auth != null && isValidUser(siteId) && hasRole(siteId, ['owner', 'staff']));
-      }
+      // Buyer identity retired: the platform account tier (sites/{siteId}/accounts/{uid})
+      // now owns buyer identity. The legacy modules/digital_goods/buyers collection and
+      // its rule were removed in the member-tier cutover.
 
       // Plan 2: orders — buyer reads own; admin reads; all writes server-only
       match /modules/digital_goods/orders/{orderId} {
