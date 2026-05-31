@@ -113,6 +113,20 @@ Single coherent change, not two patches:
 
 **NOT committed yet** — awaiting user decision.
 
+## 5b. Deferred to Plan 3 (theme: hardening / anti-piracy / feature extension)
+
+Raised 2026-05-31, intentionally NOT built now:
+
+1. **Buyer keeps their copy after product delete.** Today `deleteProduct` (api.ts) hard-deletes ONLY the product doc; it leaves the `library/{id}` doc and the Storage file. Result: the library *list* still shows the item (renders from `productSnapshot`), but the entry page AND download both BREAK — `entryId/page.tsx` treats missing product as not-found, and `getFileForBuyer` throws `forbidden` when `productSnap.exists` is false (server-api.ts). The file is orphaned, not deleted. **Desired:** once purchased, buyer keeps working access. Fix options: (a) soft-delete/archive products instead of hard-delete; (b) **make library entries self-contained** — store file path(s)+metadata on the library entry at purchase, verify download against the entry not the live product (robust "you own your copy"; schema change). Prefer (b).
+
+2. **Unique / watermarked download filename.** Today filename is fixed (`matched.name`). Tiers: (1) per-download random suffix — cosmetic, trivially renamed, near-useless for anti-piracy; (2) per-buyer deterministic name — mild support/debug value; (3) **in-PDF watermark** (buyer email/order stamped into content via pdf-lib) — the only one that survives renaming and actually deters leaks. Pairs naturally with the new streaming download (bytes already in hand server-side). Recommendation: skip 1/2 as security; do 3 if the goal is leak-tracing.
+
+3. **Online PDF reader** (in-browser viewer, no download) — feature extension.
+
+## Plan 4 (separate theme): LMS / course player inside Library Entry
+
+See memory [[project_flow_blocks_vs_lms]] — configurable course player inside a Library Entry. Orthogonal to the storefront/library layer; its own phase.
+
 ## 6. What this plan deliberately does NOT do
 - No rewrite of the auth/session system — it is sound.
 - No change to tenant-side order confirm/cancel — correctly gated by `requireAuthedMember`.
