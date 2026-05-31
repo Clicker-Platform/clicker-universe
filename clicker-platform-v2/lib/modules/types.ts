@@ -23,11 +23,15 @@ export interface MemberSurfaceDefinition {
   icon: string;               // icon key (same icon-map keys as AdminRoute.icon)
   route: string;              // e.g. '/library' → mounts at /[tenant]/account/library
   componentKey: string;       // key in the client component registry
-  // Explicit grant. If set, it decides visibility. If unset, falls back to hasData.
+  // Explicit grant. If set, it decides visibility. If unset, falls back to hasData/dataCheck.
   isGranted?: (ctx: MemberSurfaceContext) => boolean | Promise<boolean>;
-  // Implicit-by-data check used when isGranted is unset.
-  // If BOTH are unset, the surface is hidden (no way to know access).
+  // Implicit-by-data check (client-SDK-safe predicate) used when isGranted is unset.
   hasData?: (ctx: MemberSurfaceContext) => boolean | Promise<boolean>;
+  // Server-only implicit-by-data check, identified by key. Used when the data check
+  // needs the admin SDK (so it can't live as a function in this client-imported file).
+  // The server-only surface resolver maps the key → an admin-SDK predicate.
+  // If isGranted, hasData, AND dataCheck are all unset, the surface is hidden.
+  dataCheck?: string;
 }
 
 export interface ModuleDefinition {

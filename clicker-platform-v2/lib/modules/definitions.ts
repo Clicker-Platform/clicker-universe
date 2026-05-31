@@ -100,8 +100,12 @@ export const STATIC_MODULE_DEFINITIONS: Record<string, Partial<ModuleDefinition>
             icon: 'box',
             route: '/library',
             componentKey: 'digital_goods:LibrarySurface',
-            // no isGranted → implicit-by-data via hasData
-            hasData: (ctx) => import('@/lib/modules/digital_goods/surface').then(m => m.libraryHasData(ctx)),
+            // Visibility is implicit-by-data (no isGranted). The data check needs the
+            // admin SDK and runs server-side, so it is NOT defined here (definitions.ts
+            // is imported by client components and must stay free of firebase-admin).
+            // The surfaces API route resolves it via dataCheck below. See
+            // app/api/account/surfaces/route.ts + surface-admin.ts.
+            dataCheck: 'digital_goods:library',
         },
     },
     'promo': {
