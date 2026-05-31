@@ -49,7 +49,7 @@ export default function LibraryPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mt-5">
           {library.map((e) => (
-            <LibraryCard key={e.id} item={toCard(e)} />
+            <LibraryCard key={e.id} item={toCard(e)} href={`/${tenant}/account/library/${e.id}`} />
           ))}
         </div>
       )}

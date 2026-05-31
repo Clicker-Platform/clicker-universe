@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { Play, FileText } from 'lucide-react';
 import type { MockLibraryItem } from '@/lib/account/mock/types';
 
@@ -12,10 +13,10 @@ function colorFor(seed: string): string {
   return COVER_COLORS[h % COVER_COLORS.length];
 }
 
-export function LibraryCard({ item }: { item: MockLibraryItem }) {
+export function LibraryCard({ item, href }: { item: MockLibraryItem; href?: string }) {
   const Icon = item.kind === 'youtube' ? Play : FileText;
-  return (
-    <div className="bg-white rounded-2xl overflow-hidden shadow-[0_2px_10px_rgba(0,0,0,0.05)]">
+  const inner = (
+    <>
       <div
         className="h-[88px] relative flex items-center justify-center"
         style={item.cover ? undefined : { backgroundColor: colorFor(item.title) }}
@@ -36,6 +37,16 @@ export function LibraryCard({ item }: { item: MockLibraryItem }) {
         <div className="font-bold text-gray-900">{item.title}</div>
         <div className="text-gray-400 text-xs mt-0.5">{item.kind.toUpperCase()}</div>
       </div>
-    </div>
+    </>
   );
+
+  const cardClass = 'block bg-white rounded-2xl overflow-hidden shadow-[0_2px_10px_rgba(0,0,0,0.05)]';
+  if (href) {
+    return (
+      <Link href={href} className={`${cardClass} transition-shadow hover:shadow-[0_4px_16px_rgba(0,0,0,0.1)]`}>
+        {inner}
+      </Link>
+    );
+  }
+  return <div className={cardClass}>{inner}</div>;
 }
